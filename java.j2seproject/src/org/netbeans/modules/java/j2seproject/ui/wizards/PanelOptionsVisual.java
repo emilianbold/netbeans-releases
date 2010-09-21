@@ -50,7 +50,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
@@ -147,21 +146,71 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         }                
     }
     
-    public void propertyChange (PropertyChangeEvent event) {
-        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(event.getPropertyName())) {
-            String newProjectName = NewJ2SEProjectWizardIterator.getPackageName((String) event.getNewValue());
-            if (!Utilities.isJavaIdentifier(newProjectName)) {
-                newProjectName = NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNameSuffix", newProjectName); 
-            }
-            this.mainClassTextField.setText (MessageFormat.format(
-                NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"), new Object[] {newProjectName}
-            ));
-        }
-        if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(event.getPropertyName())) {
+    public void propertyChange (final PropertyChangeEvent event) {
+        final String propName = event.getPropertyName();
+        if (PanelProjectLocationVisual.PROP_PROJECT_NAME.equals(propName)) {
+            final String projectName = (String) event.getNewValue();
+            this.mainClassTextField.setText (createMainClassName(projectName));
+        } else if (PanelProjectLocationVisual.PROP_PROJECT_LOCATION.equals(propName)) {
             projectLocation = (String)event.getNewValue();
         }
     }
     
+    static String createMainClassName (final String projectName) {
+
+        final StringBuilder pkg = new StringBuilder();
+        final StringBuilder main = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        boolean needsEscape = false;
+        String part;
+        for (int i=0; i< projectName.length(); i++) {
+            final char c = projectName.charAt(i);
+            if (first) {
+                if (!Character.isJavaIdentifierStart(c)) {
+                    needsEscape = true;                    
+                } 
+                sb.append(c);
+                first = false;
+            } else {
+                if (Character.isJavaIdentifierPart(c) ) {
+                    sb.append(c);
+                } else if (sb.length() > 0) {
+                    part = sb.toString();
+                    if (pkg.length()>0) {
+                        pkg.append('.');    //NOI18N
+                    }
+                    if (needsEscape || !Utilities.isJavaIdentifier(part.toLowerCase())) {
+                        pkg.append(NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNamePrefix"));
+                    }
+                    pkg.append(part.toLowerCase());
+                    if (!needsEscape || main.length()>0) {
+                        main.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+                    }
+                    sb = new StringBuilder();
+                    first = true;
+                    needsEscape = false;
+                }
+            }
+        }
+        if (sb.length()>0) {
+            part = sb.toString();
+            if (pkg.length()>0) {
+                pkg.append('.');    //NOI18N
+            }
+            if (needsEscape || !Utilities.isJavaIdentifier(part.toLowerCase())) {
+                pkg.append(NbBundle.getMessage (PanelOptionsVisual.class, "TXT_PackageNamePrefix"));
+            }
+            pkg.append(part.toLowerCase());
+            if (!needsEscape || main.length()>0) {
+                main.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));
+            }
+        }
+        if (main.length() == 0) {
+            main.append(NbBundle.getMessage (PanelOptionsVisual.class,"TXT_ClassName"));
+        }
+        return pkg.length() == 0 ? main.toString() : String.format("%s.%s", pkg.toString(), main.toString());   //NOI18N        
+    }    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -107,4 +107,6 @@ public interface Key {
      * @return n-th secondary element
      */
     int getSecondaryAt(int level);
+    
+    KeyDataPresentation getDataPresentation();
 }

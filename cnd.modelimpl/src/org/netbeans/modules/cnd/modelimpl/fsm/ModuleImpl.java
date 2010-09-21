@@ -70,10 +70,16 @@ public final class ModuleImpl extends OffsetableDeclarationBase<CsmNamespaceDefi
     private final List<CsmUID<CsmOffsetableDeclaration>> declarations;
     private final CharSequence name;
 
-    public ModuleImpl(CsmFile file, int startOffset, int endOffset, String name) {
+    private ModuleImpl(CsmFile file, int startOffset, int endOffset, String name) {
         super(file, startOffset, endOffset);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         this.name = NameCache.getManager().getString(name);
+    }
+
+    public static ModuleImpl create(CsmFile file, int startOffset, int endOffset, String name) {
+        ModuleImpl moduleImpl = new ModuleImpl(file, startOffset, endOffset, name);
+        postObjectCreateRegistration(true, moduleImpl);
+        return moduleImpl;
     }
 
     @Override

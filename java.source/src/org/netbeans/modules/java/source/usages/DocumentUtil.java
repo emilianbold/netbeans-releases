@@ -55,7 +55,6 @@ import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
-import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
@@ -79,16 +78,16 @@ import org.openide.util.Exceptions;
  */
 public class DocumentUtil {
     
-    private static final String FIELD_RESOURCE_NAME = "resName";        //NOI18N
-    private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
-    private static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
+    
+    static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
     private static final String FIELD_REFERENCES = "references";        //NOI18N
     static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
-    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N    
+    static final String FIELD_IDENTS = "ids";                           //NOI18N
+    static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_FEATURE_IDENTS = "cifids"; //NOI18N
+    private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
     private static final String FIELD_SOURCE = "source";                //NOI18N
-    private static final String FIELD_IDENTS = "ids";                           //NOI18N
-    private static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
-    private static final String FIELD_CASE_INSENSItIVE_FEATURE_IDENTS="cifids"; //NOI18N
     
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
@@ -230,40 +229,7 @@ public class DocumentUtil {
         }
         return query;
     }
-    
-    static Term identTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_IDENTS, ident);
-    }
-    
-    static Query identQuery (final String ident) {
-        return new TermQuery(identTerm(ident));
-    }
-    
-    static Term featureIdentTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_FEATURE_IDENTS, ident);
-    }
-    
-    static Query featureIdentQuery (final String ident) {
-        return new TermQuery(featureIdentTerm(ident));
-    }
-    
-    static Term caseInsensitiveFeatureIdentTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, ident);
-    }
-            
-    static Term simpleBinaryNameTerm (final String resourceFileName) {
-        assert resourceFileName != null;
-        return new Term (FIELD_BINARY_NAME, resourceFileName);
-    }   
-    
-    static Term packageNameTerm (final String packageName) {
-        assert packageName != null;
-        return new Term (FIELD_PACKAGE_NAME, packageName);
-    }
-    
+                               
     static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
         assert resourceName  != null;
         if (usageType != null) {
@@ -319,7 +285,7 @@ public class DocumentUtil {
         if (featureIdents != null) {
             field = new Field(FIELD_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
             doc.add(field);
-            field = new Field(FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            field = new Field(FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
             doc.add(field);
         }
         if (idents != null) {
@@ -333,20 +299,7 @@ public class DocumentUtil {
         return doc;
     }
         
-    // Functions for encoding and decoding of UsageType
-    static StringBuilder createUsage (final String className) {
-        Set<ClassIndexImpl.UsageType> EMPTY = Collections.emptySet();
-        return encodeUsage (className, EMPTY,NO);
-    }
-    
-    static void addUsage (final StringBuilder rawUsage, final ClassIndexImpl.UsageType type) {
-        assert rawUsage != null;
-        assert type != null;
-        final int rawUsageLen = rawUsage.length();
-        final int startIndex = rawUsageLen - SIZE;
-        rawUsage.setCharAt (startIndex + type.getOffset(),YES);
-    }
-    
+    // Functions for encoding and decoding of UsageType    
     static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
         return encodeUsage (className, usageTypes, NO).toString();
     }
@@ -366,16 +319,7 @@ public class DocumentUtil {
         builder.append(map);
         return builder;
     }
-    
-    static String encodeUsage (final String className, final String usageMap) {
-        assert className != null;
-        assert usageMap != null;
-        StringBuilder sb = new StringBuilder ();
-        sb.append(className);
-        sb.append(usageMap);
-        return sb.toString();
-    }
-    
+            
     static String decodeUsage (final String rawUsage, final Set<ClassIndexImpl.UsageType> usageTypes) {
         assert rawUsage != null;
         assert usageTypes != null;

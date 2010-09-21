@@ -62,6 +62,7 @@ import org.netbeans.modules.glassfish.common.nodes.actions.DisableModulesCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.EnableModulesCookie;
+import org.netbeans.modules.glassfish.common.nodes.actions.OpenTestURLAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.OpenURLAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesAction;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -72,6 +73,7 @@ import org.netbeans.modules.glassfish.spi.Decorator;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
+import org.openide.actions.CopyAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
@@ -380,6 +382,12 @@ public class Hk2ItemNode extends AbstractNode {
         if(decorator.canShowBrowser()) {
             actions.add(SystemAction.get(OpenURLAction.class));
         }
+        if(decorator.canTest()) {
+            actions.add(SystemAction.get(OpenTestURLAction.class));
+        }
+        if(decorator.canCopy()) {
+            actions.add(SystemAction.get(CopyAction.class));
+        }
         if (decorator.canEditDetails()) {
             actions.add(SystemAction.get(EditDetailsAction.class));
         }
@@ -436,6 +444,8 @@ public class Hk2ItemNode extends AbstractNode {
     
     private static final String RESOURCES_ICON = 
             "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
+    private static final String WS_ICON =
+            "org/netbeans/modules/glassfish/common/resources/webservice.png"; // NOI18N
         
     public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
         @Override public boolean isRefreshable() { return true; }
@@ -448,6 +458,18 @@ public class Hk2ItemNode extends AbstractNode {
         @Override public Image getOpenedIcon(int type) { return getIcon(type); }
     };
     
+    public static final Decorator WS_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() { return true; }
+    };
+
+    public static final Decorator WS_ENDPOINT = new Decorator() {
+        @Override public boolean canTest() { return true; }
+        @Override public boolean canCopy() { return true; }
+        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(WS_ICON); }
+        @Override public Image getOpenedIcon(int type) { return getIcon(type); }
+        //@Override public boolean canSave() { return true; }
+    };
+
     public static final Decorator J2EE_APPLICATION = new Decorator() {
         @Override public boolean canUndeploy() { return true; }
         @Override public boolean canEnable() { return true; }

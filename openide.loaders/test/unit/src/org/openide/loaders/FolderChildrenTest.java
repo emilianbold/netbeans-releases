@@ -77,6 +77,7 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.test.MockLookup;
@@ -737,6 +738,7 @@ public class FolderChildrenTest extends NbTestCase {
 
         List<Node> nodes = new ArrayList<Node>();
         int cnt = fn.getChildren().getNodesCount(true);
+        assertEquals("We expect all files", FILES / 2, cnt);
         List<Node> snapshot = fn.getChildren().snapshot();
         assertEquals("Count as expected", cnt, snapshot.size());
         for (int i = 0; i < cnt; i++) {
@@ -744,6 +746,72 @@ public class FolderChildrenTest extends NbTestCase {
         }
         assertEquals("No events delivered", 0, listener.cnt);
         assertEquals("Size is half cut", FILES / 2, fn.getChildren().getNodesCount(true));
+    }
+    
+    public void testALotOfHiddenEntriesInLazyMode() throws Exception {
+        FileObject folder = FileUtil.createFolder(FileUtil.getConfigRoot(), "aLotOf");
+        List<FileObject> arr = new ArrayList<FileObject>();
+        final int FILES = 1000;
+        for (int i = 0; i < FILES; i++) {
+            arr.add(FileUtil.createData(folder, "" + i + ".dat"));
+        }
+
+        DataFolder df = DataFolder.findFolder(folder);
+
+        VisQ visq = new VisQ();
+
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
+        class L implements NodeListener {
+            int cnt;
+
+            public void childrenAdded(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenRemoved(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenReordered(NodeReorderEvent ev) {
+                cnt++;
+            }
+
+            public void nodeDestroyed(NodeEvent ev) {
+                cnt++;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                cnt++;
+            }
+        }
+        L listener = new L();
+        fn.addNodeListener(listener);
+
+        visq.block = new Object();
+        int cnt;
+        List<Node> nodes;
+        synchronized (visq.block) {
+            nodes = new ArrayList<Node>();
+            cnt = fn.getChildren().getNodesCount(false);
+            assertEquals("We expect no files at all", 0, cnt);
+
+            visq.block.wait();
+            visq.block.notify();
+        }
+
+        assertEquals("Size is half cut", FILES / 2, fn.getChildren().getNodesCount(true));
+        assertTrue("Visibility query goes on", visq.success);
+        
+        List<Node> snapshot = fn.getChildren().snapshot();
+        assertEquals("Files filtered", FILES / 2, snapshot.size());
+        for (int i = 0; i < cnt; i++) {
+            nodes.add(snapshot.get(i));
+        }
+        if ("false".equals(System.getProperty("org.openide.loaders.DataFolder.lazy"))) {
+            assertEquals("Eager children generate one event", 1, listener.cnt);
+            return;
+        }
+        assertEquals("No events delivered", 0, listener.cnt);
     }
 
     /** Tests node keys are not invalidated if only position attribute changes (see #155673). */
@@ -828,12 +896,28 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {
+        Object block;
+        boolean success;
+        
         public boolean isVisible(FileObject file) {
+            if (block != null) {
+                synchronized (block) {
+                    try {
+                        block.notifyAll();
+                        block.wait();
+                    } catch (InterruptedException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                    block = null;
+                }
+            }
             try {
                 int number = Integer.parseInt(file.getName());
                 return number % 2 == 0;
             } catch (NumberFormatException numberFormatException) {
                 return true;
+            } finally {
+                success = true;
             }
         }
 

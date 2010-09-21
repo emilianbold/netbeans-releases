@@ -53,8 +53,8 @@ made subject to such option by the copyright holder.
     <change id="ActionReference">
         <api name="awt"/>
         <summary>New @ActionReference annotations</summary>
-        <version major="7" minor="27"/>
-        <date day="25" month="8" year="2010"/>
+        <version major="7" minor="28"/>
+        <date day="5" month="9" year="2010"/>
         <author login="jtulach"/>
         <compatibility addition="yes" binary="compatible" deletion="no" semantic="compatible"/>
         <description>

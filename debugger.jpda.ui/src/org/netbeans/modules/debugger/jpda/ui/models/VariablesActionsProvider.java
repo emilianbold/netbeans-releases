@@ -55,6 +55,8 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,6 +65,20 @@ import org.openide.util.RequestProcessor;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={NodeActionsProvider.class},
+                                 position=650),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={NodeActionsProvider.class},
+                                 position=650),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types={NodeActionsProvider.class},
+                                 position=650),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types={NodeActionsProvider.class},
+                                 position=650)
+})
 public class VariablesActionsProvider implements NodeActionsProvider {
     
     

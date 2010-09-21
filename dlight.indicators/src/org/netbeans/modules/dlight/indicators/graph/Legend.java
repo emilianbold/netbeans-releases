@@ -164,6 +164,7 @@ public class Legend extends JPanel {
             updateDetailImpl(name, value);
         } else {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     updateDetailImpl(name, value);
                 }
@@ -171,9 +172,19 @@ public class Legend extends JPanel {
         }
     }
 
-    public final void updateWithInfoProvided(Collection<Column> columns){
-        init(columns);
-        repaint();
+    public final void updateWithInfoProvided(final Collection<Column> columns){
+        if (SwingUtilities.isEventDispatchThread()) {
+            init(columns);
+            repaint();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    init(columns);
+                    repaint();
+                }
+            });
+        }
     }
 
     private void updateDetailImpl(String name, String value) {
@@ -214,14 +225,17 @@ public class Legend extends JPanel {
             this.color = color;
         }
 
+        @Override
         public int getIconWidth() {
             return size;
         }
 
+        @Override
         public int getIconHeight() {
             return size;
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             g.setColor(color);
             g.fillRect(x, y, size - 1, size - 1);

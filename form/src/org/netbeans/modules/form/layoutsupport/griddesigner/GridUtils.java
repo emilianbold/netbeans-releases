@@ -45,8 +45,10 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import javax.swing.Box;
 import javax.swing.JComponent;
+import org.netbeans.modules.form.FormLoaderSettings;
 
 /**
  * Utilities of the grid designer.
@@ -100,7 +102,12 @@ public class GridUtils {
      */
     public static void addPaddingComponents(GridManager manager, int columnNo, int rowNo) {
         manager.updateLayout();
-        if (manager.getContainer().getComponentCount() == 0) {
+        boolean shouldPad = FormLoaderSettings.getInstance().getPadEmptyCells();
+        if (!shouldPad) {
+            return;
+        }
+        Container container = manager.getContainer();
+        if (container.getComponentCount() == 0) {
             // Some layout managers (like GridBagLayout) do not layout empty
             // containers => add one obvious padding before revalidation
             Component padding = createPaddingComponent(true, true);
@@ -112,6 +119,35 @@ public class GridUtils {
         // The following arrays help to avoid infinite padding in some degenerated cases
         boolean[] paddedColumn = new boolean[columnNo];
         boolean[] paddedRow = new boolean[rowNo];
+        // Workaround for problematic handling of components
+        // with zero height or width by GridBagLayout. It always
+        // put them into (0,0) location. We are padding them 
+        // to avoid this problem.
+        if (container.getLayout() instanceof GridBagLayout) {
+            revalidateGrid(manager);
+            int pad = 2;
+            for (Component comp : container.getComponents()) {
+                if (!GridUtils.isPaddingComponent(comp) && (comp instanceof Box.Filler)) {
+                    Dimension dim = comp.getSize();
+                    if (dim.width == 0) {
+                        Dimension minSize = comp.getMinimumSize();
+                        Dimension prefSize = comp.getPreferredSize();
+                        if (prefSize.width == 0) {
+                            comp.setMinimumSize(new Dimension(pad, minSize.height));
+                            comp.setPreferredSize(new Dimension(pad, prefSize.height));
+                        }
+                    }
+                    if (dim.height == 0) {
+                        Dimension minSize = comp.getMinimumSize();
+                        Dimension prefSize = comp.getPreferredSize();
+                        if (prefSize.height == 0) {
+                            comp.setMinimumSize(new Dimension(minSize.width, pad));
+                            comp.setPreferredSize(new Dimension(prefSize.width, pad));
+                        }
+                    }
+                }
+            }
+        }
         boolean modified = true;
         while (modified) {
             // Addition of paddings can make other column/rows smaller

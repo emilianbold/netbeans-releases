@@ -46,6 +46,7 @@ package org.netbeans.modules.j2ee.persistence.provider;
 
 import java.util.Collections;
 import java.util.Map;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.openide.util.NbBundle;
 
 /**
@@ -64,14 +65,18 @@ class ToplinkProvider extends Provider{
      */ 
     private static final String PREFERRED_PROVIDER_CLASS = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
     private static final String ALTERNATIVE_PROVIDER_CLASS = "oracle.toplink.essentials.ejb.cmp3.EntityManagerFactoryProvider";//NOI18N
+    private final static String ECLIPSELINK_PROVIDER_CLASS = "org.eclipse.persistence.jpa.PersistenceProvider";//NOI18N
 
     /**
      * Creates a new instance using the preferred provider class.
      * 
      * @see #PREFERRED_PROVIDER_CLASS
      */ 
-    static ToplinkProvider create(){
-        return new ToplinkProvider(PREFERRED_PROVIDER_CLASS);
+    static ToplinkProvider create(String version){
+        if(Persistence.VERSION_2_0.equals(version)){
+            return new ToplinkProvider(ECLIPSELINK_PROVIDER_CLASS, version);
+        }
+        else return new ToplinkProvider(PREFERRED_PROVIDER_CLASS, version);
     }
     
     /**
@@ -82,49 +87,60 @@ class ToplinkProvider extends Provider{
      * @see #ALTERNATIVE_PROVIDER_CLASS
      */ 
     static ToplinkProvider create55Compatible(){
-        return new ToplinkProvider(ALTERNATIVE_PROVIDER_CLASS);
+        return new ToplinkProvider(ALTERNATIVE_PROVIDER_CLASS, Persistence.VERSION_1_0);
     }
     
-    private ToplinkProvider(String providerClass){
-        super(providerClass); //NOI18N
+    private ToplinkProvider(String providerClass, String version){
+        super(providerClass, version); //NOI18N
     }
     
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(ToplinkProvider.class, "LBL_TopLink"); //NOI18N
+        String name = Persistence.VERSION_1_0.equals(getVersion())?NbBundle.getMessage(ToplinkProvider.class, "LBL_TopLinkEssentials"):NbBundle.getMessage(ToplinkProvider.class, "LBL_TopLink");//NOI18N
+        return name + (getVersion()!=null ? " (JPA "+getVersion()+")" : ""); //NOI18N
     }
     
+    @Override
     public String getJdbcUrl() {
         return "toplink.jdbc.url";
     }
 
+    @Override
     public String getJdbcDriver() {
         return "toplink.jdbc.driver";
     }
 
+    @Override
     public String getJdbcUsername() {
         return "toplink.jdbc.user";
     }
 
+    @Override
     public String getJdbcPassword() {
         return "toplink.jdbc.password";
     }
 
+    @Override
     public String getTableGenerationPropertyName() {
         return "toplink.ddl-generation";
     }
 
+    @Override
     public String getTableGenerationDropCreateValue() {
         return "drop-and-create-tables";
     }
 
+    @Override
     public String getTableGenerationCreateValue() {
         return "create-tables";
     }
 
+    @Override
     public Map getUnresolvedVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }
 
+    @Override
     public Map getDefaultVendorSpecificProperties() {
         return Collections.EMPTY_MAP;
     }

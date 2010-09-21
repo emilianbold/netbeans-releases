@@ -455,7 +455,7 @@ public class Commit extends GeneralPHP
 
     // Insert constructor
     Sleep( 1500 );
-    if (!getPlatform().equals("mac os x")) {
+    if (getPlatform() != 4096) {
         eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
     } else {
         eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );
@@ -492,7 +492,7 @@ public class Commit extends GeneralPHP
 
     boolean b = true;
     // Insert get
-     if (!getPlatform().equals("mac os x")) {
+     if (getPlatform() != 4096) {
         eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
     } else {
         eoPHP.pressKey( KeyEvent.VK_I, InputEvent.CTRL_MASK );

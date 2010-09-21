@@ -443,7 +443,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 }
             }
         } else if (errorConstructor) {
-	    Pair<List<? extends TypeMirror>, List<String>> resolvedArguments = Utilities.resolveArguments(copy, newClassToConvert, nct.getArguments());
+	    Pair<List<? extends TypeMirror>, List<String>> resolvedArguments = Utilities.resolveArguments(copy, newClassToConvert, nct.getArguments(), targetElement);
 
 	    if (resolvedArguments != null) {
 		nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();

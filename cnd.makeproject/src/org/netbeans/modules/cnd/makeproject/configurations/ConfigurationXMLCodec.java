@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.List;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -81,6 +82,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxO
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
@@ -429,6 +432,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
                     ExecutionEnvironmentFactory.fromUniqueID(currentText));
+        } else if (element.equals(FIXED_SYNC_FACTORY)) {
+            RemoteSyncFactory fixedSyncFactory = RemoteSyncFactory.fromID(currentText);
+            CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N
+            ((MakeConfiguration) currentConf).setFixedRemoteSyncFactory(fixedSyncFactory);
+        } else if (element.equals(REMOTE_MODE)) {
+            RemoteProject.Mode mode = RemoteProject.Mode.valueOf(currentText);
+            CndUtils.assertNotNull(mode, "Can not restore remote mode " + currentText); //NOI18N
+            ((MakeConfiguration) currentConf).setRemoteMode(mode);
         } else if (element.equals(C_REQUIRED_ELEMENT)) {
             if (descriptorVersion <= 41) {
                 return; // ignore

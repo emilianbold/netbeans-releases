@@ -64,6 +64,8 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -78,6 +80,17 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=ExtendedNodeModel.class,
+                                 position=300),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=ExtendedNodeModel.class,
+                                 position=300),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=ExtendedNodeModel.class,
+                                 position=300)
+})
 public class VariablesNodeModel implements ExtendedNodeModel { 
 
     public static final String FIELD =

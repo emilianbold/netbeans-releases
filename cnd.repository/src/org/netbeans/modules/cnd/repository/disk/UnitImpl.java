@@ -46,12 +46,17 @@ package org.netbeans.modules.cnd.repository.disk;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.sfs.FileStorage;
+import org.netbeans.modules.cnd.repository.spi.DatabaseStorage;
+import org.netbeans.modules.cnd.repository.spi.DatabaseStorage.Provider;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Lookup;
 
 /**
  * Implements a repository unit
@@ -62,18 +67,28 @@ public final class UnitImpl implements Unit {
     
     private Storage    singleFileStorage;
     private Storage    multyFileStorage;
+    private final Collection<DatabaseStorage> dbStorages = new ArrayList<DatabaseStorage>();
     private final CharSequence unitName;
     private final MemoryCache cache;
     
-    public UnitImpl(final CharSequence unitName) throws IOException {
-       assert unitName != null;
-       this.unitName = unitName;
-       singleFileStorage = FileStorage.create(new File(StorageAllocator.getInstance().getUnitStorageName(unitName)));
-       multyFileStorage = new MultyFileStorage(getName());
-       cache = new MemoryCache();
+    public UnitImpl(int unitId, final CharSequence unitName) throws IOException {
+        assert unitName != null;
+        this.unitName = unitName;
+        File homeDir = new File(StorageAllocator.getInstance().getUnitStorageName(unitName));
+        singleFileStorage = FileStorage.create(homeDir);
+        multyFileStorage = new MultyFileStorage(getName());
+        Collection<? extends Provider> providers = Lookup.getDefault().lookupAll(DatabaseStorage.Provider.class);
+        
+        for (Provider provider : providers) {
+            DatabaseStorage storage = provider.create(unitId, homeDir);
+            if (storage != null) {
+                dbStorages.add(storage);
+            }
+        }
+        cache = new MemoryCache();
     }
     
-    private Storage getStorage(Key key) {
+    private Storage getDiskStorage(Key key) {
         assert key != null;
         assert getName().equals(key.getUnit());
         if (key.getBehavior() == Key.Behavior.Default) {
@@ -81,6 +96,16 @@ public final class UnitImpl implements Unit {
         } else {
             return multyFileStorage;
         }
+    }
+
+    DatabaseTable getDatabaseTable(String storageID) {
+        for (DatabaseStorage dbStorage : dbStorages) {
+            DatabaseTable table = dbStorage.getTable(storageID);
+            if (table != null) {
+                return table;
+            }
+        }
+        return null;
     }
 
     @Override
@@ -91,7 +116,7 @@ public final class UnitImpl implements Unit {
         //assert getName().equals(key.getUnit().toString());
         Persistent data = cache.get(key);
         if (data == null) {
-            data = getStorage(key).read(key);
+            data = getDiskStorage(key).read(key);
             if (data != null) {
                 // no syncronization here!!!
                 // the only possible collision here is lost of element, which is currently being deleted
@@ -133,7 +158,7 @@ public final class UnitImpl implements Unit {
     public void removePhysically(Key key) throws IOException {
         assert key != null;
         assert getName().equals(key.getUnit());
-        getStorage(key).remove(key);
+        getDiskStorage(key).remove(key);
     }
     
     @Override
@@ -151,6 +176,9 @@ public final class UnitImpl implements Unit {
         }
         singleFileStorage.close();
         multyFileStorage.close();
+        for (DatabaseStorage dbStorage : dbStorages) {
+            dbStorage.close();
+        }
     }
 
     @Override
@@ -158,7 +186,7 @@ public final class UnitImpl implements Unit {
         assert key != null;
         assert getName().equals(key.getUnit());
         assert object != null;
-        getStorage(key).write(key, object);
+        getDiskStorage(key).write(key, object);
     }
 
     @Override

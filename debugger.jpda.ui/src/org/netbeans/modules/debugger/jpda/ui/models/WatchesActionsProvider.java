@@ -60,6 +60,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.ui.WatchPanel;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
@@ -69,6 +70,9 @@ import org.openide.DialogDisplayer;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                             types=NodeActionsProvider.class,
+                             position=620)
 public class WatchesActionsProvider implements NodeActionsProvider {
 
     

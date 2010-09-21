@@ -129,12 +129,14 @@ public class RADComponentNode extends FormNode
         // try to get a special icon
         icon = BeanSupport.getBeanIcon(component.getBeanClass(), iconType);
         if (icon == null) {
+            final String className = component.getBeanClass().getName();
+            final String classDetails = (String)component.getAuxValue(RADComponent.AUX_VALUE_CLASS_DETAILS);
             if (!iconsInitialized) {
                 // getIconForClass invokes getNodes(true) which cannot be called in Mutex
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        Image icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, true);
+                        Image icon = PaletteUtils.getIconForClass(className, classDetails, iconType, true);
 			iconsInitialized = true;
                         if (icon != null) {
                             img.put(iconType, icon);
@@ -143,7 +145,7 @@ public class RADComponentNode extends FormNode
                     }
                 });
             } else {
-                icon = PaletteUtils.getIconForClass(component.getBeanClass().getName(), iconType, false);
+                icon = PaletteUtils.getIconForClass(className, classDetails, iconType, false);
             }
 
             if (icon == null) {

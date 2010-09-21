@@ -63,6 +63,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -114,6 +115,7 @@ public final class ModificationResult {
      */
     public static @NonNull ModificationResult runModificationTask(final @NonNull Collection<Source> sources, final @NonNull UserTask task) throws ParseException {
         final ModificationResult result = new ModificationResult(sources);
+        final ElementOverlay overlay = new ElementOverlay();
         final JavacParser[] theParser = new JavacParser[1];
         ParserManager.parse(sources, new UserTask() {
             @Override
@@ -123,7 +125,7 @@ public final class ModificationResult {
                     Parser.Result parserResult = resultIterator.getParserResult();
                     final CompilationController cc = CompilationController.get(parserResult);
                     assert cc != null;
-                    final WorkingCopy copy = new WorkingCopy (cc.impl);
+                    final WorkingCopy copy = new WorkingCopy (cc.impl, overlay);
                     assert WorkingCopy.instance == null;
                     WorkingCopy.instance = new WeakReference<WorkingCopy>(copy);
                     try {

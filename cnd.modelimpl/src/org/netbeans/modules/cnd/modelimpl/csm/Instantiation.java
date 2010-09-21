@@ -649,6 +649,11 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> impl
         public String toString() {
             return "INSTANTIATION OF FUNCTION: " + getTemplateDeclaration() + " with types (" + mapping + ")"; // NOI18N
         }
+
+        @Override
+        public boolean isStatic() {
+            return false;
+        }
     }
 
     private static class Field extends Instantiation<CsmField> implements CsmField {

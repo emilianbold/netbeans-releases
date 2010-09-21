@@ -51,8 +51,11 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormUtils;
+import org.netbeans.modules.form.MetaComponentCreator;
 import org.netbeans.modules.form.RADVisualComponent;
 import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.VisualReplicator;
@@ -62,12 +65,14 @@ import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteColumn
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteRowAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteRowContentAction;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.EncloseInContainerAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.InsertColumnAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.InsertRowAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.SplitColumnAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.SplitRowAction;
+import org.netbeans.modules.form.project.ClassSource;
 import org.openide.nodes.Node;
 
 /**
@@ -200,6 +205,8 @@ public class GridBagManager implements GridManager {
         } else if (context == GridAction.Context.COMPONENT) {
             GridAction action = new DeleteComponentAction();
             actions.add(action);
+            action = new EncloseInContainerAction();
+            actions.add(action);
         } else if (context == GridAction.Context.CELL) {
             GridAction action = new AddAction(replicator);
             actions.add(action);
@@ -301,6 +308,59 @@ public class GridBagManager implements GridManager {
 
     public void setFill(Component component, int fill) {
         setProperty(component, "fill", fill); // NOI18N
+    }
+
+    @Override
+    public Container encloseInContainer(Set<Component> components) {
+        RADVisualContainer parent = null;
+        FormModel formModel = null;
+        int minx = Integer.MAX_VALUE;
+        int miny = Integer.MAX_VALUE;
+        int maxx = 0;
+        int maxy = 0;
+        for (Component comp : components) {
+            RADVisualComponent metaComp = componentMap.get(comp);
+            parent = metaComp.getParentContainer();
+            formModel = metaComp.getFormModel();
+            int gridx = info.getGridX(comp);
+            int gridy = info.getGridY(comp);
+            int gridwidth = info.getGridWidth(comp);
+            int gridheight = info.getGridHeight(comp);
+            minx = Math.min(minx, gridx);
+            miny = Math.min(miny, gridy);
+            maxx = Math.max(maxx, gridx+gridwidth);
+            maxy = Math.max(maxy, gridy+gridheight);
+        }
+        MetaComponentCreator creator = formModel.getComponentCreator();
+        RADVisualContainer panel = (RADVisualContainer)creator.createComponent(
+                new ClassSource("javax.swing.JPanel"), parent, null); // NOI18N
+        creator.createComponent(new ClassSource("java.awt.GridBagLayout"), panel, null); // NOI18N
+        for (Component comp : components) {
+            RADVisualComponent metaComp = componentMap.get(comp);
+            creator.moveComponent(metaComp, panel);
+        }
+        if (minx != 0) {
+            for (Component comp : components) {
+                int gridx = info.getGridX(comp);
+                setGridX(comp, gridx-minx);
+            }
+        }
+        if (miny != 0) {
+            for (Component comp : components) {
+                int gridy = info.getGridY(comp);
+                setGridY(comp, gridy-miny);
+            }
+        }
+        Container clone = (Container)replicator.getClonedComponent(panel);
+        if (clone == null) {
+            clone = (Container)replicator.createClone(panel);
+        }
+        componentMap.put(clone, panel);
+        setGridX(clone, minx);
+        setGridY(clone, miny);
+        setGridWidth(clone, maxx-minx);
+        setGridHeight(clone, maxy-miny);
+        return clone;
     }
 
 }

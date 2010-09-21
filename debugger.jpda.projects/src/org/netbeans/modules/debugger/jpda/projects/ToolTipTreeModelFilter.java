@@ -43,6 +43,7 @@
 package org.netbeans.modules.debugger.jpda.projects;
 
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -52,6 +53,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  *
  * @author martin
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                             types=TreeModelFilter.class,
+                             position=370)
 public class ToolTipTreeModelFilter implements TreeModelFilter {
 
     @Override

@@ -222,6 +222,34 @@ public class ChildrenKeysTest extends NbTestCase {
         assertTrue ("Preempted thread finished correctly", done[0]);
         assertTrue ("Other thread finished correctly", done[1]);
     }
+    
+    public void testNodesCountDelegated() throws Exception {
+        class K extends Children.Keys<String> {
+            int cnt;
+            
+            K() {
+                super(lazy());
+            }
+
+            @Override
+            protected Node[] createNodes(String key) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public int getNodesCount(boolean optimalResult) {
+                cnt++;
+                return super.getNodesCount(optimalResult);
+            }
+        }
+        
+        K k = new K();
+        Node n = createNode(k);
+        assertEquals("Returns nothing", 0, n.getChildren().getNodesCount(true));
+        assertEquals("getNodesCount method called", 1, k.cnt);
+        
+    }
+            
 
     /**
      * See issue #76614

@@ -80,7 +80,7 @@ public class KeyObjectFactory extends KeyFactory {
         // no reasone to cache declaration keys.
         boolean share = !(out instanceof OffsetableDeclarationKey);
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)out);
+            Key shared = KeyManager.instance().getSharedKey((Key)out);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             out = (SelfPersistent) shared;
@@ -131,6 +131,14 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_NAMESPACE_KEY;
         } else if (object instanceof FileKey ) {
             aHandle = KEY_FILE_KEY;
+        } else if (object instanceof FileDeclarationsKey ) {
+            aHandle = KEY_FILE_DECLARATIONS_KEY;
+        } else if (object instanceof FileMacrosKey ) {
+            aHandle = KEY_FILE_MACROS_KEY;
+        } else if (object instanceof FileIncludesKey ) {
+            aHandle = KEY_FILE_INCLUDES_KEY;
+        } else if (object instanceof FileReferencesKey ) {
+            aHandle = KEY_FILE_REFERENCES_KEY;
         } else if (object instanceof MacroKey) {
             aHandle = KEY_MACRO_KEY;
         } else if (object instanceof IncludeKey) {
@@ -143,8 +151,8 @@ public class KeyObjectFactory extends KeyFactory {
             aHandle = KEY_DECLARATION_KEY;
         } else if (object instanceof ProjectSettingsValidatorKey) {
             aHandle = KEY_PRJ_VALIDATOR_KEY;
-        } else if (object instanceof DeclarationContainerKey) {
-            aHandle = KEY_DECLARATION_CONTAINER_KEY;
+        } else if (object instanceof ProjectDeclarationContainerKey) {
+            aHandle = KEY_PROJECT_DECLARATION_CONTAINER_KEY;
         } else if (object instanceof FileContainerKey) {
             aHandle = KEY_FILE_CONTAINER_KEY;
         } else if (object instanceof GraphContainerKey) {
@@ -172,6 +180,18 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_FILE_KEY:
                 aKey = new FileKey(aStream);
                 break;
+            case KEY_FILE_DECLARATIONS_KEY:
+                aKey = new FileDeclarationsKey(aStream);
+                break;
+            case KEY_FILE_MACROS_KEY:
+                aKey = new FileMacrosKey(aStream);
+                break;
+            case KEY_FILE_INCLUDES_KEY:
+                aKey = new FileIncludesKey(aStream);
+                break;
+            case KEY_FILE_REFERENCES_KEY:
+                aKey = new FileReferencesKey(aStream);
+                break;
             case KEY_MACRO_KEY:
                 aKey = new MacroKey(aStream);
                 break;
@@ -191,8 +211,8 @@ public class KeyObjectFactory extends KeyFactory {
             case KEY_PRJ_VALIDATOR_KEY:
                 aKey = new ProjectSettingsValidatorKey(aStream);
                 break;
-            case KEY_DECLARATION_CONTAINER_KEY:
-                aKey = new DeclarationContainerKey(aStream);
+            case KEY_PROJECT_DECLARATION_CONTAINER_KEY:
+                aKey = new ProjectDeclarationContainerKey(aStream);
                 break;
             case KEY_FILE_CONTAINER_KEY:
                 aKey = new FileContainerKey(aStream);
@@ -210,7 +230,7 @@ public class KeyObjectFactory extends KeyFactory {
                 throw new IllegalArgumentException("Unknown hander was provided: " + handler);  // NOI18N
         }
         if (share) {
-            Key shared = KeyManager.instance().getSharedUID((Key)aKey);
+            Key shared = KeyManager.instance().getSharedKey((Key)aKey);
             assert shared != null;
             assert shared instanceof SelfPersistent;
             aKey = (SelfPersistent) shared;
@@ -227,15 +247,19 @@ public class KeyObjectFactory extends KeyFactory {
     public static final int KEY_PROJECT_KEY    = FIRST_INDEX;
     public static final int KEY_NAMESPACE_KEY  = KEY_PROJECT_KEY + 1;
     public static final int KEY_FILE_KEY       = KEY_NAMESPACE_KEY + 1;
-    public static final int KEY_MACRO_KEY      = KEY_FILE_KEY + 1;
+    public static final int KEY_FILE_DECLARATIONS_KEY = KEY_FILE_KEY + 1;
+    public static final int KEY_FILE_MACROS_KEY = KEY_FILE_DECLARATIONS_KEY + 1;
+    public static final int KEY_FILE_INCLUDES_KEY = KEY_FILE_MACROS_KEY + 1;
+    public static final int KEY_FILE_REFERENCES_KEY = KEY_FILE_INCLUDES_KEY + 1;
+    public static final int KEY_MACRO_KEY      = KEY_FILE_REFERENCES_KEY + 1;
     public static final int KEY_INCLUDE_KEY    = KEY_MACRO_KEY + 1;
     public static final int KEY_INHERITANCE_KEY = KEY_INCLUDE_KEY + 1;
     public static final int KEY_PARAM_LIST_KEY  = KEY_INHERITANCE_KEY + 1;
     public static final int KEY_DECLARATION_KEY = KEY_PARAM_LIST_KEY + 1;
     public static final int KEY_PRJ_VALIDATOR_KEY = KEY_DECLARATION_KEY + 1;
     
-    public static final int KEY_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
-    public static final int KEY_FILE_CONTAINER_KEY = KEY_DECLARATION_CONTAINER_KEY + 1;
+    public static final int KEY_PROJECT_DECLARATION_CONTAINER_KEY = KEY_PRJ_VALIDATOR_KEY + 1;
+    public static final int KEY_FILE_CONTAINER_KEY = KEY_PROJECT_DECLARATION_CONTAINER_KEY + 1;
     public static final int KEY_GRAPH_CONTAINER_KEY = KEY_FILE_CONTAINER_KEY    + 1;
     public static final int KEY_NS_DECLARATION_CONTAINER_KEY = KEY_GRAPH_CONTAINER_KEY + 1;
     public static final int KEY_CLASSIFIER_CONTAINER_KEY = KEY_NS_DECLARATION_CONTAINER_KEY + 1;

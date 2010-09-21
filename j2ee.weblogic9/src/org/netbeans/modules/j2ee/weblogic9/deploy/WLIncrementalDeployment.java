@@ -77,7 +77,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     private static final Logger LOGGER = Logger.getLogger(WLIncrementalDeployment.class.getName());
 
-    private static boolean forbidDirectoryDeployment = Boolean.getBoolean(WLIncrementalDeployment.class.getName() + ".forbidDirectoryDeployment");
+    private static final boolean FORBID_DIRECTORY_DEPLOYMENT = Boolean.getBoolean(WLIncrementalDeployment.class.getName() + ".forbidDirectoryDeployment");
 
     private final WLDeploymentManager dm;
 
@@ -87,7 +87,7 @@ public class WLIncrementalDeployment extends IncrementalDeployment implements In
 
     @Override
     public boolean canFileDeploy(Target target, J2eeModule deployable) {
-        if (forbidDirectoryDeployment) {
+        if (FORBID_DIRECTORY_DEPLOYMENT) {
             return false;
         }
         return deployable != null && !J2eeModule.Type.CAR.equals(deployable.getType())

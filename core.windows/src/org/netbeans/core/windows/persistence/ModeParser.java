@@ -637,6 +637,8 @@ class ModeParser {
         }
 
         //Create updated order
+        if( null == tcRefOrder )
+            tcRefOrder = new HashMap<String,Integer>(19);
         tcRefOrder.clear();
         for (int i = 0; i < localList.size(); i++) {
             TCRefParser tcRefParser = localList.get(i);
@@ -725,6 +727,8 @@ class ModeParser {
         }*/
         
         //Create updated order
+        if( null == tcRefOrder )
+            tcRefOrder = new HashMap<String,Integer>(19);
         tcRefOrder.clear();
         for (int i = 0; i < localList.size(); i++) {
             tcRefParser = (TCRefParser) localList.get(i);

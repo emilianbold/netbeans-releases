@@ -48,6 +48,7 @@ import org.netbeans.spi.debugger.SessionProvider;
  *
  * @author Martin Entlicher
  */
+@SessionProvider.Registration(path="SourcesView")
 public class SourcesSessionProvider extends SessionProvider {
 
     @Override

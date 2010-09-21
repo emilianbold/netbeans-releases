@@ -151,7 +151,9 @@ public abstract class GlassfishConfiguration implements
             J2EEBaseVersion j2eeVersion = J2EEBaseVersion.getVersion(mt, moduleVersion);
             boolean isPreJavaEE5 = (j2eeVersion != null) ?
                     (J2EEVersion.J2EE_1_4.compareSpecification(j2eeVersion) >= 0) : false;
-            if (!primarySunDD.exists()) {
+            boolean isPreJavaEE6 = (j2eeVersion != null) ?
+                    (J2EEVersion.JAVAEE_5_0.compareSpecification(j2eeVersion) >= 0) : false;
+            if (!primarySunDD.exists() && isPreJavaEE6) {
                 // If module is J2EE 1.4 (or 1.3), or this is a web app (where we have
                 // a default property even for JavaEE5), then copy the default template.
                 if (J2eeModule.Type.WAR.equals(mt) || isPreJavaEE5) {
@@ -591,6 +593,7 @@ public abstract class GlassfishConfiguration implements
         String contextRoot = null;
         if (J2eeModule.Type.WAR.equals(module.getType())) {
             try {
+                contextRoot = cr;
                 RootInterface rootDD = getSunDDRoot(false);
                 if (rootDD instanceof SunWebApp) {
                     contextRoot = ((SunWebApp) rootDD).getContextRoot();
@@ -611,11 +614,15 @@ public abstract class GlassfishConfiguration implements
         return contextRoot;
     }
 
+    private String cr = null;
+
     @Override
     public void setContextRoot(final String contextRoot) throws ConfigurationException {
         try {
             if (J2eeModule.Type.WAR.equals(module.getType())) {
-                final FileObject primarySunDDFO = getSunDD(primarySunDD, true);
+                String suspect = module.getResourceDirectory().getAbsolutePath();
+                cr = contextRoot;
+                final FileObject primarySunDDFO = getSunDD(primarySunDD, !suspect.contains(contextRoot));
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override
                     public void run() {

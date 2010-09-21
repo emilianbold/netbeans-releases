@@ -108,6 +108,34 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeMaker.QualIdent_String">
+             <api name="general"/>
+             <summary>Added TreeMaker.QualIdent(String) and TreeMaker.Type(String) method.</summary>
+             <version major="0" minor="65"/>
+             <date day="16" month="9" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeMaker.QualIdent(String)</code> and <code>TreeMaker.Type(String)</code> method, which allow
+                 to construct QualIdents and Types from String specification.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="190123"/>
+        </change>
+        <change id="TreeUtilities.translate">
+             <api name="general"/>
+             <summary>Added TreeUtilities.translate method.</summary>
+             <version major="0" minor="64"/>
+             <date day="8" month="9" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeUtilities.translate</code> method, which allows
+                 to construct new tree based on a given set of changes.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeUtilities"/>
+             <issue number="190019"/>
+        </change>
         <change id="TypeUtilities.getTypeName">
              <api name="general"/>
              <summary>Added TypeUtilities.getTypeName method.</summary>

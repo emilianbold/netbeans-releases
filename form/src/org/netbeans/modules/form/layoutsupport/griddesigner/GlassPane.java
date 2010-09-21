@@ -70,6 +70,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AbstractGridAction;
+import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DeleteComponentAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridBoundsChange;
@@ -127,6 +128,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private boolean moving;
     /** Determines if we are in the middle of resizing. */
     private boolean resizing;
+    /** Determines if we are in the middle of area selection. */
+    private boolean selecting;
     /** Determines the direction in which we are (or will start) resizing. */
     private int resizingMode;
     /** The initial point of the current resizing/moving. */
@@ -134,6 +137,19 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     /** The current resizing/moving rectangle. */
     private Rectangle draggingRect;
 
+    /** Minimum grid X coordinate of moved/resized component. */
+    private int selMinX;
+    /** Maximum grid X coordinate of a cell occupied by moved/resized component. */
+    private int selMaxX;
+    /** Minimum grid Y coordinate of moved/resized component. */
+    private int selMinY;
+    /** Maximum grid Y coordinate of a cell occupied by moved/resized component. */
+    private int selMaxY;
+    /** Minimum width of moved/resized component. */
+    private int selMinWidth;
+    /** Maximum width of moved/resized component. */
+    private int selMinHeight;
+    
     /** New grid x coordinate of the resized/moved component. */
     private int newGridX;
     /** New grid y coordinate of the resized/moved component. */
@@ -261,6 +277,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         } else if (moving) {
             paintResizing(g);
         } else {
+            if (selecting) {
+                g.setColor(GridDesigner.SELECTION_COLOR);
+                g.drawRect(draggingRect.x, draggingRect.y, draggingRect.width, draggingRect.height);
+            }
             paintSelection(g);
         }
         if (animation && (animPhase == 1f)) {
@@ -315,8 +335,12 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         // Check if there are any newly created columns/rows
         int rows = rowBounds.length-1;
         if (moving || resizing) {
-            columns = Math.max(columns, newGridX+newGridWidth);
-            rows = Math.max(rows, newGridY+newGridHeight);
+            int deltaX = newGridX - gridInfo.getGridX(focusedComponent);
+            int deltaWidth = newGridWidth - gridInfo.getGridWidth(focusedComponent);
+            columns = Math.max(columns, selMaxX+deltaX+deltaWidth+1);
+            int deltaY = newGridY - gridInfo.getGridY(focusedComponent);
+            int deltaHeight = newGridHeight - gridInfo.getGridHeight(focusedComponent);
+            rows = Math.max(rows, selMaxY+deltaY+deltaHeight+1);
         }
         
         // Paint the grid
@@ -381,10 +405,17 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
             Rectangle inner = fromComponentPane(selComp.getBounds());
             g.setColor(HIGHLIGHT_COLOR);
-            g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
-            g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
-            g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
-            g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            if ((inner.width == 0) || (inner.height == 0)) {
+                // GridBagLayout sets location of such components
+                // to (0,0) which makes inner rectangle incorrect.
+                // Happily, we can ignore inner rectangle in this case.
+                g.fillRect(rect.x, rect.y, rect.width, rect.height);
+            } else {
+                g.fillRect(rect.x, rect.y, rect.width, inner.y-rect.y);
+                g.fillRect(rect.x, inner.y, inner.x-rect.x, inner.height);
+                g.fillRect(inner.x+inner.width, inner.y, rect.width-(inner.x+inner.width-rect.x), inner.height);
+                g.fillRect(rect.x, inner.y+inner.height, rect.width, rect.height-(inner.y+inner.height-rect.y));
+            }
             g.setColor(GridDesigner.SELECTION_COLOR);
             int x = rect.x-1;
             int y = rect.y-1;
@@ -577,20 +608,20 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         if (isResizingEastward()) {
             int currentX = gridXLocation(rect.x+rect.width, false);
-            newGridWidth = Math.max(1, currentX-x+1);
+            newGridWidth = Math.max(width-selMinWidth+1, currentX-x+1);
         }
         if (isResizingWestward()) {
             int currentX = gridXLocation(rect.x, false);
-            newGridX = Math.max(0, Math.min(x+width-1, currentX));
+            newGridX = Math.max(x-selMinX, Math.min(x+width-(width-selMinWidth+1), currentX));
             newGridWidth = x+width-newGridX;
         }
         if (isResizingSouthward()) {
             int currentY = gridYLocation(rect.y+rect.height, false);
-            newGridHeight = Math.max(1, currentY-y+1);
+            newGridHeight = Math.max(height-selMinHeight+1, currentY-y+1);
         }
         if (isResizingNorthward()) {
             int currentY = gridYLocation(rect.y, false);
-            newGridY = Math.max(0, Math.min(y+height-1, currentY));
+            newGridY = Math.max(y-selMinY, Math.min(y+height-(height-selMinHeight+1), currentY));
             newGridHeight = y+height-newGridY;
         }
     }
@@ -623,8 +654,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         int endY = gridYLocation(end.y, false);
         int deltaX = endX-startX;
         int deltaY = endY-startY;
-        newGridX = Math.max(0,gridInfo.getGridX(focusedComponent)+deltaX);
-        newGridY = Math.max(0,gridInfo.getGridY(focusedComponent)+deltaY);
+        deltaX = Math.max(deltaX, -selMinX);
+        deltaY = Math.max(deltaY, -selMinY);
+        newGridX = gridInfo.getGridX(focusedComponent)+deltaX;
+        newGridY = gridInfo.getGridY(focusedComponent)+deltaY;
     }
 
     /**
@@ -921,6 +954,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
      * @param selection new selection.
      */
     void setSelection(Set<Component> selection) {
+        assert !selection.contains(null);
         if (selection == this.selection) {
             return;
         }
@@ -929,6 +963,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
         this.selection = selection;
         designer.setSelection(selection);
+        requestFocusInWindow();
     }
 
     /**
@@ -939,13 +974,42 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     @Override
     protected void processKeyEvent(KeyEvent e) {
         int keyCode = e.getKeyCode();
-        if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
+        if (keyCode == KeyEvent.VK_DELETE) {
+            if (!selection.isEmpty()) {
+                performAction(new DeleteComponentAction());
+            }
+        } else if ((keyCode == KeyEvent.VK_ESCAPE) && (moving || resizing)) {
             // Cancel moving and resizing when Esc is pressed.
             moving = false;
             resizing = false;
             repaint();
         } else {
             super.processKeyEvent(e);
+        }
+    }
+    
+    /**
+     * Initializes {@code selMinX}, {@code selMaxX}, {@code selMinY},
+     * {@code selMaxY}, {@code selMinWidth} and {@code selMinHeight} fields.
+     */
+    void initSelFields() {
+        selMinX = Integer.MAX_VALUE;
+        selMaxX = 0;
+        selMinY = Integer.MAX_VALUE;
+        selMaxY = 0;
+        selMinWidth = Integer.MAX_VALUE;
+        selMinHeight = Integer.MAX_VALUE;
+        for (Component selComp : selection) {
+            int gridX = gridInfo.getGridX(selComp);
+            int gridY = gridInfo.getGridY(selComp);
+            int gridWidth = gridInfo.getGridWidth(selComp);
+            int gridHeight = gridInfo.getGridHeight(selComp);
+            selMinX = Math.min(selMinX, gridX);
+            selMaxX = Math.max(selMaxX, gridX+gridWidth-1);
+            selMinY = Math.min(selMinY, gridY);
+            selMaxY = Math.max(selMaxY, gridY+gridHeight-1);
+            selMinWidth = Math.min(selMinWidth, gridWidth);
+            selMinHeight = Math.min(selMinHeight, gridHeight);
         }
     }
 
@@ -985,6 +1049,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     newGridY = gridInfo.getGridY(focusedComponent);
                     newGridHeight = gridInfo.getGridHeight(focusedComponent);
                     newGridWidth = gridInfo.getGridWidth(focusedComponent);
+                    initSelFields();
                 }
             } else if (SwingUtilities.isRightMouseButton(e)) {
                 focusedComponent = findComponent(point);
@@ -1004,9 +1069,30 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             } else if (resizing) {
                 resizing = false;
                 changeLocation();
+            } else if (selecting) {
+                selecting = false;
+                boolean inverse = (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0;
+                Set<Component> newSelection = new HashSet<Component>();
+                if (inverse) {
+                    newSelection.addAll(selection);
+                }
+                for (Component comp : componentPane.getComponents()) {
+                    if (GridUtils.isPaddingComponent(comp)) {
+                        continue;
+                    }
+                    Rectangle rect = fromComponentPane(comp.getBounds());
+                    if (draggingRect.intersects(rect)) {
+                        if (inverse && newSelection.contains(comp)) {
+                            newSelection.remove(comp);
+                        } else {
+                            newSelection.add(comp);
+                        }
+                    }
+                }
+                setSelection(newSelection);
             } else {
                 if (SwingUtilities.isLeftMouseButton(e)) {
-                    if ((mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
+                    if ((focusedComponent != null) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
                         Set<Component> newSelection = new HashSet<Component>();
                         newSelection.addAll(selection);
                         if (selection.contains(focusedComponent)) {
@@ -1021,7 +1107,11 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
                     focusedComponent = findComponent(point);
-                    if (!selection.contains(focusedComponent)) {
+                    // Normally, this happens when mouse is pressed.
+                    // Unfortunately, we don't receive mouse press event
+                    // when this mouse press event cancels previously shown
+                    // popup. Hence, we do this check again for mouse release.
+                    if (!selection.contains(focusedComponent) && (focusedComponent != null)) {
                         setSelection(focusedComponent);
                     }
                     List<GridAction> actions = null;
@@ -1078,6 +1168,8 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                                 menu.add(menuItem);
                             }
                         }
+                        designer.updateContextMenu(context, menu);
+                        draggingStart = null;
                         menu.show(GlassPane.this, point.x, point.y);
                     }
 
@@ -1095,9 +1187,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (draggingStart == null) {
+                draggingStart = e.getPoint();
+            }
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
+            } else if (focusedComponent == null) {
+                selecting = true;
+                draggingRect = new Rectangle(draggingStart);
+                draggingRect.add(e.getPoint());
             } else if (!selection.isEmpty()) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if (!moving) {
@@ -1112,6 +1211,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                         }
                         newGridHeight = gridInfo.getGridHeight(focusedComponent);
                         newGridWidth = gridInfo.getGridWidth(focusedComponent);
+                        initSelFields();
                         requestFocusInWindow();
                     }
                     moving = true;
@@ -1170,25 +1270,32 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             GridBoundsChange change = delegate.performAction(gridManager, currentContext);
             updateCurrentContext(currentContext);
             animLayer.loadEnd();
+            int[] animNewColumnBounds;
+            int[] animNewRowBounds;
             if (change == null) {
-                int[] animNewColumnBounds = gridInfo.getColumnBounds();
-                int[] animNewRowBounds = gridInfo.getRowBounds();
-                if (animNewColumnBounds.length != animOldColumnBounds.length) {
-                    if (animNewColumnBounds.length > animOldColumnBounds.length) {
-                        animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
-                    } else {
-                        animNewColumnBounds = extendArray(animNewRowBounds, animOldColumnBounds.length);
-                    }
-                }
-                if (animNewRowBounds.length != animOldRowBounds.length) {
-                    if (animNewRowBounds.length > animOldRowBounds.length) {
-                        animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
-                    } else {
-                        animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
-                    }
-                }
-                change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
+                animNewColumnBounds = gridInfo.getColumnBounds();
+                animNewRowBounds = gridInfo.getRowBounds();
+            } else {
+                animOldColumnBounds = change.getOldColumnBounds();
+                animOldRowBounds = change.getOldRowBounds();
+                animNewColumnBounds = change.getNewColumnBounds();
+                animNewRowBounds = change.getNewRowBounds();
             }
+            if (animNewColumnBounds.length != animOldColumnBounds.length) {
+                if (animNewColumnBounds.length > animOldColumnBounds.length) {
+                    animOldColumnBounds = extendArray(animOldColumnBounds, animNewColumnBounds.length);
+                } else {
+                    animNewColumnBounds = extendArray(animNewColumnBounds, animOldColumnBounds.length);
+                }
+            }
+            if (animNewRowBounds.length != animOldRowBounds.length) {
+                if (animNewRowBounds.length > animOldRowBounds.length) {
+                    animOldRowBounds = extendArray(animOldRowBounds, animNewRowBounds.length);
+                } else {
+                    animNewRowBounds = extendArray(animNewRowBounds, animOldRowBounds.length);
+                }
+            }
+            change = new GridBoundsChange(animOldColumnBounds, animOldRowBounds, animNewColumnBounds, animNewRowBounds);
             
             // Update customizer
             if (customizer != null) {
@@ -1239,35 +1346,28 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             int[] originalColumnBounds = info.getColumnBounds();
             int[] originalRowBounds = info.getRowBounds();
 
-            int columns = Math.max(info.getColumnCount(), newGridX+newGridWidth);
-            int rows = Math.max(info.getRowCount(), newGridY+newGridHeight);
+            int columns = info.getColumnCount();
+            int rows = info.getRowCount();
             int xDelta = newGridX - info.getGridX(focusedComponent);
             int yDelta = newGridY - info.getGridY(focusedComponent);
             int heightDelta = newGridHeight - info.getGridHeight(focusedComponent);
             int widthDelta = newGridWidth - info.getGridWidth(focusedComponent);
             GridUtils.removePaddingComponents(gridManager);
-            if (xDelta != 0) {
+            if ((xDelta != 0) || (yDelta != 0) || (widthDelta != 0) || (heightDelta != 0)) {
                 for (Component selComp : selection) {
                     int gridX = info.getGridX(selComp);
-                    gridManager.setGridX(selComp, gridX+xDelta);
-                }
-            }
-            if (yDelta != 0) {
-                for (Component selComp : selection) {
                     int gridY = info.getGridY(selComp);
-                    gridManager.setGridY(selComp, gridY+yDelta);
-                }
-            }
-            if (widthDelta != 0) {
-                for (Component selComp : selection) {
                     int width = info.getGridWidth(selComp);
-                    gridManager.setGridWidth(selComp, width+widthDelta);
-                }
-            }
-            if (heightDelta != 0) {
-                for (Component selComp : selection) {
                     int height = info.getGridHeight(selComp);
+                    // We set all grid location properties even when
+                    // just one changes to avoid unexpected behaviour
+                    // caused by GridBagConstraint.RELATIVE or REMAINDER
+                    gridManager.setGridX(selComp, gridX+xDelta);
+                    gridManager.setGridY(selComp, gridY+yDelta);
+                    gridManager.setGridWidth(selComp, width+widthDelta);
                     gridManager.setGridHeight(selComp, height+heightDelta);
+                    columns = Math.max(columns, gridX+xDelta+width+widthDelta);
+                    rows = Math.max(rows, gridY+yDelta+height+heightDelta);
                 }
             }
             GridUtils.addPaddingComponents(gridManager, columns, rows);

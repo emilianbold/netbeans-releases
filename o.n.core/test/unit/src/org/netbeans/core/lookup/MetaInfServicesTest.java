@@ -48,6 +48,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.print.PrintServiceLookup;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -70,6 +71,11 @@ public class MetaInfServicesTest extends NbTestCase {
 
     public MetaInfServicesTest(String name) {
         super(name);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
     }
     
     private ModuleManager mgr;

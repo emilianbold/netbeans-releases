@@ -182,6 +182,7 @@ public class AnimationLayer implements ActionListener {
         Dimension oldSize = container.getSize();
         container.setSize(maxContDim);
         containerImage = container.createImage(maxContDim.width, maxContDim.height);
+        container.paint(containerImage.getGraphics());
         container.setSize(oldSize);
         for (Component comp : components) {
             comp.setVisible(map.get(comp));
@@ -305,6 +306,11 @@ public class AnimationLayer implements ActionListener {
             if (phase == 1f) {
                 timer.stop();
                 maxContDim = new Dimension();
+                for (Map.Entry<Component,Rectangle> entry : endBounds.entrySet()) {
+                    Component comp = entry.getKey();
+                    comp.setBounds(entry.getValue());
+                    comp.validate();
+                }
             }
         }
     }

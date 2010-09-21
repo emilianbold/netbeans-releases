@@ -33,6 +33,8 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -106,6 +108,10 @@ public class StaticImport extends AbstractHint {
         cancel.set(false);
         TreePath mitp = treePath.getParentPath();
         if (mitp == null || mitp.getLeaf().getKind() != Kind.METHOD_INVOCATION) {
+            return null;
+        }
+        List<? extends Tree> typeArgs = ((MethodInvocationTree) mitp.getLeaf()).getTypeArguments();
+        if (typeArgs != null && !typeArgs.isEmpty()) {
             return null;
         }
         Element e = info.getTrees().getElement(treePath);

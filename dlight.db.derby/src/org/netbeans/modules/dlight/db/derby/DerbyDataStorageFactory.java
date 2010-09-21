@@ -76,17 +76,22 @@ public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDa
     @Override
     public DerbyDataStorage createStorage() {
         try {
-            return new DerbyDataStorage();
+            DerbyDataStorage result =  new DerbyDataStorage();
+            result.connect();
+            return result;
         } catch (SQLException ex) {
             DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
             return null;
         }
     }
 
+    @Override
     public DerbyDataStorage openStorage(String uniqueKey) {
         try {
             //the unique key us the url to open storage
-            return new DerbyDataStorage(uniqueKey);
+            DerbyDataStorage result =  new DerbyDataStorage(uniqueKey);
+            result.connect();
+            return result;
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -96,7 +101,9 @@ public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDa
     @Override
     public DerbyDataStorage createStorage(String uniqueKey) {
         try {
-            return new DerbyDataStorage(uniqueKey);
+            DerbyDataStorage result =  new DerbyDataStorage(uniqueKey);
+            result.connect();
+            return result;
         } catch (SQLException ex) {
             DLightLogger.getLogger(DerbyDataStorageFactory.class).log(Level.SEVERE, null, ex);
             return null;
@@ -105,14 +112,18 @@ public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDa
 
     
 
+    @Override
     public String getUniqueKey(DerbyDataStorage storage) {
         return storage.getURL();
     }
 
+    @Override
     public DerbyDataStorage openStorage(String uniqueKey, Mode mode) {
         try {
             //the unique key us the url to open storage
-            return new DerbyDataStorage(uniqueKey);
+            DerbyDataStorage result =  new DerbyDataStorage(uniqueKey);
+            result.connect();
+            return result;
         } catch (SQLException ex) {
             Exceptions.printStackTrace(ex);
         }

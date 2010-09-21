@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.collector;
 
 /**
@@ -47,6 +46,6 @@ package org.netbeans.modules.dlight.spi.collector;
  * @author mt154047
  */
 public interface DataCollectorListener {
-    void collectorStateChanged(DataCollector source, DataCollector.CollectorState state);
 
+    void collectorStateChanged(DataCollector<?> source, DataCollector.CollectorState state);
 }

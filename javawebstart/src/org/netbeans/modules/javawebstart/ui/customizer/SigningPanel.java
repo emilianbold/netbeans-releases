@@ -72,6 +72,9 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         }
         path.setText(props.signingKeyStore);
         key.setText(props.signingKeyAlias);
+        if (props.signingKeyStorePassword != null) password.setText(new String(props.signingKeyStorePassword));
+        if (props.signingKeyPassword != null) keyPass.setText(new String(props.signingKeyPassword));
+
         mixedCodeCombo.setModel(props.mixedCodeModel);
 
         refreshComponents();
@@ -111,9 +114,11 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
             props.signing = JWSProjectProperties.SIGNING_GENERATED;
         } else {
             props.signing = JWSProjectProperties.SIGNING_KEY;
+            props.signingKeyStorePassword = password.getPassword();
+            props.signingKeyPassword = keyPass.getPassword();
+            props.signingKeyStore = path.getText().trim();
+            props.signingKeyAlias = key.getText().trim();
         }
-        props.signingKeyStore = path.getText().trim();
-        props.signingKeyAlias = key.getText().trim();
     }
 
     /** This method is called from within the constructor to

@@ -54,6 +54,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
+import org.netbeans.modules.dlight.core.stack.utils.FunctionNameUtils;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
@@ -72,26 +73,32 @@ final class StackDataProviderImpl implements StackDataProvider {
     private final Lock lock = new Lock();
     private final List<DataFilter> filters = new ArrayList<DataFilter>();
 
+    @Override
     public void attachTo(DataStorage storage) {
         this.storage = (StackDataStorage) storage;
     }
 
+    @Override
     public void attachTo(ServiceInfoDataStorage serviceInfoDataStorage) {
         this.serviceInfoDataStorage = serviceInfoDataStorage;
     }
 
+    @Override
     public List<FunctionMetric> getMetricsList() {
         return metricsList;
     }
 
+    @Override
     public List<FunctionCallWithMetric> getCallers(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return storage.getCallers(path, columns, orderBy, aggregate);
     }
 
+    @Override
     public List<FunctionCallWithMetric> getCallees(List<FunctionCallWithMetric> path, List<Column> columns, List<Column> orderBy, boolean aggregate) {
         return storage.getCallees(path, columns, orderBy, aggregate);
     }
 
+    @Override
     public List<FunctionCallWithMetric> getHotSpotFunctions(List<Column> columns, List<Column> orderBy, int limit) {
         List<DataFilter> filtersCopy = null;
         synchronized (lock) {
@@ -100,36 +107,52 @@ final class StackDataProviderImpl implements StackDataProvider {
         return storage.getHotSpotFunctions(FunctionMetric.CpuTimeInclusiveMetric, filtersCopy, limit);
     }
 
+    @Override
     public List<FunctionCall> getCallStack(int stackId) {
         return storage.getCallStack(stackId);
     }
 
+    @Override
     public List<FunctionCallTreeTableNode> getTableView(List<Column> columns, List<Column> orderBy, int limit) {
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(getHotSpotFunctions(null, null, limit));
     }
 
+    @Override
     public List<FunctionCallTreeTableNode> getChildren(List<FunctionCallTreeTableNode> path, List<Column> columns, List<Column> orderBy) {
         List<FunctionCallWithMetric> fcPath = FunctionCallTreeTableNode.getFunctionCalls(path);
         List<FunctionCallWithMetric> callers = getCallees(fcPath, columns, orderBy, false);
         return FunctionCallTreeTableNode.getFunctionCallTreeTableNodes(callers);
     }
 
+    @Override
     public FunctionCallTreeTableNode getValueAt(int row) {
         //throw new UnsupportedOperationException("Not supported yet.");
         return null;
     }
 
+    @Override
     public String getTableValueAt(Column column, int row) {
         return null;
     }
 
+    @Override
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
+        SourceFileInfo info = FunctionNameUtils.getSourceFileInfo(functionCall.getFunction().getName());
+        if (info != null){
+            return info;
+        }
         Collection<? extends SourceFileInfoProvider> sourceInfoProviders =
                 Lookup.getDefault().lookupAll(SourceFileInfoProvider.class);
 
         for (SourceFileInfoProvider provider : sourceInfoProviders) {
-            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, functionCall.getOffset(), serviceInfoDataStorage.getInfo());
+            long offset = functionCall.getOffset();
+            if (offset > 0) {
+                // FIXME
+                // Call stack has address of next instruction
+                offset--;
+            }
+            final SourceFileInfo sourceInfo = provider.getSourceFileInfo(functionCall.getFunction().getQuilifiedName(), -1, offset, serviceInfoDataStorage.getInfo());
             if (sourceInfo != null && sourceInfo.isSourceKnown()) {
                 return sourceInfo;
             }
@@ -137,6 +160,7 @@ final class StackDataProviderImpl implements StackDataProvider {
         return null;
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
         if (isAdjusting) {
             return;
@@ -147,6 +171,7 @@ final class StackDataProviderImpl implements StackDataProvider {
         }
     }
 
+    @Override
     public ThreadDumpProvider getThreadDumpProvider() {
         if (storage instanceof ThreadDumpProvider) {
             return (ThreadDumpProvider) storage;

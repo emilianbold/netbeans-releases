@@ -91,6 +91,13 @@ public class Hk2InstanceChildren extends Children.Keys<Node> implements Refresha
                     new Hk2ResourceContainers(serverInstance.getLookup()),
                     NbBundle.getMessage(Hk2InstanceNode.class, "LBL_Resources"),
                     Hk2ItemNode.RESOURCES_FOLDER));
+            String iid = serverInstance.getDeployerUri();
+            if (null != iid && iid.contains("gfv3ee6wc")) {
+                keys.add(new Hk2ItemNode(serverInstance.getLookup(),
+                        new Hk2WSChildren(serverInstance.getLookup()),
+                        NbBundle.getMessage(Hk2InstanceNode.class, "LBL_WS"),
+                        Hk2ItemNode.WS_FOLDER));
+            }
             List<Node> pluggableNodes = getExtensionNodes();
             for (Iterator itr = pluggableNodes.iterator(); itr.hasNext();) {
                 keys.add((Node)itr.next());

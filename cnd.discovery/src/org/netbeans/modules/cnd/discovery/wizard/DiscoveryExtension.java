@@ -233,8 +233,8 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     }
 
     @Override
-    public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, final String functionToOpen) {
-        ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, functionToOpen);
+    public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, ProjectKind projectKind) {
+        ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, projectKind);
         importer.process(this);
     }
 

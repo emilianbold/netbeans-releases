@@ -796,13 +796,7 @@ public final class TopLogging {
                 return;
             }
             String s = new String(buf, off, len);
-            if (unwantedMessages != null && unwantedMessages.matcher(s).find()) {
-                new Exception().printStackTrace(DEBUG);
-            }
-            synchronized (sb) {
-                sb.append(s);
-            }
-            checkFlush();
+            print(s);
         }
 
         public @Override void write(byte[] b) throws IOException {
@@ -819,6 +813,30 @@ public final class TopLogging {
             checkFlush();
         }
 
+        @Override
+        public void print(String s) {
+            if (unwantedMessages != null && unwantedMessages.matcher(s).find()) {
+                new Exception().printStackTrace(DEBUG);
+            }
+            synchronized (sb) {
+                sb.append(s);
+            }
+            if (!Thread.holdsLock(this)) {
+                checkFlush();
+            }
+        }
+        
+        @Override
+        public void println(String x) {
+            print(x);
+            print(System.getProperty("line.separator"));
+        }
+        @Override
+        public void println(Object x) {
+            String s = String.valueOf(x);
+            println(s);
+        }
+        
         @Override
         public void flush() {
             try {

@@ -327,7 +327,7 @@ public class Settings {
 
     private static void firePropertyChange(String name, Object old, Object nue) {
         PropertyChangeEvent evt = new PropertyChangeEvent(Settings.class, name, old, nue);
-        PropertyChangeListener [] listeners = listenerList.getListeners(PropertyChangeListener.class);
+        PropertyChangeListener [] listeners = (PropertyChangeListener [])listenerList.getListeners(PropertyChangeListener.class);
         for(PropertyChangeListener l : listeners) {
             l.propertyChange(evt);
         }

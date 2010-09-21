@@ -111,6 +111,21 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>beforeCopy(), doCopy() and afterCopy() methods added to VCSInterceptor</summary>
+            <version major="1" minor="18"/>
+            <date day="27" month="8" year="2010"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>VCSInterceptor.beforeCopy</code>, <code>VCSInterceptor.doCopy</code>,
+                and <code>VCSInterceptor.afterCopy</code> allow a version control system
+                to better control a copy operation on a file.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSInterceptor"/>
+            <issue number="189921"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
             <summary>refreshRecursively() method added to VCSInterceptor</summary>
             <version major="1" minor="17"/>
             <date day="19" month="4" year="2010"/>

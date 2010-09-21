@@ -107,7 +107,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     private boolean visible;
     private final Action defaultAction;
     private final Collection<Column> columnsProvided = new ArrayList<Column>();
-    final AtomicReference<Object> oldRef = new AtomicReference<Object>(); 
+    final AtomicReference<Object> oldRef = new AtomicReference<Object>();
 
     static {
         IndicatorAccessor.setDefault(new IndicatorAccessorImpl());
@@ -127,13 +127,13 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
     }
 
     protected final String getActionTooltip() {
-        if (actionTooltip == null){
+        if (actionTooltip == null) {
             return null;
         }
         StringBuilder st = new StringBuilder();
-        st.append("<html><body>");//NOI18N
-        st.append(actionTooltip.replaceAll("\n", "<br>"));//NOI18N
-        st.append("</body></html>");//NOI18N
+        st.append("<html><body>"); // NOI18N
+        st.append(actionTooltip.replaceAll("\n", "<br>")); // NOI18N
+        st.append("</body></html>"); // NOI18N
         return st.toString();
     }
 
@@ -158,6 +158,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.actionTooltip = IndicatorConfigurationAccessor.getDefault().getActionTooltip(configuration);
         tickerListener = new TickerListener() {
 
+            @Override
             public void tick() {
                 Indicator.this.tick();
             }
@@ -167,16 +168,16 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         setIndicatorActionsProviderContext(Lookup.EMPTY);
         defaultAction = new AbstractAction(actionDisplayName) {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 notifyListeners();
             }
         };
         defaultAction.putValue(Action.NAME, actionDisplayName);
-        if (actionTooltip != null){
+        if (actionTooltip != null) {
             defaultAction.putValue(Action.SHORT_DESCRIPTION, getActionTooltip());
         }
     }
-
 
     /**
      * This method will be
@@ -205,6 +206,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         return indicatorRepairActionProvider;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         if (indicatorRepairActionProvider == null || e.getSource() != indicatorRepairActionProvider) {
             return;
@@ -216,6 +218,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         repairNeeded(needRepair);
     }
 
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -244,12 +247,11 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         }
     }
 
-    protected void targetStarted(){
-
+    protected void targetStarted() {
     }
 
-    protected final Collection<Column> getColumnsProvided(){
-        return columnsProvided;
+    protected final Collection<Column> getColumnsProvided() {
+        return Collections.unmodifiableCollection(columnsProvided);
     }
 
     private void targetFinished(DLightTarget target) {
@@ -267,6 +269,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
     protected abstract void tick();
 
+    @Override
     public void suggestRepaint() {
     }
 
@@ -314,6 +317,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
 
         component.addFocusListener(new FocusListener() {
 
+            @Override
             public void focusGained(FocusEvent e) {
                 if (component == null) {
                     return;
@@ -325,15 +329,16 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                     return;
                 }
                 InputMap iMap = rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-                iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter");//NOI18N
+                iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "enter"); // NOI18N
 
                 ActionMap aMap = rootPane.getActionMap();
-                if (component.getActionMap().get("enter") != null){//NOI18N
-                    aMap.put("enter", component.getActionMap().get("enter"));//NOI18N
-                }else{
+                if (component.getActionMap().get("enter") != null) { // NOI18N
+                    aMap.put("enter", component.getActionMap().get("enter")); // NOI18N
+                } else {
                     //let to re-define in child
-                    aMap.put("enter", new AbstractAction() {//NOI18N
+                    aMap.put("enter", new AbstractAction() { // NOI18N
 
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             notifyListeners();
                         }
@@ -341,6 +346,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
                 }
             }
 
+            @Override
             public void focusLost(FocusEvent e) {
                 if (component == null) {
                     return;
@@ -366,9 +372,9 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         this.toolID = toolID;
     }
 
-    private final void setToolDescription(String toolDescription) {
+    private void setToolDescription(String toolDescription) {
         this.toolDecsription = toolDescription;
-        if (toolDescription == null){
+        if (toolDescription == null) {
             return;
         }
         final JComponent component = getComponent();
@@ -376,14 +382,14 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
             return;
         }
         StringBuilder st = new StringBuilder();
-        st.append("<html><body>");//NOI18N
-        st.append(getDescription().replaceAll("\n", "<br>"));//NOI18N
-        st.append("</body></html><");//NOI18N
+        st.append("<html><body>"); // NOI18N
+        st.append(getDescription().replaceAll("\n", "<br>")); // NOI18N
+        st.append("</body></html><"); // NOI18N
         component.setToolTipText(st.toString());
     }
 
     final List<VisualizerConfiguration> getVisualizerConfigurations() {
-        return visualizerConfigurations;
+        return Collections.unmodifiableList(visualizerConfigurations);
     }
 
     void addIndicatorActionListener(IndicatorActionListener l) {
@@ -412,7 +418,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         return metadata.getColumns();
     }
 
-    final void columnProvided(Column c){
+    final void columnProvided(Column c) {
         columnsProvided.add(c);
     }
 
@@ -428,7 +434,7 @@ public abstract class Indicator<T extends IndicatorConfiguration> implements DLi
         Column col = metadata.getColumns().get(idx);
         return col.getColumnName();
     }
-    
+
     /**
      * Returns component this indicator will paint data at
      * @return component this indicator will paint own data at

@@ -72,4 +72,10 @@ public @interface DebuggerServiceRegistration {
      * The list of interfaces that this class implements and wish to register for.
      */
     Class[] types();
+
+    /**
+     * Position of this service within its path.
+     * @since 1.28
+     */
+    int position() default Integer.MAX_VALUE;
 }

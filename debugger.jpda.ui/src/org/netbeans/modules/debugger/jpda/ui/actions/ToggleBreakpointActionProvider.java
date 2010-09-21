@@ -96,7 +96,10 @@ import org.openide.util.NbBundle;
  *
  * @author   Jan Jancura
  */
-@ActionsProvider.Registration(actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-java" })
+@ActionsProvider.Registrations({
+    @ActionsProvider.Registration(path="",                     actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-java" }),
+    @ActionsProvider.Registration(path="netbeans-JPDASession", actions={ "toggleBreakpoint" }, activateForMIMETypes={ "text/x-java" })
+})
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     

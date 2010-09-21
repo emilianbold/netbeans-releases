@@ -45,6 +45,7 @@ package org.netbeans.editor.ext.html.dtd;
 
 
 import java.util.*;
+import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 
 /** The interface representing SGMLish Document Type Definition. There is separate
  * instance for every DTD ID.
@@ -207,11 +208,13 @@ public interface DTD {
     /** The interface representing Character reference. Provides its name
      * and character it refers to
      */
-    public static interface CharRef {
+    public static interface CharRef extends NamedCharRef {
         /** @return alias to this CharRef */
+        @Override
         public String getName();
         
         /** @return the character this alias is for */
+        @Override
         public char getValue();
     }
     

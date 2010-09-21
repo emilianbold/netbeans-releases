@@ -179,6 +179,14 @@ public final class ViewUtils {
     public static String toString(Rectangle2D r) {
         return "XYWH[" + r.getX() + ';' + r.getY() + ';' + r.getWidth() + ';' + r.getHeight() + ']'; // NOI18N
     }
+    
+    public static String toString(Shape s) {
+        if (s instanceof Rectangle2D) {
+            return toString((Rectangle2D)s);
+        } else {
+            return s.toString();
+        }
+    }
 
     public static String toStringHex8(int i) {
         String s = Integer.toHexString(i);

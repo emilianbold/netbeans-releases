@@ -213,7 +213,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         canceled = false;
     }
     
-    static OffsetsBag getHighlightsBag(Document doc) {
+    public static OffsetsBag getHighlightsBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(MarkOccurrencesHighlighter.class);
         
         if (bag == null) {

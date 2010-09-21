@@ -43,6 +43,7 @@ package org.netbeans.modules.dlight.spi.indicator;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.dlight.api.datafilter.DataFilterListener;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
@@ -56,7 +57,6 @@ import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.util.DLightLogger;
 
 /**
  * Provided information for {@link org.netbeans.modules.dlight.spi.indicator.Indicator}.
@@ -76,6 +76,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
             new CopyOnWriteArrayList<IndicatorNotificationsListener>();
     private final CopyOnWriteArrayList<ValidationListener> validationListeners =
             new CopyOnWriteArrayList<ValidationListener>();
+    private final AtomicBoolean hasListeners = new AtomicBoolean(false);
     private ServiceInfoDataStorage serviceInfoDataStorage;
     private DLightTarget validatedTarget = null;
     private ValidationStatus validationStatus;
@@ -86,12 +87,22 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         validationStatus = ValidationStatus.initialStatus();
     }
 
-    private void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        notificationListeners.addIfAbsent(l);
+    private synchronized void addIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        boolean added = notificationListeners.addIfAbsent(l);
+
+        if (hasListeners.compareAndSet(false, added)) {
+            resume();
+        }
     }
 
-    private boolean removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
-        return notificationListeners.remove(l);
+    private synchronized void removeIndicatorDataProviderListener(IndicatorNotificationsListener l) {
+        boolean removed = notificationListeners.remove(l);
+
+        if (removed && notificationListeners.isEmpty()) {
+            if (hasListeners.compareAndSet(true, false)) {
+                pause();
+            }
+        }
     }
 
     @Override
@@ -121,8 +132,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     @Override
-    public final ValidationStatus getValidationStatus() {
-        return ValidationStatus.validStatus();
+    public final synchronized ValidationStatus getValidationStatus() {
+        return validationStatus;
     }
 
     @Override
@@ -150,8 +161,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
 
     @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
-        DLightLogger.assertTrue(validatedTarget == event.target,
-                "Validation was performed against another target"); // NOI18N
+//        DLightLogger.assertTrue(validatedTarget == event.target,
+//                "Validation was performed against another target"); // NOI18N
 
         switch (event.state) {
             case RUNNING:
@@ -173,12 +184,12 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     /**
-     * Try to subscibe indicator to this Indicator DataProvider.
-     * To successfuly subscribe indicator {@link #getDataTablesMetadata()} should contain
+     * Try to subscribe indicator to this Indicator DataProvider.
+     * To successfully subscribe indicator {@link #getDataTablesMetadata()} should contain
      * columns which are required by indicator(the result of
      * {@link Indicator#getMetadataColumns()} method)
      * @param indicator indicator to subscribe
-     * @return <code>true</code> if indicator was successfuly subscribed,
+     * @return <code>true</code> if indicator was successfully subscribed,
      * <code>false</code> otherwise
      */
     public final boolean subscribe(Indicator<?> indicator) {
@@ -209,8 +220,8 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
     }
 
     /**
-     * Use this method to unsubscribe from this data provider
-     * @param indicator indicator to unsubscribe
+     * Use this method to un-subscribe from this data provider
+     * @param indicator indicator to un-subscribe
      */
     public final void unsubscribe(Indicator<?> indicator) {
         removeIndicatorDataProviderListener(indicator);
@@ -253,7 +264,7 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
 
     /**
      *  Initialize with service info data storage
-     * @param infoStorage service infor data storage
+     * @param infoStorage service info data storage
      */
     public final void init(ServiceInfoDataStorage infoStorage) {
         this.serviceInfoDataStorage = infoStorage;
@@ -267,16 +278,22 @@ public abstract class IndicatorDataProvider<T extends IndicatorDataProviderConfi
         return serviceInfoDataStorage;
     }
 
+    protected void pause() {
+    }
+
+    protected void resume() {
+    }
+
     private static final class IndicatorDataProviderAccessorImpl extends IndicatorDataProviderAccessor {
 
         @Override
-        public void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
+        public void addIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
             provider.addIndicatorDataProviderListener(l);
         }
 
         @Override
-        public boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l) {
-            return provider.removeIndicatorDataProviderListener(l);
+        public void removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l) {
+            provider.removeIndicatorDataProviderListener(l);
         }
     }
 }

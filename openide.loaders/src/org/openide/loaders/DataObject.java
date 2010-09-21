@@ -1343,6 +1343,9 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
             if (!all.containsKey("time")) { // NOI18N
                 all.put("time", DateFormat.getTimeInstance().format(d)); // NOI18N
             }
+            if (!all.containsKey("dateTime")) { // NOI18N
+                all.put("dateTime", d); // NOI18N
+            }
             
             return Collections.unmodifiableMap(all);
         }

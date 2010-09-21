@@ -71,6 +71,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String INCLUDED = "DW:included"; // NOI18N
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
+    public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -242,6 +243,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     @Override
     public void setCompilerName(String compiler) {
         putProperty(COMPILER_NAME, compiler);
+    }
+
+    @Override
+    public List<String> getDependencies() {
+        return (List<String>) getProperty(DEPENDENCIES);
+    }
+
+    @Override
+    public void setDependencies(List<String> dependencies) {
+        putProperty(DEPENDENCIES, dependencies);
     }
    
     private static class DiscoveryWizardDescriptorAdapter implements DiscoveryDescriptor{
@@ -415,6 +426,16 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         @Override
         public void setCompilerName(String compiler) {
             wizard.putProperty(COMPILER_NAME, compiler);
+        }
+
+        @Override
+        public List<String> getDependencies() {
+            return (List<String>) wizard.getProperty(DEPENDENCIES);
+        }
+
+        @Override
+        public void setDependencies(List<String> dependencies) {
+            wizard.putProperty(DEPENDENCIES, dependencies);
         }
     }
 
@@ -591,6 +612,15 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         public void setCompilerName(String compiler) {
             map.put(COMPILER_NAME, compiler);
         }
-    }
 
+        @Override
+        public List<String> getDependencies() {
+            return (List<String>) map.get(DEPENDENCIES);
+        }
+
+        @Override
+        public void setDependencies(List<String> dependencies) {
+            map.put(DEPENDENCIES, dependencies);
+        }
+    }
 }

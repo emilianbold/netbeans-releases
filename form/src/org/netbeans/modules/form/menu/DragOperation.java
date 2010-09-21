@@ -145,8 +145,7 @@ class DragOperation {
         PaletteItem paletteItem = PaletteUtils.getSelectedItem();
         if(paletteItem != null) {
             MetaComponentCreator creator = menuEditLayer.formDesigner.getFormModel().getComponentCreator();
-            RADVisualComponent precreated = creator.precreateVisualComponent(
-                    paletteItem.getComponentClassSource());
+            RADVisualComponent precreated = creator.precreateVisualComponent(paletteItem);
             if(precreated != null) {
                 Object comp = precreated.getBeanInstance();
                 if(comp instanceof JComponent) {
@@ -427,8 +426,7 @@ class DragOperation {
         // get the pre-created component
         MetaComponentCreator creator = menuEditLayer.formDesigner.getFormModel().getComponentCreator();
         if(creator != null) {
-            RADVisualComponent precreated = creator.precreateVisualComponent(
-                    paletteItem.getComponentClassSource());
+            RADVisualComponent precreated = creator.precreateVisualComponent(paletteItem);
             if(precreated != null) {
                 newComponent = (JComponent) precreated.getBeanInstance();
             }

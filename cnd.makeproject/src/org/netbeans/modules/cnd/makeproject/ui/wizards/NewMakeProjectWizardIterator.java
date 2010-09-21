@@ -47,13 +47,20 @@ import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
@@ -79,6 +86,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public static final String DYNAMICLIBRARY_PROJECT_NAME = "CppDynamicLibrary";  // NOI18N
     public static final String STATICLIBRARY_PROJECT_NAME = "CppStaticLibrary"; // NOI18N
     public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
+    public static final String FULL_REMOTE_PROJECT_NAME = "FullRemoteProject"; // NOI18N
     public static final String QTAPPLICATION_PROJECT_NAME = "QtApplication"; // NOI18N
     public static final String QTDYNAMICLIBRARY_PROJECT_NAME = "QtDynamicLibrary"; // NOI18N
     public static final String QTSTATICLIBRARY_PROJECT_NAME = "QtStaticLibrary"; // NOI18N
@@ -91,16 +99,60 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public static final int TYPE_QT_APPLICATION = 4;
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
-    private int wizardtype;
-    private String name;
-    private String wizardTitle;
-    private String wizardACSD;
+    private final int wizardtype;
+    private final boolean fullRemote;
+
+    private Boolean lastSimpleMode = null;
+    private String lastHostUid = null;
+    private Boolean lastSetupHost = null;
+
+    private SelectHostWizardProvider selectHostWizardProvider;
+    private WizardDescriptor.Panel selectHostPanel;
+    
+    private final SelectModeDescriptorPanel importPanel;
+    private final PanelConfigureProject panelConfigureProjectTrue;
+//    private final PanelConfigureProject panelConfigureProjectFalse;
+//    private final MakefileOrConfigureDescriptorPanel makefileOrConfigureDescriptorPanel;
+//    private final BuildActionsDescriptorPanel buildActionsDescriptorPanel;
+//    private final SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
+//    private final ParserConfigurationDescriptorPanel parserConfigurationDescriptorPanel;
+    private final WizardDescriptor.Panel[] advancedPanels;
+
+    private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
     private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD) {
+        this(wizardtype, name, wizardTitle, wizardACSD, false);
+    }
+
+    private NewMakeProjectWizardIterator(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
         this.wizardtype = wizardtype;
-        this.name = name;
-        this.wizardTitle = wizardTitle;
-        this.wizardACSD = wizardACSD;
+        name = name.replaceAll(" ", ""); // NOI18N
+        this.fullRemote = fullRemote;
+
+        panelConfigureProjectTrue = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true);
+
+//        panelConfigureProjectFalse = new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false);
+//        makefileOrConfigureDescriptorPanel = new MakefileOrConfigureDescriptorPanel();
+//        buildActionsDescriptorPanel = new BuildActionsDescriptorPanel();
+//        sourceFoldersDescriptorPanel = new SourceFoldersDescriptorPanel();
+//        parserConfigurationDescriptorPanel = new ParserConfigurationDescriptorPanel();
+
+        advancedPanels = new WizardDescriptor.Panel[] {
+            new MakefileOrConfigureDescriptorPanel(),   // makefileOrConfigureDescriptorPanel
+            new BuildActionsDescriptorPanel(),          // buildActionsDescriptorPanel
+            new SourceFoldersDescriptorPanel(),         // sourceFoldersDescriptorPanel
+            new ParserConfigurationDescriptorPanel(),   // parserConfigurationDescriptorPanel
+            new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false) // panelConfigureProject
+        };
+
+
+        importPanel = new SelectModeDescriptorPanel(fullRemote);
+        importPanel.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                setupPanelsAndStepsIfNeed();
+            }
+        });
     }
 
     public static NewMakeProjectWizardIterator newApplication() {
@@ -152,21 +204,105 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return new NewMakeProjectWizardIterator(TYPE_MAKEFILE, name, wizardTitle, wizardACSD);
     }
 
-    private WizardDescriptor.Panel[] createPanels(String name) {
-        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
-            return new WizardDescriptor.Panel[]{
-                        new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, true)
-                    };
-        } else if (wizardtype == TYPE_MAKEFILE) {
-            return new WizardDescriptor.Panel[]{
-                        new SelectModeDescriptorPanel(),
-                        new MakefileOrConfigureDescriptorPanel(),
-                        new BuildActionsDescriptorPanel(),
-                        new SourceFoldersDescriptorPanel(),
-                        new ParserConfigurationDescriptorPanel(),
-                        new PanelConfigureProject(name, wizardtype, wizardTitle, wizardACSD, false),};
+    public static NewMakeProjectWizardIterator newFullRemote() {
+        String name = FULL_REMOTE_PROJECT_NAME;
+        String wizardTitle = getString("Templates/Project/Native/newFullRemote.xml"); // NOI18N
+        String wizardACSD = getString("NativeFullRemoteNameACSD"); // NOI18N
+        return new NewMakeProjectWizardIterator(TYPE_MAKEFILE, name, wizardTitle, wizardACSD, true);
+    }
+
+    private static boolean equals(Object o1, Object o2) {
+        if (o1 == null) {
+            return o2 == null;
+        } else {
+            return o1.equals(o2);
         }
-        return null; // FIXUP
+    }
+
+    private SelectHostWizardProvider getSelectHostWizardProvider() {
+        if (selectHostWizardProvider == null) {
+            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    fireStateChanged();
+                }
+            });
+        }
+        return selectHostWizardProvider;
+    }
+
+    private synchronized void setupPanelsAndStepsIfNeed() {
+        if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
+            if (panels == null) {
+                panels = new WizardDescriptor.Panel[] { panelConfigureProjectTrue };
+            }
+        } else if (wizardtype == TYPE_MAKEFILE) {
+            String hostUID = (wiz == null) ? null : (String) wiz.getProperty("hostUID");
+            Boolean setupHost = fullRemote ? Boolean.valueOf(getSelectHostWizardProvider().isNewHost()) : null;
+
+            if (panels != null) {
+                if (equals(lastSimpleMode, isSimple())) {
+                    if (fullRemote) {
+                        if (equals(lastHostUid, hostUID)) {
+                            if (equals(lastSetupHost, setupHost)) {
+                                return;
+                            }
+                        }
+                    } else {
+                        return;
+                    }
+                }
+            }
+            lastHostUid = hostUID;
+            lastSimpleMode = Boolean.valueOf(isSimple());
+            lastSetupHost = setupHost;
+
+            LOGGER.log(Level.FINE, "refreshing panels and steps");
+
+            List<WizardDescriptor.Panel> panelsList = new ArrayList<WizardDescriptor.Panel>();
+            if (fullRemote) {
+                if (selectHostPanel == null) {
+                    selectHostPanel = getSelectHostWizardProvider().getSelectHostPanel();
+                }
+                panelsList.add(selectHostPanel);
+                if (getSelectHostWizardProvider().isNewHost()) {
+                    panelsList.addAll(Arrays.asList(getSelectHostWizardProvider().getAdditionalPanels()));
+                    panelsList.add(importPanel);
+                    if (!isSimple()) {
+                        panelsList.addAll(Arrays.asList(advancedPanels));
+                    }
+                } else {
+                    panelsList.add(importPanel);
+                    if (!isSimple()) {
+                        panelsList.addAll(Arrays.asList(advancedPanels));
+                    }
+                }
+            } else {
+                panelsList.add(importPanel);
+                if (!isSimple()) {
+                    panelsList.addAll(Arrays.asList(advancedPanels));
+                }
+            }
+            panels = panelsList.toArray(new WizardDescriptor.Panel[panelsList.size()]);
+            setupSteps();
+        } else {
+            throw new IllegalStateException("Illegal wizard type: " + wizardtype); //NOI18N
+        }
+    }
+
+    private void setupSteps() {
+        String[] steps = createSteps(panels);
+        String[] advanced;
+        if (fullRemote) {
+            advanced = new String[]{ steps[0], steps[1], "..."}; // NOI18N
+        } else {
+            advanced = new String[]{ steps[0], "..."}; // NOI18N
+        }
+        Component c = panels[0].getComponent();
+        if (c instanceof JComponent) { // assume Swing components
+            JComponent jc = (JComponent) c;
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, advanced);
+        }
     }
 
     private String[] createSteps(WizardDescriptor.Panel[] panels) {
@@ -213,16 +349,19 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         Set<FileObject> resultSet = new HashSet<FileObject>();
         File dirF = (File) wiz.getProperty("projdir"); // NOI18N
         String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        //boolean fullRemote = (wiz.getProperty("fullRemote") == null) ? false : ((Boolean) wiz.getProperty("fullRemote")).booleanValue();
         CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty("name"); // NOI18N
         String makefileName = (String) wiz.getProperty("makefilename"); // NOI18N
+        if (fullRemote) {
+            getSelectHostWizardProvider().apply();
+        }
         if (isSimple()) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                SelectModeDescriptorPanel importPanel = (SelectModeDescriptorPanel) simplePanels[0];
                 resultSet.addAll(extension.createProject(new SelectModeDescriptorPanel.WizardDescriptorAdapter(importPanel.getWizardStorage())));
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
@@ -268,6 +407,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setMakefileName(makefileName);
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
+            prjParams.setFullRemote(fullRemote);
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = FileUtil.toFileObject(dirF);
@@ -277,29 +417,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
-    private transient WizardDescriptor.Panel[] simplePanels;
     private transient WizardDescriptor wiz;
 
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote)); // NOI18N
         index = 0;
-        panels = createPanels(name.replaceAll(" ", "")); // NOI18N
-        // Make sure list of steps is accurate.
-        String[] steps = createSteps(panels);
-        if (wizardtype == TYPE_MAKEFILE) {
-            simplePanels = new WizardDescriptor.Panel[]{
-                        panels[0]
-                    //,new ImportProjectDescriptorPanel()
-                    };
-            steps = createSteps(simplePanels);
-            String[] advanced = new String[]{steps[0], "..."}; // NOI18N
-            Component c = panels[0].getComponent();
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, advanced);
-            }
-        }
+        setupPanelsAndStepsIfNeed();
     }
 
     @Override
@@ -312,7 +437,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         }
         this.wiz = null;
         panels = null;
-        simplePanels = null;
     }
 
     @Override
@@ -322,16 +446,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
     }
 
     @Override
     public boolean hasNext() {
-        if (isSimple()) {
-            return index < simplePanels.length - 1;
-        } else {
-            return index < panels.length - 1;
-        }
+        setupPanelsAndStepsIfNeed();
+        boolean result = index < panels.length - 1;
+        LOGGER.log(Level.FINE, "hasNext()=={0} (index=={1}, panels.length=={2})", new Object[]{result, index, panels.length});
+        return result;
     }
 
     @Override
@@ -341,7 +464,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public void nextPanel() {
-        if (!hasNext()) {
+        if (!hasNext()) { // will call setupPanelsAndStepsIfNeed();
             throw new NoSuchElementException();
         }
         index++;
@@ -357,12 +480,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
 
     @Override
     public WizardDescriptor.Panel current() {
-        if (isSimple()) {
-            return simplePanels[index];
-        } else {
-            return panels[index];
-        }
+        setupPanelsAndStepsIfNeed();
+        return panels[index];
     }
+
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
 
     @Override
@@ -376,6 +497,17 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
+        }
+    }
+
+    private void fireStateChanged() {
+        ChangeEvent event = new ChangeEvent(this);
+        ChangeListener[] listenersCopy;
+        synchronized (listeners) {
+            listenersCopy = listeners.toArray(new ChangeListener[listeners.size()]);
+        }
+        for (ChangeListener listener : listenersCopy) {
+            listener.stateChanged(event);
         }
     }
 

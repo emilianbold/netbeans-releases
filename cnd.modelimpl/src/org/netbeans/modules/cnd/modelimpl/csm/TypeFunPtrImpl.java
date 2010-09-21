@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Represent pointer to function type
  * @author Vladimir Kvashin
  */
-public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
+public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
     private Collection<CsmUID<CsmParameter>> functionParameters;
     private short functionPointerDepth;
@@ -95,6 +95,7 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);
     }
 
+    @Override
     public Collection<CsmParameter> getParameters() {
         if (functionParameters == null) {
             return Collections.<CsmParameter>emptyList();

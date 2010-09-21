@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAcceptor;
+import org.openide.util.NbBundle;
 
 /**
  * Action that allows to add a new component into the grid.
@@ -123,6 +124,8 @@ public class AddAction extends AbstractGridAction {
             }
         });
         menu.disableHack();
+        String name = NbBundle.getMessage(AddAction.class, "AddAction_Name"); // NOI18N
+        menu.setText(name);
         return menu;
     }
 
@@ -152,8 +155,9 @@ public class AddAction extends AbstractGridAction {
             RADVisualContainer container = (RADVisualContainer)replicator.getTopMetaComponent();
             FormModel formModel = container.getFormModel();
             RADComponent metacomp = formModel.getComponentCreator().createComponent(
-                    pItem.getComponentClassSource(), container, null);
-            if (metacomp instanceof RADVisualComponent) {
+                    pItem, container, null);
+            if (metacomp.isInModel() // It is not in the model when the addition was canceled
+                    && (metacomp instanceof RADVisualComponent)) {
                 replicator.addComponent(metacomp);
                 Component comp = (Component)replicator.getClonedComponent(metacomp);
                 gridManager.setGridX(comp, context.getFocusedColumn());

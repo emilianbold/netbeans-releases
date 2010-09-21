@@ -69,6 +69,7 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.modules.debugger.jpda.ui.debugging.FiltersDescriptor;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -82,6 +83,9 @@ import org.openide.util.actions.Presenter;
 /**
  * @author   Martin Entlicher
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types=NodeActionsProvider.class,
+                             position=700)
 public class DebuggingActionsProvider implements NodeActionsProvider {
 
     private JPDADebugger debugger;

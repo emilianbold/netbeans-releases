@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.spi.impl;
 
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
@@ -51,14 +50,13 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
  */
 public abstract class IndicatorDataProviderAccessor {
 
- private static volatile IndicatorDataProviderAccessor DEFAULT;
+    private static volatile IndicatorDataProviderAccessor DEFAULT;
 
     public static IndicatorDataProviderAccessor getDefault() {
         IndicatorDataProviderAccessor a = DEFAULT;
         if (a != null) {
             return a;
         }
-
         try {
             Class.forName(IndicatorDataProvider.class.getName(), true, IndicatorDataProvider.class.getClassLoader());//
         } catch (Exception e) {
@@ -76,8 +74,7 @@ public abstract class IndicatorDataProviderAccessor {
     public IndicatorDataProviderAccessor() {
     }
 
-    public abstract  void addIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l);
+    public abstract void addIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l);
 
-    public abstract  boolean removeIndicatorDataProviderListener(IndicatorDataProvider provider, IndicatorNotificationsListener l);
-
+    public abstract void removeIndicatorDataProviderListener(IndicatorDataProvider<?> provider, IndicatorNotificationsListener l);
 }

@@ -665,17 +665,31 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
 
         if (lineWrapType == null) {
-            Document doc = getDocument();
-            lineWrapType = LineWrapType.fromSettingValue((String) doc.getProperty(SimpleValueNames.TEXT_LINE_WRAP));
-            if (lineWrapType == null) {
-                lineWrapType = LineWrapType.NONE;
-            }
+            updateLineWrapType();
 
+            Document doc = getDocument();
             // #183797 - most likely seeing a non-nb document during the editor pane creation
-            Integer dllw = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
+            Integer dllw = (Integer) doc.getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
             defaultLimitLineWidth = dllw != null ? dllw.intValue() : EditorPreferencesDefaults.defaultTextLimitWidth;
 
             DocumentUtilities.addPropertyChangeListener(doc, WeakListeners.propertyChange(this, doc));
+        }
+    }
+    
+    private void updateLineWrapType() {
+        String lwt = null;
+        if (textComponent != null) {
+            lwt = (String) textComponent.getClientProperty(SimpleValueNames.TEXT_LINE_WRAP);
+        }
+        if (lwt == null) {
+            Document doc = getDocument();
+            lwt = (String) doc.getProperty(SimpleValueNames.TEXT_LINE_WRAP);
+        }
+        if (lwt != null) {
+            lineWrapType = LineWrapType.fromSettingValue(lwt);
+            if (lineWrapType == null) {
+                lineWrapType = LineWrapType.NONE;
+            }
         }
     }
 
@@ -946,8 +960,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
      */
     public void updateLengthyAtomicEdit(int delta) {
         lengthyAtomicEdit += delta;
-        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n",
+        LOG.log(Level.FINE, "updateLengthyAtomicEdit: delta={0} lengthyAtomicEdit={1}\n", // NOI18N
                 new Object[] { delta, lengthyAtomicEdit} );
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.INFO, "updateLengthyAtomicEdit() stack", new Exception("updateLengthyAtomicEdit()")); // NOI18N
+        }
         if (lengthyAtomicEdit == 0) {
             // Release the existing children
             PriorityMutex mutex = getMutex();
@@ -1132,13 +1149,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             boolean reinitViews = false;
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
-                LineWrapType lwt = LineWrapType.fromSettingValue((String)getDocument().getProperty(SimpleValueNames.TEXT_LINE_WRAP));
-                if (lwt == null) {
-                    lwt = LineWrapType.NONE;
-                }
-                if (lwt != lineWrapType) {
-                    LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { lineWrapType, lwt }); //NOI18N
-                    lineWrapType = lwt;
+                LineWrapType origLineWrapType = lineWrapType;
+                updateLineWrapType();
+                if (origLineWrapType != lineWrapType) {
+                    LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { origLineWrapType, lineWrapType }); //NOI18N
                     reinitViews = true;
                 }
             }
@@ -1159,7 +1173,22 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
             if ("ancestor".equals(propName)) { // NOI18N
-                checkViewsInited();
+                getDocument().render(new Runnable() {
+                    @Override
+                    public void run() {
+                        PriorityMutex mutex = getMutex();
+                        if (mutex != null) {
+                            mutex.lock();
+                            // checkDocumentLocked() - unnecessary - doc.render() called
+                            try {
+                                checkViewsInited();
+                            } finally {
+                                mutex.unlock();
+                            }
+                        }
+                    }
+                });
+
             } else if ("font".equals(propName)) {
                 if (!customFont && defaultFont != null) {
                     customFont = !defaultFont.equals(textComponent.getFont());
@@ -1172,6 +1201,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 if (!customBackground && defaultBackground != null) {
                     customBackground = !defaultBackground.equals(textComponent.getBackground());
                 }
+            } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
+                updateLineWrapType();
+                reinitViews();
             }
         }
     }

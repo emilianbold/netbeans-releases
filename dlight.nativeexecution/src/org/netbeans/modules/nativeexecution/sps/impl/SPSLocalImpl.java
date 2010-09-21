@@ -93,7 +93,7 @@ public final class SPSLocalImpl extends SPSCommonImpl {
 
         privpCmd = "bin/nativeexecution/" + path + "/privp"; // NOI18N
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
-        File file = fl.locate(privpCmd, null, false);
+        File file = fl.locate(privpCmd, "org.netbeans.modules.dlight.nativeexecution", false); //NOI18N
 
         if (file == null || !file.exists()) {
             throw new MissingResourceException(privpCmd, null, null);

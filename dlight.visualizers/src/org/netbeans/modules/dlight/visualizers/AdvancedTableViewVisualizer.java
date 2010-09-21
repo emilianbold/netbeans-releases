@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
+import org.netbeans.modules.dlight.util.ui.DualPaneSupport;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -74,7 +75,7 @@ import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
-import org.netbeans.modules.dlight.spi.impl.TableDataProvider;
+import org.netbeans.modules.dlight.spi.support.TableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerContainer;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -600,6 +601,14 @@ final class AdvancedTableViewVisualizer extends JPanel implements
                                 @Override
                                 public void setValue(Object val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
                                     //throw new UnsupportedOperationException("Not supported yet.");
+                                }
+
+                                @Override
+                                public Object getValue(String attributeName) {
+                                    if ("suppressCustomEditor".equals(attributeName)) {//NOI18N
+                                        return true;
+                                    }                                    
+                                    return super.getValue(attributeName);
                                 }
                             };
                             result.add(propery);

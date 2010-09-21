@@ -169,15 +169,18 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
-		<friend>com.microchip.mplab.nbide.programmer</friend>
+                <friend>com.microchip.mplab.nbide.programmer</friend>
                 <friend>com.sun.cloud.api</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.debugger.common</friend>
@@ -247,6 +250,7 @@
                 <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
+                <package>org.netbeans.modules.nativeexecution.support.ui.api</package>
             </friend-packages>
         </data>
     </configuration>

@@ -494,6 +494,20 @@ public class Util {
     }
 
     /**
+     *
+     * @return true if jpa version is supported by platform (may need to be extended to classpath check and possible library addition check but not in this method
+     * it's used to check server support in current realization)
+     */
+    public static boolean isJPAVersionSupported(Project project, String version){
+        JPAModuleInfo info = project.getLookup().lookup(JPAModuleInfo.class);
+        if(info!=null){
+            return !Boolean.FALSE.equals(info.isJPAVersionSupported(version));//null return considerd valid too and the same as true
+        }
+        return true;
+
+    }
+
+    /**
      * Creates a persistence unit using the PU wizard and adds the created
      * persistence unit to the given project's <code>PUDataObject</code> and saves it.
      *

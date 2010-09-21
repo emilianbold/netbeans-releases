@@ -92,6 +92,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.dlight.remote</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.7</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.dlight.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -357,6 +365,7 @@
                 <friend>com.sun.tools.dlight.remotesupport</friend>
                 <friend>com.sun.tools.dlight.target</friend>
                 <friend>com.sun.tools.dlight.xyplot</friend>
+                <friend>com.sun.tools.odb</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.performanceanalyzeractions</friend>
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>

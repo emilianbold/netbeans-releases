@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -146,7 +147,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         toolchainComboBox.setRenderer(new MyToolchainListCellRenderer(FAKE_ITEM));
     }
 
-    /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
+    /*package*/static void updateToolchainsComponents(JComboBox hostComboBox, JComboBox toolchainComboBox, 
+            Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enableHost, boolean enableToolchain) {
+
         hostComboBox.removeAllItems();
         toolchainComboBox.removeAllItems();
         if (records != null) {
@@ -156,16 +159,35 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             hostComboBox.setSelectedItem(srToSelect);
             updateToolchains(toolchainComboBox, srToSelect);
             toolchainComboBox.setSelectedItem(csToSelect);
-            hostComboBox.setEnabled(enabled);
-            toolchainComboBox.setEnabled(enabled);
+            hostComboBox.setEnabled(enableHost);
+            toolchainComboBox.setEnabled(enableToolchain);
         }
     }
 
-    private static Collection<ServerRecord> initServerRecords() {
+    private static Collection<ServerRecord> initServerRecords(ToolsCacheManager toolsCacheManager, ExecutionEnvironment ee) {
         Collection<ServerRecord> out = new ArrayList<ServerRecord>();
-        for (ServerRecord serverRecord : ServerList.getRecords()) {
+
+        Collection<ServerRecord> records = new ArrayList<ServerRecord>();
+        if (toolsCacheManager != null && toolsCacheManager.getServerUpdateCache() != null) {
+            records.addAll(toolsCacheManager.getServerUpdateCache().getHosts());
+        } else {
+            records.addAll(ServerList.getRecords());
+        }
+        if (ee != null) {
+            ServerRecord r = ServerList.get(ee);
+            if (r.isSetUp()) {
+                records.add(r);
+            }
+        }
+
+        for (ServerRecord serverRecord : records) {
             if (serverRecord.isSetUp() && !serverRecord.isDeleted()) {
-                CompilerSetManager csm = CompilerSetManager.get(serverRecord.getExecutionEnvironment());
+                CompilerSetManager csm;
+                if (toolsCacheManager != null && ee != null) {
+                    csm = toolsCacheManager.getCompilerSetManagerCopy(ee, false);
+                } else {
+                    csm = CompilerSetManager.get(serverRecord.getExecutionEnvironment());
+                }
                 if (csm != null) {
                     csm.finishInitialization();
                     if (!csm.isEmpty() && !csm.isUninitialized()) {
@@ -651,10 +673,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String hostUID = (String) settings.getProperty("hostUID");  //NOI18N
         CompilerSet cs = (CompilerSet) settings.getProperty("toolchain"); //NOI18N
         Boolean readOnlyToolchain = (Boolean) settings.getProperty("readOnlyToolchain"); //NOI18N
-        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, readOnlyToolchain) {
+        RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, 
+                readOnlyToolchain, (ToolsCacheManager) settings.getProperty("ToolsCacheManager")) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
-                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled);
+                updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled, enabled);
                 initialized = true;
                 panel.fireChangeEvent(); // Notify that the panel changed
             }
@@ -868,29 +891,29 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         private final String hostUID;
         private final CompilerSet cs;
         private final boolean readOnlyUI;
+        private final ToolsCacheManager toolsCacheManager;
         
         // fields to be inited in worker thread and used in EDT
         private Collection<ServerRecord> records;
         private ServerRecord srToSelect;
         private CompilerSet csToSelect;
         
-        public DevHostsInitializer(String hostUID, CompilerSet cs, Boolean readOnlyToolchain) {
+        public DevHostsInitializer(String hostUID, CompilerSet cs, Boolean readOnlyToolchain, ToolsCacheManager toolsCacheManager) {
             this.hostUID = hostUID;
             this.cs = cs;
             this.readOnlyUI = readOnlyToolchain == null ? false : readOnlyToolchain.booleanValue();
+            this.toolsCacheManager = toolsCacheManager;
         }
 
         @Override
         public void run() {
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
-                    records = initServerRecords();
+                    ExecutionEnvironment ee = (hostUID == null) ? null : ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+                    records = initServerRecords(toolsCacheManager, ee);
                     srToSelect = null;
-                    if (hostUID != null) {
-                        ExecutionEnvironment ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-                        if (ee != null) {
-                            srToSelect = ServerList.get(ee);
-                        }
+                    if (ee != null) {
+                        srToSelect = ServerList.get(ee);
                     }
                     if (!records.contains(srToSelect)) {
                         srToSelect = null;
@@ -899,7 +922,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                         srToSelect = ServerList.getDefaultRecord();
                     }
                     if (cs == null) {
-                        CompilerSetManager csm = CompilerSetManager.get(srToSelect.getExecutionEnvironment());
+                        CompilerSetManager csm;
+                        if (toolsCacheManager == null) {
+                            csm = CompilerSetManager.get(srToSelect.getExecutionEnvironment());
+                        } else {
+                            csm = toolsCacheManager.getCompilerSetManagerCopy(srToSelect.getExecutionEnvironment(), false);
+                        }
                         csToSelect = csm.getDefaultCompilerSet();
                     } else {
                         csToSelect = cs;

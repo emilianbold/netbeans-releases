@@ -78,8 +78,7 @@ if ((int) $_GET['responder'] > 0) {
                 }
                 } else {
                     if ((int) $_GET['deletar'] > 0) {
-                     
-                        $db->Query('UPDATE `contact` SET `read`=1 WHERE `id`=%d', $_GET['deletar']);
+                         $db->Query('UPDATE `contact` SET `read`=1 WHERE `id`=%d', $_GET['deletar']);
 
                         if ($db->Affected() > 0) {
                             echo '<h3>Contato deletado</h3>';
@@ -103,7 +102,7 @@ if ((int) $_GET['responder'] > 0) {
                                     <?php
                                     while ($r = $db->Result(false)) {
                                         
-                                               
+                                                
                                     ?>
                                                 <tr>
                                                     <td><?php echo Show($r['name']); ?></td>

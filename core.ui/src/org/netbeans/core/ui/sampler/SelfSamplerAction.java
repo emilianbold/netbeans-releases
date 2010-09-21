@@ -107,7 +107,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     //~ Constructors -------------------------------------------------------------------------------------------------------------
     private SelfSamplerAction() {
         putValue(Action.NAME, ACTION_NAME_START);
-//        putValue(Action.SHORT_DESCRIPTION, ACTION_DESCR);
+        putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
         putValue(Action.SMALL_ICON,
                 ImageUtilities.loadImageIcon("org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
                 , false));
@@ -131,6 +131,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             Sampler c;
             if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
                 putValue(Action.NAME, ACTION_NAME_STOP);
+                putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_STOP);
                 putValue(Action.SMALL_ICON,
                         ImageUtilities.loadImageIcon(
                         "org/netbeans/core/ui/sampler/selfSamplerRunning.png" //NOI18N
@@ -151,6 +152,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     @Override
                     protected void done() {
                         putValue(Action.NAME, ACTION_NAME_START);
+                        putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
                         putValue(Action.SMALL_ICON,
                                 ImageUtilities.loadImageIcon(
                                 "org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
@@ -238,22 +240,6 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
         }
 
         @Override
-        protected void cancelTimer() {
-            if (SelfSamplerAction.getInstance().isProfileMe(this)) {
-                // if this sampling was invoked manually via ProfileMe action
-                // stop it
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        SelfSamplerAction.getInstance().actionPerformed(null);
-                    }
-                });
-            }
-        }
-        
-        
-        
-        @Override
         protected void saveSnapshot(byte[] arr) throws IOException {
             // save snapshot
             File outFile = File.createTempFile("selfsampler", SamplesOutputStream.FILE_EXT); // NOI18N
@@ -262,8 +248,8 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             // open snapshot
             FileObject fo = FileUtil.toFileObject(outFile);
             DataObject dobj = DataObject.find(fo);
+            // ugly test for DefaultDataObject
             if (defaultDataObject.isAssignableFrom(dobj.getClass())) {
-                // ugly test for DefaultDataObject
                 String msg = MessageFormat.format(SelfSamplerAction.SAVE_MSG, outFile.getAbsolutePath());
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             } else {
@@ -285,35 +271,24 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
         protected ThreadMXBean getThreadMXBean() {
             return ManagementFactory.getThreadMXBean();
         }
-
         
         protected void openProgress(final int steps) {
             if (EventQueue.isDispatchThread()) {
                 // log warnining
                 return;
             }
-            EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelfSamplerAction.class, "Save_Progress"));
-                    progress.start(steps);
-                }
-            });
+            progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(SelfSamplerAction.class, "Save_Progress"));
+            progress.start(steps);
         }
+        
         protected void closeProgress() {
             if (EventQueue.isDispatchThread()) {
                 return;
             }
-            EventQueue.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    progress.finish();
-                    progress = null;
-                }
-            });
+            progress.finish();
+            progress = null;
         }
+        
         protected void progress(int i) {
             if (EventQueue.isDispatchThread()) {
                 return;

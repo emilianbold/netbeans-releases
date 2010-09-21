@@ -44,24 +44,14 @@
 package org.netbeans.modules.j2ee.weblogic9.deploy;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.AllPermission;
-import java.security.CodeSource;
-import java.security.PermissionCollection;
-import java.security.Permissions;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -94,12 +84,13 @@ import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentContext;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DeploymentManager2;
 import org.netbeans.modules.j2ee.weblogic9.ProgressObjectSupport;
 import org.netbeans.modules.j2ee.weblogic9.WLConnectionSupport;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.WLProductProperties;
 import org.openide.util.NbBundle;
@@ -108,11 +99,9 @@ import org.openide.util.RequestProcessor;
 
 /**
  * Main class of the deployment process. This serves as a wrapper for the
- * server's DeploymentManager implementation, all calls are delegated to the
- * server's implementation, with the thread's context classloader updated
- * if necessary.
+ * server's DeploymentManager implementation.
  *
- * @author Kirill Sorokin
+
  * @author Petr Hejl
  */
 public class WLDeploymentManager implements DeploymentManager2 {
@@ -123,26 +112,18 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private static final boolean DEBUG_JSR88 = Boolean.getBoolean(WLDeploymentManager.class.getName() + ".debugJsr88");
 
+    /** <i>GuardedBy(WLDeploymentManager.class)</i> */
     private static final Map<ServerProgressObject, DeploymentStatus> OBJECTS_TO_POLL = new HashMap<ServerProgressObject, DeploymentStatus>();
 
-    /** <i>GuardedBy(WLDeploymentManager.class)</i> */
     private static final RequestProcessor OBJECT_POLL_RP = new RequestProcessor("ProgressObject Poll", 1);
+
+    private static final Target DWP_TARGET = new WLTarget("myserver"); // NOI18N
 
     static {
         if (DEBUG_JSR88) {
             System.setProperty("weblogic.deployer.debug", "all"); // NOI18N
         }
-
-        WLConnectionSupport.WLDeploymentManagerAccessor.setDefault(new WLConnectionSupport.WLDeploymentManagerAccessor() {
-
-            @Override
-            public ClassLoader getWLClassLoader(WLDeploymentManager manager) {
-                return manager.getWLClassLoader();
-            }
-        });
     }
-
-    private final WLDeploymentFactory factory;
 
     private final String uri;
     private final String host;
@@ -150,12 +131,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private final WLProductProperties productProperties = new WLProductProperties(this);
 
-    private final WLMutableState mutableState;
+    private final WLSharedState mutableState;
 
     private final boolean disconnected;
-
-    /* GuardedBy("this") */
-    private WLClassLoader classLoader;
 
     /* GuardedBy("this") */
     private InstanceProperties instanceProperties;
@@ -163,9 +141,17 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private DeploymentManager manager;
 
-    public WLDeploymentManager(WLDeploymentFactory factory, String uri,
-            String host, String port, boolean disconnected, WLMutableState mutableState) {
-        this.factory = factory;
+    /* GuardedBy("this") */
+    private Version serverVersion;
+
+    /* GuardedBy("this") */
+    private boolean webProfile;
+
+    /* GuardedBy("this") */
+    private boolean initialized;
+
+    public WLDeploymentManager(String uri, String host, String port,
+            boolean disconnected, WLSharedState mutableState) {
         this.uri = uri;
         this.host = host;
         this.port = port;
@@ -194,6 +180,27 @@ public class WLDeploymentManager implements DeploymentManager2 {
         return port;
     }
 
+    @CheckForNull
+    public synchronized Version getServerVersion() {
+        init();
+        return serverVersion;
+    }
+
+    public synchronized boolean isWebProfile() {
+        init();
+        return webProfile;
+    }
+
+    /**
+     * Returns the InstanceProperties object for the current server instance.
+     */
+    public synchronized InstanceProperties getInstanceProperties() {
+        if (instanceProperties == null) {
+            instanceProperties = InstanceProperties.getInstanceProperties(uri);
+        }
+        return instanceProperties;
+    }
+
     public void addDomainChangeListener(ChangeListener listener) {
         mutableState.addDomainChangeListener(listener);
     }
@@ -210,38 +217,24 @@ public class WLDeploymentManager implements DeploymentManager2 {
         mutableState.setRestartNeeded(restartNeeded);
     }
 
-    /**
-     * Returns the InstanceProperties object for the current server instance.
-     */
-    public final synchronized InstanceProperties getInstanceProperties() {
-        if (instanceProperties == null) {
-            this.instanceProperties = InstanceProperties.getInstanceProperties(uri);
+    public Process getServerProcess() {
+        return mutableState.getServerProcess();
+    }
 
-        }
-        return instanceProperties;
+    public synchronized void setServerProcess(Process serverProcess) {
+        mutableState.setServerProcess(serverProcess);
     }
 
     public WLProductProperties getProductProperties() {
         return productProperties;
     }
 
-    private synchronized ClassLoader getWLClassLoader() {
-        if (classLoader == null) {
-            LOGGER.log(Level.FINE, "Creating classloader for {0}", this.getUri());
-            try {
-                File[] classpath = WLPluginProperties.getClassPath(this);
-                URL[] urls = new URL[classpath.length];
-                for (int i = 0; i < classpath.length; i++) {
-                    urls[i] = classpath[i].toURI().toURL();
-                }
-                classLoader = new WLClassLoader(urls, WLDeploymentManager.class.getClassLoader());
-                LOGGER.log(Level.FINE, "Classloader for {0} created successfully", this.getUri());
-                return classLoader;
-            } catch (MalformedURLException e) {
-                LOGGER.log(Level.WARNING, null, e);
-            }
+    private synchronized void init() {
+        if (initialized) {
+            return;
         }
-        return classLoader;
+        serverVersion = WLPluginProperties.getServerVersion(WLPluginProperties.getServerRoot(this, true));
+        webProfile = WLPluginProperties.isWebProfile(WLPluginProperties.getServerRoot(this, true));
     }
 
     private <T> T executeAction(final Action<T> action) throws Exception {
@@ -269,8 +262,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
 
     private synchronized DeploymentManager getDeploymentManager(String username,
             String password, String host, String port) throws DeploymentManagerCreationException {
-
-        assert Thread.currentThread().getContextClassLoader() instanceof WLClassLoader;
 
         if (manager != null) {
             // this should work even if some older WL release does not have this
@@ -493,6 +484,12 @@ public class WLDeploymentManager implements DeploymentManager2 {
         if (disconnected) {
             throw new IllegalStateException("Deployment manager is disconnected");
         }
+        // FIXME DWP fix this when we find a way how to connect to DWP
+        if (isWebProfile()) {
+            // DWP is single server according to presentation
+            return new Target[] {DWP_TARGET}; // NOI18N
+        }
+
         try {
             // we do this magic because default JSR-88 returns all targets
             // including for example JMSServer which is not very good for
@@ -520,17 +517,19 @@ public class WLDeploymentManager implements DeploymentManager2 {
                 }
             });
         } catch (Exception ex) {
-            LOGGER.log(Level.INFO, null, ex.getCause());
+            LOGGER.log(Level.INFO, null, ex);
 
-                // just a fallback
-                try {
+            // just a fallback
+            try {
                 return executeAction(new Action<Target[]>() {
+
+                    @Override
                     public Target[] execute(DeploymentManager manager) throws ExecutionException {
                         return manager.getTargets();
                     }
                 });
             } catch (Exception fex) {
-                LOGGER.log(Level.INFO, null, ex.getCause());
+                LOGGER.log(Level.INFO, null, fex);
                 return new Target[] {};
             }
         }
@@ -679,56 +678,6 @@ public class WLDeploymentManager implements DeploymentManager2 {
     private static interface Action<T> {
 
          T execute(DeploymentManager manager) throws ExecutionException;
-    }
-
-    private static class WLClassLoader extends URLClassLoader {
-
-        public WLClassLoader(URL[] urls, ClassLoader parent) {
-            super(urls, parent);
-        }
-
-        public void addURL(File f) throws MalformedURLException {
-            if (f.isFile()) {
-                addURL(f.toURL());
-            }
-        }
-
-        @Override
-        protected Class<?> findClass(String name) throws ClassNotFoundException {
-            Class<?> clazz = super.findClass(name);
-            if (LOGGER.isLoggable(Level.FINEST)) {
-                String filename = name.replace('.', '/'); // NOI18N
-                int index = filename.indexOf('$'); // NOI18N
-                if (index > 0) {
-                    filename = filename.substring(0, index);
-                }
-                filename = filename + ".class"; // NOI18N
-
-                URL url = this.getResource(filename);
-                LOGGER.log(Level.FINEST, "WebLogic classloader asked for {0}", name);
-                if (url != null) {
-                    LOGGER.log(Level.FINEST, "WebLogic classloader found {0} at {1}",new Object[]{name, url});
-                }
-            }
-            return clazz;
-        }
-
-        @Override
-        protected PermissionCollection getPermissions(CodeSource codeSource) {
-            Permissions p = new Permissions();
-            p.add(new AllPermission());
-            return p;
-        }
-
-        @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            // get rid of annoying warnings
-            if (name.indexOf("jndi.properties") != -1 || name.indexOf("i18n_user.properties") != -1) { // NOI18N
-                return Collections.enumeration(Collections.<URL>emptyList());
-            }
-
-            return super.getResources(name);
-        }
     }
 
     private class ServerTargetModuleID implements TargetModuleID {

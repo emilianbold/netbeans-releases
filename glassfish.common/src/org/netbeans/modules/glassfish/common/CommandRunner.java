@@ -91,6 +91,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.spi.WSDesc;
 
 
 /** 
@@ -297,6 +298,40 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
     
+    /**
+     * Sends list-web-services command to server (synchronous)
+     *
+     * @return String array of names of deployed applications.
+     */
+    public List<WSDesc> getWebServices() {
+        List<WSDesc> result = Collections.emptyList();
+        try {
+            List<String> wss = Collections.emptyList();
+            Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand();
+            serverCmd = cmd;
+            Future<OperationState> task = executor().submit(this);
+            OperationState state = task.get();
+            if (state == OperationState.COMPLETED) {
+                wss = cmd.getWebserviceList();
+
+                result = processWebServices(wss);
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        }
+        return result;
+    }
+
+    private List<WSDesc> processWebServices(List<String> wssList){
+        List<WSDesc> result = new  ArrayList<WSDesc>();
+        for (String a : wssList) {
+            result.add(new WSDesc(a, a+"?wsdl", a+"?Tester")); // NOI18N
+        }
+        return result;
+    }
+
     public List<ResourceDesc> getResources(String type) {
         List<ResourceDesc> result = Collections.emptyList();
         try {
@@ -399,10 +434,10 @@ public class CommandRunner extends BasicTask<OperationState> {
                 contextRoot, computePreserveSessions(ip), properties, libraries));
     }
 
-    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries)  {
+    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
-                computePreserveSessions(ip), libraries));
+                computePreserveSessions(ip), libraries, resourcesChanged));
     }
 
     private static Boolean computePreserveSessions(Map<String,String> ip) {
@@ -620,7 +655,7 @@ public class CommandRunner extends BasicTask<OperationState> {
                     serverCmd.toString(), instanceName);
         } else {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailed", // NOI18N
-                    serverCmd.toString(), instanceName);
+                    serverCmd.toString(), instanceName, serverCmd.getServerMessage());
         }
     }
     
