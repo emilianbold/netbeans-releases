@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements CsmUsingDirective
  * @author Vladimir Kvasihn
  */
-public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
+public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirective> implements CsmUsingDirective, RawNamable {
 
     private final CharSequence name;
     private final CharSequence[] rawName;

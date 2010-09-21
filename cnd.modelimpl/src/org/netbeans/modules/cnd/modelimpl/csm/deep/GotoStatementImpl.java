@@ -55,13 +55,17 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
  * CsmGotoStatement implementation
  * @author Vladimir Kvashin
  */
-public class GotoStatementImpl extends StatementBase implements CsmGotoStatement {
+public final class GotoStatementImpl extends StatementBase implements CsmGotoStatement {
 
     private final CharSequence label;
 
-    public GotoStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private GotoStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
         label = AstUtil.findId(ast);
+    }
+
+    public static GotoStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new GotoStatementImpl(ast, file, scope);
     }
 
     @Override

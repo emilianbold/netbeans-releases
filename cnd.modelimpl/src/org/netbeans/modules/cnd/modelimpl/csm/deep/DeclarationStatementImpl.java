@@ -59,13 +59,17 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Implementation of CsmDeclarationStatement
  * @author Vladimir Kvashin
  */
-public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
+public final class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
     private volatile List<CsmDeclaration> declarators;
     private static final List<CsmDeclaration> EMPTY = Collections.<CsmDeclaration>emptyList();
     
-    public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+    }
+
+    public static DeclarationStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new DeclarationStatementImpl(ast, file, scope);
     }
 
     @Override

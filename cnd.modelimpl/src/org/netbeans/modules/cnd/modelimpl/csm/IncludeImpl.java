@@ -63,7 +63,7 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn,
  *         Vladimir Voskresensky
  */
-public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
+public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
     private final CharSequence name;
     private final boolean system;
     

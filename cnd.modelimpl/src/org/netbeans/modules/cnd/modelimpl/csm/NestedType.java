@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  * Class for types B and C in the compound type A::B::C
  * @author eu155513
  */
-public class NestedType extends TypeImpl {
+public final class NestedType extends TypeImpl {
     private final CsmType parentType;
 
     private NestedType(CsmType parent, CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
