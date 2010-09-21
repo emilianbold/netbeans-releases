@@ -66,7 +66,7 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
 
     private SoftReference<List<CsmStatement>> statements = null;
 
-    public LazyStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+    protected LazyStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
         // we need to throw away the compound statement AST under this element
         ast.setFirstChild(null);

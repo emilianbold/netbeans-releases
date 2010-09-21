@@ -274,7 +274,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 AST lastChild = AstUtil.getLastChildRecursively(lastInitAst);
                 if ((lastChild != null) && (lastChild instanceof CsmAST)) {
                     end = ((CsmAST) lastChild).getEndOffset();
-                    initExpr = new ExpressionBase(start, end, getContainingFile(), null, _getScope());
+                    initExpr = ExpressionBase.create(start, end, getContainingFile(),/* null,*/ _getScope());
                 }
             }
         }

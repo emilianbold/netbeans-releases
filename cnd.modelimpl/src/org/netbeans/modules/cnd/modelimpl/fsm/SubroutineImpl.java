@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author nk220367
  */
-public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
+public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         implements CsmFunctionDefinition, Disposable, RawNamable {
 
     private final CharSequence name;

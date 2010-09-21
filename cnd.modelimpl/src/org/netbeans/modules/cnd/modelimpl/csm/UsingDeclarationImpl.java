@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * Implements CsmUsingDeclaration
  * @author Vladimir Kvasihn
  */
-public class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration> 
+public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsingDeclaration>
         implements CsmUsingDeclaration, CsmMember, RawNamable, Disposable {
 
     private final CharSequence name;
