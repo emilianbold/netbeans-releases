@@ -128,6 +128,10 @@ public class MakeJNLP extends Task {
     public void setKeystore(String k) {
         getSignTask().setKeystore(k);
     }
+
+    public void setStoreType(String t) {
+        getSignTask().setStoretype(t);
+    }
     
     private String codebase = "$$codebase";
     public void setCodebase(String s) {
