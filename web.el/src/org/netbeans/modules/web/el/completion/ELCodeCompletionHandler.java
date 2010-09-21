@@ -48,6 +48,7 @@ import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +71,9 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
+import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem.ELImplicitObject;
+import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -80,6 +84,7 @@ import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Code completer for Expression Language.
@@ -135,6 +140,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (resolved == null) {
             proposeManagedBeans(context, prefix, element, typeUtilities, proposals);
             proposeVariables(context, prefix, element, typeUtilities, proposals);
+            proposeImpicitObjects(context, prefix, element, typeUtilities, proposals);
+            proposeKeywords(context, prefix, element, typeUtilities, proposals);
         } else {
             proposeMethods(context, resolved, prefix, element, typeUtilities, proposals);
         }
@@ -177,6 +184,38 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             item.setSmart(true);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             proposals.add(item);
+        }
+    }
+
+    private void proposeImpicitObjects(CodeCompletionContext context,
+            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (org.netbeans.modules.web.core.syntax.spi.ELImplicitObject implicitObject : ELTypeUtilities.getImplicitObjects()) {
+            if (implicitObject.getName().startsWith(prefix)) {
+                ELImplictObjectCompletionItem item = new ELImplictObjectCompletionItem(implicitObject.getName(), implicitObject.getClazz());
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                item.setSmart(true);
+                proposals.add(item);
+            }
+        }
+    }
+    
+    private void proposeKeywords(CodeCompletionContext context,
+            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (ELTokenId elToken : ELTokenId.values()) {
+            if (!ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elToken)) {
+                continue;
+            }
+            if (elToken.fixedText() == null) {
+                continue;
+            }
+            if (elToken.fixedText().startsWith(prefix)) {
+                ELKeywordCompletionItem item = new ELKeywordCompletionItem(elToken.fixedText());
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
+            }
+
         }
     }
 

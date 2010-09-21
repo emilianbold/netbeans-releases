@@ -53,6 +53,7 @@ import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -72,13 +73,15 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject;
+import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Utility class for resolving elements/types for EL expressions.
@@ -119,14 +122,21 @@ public final class ELTypeUtilities {
         return create(cp);
     }
 
-    public Element getTypeFor(Element element) {
-        final TypeMirror tm;
-        if (element.getKind() == ElementKind.METHOD) {
-            tm = getReturnType((ExecutableElement) element);
-        } else {
-            tm = element.asType();
-        }
+    public String getTypeNameFor(Element element) {
+        final TypeMirror tm = getTypeMirrorFor(element);
+        SourceTask<String> task = new SourceTask<String>() {
 
+            @Override
+            public void run(CompilationController info) throws Exception {
+                setResult(info.getTypeUtilities().getTypeName(tm).toString());
+            }
+        };
+        runTask(task);
+        return task.getResult();
+    }
+
+    public Element getTypeFor(Element element) {
+        final TypeMirror tm = getTypeMirrorFor(element);
         SourceTask<Element> task = new SourceTask<Element>() {
 
             @Override
@@ -162,6 +172,8 @@ public final class ELTypeUtilities {
                 TypeKind returnTypeKind = method.getReturnType().getKind();
                 if (returnTypeKind.isPrimitive()) {
                     setResult(info.getTypes().getPrimitiveType(returnTypeKind));
+                } else if (returnTypeKind == TypeKind.VOID) {
+                    setResult(info.getTypes().getNoType(returnTypeKind));
                 } else {
                     setResult(method.getReturnType());
                 }
@@ -247,6 +259,24 @@ public final class ELTypeUtilities {
         return task.getResult();
     }
 
+    public static Collection<ELImplicitObject> getImplicitObjects() {
+        Set<ELImplicitObject> result = new HashSet<ELImplicitObject>();
+        Collection<? extends ImplicitObjectProvider> providers =
+                Lookup.getDefault().lookupAll(ImplicitObjectProvider.class);
+        
+        for (ImplicitObjectProvider each : providers) {
+            result.addAll(each.getImplicitObjects());
+        }
+        return result;
+    }
+
+    private TypeMirror getTypeMirrorFor(Element element) {
+        if (element.getKind() == ElementKind.METHOD) {
+            return getReturnType((ExecutableElement) element);
+        }
+        return element.asType();
+    }
+    
     private void runTask(SourceTask<?> task) {
         try {
             JavaSource.create(cpInfo).runUserActionTask(task, true);
@@ -341,13 +371,30 @@ public final class ELTypeUtilities {
     }
 
     private Element getIdentifierType(final AstIdentifier identifier, final ELElement element) {
-        final String beanClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
+        String tempClass = null;
+        // try implicit objects first
+        for (ELImplicitObject implicitObject : getImplicitObjects()) {
+            if (implicitObject.getName().equals(identifier.getImage())) {
+                if (implicitObject.getClazz() == null || implicitObject.getClazz().isEmpty()) {
+                    // the identiefier represents an implicit object whose type we don't know
+                    tempClass = Object.class.getName();
+                } else {
+                    tempClass = implicitObject.getClazz();
+                }
+                break;
+            }
+        }
+        if (tempClass == null) {
+            // managed beans
+            tempClass = ELVariableResolvers.findBeanClass(identifier.getImage(), element.getParserResult().getFileObject());
+        }
+        final String clazz = tempClass;
         SourceTask<Element> task = new SourceTask<Element>() {
 
             @Override
             public void run(CompilationController info) throws Exception {
-                if (beanClass != null) {
-                    setResult(info.getElements().getTypeElement(beanClass));
+                if (clazz != null) {
+                    setResult(info.getElements().getTypeElement(clazz));
                 }
                 // probably a variable
                 int offset = element.getOriginalOffset().getStart() + identifier.startOffset();
