@@ -43,9 +43,15 @@
 package org.netbeans.modules.git.utils;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
 
@@ -57,6 +63,7 @@ public final class GitUtils {
 
     private static final String DOT_GIT = ".git"; //NOI18N
     private static final Pattern METADATA_PATTERN = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
+    private static final String FILENAME_GITIGNORE = ".hgignore"; // NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -138,6 +145,94 @@ public final class GitUtils {
             filesUnderRoot.add(file);
         }
         return added;
+    }
+    
+    public static boolean isIgnored(File file, boolean checkSharability){
+        if (file == null) return false;
+        String path = file.getPath();
+        File topFile = Git.getInstance().getRepositoryRoot(file);
+        
+        // We assume that the toplevel directory should not be ignored.
+        if (topFile == null || topFile.equals(file)) {
+            return false;
+        }
+        
+//        Set<Pattern> patterns = getIgnorePatterns(topFile);
+//        try {
+//        path = path.substring(topFile.getAbsolutePath().length() + 1);
+//        } catch(StringIndexOutOfBoundsException e) {
+//            throw e;
+//        }
+//        if (File.separatorChar != '/') {
+//            path = path.replace(File.separatorChar, '/');
+//        }
+//
+//        for (Iterator i = patterns.iterator(); i.hasNext();) {
+//            Pattern pattern = (Pattern) i.next();
+//            if (pattern.matcher(path).find()) {
+//                return true;
+//            }
+//        }
+
+        // check cached not sharable folders and files
+        if (isNotSharable(path, topFile)) {
+            return true;
+        }
+
+        // If a parent of the file matches a pattern ignore the file
+        File parentFile = file.getParentFile();
+        if (!parentFile.equals(topFile)) {
+            if (isIgnored(parentFile, false)) return true;
+        }
+
+        if (FILENAME_GITIGNORE.equals(file.getName())) return false;
+        if (checkSharability) {
+            int sharability = SharabilityQuery.getSharability(FileUtil.normalizeFile(file));
+            if (sharability == SharabilityQuery.NOT_SHARABLE) {
+                addNotSharable(topFile, path);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // cached not sharable files and folders
+    private static final Map<File, Set<String>> notSharable = Collections.synchronizedMap(new HashMap<File, Set<String>>(5));
+    private static void addNotSharable (File topFile, String ignoredPath) {
+        synchronized (notSharable) {
+            // get cached patterns
+            Set ignores = notSharable.get(topFile);
+            if (ignores == null) {
+                ignores = new HashSet<String>();
+            }
+            String patternCandidate = ignoredPath;
+            // test for duplicate patterns
+            for (Iterator<String> it = ignores.iterator(); it.hasNext();) {
+                String storedPattern = it.next();
+                if (storedPattern.equals(ignoredPath) // already present
+                        || ignoredPath.startsWith(storedPattern + '/')) { // path already ignored by its ancestor
+                    patternCandidate = null;
+                    break;
+                } else if (storedPattern.startsWith(ignoredPath + '/')) { // stored pattern matches a subset of ignored path
+                    // remove the stored pattern and add the ignored path
+                    it.remove();
+                }
+            }
+            if (patternCandidate != null) {
+                ignores.add(patternCandidate);
+            }
+            notSharable.put(topFile, ignores);
+        }
+    }
+
+    private static boolean isNotSharable (String path, File topFile) {
+        boolean retval = false;
+        Set<String> notSharablePaths = notSharable.get(topFile);
+        if (notSharablePaths == null) {
+            notSharablePaths = Collections.emptySet();
+        }
+        retval = notSharablePaths.contains(path);
+        return retval;
     }
 
     public GitUtils() {

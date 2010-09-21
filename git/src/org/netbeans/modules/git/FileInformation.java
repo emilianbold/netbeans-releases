@@ -63,7 +63,8 @@ public class FileInformation {
         directory = false;
         seenInUI = true;
         if (!status.isTracked()) {
-            this.status = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+            this.status = GitStatus.Status.STATUS_IGNORED.equals(status.getStatusIndexWC()) ? EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)
+                    : EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         } else if (status.isConflict()) {
             this.status = EnumSet.of(Status.STATUS_VERSIONED_CONFLICT);
         } else {

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -52,11 +53,13 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.versioning.Utils;
+import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -100,7 +103,7 @@ public class StatusTest extends AbstractGitTestCase {
         newFiles.add(newFile = createFile(repositoryLocation, "file"));
         assertTrue(cache.getCachedStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
         assertTrue(cache.getCachedStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        
+
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(1, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
@@ -142,9 +145,6 @@ public class StatusTest extends AbstractGitTestCase {
     }
 
     public void testPingRepository_Refresh () throws Exception {
-        // give some time to bg tasks to finish
-        Thread.sleep(10000);
-
         File folderA = new File(repositoryLocation, "folderA");
         File fileA1 = new File(folderA, "file1");
         File fileA2 = new File(folderA, "file2");
@@ -164,7 +164,7 @@ public class StatusTest extends AbstractGitTestCase {
         fileC1.createNewFile();
         fileC2.createNewFile();
 
-        LogHandler handler = new LogHandler();
+        LogHandler handler = new LogHandler(getWorkDir());
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(folderA));
         FileInformation status = getCache().getCachedStatus(folderA);
@@ -226,11 +226,144 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(handler.waitForFilesToRefresh());
     }
 
+    public void testIgnoredFile () throws Exception {
+        File folderA = new File(repositoryLocation, "folderA");
+        File fileA1 = new File(folderA, "file1");
+        File fileA2 = new File(folderA, "file2");
+        folderA.mkdirs();
+        fileA1.createNewFile();
+        fileA2.createNewFile();
+
+        File ignoreFile = new File(repositoryLocation, ".gitignore");
+        write(ignoreFile, "file1");
+
+        LogHandler handler = new LogHandler(getWorkDir());
+        Git.STATUS_LOG.addHandler(handler);
+        handler.setFilesToRefresh(Collections.singleton(fileA1));
+        FileInformation status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+
+        write(ignoreFile, "");
+        handler.setFilesToRefresh(Collections.singleton(fileA1));
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(fileA1)));
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        write(ignoreFile, "folderA");
+        handler.setFilesToRefresh(Collections.singleton(fileA2));
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        handler.setFilesToRefresh(Collections.singleton(folderA));
+        status = getCache().getCachedStatus(folderA);
+        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE)); // should be excluded actually
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+
+        write(ignoreFile, "");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folderA)));
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        ignoreFile = new File(folderA, ".gitignore");
+        write(ignoreFile, "file1");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folderA)));
+        status = getCache().getCachedStatus(fileA1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        status = getCache().getCachedStatus(fileA2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+    }
+
+    public void testIgnoredBySharability () throws Exception {
+        skeletonIgnoredBySharability();
+    }
+
+    public void testIgnoredBySharabilityAWT () throws Throwable {
+        final Throwable[] th = new Throwable[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    skeletonIgnoredBySharability();
+                } catch (Throwable t) {
+                    th[0] = t;
+                }
+            }
+        });
+        if (th[0] != null) {
+            throw th[0];
+        }
+    }
+
+    private void skeletonIgnoredBySharability () throws Exception {
+        File folder = new File(repositoryLocation, "folderA");
+        File file1 = new File(folder, "notSharable");
+        File file2 = new File(folder, "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+
+        LogHandler handler = new LogHandler(getWorkDir());
+        Git.STATUS_LOG.addHandler(handler);
+        handler.setFilesToRefresh(Collections.singleton(file1));
+        FileInformation status = getCache().getCachedStatus(file1);
+        if (EventQueue.isDispatchThread()) {
+            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        } else {
+            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        }
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(file1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+
+        File newFolder = new File(repositoryLocation, "notSharable");
+        folder.renameTo(newFolder);
+        file1 = new File(newFolder, file1.getName());
+        file2 = new File(newFolder, file2.getName());
+        handler.setFilesToRefresh(Collections.singleton(file2));
+        status = getCache().getCachedStatus(file2);
+        if (EventQueue.isDispatchThread()) {
+            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        } else {
+            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        }
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(file2);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+
+        folder = new File(repositoryLocation, "notSharableFolder");
+        folder.mkdirs();
+        file1 = new File(folder, "file1");
+        file1.createNewFile();
+        handler.setFilesToRefresh(Collections.singleton(folder));
+        status = getCache().getCachedStatus(folder);
+        if (EventQueue.isDispatchThread()) {
+            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        } else {
+            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        }
+        assertTrue(handler.waitForFilesToRefresh());
+        status = getCache().getCachedStatus(folder);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        status = getCache().getCachedStatus(file1);
+        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+    }
+
     // TODO add more tests when add is implemented
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented
     // TODO add more tests when exclusions are supported
     // TODO test statuses between HEAD-WC: when commit is implemented
+    // TODO test toggle ignore on folder
+    // TODO test skip ignores
 
     private void assertSameStatus(Set<File> files, Status status) {
         for (File f : files) {
@@ -242,17 +375,27 @@ public class StatusTest extends AbstractGitTestCase {
         private Set<File> filesToRefresh;
         private boolean filesRefreshed;
         private final HashSet<File> refreshedFiles = new HashSet<File>();
+        private final File topFolder;
+
+        private LogHandler (File topFolder) {
+            this.topFolder = topFolder;
+        }
 
         @Override
         public void publish(LogRecord record) {
             if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
                 synchronized (this) {
-                    filesRefreshed = true;
-                    notifyAll();
+                    if (refreshedFiles.equals(filesToRefresh)) {
+                        filesRefreshed = true;
+                        notifyAll();
+                    }
                 }
             } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
                 synchronized (this) {
-                    refreshedFiles.addAll((Set<File>) record.getParameters()[0]);
+                    for (File f : (Set<File>) record.getParameters()[0]) {
+                        if (f.getAbsolutePath().startsWith(topFolder.getAbsolutePath()))
+                        refreshedFiles.add(f);
+                    }
                     notifyAll();
                 }
             }
@@ -275,13 +418,26 @@ public class StatusTest extends AbstractGitTestCase {
         private boolean waitForFilesToRefresh () throws InterruptedException {
             for (int i = 0; i < 20; ++i) {
                 synchronized (this) {
-                    if (filesRefreshed && refreshedFiles.equals(filesToRefresh)) {
+                    if (filesRefreshed) {
                         return true;
                     }
                     wait(500);
                 }
             }
             return false;
+        }
+
+    }
+
+    @ServiceProvider(service=SharabilityQueryImplementation.class)
+    public static class DummySharabilityQuery implements SharabilityQueryImplementation {
+
+        @Override
+        public int getSharability (File file) {
+            if (file.getAbsolutePath().contains("notSharable")) {
+                return SharabilityQuery.NOT_SHARABLE;
+            }
+            return SharabilityQuery.UNKNOWN;
         }
 
     }

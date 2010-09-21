@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -374,7 +375,10 @@ public class FileStatusCache {
                 // but scan only files/folders visible in IDE
                 triggerGitScan = seenInUI;
                 // fast ignore-test
-//                info = checkForIgnoredFile(file);
+                info = checkForIgnoredFile(file);
+                if (info == null) {
+                    info = getInfo(file);
+                }
                 if (file.isDirectory()) {
                     setInfo(file, info = info == null ? new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true) : new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true));
                 } else {
@@ -436,8 +440,9 @@ public class FileStatusCache {
         if(file == null || fi == null) return;
         FileInformation current;
         synchronized (this) {
-            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
-                // Sharebility query recognized this file as ignored
+            if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && (GitUtils.isIgnored(file, true)
+                    || getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED))) {
+                // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
             }
@@ -547,6 +552,56 @@ public class FileStatusCache {
             }
             modifiedFiles.add(parent, modified);
             conflictedFiles.add(parent, conflicted);
+        }
+    }
+
+    /**
+     * Fast (can be run from AWT) version of {@link #handleIgnoredFiles(Set)}, tests a file if it's ignored, but never runs a SharebilityQuery.
+     * If the file is not recognized as ignored, runs {@link #handleIgnoredFiles(Set)}.
+     * @param file
+     * @return true if the file is recognized as ignored (but not through a SharebilityQuery)
+     */
+    private FileInformation checkForIgnoredFile (File file) {
+        FileInformation fi = null;
+        if (GitUtils.isIgnored(file, false)) {
+            fi = FILE_INFORMATION_EXCLUDED;
+        } else {
+            // run the full test with the SQ
+            handleIgnoredFiles(Collections.singleton(file));
+        }
+        return fi;
+    }
+
+    /**
+     * Checks if given files are ignored, also calls a SharebilityQuery. Cached status for ignored files is eventually refreshed.
+     * Can be run from AWT, in that case it switches to a background thread.
+     * @param files set of files to be ignore-tested.
+     */
+    private void handleIgnoredFiles(final Set<File> files) {
+        Runnable outOfAWT = new Runnable() {
+            @Override
+            public void run() {
+                for (File f : files) {
+                    if (GitUtils.isIgnored(f, true)) {
+                        // refresh status for this file
+                        boolean isDirectory = f.isDirectory();
+                        boolean exists = f.exists();
+                        if (!exists) {
+                            // remove from cache
+                            refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
+                        } else {
+                            // add to cache as ignored
+                            refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
+                        }
+                    }
+                }
+            }
+        };
+        // always run outside of AWT, SQ inside isIgnored can last a long time
+        if (EventQueue.isDispatchThread()) {
+            rp.post(outOfAWT);
+        } else {
+            outOfAWT.run();
         }
     }
 
