@@ -56,6 +56,8 @@ public interface RemoteProject {
         REMOTE_SOURCES
     }
 
+    public static Mode DEFAULT_MODE = Mode.LOCAL_SOURCES;
+
     // FIXUP. Think over how to get correct factory
     static final String FULL_REMOTE_SYNC_ID = "full"; //NOI18N
     

@@ -205,7 +205,9 @@ public class MakeProjectGenerator {
             RemoteSyncFactory factory = RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
             CndUtils.assertNotNull(factory, "Can not find sync factory for full remote"); //NOI18N
             for (Configuration conf : confs) {
-                ((MakeConfiguration) conf).setFixedRemoteSyncFactory(factory);
+                MakeConfiguration mk = (MakeConfiguration) conf;
+                mk.setFixedRemoteSyncFactory(factory);
+                mk.setRemoteMode(RemoteProject.Mode.REMOTE_SOURCES);
             }
         }
         final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
@@ -227,8 +229,8 @@ public class MakeProjectGenerator {
         data.appendChild(nativeProjectType);
 
         if (prjParams.getFullRemote()) {
-            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.FULL_REMOTE_TAG); // NOI18N
-            fullRemoteNode.appendChild(doc.createTextNode("" + prjParams.getFullRemote())); // NOI18N
+            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE_TAG); // NOI18N
+            fullRemoteNode.appendChild(doc.createTextNode("" + prjParams.getRemoteMode())); // NOI18N
             data.appendChild(fullRemoteNode);
         }
 

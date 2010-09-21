@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNod
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
@@ -130,6 +132,7 @@ public class MakeConfiguration extends Configuration {
     private QmakeConfiguration qmakeConfiguration;
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
+    private RemoteProject.Mode remoteMode;
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
         this(baseDir, name, configurationTypeValue, null);
@@ -141,6 +144,7 @@ public class MakeConfiguration extends Configuration {
 
     public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS) {
         super(baseDir, name);
+        remoteMode = RemoteProject.DEFAULT_MODE;
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
@@ -411,6 +415,7 @@ public class MakeConfiguration extends Configuration {
         getConfigurationType().assign(makeConf.getConfigurationType());
         getDevelopmentHost().assign(makeConf.getDevelopmentHost());
         fixedRemoteSyncFactory = makeConf.fixedRemoteSyncFactory;
+        remoteMode = makeConf.remoteMode;
         getCompilerSet().assign(makeConf.getCompilerSet());
         getCRequired().assign(makeConf.getCRequired());
         getCppRequired().assign(makeConf.getCppRequired());
@@ -548,6 +553,7 @@ public class MakeConfiguration extends Configuration {
         DevelopmentHostConfiguration dhconf = getDevelopmentHost().clone();
         clone.setDevelopmentHost(dhconf);
         clone.fixedRemoteSyncFactory = this.fixedRemoteSyncFactory;
+        clone.remoteMode = this.remoteMode;
         CompilerSet2Configuration csconf = getCompilerSet().clone();
         csconf.setDevelopmentHostConfiguration(dhconf);
         clone.setCompilerSet(csconf);
@@ -633,6 +639,15 @@ public class MakeConfiguration extends Configuration {
 
     public void setFixedRemoteSyncFactory(RemoteSyncFactory fixedRemoteSyncFactory) {
         this.fixedRemoteSyncFactory = fixedRemoteSyncFactory;
+    }
+
+    public RemoteProject.Mode getRemoteMode() {
+        return remoteMode;
+    }
+
+    public void setRemoteMode(RemoteProject.Mode mode) {
+        CndUtils.assertNotNull(mode, "Null remote mode"); //NOI18N
+        remoteMode = mode;
     }
 
     public Sheet getRequiredProjectsSheet(Project project, MakeConfiguration conf) {
