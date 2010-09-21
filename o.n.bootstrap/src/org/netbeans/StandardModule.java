@@ -52,6 +52,8 @@ package org.netbeans;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -696,6 +698,11 @@ final class StandardModule extends Module {
         public OneModuleClassLoader(List<File> classp, ClassLoader[] parents) throws IllegalArgumentException {
             super(classp, parents, false, StandardModule.this);
             rc = releaseCount++;
+            try {
+                JaveleonModule.javeleonFacadeMethod.invoke(null, this, getCodeNameBase());
+            } catch (Exception ex) {
+                // OK, give up, Javeleon is not enabled!
+            }
         }
         
         public Module getModule() {
