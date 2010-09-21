@@ -349,7 +349,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             } else if (/*XXX Define somewhere*/"fullRemote".equals(name)) { // NOI18N
                 return storage.fullRemote;
             } else if (/*XXX Define somewhere*/"nativeProjDir".equals(name)) { // NOI18N
-                return storage.getProjectPath();
+                return storage.getSourcesFileObject().getPath();
             } else if (/*XXX Define somewhere*/"nativeProjFO".equals(name)) { // NOI18N
                 return storage.getSourcesFileObject();
             } else if (/*XXX Define somewhere*/"projdir".equals(name)) { // NOI18N
