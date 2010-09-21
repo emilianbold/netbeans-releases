@@ -151,6 +151,7 @@ public class MakeProjectGenerator {
         AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
+        p.setRemoteMode(prjParams.getRemoteMode());
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
         return p;
     }

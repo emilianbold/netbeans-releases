@@ -176,7 +176,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
-    private final RemoteProject.Mode remoteMode;
+    private /*final*/ RemoteProject.Mode remoteMode;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
@@ -237,6 +237,10 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
+    }
+
+    /*package*/ void setRemoteMode(RemoteProject.Mode mode) {
+        remoteMode = mode;
     }
 
     public RemoteProject.Mode getRemoteMode() {

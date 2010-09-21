@@ -170,13 +170,13 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
+        Boolean b = (Boolean) wizard.getProperty("fullRemote");
+        fullRemote = (b == null) ? false : b.booleanValue();
         if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
         }
-        Boolean b = (Boolean) wizard.getProperty("fullRemote");
-        fullRemote = (b == null) ? false : b.booleanValue();
         hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
         if (hostUID == null) {
             executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
@@ -190,7 +190,15 @@ public class ImportProject implements PropertyChangeListener {
         nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
         nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectName = projectFolder.getName();
-        makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
+        if (fullRemote) {
+            makefileName = (String) wizard.getProperty("makefileName"); //NOI18N
+            int pos = makefileName.lastIndexOf('/');
+            if (pos > 0) {
+                makefileName = makefileName.substring(pos+1);
+            }
+        } else {
+            makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
+        }
         workingDir = nativeProjectPath;
         configurePath = (String) wizard.getProperty("configureName");  // NOI18N
         if (configurePath != null) {
@@ -275,13 +283,15 @@ public class ImportProject implements PropertyChangeListener {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
-        String workingDirRel;
-        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-            workingDirRel = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
-        } else {
-            workingDirRel = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
+        String workingDirRel = (fullRemote) ? nativeProjectFO.getPath() : projectFolder.getPath();
+        if (!fullRemote) { //XXX:fullRemote {
+            if(MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                workingDirRel = CndPathUtilitities.toRelativePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
+            } else {
+                workingDirRel = CndPathUtilitities.toAbsolutePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
+            }
         }
         workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);

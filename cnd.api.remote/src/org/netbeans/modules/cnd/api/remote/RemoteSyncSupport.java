@@ -73,6 +73,11 @@ public final class RemoteSyncSupport {
         return null;
     }
 
+    public static RemoteProject.Mode getRemoteMode(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
+    }
+
 //    /**
 //     * Creates an instance of RemoteSyncWorker.
 //     *
