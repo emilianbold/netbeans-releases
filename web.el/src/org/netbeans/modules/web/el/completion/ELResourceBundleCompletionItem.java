@@ -41,17 +41,21 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.web.el.ELElement;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Erno Mononen
  */
 final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
+
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesKey.gif";//NOI18N
 
     private final String key;
     private final String value;
@@ -87,6 +91,11 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     @Override
     public ElementHandle getElement() {
         return null;
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return ImageUtilities.loadImageIcon(ICON_PATH, false);
     }
 
 }

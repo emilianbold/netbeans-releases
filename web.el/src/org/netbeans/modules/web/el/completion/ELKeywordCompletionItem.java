@@ -37,27 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
+package org.netbeans.modules.web.el.completion;
 
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.project.NativeFileSearch;
-import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 
 /**
- * Detect additional include paths and macros from compiler options.
- * For example:
- * Convert `pkg-config --cflags gtk-2.0` to list of paths and macros
- * Convert -xopenmp to _OPENMP macro
- * 
- * @author Alexander Simon
+ * Completion item for EL keywords.
+ *
+ * @author Erno Mononen
  */
-public interface UserOptionsProvider {
-    List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration);
-    NativeFileSearch getPackageFileSearch(Project project);
+final class ELKeywordCompletionItem extends DefaultCompletionProposal {
+
+    private final String keyword;
+
+    public ELKeywordCompletionItem(String keyword) {
+        this.keyword = keyword;
+    }
+
+    @Override
+    public ElementHandle getElement() {
+        return null;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.KEYWORD;
+    }
+
+    @Override
+    public String getName() {
+        return keyword;
+    }
+
 }

@@ -292,7 +292,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
                 if (sortFile == null) {
                     sortFile = containingFile;
                     out = fun;
-                } else if (CharSequences.comparator().compare(sortFile.getAbsolutePath(), containingFile.getAbsolutePath()) < 0) {
+                } else if (CharSequences.comparator().compare(sortFile.getAbsolutePath(), containingFile.getAbsolutePath()) > 0) {
                     sortFile = containingFile;
                     out = fun;
                 }

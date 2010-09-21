@@ -70,8 +70,9 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
-    @ForAllEnvironments
-    public void testSyncDirStruct() throws Exception {
+    //@ForAllEnvironments
+    // Disabled, see IZ 190453
+    public void DISABLEDtestSyncDirStruct() throws Exception {
         sleep(200); // FIXUP: a workaround for a very instable test failure
         String dirName = "/usr/include";
         // set up local test directory
