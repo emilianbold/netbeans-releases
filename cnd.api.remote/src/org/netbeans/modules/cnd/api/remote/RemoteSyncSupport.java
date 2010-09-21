@@ -63,9 +63,9 @@ public final class RemoteSyncSupport {
     }
 
     public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
-        ServerRecord serverRecord = ServerList.get(project);
-        if (serverRecord != null) {
-            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        if (remoteProject != null) {
+            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
             if (syncFactory != null) {
                 return syncFactory.createNew(project, out, err);
             }
@@ -73,40 +73,40 @@ public final class RemoteSyncSupport {
         return null;
     }
 
-    /**
-     * Creates an instance of RemoteSyncWorker.
-     *
-     * @param localDir local directory that should be synchronized
-     *
-     * @param executionEnvironment
-     *
-     * @param out output stream:
-     * in the case implementation uses an external program (rsync? scp?),
-     * it can redirect its stdout here
-     *
-     * @param err error stream:
-     * in the case implementation uses an external program (rsync? scp?),
-     * it can redirect its stderr here
-     *
-     * @param privProjectStorageDir a directory to store misc. cache-ing information;
-     * it is caller's responsibility top guarantee that different local dirs
-     * has different privProjectStorage associated
-     * (usually it is "nbprohect/private" :-))
-     *
-     * @return new instance of the RemoteSyncWorker
-     */
-    public static RemoteSyncWorker createSyncWorker(ExecutionEnvironment executionEnvironment,
-        PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-
-        ServerRecord serverRecord = ServerList.get(executionEnvironment);
-        if (serverRecord != null) {
-            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
-            if (syncFactory != null) {
-                return syncFactory.createNew(executionEnvironment, out, err, privProjectStorageDir, localDirs);
-            }
-        }
-        return null;
-    }
+//    /**
+//     * Creates an instance of RemoteSyncWorker.
+//     *
+//     * @param localDir local directory that should be synchronized
+//     *
+//     * @param executionEnvironment
+//     *
+//     * @param out output stream:
+//     * in the case implementation uses an external program (rsync? scp?),
+//     * it can redirect its stdout here
+//     *
+//     * @param err error stream:
+//     * in the case implementation uses an external program (rsync? scp?),
+//     * it can redirect its stderr here
+//     *
+//     * @param privProjectStorageDir a directory to store misc. cache-ing information;
+//     * it is caller's responsibility top guarantee that different local dirs
+//     * has different privProjectStorage associated
+//     * (usually it is "nbprohect/private" :-))
+//     *
+//     * @return new instance of the RemoteSyncWorker
+//     */
+//    public static RemoteSyncWorker createSyncWorker(ExecutionEnvironment executionEnvironment,
+//        PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+//
+//        ServerRecord serverRecord = ServerList.get(executionEnvironment);
+//        if (serverRecord != null) {
+//            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
+//            if (syncFactory != null) {
+//                return syncFactory.createNew(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+//            }
+//        }
+//        return null;
+//    }
 
     public static class PathMapperException extends Exception {
 
