@@ -39,53 +39,24 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.el.completion;
 
-import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
-import org.netbeans.modules.web.el.ELElement;
-import org.openide.util.ImageUtilities;
 
 /**
+ * Completion item for EL keywords.
  *
  * @author Erno Mononen
  */
-final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
+final class ELKeywordCompletionItem extends DefaultCompletionProposal {
 
-    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesKey.gif";//NOI18N
+    private final String keyword;
 
-    private final String key;
-    private final String value;
-    private final ELElement element;
-
-    public ELResourceBundleCompletionItem(String key, String value, ELElement element) {
-        this.key = key;
-        this.value = value;
-        this.element = element;
-    }
-
-    @Override
-    public String getName() {
-        return key;
-    }
-
-    @Override
-    public String getRhsHtml(HtmlFormatter formatter) {
-        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
-        return formatter.getText();
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
-    }
-
-    @Override
-    public int getSortPrioOverride() {
-        return 20;
+    public ELKeywordCompletionItem(String keyword) {
+        this.keyword = keyword;
     }
 
     @Override
@@ -94,8 +65,13 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     }
 
     @Override
-    public ImageIcon getIcon() {
-        return ImageUtilities.loadImageIcon(ICON_PATH, false);
+    public ElementKind getKind() {
+        return ElementKind.KEYWORD;
+    }
+
+    @Override
+    public String getName() {
+        return keyword;
     }
 
 }

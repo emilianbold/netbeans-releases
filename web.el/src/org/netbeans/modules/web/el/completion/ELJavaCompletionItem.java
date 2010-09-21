@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -56,12 +57,15 @@ import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Erno Mononen
  */
 final class ELJavaCompletionItem extends DefaultCompletionProposal {
+
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/jsf_bean_16.png";//NOI18N
 
     private final Element javaElement;
     private final ELElement elElement;
@@ -107,11 +111,15 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        Element type = typeUtilities.getTypeFor(javaElement);
-        if (type != null) {
-            return type.getSimpleName().toString();
+        return typeUtilities.getTypeNameFor(javaElement);
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        if (adapter.getKind() == ElementKind.CLASS) {
+            return ImageUtilities.loadImageIcon(ICON_PATH, false);
         }
-        return "";
+        return super.getIcon();
     }
 
     final class ElementHandleAdapter implements ElementHandle {

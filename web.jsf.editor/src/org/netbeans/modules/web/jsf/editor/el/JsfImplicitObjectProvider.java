@@ -107,7 +107,7 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
         public ApplicationObject(){
             super("application");                         //NOI18N
             setType(OBJECT_TYPE);
-            setClazz( Object.class.getCanonicalName());
+            setClazz("javax.servlet.ServletContext");
         }
     }
     
@@ -139,7 +139,7 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
         public SessionObject(){
             super("session");                                    //NOI18N
             setType(OBJECT_TYPE);
-            setClazz( Object.class.getCanonicalName() );
+            setClazz("javax.servlet.http.HttpSession");
         }
     }
     
