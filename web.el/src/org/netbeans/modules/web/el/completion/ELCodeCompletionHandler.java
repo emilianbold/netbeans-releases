@@ -57,6 +57,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
+import javax.servlet.jsp.el.ImplicitObjectELResolver;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -70,6 +71,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.el.lexer.api.ELTokenId;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -135,6 +137,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (resolved == null) {
             proposeManagedBeans(context, prefix, element, typeUtilities, proposals);
             proposeVariables(context, prefix, element, typeUtilities, proposals);
+            proposeKeywords(context, prefix, element, typeUtilities, proposals);
         } else {
             proposeMethods(context, resolved, prefix, element, typeUtilities, proposals);
         }
@@ -177,6 +180,25 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             item.setSmart(true);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             proposals.add(item);
+        }
+    }
+
+    private void proposeKeywords(CodeCompletionContext context,
+            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (ELTokenId elToken : ELTokenId.values()) {
+            if (!ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elToken)) {
+                continue;
+            }
+            if (elToken.fixedText() == null) {
+                continue;
+            }
+            if (elToken.fixedText().startsWith(prefix)) {
+                ELKeywordCompletionItem item = new ELKeywordCompletionItem(elToken.fixedText());
+                item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+                proposals.add(item);
+            }
+
         }
     }
 
