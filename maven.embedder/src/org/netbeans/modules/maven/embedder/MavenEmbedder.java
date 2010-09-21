@@ -55,7 +55,6 @@ import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionRequest;
-import org.apache.maven.artifact.resolver.ArtifactResolutionResult;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.DefaultMavenExecutionResult;
 import org.apache.maven.execution.MavenExecutionRequest;
@@ -110,30 +109,6 @@ public final class MavenEmbedder {
         this.settingsBuilder = plexus.lookup(SettingsBuilder.class);
         this.populator = plexus.lookup(MavenExecutionRequestPopulator.class);
         
-    }
-
-
-
-    public MavenExecutionResult readProject(MavenExecutionRequest request) {
-        File pomFile = request.getPom();
-        MavenExecutionResult result = new DefaultMavenExecutionResult();
-        try {
-            populator.populateDefaults(request);
-            
-            ProjectBuildingRequest configuration = request.getProjectBuildingRequest();
-            configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
-            configuration.setOffline(embedderConfiguration.isOffline());
-            configuration.setRepositorySession(maven.newRepositorySession(request));
-            ProjectBuildingResult projectBuildingResult = projectBuilder.build(pomFile, configuration);
-            result.setProject(projectBuildingResult.getProject());
-            result.setDependencyResolutionResult(projectBuildingResult.getDependencyResolutionResult());
-     
-        } catch (ProjectBuildingException ex) {
-            return result.addException(ex);
-        } catch (MavenExecutionRequestPopulationException ex) {
-            return result.addException(ex);
-        }
-        return result;
     }
 
     private String getLocalRepositoryPath() {
@@ -220,7 +195,6 @@ public final class MavenEmbedder {
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setRepositorySession(maven.newRepositorySession(req));
-            configuration.setOffline(true);
             return projectBuilder.build(fallback, configuration).getProject();
         } catch (ProjectBuildingException ex) {
             return new MavenProject();
@@ -256,7 +230,7 @@ public final class MavenEmbedder {
         //TODO
 //        req.setTransferListener(createArtifactTransferListener(monitor));
 
-        ArtifactResolutionResult result = repositorySystem.resolve(req);
+        /*ArtifactResolutionResult result = */repositorySystem.resolve(req);
 
 //        setLastUpdated(localRepository, req.getRemoteRepositories(), sources);
     }
