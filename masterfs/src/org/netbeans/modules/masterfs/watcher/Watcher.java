@@ -206,7 +206,15 @@ public class Watcher extends AnnotationProvider {
                 return new LinuxNotifier();
             }
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                return new OSXNotifier();
+                try {
+                    final OSXNotifier notifier = new OSXNotifier();
+                    notifier.start();
+                    return notifier;
+                } catch (IOException ioe) {
+                    LOG.log(Level.INFO, null, ioe);
+                } catch (InterruptedException ie) {
+                    LOG.log(Level.INFO, null, ie);
+                }
             }
         } catch (LinkageError x) {
             LOG.log(Level.INFO, null, x);
