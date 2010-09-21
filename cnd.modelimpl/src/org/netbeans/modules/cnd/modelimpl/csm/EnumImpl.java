@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Implements CsmEnum
  * @author Vladimir Kvashin
  */
-public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
+public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     private final List<CsmUID<CsmEnumerator>> enumerators;
     

@@ -136,7 +136,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
             if (path != null) {
                 boolean selected = false;
-                String makeFile = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty("nativeProjFO")).getPath();
+                FileObject makeFileFO = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty("nativeProjFO"));
+                String makeFile = (makeFileFO == null) ? null : makeFileFO.getPath();
                 if (makeFile != null) {
                     makefileNameTextField.setText(makeFile);
                     makefileRadioButton.setSelected(true);

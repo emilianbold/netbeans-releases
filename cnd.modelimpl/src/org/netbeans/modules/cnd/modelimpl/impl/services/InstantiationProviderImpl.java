@@ -577,7 +577,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override
     public CsmExpressionBasedSpecializationParameter createExpressionBasedSpecializationParameter(String expression, CsmFile file, int start, int end) {
-        return new ExpressionBasedSpecializationParameterImpl(expression, file, start, end);
+        return ExpressionBasedSpecializationParameterImpl.create(expression, file, start, end);
     }
 
 }

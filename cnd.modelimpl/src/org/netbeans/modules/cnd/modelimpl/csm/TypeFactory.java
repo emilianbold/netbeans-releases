@@ -290,7 +290,7 @@ public class TypeFactory {
                                         type.instantiationParams.add(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
-                                        type.instantiationParams.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(namePart, type.getContainingFile(), scope),
+                                        type.instantiationParams.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(namePart, type.getContainingFile(), scope),
                                                 type.getContainingFile(), OffsetableBase.getStartOffset(namePart), OffsetableBase.getEndOffset(namePart)));
                                     }
                                 }

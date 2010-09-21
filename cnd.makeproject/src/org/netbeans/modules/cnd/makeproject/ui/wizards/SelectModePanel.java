@@ -91,6 +91,11 @@ public class SelectModePanel extends javax.swing.JPanel {
         sourceFolderLabel.setVisible(controller.isFullRemote());
         sourceFolder.setVisible(controller.isFullRemote());
         sourceBrowseButton.setVisible(controller.isFullRemote());
+        if (!controller.isFullRemote()) {
+            // the same dir is ised for both project metadata and existing sources;
+            // but "existing sources" in more clear title
+            projectFolderLabel.setText(sourceFolderLabel.getText());
+        }
         instructions.setEditorKit(new HTMLEditorKit());
         instructions.setBackground(instructionPanel.getBackground());
         disableHostSensitiveComponents();
@@ -493,7 +498,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty("toolchain", tc); // NOI18N
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
-        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject());
+        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
         initialized = false;
     }
 

@@ -735,7 +735,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
         // ALl OK
         FileObject fo = null;
-        fo = FileUtil.toFileObject(new File(getBaseDir()));
+        fo = getBaseDirFileObject();
         if (fo != null) {
             LOGGER.log(Level.FINE, "Start of writting project descriptor MakeConfigurationDescriptor@{0} for project {1} @{2}", new Object[]{System.identityHashCode(this), fo.getName(), System.identityHashCode(this.project)}); // NOI18N
             new ConfigurationXMLWriter(fo, this).write();

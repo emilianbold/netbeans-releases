@@ -186,12 +186,12 @@ public class CopyTestHidden extends AbstractCommandTestCase {
         testCopyFile2URL("folder/file3", "filecopy@");
     }
 
-    public void testCopyFile2URL(String srcPath, String targetFileName) throws Exception {
+    private void testCopyFile2URL(String srcPath, String targetFileName) throws Exception {
         createAndCommitParentFolders(srcPath);
         File file = createFile(srcPath);
         add(file);
         commit(file);
-                
+
         // File filecopy = new File(createFolder(file.getParentFile(), targetFileName), file.getName());
         File filecopy = createFile(renameFile(srcPath, targetFileName));
 
@@ -203,8 +203,61 @@ public class CopyTestHidden extends AbstractCommandTestCase {
         assertNotNull(info);
         assertEquals(getFileUrl(filecopy), TestUtilities.decode(info.getUrl()));
         assertNotifiedFiles(new File[] {});
-    }        
-    
+    }
+
+    public void testCopyFile2File() throws Exception {
+        testCopyFile2File("file", "filecopy");
+    }
+
+    public void testCopyFile2FileInDir() throws Exception {
+        testCopyFile2File("folder/file", "filecopy");
+    }
+
+    public void testCopyFileWithAtSign2File() throws Exception {
+        testCopyFile2File("@file", "filecopy1");
+        testCopyFile2File("fi@le", "filecopy2");
+        testCopyFile2File("file@", "filecopy3");
+    }
+
+    public void testCopyFile2FileWithAtSign() throws Exception {
+//        testCopyFile2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        testCopyFile2File("file2", "file@copy");
+        testCopyFile2File("file3", "filecopy@");
+    }
+
+    public void testCopyFileWithAtSignInDir2FileInDir() throws Exception {
+        testCopyFile2File("folder/@file", "filecopy1");
+        testCopyFile2File("folder/fi@le", "filecopy2");
+        testCopyFile2File("folder/file@", "filecopy3");
+    }
+
+    public void testCopyFile2FileWithAtSignInDir() throws Exception {
+//        testCopyFile2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        testCopyFile2File("folder/file2", "file@copy");
+        testCopyFile2File("folder/file3", "filecopy@");
+    }
+
+    private void testCopyFile2File(String srcPath, String target) throws Exception {
+        createAndCommitParentFolders(srcPath);
+        File file = createFile(srcPath);
+        add(file);
+        commit(file);
+
+        // File filecopy = new File(createFolder(file.getParentFile(), targetFileName), file.getName());
+        File filecopy = new File(file.getParentFile(), target);
+
+        ISVNClientAdapter c = getNbClient();
+//        c.copy(file, getFileUrl(filecopy), "copy"); XXX is failing with javahl and we don't use it anyway
+        c.copy(file, filecopy);
+
+        assertTrue(filecopy.exists());
+
+        ISVNInfo info = getInfo(filecopy);
+        assertNotNull(info);
+        assertEquals(getFileUrl(filecopy), TestUtilities.decode(info.getUrl()));
+        assertNotifiedFiles(new File[] {});
+    }
+
     public void testCopyURL2File() throws Exception {
         testCopyURL2File("file", "filecopy");
     }

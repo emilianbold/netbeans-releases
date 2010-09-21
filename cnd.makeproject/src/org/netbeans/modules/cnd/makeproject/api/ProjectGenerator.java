@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
@@ -164,6 +165,10 @@ public class ProjectGenerator {
 
         public boolean getFullRemote() {
             return fullRemote;
+        }
+
+        public RemoteProject.Mode getRemoteMode() {
+            return fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES;
         }
 
         public File getProjectFolder() {

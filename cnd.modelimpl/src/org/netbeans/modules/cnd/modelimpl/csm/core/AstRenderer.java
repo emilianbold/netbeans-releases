@@ -693,7 +693,7 @@ public class AstRenderer {
         }
         if (token != null) {
             int rcurlyOffset = AstUtil.getFirstCsmAST(token).getEndOffset();
-            CsmOffsetable typeOffset = new OffsetableBase(file, typeStartOffset, rcurlyOffset);
+            CsmOffsetable typeOffset = OffsetableBase.create(file, typeStartOffset, rcurlyOffset);
             token = token.getNextSibling();
             boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
@@ -741,7 +741,7 @@ public class AstRenderer {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
                             CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
-                            VariableImpl<?> var = VariableImpl.create(new OffsetableBase(file, rcurlyOffset, rcurlyOffset),
+                            VariableImpl<?> var = VariableImpl.create(OffsetableBase.create(file, rcurlyOffset, rcurlyOffset),
                                     file, type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
                             if (container2 != null) {
                                 container2.addDeclaration(var);
@@ -1681,64 +1681,64 @@ public class AstRenderer {
         for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
             switch (token.getType()) {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
-                    return new CompoundStatementImpl(token, file, owner);
+                    return CompoundStatementImpl.create(token, file, owner);
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
-                    return new LazyCompoundStatementImpl(token, file, owner);
+                    return LazyCompoundStatementImpl.create(token, file, owner);
                 case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
-                    return new LazyTryCatchStatementImpl(token, file, owner);
+                    return LazyTryCatchStatementImpl.create(token, file, owner);
             }
         }
         // prevent null bodies
-        return new EmptyCompoundStatementImpl(ast, file, owner);
+        return EmptyCompoundStatementImpl.create(ast, file, owner);
     }
 
     public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope) {
         switch (ast.getType()) {
             case CPPTokenTypes.CSM_LABELED_STATEMENT:
-                return new LabelImpl(ast, file, scope);
+                return LabelImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CASE_STATEMENT:
-                return new CaseStatementImpl(ast, file, scope);
+                return CaseStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_DEFAULT_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.DEFAULT, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.DEFAULT, scope);
             case CPPTokenTypes.CSM_EXPRESSION_STATEMENT:
-                return new ExpressionStatementImpl(ast, file, scope);
+                return ExpressionStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CLASS_DECLARATION:
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                 if(new AstRenderer((FileImpl) file).isExpressionLikeDeclaration(ast, scope)) {
-                    return new ExpressionStatementImpl(ast, file, scope);
+                    return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
-                    return new DeclarationStatementImpl(ast, file, scope);
+                    return DeclarationStatementImpl.create(ast, file, scope);
                 }
             case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
-                return new CompoundStatementImpl(ast, file, scope);
+                return CompoundStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_IF_STATEMENT:
-                return new IfStatementImpl(ast, file, scope);
+                return IfStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_SWITCH_STATEMENT:
-                return new SwitchStatementImpl(ast, file, scope);
+                return SwitchStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_WHILE_STATEMENT:
-                return new LoopStatementImpl(ast, file, false, scope);
+                return LoopStatementImpl.create(ast, file, false, scope);
             case CPPTokenTypes.CSM_DO_WHILE_STATEMENT:
-                return new LoopStatementImpl(ast, file, true, scope);
+                return LoopStatementImpl.create(ast, file, true, scope);
             case CPPTokenTypes.CSM_FOR_STATEMENT:
-                return new ForStatementImpl(ast, file, scope);
+                return ForStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_GOTO_STATEMENT:
-                return new GotoStatementImpl(ast, file, scope);
+                return GotoStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CONTINUE_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.CONTINUE, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.CONTINUE, scope);
             case CPPTokenTypes.CSM_BREAK_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.BREAK, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.BREAK, scope);
             case CPPTokenTypes.CSM_RETURN_STATEMENT:
-                return new ReturnStatementImpl(ast, file, scope);
+                return ReturnStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_TRY_STATEMENT:
-                return new TryCatchStatementImpl(ast, file, scope, false);
+                return TryCatchStatementImpl.create(ast, file, scope, false);
             case CPPTokenTypes.CSM_CATCH_CLAUSE:
                 // TODO: isn't it in TryCatch ??
-                return new UniversalStatement(ast, file, CsmStatement.Kind.CATCH, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.CATCH, scope);
             case CPPTokenTypes.CSM_THROW_STATEMENT:
                 // TODO: throw
-                return new UniversalStatement(ast, file, CsmStatement.Kind.THROW, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.THROW, scope);
             case CPPTokenTypes.CSM_ASM_BLOCK:
                 // just ignore
                 break;
@@ -1797,7 +1797,7 @@ public class AstRenderer {
     }
     
     public ExpressionBase renderExpression(AST ast, CsmScope scope) {
-        return isExpression(ast) ? new ExpressionBase(ast, file, null, scope) : null;
+        return isExpression(ast) ? ExpressionBase.create(ast, file,/* null,*/ scope) : null;
     }
 
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
@@ -1806,13 +1806,13 @@ public class AstRenderer {
             if (first != null) {
                 int type = first.getType();
                 if (isExpression(type)) {
-                    return new ConditionExpressionImpl(first, file, scope);
+                    return ConditionExpressionImpl.create(first, file, scope);
                 } else if (type == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                         type == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         type == CPPTokenTypes.LITERAL_struct ||
                         type == CPPTokenTypes.LITERAL_class ||
                         type == CPPTokenTypes.LITERAL_union) {
-                    return new ConditionDeclarationImpl(ast, file, scope);
+                    return ConditionDeclarationImpl.create(ast, file, scope);
                 }
             }
         }
@@ -1825,7 +1825,7 @@ public class AstRenderer {
             if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
                 for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
                     if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
-                        ExpressionBase initializer = new ExpressionBase(initializerToken, file, null, scope);
+                        ExpressionBase initializer = ExpressionBase.create(initializerToken, file,/* null,*/ scope);
                         if (initializers == null) {
                             initializers = new ArrayList<CsmExpression>();
                         }

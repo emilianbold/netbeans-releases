@@ -73,7 +73,7 @@ import org.openide.util.CharSequences;
  *
  * @author eu155513
  */
-public class TemplateParameterImpl extends OffsetableDeclarationBase implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
+public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T> implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 

@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  *
  * @author Vladimir Voskresensky
  */
-public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
+public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
     
     /** name of macros, i.e. SUM or MACRO */
     private final CharSequence name;

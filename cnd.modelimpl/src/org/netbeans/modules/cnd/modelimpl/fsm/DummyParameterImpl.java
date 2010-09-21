@@ -50,13 +50,12 @@ import org.netbeans.modules.cnd.api.model.*;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  * Implements CsmParameter
  * @author Vladimir Kvashin
  */
-public class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
+public final class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
     private DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
         super(file, startOffset, endOffset, null, name, scope, false, false);
