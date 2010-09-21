@@ -66,6 +66,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.client.cli.CommandlineClient;
+import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -500,5 +502,30 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         assertNotNull(info);
         assertEquals(url, TestUtilities.decode(info.getUrl()));
     }    
-    
+
+    protected boolean shouldBeTestedWithCurrentClient(boolean checkCLI, boolean checkJavaHl) throws Exception {
+        if( checkCLI && isCommandLine() ||
+            checkJavaHl && isJavahl())
+        {
+            checkAcceptedVersion();
+            return false;
+        }
+        return true;
+    }
+
+    private void checkAcceptedVersion() throws SVNClientException {
+        CommandlineClient c = new CommandlineClient();
+        String version = c.getVersion();
+        if (version.indexOf("version 0.") == -1  &&
+            version.indexOf("version 1.0") == -1 &&
+            version.indexOf("version 1.1") == -1 &&
+            version.indexOf("version 1.2") == -1 &&
+            version.indexOf("version 1.3") == -1 &&
+            version.indexOf("version 1.4") == -1 &&
+            version.indexOf("version 1.5") == -1 &&
+            version.indexOf("version 1.6") == -1) {
+            fail("svn cli client seems to be > 1.6. Some tests might pass now...");
+        }
+    }
+
 }
