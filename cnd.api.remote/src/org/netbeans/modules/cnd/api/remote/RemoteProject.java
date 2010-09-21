@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
@@ -64,4 +65,6 @@ public interface RemoteProject {
     ExecutionEnvironment getDevelopmentHost();
 
     Mode getRemoteMode();
+
+    RemoteSyncFactory getSyncFactory();
 }
