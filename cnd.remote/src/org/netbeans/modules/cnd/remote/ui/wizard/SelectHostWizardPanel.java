@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
@@ -103,11 +105,11 @@ public class SelectHostWizardPanel implements
         return component;
     }
 
-    public WizardDescriptor.Panel[] getAdditionalPanels() {
-        return new WizardDescriptor.Panel[] {
-            new CreateHostWizardPanel2(createHostData),
-            new CreateHostWizardPanel3(createHostData)
-        };
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> list = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>(2);
+        list.add(new CreateHostWizardPanel2(createHostData));
+        list.add(new CreateHostWizardPanel3(createHostData));
+        return list;
     }
 
     public boolean isNewHost() {

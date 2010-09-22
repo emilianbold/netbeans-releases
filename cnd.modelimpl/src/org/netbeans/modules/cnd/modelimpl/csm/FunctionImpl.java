@@ -816,6 +816,29 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    // help method in base class to choose on of declarations for fun definition
+    protected final CsmFunction chooseDeclaration(Collection<CsmDeclaration> decls) {
+        CsmFunction out = null;
+        if (decls.size() == 1) {
+            out = (CsmFunction) decls.iterator().next();
+        } else {
+            // choose declaration based on file name
+            CsmFile sortFile = null;
+            for (CsmDeclaration decl : decls) {
+                CsmFunction fun = (CsmFunction) decl;
+                CsmFile containingFile = fun.getContainingFile();
+                if (sortFile == null) {
+                    sortFile = containingFile;
+                    out = fun;
+                } else if (CharSequences.comparator().compare(sortFile.getAbsolutePath(), containingFile.getAbsolutePath()) > 0) {
+                    sortFile = containingFile;
+                    out = fun;
+                }
+            }
+        }
+        return out;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

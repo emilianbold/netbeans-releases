@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
+public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
@@ -87,7 +86,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
     @Override
-    public Component getComponent() {
+    public SelectModePanel getComponent() {
         if (component == null) {
             component = new SelectModePanel(this);
       	    component.setName(name);
@@ -171,17 +170,17 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor)settings;
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
         if (wizardDescriptor.getProperty("simpleMode") == null) {
             wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
         }
-        component.read(wizardDescriptor);
+        getComponent().read(wizardDescriptor);
     }
 
     @Override
-    public void storeSettings(Object settings) {
-        component.store((WizardDescriptor)settings);
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 
     public WizardStorage getWizardStorage(){

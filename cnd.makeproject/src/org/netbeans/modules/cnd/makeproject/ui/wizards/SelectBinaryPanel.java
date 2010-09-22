@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,7 +34,12 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.util.HashSet;
@@ -53,51 +52,70 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
- * Panel just asking for basic info.
+ *
+ * @author Alexander Simon
  */
-final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
-
+public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
     private WizardDescriptor wizardDescriptor;
-    private SourceFoldersPanel component;
-    private final String name;
+    private SelectBinaryPanelVisual component;
+    private String name;
+    private boolean isValid = false;
+    private final BinaryWizardStorage wizardStorage;
+    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
-    /** Create the wizard panel descriptor. */
-    public SourceFoldersDescriptorPanel() {
-        name = NbBundle.getMessage(SourceFoldersDescriptorPanel.class, "SourceFoldersName"); // NOI18N
+    public SelectBinaryPanel(){
+        name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
+        wizardStorage = new BinaryWizardStorage(this);
     }
 
     @Override
-    public SourceFoldersPanel getComponent() {
+    public boolean isFinishPanel() {
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        String[] res;
+        Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
+        String[] names = (String[]) o;
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+            res = new String[]{names[0]};
+        } else {
+            res = new String[]{names[0], "..."}; // NOI18N
+        }
+        component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, res);
+      	fireChangeEvent();
+    }
+
+    @Override
+    public SelectBinaryPanelVisual getComponent() {
         if (component == null) {
-            component = new SourceFoldersPanel(this);
-            component.setName(name);
+            component = new SelectBinaryPanelVisual(this);
+      	    component.setName(name);
         }
         return component;
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    public WizardDescriptor getWizardDescriptor() {
-        return wizardDescriptor;
+    public HelpCtx getHelp() {
+        return new HelpCtx("NewBinaryWizard"); // NOI18N
     }
 
     @Override
-    public HelpCtx getHelp() {
-        return new HelpCtx("NewMakeWizardP3"); // NOI18N
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 
     @Override
     public boolean isValid() {
-        boolean valid = getComponent().valid(wizardDescriptor);
-        if (valid) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
-        }
-        return valid;
+        return isValid;
     }
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     @Override
     public final void addChangeListener(ChangeListener l) {
@@ -105,12 +123,16 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<Wizar
             listeners.add(l);
         }
     }
-
     @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
+    }
+
+    private void validate(){
+        isValid = component.valid();
+        fireChangeEvent();
     }
 
     protected final void fireChangeEvent() {
@@ -124,19 +146,44 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<Wizar
         }
     }
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
+    WizardDescriptor getWizardDescriptor(){
+        return wizardDescriptor;
     }
 
-    @Override
-    public void readSettings(WizardDescriptor settings) {
-        wizardDescriptor = settings;
-        getComponent().read(wizardDescriptor);
+    public BinaryWizardStorage getWizardStorage(){
+        return wizardStorage;
     }
 
-    @Override
-    public void storeSettings(WizardDescriptor settings) {
-        getComponent().store(settings);
+    public static class BinaryWizardStorage {
+        private String binaryPath = ""; // NOI18N
+        private final SelectBinaryPanel controller;
+
+        public BinaryWizardStorage(SelectBinaryPanel controller) {
+            this.controller = controller;
+        }
+
+        public String getBinaryPath() {
+            return binaryPath;
+        }
+
+        public void setBinaryPath(String path) {
+            this.binaryPath = path.trim();
+            controller.validate();
+        }
     }
+
+    public static class WizardDescriptorAdapter extends WizardDescriptor{
+        private BinaryWizardStorage storage;
+        public WizardDescriptorAdapter(BinaryWizardStorage storage) {
+            this.storage = storage;
+        }
+        @Override
+        public synchronized Object getProperty(String name) {
+            if ("binary".equals(name)) { // NOI18N
+                return storage.getBinaryPath();
+            }
+            return super.getProperty(name);
+        }
+    }
+
 }
