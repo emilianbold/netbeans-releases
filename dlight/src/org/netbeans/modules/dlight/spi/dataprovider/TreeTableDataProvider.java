@@ -39,23 +39,48 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.spi.dataprovider;
 
-package org.netbeans.modules.dlight.api.impl;
+import org.netbeans.modules.dlight.api.dataprovider.TreeTableNode;
+import java.util.List;
+import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
+
 
 /**
- * Represents tree table node
+ *
+ * @param <T>
  */
-public interface TreeTableNode {
+public interface TreeTableDataProvider<T extends TreeTableNode> extends DataProvider {
 
   /**
-   * Returns value for the table column with the name <param> columnName</param>
-   * @param columnName table column name to get value for
-   * @return value
+   * 
+   * @param columns
+   * @param orderBy
+   * @param limit
+   * @return
    */
-  public Object getValue(String columnName);
+  public List<T> getTableView(List<Column> columns, List<Column> orderBy, int limit);
+
   /**
-   * Returns tree value
-   * @return tree value
+   * 
+   * @param path
+   * @return
    */
-  public Object getValue();
+   public abstract List<T> getChildren(List<T> path, List<Column> columns, List<Column> orderBy);
+
+  /**
+   * Returns tree column value here
+   * @param row
+   * @return
+   */
+  public abstract T getValueAt(int row);
+
+  /**
+   * 
+   * @param column
+   * @param row
+   * @return
+   */
+  public abstract String getTableValueAt(Column column, int row);
 }
+
