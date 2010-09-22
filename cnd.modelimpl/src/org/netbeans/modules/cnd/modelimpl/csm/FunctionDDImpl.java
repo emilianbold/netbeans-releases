@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -165,21 +166,17 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
-        CsmDeclaration decl = null;
+        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
         for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
             if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
                 if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), candidate)) {
-                    decl = candidate;
-                    break;
-                }
-                if (decl == null) {
-                    decl = candidate;
+                    decls.add(candidate);
                 }
             }
         }
-        if( decl != null && (decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
-                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
+        CsmDeclaration decl = chooseDeclaration(decls);
+        if( decl != null) {
             return (CsmFunction) decl;
         }
         FunctionParameterListImpl parameterList = getParameterList();
