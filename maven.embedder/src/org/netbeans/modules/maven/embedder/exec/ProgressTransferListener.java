@@ -62,7 +62,6 @@ import org.sonatype.aether.transfer.TransferResource;
 public class ProgressTransferListener implements TransferListener {
     
     private static ThreadLocal<Integer> lengthRef = new ThreadLocal<Integer>();
-    private static ThreadLocal<Integer> countRef = new ThreadLocal<Integer>();
     private static ThreadLocal<ProgressContributor> contribRef = new ThreadLocal<ProgressContributor>();
     private static ThreadLocal<ProgressContributor> pomcontribRef = new ThreadLocal<ProgressContributor>();
     private static ThreadLocal<Integer> pomCountRef = new ThreadLocal<Integer>();
@@ -119,7 +118,7 @@ public class ProgressTransferListener implements TransferListener {
     }
 
     private String getResourceName(TransferResource res) {
-        int lastSlash = res.getResourceName().lastIndexOf("/"); //NOI18N
+        int lastSlash = res.getResourceName().lastIndexOf('/');
         return lastSlash > -1 ? res.getResourceName().substring(lastSlash + 1) : res.getResourceName();
     }
     
@@ -178,7 +177,6 @@ public class ProgressTransferListener implements TransferListener {
             contribRef.get().start(total);
         }
         lengthRef.set(total);
-        countRef.set(0);
         contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Started", getResourceName(res)));
     }
 
@@ -188,10 +186,7 @@ public class ProgressTransferListener implements TransferListener {
         if (contribRef.get() == null) {
             return;
         }
-        long cnt = (long)countRef.get();
-        if (te.getDataLength() > 0) {
-            cnt = cnt + te.getDataLength();
-        }
+        long cnt = te.getTransferredBytes();
         cnt = Math.min((long)Integer.MAX_VALUE, cnt);
         if (lengthRef.get() < 0) {
             contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferring", getResourceName(te.getResource())));
@@ -199,7 +194,6 @@ public class ProgressTransferListener implements TransferListener {
             cnt = Math.min(cnt, (long)lengthRef.get());
             contribRef.get().progress(NbBundle.getMessage(ProgressTransferListener.class, "TXT_Transferred", getResourceName(te.getResource()), cnt), (int)cnt);
         }
-        countRef.set((int)cnt);
     }
 
     @Override
