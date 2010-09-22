@@ -438,13 +438,11 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         Item canonicalItem = null;
         while (it.hasNext()) {
             Item item = it.next();
-            File itemFile = item.getNormalizedFile();
-            if (itemFile == file || itemFile.getPath().equals(file.getPath())) {
+            if (item.getNormalizedPath().equals(file.getPath())) {
                 return item;
             }
             if (canonicalItem == null) {
-                File canonicalItemFile = item.getCanonicalFile();
-                if (canonicalItemFile == file || canonicalItemFile.getPath().equals(file.getPath())) {
+                if (item.getCanonicalPath().equals(file.getPath())) {
                     canonicalItem = item;
                 }
             }
@@ -1345,20 +1343,22 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 }
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
-                String filePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, file.getPath());
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                    filePath = CndPathUtilitities.toRelativePath(baseDirFO, file.getPath());
-                } else {
-                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
-                }
-                Item item = new Item(CndPathUtilitities.normalize(filePath));
+//  All the logic below moved to Item constructor
+//                String filePath;
+//                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+//                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, file.getPath());
+//                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+//                    filePath = CndPathUtilitities.toRelativePath(baseDirFO, file.getPath());
+//                } else {
+//                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
+//                }
+//                Item item = new Item(CndPathUtilitities.normalize(filePath));
+                Item item = new Item(file, baseDirFO);
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {
-                    handle.progress(filePath);
+                    handle.progress(item.getPath());
                 }
             }
         }

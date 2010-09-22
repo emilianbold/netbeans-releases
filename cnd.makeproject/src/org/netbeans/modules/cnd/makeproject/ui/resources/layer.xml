@@ -62,7 +62,6 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makefile.html"/>
                 </file>
 
-                <!--
                 <file name="newFullRemote.xml">
                     <attr name="position" intvalue="150"/>
                     <attr name="template" boolvalue="true"/>
@@ -71,7 +70,6 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/newFullRemote.html"/>
                 </file>
-                -->
 
                 <file name="newApplication.xml">
                     <attr name="position" intvalue="200"/>

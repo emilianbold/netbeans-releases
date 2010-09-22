@@ -154,11 +154,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
-            File file = item.getFile();
-            if (!file.exists()
-                    || !file.isFile()
-                    || !VisibilityQuery.getDefault().isVisible(file)
-                    || !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+            FileObject fo = item.getFileObject();
+            if (fo.isVirtual()
+                    || !fo.isData()
+                    || !VisibilityQuery.getDefault().isVisible(fo)
+                    || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
                 }

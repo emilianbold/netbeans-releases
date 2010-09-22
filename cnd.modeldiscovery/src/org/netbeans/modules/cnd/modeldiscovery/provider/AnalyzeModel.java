@@ -331,7 +331,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     break;
                 }
                 Item item = items[i];
-                String path = item.getNormalizedFile().getAbsolutePath();
+                String path = item.getNormalizedPath();
                 projectSearchBase.put(path, item);
             }
             for (int i = 0; i < items.length; i++){

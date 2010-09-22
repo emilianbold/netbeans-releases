@@ -150,7 +150,7 @@ public class ModelSource implements SourceFileProperties {
     
     @Override
     public String getItemName() {
-        return item.getFile().getName();
+        return item.getName();
     }
     
     @Override

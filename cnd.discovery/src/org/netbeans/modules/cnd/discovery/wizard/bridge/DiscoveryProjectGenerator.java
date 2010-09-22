@@ -474,7 +474,7 @@ public class DiscoveryProjectGenerator {
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
-            String canonicalPath = item.getNormalizedFile().getAbsolutePath();
+            String canonicalPath = item.getNormalizedPath();
             if (!(relatives.contains(path) || used.contains(path) ||
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
