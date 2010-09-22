@@ -168,6 +168,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         }
     }
 
+    public String getVersion() throws SVNClientException {
+        VersionCommand cmd = new VersionCommand();
+        try {
+            config(cmd);
+            cli.exec(cmd);
+            checkErrors(cmd);
+            return cmd.getOutput();
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+            SVNClientException e = new SVNClientException(ex.getMessage());
+            e.wrapException(ex);
+            throw e;
+        }
+    }
+
     public void addNotifyListener(ISVNNotifyListener l) {
         notificationHandler.add(l);
     }

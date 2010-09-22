@@ -83,13 +83,13 @@ public class Watcher extends AnnotationProvider {
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        return icon;
+        return null;
     }
     public @Override String annotateNameHtml(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Action[] actions(Set<? extends FileObject> files) {
         return null;
@@ -121,6 +121,7 @@ public class Watcher extends AnnotationProvider {
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
             FileObject fo = FileUtil.toFileObject(dir);
             String path = dir.getAbsolutePath();
+            assert fo != null;
 
             if (map.containsKey(fo)) return -1;
 
@@ -183,6 +184,8 @@ public class Watcher extends AnnotationProvider {
 
 
     private void enqueue(FileObject fo) {
+        assert fo != null;
+
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);

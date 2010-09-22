@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,6 @@ package org.netbeans.modules.editor.hints;
 
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -59,13 +58,10 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.hints.AnnotationHolder.Attacher;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.LifecycleManager;
@@ -278,30 +274,46 @@ public class AnnotationHolderTest extends NbTestCase {
     }
     
     public void testTypeIntoLine() throws Exception {
-        performTypingTest(25, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(25, "a", new int[0]);
     }
     
     public void testTypeOnLineStart() throws Exception {
-        performTypingTest(21, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewline() throws Exception {
-        performTypingTest(21, "a\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\n", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewlines() throws Exception {
-        performTypingTest(21, "a\na\na\na\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\na\na\na\n", new int[0]);
     }
     
     public void testTypeNewline() throws Exception {
-        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0], new AttributeSet[0]);
+        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0]);
+    }
+
+    public void testType190393a() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(5, "x", new int[] {8, 9}, new int[] {9, 10});
+    }
+
+    public void testType190393b() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(4, 1, "", new int[] {8, 9}, new int[] {7, 8});
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
-        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans, highlightValues);
+    private void performTypingTest(int index, String insertWhat, int[] highlightSpans) throws Exception {
+        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans);
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
+    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
+        performTypingTest(index, 0, insertWhat, errorSpan, highlightSpans);
+    }
+
+    private void performTypingTest(int index, int remove, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
         ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, errorSpan[0], errorSpan[1]);
         
         ec.open();
@@ -315,10 +327,11 @@ public class AnnotationHolderTest extends NbTestCase {
         AnnotationHolder.getInstance(file).attacher = new AttacherImpl();
         
         AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1));
-        
+
+        doc.remove(index, remove);
         doc.insertString(index, insertWhat, null);
 
-        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, highlightValues);
+        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, null);
         
         LifecycleManager.getDefault().saveAll();
         
@@ -332,9 +345,13 @@ public class AnnotationHolderTest extends NbTestCase {
         while (hs.moveNext()) {
             assertEquals(message, spans[2 * index], hs.getStartOffset());
             assertEquals(message, spans[2 * index + 1], hs.getEndOffset());
-            assertEquals(message, values[index], hs.getAttributes());
+            if (values != null) {
+                assertEquals(message, values[index], hs.getAttributes());
+            }
             index++;
         }
+
+        assertEquals(2 * index, spans.length);
     }
     
     @Override 

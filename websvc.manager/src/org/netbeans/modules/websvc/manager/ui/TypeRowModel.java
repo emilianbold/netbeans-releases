@@ -45,7 +45,7 @@
 
 package org.netbeans.modules.websvc.manager.ui;
 
-import org.netbeans.modules.websvc.manager.swing.outline.RowModel;
+import org.netbeans.swing.outline.RowModel;
 import org.openide.util.NbBundle;
 import javax.swing.tree.DefaultMutableTreeNode;
 

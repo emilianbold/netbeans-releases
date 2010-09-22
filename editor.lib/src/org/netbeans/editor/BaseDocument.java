@@ -1853,7 +1853,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     public final void breakAtomicLock() {
         if (atomicEdits != null && atomicEdits.size() > 0) {
             atomicEdits.end();
-            atomicEdits.undo();
+            if (atomicEdits.canUndo()) {
+                atomicEdits.undo();
+            }
             atomicEdits = null;
         }
     }
