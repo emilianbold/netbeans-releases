@@ -279,6 +279,44 @@ public class StatusTest extends AbstractGitTestCase {
         }
     }
 
+    public void testSkipIgnoredFolders () throws Exception {
+        File file1 = new File(workDir, "file1");
+        File folder = new File(workDir, "folder");
+        File file2 = new File(folder, "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+        File subFolder = new File(folder, "subfolder");
+        File file3 = new File(folder, "file3");
+        File file4 = new File(subFolder, "file4");
+        subFolder.mkdirs();
+        file3.createNewFile();
+        file4.createNewFile();
+        File folder2 = new File(workDir, "folder2");
+        folder2.mkdirs();
+        File file5 = new File(folder2, "file5");
+        file5.createNewFile();
+        File subFolder2 = new File(folder2, "subfolder");
+        File file6 = new File(subFolder2, "file6");
+        subFolder2.mkdirs();
+        file6.createNewFile();
+
+        write(new File(workDir, ".gitignore"), "folder\nfile1");
+        write(new File(folder2, ".gitignore"), "subfolder");
+
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file2));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+        assertStatus(statuses, workDir, file5, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(subFolder2).isFolder());
+        assertNull(statuses.get(file6));
+    }
+
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusProgressMonitor monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);

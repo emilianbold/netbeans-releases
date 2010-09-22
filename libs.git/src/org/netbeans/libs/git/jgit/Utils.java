@@ -46,15 +46,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 /**
  *
  * @author ondra
  */
 public final class Utils {
-    private Utils () {
+private Utils () {
 
     }
 
@@ -70,7 +73,16 @@ public final class Utils {
         return repository.getConfig().getBoolean("core", null, "filemode", true); //NOI18N
     }
     
-    public static Collection<String> getRelativePaths (File workDir, File[] roots) {
+    public static Collection<PathFilter> getPathFilters (File workDir, File[] roots) {
+        Collection<String> relativePaths = getRelativePaths(workDir, roots);
+        Collection<PathFilter> filters = new LinkedList<PathFilter>();
+        for (String path : relativePaths) {
+            filters.add(PathFilter.create(path));
+        }
+        return filters;
+    }
+
+    public static Collection<String> getRelativePaths(File workDir, File[] roots) {
         Collection<String> paths = new ArrayList<String>(roots.length);
         for (File root : roots) {
             if (workDir.equals(root)) {
@@ -97,5 +109,24 @@ public final class Utils {
             relativePath.deleteCharAt(relativePath.length() - 1);
         }
         return relativePath.toString();
+    }
+
+    public static boolean isUnder (Collection<PathFilter> filters, TreeWalk treeWalk) {
+        boolean retval = false;
+        for (PathFilter filter : filters) {
+            if (filter.include(treeWalk) && treeWalk.getPathString().length() < filter.getPath().length()) {
+                retval = true;
+                break;
+            }
+        }
+        return retval;
+    }
+
+    public static Collection<byte[]> getPaths (Collection<PathFilter> pathFilters) {
+        Collection<byte[]> paths = new LinkedList<byte[]>();
+        for (PathFilter filter : pathFilters) {
+            paths.add(Constants.encode(filter.getPath()));
+        }
+        return paths;
     }
 }

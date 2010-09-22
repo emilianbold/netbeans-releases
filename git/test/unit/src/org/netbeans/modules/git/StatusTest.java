@@ -45,9 +45,11 @@ package org.netbeans.modules.git;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Handler;
@@ -357,13 +359,143 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
     }
 
+    public void testPurgeRemovedIgnoredFiles () throws Exception {
+        File folder = new File(repositoryLocation, "folder");
+        final File file1 = new File(folder, "ignored");
+        folder.mkdirs();
+        file1.createNewFile();
+
+        File ignoreFile = new File(repositoryLocation, ".gitignore");
+        write(ignoreFile, "ignored");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(file1)));
+        assertTrue(getCache().getCachedStatus(file1).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        file1.delete();
+        assertFalse(file1.exists());
+        final boolean[] cleaned = new boolean[1];
+        Git.STATUS_LOG.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().contains("refreshAllRoots() uninteresting file: {0}") && file1.equals(record.getParameters()[0])) {
+                    cleaned[0] = true;
+                }
+            }
+            @Override
+            public void flush() {
+            }
+            @Override
+            public void close() throws SecurityException {
+            }
+        });
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folder)));
+        assertTrue(cleaned[0]);
+    }
+
+    public void testSkipIgnores () throws Exception {
+        File folder = new File(repositoryLocation, "folder");
+        File file = new File(repositoryLocation, "file");
+        file.createNewFile();
+        File file1 = new File(folder, "file1");
+        File file2 = new File(folder, "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+
+        File ignoreFile = new File(repositoryLocation, ".gitignore");
+        write(ignoreFile, "folder");
+
+        LogHandler handler = new LogHandler(repositoryLocation);
+        Git.STATUS_LOG.addHandler(handler);
+        handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        handler.waitForFilesToRefresh();
+        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.interestingFiles);
+
+        handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        handler.waitForFilesToRefresh();
+        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.interestingFiles);
+    }
+
+    public void testToggleIgnoreFolder () throws Exception {
+        File file1 = new File(repositoryLocation, "file1");
+        file1.createNewFile();
+        File folder = new File(repositoryLocation, "folder");
+        folder.mkdirs();
+        File file2 = new File(folder, "file2");
+        file2.createNewFile();
+        File subFolder = new File(folder, "subfolder");
+        subFolder.mkdirs();
+        File file3 = new File(subFolder, "file3");
+        file3.createNewFile();
+
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        List<File> ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.contains(file2));
+        assertTrue(newFiles.contains(file3));
+        assertTrue(ignoredFiles.isEmpty());
+
+        File ignoreFile = new File(repositoryLocation, ".gitignore");
+        write(ignoreFile, "subfolder");
+        getCache().getCachedStatus(file3);
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().getCachedStatus(file3);
+        Thread.sleep(500);
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.contains(file2));
+        assertFalse(newFiles.contains(file3));
+        assertTrue(ignoredFiles.contains(subFolder));
+        assertTrue(ignoredFiles.contains(file3));
+
+        write(ignoreFile, "subfolder2");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.contains(file2));
+        assertTrue(newFiles.contains(file3));
+        assertTrue(ignoredFiles.isEmpty());
+
+        write(ignoreFile, "folder");
+        getCache().getCachedStatus(file2);
+        getCache().getCachedStatus(file3);
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().getCachedStatus(file2);
+        getCache().getCachedStatus(file3);
+        Thread.sleep(500);
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.isEmpty());
+        assertTrue(ignoredFiles.contains(folder));
+        assertTrue(ignoredFiles.contains(subFolder));
+        assertTrue(ignoredFiles.contains(file2));
+        assertTrue(ignoredFiles.contains(file3));
+
+        write(ignoreFile, "subfolder");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.contains(file2));
+        assertFalse(newFiles.contains(file3));
+        assertFalse(ignoredFiles.contains(folder));
+        assertTrue(ignoredFiles.contains(subFolder));
+        assertTrue(ignoredFiles.contains(file3));
+
+        write(ignoreFile, "");
+        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        assertTrue(newFiles.contains(file2));
+        assertTrue(newFiles.contains(file3));
+        assertTrue(ignoredFiles.isEmpty());
+    }
+
     // TODO add more tests when add is implemented
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented
     // TODO add more tests when exclusions are supported
     // TODO test statuses between HEAD-WC: when commit is implemented
-    // TODO test toggle ignore on folder
-    // TODO test skip ignores
+    // TODO test conflicts
 
     private void assertSameStatus(Set<File> files, Status status) {
         for (File f : files) {
@@ -376,6 +508,7 @@ public class StatusTest extends AbstractGitTestCase {
         private boolean filesRefreshed;
         private final HashSet<File> refreshedFiles = new HashSet<File>();
         private final File topFolder;
+        private final Set<String> interestingFiles = new HashSet<String>();
 
         private LogHandler (File topFolder) {
             this.topFolder = topFolder;
@@ -398,6 +531,8 @@ public class StatusTest extends AbstractGitTestCase {
                     }
                     notifyAll();
                 }
+            } else if (record.getMessage().equals("refreshAllRoots() file status: {0} {1}")) {
+                interestingFiles.add((String) record.getParameters()[0]);
             }
         }
 

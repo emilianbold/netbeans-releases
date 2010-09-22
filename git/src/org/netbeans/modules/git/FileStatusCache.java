@@ -180,13 +180,6 @@ public class FileStatusCache {
             try {
                 // find all files with not up-to-date or ignored status
                 interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), StatusProgressMonitor.NULL_PROGRESS_MONITOR);
-                for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
-                    // put the file's FI into the cache
-                    File file = interestingEntry.getKey();
-                    FileInformation fi = new FileInformation(interestingEntry.getValue());
-                    LOG.log(Level.FINE, "refreshAllRoots() file: {0} {1} ", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
-                    refreshFileStatus(file, fi);
-                }
                 for (File root : refreshEntry.getValue()) {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
                     for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)))) {
@@ -195,8 +188,9 @@ public class FileStatusCache {
                         File filesOwner = null;
                         boolean correctRepository = true;
                         if (!interestingFiles.containsKey(file) // file no longer has an interesting status
-                                && (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && !exists || // file was ignored and is now deleted
-                                !fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && (!exists || file.isFile())) // file is now up-to-date or also ignored by .gitignore
+                                && (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
+                                fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
+                                !fi.isDirectory() && !fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
                                 && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
                             LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                             refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
@@ -208,8 +202,15 @@ public class FileStatusCache {
                         }
                     }
                 }
+                for (Map.Entry<File, GitStatus> interestingEntry : interestingFiles.entrySet()) {
+                    // put the file's FI into the cache
+                    File file = interestingEntry.getKey();
+                    FileInformation fi = new FileInformation(interestingEntry.getValue());
+                    LOG.log(Level.FINE, "refreshAllRoots() file status: {0} {1}", new Object[] {file.getAbsolutePath(), fi}); // NOI18N
+                    refreshFileStatus(file, fi);
+                }
             } catch (GitException ex) {
-                LOG.log(Level.INFO, "refreshAll() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
+                LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
             } finally {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
@@ -369,6 +370,7 @@ public class FileStatusCache {
         FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
         boolean triggerGitScan = false;
+        boolean addAsExcluded = false;
         if (info == null) {
             if (Git.getInstance().isManaged(file)) {
                 // ping repository scan, this means it has not yet been scanned
@@ -377,6 +379,7 @@ public class FileStatusCache {
                 // fast ignore-test
                 info = checkForIgnoredFile(file);
                 if (info == null) {
+                    // info could have changed in the previous call
                     info = getInfo(file);
                 }
                 if (file.isDirectory()) {
@@ -390,18 +393,12 @@ public class FileStatusCache {
                             upToDateAccess = 0;
                             if (LOG.isLoggable(Level.FINE)) {
                                 synchronized (upToDateFiles) {
-                                    LOG.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {new Integer(UTD_NOTIFY_NUMBER), upToDateFiles});
+                                    LOG.log(Level.FINE, "Another {0} U2D files added: {1}", new Object[] {new Integer(UTD_NOTIFY_NUMBER), upToDateFiles}); //NOI18N
                                 }
                             }
                         }
                     } else {
-                        // add ignored file to cache
-                        rp.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
-                            }
-                        });
+                        addAsExcluded = true;
                     }
                 }
             } else {
@@ -410,7 +407,22 @@ public class FileStatusCache {
             }
             LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
         } else {
+            // an u-t-d file may be actually ignored. This needs to be checked since we skip ignored folders in the status scan
+            // so ignored files appear as up-to-date after the scan finishes
+            if (info.containsStatus(Status.STATUS_VERSIONED_UPTODATE) && checkForIgnoredFile(file) != null) {
+                info = FILE_INFORMATION_EXCLUDED;
+                addAsExcluded = true;
+            }
             triggerGitScan = seenInUI && !info.seenInUI();
+        }
+        if (addAsExcluded) {
+            // add ignored file to cache
+            rp.post(new Runnable() {
+                @Override
+                public void run() {
+                    refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
+                }
+            });
         }
         if (triggerGitScan) {
             info.setSeenInUI(true); // next time this file/folder will not trigger the git scan
@@ -559,11 +571,11 @@ public class FileStatusCache {
      * Fast (can be run from AWT) version of {@link #handleIgnoredFiles(Set)}, tests a file if it's ignored, but never runs a SharebilityQuery.
      * If the file is not recognized as ignored, runs {@link #handleIgnoredFiles(Set)}.
      * @param file
-     * @return true if the file is recognized as ignored (but not through a SharebilityQuery)
+     * @return {@link #FILE_INFORMATION_EXCLUDED} if the file is recognized as ignored (but not through a SharebilityQuery), <code>null</code> otherwise
      */
     private FileInformation checkForIgnoredFile (File file) {
         FileInformation fi = null;
-        if (GitUtils.isIgnored(file, false)) {
+        if (file.getParentFile() != null && getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
             fi = FILE_INFORMATION_EXCLUDED;
         } else {
             // run the full test with the SQ

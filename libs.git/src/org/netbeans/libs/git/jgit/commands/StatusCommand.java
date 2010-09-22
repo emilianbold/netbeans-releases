@@ -45,7 +45,7 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
@@ -55,11 +55,11 @@ import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitException;
@@ -72,7 +72,7 @@ import org.netbeans.libs.git.progress.StatusProgressMonitor;
  * @author ondra
  */
 public class StatusCommand extends GitCommand {
-    private final HashMap<File, GitStatus> statuses;
+    private final LinkedHashMap<File, GitStatus> statuses;
     private final File[] roots;
     private final StatusProgressMonitor monitor;
 
@@ -80,7 +80,7 @@ public class StatusCommand extends GitCommand {
         super(repository, monitor);
         this.roots = roots;
         this.monitor = monitor;
-        statuses = new HashMap<File, GitStatus>();
+        statuses = new LinkedHashMap<File, GitStatus>();
     }
 
     @Override
@@ -90,11 +90,11 @@ public class StatusCommand extends GitCommand {
             DirCache cache = DirCache.lock(repository);
             try {
                 TreeWalk treeWalk = new TreeWalk(repository);
-                Collection<String> relativePaths = Utils.getRelativePaths(repository.getWorkDir(), roots);
-                if (!relativePaths.isEmpty()) {
-                    treeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
+                Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkDir(), roots);
+                if (!pathFilters.isEmpty()) {
+                    treeWalk.setFilter(PathFilterGroup.create(pathFilters));
                 }
-                treeWalk.setRecursive(true);
+                treeWalk.setRecursive(false);
                 treeWalk.reset();
                 ObjectId headId = repository.resolve(Constants.HEAD);
                 if (headId != null) {
@@ -131,31 +131,42 @@ public class StatusCommand extends GitCommand {
                     FileTreeIterator fti = treeWalk.getTree(T_WORKSPACE, FileTreeIterator.class);
                     DirCacheIterator indexIterator = treeWalk.getTree(T_INDEX, DirCacheIterator.class);
                     DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
-                    if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
-                        statusIndexWC = GitStatus.Status.STATUS_REMOVED;
-                    } else if (mIndex == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
-                        if (fti.isEntryIgnored()) {
-                            statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                    boolean isFolder = false;
+                    if (mWorking == FileMode.TREE.getBits()) {
+                        if (fti.isEntryIgnored() && !Utils.isUnder(pathFilters, treeWalk)) { // root is under fti
+                            statusIndexWC = statusHeadWC = GitStatus.Status.STATUS_IGNORED;
+                            isFolder = true;
                         } else {
-                            statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                            treeWalk.enterSubtree();
+                            continue;
                         }
-                    } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), FS.DETECTED))) {
-                        statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                     } else {
-                        statusIndexWC = GitStatus.Status.STATUS_NORMAL;
-                    }
-                    if ((statusHeadIndex == GitStatus.Status.STATUS_MODIFIED || statusIndexWC == GitStatus.Status.STATUS_MODIFIED)
-                            && (mHead != mWorking || !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId()))) {
-                        statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
-                    } else {
-                        statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                        if (mWorking == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
+                            statusIndexWC = GitStatus.Status.STATUS_REMOVED;
+                        } else if (mIndex == FileMode.MISSING.getBits() && mWorking != FileMode.MISSING.getBits()) {
+                            if (fti.isEntryIgnored()) {
+                                statusIndexWC = GitStatus.Status.STATUS_IGNORED;
+                            } else {
+                                statusIndexWC = GitStatus.Status.STATUS_ADDED;
+                            }
+                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), FS.DETECTED))) {
+                            statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
+                        } else {
+                            statusIndexWC = GitStatus.Status.STATUS_NORMAL;
+                        }
+                        if ((statusHeadIndex == GitStatus.Status.STATUS_MODIFIED || statusIndexWC == GitStatus.Status.STATUS_MODIFIED)
+                                && (mHead != mWorking || !treeWalk.getObjectId(T_HEAD).equals(fti.getEntryObjectId()))) {
+                            statusHeadWC = GitStatus.Status.STATUS_MODIFIED;
+                        } else {
+                            statusHeadWC = GitStatus.Status.STATUS_NORMAL;
+                        }
                     }
 
                     boolean inConflict = false;
                     if (indexEntry != null) {
                         inConflict = indexEntry.getStage() > 0;
                     }
-                    GitStatus status = new GitStatus(tracked, path, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict);
+                    GitStatus status = new GitStatus(tracked, path, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict, isFolder);
                     statuses.put(file, status);
                     monitor.notifyStatus(status);
                 }

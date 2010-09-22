@@ -60,8 +60,9 @@ public class GitStatus {
     private final Status statusHeadIndex;
     private final Status statusIndexWC;
     private final boolean conflict;
+    private final boolean isFolder;
 
-    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, boolean conflict) {
+    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, boolean conflict, boolean isFolder) {
         this.tracked = tracked;
         this.relativePath = relativePath;
         this.correspondingFile = correspondingFile;
@@ -69,6 +70,7 @@ public class GitStatus {
         this.statusIndexWC = statusIndexWC;
         this.statusHeadWC = statusHeadWC;
         this.conflict = conflict;
+        this.isFolder = isFolder;
     }
 
     public File getFile() {
@@ -97,5 +99,9 @@ public class GitStatus {
 
     public boolean isConflict() {
         return conflict;
+    }
+
+    public boolean isFolder () {
+        return isFolder;
     }
 }

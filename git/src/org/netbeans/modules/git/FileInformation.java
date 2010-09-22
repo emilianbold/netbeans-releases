@@ -60,7 +60,7 @@ public class FileInformation {
     }
 
     FileInformation (GitStatus status) {
-        directory = false;
+        directory = status.isFolder();
         seenInUI = true;
         if (!status.isTracked()) {
             this.status = GitStatus.Status.STATUS_IGNORED.equals(status.getStatusIndexWC()) ? EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)
