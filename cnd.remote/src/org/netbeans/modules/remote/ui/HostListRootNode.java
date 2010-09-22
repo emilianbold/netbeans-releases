@@ -91,8 +91,11 @@ public final class HostListRootNode extends AbstractNode {
 
     private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener, Runnable {
 
+        private final RequestProcessor.Task refreshTask;
+
         public HostChildren() {
             ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
+            refreshTask = new RequestProcessor("Refreshing Host List", 1).create(this); // NOI18N
         }
 
         @Override
@@ -113,8 +116,7 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            RequestProcessor.getDefault().post(this);
-            
+            refreshTask.schedule(0);
         }
 
         @Override
