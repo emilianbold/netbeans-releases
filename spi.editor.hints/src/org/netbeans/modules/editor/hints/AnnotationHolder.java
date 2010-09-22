@@ -304,6 +304,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             if (line == null)
                 return ;
 
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset() + e.getLength());
+
+            if (endOffset < line.getOffset())
+                return;
+
             List<ErrorDescription> eds = getErrorsForLine(line, false);
 
             if (eds == null)
@@ -366,6 +371,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 //nothing to do:
                 return;
             }
+
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset());
+
+            if (endOffset < current.getOffset())
+                return;
 
             assert index != (-1);
 

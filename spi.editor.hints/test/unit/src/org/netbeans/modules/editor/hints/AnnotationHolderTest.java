@@ -54,6 +54,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.Utilities;
@@ -77,6 +78,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.util.Lookup;
+import org.openide.util.NbCollections;
 import org.openide.util.lookup.Lookups;
 
 import static org.netbeans.modules.editor.hints.AnnotationHolder.*;
@@ -278,30 +280,46 @@ public class AnnotationHolderTest extends NbTestCase {
     }
     
     public void testTypeIntoLine() throws Exception {
-        performTypingTest(25, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(25, "a", new int[0]);
     }
     
     public void testTypeOnLineStart() throws Exception {
-        performTypingTest(21, "a", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewline() throws Exception {
-        performTypingTest(21, "a\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\n", new int[0]);
     }
     
     public void testTypeOnLineStartWithNewlines() throws Exception {
-        performTypingTest(21, "a\na\na\na\n", new int[0], new AttributeSet[0]);
+        performTypingTest(21, "a\na\na\na\n", new int[0]);
     }
     
     public void testTypeNewline() throws Exception {
-        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0], new AttributeSet[0]);
+        performTypingTest(22, "asdasd\nasdfasdf", new int[] {23, 25}, new int[0]);
+    }
+
+    public void testType190393a() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(5, "x", new int[] {8, 9}, new int[] {9, 10});
+    }
+
+    public void testType190393b() throws Exception {
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, "1\n2\n3\n4\n5\n6\n7\n8\n9\na\nb\nc\nd\ne", null);
+        performTypingTest(4, 1, "", new int[] {8, 9}, new int[] {7, 8});
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
-        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans, highlightValues);
+    private void performTypingTest(int index, String insertWhat, int[] highlightSpans) throws Exception {
+        performTypingTest(index, insertWhat, new int[] {21, 32}, highlightSpans);
     }
     
-    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans, AttributeSet[] highlightValues) throws Exception {
+    private void performTypingTest(int index, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
+        performTypingTest(index, 0, insertWhat, errorSpan, highlightSpans);
+    }
+
+    private void performTypingTest(int index, int remove, String insertWhat, int[] errorSpan, int[] highlightSpans) throws Exception {
         ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, errorSpan[0], errorSpan[1]);
         
         ec.open();
@@ -315,10 +333,11 @@ public class AnnotationHolderTest extends NbTestCase {
         AnnotationHolder.getInstance(file).attacher = new AttacherImpl();
         
         AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1));
-        
+
+        doc.remove(index, remove);
         doc.insertString(index, insertWhat, null);
 
-        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, highlightValues);
+        assertHighlights("highlights correct", AnnotationHolder.getBag(doc), highlightSpans, null);
         
         LifecycleManager.getDefault().saveAll();
         
@@ -332,9 +351,13 @@ public class AnnotationHolderTest extends NbTestCase {
         while (hs.moveNext()) {
             assertEquals(message, spans[2 * index], hs.getStartOffset());
             assertEquals(message, spans[2 * index + 1], hs.getEndOffset());
-            assertEquals(message, values[index], hs.getAttributes());
+            if (values != null) {
+                assertEquals(message, values[index], hs.getAttributes());
+            }
             index++;
         }
+
+        assertEquals(2 * index, spans.length);
     }
     
     @Override 
