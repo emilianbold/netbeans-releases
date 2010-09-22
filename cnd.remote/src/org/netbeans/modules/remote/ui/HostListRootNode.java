@@ -60,6 +60,7 @@ import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -88,7 +89,7 @@ public final class HostListRootNode extends AbstractNode {
         return new Action[] { new AddHostAction() };
     }
 
-    private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener {
+    private static class HostChildren extends ChildFactory<ExecutionEnvironment> implements PropertyChangeListener, Runnable {
 
         public HostChildren() {
             ServerList.addPropertyChangeListener(WeakListeners.propertyChange(this, null));
@@ -112,6 +113,12 @@ public final class HostListRootNode extends AbstractNode {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
+            RequestProcessor.getDefault().post(this);
+            
+        }
+
+        @Override
+        public void run() {
             this.refresh(true);
         }
     }
