@@ -233,7 +233,7 @@ public final class ResourceBundles {
         return result;
     }
     
-    private List<String> getBundles() {
+    public List<String> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
         }
