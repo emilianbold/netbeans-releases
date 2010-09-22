@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,14 +68,11 @@ import java.util.TreeSet;
 import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
-import org.netbeans.modules.subversion.client.cli.commands.VersionCommand;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.subversion.utils.TestUtilities;
-import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
-import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
@@ -149,6 +147,10 @@ public abstract class AbstractCommandTestCase extends AbstractSvnTestCase {
         // no way to push empty user
         String[] cmd = new String[]{"svn", "ci", file.getAbsolutePath(), "-m", "\"commit\"", "--username="};
         Runtime.getRuntime().exec(cmd).waitFor();
+    }
+
+    protected void assertDate(Date refdate, Date date) {
+        assertEquals(new Date(((long)(refdate.getTime() / 1000)) * 1000), new Date(((long)(date.getTime() / 1000)) * 1000));
     }
 
     protected void assertInfos(ISVNInfo info, ISVNInfo refInfo) {

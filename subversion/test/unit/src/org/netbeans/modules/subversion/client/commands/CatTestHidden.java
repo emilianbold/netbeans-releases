@@ -67,6 +67,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }                   
 
     public void testCatFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatFile("@file");
         testCatFile("fi@le");
         testCatFile("file@");
@@ -77,6 +80,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCatFileInDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatFile("folder/@file");
         testCatFile("folder/fi@le");
         testCatFile("folder/file@");
@@ -100,6 +106,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCatFileWithAtSignPrevRev() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatFilePrevRev("@file");
         testCatFilePrevRev("fi@le");
         testCatFilePrevRev("file@");
@@ -131,6 +140,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCatURLWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatURL("@file");
         testCatURL("fi@le");
         testCatURL("file@");
@@ -141,6 +153,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }
     
     public void testCatURLInDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatURL("folder/@file");
         testCatURL("folder/fi@le");
         testCatURL("folder/file@");
@@ -165,6 +180,9 @@ public class CatTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCatURLWithAtSignPrevRev() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCatURLPrevRev("@file");
         testCatURLPrevRev("fi@le");
         testCatURLPrevRev("file@");

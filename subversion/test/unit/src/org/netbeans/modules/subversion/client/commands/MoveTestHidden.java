@@ -129,7 +129,10 @@ public class MoveTestHidden extends AbstractCommandTestCase {
     }
 
     public void testMoveURL2URLWithAtSignPrevRevision() throws Exception {
-//        testMoveURL2URLPrevRevision("file1", "@filemove"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        testMoveURL2URLPrevRevision("file1", "@filemove"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testMoveURL2URLPrevRevision("file2", "file@move");
         testMoveURL2URLPrevRevision("file3", "filemove@");
     }

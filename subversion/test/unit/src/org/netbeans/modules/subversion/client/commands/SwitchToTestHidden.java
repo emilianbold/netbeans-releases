@@ -178,6 +178,9 @@ public class SwitchToTestHidden extends AbstractCommandTestCase {
     }
 
     public void testSwitchToFolderWithAtSignRec() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         File folder = createFolder("fol@der");
         File file = createFile(folder, "file");
         File folder1 = createFolder(folder, "folder1");
