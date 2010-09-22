@@ -118,14 +118,23 @@ public class CheckoutTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCheckoutFolderWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCheckoutFolder('@' + CI_FOLDER, "checkoutFolder");
     }
 
     public void testCheckoutFolderToDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCheckoutFolder(CI_FOLDER, "@checkoutFolder");
     }
 
     public void testCheckoutFolderWithAtSignToDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCheckoutFolder('@' + CI_FOLDER, "@checkoutFolder");
     }
 
@@ -191,6 +200,9 @@ public class CheckoutTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCheckoutFolderWithAtSignPrevRevision() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCheckoutFolderPrevRevision('@' + CI_FOLDER);
     }
 

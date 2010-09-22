@@ -63,7 +63,7 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     
     public BlameTestHidden(String testName) throws Exception {
         super(testName);
-    }
+    } 
 
     @Override
     protected void setUp() throws Exception {
@@ -137,6 +137,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         blame(fileAnnotator, "@file");
         blame(fileAnnotator, "fi@le");
         blame(fileAnnotator, "file@");
@@ -147,6 +150,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameFileInDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         blame(fileAnnotator, "folder/@file");
         blame(fileAnnotator, "folder/fi@le");
         blame(fileAnnotator, "folder/file@");
@@ -157,6 +163,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
     }
 
     public void testBlameUrlWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         blame(urlAnnotator, "@file");
         blame(urlAnnotator, "fi@le");
         blame(urlAnnotator, "file@");
@@ -204,9 +213,9 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         assertEquals(author2, a1.getAuthor(1));
         assertEquals(author3, a1.getAuthor(2));
 
-        assertEquals(date1, a1.getChanged(0));
-        assertEquals(date2, a1.getChanged(1));
-        assertEquals(date3, a1.getChanged(2));
+        assertDate(date1, a1.getChanged(0));
+        assertDate(date2, a1.getChanged(1));
+        assertDate(date3, a1.getChanged(2));
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
@@ -312,8 +321,8 @@ public class BlameTestHidden extends AbstractCommandTestCase {
         assertEquals(author1, a1.getAuthor(0));
         assertEquals(author2, a1.getAuthor(1));
         
-        assertEquals(date1, a1.getChanged(0));
-        assertEquals(date2, a1.getChanged(1));
+        assertDate(date1, a1.getChanged(0));
+        assertDate(date2, a1.getChanged(1));
 
         assertEquals(rev1.getNumber(), a1.getRevision(0));
         assertEquals(rev2.getNumber(), a1.getRevision(1));
