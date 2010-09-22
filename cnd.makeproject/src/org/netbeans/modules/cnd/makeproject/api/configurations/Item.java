@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
@@ -76,10 +77,31 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     //private final String sortName;
     private Folder folder;
     private File file = null;
+    private FileObject fileObject;
     private DataObject lastDataObject = null;
+
+    public Item(FileObject fileObject, FileObject baseDirFO) {
+
+        this.fileObject = fileObject;
+
+        String p;
+        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            p = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, fileObject.getPath());
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            p = CndPathUtilitities.toRelativePath(baseDirFO, fileObject.getPath());
+        } else {
+            p = CndPathUtilitities.toAbsolutePath(baseDirFO, fileObject.getPath());
+        }
+        p = CndPathUtilitities.normalize(p);
+
+        path = p;
+    }
+
 
     public Item(String path) {
         this.path = path;
+//        this.fileObject = FileUtil.toFileObject(new File(path));
+//        CndUtils.assertNotNull(fileObject, "Can't find file object for item " + path); //NOI18N
         //this.sortName = CndPathUtilitities.getBaseName(path);
 //        int i = sortName.lastIndexOf("."); // NOI18N
 //        if (i > 0) {
@@ -148,6 +170,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getPath() {
         return path;
+    }
+
+    public String getAbsolutePath() {
+        synchronized (this) {
+            if (fileObject != null) {
+                return fileObject.getPath();
+            }
+        }
+        return getNormalizedFile().getAbsolutePath();
     }
 
     public String getSortName() {
@@ -242,6 +273,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return folder;
     }
 
+    public String getNormalizedPath() {
+        return getNormalizedFile().getPath();
+    }
+    
     public File getNormalizedFile() {
         String aPath = getAbsPath();
         if (aPath != null) {
@@ -254,6 +289,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public File getFile() {
         // let's try to use normalized, not canonical paths
         return getNormalizedFile();
+    }
+
+    public String getCanonicalPath() {
+        return getCanonicalFile().getAbsolutePath();
     }
 
     public File getCanonicalFile() {
@@ -332,12 +371,16 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public FileObject getFileObject() {
-        File curFile = getNormalizedFile();
-        FileObject fo = FileUtil.toFileObject(curFile);
-        if (fo == null) {
-            fo = FileUtil.toFileObject(getCanonicalFile());
+        synchronized (this) {
+            if (fileObject == null) {
+                File curFile = getNormalizedFile();
+                fileObject = FileUtil.toFileObject(curFile);
+                if (fileObject == null) {
+                    fileObject = FileUtil.toFileObject(getCanonicalFile());
+                }
+            }
         }
-        return fo;
+        return fileObject;
     }
 
     public DataObject getDataObject() {
