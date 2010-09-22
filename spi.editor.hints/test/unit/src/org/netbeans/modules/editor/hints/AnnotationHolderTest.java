@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -46,7 +46,6 @@ package org.netbeans.modules.editor.hints;
 
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -54,19 +53,15 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.editor.hints.AnnotationHolder.Attacher;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.ErrorDescriptionTestSupport;
-import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.openide.LifecycleManager;
@@ -78,7 +73,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.util.Lookup;
-import org.openide.util.NbCollections;
 import org.openide.util.lookup.Lookups;
 
 import static org.netbeans.modules.editor.hints.AnnotationHolder.*;
