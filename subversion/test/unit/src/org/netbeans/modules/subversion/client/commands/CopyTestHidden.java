@@ -67,12 +67,18 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyURL2URLWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
 //        testCopyURL2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2URL("file2", "file@copy");
         testCopyURL2URL("file3", "filecopy@");
     }
 
     public void testCopyURLWithAtSign2URL() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2URL("@file", "filecopy1");
         testCopyURL2URL("fi@le", "filecopy2");
         testCopyURL2URL("file@", "filecopy3");
@@ -83,12 +89,18 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyURL2URLWithAtSignInDir() throws Exception {
-//        testCopyURL2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyURL2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2URL("folder/file2", "file@copy");
         testCopyURL2URL("folder/file3", "filecopy@");
     }
 
     public void testCopyURLWithAtSign2URLInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2URL("folder/@file", "filecopy1");
         testCopyURL2URL("folder/fi@le", "filecopy2");
         testCopyURL2URL("folder/file@", "filecopy3");
@@ -118,12 +130,18 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyURL2URLWithAtSignPrevRevision() throws Exception {
-//        testCopyURL2URLPrevRevision("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        testCopyURL2URLPrevRevision("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2URLPrevRevision("file2", "file@copy");
         testCopyURL2URLPrevRevision("file3", "filecopy@");
     }
 
     public void testCopyURLWithAtSign2URLPrevRevision() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2URLPrevRevision("@file", "filecopy1");
         testCopyURL2URLPrevRevision("fi@le", "filecopy2");
         testCopyURL2URLPrevRevision("file@", "filecopy3");
@@ -163,25 +181,37 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyFileWithAtSign2URL() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyFile2URL("@file", "filecopy1");
         testCopyFile2URL("fi@le", "filecopy2");
         testCopyFile2URL("file@", "filecopy3");
     }
 
     public void testCopyFile2URLWithAtSign() throws Exception {
-//        testCopyFile2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyFile2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyFile2URL("file2", "file@copy");
         testCopyFile2URL("file3", "filecopy@");
     }
 
     public void testCopyFileWithAtSign2URLInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyFile2URL("folder/@file", "filecopy1");
         testCopyFile2URL("folder/fi@le", "filecopy2");
         testCopyFile2URL("folder/file@", "filecopy3");
     }
 
     public void testCopyFile2URLWithAtSignInDir() throws Exception {
-//        testCopyFile2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyFile2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyFile2URL("folder/file2", "file@copy");
         testCopyFile2URL("folder/file3", "filecopy@");
     }
@@ -214,25 +244,37 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyFileWithAtSign2File() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyFile2File("@file", "filecopy1");
         testCopyFile2File("fi@le", "filecopy2");
         testCopyFile2File("file@", "filecopy3");
     }
 
     public void testCopyFile2FileWithAtSign() throws Exception {
-//        testCopyFile2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyFile2URL("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyFile2File("file2", "file@copy");
         testCopyFile2File("file3", "filecopy@");
     }
 
     public void testCopyFileWithAtSignInDir2FileInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyFile2File("folder/@file", "filecopy1");
         testCopyFile2File("folder/fi@le", "filecopy2");
         testCopyFile2File("folder/file@", "filecopy3");
     }
 
     public void testCopyFile2FileWithAtSignInDir() throws Exception {
-//        testCopyFile2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyFile2URL("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyFile2File("folder/file2", "file@copy");
         testCopyFile2File("folder/file3", "filecopy@");
     }
@@ -267,25 +309,37 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyURLWithAtSign2File() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2File("@file", "filecopy1");
         testCopyURL2File("fi@le", "filecopy2");
         testCopyURL2File("file@", "filecopy3");
     }
 
     public void testCopyURL2FileWithAtSign() throws Exception {
-//        testCopyURL2File("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        testCopyURL2File("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2File("file2", "file@copy");
         testCopyURL2File("file3", "filecopy@");
     }
 
     public void testCopyURLWithAtSign2FileInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2File("folder/@file", "filecopy1");
         testCopyURL2File("folder/fi@le", "filecopy2");
         testCopyURL2File("folder/file@", "filecopy3");
     }
 
     public void testCopyURL2FileWithAtSignInDir() throws Exception {
-//        testCopyURL2File("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        //        testCopyURL2File("folder/file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2File("folder/file2", "file@copy");
         testCopyURL2File("folder/file3", "filecopy@");
     }
@@ -312,12 +366,18 @@ public class CopyTestHidden extends AbstractCommandTestCase {
     }
 
     public void testCopyURL2FileWithAtSignPrevRevision() throws Exception {
-//        testCopyURL2FilePrevRevision("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
+        testCopyURL2FilePrevRevision("file1", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testCopyURL2FilePrevRevision("file2", "file@copy");
         testCopyURL2FilePrevRevision("file3", "filecopy@");
     }
 
     public void testCopyURLWithAtSign2FilePrevRevision() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testCopyURL2FilePrevRevision("@file", "filecopy1");
         testCopyURL2FilePrevRevision("fi@le", "filecopy2");
         testCopyURL2FilePrevRevision("file@", "filecopy3");
