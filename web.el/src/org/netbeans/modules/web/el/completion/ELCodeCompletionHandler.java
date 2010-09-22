@@ -48,7 +48,6 @@ import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -72,8 +71,8 @@ import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
-import org.netbeans.modules.web.core.syntax.completion.api.ElCompletionItem.ELImplicitObject;
-import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions.Function;
 import org.netbeans.modules.web.el.AstPath;
 import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -84,7 +83,6 @@ import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  * Code completer for Expression Language.
@@ -138,7 +136,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         Element resolved = typeUtilities.resolveElement(element, nodeToResolve);
 
         if (resolved == null) {
+            // not yet working properly
+            //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
             proposeManagedBeans(context, prefix, element, typeUtilities, proposals);
+            proposeBundles(context, prefix, element, proposals);
             proposeVariables(context, prefix, element, typeUtilities, proposals);
             proposeImpicitObjects(context, prefix, element, typeUtilities, proposals);
             proposeKeywords(context, prefix, element, typeUtilities, proposals);
@@ -249,6 +250,24 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
+    private void proposeBundles(CodeCompletionContext context,
+            String prefix, ELElement elElement, List<CompletionProposal> proposals) {
+
+        ResourceBundles resourceBundles = ResourceBundles.get(getFileObject(context));
+        if (!resourceBundles.canHaveBundles()) {
+            return;
+        }
+        for (String bundle : resourceBundles.getBundles()) {
+            if (!bundle.startsWith(prefix)) {
+                continue;
+            }
+            ELResourceBundleCompletionItem item = new ELResourceBundleCompletionItem(bundle);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            proposals.add(item);
+        }
+
+    }
+
     private void proposeBundleKeys(CodeCompletionContext context,
             String prefix, ELElement elElement, String bundleKey, AstString target, List<CompletionProposal> proposals) {
         
@@ -264,7 +283,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (!entry.getKey().startsWith(prefix)) {
                 continue;
             }
-            ELResourceBundleCompletionItem item = new ELResourceBundleCompletionItem(entry.getKey(), entry.getValue(), elElement);
+            ELResourceBundleKeyCompletionItem item = new ELResourceBundleKeyCompletionItem(entry.getKey(), entry.getValue(), elElement);
+            item.setSmart(true);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            proposals.add(item);
+        }
+    }
+
+    private void proposeFunctions(CodeCompletionContext context,
+            String prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix)) {
+            ELFunctionCompletionItem item = 
+                    new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
             item.setSmart(true);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             proposals.add(item);
