@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.core.syntax.completion;
+package org.netbeans.modules.web.core.syntax.completion.api;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,16 +53,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.jsp.tagext.FunctionInfo;
 import javax.servlet.jsp.tagext.TagLibraryInfo;
-import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class ELFunctions {
-    public static class Function {
+public final class ELFunctions {
+    public static final class Function {
         private String prefix;
         private FunctionInfo info;
         
@@ -126,9 +126,9 @@ public class ELFunctions {
         }
     }
     
-    public static List<Function> getFunctions(JspSyntaxSupport sup, String start){
+    public static List<Function> getFunctions(FileObject context, String start){
         List<Function> functions = new ArrayList<Function>();
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(sup.getFileObject(), false, false);
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(context, false, false);
         if (result != null && result.getPageInfo() != null) {
             Map<?,?> libraries = result.getPageInfo().getTagLibraries();
             Map<?,?> prefixes = result.getPageInfo().getJspPrefixMapper();

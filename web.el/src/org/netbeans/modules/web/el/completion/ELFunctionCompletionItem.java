@@ -39,46 +39,32 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.web.el.completion;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.openide.util.ImageUtilities;
 
 /**
+ * Code completion item for EL functions.
+ *
  *
  * @author Erno Mononen
  */
-final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
+final class ELFunctionCompletionItem extends DefaultCompletionProposal {
 
-    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesLocale.gif";//NOI18N
-    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/function_16.png";
 
-    private final String bundle;
+    private final String name;
+    private final String clazz;
 
-    public ELResourceBundleCompletionItem(String bundle) {
-        this.bundle = bundle;
-    }
-
-    @Override
-    public String getName() {
-        return bundle;
-    }
-
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
-    }
-
-    @Override
-    public int getSortPrioOverride() {
-        return 20;
+    public ELFunctionCompletionItem(String name, String clazz) {
+        this.name = name;
+        this.clazz = clazz;
     }
 
     @Override
@@ -87,28 +73,23 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
     }
 
     @Override
+    public ElementKind getKind() {
+        return ElementKind.CLASS;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        return clazz;
+    }
+
+    @Override
     public ImageIcon getIcon() {
         return ImageUtilities.loadImageIcon(ICON_PATH, false);
     }
 
-    @Override
-    public String getCustomInsertTemplate() {
-        StringBuilder result = new StringBuilder();
-        result.append(getInsertPrefix())
-                .append("['")
-                .append("${cursor}")
-                .append("']");
-        scheduleShowingCompletion();
-        return result.toString();
-    }
-
-    private static void scheduleShowingCompletion() {
-        service.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                Completion.get().showCompletion();
-            }
-        }, 250, TimeUnit.MILLISECONDS);
-    }
 }
