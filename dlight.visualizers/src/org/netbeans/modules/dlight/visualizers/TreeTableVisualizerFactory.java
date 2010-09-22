@@ -4,7 +4,7 @@
  */
 package org.netbeans.modules.dlight.visualizers;
 
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.TreeTableDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProvider;
 import org.netbeans.modules.dlight.spi.visualizer.VisualizerFactory;

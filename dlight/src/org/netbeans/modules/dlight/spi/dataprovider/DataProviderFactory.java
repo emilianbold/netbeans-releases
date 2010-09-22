@@ -48,13 +48,14 @@ import org.netbeans.modules.dlight.spi.visualizer.VisualizerDataProviderFactory;
  * Factory to create {@link org.netbeans.modules.dlight.spi.dataprovider.DataProvider} instances.
  * Register your factory instance in Global Lookup.
  */
-public interface DataProviderFactory extends VisualizerDataProviderFactory<DataProvider> {
+public interface DataProviderFactory<T extends DataProvider> extends VisualizerDataProviderFactory<T> {
 
     /**
      * Creates new DataProvider instance
      * @return newly created instance of DataProvider
      */
-    DataProvider create();
+    @Override
+    T create();
 
     /**
      * Returns true if can attach to this storage
