@@ -83,13 +83,13 @@ public class Watcher extends AnnotationProvider {
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        return icon;
+        return null;
     }
     public @Override String annotateNameHtml(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Action[] actions(Set<? extends FileObject> files) {
         return null;
