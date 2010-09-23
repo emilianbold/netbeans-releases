@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.netbeans.modules.git.utils.GitUtils;
 import java.io.File;
 import java.util.Collections;
@@ -62,7 +64,7 @@ import org.openide.util.lookup.ServiceProviders;
  * @author ondra
  */
 @ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=GitVCS.class)})
-public class GitVCS extends VersioningSystem {
+public class GitVCS extends VersioningSystem implements PropertyChangeListener {
 
     private Set<File> knownRoots = Collections.synchronizedSet(new HashSet<File>());
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));
@@ -178,5 +180,20 @@ public class GitVCS extends VersioningSystem {
             }
         }
         return knownParent;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getPropertyName().equals(FileStatusCache.PROP_FILE_STATUS_CHANGED)) {
+            FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) event.getNewValue();
+            fireStatusChanged(changedEvent.getFile());
+        } else if (event.getPropertyName().equals(Git.PROP_ANNOTATIONS_CHANGED)) {
+            fireAnnotationsChanged((Set<File>) event.getNewValue());
+        } else if (event.getPropertyName().equals(Git.PROP_VERSIONED_FILES_CHANGED)) {
+            LOG.fine("cleaning unversioned parents cache"); //NOI18N
+            unversionedParents.clear();
+            fireVersionedFilesChanged();
+        }
     }
 }

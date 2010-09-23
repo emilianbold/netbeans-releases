@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +60,7 @@ import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -71,7 +74,12 @@ public final class Git {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.git"); //NOI18N
     public static final Logger STATUS_LOG = Logger.getLogger("org.netbeans.modules.git.status"); //NOI18N;
     private GitVCS gitVCS;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private FileStatusCache fileStatusCache;
+    private HashMap<File, RequestProcessor> processorsToUrl;
+    public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
+    static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
+    public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public Git () {
     }
@@ -89,6 +97,8 @@ public final class Git {
         annotator = new Annotator();
         interceptor = new FilesystemInterceptor();
         gitVCS = Lookup.getDefault().lookup(GitVCS.class);
+        fileStatusCache.addPropertyChangeListener(gitVCS);
+        addPropertyChangeListener(gitVCS);
     }
 
     VCSAnnotator getVCSAnnotator() {
@@ -156,6 +166,43 @@ public final class Git {
 
     public GitClient getClient (File repository) throws GitException {
         return GitClientFactory.getInstance(null).getClient(repository);
+    }
+
+    public RequestProcessor getRequestProcessor() {
+        return getRequestProcessor(null);
+    }
+
+    /**
+     * @param  url  URL or {@code null}
+     */
+    public RequestProcessor getRequestProcessor(File url) {
+        if(processorsToUrl == null) {
+            processorsToUrl = new HashMap<File, RequestProcessor>();
+        }
+
+        RequestProcessor rp = processorsToUrl.get(url);   //'url' can be null
+        if (rp == null) {
+            String rpName = "Git - " + (url != null ? url.toString() : "ANY_KEY");//NOI18N
+            rp = new RequestProcessor(rpName, 1, true);
+            processorsToUrl.put(url, rp);
+        }
+        return rp;
+    }
+
+    public void refreshAllAnnotations() {
+        support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
+    }
+
+    public void changesetChanged(File repository) {
+        support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
     }
 
     private static class RootsToFile {

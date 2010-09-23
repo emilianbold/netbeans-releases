@@ -121,6 +121,49 @@ public class FileInformation {
         return this.directory;
     }
 
+    /**
+     * TODO more complex logic needed.
+     * Gets integer status that can be used in comparators. The more important the status is for the user,
+     * the lower value it has. Conflict is 0, unknown status is 100.
+     *
+     * @return status constant suitable for 'by importance' comparators
+     */
+    public int getComparableStatus () {
+        if (containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+            return 0;
+        } else if (containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+            return 1;
+        } else if (containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+            return 10;
+        } else if (containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+            return 11;
+        } else if (containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+            return 12;
+        } else if (containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+            return 13;
+        } else if (containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+            return 50;
+        } else if (containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            return 100;
+        } else if (containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            return 101;
+        } else if (containsStatus(Status.STATUS_UNKNOWN)) {
+            return 102;
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
+        }
+    }
+
+    public String getShortStatusText() {
+        // TODO implement
+        return "Nevim";
+    }
+
+    public String getStatusText () {
+        // TODO implement
+        return "Tady ale fakt netusim";
+    }
+
     public static enum Status {
 
         /**

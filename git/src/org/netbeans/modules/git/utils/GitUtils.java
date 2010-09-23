@@ -201,7 +201,7 @@ public final class GitUtils {
     private static void addNotSharable (File topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns
-            Set ignores = notSharable.get(topFile);
+            Set<String> ignores = notSharable.get(topFile);
             if (ignores == null) {
                 ignores = new HashSet<String>();
             }

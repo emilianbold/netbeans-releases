@@ -42,26 +42,47 @@
 
 package org.netbeans.modules.git;
 
+import org.netbeans.modules.git.options.AnnotationColorProvider;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  * TODO: handle annotations
- * TODO: implement {@link org.netbeans.modules.versioning.util.OptionsPanelColorProvider}
  * @author ondra
  */
-class Annotator extends VCSAnnotator {
-    private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(FileInformation.Status.class);
+public class Annotator extends VCSAnnotator {
+    private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
+    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.STATUS_VERSIONED_UPTODATE, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
         STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.STATUS_VERSIONED_UPTODATE, FileInformation.Status.STATUS_NOTVERSIONED_EXCLUDED));
     }
+    private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
+    private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
+    private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
+    private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
+    private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
+
     private final FileStatusCache cache;
+    private MessageFormat format;
+    private String emptyFormat;
 
     public Annotator() {
         cache = Git.getInstance().getFileStatusCache();
@@ -81,11 +102,220 @@ class Annotator extends VCSAnnotator {
 
     @Override
     public Image annotateIcon(Image icon, VCSContext context) {
-        return super.annotateIcon(icon, context);
+        boolean folderAnnotation = false;
+        for (File file : context.getRootFiles()) {
+            if (file.isDirectory()) {
+                folderAnnotation = true;
+                Utils.addFolderToLog(file);
+                break;
+            }
+        }
+
+        if (folderAnnotation == false && context.getRootFiles().size() > 1) {
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
+        }
+
+        if (folderAnnotation == false) {
+            return annotateFileIcon(context, icon);
+        } else {
+            return annotateFolderIcon(context, icon);
+        }
     }
 
     @Override
     public String annotateName(String name, VCSContext context) {
-        return name + " [Tomasi, implement us]";
+        FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
+        boolean folderAnnotation = false;
+        for (final File file : context.getRootFiles()) {
+            FileInformation info = cache.getCachedStatus(file);
+            if (!info.containsStatus(STATUS_IS_IMPORTANT)) continue;
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+                mostImportantFile = file;
+                folderAnnotation = info.isDirectory();
+            }
+        }
+
+        if (folderAnnotation == false && context.getRootFiles().size() > 1) {
+            folderAnnotation = !Utils.isFromMultiFileDataObject(context);
+        }
+
+        if (mostImportantInfo == null) return null;
+        return folderAnnotation ?
+            annotateFolderNameHtml(name, context, mostImportantInfo, mostImportantFile) :
+            annotateNameHtml(name, mostImportantInfo, mostImportantFile);
+    }
+
+    private void refresh () {
+        // TODO: implement, [status repository branch tags? etc.]
+    }
+    
+    private static boolean isMoreImportant (FileInformation a, FileInformation b) {
+        if (b == null) return true;
+        if (a == null) return false;
+        return a.getComparableStatus() < b.getComparableStatus();
+    }
+
+
+    private Image annotateFileIcon (VCSContext context, Image icon) throws IllegalArgumentException {
+        FileInformation mostImportantInfo = null;
+        File mostImportantFile = null;
+        for (final File file : context.getRootFiles()) {
+            FileInformation info = cache.getCachedStatus(file);
+            if (!info.containsStatus(STATUS_IS_IMPORTANT)) {
+                continue;
+            }
+            if (isMoreImportant(info, mostImportantInfo)) {
+                mostImportantInfo = info;
+                mostImportantFile = file;
+            }
+        }
+        if(mostImportantInfo == null) return null;
+        String statusText = null;
+        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+            statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+            statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+            // TODO: copy?
+            statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+            statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+            statusText = null;
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+            statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            statusText = null;
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_UNKNOWN)) {
+            statusText = null;
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
+        }
+        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
+    }
+
+    private Image annotateFolderIcon(VCSContext context, Image icon) {
+        boolean isVersioned = false;
+        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
+            File file = (File) i.next();
+            // There is an assumption here that annotateName was already
+            // called and FileStatusCache.getStatus was scheduled if
+            // FileStatusCache.getCachedStatus returned null.
+            FileInformation info = cache.getCachedStatus(file);
+            if (info.containsStatus(STATUS_BADGEABLE)) {
+                isVersioned = true;
+                break;
+            }
+        }
+        if (!isVersioned) {
+            return null;
+        }
+        Image badge = null;
+        if (cache.containsFiles(context, EnumSet.of(Status.STATUS_VERSIONED_CONFLICT), true)) {
+            badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
+        } else if (cache.containsFiles(context, FileInformation.STATUS_LOCAL_CHANGES, true)) {
+            badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified);
+        }
+        if (badge != null) {
+            return ImageUtilities.mergeImages(icon, badge, 16, 9);
+        } else {
+            return icon;
+        }
+    }
+
+    private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
+        String nameHtml = htmlEncode(name);
+        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
+        }
+        MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
+        return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+    }
+
+    public String annotateNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
+        name = htmlEncode(name);
+
+        String textAnnotation;
+        boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
+
+        if (annotationsVisible && mostImportantFile != null && mostImportantInfo.containsStatus(STATUS_IS_IMPORTANT)) {
+            if (format != null) {
+                textAnnotation = formatAnnotation(mostImportantInfo, mostImportantFile);
+            } else {
+                String statusText = mostImportantInfo.getShortStatusText();
+                if(!statusText.isEmpty()) {
+                    textAnnotation = " [" + mostImportantInfo.getShortStatusText() + "]"; // NOI18N
+                } else {
+                    textAnnotation = ""; // NOI18N
+                }
+            }
+        } else {
+            textAnnotation = ""; // NOI18N
+        }
+
+        if (!textAnnotation.isEmpty()) {
+            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); // NOI18N
+        }
+
+        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+            // what about copy?
+            return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+            return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+            return name;
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_UNKNOWN)) {
+            return name;
+        } else {
+            throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
+        }
+    }
+
+    private static String htmlEncode(String name) {
+        if (name.indexOf('<') == -1) return name;
+        return lessThan.matcher(name).replaceAll("&lt;"); // NOI18N
+    }
+
+    private AnnotationColorProvider getAnnotationProvider() {
+        return AnnotationColorProvider.getInstance();
+    }
+
+    private String formatAnnotation(FileInformation info, File file) {
+        String statusString = "";  // NOI18N
+        if (info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+            statusString = info.getShortStatusText();
+        }
+
+        //String stickyString = SvnUtils.getCopy(file);
+        String stickyString = null;
+        if (stickyString == null) {
+            stickyString = ""; // NOI18N
+        }
+
+        Object[] arguments = new Object[] {
+            statusString,
+            stickyString,
+        };
+
+        String annotation = format.format(arguments, new StringBuffer(), null).toString().trim();
+        if(annotation.equals(emptyFormat)) {
+            return ""; // NOI18N
+        } else {
+            return " " + annotation; // NOI18N
+        }
     }
 }

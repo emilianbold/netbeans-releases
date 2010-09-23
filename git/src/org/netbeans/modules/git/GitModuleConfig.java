@@ -42,6 +42,10 @@
 
 package org.netbeans.modules.git;
 
+import java.awt.Color;
+import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
+
 /**
  *
  * @author ondra
@@ -61,8 +65,20 @@ public final class GitModuleConfig {
         
     }
 
-    boolean isExcludedFromCommit(String absolutePath) {
+    public boolean isExcludedFromCommit(String absolutePath) {
         return false;
     }
 
+    public Color getColor(String colorName, Color defaultColor) {
+         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
+         return new Color(colorRGB);
+    }
+
+    public void setColor(String colorName, Color value) {
+         getPreferences().putInt(colorName, value.getRGB());
+    }
+
+    public Preferences getPreferences() {
+        return NbPreferences.forModule(GitModuleConfig.class);
+    }
 }

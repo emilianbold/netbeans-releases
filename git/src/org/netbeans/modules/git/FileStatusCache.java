@@ -517,7 +517,7 @@ public class FileStatusCache {
 
     private Set<File> listFilesIntern (Set<File> roots, EnumSet<Status> includeStatus, boolean recursively) {
         if(roots == null || roots.isEmpty()) {
-            return Collections.EMPTY_SET;
+            return Collections.<File>emptySet();
         }
         Set<File> ret = new HashSet<File>();
         for (File root : roots) {
