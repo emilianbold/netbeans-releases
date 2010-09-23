@@ -155,7 +155,6 @@ public final class NbMavenProjectImpl implements Project {
     private FileObject fileObject;
     private FileObject folderFileObject;
     private final File projectFile;
-    private Image icon;
     private final Lookup lookup;
     private Updater updater1;
     private Updater updater2;
@@ -179,7 +178,7 @@ public final class NbMavenProjectImpl implements Project {
     static {
         // invokes static initializer of ModelHandle.class
         // that will assign value to the ACCESSOR field above
-        Class c = NbMavenProject.class;
+        Class<?> c = NbMavenProject.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
@@ -405,9 +404,6 @@ public final class NbMavenProjectImpl implements Project {
                                 "Error reading project model", msg, null);
                         problemReporter.addReport(report);
 
-                    }
-                    if (msg.contains("Detected the following recursive expression cycle: []")) {
-                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.WARNING, "#190530: anomalous error", e);
                     }
                 }
             }
