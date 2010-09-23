@@ -45,10 +45,12 @@
 
 package org.netbeans.modules.java.source.transform;
 
+import javax.lang.model.util.Elements;
 import org.netbeans.modules.java.source.query.CommentHandler;
 
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree.JCTypeAnnotation;
 import com.sun.tools.javac.util.Context;
 import javax.lang.model.element.Element;
@@ -57,11 +59,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.QualifiedNameable;
 import org.netbeans.modules.java.source.builder.ASTService;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.QualIdentTree;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.save.ElementOverlay;
 
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
@@ -88,15 +93,19 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     public Element currentSym;
 
     protected TreeFactory make;
+    protected Elements elements;
     protected CommentHandler comments;
     protected ASTService model;
+    private ElementOverlay overlay;
     private ImportAnalysis2 importAnalysis;
     private Map<Tree, Object> tree2Tag;
 
     public void attach(Context context, ImportAnalysis2 importAnalysis, Map<Tree, Object> tree2Tag) {
         make = TreeFactory.instance(context);
+        elements = JavacElements.instance(context);
         comments = CommentHandlerService.instance(context);
         model = ASTService.instance(context);
+        overlay = context.get(ElementOverlay.class);
         this.importAnalysis = importAnalysis;
         this.tree2Tag = tree2Tag;
     }
@@ -105,6 +114,7 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         make = null;
         comments = null;
         model = null;
+        overlay = null;
         importAnalysis = null;
     }
 
@@ -441,8 +451,17 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
     }
     public Tree visitMemberSelect(MemberSelectTree tree, Object p) {
         if (tree instanceof QualIdentTree) {
-            Element el = ((QualIdentTree) tree).sym;
-            
+            QualIdentTree qit = (QualIdentTree) tree;
+            Element el = qit.sym;
+
+            if (el == null) {
+                el = overlay.resolve(model, elements, qit.getFQN());
+            } else {
+                if (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE) {
+                    el = overlay.resolve(model, elements, ((QualifiedNameable) el).getQualifiedName().toString());
+                }
+            }
+
             return importAnalysis.resolveImport(tree, el);
         } else {
             return rewriteChildren(tree);

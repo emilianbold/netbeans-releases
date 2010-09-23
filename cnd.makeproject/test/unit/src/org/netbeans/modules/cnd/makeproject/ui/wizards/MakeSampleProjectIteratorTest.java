@@ -194,15 +194,15 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         }
     }
 
-    @Test
-    public void testHelloQtWorld() throws IOException, InterruptedException, InvocationTargetException {
-        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
-        }
-        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
-        }
-    }
+//    @Test
+//    public void testHelloQtWorld() throws IOException, InterruptedException, InvocationTargetException {
+//        if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+//            testSample(SunStudioCompilerSet, "HelloQtWorld", defaultConfs, "-j 1");
+//        }
+//        if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
+//            testSample(GNUCompilerSet, "HelloQtWorld", defaultConfs, "");
+//        }
+//    }
 
     @Test
     public void testProfilingDemo() throws IOException, InterruptedException, InvocationTargetException {

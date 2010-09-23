@@ -43,7 +43,6 @@
  */
 package org.netbeans.api.java.source;
 
-import java.util.Collections;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
@@ -57,6 +56,9 @@ import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.tools.JavaFileObject;
@@ -811,6 +813,17 @@ public final class TreeMaker {
         Parameters.notNull("element", element);
         return delegate.QualIdent(element);
     }
+
+    /**
+     * Creates a qualified identifier for a given String.
+     *
+     * @param name FQN for which to create the QualIdent
+     * @since 0.65
+     */
+    public @NonNull ExpressionTree QualIdent(@NonNull String name) {
+        Parameters.notNull("name", name);
+        return delegate.QualIdent(name);
+    }
     
     /**
      * Creates a new ReturnTree.
@@ -884,6 +897,35 @@ public final class TreeMaker {
     public @NonNull Tree Type(@NonNull TypeMirror type) {
         Parameters.notNull("type", type);
         return delegate.Type(type);
+    }
+
+    /**
+     * Creates a new Tree for a given String type specification.
+     *
+     * @param type       String type specification
+     * @see com.sun.source.tree.ExpressionTree
+     * @since 0.65
+     */
+    public @NonNull Tree Type(@NonNull String type) {
+        Parameters.notNull("type", type);
+
+        Tree typeTree = copy.getTreeUtilities().parseType(type);
+        final Map<Tree, Tree> translate = new HashMap<Tree, Tree>();
+
+        new TreeScanner<Void, Void>() {
+            @Override
+            public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                translate.put(node, QualIdent(node.toString()));
+                return null;
+            }
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                translate.put(node, QualIdent(node.toString()));
+                return null;
+            }
+        }.scan(typeTree, null);
+
+        return copy.getTreeUtilities().translate(typeTree, translate);
     }
 
     /**

@@ -189,7 +189,7 @@ final class ModuleList implements Stamps.Updater {
             Set<File> jars = InstalledFileLocator.getDefault().locateAll(jar, name, false);
             if (jars.isEmpty()) {
                 throw new FileNotFoundException(jar);
-            } else if (jars.size() == 1) {
+            } else if (jars.size() == 1 || Boolean.getBoolean("org.netbeans.core.startup.ModuleList.firstModuleJarWins")) {
                 return jars.iterator().next();
             } else {
                 // Pick the newest one available.

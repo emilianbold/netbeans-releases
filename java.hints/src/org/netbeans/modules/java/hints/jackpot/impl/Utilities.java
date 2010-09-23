@@ -423,16 +423,9 @@ public class Utilities {
     }
 
     private static Tree fixTree(Context c, Tree patternTree) {
-        TreeFactory make = TreeFactory.instance(c);
         FixTree fixTree = new FixTree();
 
-        //TODO: workaround, ImmutableTreeTranslator needs a CompilationUnitTree (rewriteChildren(BlockTree))
-        //but sometimes no CompilationUnitTree (e.g. during BatchApply):
-        CompilationUnitTree cut = make.CompilationUnit(null, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList(), null);
-        ImportAnalysis2 ia = new ImportAnalysis2(c);
-
-        ia.setImports(Collections.<ImportTree>emptyList());
-        fixTree.attach(c, ia, null);
+        fixTree.attach(c, new NoImports(c), null);
 
         return fixTree.translate(patternTree);
     }

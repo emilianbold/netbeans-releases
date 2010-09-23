@@ -43,11 +43,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -80,7 +78,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     }
 
     @Override
-    public Component getComponent() {
+    public PanelConfigureProjectVisual getComponent() {
         if (component == null) {
             component = new PanelConfigureProjectVisual(this, this.name, this.wizardTitle, this.wizardACSD, showMakefileTextField, type);
         }
@@ -102,6 +100,8 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
             return new HelpCtx("NewStaticLibWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
             return new HelpCtx("NewMakeWizardP1"); // NOI18N
+        } else if (type == NewMakeProjectWizardIterator.TYPE_BINARY) {
+            return new HelpCtx("NewBinaryWizard"); // NOI18N
         } else {
             return new HelpCtx("CreatingCorC++Project"); // NOI18N
         }
@@ -109,8 +109,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
+        return getComponent().valid(wizardDescriptor);
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
@@ -129,13 +128,13 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            (it.next()).stateChanged(ev);
         }
     }
 
@@ -145,11 +144,11 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
             return;
         }
         wizardDescriptor = settings;
-        component.read(wizardDescriptor);
+        getComponent().read(wizardDescriptor);
 
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new wizard's title
         // this name is used in NewProjectWizard to modify the title
-        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        Object substitute = getComponent().getClientProperty("NewProjectWizard_Title"); // NOI18N
         if (substitute != null) {
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
         }
@@ -158,8 +157,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
-        WizardDescriptor d = settings;
-        component.store(d);
+        getComponent().store(settings);
         initialized = false;
     }
 

@@ -1144,7 +1144,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="--all"/>
       <arg value="--exclude"/>
       <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
-      <arg value="glob:{*/nbproject/private/**,*/*/nbproject/private/**,**/user.build.properties,nbbuild/misc/build-site-local.sh}"/>
+      <arg value="glob:{*/nbproject/private/**,*/*/nbproject/private/**,**/user.build.properties}"/>
     </hgexec>
   </target>
 

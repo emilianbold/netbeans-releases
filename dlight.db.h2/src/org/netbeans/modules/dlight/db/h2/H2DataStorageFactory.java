@@ -51,7 +51,7 @@ import org.netbeans.modules.dlight.db.h2.RcFile.FormatException;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorageFactory;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;

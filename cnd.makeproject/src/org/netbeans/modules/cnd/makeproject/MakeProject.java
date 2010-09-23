@@ -73,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
@@ -146,6 +147,8 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
+    public static final String REMOTE_MODE_TAG = "remote-mode"; // NOI18N
+
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
 
@@ -173,6 +176,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MakeSources sources;
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
+    private /*final*/ RemoteProject.Mode remoteMode;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
@@ -198,6 +202,21 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             projectType = new Integer(typeTxt).intValue();
         }
 
+        NodeList fullRemoteNodeList = data.getElementsByTagName(REMOTE_MODE_TAG);
+        if (fullRemoteNodeList.getLength() == 1) {
+            fullRemoteNodeList = fullRemoteNodeList.item(0).getChildNodes();
+            String t = fullRemoteNodeList.item(0).getNodeValue();
+            RemoteProject.Mode mode = RemoteProject.Mode.valueOf(t);
+            CndUtils.assertNotNull(mode, "can not restore remote mode " + t); //NOI18N
+            if (mode != null) {
+                remoteMode = mode;
+            } else {
+                remoteMode = RemoteProject.DEFAULT_MODE;
+            }
+        } else {
+            remoteMode = RemoteProject.DEFAULT_MODE;
+        }
+
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
@@ -218,6 +237,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                 set.addAll(Arrays.asList(extensions.split(","))); // NOI18N
             }
         }
+    }
+
+    /*package*/ void setRemoteMode(RemoteProject.Mode mode) {
+        remoteMode = mode;
+    }
+
+    public RemoteProject.Mode getRemoteMode() {
+        return remoteMode;
     }
 
     @Override
@@ -1046,6 +1073,26 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
+        }
+
+        @Override
+        public Mode getRemoteMode() {
+            return remoteMode;
+        }
+
+        @Override
+        public RemoteSyncFactory getSyncFactory() {
+            // TODO:fullRemote: think over, should mode be checked here?
+            // Probably noit sice fixed factory is set to configurations in the cae of full remote
+            switch (remoteMode) {
+                case LOCAL_SOURCES:
+                    return getActiveConfiguration().getRemoteSyncFactory();
+                case REMOTE_SOURCES:
+                    return RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+                default:
+                    CndUtils.assertTrue(false, "Unexpected remote mode " + remoteMode); //NOI18N
+                    return getActiveConfiguration().getRemoteSyncFactory();
+            }
         }
     }
     

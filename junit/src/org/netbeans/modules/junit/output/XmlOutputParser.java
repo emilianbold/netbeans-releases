@@ -466,31 +466,40 @@ final class XmlOutputParser extends DefaultHandler {
         String[] stArray = tr.getStackTrace();
         if (stArray == null){
             tr.setStackTrace(new String[]{line});
-            Matcher matcher = regexp.getComparisonPattern().matcher(line);
-            if (matcher.matches()){
-                tr.setComparisonFailure(
-                        new Trouble.ComparisonFailure(
-                            matcher.group(1)+matcher.group(2)+matcher.group(3),
-                            matcher.group(4)+matcher.group(5)+matcher.group(6))
-                );
-                return;
-            }
-            matcher = regexp.getComparisonHiddenPattern().matcher(line);
-            if (matcher.matches()){
-                tr.setComparisonFailure(
-                        new Trouble.ComparisonFailure(
-                            matcher.group(1),
-                            matcher.group(2))
-                );
-                return;
-            }
-
+            setComparisonFailure(tr, line);
         } else {
             List<String> stList = new ArrayList(Arrays.asList(trouble.getStackTrace()));
             if (!line.startsWith(stList.get(stList.size()-1))){
                 stList.add(line);
                 tr.setStackTrace(stList.toArray(new String[stList.size()]));
             }
+        }
+    }
+
+    private void setComparisonFailure(Trouble tr, String line) {
+        // #190267: exclude "big" log (if any) from the matching
+        int logPos = line.indexOf("Log:"); // NOI18N
+        if(logPos > 0) {
+            line = line.substring(0, logPos);
+        }
+
+        Matcher matcher = regexp.getComparisonPattern().matcher(line);
+        if (matcher.matches()){
+            tr.setComparisonFailure(
+                    new Trouble.ComparisonFailure(
+                        matcher.group(1)+matcher.group(2)+matcher.group(3),
+                        matcher.group(4)+matcher.group(5)+matcher.group(6))
+            );
+            return;
+        }
+        matcher = regexp.getComparisonHiddenPattern().matcher(line);
+        if (matcher.matches()){
+            tr.setComparisonFailure(
+                    new Trouble.ComparisonFailure(
+                        matcher.group(1),
+                        matcher.group(2))
+            );
+            return;
         }
     }
 

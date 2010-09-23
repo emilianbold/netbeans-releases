@@ -48,7 +48,6 @@ import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.util.TreePathScanner;
-import java.util.HashSet;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -78,6 +77,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,18 +86,22 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -755,7 +759,7 @@ public class Utilities {
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }
 
-    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
+    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target) {
         List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
         List<String> argumentNames = new LinkedList<String>();
         Set<String>      usedArgumentNames = new HashSet<String>();
@@ -766,7 +770,13 @@ public class Utilities {
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
 
-            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+            if (tm == null || containsErrorsRecursively(tm)) {
+                return null;
+            }
+
+            Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(tm);
+
+            if (!allTypeVarsAccessible(typeVars, target)) {
                 return null;
             }
 
@@ -809,23 +819,29 @@ public class Utilities {
     //=>
     //ArrayList<Unknown> xxx;
     //xxx = new ArrayList<Unknown>();
-    public static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
+    public static boolean containsErrorsRecursively(TypeMirror tm) {
         switch (tm.getKind()) {
-            case WILDCARD:
-            case TYPEVAR:
             case ERROR:
                 return true;
             case DECLARED:
                 DeclaredType type = (DeclaredType) tm;
 
                 for (TypeMirror t : type.getTypeArguments()) {
-                    if (containsErrorsOrTypevarsRecursively(t))
+                    if (containsErrorsRecursively(t))
                         return true;
                 }
 
                 return false;
             case ARRAY:
-                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
+                return containsErrorsRecursively(((ArrayType) tm).getComponentType());
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null && containsErrorsRecursively(((WildcardType) tm).getExtendsBound())) {
+                    return true;
+                }
+                if (((WildcardType) tm).getSuperBound() != null && containsErrorsRecursively(((WildcardType) tm).getSuperBound())) {
+                    return true;
+                }
+                return false;
             default:
                 return false;
         }
@@ -876,7 +892,83 @@ public class Utilities {
         public Boolean visitClass(ClassTree node, Void p) {
             return false;
         }
+    }
 
+    public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {
+        if (tm == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<TypeVariable> typeVars = new LinkedList<TypeVariable>();
+
+        containedTypevarsRecursively(tm, typeVars);
+
+        return typeVars;
+    }
+
+    private static void containedTypevarsRecursively(@NonNull TypeMirror tm, @NonNull Collection<TypeVariable> typeVars) {
+        switch (tm.getKind()) {
+            case TYPEVAR:
+                typeVars.add((TypeVariable) tm);
+                break;
+            case DECLARED:
+                DeclaredType type = (DeclaredType) tm;
+                for (TypeMirror t : type.getTypeArguments()) {
+                    containedTypevarsRecursively(t, typeVars);
+                }
+
+                break;
+            case ARRAY:
+                containedTypevarsRecursively(((ArrayType) tm).getComponentType(), typeVars);
+                break;
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getExtendsBound(), typeVars);
+                }
+                if (((WildcardType) tm).getSuperBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getSuperBound(), typeVars);
+                }
+                break;
+        }
+    }
+
+    public static boolean allTypeVarsAccessible(Collection<TypeVariable> typeVars, Element target) {
+        if (target == null) {
+            return typeVars.isEmpty();
+        }
+        
+        Set<TypeVariable> targetTypeVars = new HashSet<TypeVariable>();
+
+        OUTER: while (target.getKind() != ElementKind.PACKAGE) {
+            Iterable<? extends TypeParameterElement> tpes;
+
+            switch (target.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    tpes = ((TypeElement) target).getTypeParameters();
+                    break;
+                case METHOD:
+                case CONSTRUCTOR:
+                    tpes = ((ExecutableElement) target).getTypeParameters();
+                    break;
+                default:
+                    break OUTER;
+            }
+
+            for (TypeParameterElement tpe : tpes) {
+                targetTypeVars.add((TypeVariable) tpe.asType());
+            }
+
+            if (target.getModifiers().contains(Modifier.STATIC)) {
+                break;
+            }
+
+            target = target.getEnclosingElement();
+        }
+
+        return targetTypeVars.containsAll(typeVars);
     }
 
 }

@@ -706,6 +706,9 @@ final class JUnitOutputReader {
     //--------------------------------------------------------
     
     /**
+     * Parses given plain header and sets the time of the test case if possible.
+     * @param testcaseHeader the test case header.
+     * @return {@code true} is success, otherwise {@code false}.
      */
     private boolean tryParsePlainHeader(String testcaseHeader) {
         final Matcher matcher = regexp.getTestcaseHeaderPlainPattern()
@@ -713,14 +716,13 @@ final class JUnitOutputReader {
         if (matcher.matches()) {
             String methodName = matcher.group(1);
             String timeString = matcher.group(2);
-            
             testcase = findTest(testSession.getCurrentSuite(), methodName);
-            testcase.setTimeMillis(parseTime(timeString));
-            
-            return true;
-        } else {
-            return false;
+            if(testcase != null) { // #187035
+                testcase.setTimeMillis(parseTime(timeString));
+                return true;
+            }
         }
+        return false;
     }
 
     private JUnitTestcase findTest(TestSuite suite, String methodName){

@@ -60,6 +60,7 @@ public class CndUtils {
     private static final Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
+    private static volatile Exception lastAssertion;
 
     static {
         String text = System.getProperty("cnd.release.mode");
@@ -123,6 +124,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertNull(Object object, String message) {
+        if (isDebugMode()) {
+            assertTrue(object == null, message); //NOI18N
+        }
+    }
+
     public static int getNumberCndWorkerThreads() {
         int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
                 Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
@@ -158,14 +165,18 @@ public class CndUtils {
 
     public static void assertTrue(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.SEVERE, message, new Exception(message));
+            LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
     public static void assertTrueInConsole(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.INFO, message, new Exception(message));
+            LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
         }
+    }
+
+    public static Exception getLastAssertion() {
+        return lastAssertion;
     }
 
     public static void assertNonUiThread() {

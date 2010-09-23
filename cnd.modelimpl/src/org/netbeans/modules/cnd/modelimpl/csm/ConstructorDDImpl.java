@@ -62,19 +62,27 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
  */
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
-    private final List<CsmExpression> initializers;
+    private List<CsmExpression> initializers;
     
-    public ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
-        
-        initializers = AstRenderer.renderConstructorInitializersList(ast, this, this.getContainingFile());
+    private ConstructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, nameHolder, global);
     }
  
+    public static ConstructorDDImpl createConstructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(ast, cls, visibility, nameHolder, register);
+        constructorDDImpl.initializers = AstRenderer.renderConstructorInitializersList(ast, constructorDDImpl, constructorDDImpl.getContainingFile());
+        postObjectCreateRegistration(register, constructorDDImpl);
+        nameHolder.addReference(cls.getContainingFile(), constructorDDImpl);
+        return constructorDDImpl;
+    }
+
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
     }
     
+    @Override
     public List<CsmExpression> getInitializerList() {
         if(initializers != null) {
             return initializers;

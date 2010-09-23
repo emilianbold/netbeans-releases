@@ -42,7 +42,7 @@
 package org.netbeans.modules.dlight.visualizers.api;
 
 import org.netbeans.modules.dlight.util.ui.Renderer;
-import org.netbeans.modules.dlight.visualizers.api.impl.OpenFunctionInEditorActionProvider;
+import org.netbeans.modules.dlight.visualizers.support.OpenFunctionInEditorActionProvider;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collections;

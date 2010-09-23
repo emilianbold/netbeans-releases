@@ -303,6 +303,25 @@ public final class DataStorageManager {
                 }
             }
         }
+        if (perstistentDataStorageFactories != null) {
+            for (PersistentDataStorageFactory<?> storage : perstistentDataStorageFactories) {
+                //we should open here the persistente storage
+
+                if (storage.getStorageTypes().contains(storageType)) {
+                    DataStorage newStorage = storage.createStorage();
+                    if (newStorage != null) {
+                        if (newStorage instanceof ProxyDataStorage) {
+                            ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                            DataStorage backendStorage = getDataStorageFor( session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                            proxyStorage.attachTo(backendStorage);
+                        }
+                        newStorage.createTables(tableMetadatas);
+
+                        return newStorage;
+                    } 
+                }
+            }
+        }        
         return null;
     }
 }

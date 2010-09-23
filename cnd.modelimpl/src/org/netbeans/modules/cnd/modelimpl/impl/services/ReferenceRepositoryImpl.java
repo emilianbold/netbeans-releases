@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -79,6 +80,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
@@ -103,6 +105,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
     public ReferenceRepositoryImpl() {
     }
     
+    @Override
     public Collection<CsmReference> getReferences(CsmObject target, CsmProject project, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         if (!(project instanceof ProjectBase)) {
             return Collections.<CsmReference>emptyList();
@@ -134,6 +137,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
+    @Override
     public Collection<CsmReference> getReferences(CsmObject target, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         CsmScope scope = getDeclarationScope(target);
         CsmFile scopeFile = CsmKindUtilities.isOffsetable(scope) ? ((CsmOffsetable)scope).getContainingFile() : null;
@@ -167,6 +171,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return out;
     }
     
+    @Override
     public Collection<CsmReference> getReferences(CsmObject[] targets, CsmFile file, Set<CsmReferenceKind> kinds, Interrupter interrupter) {
         Collection<CsmReference> refs = new LinkedHashSet<CsmReference>(1024);
         // TODO: optimize performance
@@ -177,6 +182,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
             // if only one target, then collection is already sorted
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                @Override
                 public int compare(CsmReference o1, CsmReference o2) {
                     return o1.getStartOffset() - o2.getStartOffset();
                 }
@@ -238,6 +244,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
         final Collection<CsmReference> out = new ArrayList<CsmReference>(20);
         ReferenceVisitor visitor = new ReferenceVisitor() {
+            @Override
             public void visit(CsmReference ref) {
                 if (interrupter != null && interrupter.cancelled()){
                     return;
@@ -390,11 +397,25 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(referencedObj)) {
             referencedObj = ((CsmInstantiation)referencedObj).getTemplateDeclaration();
         }
-        if (targetDecl.equals(referencedObj) || (targetDef != null && targetDef.equals(referencedObj))) {
+        if (CsmReferenceSupport.sameDeclaration(targetDecl, referencedObj) || checkDefinitions(targetDef, referencedObj)) {
             accept = CsmReferenceResolver.getDefault().isKindOf(ref, kinds);
         }
         return accept;
     }   
+
+    private boolean checkDefinitions(CsmObject targetDef, CsmObject referencedObj) {
+        if (targetDef == null) {
+            return false;
+        }
+        if (targetDef.equals(referencedObj)) {
+            return true;
+        }
+        if (CsmKindUtilities.isFunction(referencedObj)) {
+            CsmFunctionDefinition refDef = ((CsmFunction) referencedObj).getDefinition();
+            return targetDef.equals(refDef);
+        }
+        return false;
+    }
 
     private CsmScope getDeclarationScope(CsmObject decl) {
         assert decl != null;

@@ -188,4 +188,75 @@ public final class FunctionNameUtils {
         }
         return functionSignature.substring(start);
     }
+
+    public static String getFunctionName(String functionSignature) {
+        int start = 0;
+        int templateLevel = 0;
+        boolean isOperator = false;
+        int ssOpenmp = functionSignature.indexOf("_$"); // NOI18N
+        if (ssOpenmp >= 0) {
+            int j = functionSignature.indexOf('.');
+            if (j > ssOpenmp) {
+                functionSignature = functionSignature.substring(0, ssOpenmp) + functionSignature.substring(j + 1);
+            }
+        }
+        if (functionSignature.indexOf("`") != -1) {//NOI18N
+            start = functionSignature.indexOf("`") + 1;//NOI18N
+        }
+        for (int i = start; i < functionSignature.length(); i++) {
+            char c = functionSignature.charAt(i);
+            switch (c) {
+                case '<':
+                    templateLevel++;
+                    break;
+                case '>':
+                    templateLevel++;
+                    break;
+                case 'o':
+                    if (functionSignature.substring(i).startsWith("operator") && // NOI18N
+                            functionSignature.length() > i + 8
+                            && !Character.isLetter(functionSignature.charAt(i + 8))) {
+                        isOperator = true;
+                    }
+                    break;
+                case '+':
+                    if (functionSignature.length() > i + 1
+                            && functionSignature.charAt(i + 1) == '0') {
+                        return functionSignature.substring(start, i);
+                    }
+                    break;
+                case '.':
+                    if (functionSignature.indexOf("`") != -1 && functionSignature.indexOf("`") > i) {//NOI18N
+                        break;
+                    }
+                    return functionSignature.substring(start, i);
+                case ' ':
+                    if (functionSignature.length() > i + 1
+                            && functionSignature.charAt(i + 1) == '#') {
+                        return functionSignature.substring(start, i);
+                    }
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
+                case '*':
+                case '&':
+                    if (templateLevel == 0) {
+                        if (!isOperator) {
+                            start = i + 1;
+                        }
+                    }
+                    break;
+                case '[':
+                    start = i + 1;
+                    break;
+                case '(':
+                case ']':
+                    return functionSignature.substring(start, i);
+            }
+        }
+        return functionSignature.substring(start);
+    }
 }

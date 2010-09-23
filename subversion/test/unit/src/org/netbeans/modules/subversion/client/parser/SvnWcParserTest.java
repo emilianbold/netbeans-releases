@@ -46,6 +46,7 @@ package org.netbeans.modules.subversion.client.parser;
 import junit.framework.*;
 import java.io.File;
 import java.util.Date;
+import org.netbeans.junit.NbTestCase;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
@@ -54,7 +55,7 @@ import org.tigris.subversion.svnclientadapter.SVNStatusKind;
  *
  * @author Ed Hillmann
  */
-public class SvnWcParserTest extends TestCase {
+public class SvnWcParserTest extends NbTestCase {
 
     private String dataRootDir;
     private SvnWcParser svnWcParser;
@@ -66,8 +67,10 @@ public class SvnWcParserTest extends TestCase {
     protected void setUp() throws Exception {
         svnWcParser = new SvnWcParser();
 
+        System.setProperty("svnClientAdapterFactory", "commandline");
+
         //data.root.dir defined in project.properties
-        dataRootDir = System.getProperty("data.root.dir");
+        dataRootDir = getDataDir().getAbsolutePath();
     }
 
     public static Test suite() {
@@ -78,6 +81,7 @@ public class SvnWcParserTest extends TestCase {
 
     public void testGetSingleStatusNoChanges() throws Exception {
         File myFile = new File(dataRootDir + "/SvnWcParser/no-changes/testapp/Main.java");
+        assertTrue(myFile.exists());
         ISVNStatus parsedStatus = svnWcParser.getSingleStatus(myFile);
         assertFalse(parsedStatus.isCopied());
         assertNull(parsedStatus.getUrlCopiedFrom());

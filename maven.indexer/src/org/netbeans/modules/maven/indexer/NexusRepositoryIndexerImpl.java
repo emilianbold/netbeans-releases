@@ -72,6 +72,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -184,7 +185,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     private static final int MAX_RESULT_COUNT = 512;
     private static final int DEFAULT_MAX_CLAUSE = 1024;
-    private static final int MAX_MAX_CLAUSE = 8192;
+    private static final int MAX_MAX_CLAUSE = 2048;
 
     //#138102
     public static String createLocalRepositoryPath(FileObject fo) {
@@ -212,9 +213,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 ContainerConfiguration config = new DefaultContainerConfiguration();
 	            //#154755 - start
 	            ClassWorld world = new ClassWorld();
-	            ClassRealm embedderRealm = world.newRealm("maven.embedder", MavenEmbedder.class.getClassLoader()); //NOI18N
-	            ClassRealm indexerRealm = world.newRealm("maven.indexer", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
-	            ClassRealm plexusRealm = world.newRealm("plexus.core", NexusRepositoryIndexerImpl.class.getClassLoader()); //NOI18N
+	            ClassRealm embedderRealm = world.newRealm("maven.embedder", EmbedderFactory.guiceReadyLoader(MavenEmbedder.class)); //NOI18N
+                ClassLoader indexerLoader = EmbedderFactory.guiceReadyLoader(NexusRepositoryIndexerImpl.class, MavenEmbedder.class);
+	            ClassRealm indexerRealm = world.newRealm("maven.indexer", indexerLoader); //NOI18N
+	            ClassRealm plexusRealm = world.newRealm("plexus.core", indexerLoader); //NOI18N
 	            //need to import META-INF/plexus stuff, otherwise the items in META-INF will not be loaded,
 	            // and the Dependency Injection won't work.
 	            plexusRealm.importFrom(embedderRealm.getId(), "META-INF/plexus"); //NOI18N
@@ -714,7 +716,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         BooleanQuery bq = new BooleanQuery();
                         loadIndexingContext(repo);
                         String id = groupId + ArtifactInfo.FS;
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                        bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] { repo }), false);
                         if (response != null) {
@@ -746,7 +748,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS;
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                        bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
@@ -775,7 +777,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                         loadIndexingContext(repo);
                         String clsname = className.replace(".", "/");
-                        FlatSearchRequest fsr = new FlatSearchRequest(indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase()),
+                        FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase())),
                                 ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
@@ -839,7 +841,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
-                        bq.add(new BooleanClause((indexer.constructQuery(ArtifactInfo.SHA1, sha1)), BooleanClause.Occur.SHOULD));
+                        bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(ArtifactInfo.SHA1, sha1))), BooleanClause.Occur.SHOULD));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
@@ -901,7 +903,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + prefix;
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                        bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
@@ -935,7 +937,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
                         if (prefix.length() > 0) { //heap out of memory otherwise
-                            bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.GROUP_ID, prefix)), BooleanClause.Occur.MUST));
+                            bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.GROUP_ID, prefix))), BooleanClause.Occur.MUST));
                         }
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
@@ -969,7 +971,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + prefix;
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                        bq.add(new BooleanClause(setBooleanRewrite(new PrefixQuery(new Term(ArtifactInfo.UINFO, id))), BooleanClause.Occur.MUST));
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[] {repo}), false);
@@ -1018,7 +1020,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                                         q = new PrefixQuery(new Term(fieldName, field.getValue()));
                                     }
                                 }
-                                BooleanClause bc = new BooleanClause(q, occur);
+                                BooleanClause bc = new BooleanClause(setBooleanRewrite(q), occur);
                                 bq.add(bc); //NOI18N
                             } else {
                                 //TODO when all fields, we need to create separate
@@ -1133,6 +1135,17 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             bVersionInfos.add(nbvi);
         }
         return bVersionInfos;
+    }
+    
+    private static Query setBooleanRewrite (final Query q) {
+        if (q instanceof MultiTermQuery) {
+            ((MultiTermQuery)q).setRewriteMethod(MultiTermQuery.CONSTANT_SCORE_BOOLEAN_QUERY_REWRITE);
+        } else if (q instanceof BooleanQuery) {
+            for (BooleanClause c : ((BooleanQuery)q).getClauses()) {
+                setBooleanRewrite(c.getQuery());
+            }
+        }
+        return q;
     }
 
     private static class NbIndexCreator extends AbstractIndexCreator {

@@ -182,7 +182,7 @@ public class ProjectBridge {
         if (canonicalItems == null) {
             canonicalItems = new HashMap<String,Item>();
             for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                canonicalItems.put(item.getCanonicalFile().getAbsolutePath(),item);
+                canonicalItems.put(item.getCanonicalPath(),item);
             }
         }
         return canonicalItems.get(path);

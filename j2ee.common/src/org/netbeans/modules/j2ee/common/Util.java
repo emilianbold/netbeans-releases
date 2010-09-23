@@ -62,6 +62,8 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
@@ -310,25 +312,29 @@ public class Util {
             }
         };
     }
-    
-    public static File[] getJ2eePlatformClasspathEntries(Project project) {
+
+    @NonNull
+    public static File[] getJ2eePlatformClasspathEntries(@NullAllowed Project project, @NullAllowed J2eePlatform j2eePlatform) {
         if (project != null) {
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null) {
-                J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
-                if (j2eePlatform != null) {
-                    File[] classpath = null;
+                J2eePlatform j2eePlatformLocal = j2eePlatform != null
+                        ? j2eePlatform
+                        : Deployment.getDefault().getJ2eePlatform(j2eeModuleProvider.getServerInstanceID());
+                if (j2eePlatformLocal != null) {
                     try {
-                        classpath = j2eePlatform.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
+                        return j2eePlatformLocal.getClasspathEntries(j2eeModuleProvider.getConfigSupport().getLibraries());
                     } catch (ConfigurationException ex) {
                         LOGGER.log(Level.FINE, null, ex);
-                        classpath = j2eePlatform.getClasspathEntries();
+                        return j2eePlatformLocal.getClasspathEntries();
                     }
-                    return classpath;
                 }
             }
         }
-        return new File[0];
+        if (j2eePlatform != null) {
+            return j2eePlatform.getClasspathEntries();
+        }
+        return new File[] {};
     }
     
     /**

@@ -22,6 +22,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.explorer</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -32,6 +40,14 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.18</specification-version>
+                    </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.openide.util</code-name-base>
@@ -66,8 +82,10 @@
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
-                <friend>com.sun.tools.analytics.oss.support</friend>                
-                <friend>com.sun.tools.analytics.oss.support.ui</friend>                
+                <friend>com.sun.tools.analytics.uncover</friend>                
+                <friend>com.sun.tools.analytics.coverage</friend>
+                <friend>com.sun.tools.analytics.oss.support</friend>
+                <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.dlight.amp</friend>
                 <friend>com.sun.tools.dlight.bridge</friend>
                 <friend>com.sun.tools.dlight.lint</friend>
@@ -89,6 +107,7 @@
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>                
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>

@@ -105,12 +105,11 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 
 /**
  *
@@ -227,11 +226,11 @@ public final class ReferencesSupport {
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE, oldVersion);
+                    putReferencedObject(csmFile, key, UNRESOLVED, oldVersion);
                 } else {
                     putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
-            } else if (csmItem == FAKE) {
+            } else if (csmItem == UNRESOLVED) {
                 csmItem = null;
             }
         }
@@ -574,7 +573,7 @@ public final class ReferencesSupport {
                 if (owner != null) {
                     if (owner.equals(targetDef)) {
                         kind = CsmReferenceKind.DEFINITION;
-                    } else if (sameDeclaration(owner, targetDecl)) {
+                    } else if (CsmReferenceSupport.sameDeclaration(owner, targetDecl)) {
                         kind = CsmReferenceKind.DECLARATION;
                     } else {
                         kind = getReferenceUsageKind(ref);
@@ -584,28 +583,7 @@ public final class ReferencesSupport {
         }
         return kind;
     }
-
-    private static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
-        if (checkDecl.equals(targetDecl)) {
-            return true;
-        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
-            CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
-            CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
-            if (fqnCheck.equals(fqnTarget)) {
-                return true;
-            }
-            String strFqn = fqnCheck.toString().trim();
-            // we consider const and not const methods as the same
-            if (strFqn.endsWith("const")) { //NOI18N
-                int cutConstInd = strFqn.lastIndexOf("const"); //NOI18N
-                assert cutConstInd >= 0;
-                fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
-            }
-            return fqnCheck.equals(fqnTarget);
-        }
-        return false;
-    }
-
+   
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {
@@ -643,7 +621,7 @@ public final class ReferencesSupport {
     private final Object cacheLock = new CacheLock();
     private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
-    private static CsmObject FAKE = new CsmObject() {
+    private static CsmObject UNRESOLVED = new CsmObject() {
 
         @Override
         public String toString() {
@@ -658,7 +636,7 @@ public final class ReferencesSupport {
             CsmObject out = null;
             if (map != null) {
                 out = map.get(offset);
-                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                if (out == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                     // we don't beleive in such fake and put null instead
                     map.put(offset, null);
                     out = null;
@@ -670,7 +648,7 @@ public final class ReferencesSupport {
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         synchronized (cacheLock) {
-            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+            if (object == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                 return;

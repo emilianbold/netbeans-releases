@@ -273,8 +273,20 @@ public class InsertI18nStringAction extends CookieAction {
         EditorCookie sec = (activatedNodes[0]).getCookie(EditorCookie.class);
         if (sec == null) return false;
 
-        JEditorPane[] edits = sec.getOpenedPanes();
-        return edits != null && edits.length > 0;
+
+        return hasOpenedPane(sec); // #188430
+    }
+
+    /**
+     * Checks whether at least one opened editor pane exists.
+     * @param ec the {@code EditorCookie} associated to the editor pane.
+     * @return (@code true} if the editor pane associated with the specified 
+     * {@code EditorCookie} exists, otherwise (@code false}.
+     * @see Bug 188430
+     */
+    private boolean hasOpenedPane(EditorCookie ec) {
+        JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+        return pane != null;
     }
 
     /** Implements superclass abstract method.

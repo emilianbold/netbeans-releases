@@ -81,7 +81,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
@@ -1034,6 +1034,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.metrics = metrics;
             SourceFileInfo sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
             lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
+            setLineNumber(lineNumber);
             
         }
 
@@ -1044,7 +1045,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public String getDisplayedName() {
             if (hasLineNumber()){
-                return getFunction().getName() + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
+                return FunctionNameUtils.getFunctionName(getFunction().getName()) ;
+                        //+ "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
             }
             return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
@@ -1086,7 +1088,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public int getLineNumber() {
             
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            return lineNumber;
         }
     }
     
