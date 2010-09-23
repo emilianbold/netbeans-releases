@@ -405,6 +405,9 @@ public final class NbMavenProjectImpl implements Project {
                         problemReporter.addReport(report);
 
                     }
+                    if (msg.contains("Detected the following recursive expression cycle: []")) {
+                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.WARNING, "#190530: anomalous error", e);
+                    }
                 }
             }
         } catch (RuntimeException exc) {
