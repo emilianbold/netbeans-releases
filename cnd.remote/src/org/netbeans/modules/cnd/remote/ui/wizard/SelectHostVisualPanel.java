@@ -64,7 +64,9 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -77,6 +79,8 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private final DefaultListModel model;
     private final CreateHostVisualPanel1 createHostPanel;
     private final AtomicBoolean setupNewHost;
+
+    private static final String LAST_SELECTED_HOST_KEY = "last-selected-remote-host"; //NOI18N
 
     public SelectHostVisualPanel(SelectHostWizardPanel controller, boolean allowLocal,
             CreateHostVisualPanel1 createHostPanel, AtomicBoolean setupNewHost) {
@@ -91,7 +95,6 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         rbNew.setSelected(setupNewHost.get());
         rbExistent.setSelected(!setupNewHost.get());
         model = new DefaultListModel();
-        initServerList();
         rbNew.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -106,13 +109,6 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
                 requestFocusInEDT(lstDevHosts);
             }
         });
-        // modeChanged() called right from here doesn't work on Mac if called
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                modeChanged();
-            }
-        });
     }
 
     private void requestFocusInEDT(final Component c) {
@@ -124,7 +120,41 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         });
     }
 
+    private boolean setDefaultHostSelection() {
+        if (model.size() > 0) {
+            ServerRecord defRec = ServerList.getDefaultRecord();
+            if (defRec.isRemote()) {
+                lstDevHosts.setSelectedValue(defRec, true);
+                return true;
+            } else {
+                String hostKey = NbPreferences.forModule(getClass()).get(LAST_SELECTED_HOST_KEY, null);
+                if (hostKey == null) {
+                    lstDevHosts.setSelectedIndex(0);
+                    return true;
+                } else {
+                    for (int i = 0; i < model.getSize(); i++) {
+                        ServerRecord record = (ServerRecord) model.get(i);
+                        if (hostKey.equals(ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment()))) {
+                            lstDevHosts.setSelectedIndex(i);
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void rememberHostSelection() {
+        ServerRecord record = (ServerRecord) lstDevHosts.getSelectedValue();
+        if (record != null) {
+            String hostKey = ExecutionEnvironmentFactory.toUniqueID(record.getExecutionEnvironment());
+            NbPreferences.forModule(getClass()).put(LAST_SELECTED_HOST_KEY, hostKey);
+        }
+    }
+
     private void initServerList() {
+        model.clear();
         for (ServerRecord rec : ServerList.getRecords()) {
             if (rec.isRemote() || allowLocal) {
                 model.addElement(rec);
@@ -141,11 +171,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setCellRenderer(new HostListCellRenderer());
-// FIXUP: otherwise asynchroneous validation is called when first displaying the page. Root cause TBD
-//        if (model.size() > 0) {
-//            lstDevHosts.setSelectedIndex(0);
-//            fire = true;
-//        }
+        fire = setDefaultHostSelection(); // NB: before adding selection listener
         lstDevHosts.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -163,12 +189,25 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         return rbNew.isSelected();
     }
 
-    /** called each time the component is to be displayed (i.e. from readSettings)*/
-    public void reset() {
-    }
-
     private void fireChange() {
         controller.stateChanged(new ChangeEvent(this));
+    }
+
+
+    /** called each time the component is to be displayed (i.e. from readSettings)*/
+    /*package*/ void onReadSettings() {
+        initServerList();
+        // modeChanged() called right from here doesn't work on Mac if called
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                modeChanged();
+            }
+        });
+    }
+
+    /*package*/ void onStoreSettings() {
+        rememberHostSelection();
     }
 
     /** This method is called from within the constructor to
