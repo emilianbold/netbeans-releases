@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -76,6 +77,11 @@ public final class RemoteSyncSupport {
     public static RemoteProject.Mode getRemoteMode(Project project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
+    }
+
+    public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getRemoteFileSystemHost();
     }
 
 //    /**

@@ -215,6 +215,10 @@ public class ProjectGenerator {
             return hostUID;
         }
 
+        public void setHostUID(String hostUID) {
+            this.hostUID = hostUID;
+        }
+
         public CompilerSet getToolchain() {
             return cs;
         }

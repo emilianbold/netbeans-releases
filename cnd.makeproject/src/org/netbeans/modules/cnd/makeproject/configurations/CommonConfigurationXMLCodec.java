@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
@@ -227,8 +228,8 @@ public abstract class CommonConfigurationXMLCodec
     // Tools Set (Compiler set and platform)
     protected final static String TOOLS_SET_ELEMENT = "toolsSet"; // NOI18N
     protected final static String DEVELOPMENT_SERVER_ELEMENT = "developmentServer"; // NOI18N
-    protected final static String FIXED_SYNC_FACTORY = "remoteSyncFactory"; // NOI18N
-    protected final static String REMOTE_MODE = "remoteMode"; // NOI18N
+    protected final static String FIXED_SYNC_FACTORY_ELEMENT = "remoteSyncFactory"; // NOI18N
+    protected final static String REMOTE_MODE_ELEMENT = MakeProject.REMOTE_MODE; // NOI18N
     protected final static String COMPILER_SET_ELEMENT = "compilerSet"; // NOI18N
     protected final static String C_REQUIRED_ELEMENT = "cRequired"; // NOI18N
     protected final static String CPP_REQUIRED_ELEMENT = "cppRequired"; // NOI18N
@@ -375,6 +376,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
         if (publicLocation) {
@@ -445,9 +447,10 @@ public abstract class CommonConfigurationXMLCodec
         xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getHostKey());
         RemoteSyncFactory fixedSyncFactory = makeConfiguration.getFixedRemoteSyncFactory();
         if (fixedSyncFactory != null) {
-            xes.element(FIXED_SYNC_FACTORY, fixedSyncFactory.getID());
+            xes.element(FIXED_SYNC_FACTORY_ELEMENT, fixedSyncFactory.getID());
         }
-        xes.element(REMOTE_MODE, makeConfiguration.getRemoteMode().name());
+        // XXX:fullRemote: move to project-level
+        xes.element(REMOTE_MODE_ELEMENT, makeConfiguration.getRemoteMode().name());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
@@ -1023,7 +1026,7 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     public static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> directories) {
-        if (directories.size() == 0) {
+        if (directories.isEmpty()) {
             return;
         }
         xes.elementOpen(tag);
