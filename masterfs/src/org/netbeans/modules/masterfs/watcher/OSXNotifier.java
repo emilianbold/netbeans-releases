@@ -263,7 +263,13 @@ public class OSXNotifier extends Notifier<Void> {
             final long st = System.currentTimeMillis();
             final int length = numEvents.intValue();
             final Pointer[] pointers = eventPaths.getPointerArray(0, length);
-            final int[] flags = eventFlags.getIntArray(0, length);
+            int flags[];
+            if (eventFlags == null) {
+                flags = new int[length];
+                LOG.log(Level.WARNING, "FSEventStreamCallback eventFlags == null, expected int[] of size {0}", length); //NOI18N
+            } else {
+                flags = eventFlags.getIntArray(0, length);
+            }
             for (int i=0; i<length; i++) {
                 final Pointer p = pointers[i];
                 int flag = flags[i];
