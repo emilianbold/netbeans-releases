@@ -76,7 +76,7 @@ public class FileStatusCache {
 
     public static final String PROP_FILE_STATUS_CHANGED = "status.changed"; // NOI18N
 
-    private final CacheIndex conflictedFiles, modifiedFiles;
+    private final CacheIndex conflictedFiles, modifiedFiles, ignoredFiles;
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.status.cache"); //NOI18N
     private int MAX_COUNT_UPTODATE_FILES = 1024;
     private static final int CACHE_SIZE_WARNING_THRESHOLD = 50000; // log when cache gets too big and steps over this threshold
@@ -88,7 +88,7 @@ public class FileStatusCache {
      */
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
-    private final RequestProcessor rp = new RequestProcessor("Git.cacheNG", 1, true);
+    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
@@ -102,6 +102,7 @@ public class FileStatusCache {
         cachedFiles = new HashMap<File, FileInformation>();
         conflictedFiles = createCacheIndex();
         modifiedFiles = createCacheIndex();
+        ignoredFiles = createCacheIndex();
     }
 
     /**
@@ -540,13 +541,21 @@ public class FileStatusCache {
     }
 
     private Set<File> getIndexValues (File root, Set<Status> includeStatus) {
-        File[] files;
-        if (includeStatus.equals(EnumSet.of(Status.STATUS_VERSIONED_CONFLICT))) {
-            files = conflictedFiles.get(root);
-        } else {
-            files = modifiedFiles.get(root);
+        File[] modified = new File[0];
+        File[] ignored = new File[0];
+        if (includeStatus.contains(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            ignored = ignoredFiles.get(root);
         }
-        return new HashSet(Arrays.asList(files));
+        if (FileInformation.STATUS_LOCAL_CHANGES.clone().removeAll(includeStatus)) {
+            if (includeStatus.equals(EnumSet.of(Status.STATUS_VERSIONED_CONFLICT))) {
+                modified = conflictedFiles.get(root);
+            } else {
+                modified = modifiedFiles.get(root);
+            }
+        }
+        Set<File> values = new HashSet<File>(Arrays.asList(ignored));
+        values.addAll(Arrays.asList(modified));
+        return values;
     }
 
     private void updateIndex(File file, FileInformation fi, boolean addToIndex) {
@@ -554,16 +563,23 @@ public class FileStatusCache {
         if (parent != null) {
             Set<File> conflicted = new HashSet<File>(Arrays.asList(conflictedFiles.get(parent)));
             Set<File> modified = new HashSet<File>(Arrays.asList(modifiedFiles.get(parent)));
+            Set<File> ignored = new HashSet<File>(Arrays.asList(ignoredFiles.get(parent)));
             modified.remove(file);
             conflicted.remove(file);
+            ignored.remove(file);
             if (addToIndex) {
-                modified.add(file);
-                if (fi.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
-                    conflicted.add(file);
+                if (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+                    ignored.add(file);
+                } else {
+                    modified.add(file);
+                    if (fi.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+                        conflicted.add(file);
+                    }
                 }
             }
             modifiedFiles.add(parent, modified);
             conflictedFiles.add(parent, conflicted);
+            ignoredFiles.add(parent, ignored);
         }
     }
 
