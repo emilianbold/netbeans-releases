@@ -337,7 +337,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
+        final TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
 
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
@@ -385,20 +385,18 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || types.contains(ElementKind.PARAMETER))) {
+        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || fixTypes.contains(ElementKind.PARAMETER))) {
             ExecutableElement ee = null;
 
             if (firstMethod != null) {
                 ee = (ExecutableElement) info.getTrees().getElement(firstMethod);
             }
 
-            if ((ee != null) && type != null) {
-                int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
-                if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
-                if (fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
-            }
+            int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
+            if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
+            if ((firstMethod != null || firstInitializer != null) && fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
         }
 
         return result;
