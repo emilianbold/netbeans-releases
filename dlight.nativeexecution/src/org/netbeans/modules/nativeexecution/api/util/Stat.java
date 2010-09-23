@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,41 +34,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-
-
-void usage() {
-    fprintf(stderr, "Usage: \n");
-    fprintf(stderr, "   ./sigqueue pid signo value\n");
-}
-
-/*
- * CLI wrapper for sigqueue.
- * Usage:
- *    sigqueue pid signo value
  *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-int main(int argc, char** argv) {
-    if (argc < 4) {
-        usage();
-        exit(1);
+package org.netbeans.modules.nativeexecution.api.util;
+
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.support.HelperUtility;
+import org.netbeans.modules.nativeexecution.support.ShellSession;
+import org.openide.util.Exceptions;
+
+/**
+ * Contains some information from stat structure
+ *
+ * @author Egor Ushakov
+ */
+public final class Stat {
+    private final long inode;
+    private final long ctime;
+
+    private static final HelperUtility statHelperUtility =
+            new HelperUtility("bin/nativeexecution/$osname-${platform}$_isa/stat"); // NOI18N
+
+    /**
+     * Returns Stat structure
+     * @param filename - name of file
+     * @param exEnv - environment where file is located
+     * @return Stat structure, null if stat failed
+     */
+    public static Stat get(String filename, ExecutionEnvironment exEnv) {
+        try {
+            String[] res = ShellSession.execute(exEnv, statHelperUtility.getPath(exEnv) + " " + filename); //NOI18N
+            return new Stat(Long.valueOf(res[0].split(": ")[1].trim()), //NOI18N
+                    Long.valueOf(res[1].split(": ")[1].trim())); //NOI18N
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
-    //setting pid
-    pid_t pid = atoi(argv[1]);
+    private Stat(long inode, long ctime) {
+        this.inode = inode;
+        this.ctime = ctime;
+    }
 
-    //setting signo
-    int signo = atoi(argv[2]);
+    public long getCtime() {
+        return ctime;
+    }
 
-    // setting value
-    union sigval value;
-    value.sival_int = atoi(argv[3]);
+    public long getInode() {
+        return inode;
+    }
 
-    return sigqueue(pid, signo, value);
+    @Override
+    public String toString() {
+	return "inode=" + inode + ", " + "ctime=" + ctime; //NOI18N
+    }
 }
-

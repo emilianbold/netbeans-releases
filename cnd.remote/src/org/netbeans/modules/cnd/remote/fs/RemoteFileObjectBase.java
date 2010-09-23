@@ -122,9 +122,9 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Object getAttribute(String attrName) {
-        if (attrName.equals("java.io.File")) { // NOI18N
-            return cache;
-        }
+//        if (attrName.equals("java.io.File")) { // NOI18N
+//            return cache;
+//        }
         return null;
     }
 

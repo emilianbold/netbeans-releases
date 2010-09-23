@@ -76,6 +76,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 
 /**
@@ -152,6 +153,9 @@ public class MakeProjectGenerator {
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         p.setRemoteMode(prjParams.getRemoteMode());
+        if (prjParams.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            p.setRemoteFileSystemHost(ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID()));
+        }
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
         return p;
     }
@@ -230,9 +234,14 @@ public class MakeProjectGenerator {
         data.appendChild(nativeProjectType);
 
         if (prjParams.getFullRemote()) {
-            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE_TAG); // NOI18N
-            fullRemoteNode.appendChild(doc.createTextNode("" + prjParams.getRemoteMode())); // NOI18N
+            // mode
+            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE); // NOI18N
+            fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name())); // NOI18N
             data.appendChild(fullRemoteNode);
+            // host
+            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST); // NOI18N
+            rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID())); // NOI18N
+            data.appendChild(rfsHostNode);
         }
 
         h.putPrimaryConfigurationData(data, true);
