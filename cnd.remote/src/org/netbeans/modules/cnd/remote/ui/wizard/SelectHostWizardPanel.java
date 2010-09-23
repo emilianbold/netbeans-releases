@@ -79,6 +79,7 @@ public class SelectHostWizardPanel implements
     private final CreateHostWizardPanel1 delegate;
     private final AtomicBoolean setupNewHost;
     private WizardDescriptor wizardDescriptor;
+    private volatile boolean needsValidation;
 
     public SelectHostWizardPanel(boolean allowLocal, ChangeListener changeListener) {
         this.allowLocal = allowLocal;
@@ -93,6 +94,7 @@ public class SelectHostWizardPanel implements
         } else {
             setupNewHost.set(ServerList.getRecords().size() <= 1);
         }
+        needsValidation = false;
     }
 
     @Override
@@ -123,24 +125,29 @@ public class SelectHostWizardPanel implements
 
     @Override
     public void prepareValidation() {
-        getComponent().enableControls(false);
+        if (needsValidation) {
+            getComponent().enableControls(false);
+        }
     }
 
     @Override
     public void validate() throws WizardValidationException {
-        ExecutionEnvironment execEnv = getComponent().getSelectedHost();
-        try {
-            if (execEnv != null) {
-                ConnectionManager.getInstance().connectTo(execEnv);
-                RemoteUtil.checkSetupAfterConnection(execEnv);
+        if (needsValidation) {
+            ExecutionEnvironment execEnv = getComponent().getSelectedHost();
+            try {
+                if (execEnv != null) {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                    RemoteUtil.checkSetupAfterConnection(execEnv);
+                }
+            } catch (IOException ex) {
+                String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");
+                throw new WizardValidationException(getComponent(), message, message);
+            } catch (CancellationException ex) {
+                String message = NbBundle.getMessage(getClass(), "ConnectCancelledMessage");
+                throw new WizardValidationException(getComponent(), message, message);
+            } finally {
+                getComponent().enableControls(true);
             }
-        } catch (IOException ex) {
-            String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");
-            throw new WizardValidationException(getComponent(), message, message);
-        } catch (CancellationException ex) {
-            // nothing
-        } finally {
-            getComponent().enableControls(true);
         }
     }
 
@@ -176,7 +183,8 @@ public class SelectHostWizardPanel implements
     public void readSettings(WizardDescriptor settings) {
         delegate.readSettings(settings);
         this.wizardDescriptor = settings;
-        getComponent().reset();
+        getComponent().onReadSettings();
+        needsValidation = false;
     }
 
     @Override
@@ -185,6 +193,8 @@ public class SelectHostWizardPanel implements
         ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
         settings.putProperty("hostUID", (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
         settings.putProperty("ToolsCacheManager", createHostData.getCacheManager()); // NOI18N
+        getComponent().onStoreSettings();
+        needsValidation = true;
     }
 
     ExecutionEnvironment getSelectedHost() {
