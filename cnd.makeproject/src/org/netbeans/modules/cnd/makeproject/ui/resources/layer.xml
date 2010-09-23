@@ -62,14 +62,14 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makefile.html"/>
                 </file>
 
-                <!--file name="binary.xml">
+                <file name="binary.xml">
                     <attr name="position" intvalue="120"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" methodvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.binary"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/makeproject/ui/resources/binary.html"/>
-                </file-->
+                </file>
 
                 <!--
                 <file name="newFullRemote.xml">
