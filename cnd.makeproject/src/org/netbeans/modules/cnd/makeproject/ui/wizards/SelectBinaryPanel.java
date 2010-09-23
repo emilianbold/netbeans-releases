@@ -156,6 +156,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     public static class BinaryWizardStorage {
         private String binaryPath = ""; // NOI18N
+        private String sourceFolderPath = ""; // NOI18N
         private final SelectBinaryPanel controller;
 
         public BinaryWizardStorage(SelectBinaryPanel controller) {
@@ -170,20 +171,13 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
             this.binaryPath = path.trim();
             controller.validate();
         }
-    }
 
-    public static class WizardDescriptorAdapter extends WizardDescriptor{
-        private BinaryWizardStorage storage;
-        public WizardDescriptorAdapter(BinaryWizardStorage storage) {
-            this.storage = storage;
+        public String getSourceFolderPath() {
+            return sourceFolderPath;
         }
-        @Override
-        public synchronized Object getProperty(String name) {
-            if ("binary".equals(name)) { // NOI18N
-                return storage.getBinaryPath();
-            }
-            return super.getProperty(name);
+
+        public void setSourceFolderPath(String path) {
+            this.sourceFolderPath = path.trim();
         }
     }
-
 }
