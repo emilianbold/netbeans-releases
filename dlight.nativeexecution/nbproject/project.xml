@@ -177,6 +177,7 @@
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
+                <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -230,6 +231,7 @@
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>

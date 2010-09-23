@@ -81,7 +81,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;

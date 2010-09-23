@@ -65,7 +65,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.TreeTableDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
