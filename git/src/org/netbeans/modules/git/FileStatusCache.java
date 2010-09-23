@@ -384,9 +384,11 @@ public class FileStatusCache {
                     info = getInfo(file);
                 }
                 if (file.isDirectory()) {
-                    setInfo(file, info = info == null ? new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true) : new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true));
+                    setInfo(file, info = (info != null && info.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)
+                            ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true)
+                            : new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true)));
                 } else {
-                    if (info == null) {
+                    if (info == null || info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
                         info = FILE_INFORMATION_UPTODATE;
                         addUpToDate(file);
                         // XXX delete later
@@ -398,7 +400,7 @@ public class FileStatusCache {
                                 }
                             }
                         }
-                    } else {
+                    } else if (info.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
                         addAsExcluded = true;
                     }
                 }
