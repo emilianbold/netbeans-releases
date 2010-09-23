@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.cnd.discovery.projectimport;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +56,7 @@ import java.util.Map;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
@@ -69,23 +73,30 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -93,23 +104,146 @@ import org.openide.util.RequestProcessor;
  *
  * @author Alexander Simon
  */
-public class ImportExecutable {
+public class ImportExecutable implements PropertyChangeListener {
     private static final boolean DLL_FILE_SEARCH = false;
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 2);
     private final Map<String, Object> map;
-    private final Project lastSelectedProject;
+    private Project lastSelectedProject;
     private final ProjectKind projectKind;
     private CreateDependencies cd;
+    private final boolean createProjectMode;
+    private String sourcesPath;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
         this.lastSelectedProject = lastSelectedProject;
         this.projectKind = projectKind;
+        if (lastSelectedProject == null) {
+            createProjectMode = true;
+            postCreateProject();
+        } else {
+            createProjectMode = false;
+        }
+    }
+
+    private void postCreateProject() {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(ImportExecutable.class, "ImportExecutable.Progress.ProjectCreating")); // NOI18N
+                progress.start();
+                try {
+                    createProject();
+                } finally {
+                    progress.finish();
+                }
+            }
+        });
+    }
+
+
+    private void createProject() {
+        String binaryPath = (String) map.get("outputTextField"); // NOI18N
+        sourcesPath = (String) map.get("sourceFolderPath"); // NOI18N
+        File projectFolder = (File) map.get("projdir");  // NOI18N;
+        String projectName = (String) map.get("name"); // NOI18N
+        String baseDir;
+        if (projectFolder != null) {
+            projectFolder = CndFileUtils.normalizeFile(projectFolder);
+            baseDir = projectFolder.getAbsolutePath();
+            if (projectName == null) {
+                projectName = projectFolder.getName();
+            }
+        } else {
+            String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
+            if (projectName == null) {
+                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(binaryPath).getName());
+            }
+            baseDir = projectParentFolder + File.separator + projectName;
+            projectFolder = new File(baseDir);
+        }
+        String hostUID = (String) map.get("hostUID"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
+        MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
+        String workingDirRel = sourcesPath;
+        if(MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            workingDirRel = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
+        } else {
+            workingDirRel = CndPathUtilitities.toAbsolutePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
+        }
+        conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
+        // Executable
+        String exe = binaryPath;
+        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exe);
+        exe = CndPathUtilitities.normalize(exe);
+        conf.getMakefileConfiguration().getOutput().setValue(exe);
+        String exePath = new File(binaryPath).getParentFile().getAbsolutePath();
+        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), exePath);
+        exePath = CndPathUtilitities.normalize(exePath);
+        conf.getProfile().setRunDirectory(exePath);
+        conf.getProfile().setBuildFirst(false);
+
+        ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, projectFolder);
+        prjParams.setOpenFlag(false)
+                 .setConfiguration(conf)
+                 .setImportantFiles(Collections.<String>singletonList(binaryPath).iterator());
+        List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
+        list.add(new SourceFolderInfo() {
+
+            @Override
+            public FileObject getFileObject() {
+                return FileUtil.toFileObject(new File(sourcesPath));
+            }
+
+            @Override
+            public String getFolderName() {
+                return getFileObject().getName();
+            }
+
+            @Override
+            public boolean isAddSubfoldersSelected() {
+                return true;
+            }
+        });
+        prjParams.setSourceFolders(list.iterator());
+        try {
+            lastSelectedProject = ProjectGenerator.createProject(prjParams);
+            OpenProjects.getDefault().addPropertyChangeListener(this);
+            map.put("DW:buildResult", binaryPath); // NOI18N
+            map.put("DW:consolidationLevel", "file"); // NOI18N
+            map.put("DW:rootFolder", lastSelectedProject.getProjectDirectory().getPath()); // NOI18N
+            OpenProjects.getDefault().open(new Project[]{lastSelectedProject}, false);
+            OpenProjects.getDefault().setMainProject(lastSelectedProject);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+            if (evt.getNewValue() instanceof Project[]) {
+                Project[] projects = (Project[])evt.getNewValue();
+                if (projects.length == 0) {
+                    return;
+                }
+                OpenProjects.getDefault().removePropertyChangeListener(this);
+                if (lastSelectedProject == null) {
+                    return;
+                }
+                IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+                if (extension != null) {
+                    process((DiscoveryExtension)extension);
+                }
+            }
+        }
     }
 
     public void process(final DiscoveryExtension extension){
         switchModel(false, lastSelectedProject);
-        RP.post(new Runnable() {
+        Runnable run = new Runnable() {
 
             @Override
             public void run() {
@@ -121,7 +255,9 @@ public class ImportExecutable {
                     MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
                     applicable = extension.isApplicable(map, lastSelectedProject);
                     if (applicable.isApplicable()) {
-                        resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
+                        if (!createProjectMode) {
+                            resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
+                        }
                         String additionalDependencies = null;
                         if (projectKind == ProjectKind.IncludeDependencies) {
                             additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
@@ -165,7 +301,8 @@ public class ImportExecutable {
                     }
                 }
             }
-        });
+        };
+        RP.post(run);
     }
 
     private static void discoverScripts(Project project) {
@@ -182,6 +319,9 @@ public class ImportExecutable {
             return;
         }
         String root = findFolderPath(getRoot(configurationDescriptor));
+        if (root == null) {
+            return;
+        }
         File rootFile = new File(root);
         DiscoveredConfigure configure = scanFolder(rootFile);
         if (configure.script == null || configure.makefile == null) {
@@ -254,7 +394,6 @@ public class ImportExecutable {
         }
         return configure;
     }
-
 
     private static final class DiscoveredConfigure {
         private File script;
@@ -496,6 +635,11 @@ public class ImportExecutable {
             if (sub.isProjectFiles()) {
                 if (MakeConfigurationDescriptor.SOURCE_FILES_FOLDER.equals(sub.getName())) {
                     return sub;
+                } else if (MakeConfigurationDescriptor.HEADER_FILES_FOLDER.equals(sub.getName()) ||
+                           MakeConfigurationDescriptor.RESOURCE_FILES_FOLDER.equals(sub.getName())){
+                    // skip
+                } else {
+                    return sub;
                 }
             }
         }
@@ -503,6 +647,12 @@ public class ImportExecutable {
     }
 
     static String findFolderPath(Folder root) {
+        if (root == null) {
+            return null;
+        }
+        if (root.isDiskFolder()) {
+            return root.getRoot();
+        }
         List<String> candidates = new ArrayList<String>();
         for (Object o : root.getElements()) {
             if (o instanceof Folder) {

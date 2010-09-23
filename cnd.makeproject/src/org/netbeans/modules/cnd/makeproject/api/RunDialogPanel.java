@@ -88,13 +88,6 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     private static final String picklistName = "executables"; // NOI18N
     private boolean isValidating = false;
     
-    public RunDialogPanel() {
-        isRun = true;
-        initialize(null);
-        errorLabel.setText(""); //NOI18N
-        initAccessibility();
-    }
-    
     private void initAccessibility() {
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("RUN_DIALOG_PANEL_AD"));

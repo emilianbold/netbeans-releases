@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
@@ -70,10 +72,14 @@ public class RemoteFileUtil {
     }
 
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv) {
+        String normalizedPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
+        if (CndUtils.isDebugMode() && ! normalizedPath.equals(absolutePath)) {
+            CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
+        }
         if (execEnv.isRemote()) {
-            return FileSystemProvider.getFileSystem(execEnv, absolutePath).findResource(absolutePath);
+            return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
         } else {
-            return FileUtil.toFileObject(new File(absolutePath));
+            return FileUtil.toFileObject(new File(normalizedPath));
         }
     }
 
