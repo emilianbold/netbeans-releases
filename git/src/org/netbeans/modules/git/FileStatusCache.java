@@ -360,7 +360,7 @@ public class FileStatusCache {
     }
 
     /**
-     * TODO: handle ignored files, currently not implemented
+     * TODO: go through the logic once more, it seems very very complex
      * TODO: handle initial scan, not implemented either
      * Fast version of {@link #getStatus(java.io.File)}.
      * @param file
@@ -423,7 +423,12 @@ public class FileStatusCache {
             rp.post(new Runnable() {
                 @Override
                 public void run() {
-                    refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
+                    synchronized (FileStatusCache.this) {
+                        FileInformation info = getInfo(file);
+                        if (info == null || info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+                            refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
+                        }
+                    }
                 }
             });
         }
