@@ -688,6 +688,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
             if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) {
                 name = CndPathUtilitities.getBaseName(workingDir);
+            } else {
+                String sourcesPath = (String) settings.getProperty("sourceFolderPath"); // NOI18N
+                if (sourcesPath != null && sourcesPath.length() > 0) {
+                    name = CndPathUtilitities.getBaseName(sourcesPath);
+                }
             }
             int baseCount = 1;
             String formater = name + "_{0}"; // NOI18N
