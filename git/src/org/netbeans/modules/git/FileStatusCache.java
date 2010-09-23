@@ -110,8 +110,8 @@ public class FileStatusCache {
      * @param file
      * @return always returns a not null value
      */
-    public FileInformation getCachedStatus (final File file) {
-        return getCachedStatus(file, true);
+    public FileInformation getStatus (final File file) {
+        return getStatus(file, true);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -367,7 +367,7 @@ public class FileStatusCache {
      * @param seenInUI false value means the file/folder is not visible in UI and thus cannot trigger initial git status scan
      * @return always returns a not null value
      */
-    private FileInformation getCachedStatus (final File file, boolean seenInUI) {
+    private FileInformation getStatus (final File file, boolean seenInUI) {
         FileInformation info = getInfo(file); // cached value
         LOG.log(Level.FINER, "getCachedStatus for file {0}: {1}", new Object[] {file, info}); //NOI18N
         boolean triggerGitScan = false;
@@ -461,7 +461,7 @@ public class FileStatusCache {
         FileInformation current;
         synchronized (this) {
             if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && (GitUtils.isIgnored(file, true)
-                    || getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED))) {
+                    || getStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED))) {
                 // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
                 fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
@@ -512,7 +512,7 @@ public class FileStatusCache {
             }
         }
         for (File root : indexRoots) {
-            FileInformation fi = getCachedStatus(root);
+            FileInformation fi = getStatus(root);
             if (fi != null && fi.containsStatus(includeStatus) && (addExcluded || !GitModuleConfig.getDefault().isExcludedFromCommit(root.getAbsolutePath()))) {
                 return true;
             }
@@ -529,7 +529,7 @@ public class FileStatusCache {
             if(recursively) {
                 ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
             }
-            FileInformation fi = getCachedStatus(root);
+            FileInformation fi = getStatus(root);
             if (fi != null && !fi.containsStatus(includeStatus)) {
                 continue;
             }
@@ -598,7 +598,7 @@ public class FileStatusCache {
      */
     private FileInformation checkForIgnoredFile (File file) {
         FileInformation fi = null;
-        if (file.getParentFile() != null && getCachedStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (file.getParentFile() != null && getStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
             fi = FILE_INFORMATION_EXCLUDED;
         } else {
             // run the full test with the SQ

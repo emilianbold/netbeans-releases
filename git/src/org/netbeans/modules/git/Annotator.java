@@ -128,7 +128,7 @@ public class Annotator extends VCSAnnotator {
         File mostImportantFile = null;
         boolean folderAnnotation = false;
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getStatus(file);
             if (!info.containsStatus(STATUS_IS_IMPORTANT)) continue;
             if (isMoreImportant(info, mostImportantInfo)) {
                 mostImportantInfo = info;
@@ -162,7 +162,7 @@ public class Annotator extends VCSAnnotator {
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getStatus(file);
             if (!info.containsStatus(STATUS_IS_IMPORTANT)) {
                 continue;
             }
@@ -205,7 +205,7 @@ public class Annotator extends VCSAnnotator {
             // There is an assumption here that annotateName was already
             // called and FileStatusCache.getStatus was scheduled if
             // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.getStatus(file);
             if (info.containsStatus(STATUS_BADGEABLE)) {
                 isVersioned = true;
                 break;
