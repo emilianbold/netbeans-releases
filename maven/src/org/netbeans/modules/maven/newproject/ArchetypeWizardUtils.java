@@ -111,15 +111,15 @@ public class ArchetypeWizardUtils {
     private ArchetypeWizardUtils() {
     }
 
-    public static Archetype[] WEB_APP_ARCHS;
-    public static Archetype[] EJB_ARCHS;
-    public static Archetype[] EAR_ARCHS;
-    public static final Archetype EA_ARCH;
+    static final Archetype[] WEB_APP_ARCHS;
+    static final Archetype[] EJB_ARCHS;
+    static final Archetype[] EAR_ARCHS;
+    static final Archetype EA_ARCH;
     
-    public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
-    public static final Archetype OSGI_ARCH;
+    static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
+    static final Archetype OSGI_ARCH;
 
-    public static final String[] EE_LEVELS = new String[] {
+    static final String[] EE_LEVELS = {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
