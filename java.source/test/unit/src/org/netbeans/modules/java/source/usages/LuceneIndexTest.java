@@ -47,6 +47,7 @@ package org.netbeans.modules.java.source.usages;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -210,13 +211,13 @@ public class LuceneIndexTest extends NbTestCase {
         assertFalse(index.isValid(true));
 
         clearValidityCache(index);
-        Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
+        List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String,String>,Object[]>>();
         List<String> xref = new LinkedList<String>();
         String sym = "";
         String ident = "";
-        refs.put(Pair.<String,String>of("A", null), new Object[]{xref,sym,ident});
+        refs.add(Pair.<Pair<String,String>,Object[]>of(Pair.<String,String>of("A", null), new Object[]{xref,sym,ident}));
         Set<Pair<String,String>> toDel = new HashSet<Pair<String,String>>();
-        index.store(refs, toDel);       
+        index.store(refs, toDel, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
         //Existing index => valid
         assertTrue(index.isValid(true));
         assertTrue(indexFolder.listFiles().length>0);
@@ -228,7 +229,7 @@ public class LuceneIndexTest extends NbTestCase {
         assertTrue(indexFolder.listFiles().length==0);
 
         clearValidityCache(index);
-        index.store(refs, toDel);
+        index.store(refs, toDel, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
         assertTrue(index.isValid(true));
         assertTrue(indexFolder.listFiles().length>0);
 

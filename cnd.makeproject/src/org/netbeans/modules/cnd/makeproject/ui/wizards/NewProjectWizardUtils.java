@@ -60,13 +60,13 @@ import org.openide.filesystems.FileUtil;
 /*package*/ class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
-        Boolean b = (Boolean) wizardDescriptor.getProperty("fullRemote");
+        Boolean b = (Boolean) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_FULL_REMOTE);
         return b != null && b.booleanValue();
     }
 
     public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {
         if (isFullRemote(wizardDescriptor)) {
-            String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+            String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
             CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             return RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
@@ -76,7 +76,7 @@ import org.openide.filesystems.FileUtil;
     }
 
     public static ExecutionEnvironment getExecutionEnvironment(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
         return (hostUID == null) ?
             ServerList.getDefaultRecord().getExecutionEnvironment() :
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);

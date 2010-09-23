@@ -136,11 +136,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 }
                 CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
                 if (compiler != null) {
-                    controller.getWizardDescriptor().putProperty("toolchain", compiler); // NOI18N
-                    controller.getWizardDescriptor().putProperty("hostUID", ExecutionEnvironmentFactory.getLocal().getHost()); // NOI18N
-                    controller.getWizardDescriptor().putProperty("readOnlyToolchain", Boolean.TRUE); //NOI18N
+                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN, compiler);
+                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
+                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
                 } else {
-                    controller.getWizardDescriptor().putProperty("readOnlyToolchain", Boolean.FALSE); //NOI18N
+                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
                 }
                 @SuppressWarnings("unchecked")
                 List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
@@ -344,7 +344,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty("sourceFolderPath",  sourcesField.getText().trim()); // NOI18N
         //wizardDescriptor.putProperty("displayName",   new File(binaryField.getText().trim()).getName()); // NOI18N
         // TODO should be inited
-        wizardDescriptor.putProperty("makefileName",  ""); // NOI18N
+        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
     }
 
     boolean valid() {
