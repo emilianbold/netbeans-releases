@@ -417,7 +417,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
         if (controller.isFullRemote()) {
             WizardDescriptor wd = controller.getWizardDescriptor();
-            String hostUID = (String) wd.getProperty("hostUID");
+            String hostUID = (String) wd.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
             ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             fileChooser = new FileChooserBuilder(execEnv).createFileChooser(seed);
             fileChooser.setApproveButtonText(approveButtonText);
@@ -445,10 +445,10 @@ public class SelectModePanel extends javax.swing.JPanel {
     void read(WizardDescriptor wizardDescriptor) {
         initialized = false;
         updateControls();
-        String hostUID = (String) wizardDescriptor.getProperty("hostUID");
-        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty("toolchain");
+        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
+        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false,
-                (ToolsCacheManager) wizardDescriptor.getProperty("ToolsCacheManager")) {
+                (ToolsCacheManager) wizardDescriptor.getProperty("ToolsCacheManager")) { // NOI18N
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 boolean enableHost = enabled;
@@ -481,21 +481,21 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     void store(WizardDescriptor wizardDescriptor) {
         if (simpleMode.isSelected()) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
-            wizardDescriptor.putProperty("setAsMain",  Boolean.TRUE); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SET_AS_MAIN,  Boolean.TRUE);
         } else {
-            wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
         wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
-        wizardDescriptor.putProperty("readOnlyToolchain", Boolean.TRUE); // NOI18N
+        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
-        wizardDescriptor.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(ee)); // NOI18N
+        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(ee));
         controller.getWizardStorage().setExecutionEnvironment(ee);
 
         Object tc = toolchainComboBox.getSelectedItem();
         if (tc != null && tc instanceof CompilerSet) {
-            wizardDescriptor.putProperty("toolchain", tc); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN, tc);
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
         wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
