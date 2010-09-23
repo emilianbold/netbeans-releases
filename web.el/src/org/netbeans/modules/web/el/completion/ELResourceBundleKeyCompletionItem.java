@@ -41,34 +41,41 @@
  */
 package org.netbeans.modules.web.el.completion;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import javax.swing.ImageIcon;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.web.el.ELElement;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Erno Mononen
  */
-final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
+final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal {
 
-    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesLocale.gif";//NOI18N
-    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesKey.gif";//NOI18N
 
-    private final String bundle;
+    private final String key;
+    private final String value;
+    private final ELElement element;
 
-    public ELResourceBundleCompletionItem(String bundle) {
-        this.bundle = bundle;
+    public ELResourceBundleKeyCompletionItem(String key, String value, ELElement element) {
+        this.key = key;
+        this.value = value;
+        this.element = element;
     }
 
     @Override
     public String getName() {
-        return bundle;
+        return key;
+    }
+
+    @Override
+    public String getRhsHtml(HtmlFormatter formatter) {
+        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
+        return formatter.getText();
     }
 
     @Override
@@ -91,24 +98,4 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
         return ImageUtilities.loadImageIcon(ICON_PATH, false);
     }
 
-    @Override
-    public String getCustomInsertTemplate() {
-        StringBuilder result = new StringBuilder();
-        result.append(getInsertPrefix())
-                .append("['")
-                .append("${cursor}")
-                .append("']");
-        scheduleShowingCompletion();
-        return result.toString();
-    }
-
-    private static void scheduleShowingCompletion() {
-        service.schedule(new Runnable() {
-
-            @Override
-            public void run() {
-                Completion.get().showCompletion();
-            }
-        }, 250, TimeUnit.MILLISECONDS);
-    }
 }
