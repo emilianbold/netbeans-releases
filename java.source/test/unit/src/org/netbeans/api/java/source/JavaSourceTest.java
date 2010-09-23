@@ -1967,13 +1967,11 @@ public class JavaSourceTest extends NbTestCase {
         public <S, T> void queryDocTerms(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, ResultConvertor<? super Term, S> termConvertor, Map<? super T, Set<S>> result) throws IOException, InterruptedException {
             await();
         }
-              
-        public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
-        }
 
-        public void store(Map<Pair<String,String>, Object[]> refs, List<Pair<String,String>> topLevels) throws IOException {            
+        @Override
+        public <S, T> void store(Collection<T> toAdd, Collection<S> toDelete, ResultConvertor<? super T, ? extends org.apache.lucene.document.Document> docConvertor, ResultConvertor<? super S, ? extends Query> queryConvertor, boolean optimize) throws IOException {
         }
-
+        
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
             return true;
         }
@@ -1995,7 +1993,7 @@ public class JavaSourceTest extends NbTestCase {
                 }
                 Thread.sleep(100);
             }
-        }              
+        }
     }
 
     private FileObject createTestFile (String className) {
