@@ -448,6 +448,17 @@ public class CreateElementTest extends HintsTestBase {
         )));
     }
 
+    public void test189687() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug189687", 83, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:ii:org.netbeans.test.java.hints.Bug189687:int:[private]",
+                "AddParameterOrLocalFix:ii:int:false"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug189687", 119, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:ii:org.netbeans.test.java.hints.Bug189687:int:[private, static]",
+                "AddParameterOrLocalFix:ii:int:false"
+        )));
+    }
+
     protected void performTestAnalysisTest(String className, int offset, Set<String> golden) throws Exception {
         prepareTest(className);
 

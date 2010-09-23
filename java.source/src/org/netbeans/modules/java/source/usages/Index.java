@@ -45,7 +45,6 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -73,8 +72,7 @@ public abstract class Index {
     public abstract <T> void query (@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException;
     public abstract <S, T> void queryDocTerms(@NonNull Query[] queries, @NonNull FieldSelector selector, @NonNull ResultConvertor<? super Document, T> convertor, @NonNull ResultConvertor<? super Term, S> termConvertor, Map<? super T, Set<S>> result) throws IOException, InterruptedException;
     public abstract <T> void queryTerms(@NullAllowed Term start, @NonNull ResultConvertor<Term,T> filter, @NonNull Collection<? super T> result) throws  IOException, InterruptedException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException;
-    public abstract void store (Map<Pair<String,String>,Object[]> refs, List<Pair<String,String>> topLevels) throws IOException;
+    public abstract <S, T> void store (@NonNull Collection<T> toAdd, @NonNull Collection<S> toDelete, @NonNull ResultConvertor<? super T, ? extends Document> docConvertor, @NonNull ResultConvertor<? super S, ? extends Query> queryConvertor, boolean optimize) throws IOException;
     public abstract void clear () throws IOException;
     public abstract void close () throws IOException;
             
