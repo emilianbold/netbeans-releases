@@ -285,12 +285,17 @@ class LuceneIndex extends Index {
     }
 
     @Override
-    public void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
+    public <S, T> void store (
+            final @NonNull Collection<T> toAdd,
+            final @NonNull Collection<S> toDelete,
+            final @NonNull ResultConvertor<? super T, ? extends Document> docConvertor,
+            final @NonNull ResultConvertor<? super S, ? extends Query> queryConvertor,
+            final boolean optimize) throws IOException{
         try {
             ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
-                    _store(refs, topLevels);
+                    _store(toAdd, toDelete, docConvertor, queryConvertor, optimize);
                     return null;
                 }
             });
@@ -299,17 +304,27 @@ class LuceneIndex extends Index {
         }
     }
 
-    private void _store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException {
+    private <S, T> void _store (
+            final @NonNull Collection<T> data,
+            final @NonNull Collection<S> toDelete,
+            final @NonNull ResultConvertor<? super T, ? extends Document> docConvertor,
+            final @NonNull ResultConvertor<? super S, ? extends Query> queryConvertor,
+            final boolean optimize) throws IOException {
         assert ClassIndexManager.getDefault().holdsWriteLock();
         boolean create = !exists();
         final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
-                for (Pair<String,String> topLevel : topLevels) {
-                    out.deleteDocuments(DocumentUtil.binaryContentNameQuery(topLevel));
+                for (S td : toDelete) {
+                    try {
+                        out.deleteDocuments(queryConvertor.convert(td));
+                    } catch (Stop ex) {
+                        //Never thrown
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
-            storeData(out, refs, false);
+            storeData(out, data, docConvertor, optimize);
         } finally {
             try {
                 out.close();
@@ -318,44 +333,11 @@ class LuceneIndex extends Index {
             }
         }
     }
-    
-    @Override
-    public void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
-        try {
-            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws IOException, InterruptedException {
-                    _store(refs, toDelete);
-                    return null;
-                }
-            });
-        } catch (InterruptedException ie) {
-            throw new IOException("Interrupted");   //NOI18N
-        }
-    }
-
-    private void _store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException {
-        assert ClassIndexManager.getDefault().holdsWriteLock();
-        boolean create = !exists();
-        final IndexWriter out = dirCache.getWriter(create);
-        try {
-            if (!create) {
-                for (Pair<String,String> toDeleteItem : toDelete) {
-                    out.deleteDocuments(DocumentUtil.binaryNameSourceNamePairQuery(toDeleteItem));
-                }
-            }
-            storeData(out, refs, true);
-        } finally {
-            try {
-                out.close();
-            } finally {
-                dirCache.refreshReader();
-            }
-        }
-    }
-
-    private void storeData (final IndexWriter out,
-            final Map<Pair<String,String>, Object[]> refs,
+        
+    private <T> void storeData (
+            final IndexWriter out,
+            final @NonNull Collection<T> data,
+            final @NonNull ResultConvertor<? super T, ? extends Document> convertor,
             final boolean optimize) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
@@ -376,23 +358,21 @@ class LuceneIndex extends Index {
             memDir = new RAMDirectory ();
             activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
         }
-        for (Iterator<Map.Entry<Pair<String,String>,Object[]>> it = refs.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Pair<String,String>,Object[]> refsEntry = it.next();
-            it.remove();
-            final Pair<String,String> pair = refsEntry.getKey();
-            final String cn = pair.first;
-            final String srcName = pair.second;
-            final Object[] data = refsEntry.getValue();
-            final List<String> cr = (List<String>) data[0];
-            final String fids = (String) data[1];
-            final String ids = (String) data[2];
-            final Document newDoc = DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
-            activeOut.addDocument(newDoc);
-            if (memDir != null && lmListener.isLowMemory()) {
-                activeOut.close();
-                out.addIndexesNoOptimize(new Directory[] {memDir});
-                memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
+        for (Iterator<T> it = data.iterator(); it.hasNext();) {
+            try {
+                T entry = it.next();
+                it.remove();
+                final Document doc = convertor.convert(entry);
+                activeOut.addDocument(doc);
+                if (memDir != null && lmListener.isLowMemory()) {
+                    activeOut.close();
+                    out.addIndexesNoOptimize(new Directory[] {memDir});
+                    memDir = new RAMDirectory ();
+                    activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
+                }
+            } catch (Stop ex) {
+                //Never thrown but log
+                Exceptions.printStackTrace(ex);
             }
         }
         if (memDir != null) {
