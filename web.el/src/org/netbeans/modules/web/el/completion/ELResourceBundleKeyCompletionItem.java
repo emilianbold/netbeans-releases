@@ -41,12 +41,18 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.util.Collections;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.web.el.ELElement;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -90,7 +96,7 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
 
     @Override
     public ElementHandle getElement() {
-        return null;
+        return new ResourceBundleElementHandle();
     }
 
     @Override
@@ -98,4 +104,52 @@ final class ELResourceBundleKeyCompletionItem extends DefaultCompletionProposal 
         return ImageUtilities.loadImageIcon(ICON_PATH, false);
     }
 
+    private class ResourceBundleElementHandle extends ELElementHandle {
+
+        @Override
+        String document(ParserResult info) {
+            return key + "=" + "<font color='#ce7b00'>" + value + "</font>";
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return element.getParserResult().getFileObject();
+        }
+
+        @Override
+        public String getMimeType() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return key;
+        }
+
+        @Override
+        public String getIn() {
+            return null;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.OTHER;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+
+    }
 }
