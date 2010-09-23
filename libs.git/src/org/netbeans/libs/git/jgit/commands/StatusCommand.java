@@ -61,7 +61,6 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.Utils;
@@ -149,7 +148,7 @@ public class StatusCommand extends GitCommand {
                             } else {
                                 statusIndexWC = GitStatus.Status.STATUS_ADDED;
                             }
-                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), FS.DETECTED))) {
+                        } else if (mIndex != mWorking || (mWorking != 0 && mWorking != FileMode.TREE.getBits() && fti.isModified(indexEntry, true, Utils.checkExecutable(repository), repository.getFS()))) {
                             statusIndexWC = GitStatus.Status.STATUS_MODIFIED;
                         } else {
                             statusIndexWC = GitStatus.Status.STATUS_NORMAL;
