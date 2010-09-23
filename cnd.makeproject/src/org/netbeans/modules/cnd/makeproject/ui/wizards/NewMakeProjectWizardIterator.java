@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -275,9 +274,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 }
                 panelsList.add(selectHostPanel);
                 if (getSelectHostWizardProvider().isNewHost()) {
-                    for(WizardDescriptor.Panel<?> p : getSelectHostWizardProvider().getAdditionalPanels()){
-                        panelsList.add((Panel<WizardDescriptor>) p);
-                    }
+                    panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
                     panelsList.add(importPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
@@ -303,8 +300,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
                 panels.add(selectBinaryPanel);
-                panels.add(advancedPanels.get(1)); // buildActionsDescriptorPanel
-                panels.add(advancedPanels.get(2)); // sourceFoldersDescriptorPanel
+                //panels.add(advancedPanels.get(1)); // buildActionsDescriptorPanel
+                //panels.add(advancedPanels.get(2)); // sourceFoldersDescriptorPanel
                 panels.add(advancedPanels.get(4)); // panelConfigureProject
             }
         } else {
@@ -394,6 +391,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if (wizardtype == TYPE_BINARY) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
+                extension.discoverProject(wiz.getProperties(), null, IteratorExtension.ProjectKind.IncludeDependencies);
                 //resultSet.addAll(extension.createProject(wiz));
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
