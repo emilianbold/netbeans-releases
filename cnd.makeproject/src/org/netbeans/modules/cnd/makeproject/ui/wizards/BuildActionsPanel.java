@@ -104,23 +104,6 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputBrowseButton.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_BROWSE_BUTTON_AD"));
     }
     
-    private final class MakefileDocumentListener implements DocumentListener {
-        @Override
-        public void changedUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
-        
-        @Override
-        public void insertUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
-        
-        @Override
-        public void removeUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
-    }
-    
     private void makefileFieldChanged() {
         File makefile = new File(makefileName);
         if (makefile.getParent() != null) {

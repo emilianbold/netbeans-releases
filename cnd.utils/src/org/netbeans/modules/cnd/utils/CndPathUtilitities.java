@@ -74,6 +74,9 @@ public class CndPathUtilitities {
      * the file is in the current directory rather than ".".
      */
     public static String getDirName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -88,6 +91,9 @@ public class CndPathUtilitities {
      * its filename.
      */
     public static String getBaseName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
