@@ -181,7 +181,7 @@ class QueryUtil {
             throw new IllegalArgumentException();
         }
     }
-    
+        
     static Pair<ResultConvertor<Term,String>,Term> createPackageFilter(
             final @NullAllowed String prefix,
             final boolean directOnly) {
@@ -308,7 +308,7 @@ class QueryUtil {
         protected abstract FilteredTermEnum getTermEnum(IndexReader reader) throws IOException;
         
     }
-    
+        
     private static class RegexpTermEnum extends FilteredTermEnum {
         
         private final String fieldName;
