@@ -82,8 +82,6 @@ import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
 import org.apache.maven.model.Resource;
-import org.apache.maven.model.building.ModelBuildingException;
-import org.apache.maven.model.building.ModelProblem;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -438,6 +436,7 @@ public final class NbMavenProjectImpl implements Project {
                     reportExceptions(res);
                 }
 
+
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
@@ -492,37 +491,27 @@ public final class NbMavenProjectImpl implements Project {
     private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
         for (Throwable e : res.getExceptions()) {
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
-            String msg = e.getMessage();
-            if (e instanceof ArtifactResolutionException) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"), msg, null);
-                problemReporter.addReport(report);
-            } else if (e instanceof ArtifactNotFoundException) {
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"), msg, null);
-                problemReporter.addReport(report);
-            } else if (e instanceof ProjectBuildingException) {
-                //igonre if the problem is in the project validation codebase, we handle that later..
-                problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
-                Throwable cause = e.getCause();
-                if (cause instanceof ModelBuildingException) {
-                    for (ModelProblem problem : ((ModelBuildingException) cause).getProblems()) {
-                        if (problem.getMessage().contains("Detected the following recursive expression cycle: []")) {
-                            Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "#190530: anomalous error", problem.getException());
-                        }
+                    String msg = e.getMessage();
+                    if (e instanceof ArtifactResolutionException) {
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"), msg, null);
+                        problemReporter.addReport(report);
+                    } else if (e instanceof ArtifactNotFoundException) {
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"), msg, null);
+                        problemReporter.addReport(report);
+                    } else if (e instanceof ProjectBuildingException) {
+                        //igonre if the problem is in the project validation codebase, we handle that later..
+                        problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
+                    } else {
+                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
+                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                                "Error reading project model", msg, null);
+                        problemReporter.addReport(report);
+            
                     }
-                }
-            } else {
-                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
-                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                        "Error reading project model", msg, null);
-                problemReporter.addReport(report);
-
-            }
-            if (msg.contains("Detected the following recursive expression cycle: []")) {
-                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.WARNING, "#190530: anomalous error", e);
-            }
+            
         }
     }
 
