@@ -118,7 +118,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         CharSequence content = readFile(absPath);
         CharSequence text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
@@ -135,7 +135,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             long time = System.currentTimeMillis();
             FileObject fo = rootFO.getFileObject(absPath);
             assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-            assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+            assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
             InputStream is = fo.getInputStream();
             assertNotNull("Got null input stream for " + getFileName(execEnv, absPath), is);
             is.close();
