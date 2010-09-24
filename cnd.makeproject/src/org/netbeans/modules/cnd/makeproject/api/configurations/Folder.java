@@ -155,7 +155,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Items to be removed
         for (Item item : getItemsAsArray()) {
             FileObject fo = item.getFileObject();
-            if (fo.isVirtual()
+            if (!fo.isValid()
                     || !fo.isData()
                     || !VisibilityQuery.getDefault().isVisible(fo)
                     || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {

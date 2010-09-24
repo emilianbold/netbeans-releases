@@ -185,7 +185,7 @@ public class PkgConfigImpl implements PkgConfig {
                 continue;
             }
             done.add(file);
-            if (!file.isVirtual() && file.isFolder() && file.canRead()) {
+            if (file.isValid() && file.isFolder() && file.canRead()) {
                 for (FileObject fpc : file.getChildren()) {
                     String name = fpc.getNameExt();
                     if (name.endsWith(".pc") && fpc.canRead() && fpc.isData()) { // NOI18N
