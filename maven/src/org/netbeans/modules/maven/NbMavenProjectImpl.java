@@ -165,9 +165,7 @@ public final class NbMavenProjectImpl implements Project {
     private final Info projectInfo;
     private final MavenSharabilityQueryImpl sharability;
     private final SubprojectProviderImpl subs;
-    private final 
-    @NonNull
-    NbMavenProject watcher;
+    private final @NonNull NbMavenProject watcher;
     private final ProjectState state;
     private final M2ConfigProvider configProvider;
     private final ClassPathProviderImpl cppProvider;
@@ -230,9 +228,7 @@ public final class NbMavenProjectImpl implements Project {
         return projectFile;
     }
 
-    public 
-    @NonNull
-    NbMavenProject getProjectWatcher() {
+    public @NonNull NbMavenProject getProjectWatcher() {
         return watcher;
     }
 
@@ -267,9 +263,9 @@ public final class NbMavenProjectImpl implements Project {
             }
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
+            req.setOffline(true);
             // recursive == false is important to avoid checking all submodules for extensions
             // that will not be used in current pom anyway..
-            req.setOffline(true);
             // #135070
             req.setRecursive(false);
             req.setUserProperties(createSystemPropsForProjectLoading());
@@ -340,30 +336,18 @@ public final class NbMavenProjectImpl implements Project {
         return props;
     }
 
-//    private AggregateProgressHandle createDownloadHandle() {
-//        AggregateProgressHandle hndl = AggregateProgressFactory.createSystemHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
-//                            new ProgressContributor[] {
-//                                AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-//                            null, null);
-//        hndl.setInitialDelay(2000);
-//        return hndl;
-//    }
     /**
      * getter for the maven's own project representation.. this instance is cached but gets reloaded
      * when one the pom files have changed.
      */
-    public 
-    @NonNull
-    synchronized MavenProject getOriginalMavenProject() {
+    public @NonNull synchronized MavenProject getOriginalMavenProject() {
         if (project == null) {
             project = loadOriginalMavenProject(true);
         }
         return project;
     }
 
-    private 
-    @NonNull
-    MavenProject loadOriginalMavenProject(boolean fallbackOnline) {
+    private @NonNull MavenProject loadOriginalMavenProject(boolean fallbackOnline) {
         long startLoading = System.currentTimeMillis();
         MavenProject newproject = null;
         try {
@@ -392,7 +376,7 @@ public final class NbMavenProjectImpl implements Project {
                 if (fallbackOnline) {
                     ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
                             NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report"),
-                            NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report_Dec"), null);
+                            NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report_Desc"), null);
                     problemReporter.addReport(report);
                     ProgressTransferListener ptl = new ProgressTransferListener();
                         req.setTransferListener(ptl);
@@ -456,7 +440,7 @@ public final class NbMavenProjectImpl implements Project {
                 newproject = getFallbackProject();
                 if(fallbackOnline){
                     newproject.setName(NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Project_Name"));
-                    newproject.setDescription(NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Project_Dec"));
+                    newproject.setDescription(NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Project_Desc"));
                 }
             }
             long endLoading = System.currentTimeMillis();
@@ -465,11 +449,9 @@ public final class NbMavenProjectImpl implements Project {
             if (logger.isLoggable(Level.FINE) && SwingUtilities.isEventDispatchThread()) {
                 logger.log(Level.FINE, "Project " + getProjectDirectory().getPath() + " loaded in AWT event dispatching thread!", new RuntimeException());
             }
-
-            assert newproject != null;
-            return newproject;
-
         }
+        assert newproject != null;
+        return newproject;
     }
 
     private MavenProject getFallbackProject() throws AssertionError {
@@ -490,27 +472,24 @@ public final class NbMavenProjectImpl implements Project {
     private void reportExceptions(MavenExecutionResult res) throws MissingResourceException {
         for (Throwable e : res.getExceptions()) {
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Error on loading project " + projectFile, e); //NOI18N
-                    String msg = e.getMessage();
-                    if (e instanceof ArtifactResolutionException) {
-                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"), msg, null);
-                        problemReporter.addReport(report);
-                    } else if (e instanceof ArtifactNotFoundException) {
-                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"), msg, null);
-                        problemReporter.addReport(report);
-                    } else if (e instanceof ProjectBuildingException) {
-                        //igonre if the problem is in the project validation codebase, we handle that later..
-                        problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
-                    } else {
-                        Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
-                        ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
-                                "Error reading project model", msg, null);
-                        problemReporter.addReport(report);
-            }
-            if (msg.contains("Detected the following recursive expression cycle: []")) {
-                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.WARNING, "#190530: anomalous error", e);
+            String msg = e.getMessage();
+            if (e instanceof ArtifactResolutionException) {
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Resolution_problem"), msg, null);
+                problemReporter.addReport(report);
+            } else if (e instanceof ArtifactNotFoundException) {
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Artifact_Not_Found"), msg, null);
+                problemReporter.addReport(report);
+            } else if (e instanceof ProjectBuildingException) {
+                //igonre if the problem is in the project validation codebase, we handle that later..
+                problemReporter.addReport(new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        NbBundle.getMessage(NbMavenProjectImpl.class, "TXT_Cannot_Load_Project"), msg, new RevalidateAction(this)));
+            } else {
+                Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), e); //NOI18N
+                ProblemReport report = new ProblemReport(ProblemReport.SEVERITY_HIGH,
+                        "Error reading project model", msg, null);
+                problemReporter.addReport(report);
             }
         }
     }
@@ -661,9 +640,7 @@ public final class NbMavenProjectImpl implements Project {
         return home;
     }
 
-    public 
-    @CheckForNull
-    String getArtifactRelativeRepositoryPath() {
+    public @CheckForNull String getArtifactRelativeRepositoryPath() {
         Artifact artifact = getOriginalMavenProject().getArtifact();
         if (artifact == null) {
             return null;
@@ -675,9 +652,7 @@ public final class NbMavenProjectImpl implements Project {
      * path of test artifact in local repository
      * @return
      */
-    public 
-    @CheckForNull
-    String getTestArtifactRelativeRepositoryPath() {
+    public @CheckForNull String getTestArtifactRelativeRepositoryPath() {
         Artifact main = getOriginalMavenProject().getArtifact();
         if (main == null) {
             return null;
@@ -923,9 +898,7 @@ public final class NbMavenProjectImpl implements Project {
             }
         }
 
-        public 
-        @Override
-        void propertyChange(PropertyChangeEvent evt) {
+        public @Override void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 check();
             }
