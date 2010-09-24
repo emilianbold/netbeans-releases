@@ -407,7 +407,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             if (tool != null) {
                 container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
             } else {
-                container.addVisualizer(toolID, toolID, visualizer);
+                tool = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(toolID);
+                container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
             }
             container.showup();
             visualizer.refresh();
@@ -639,6 +640,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    @Override
     public void mouseClickedOnIndicator(Indicator<?> source) {
         DLightSession session = findIndicatorOwner(source);
         //set active session
