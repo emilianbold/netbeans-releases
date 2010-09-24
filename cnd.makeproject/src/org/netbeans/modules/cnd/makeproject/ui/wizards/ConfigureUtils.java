@@ -159,7 +159,7 @@ public final class ConfigureUtils {
         }
         for (String name : pattern) {
             FileObject makeFO = projDirFo.getFileObject(name); // NOI18N
-            if (makeFO != null && !makeFO.isVirtual() && makeFO.isData() && makeFO.canRead()) {
+            if (makeFO != null && makeFO.isValid() && makeFO.isData() && makeFO.canRead()) {
                 return makeFO;
             }
         }
