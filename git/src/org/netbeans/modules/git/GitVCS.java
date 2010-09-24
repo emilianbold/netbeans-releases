@@ -196,4 +196,8 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
             fireVersionedFilesChanged();
         }
     }
+
+    void refreshStatus (Set<File> files) {
+        fireStatusChanged(files == null || files.isEmpty() ? null : files);
+    }
 }

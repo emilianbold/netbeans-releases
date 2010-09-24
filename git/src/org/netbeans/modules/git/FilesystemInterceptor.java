@@ -47,11 +47,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
 
@@ -71,11 +75,23 @@ class FilesystemInterceptor extends VCSInterceptor {
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
+    private static final String INDEX_FILE_NAME = "index";
 
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
         refreshTask = rp.create(new RefreshTask());
         gitFolderEventsHandler = new GitFolderEventsHandler();
+    }
+
+    @Override
+    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+        long retval = -1;
+        if (GitUtils.DOT_GIT.equals(dir.getName())) {
+            Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
+            children.clear();
+            retval = gitFolderEventsHandler.refreshAdminFolder(dir);
+        }
+        return retval;
     }
 
     /**
@@ -127,14 +143,41 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+
+
+    
     private class GitFolderEventsHandler {
-        private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>(5);
+        private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>();
+        private final HashMap<File, Long> indexFiles = new HashMap<File, Long>(5);
+        private final HashMap<File, FileChangeListener> gitFolderRLs = new HashMap<File, FileChangeListener>(5);
 
         private final HashSet<File> filesToInitialize = new HashSet<File>();
-        private RequestProcessor.Task initializingTask = rp.create(new Runnable() {
+        private final RequestProcessor.Task initializingTask = rp.create(new Runnable() {
             @Override
             public void run() {
                 initializeFiles();
+            }
+        });
+
+        private final HashSet<File> refreshedRepositories = new HashSet<File>(5);
+        private final RequestProcessor.Task refreshOpenFilesTask = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                HashSet<File> repositories;
+                synchronized (refreshedRepositories) {
+                    repositories = new HashSet<File>(refreshedRepositories);
+                    refreshedRepositories.clear();
+                }
+                Set<File> openFiles = Utils.getOpenFiles();
+                for (Iterator<File> it = openFiles.iterator(); it.hasNext(); ) {
+                    File file = it.next();
+                    if (!repositories.contains(Git.getInstance().getRepositoryRoot(file))) {
+                        it.remove();
+                    }
+                }
+                if (!openFiles.isEmpty()) {
+                    Git.getInstance().headChanged(openFiles);
+                }
             }
         });
 
@@ -148,7 +191,7 @@ class FilesystemInterceptor extends VCSInterceptor {
             Set<File> retval = new HashSet<File>();
             Set<File> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
             synchronized (seenRootsForRepository) {
-                 retval.addAll(seenRootsForRepository);
+                retval.addAll(seenRootsForRepository);
             }
             return retval;
         }
@@ -194,7 +237,54 @@ class FilesystemInterceptor extends VCSInterceptor {
             return nextFile;
         }
 
-        private void initializeFiles () {
+        /**
+         *
+         * @param indexFile
+         * @param timestamp new timestamp, value 0 and missing indexFile.getParentFile() will remove the item from the cache
+         */
+        private void refreshIndexFileTimestamp (File indexFile, long timestamp) {
+            final File gitFolder = FileUtil.normalizeFile(indexFile.getParentFile());
+            boolean exists = timestamp > 0 || gitFolder.exists();
+            synchronized (indexFiles) {
+                Long ts;
+                if (exists && (ts = indexFiles.get(indexFile)) != null && ts >= timestamp) {
+                    // do not enter the filesystem module unless really need to
+                    return;
+                }
+            }
+            synchronized (indexFiles) {
+                indexFiles.remove(indexFile);
+                FileChangeListener list = gitFolderRLs.remove(gitFolder);
+                if (exists) {
+                    indexFiles.put(indexFile, Long.valueOf(timestamp));
+                    if (list == null) {
+                        final FileChangeListener fList = list = new FileChangeAdapter();
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.addRecursiveListener(fList, gitFolder);
+                            }
+                        });
+                    }
+                    gitFolderRLs.put(gitFolder, list);
+                } else {
+                    if (list != null) {
+                        final FileChangeListener fList = list;
+                        // has to run in a different thread, otherwise we may get a deadlock
+                        rp.post(new Runnable () {
+                            @Override
+                            public void run() {
+                                FileUtil.removeRecursiveListener(fList, gitFolder);
+                            }
+                        });
+                    }
+                    Git.STATUS_LOG.fine("refreshAdminFolderTimestamp: " + indexFile.getAbsolutePath() + " no longer exists"); //NOI18N
+                }
+            }
+        }
+
+        private void initializeFiles() {
             File file = null;
             while ((file = getFileToInitialize()) != null) {
                 Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: {0}", file.getAbsolutePath()); //NOI18N
@@ -202,12 +292,59 @@ class FilesystemInterceptor extends VCSInterceptor {
                 File repositoryRoot = Git.getInstance().getRepositoryRoot(file);
                 if (repositoryRoot != null) {
                     if (addSeenRoot(repositoryRoot, file)) {
+                        // this means the repository has not yet been scanned, so scan it
+                        Git.STATUS_LOG.fine("initializeFiles: planning a scan for " + repositoryRoot.getAbsolutePath() + " - " + file.getAbsolutePath()); //NOI18N
                         reScheduleRefresh(4000, Collections.singleton(file));
-                        // TODO: init cached timestamps, see mercurial
+                        synchronized (indexFiles) {
+                            File indexFile = FileUtil.normalizeFile(new File(GitUtils.getGitFolderForRoot(repositoryRoot), INDEX_FILE_NAME));
+                            if (!indexFiles.containsKey(indexFile)) {
+                                if (indexFile.isFile()) {
+                                    indexFiles.put(indexFile, null);
+                                    refreshIndexFileTimestamp(indexFile, indexFile.lastModified());
+                                }
+                            }
+                        }
                     }
                 }
             }
             Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: finished"); //NOI18N
+        }
+
+        // TODO: unit test - automatic refresh following outside events
+        // TODO: unit test - NO automatic refresh after IDE events
+        // TODO: unit test - listen only for changes on INDEX file, not the whole .git folder (e.g. after fetch, push, etc.)
+        private long refreshAdminFolder (File gitFolder) {
+            long lastModified = 0;
+            if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
+                File indexFile = FileUtil.normalizeFile(new File(gitFolder, INDEX_FILE_NAME));
+                Git.STATUS_LOG.finer("refreshAdminFolder: special FS event handling for " + indexFile.getAbsolutePath()); //NOI18N
+                lastModified = indexFile.lastModified();
+                Long lastCachedModified = null;
+                synchronized (indexFiles) {
+                    lastCachedModified = indexFiles.get(indexFile);
+                    if (lastCachedModified == null || lastCachedModified < lastModified || lastModified == 0) {
+                        refreshIndexFileTimestamp(indexFile, lastModified);
+                        lastCachedModified = null;
+                    }
+                }
+                if (lastCachedModified == null) {
+                    File repository = gitFolder.getParentFile();
+                    Git.STATUS_LOG.fine("refreshAdminFolder: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
+                    reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
+                    refreshOpenFiles(repository);
+                }
+            }
+            return lastModified;
+        }
+
+        private void refreshOpenFiles (File repository) {
+            boolean refreshPlanned;
+            synchronized (refreshedRepositories) {
+                refreshPlanned = !refreshedRepositories.add(repository);
+            }
+            if (refreshPlanned) {
+                refreshOpenFilesTask.schedule(3000);
+            }
         }
     }
 }

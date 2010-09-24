@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
@@ -79,7 +80,6 @@ public final class Git {
     private HashMap<File, RequestProcessor> processorsToUrl;
     public static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
     static final String PROP_VERSIONED_FILES_CHANGED = "versionedFilesChanged"; // NOI18N
-    public static final String PROP_CHANGESET_CHANGED = "changesetChanged"; // NOI18N
 
     public Git () {
     }
@@ -193,16 +193,16 @@ public final class Git {
         support.firePropertyChange(PROP_ANNOTATIONS_CHANGED, null, null);
     }
 
-    public void changesetChanged(File repository) {
-        support.firePropertyChange(PROP_CHANGESET_CHANGED, repository, null);
-    }
-
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
+    }
+
+    public void headChanged (Set<File> files) {
+        gitVCS.refreshStatus(files);
     }
 
     private static class RootsToFile {
