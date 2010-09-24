@@ -82,6 +82,7 @@ public class BinaryAnalyserTest extends NbTestCase {
 
     public void testAnnotationsIndexed() throws Exception {
         ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            @Override
             public Void run() throws IOException, InterruptedException {
                 FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
                 FileObject indexDir = workDir.createFolder("index");
@@ -94,12 +95,12 @@ public class BinaryAnalyserTest extends NbTestCase {
                         index.clear();
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
-                        index.store(refs, topLevels);
+                    public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
+                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
-                        index.store(refs, toDelete);
+                    public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                        index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
                     }
                 }, getWorkDir());
 

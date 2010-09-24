@@ -106,7 +106,7 @@ public class LHTestCase extends NbTestCase {
         
 
         if (file.isFile()) {
-            File storeFile = store.getStoreFile(file, ts);
+            File storeFile = store.getStoreFile(file, ts, false);
             if (!storeFile.exists()) {
                 fail("store file doesn't exist for file");
             }
@@ -201,7 +201,7 @@ public class LHTestCase extends NbTestCase {
         }
     }
     
-    static void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
+    static void createFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
         if(data != null) {
             write(file, data.getBytes());
         } else {
@@ -232,6 +232,10 @@ public class LHTestCase extends NbTestCase {
     }
     
     static void write(File file, byte[] data) throws Exception {
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
         BufferedOutputStream bos  = null;
         try {
             bos = new BufferedOutputStream(new FileOutputStream(file));

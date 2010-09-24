@@ -62,7 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
@@ -76,6 +76,12 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         this.fullRemote = fullRemote;
         wizardStorage = new WizardStorage(fullRemote);
     }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
 
     public boolean isFullRemote() {
         return fullRemote;
@@ -111,9 +117,9 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     private void setMode(boolean isSimple) {
         if (isSimple) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         } else {
-            wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
         validate();
     }
@@ -151,7 +157,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
@@ -162,7 +168,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE));
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -172,8 +178,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        if (wizardDescriptor.getProperty("simpleMode") == null) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+        if (wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE) == null) {
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         }
         getComponent().read(wizardDescriptor);
     }

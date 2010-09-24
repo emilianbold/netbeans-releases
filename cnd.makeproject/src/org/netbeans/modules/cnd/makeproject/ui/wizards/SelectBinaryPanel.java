@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private SelectBinaryPanelVisual component;
     private String name;
@@ -64,13 +64,18 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public SelectBinaryPanel(){
-        name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
+        name = NbBundle.getMessage(SelectBinaryPanel.class, "SelectBinaryPanelVisual.Title"); // NOI18N
         wizardStorage = new BinaryWizardStorage(this);
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE));
     }
 
     @Override
@@ -78,7 +83,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N

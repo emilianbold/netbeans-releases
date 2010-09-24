@@ -395,6 +395,7 @@ public final class ELTypeUtilities {
             public void run(CompilationController info) throws Exception {
                 if (clazz != null) {
                     setResult(info.getElements().getTypeElement(clazz));
+                    return;
                 }
                 // probably a variable
                 int offset = element.getOriginalOffset().getStart() + identifier.startOffset();

@@ -133,7 +133,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String mn = (String)wizardDescriptor.getProperty("makefileName"); // NOI18N
+        String mn = (String)wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME);
         if (makefileName == null || !makefileName.equals(mn)) {
             initFields();
             makefileName = mn;
@@ -151,20 +151,20 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     boolean valid(WizardDescriptor settings) {
         if (buildCommandWorkingDirTextField.getText().length() == 0) {
             String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
-            buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+            buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
             return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }

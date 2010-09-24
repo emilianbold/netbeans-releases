@@ -101,6 +101,18 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public static final int TYPE_QT_DYNAMIC_LIB = 5;
     public static final int TYPE_QT_STATIC_LIB = 6;
     public static final int TYPE_BINARY = 7;
+    // Wizard descriptor properies
+    public static final String PROPERTY_NAME = "name"; // String // NOI18N
+    public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
+    public static final String PROPERTY_MAKEFILE_NAME = "makefilename"; // String // NOI18N
+    public static final String PROPERTY_SET_AS_MAIN = "setAsMain"; // Boolean // NOI18N
+    public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
+    public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
+    public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
+    public static final String PROPERTY_TOOLCHAIN = "toolchain"; // CompilerSet // NOI18N
+    public static final String PROPERTY_READ_ONLY_TOOLCHAIN = "readOnlyToolchain"; // Boolean // NOI18N
+//NewMakeProjectWizardIterator.PROPERTY_FULL_REMOTE
+
     private final int wizardtype;
     private final boolean fullRemote;
 
@@ -243,9 +255,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
                 panels.add(panelConfigureProjectTrue);
+                String[] steps = createSteps(panels);
             }
         } else if (wizardtype == TYPE_MAKEFILE) {
-            String hostUID = (wiz == null) ? null : (String) wiz.getProperty("hostUID");
+            String hostUID = (wiz == null) ? null : (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
             Boolean setupHost = fullRemote ? Boolean.valueOf(getSelectHostWizardProvider().isNewHost()) : null;
 
             if (panels != null) {
@@ -303,6 +316,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 //panels.add(advancedPanels.get(1)); // buildActionsDescriptorPanel
                 //panels.add(advancedPanels.get(2)); // sourceFoldersDescriptorPanel
                 panels.add(advancedPanels.get(4)); // panelConfigureProject
+                String[] steps = createSteps(panels);
             }
         } else {
             throw new IllegalStateException("Illegal wizard type: " + wizardtype); //NOI18N
@@ -366,15 +380,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public Set<FileObject> instantiate() throws IOException {
         Set<FileObject> resultSet = new HashSet<FileObject>();
-        File dirF = (File) wiz.getProperty("projdir"); // NOI18N
-        String hostUID = (String) wiz.getProperty("hostUID"); // NOI18N
+        File dirF = (File) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER);
+        String hostUID = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
         //boolean fullRemote = (wiz.getProperty("fullRemote") == null) ? false : ((Boolean) wiz.getProperty("fullRemote")).booleanValue();
-        CompilerSet toolchain = (CompilerSet) wiz.getProperty("toolchain"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
-        String projectName = (String) wiz.getProperty("name"); // NOI18N
-        String makefileName = (String) wiz.getProperty("makefilename"); // NOI18N
+        String projectName = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_NAME);
+        String makefileName = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME);
         if (fullRemote) {
             getSelectHostWizardProvider().apply();
         }
@@ -433,6 +447,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
             prjParams.setFullRemote(fullRemote);
+            prjParams.setHostUID(hostUID);
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = FileUtil.toFileObject(dirF);
@@ -447,15 +462,15 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.putProperty("fullRemote", Boolean.valueOf(fullRemote)); // NOI18N
+        wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_FULL_REMOTE, Boolean.valueOf(fullRemote));
         index = 0;
         setupPanelsAndStepsIfNeed();
     }
 
     @Override
     public void uninitialize(WizardDescriptor wiz) {
-        this.wiz.putProperty("projdir", null); // NOI18N
-        this.wiz.putProperty("name", null); // NOI18N
+        this.wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER, null);
+        this.wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, null);
         this.wiz.putProperty("mainClass", null); // NOI18N
         if (wizardtype == TYPE_MAKEFILE) {
             this.wiz.putProperty("sourceRoot", null); // NOI18N
@@ -471,7 +486,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     private boolean isSimple() {
-        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty("simpleMode")); // NOI18N
+        return wizardtype == TYPE_MAKEFILE && wiz != null && Boolean.TRUE.equals(wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE));
     }
 
     @Override

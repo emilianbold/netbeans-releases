@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.List;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -98,7 +99,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private String tag;
     private FileObject projectDirectory;
     private int descriptorVersion = -1;
-    private MakeConfigurationDescriptor projectDescriptor;
+    private final MakeConfigurationDescriptor projectDescriptor;
+    private final RemoteProject remoteProject;
     private List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
@@ -132,6 +134,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         this.tag = tag;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
+        this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
         this.relativeOffset = relativeOffset;
     }
 
@@ -432,11 +435,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             ((MakeConfiguration) currentConf).getDevelopmentHost().setHost(
                     ExecutionEnvironmentFactory.fromUniqueID(currentText));
-        } else if (element.equals(FIXED_SYNC_FACTORY)) {
+        } else if (element.equals(FIXED_SYNC_FACTORY_ELEMENT)) {
             RemoteSyncFactory fixedSyncFactory = RemoteSyncFactory.fromID(currentText);
             CndUtils.assertNotNull(fixedSyncFactory, "Can not restore fixed sync factory " + currentText); //NOI18N
             ((MakeConfiguration) currentConf).setFixedRemoteSyncFactory(fixedSyncFactory);
-        } else if (element.equals(REMOTE_MODE)) {
+        } else if (element.equals(REMOTE_MODE_ELEMENT)) {
+            // XXX:fullRemote: move to project-level
             RemoteProject.Mode mode = RemoteProject.Mode.valueOf(currentText);
             CndUtils.assertNotNull(mode, "Can not restore remote mode " + currentText); //NOI18N
             ((MakeConfiguration) currentConf).setRemoteMode(mode);
@@ -511,7 +515,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             ((MakeConfiguration) currentConf).getMakefileConfiguration().getOutput().setValue(path);
         } else if (element.equals(FOLDER_PATH_ELEMENT)) { // FIXUP: < version 5
-            currentFolder.addItem(new Item(getString(currentText)));
+            currentFolder.addItem(createItem(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT) || element.equals(DISK_FOLDER_ELEMENT)) {
@@ -529,14 +533,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
             String path = currentText;
             path = getString(adjustOffset(path));
-            currentFolder.addItem(new Item(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ITEM_NAME_ELEMENT)) {
             String path = currentFolder.getRootPath() + '/' + currentText;
             if (path.startsWith("./")) { // NOI18N
                 path = path.substring(2);
             }
             path = getString(adjustOffset(path));
-            currentFolder.addItem(new Item(path));
+            currentFolder.addItem(createItem(path));
         } else if (element.equals(ItemXMLCodec.ITEM_EXCLUDED_ELEMENT) || element.equals(ItemXMLCodec.EXCLUDED_ELEMENT)) {
             currentItemConfiguration.getExcluded().setValue(currentText.equals(TRUE_VALUE));
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
@@ -870,6 +874,23 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_ADDITIONAL_INFOS_LIST_ELEMENT)) {
             currentList = null;
+        }
+    }
+
+    private Item createItem(String path) {
+        FileObject projectDirFO = projectDescriptor.getProject().getProjectDirectory();
+        if (!path.startsWith("/")) {
+            return new Item(path); //XXX:fullRemote
+        }
+        if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getRemoteFileSystemHost());
+            if (itemFO == null) {
+                return new Item(path); //XXX:fullRemote
+            } else {
+                return new Item(itemFO, projectDirFO);
+            }
+        } else {
+            return new Item(path); //XXX:fullRemote convert this to use of file items as well
         }
     }
 
