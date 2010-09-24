@@ -270,7 +270,7 @@ public final class TreePathHandle {
                     && clsSym.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
                     && clsSym.sourcefile.toUri().isAbsolute()) {
                     u = clsSym.sourcefile.toUri().toURL();
-                } else {
+                } else if (clsSym.classfile != null) {
                     u = clsSym.classfile.toUri().toURL();
                 }
             } catch (MalformedURLException ex) {
