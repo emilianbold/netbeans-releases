@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import org.netbeans.modules.gsf.testrunner.api.ResultDisplayHandler;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.EventQueue;
@@ -160,11 +159,11 @@ final class ResultPanelOutput extends JScrollPane
 
         doc = textPane.getDocument();
 
-        AccessibleContext accessibleContext = textPane.getAccessibleContext();
-        accessibleContext.setAccessibleName(
-                NbBundle.getMessage(getClass(), "ACSN_OutputTextPane"));//NOI18N
-        accessibleContext.setAccessibleDescription(
-                NbBundle.getMessage(getClass(), "ACSD_OutputTextPane"));//NOI18N
+        AccessibleContext ac = textPane.getAccessibleContext();
+        ac.setAccessibleName(NbBundle.getMessage(getClass(),
+                                                "ACSN_OutputTextPane"));//NOI18N
+        ac.setAccessibleDescription(NbBundle.getMessage(getClass(),
+                                                "ACSD_OutputTextPane"));//NOI18N
         
         this.displayHandler = displayHandler;
     }
@@ -222,6 +221,7 @@ final class ResultPanelOutput extends JScrollPane
         OutputDisplayer(Object[] output) {
             this.output = output;
         }
+        @Override
         public void run() {
             if (!EventQueue.isDispatchThread()) {
                 EventQueue.invokeLater(this);
@@ -234,6 +234,7 @@ final class ResultPanelOutput extends JScrollPane
     /**
      * This method is called by a Swing timer (in the dispatch thread).
      */
+    @Override
     public void actionPerformed(ActionEvent e) {
         
         /* Called by the Swing timer (in the EventDispatch thread) */
