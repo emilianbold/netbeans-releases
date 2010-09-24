@@ -80,7 +80,7 @@ import org.w3c.dom.Node;
  */
 public class MakeSources implements Sources, AntProjectListener {
     
-    private static final String GENERIC = "generic";
+    private static final String GENERIC = "generic"; // NOI18N
 
     private MakeProject project;
     private AntProjectHelper helper;
@@ -233,7 +233,7 @@ public class MakeSources implements Sources, AntProjectListener {
                     sources.addGroup(project, GENERIC, fo, displayName);
                 }
             }
-            sources.addGroup(project, GENERIC, project.getProjectDirectory(), "Project metadata");
+            sources.addGroup(project, GENERIC, project.getProjectDirectory(), "Project metadata"); // NOI18N
             return sources;
         } else {
             SourcesHelper h = new SourcesHelper(project, helper, project.evaluator());
