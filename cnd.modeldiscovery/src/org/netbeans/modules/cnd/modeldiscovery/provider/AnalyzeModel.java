@@ -321,30 +321,32 @@ public class AnalyzeModel implements DiscoveryProvider {
         
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
-            Map<String,List<String>> searchBase = search(root);
-            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
-            boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
-            Item[] items = makeConfigurationDescriptor.getProjectItems();
-            Map<String,Item> projectSearchBase = new HashMap<String,Item>();
-            for (int i = 0; i < items.length; i++){
-                if (isStoped) {
-                    break;
+            if (root != null) {
+                Map<String,List<String>> searchBase = search(root);
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
+                boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
+                Item[] items = makeConfigurationDescriptor.getProjectItems();
+                Map<String,Item> projectSearchBase = new HashMap<String,Item>();
+                for (int i = 0; i < items.length; i++){
+                    if (isStoped) {
+                        break;
+                    }
+                    Item item = items[i];
+                    String path = item.getNormalizedPath();
+                    projectSearchBase.put(path, item);
                 }
-                Item item = items[i];
-                String path = item.getNormalizedPath();
-                projectSearchBase.put(path, item);
-            }
-            for (int i = 0; i < items.length; i++){
-                if (isStoped) {
-                    break;
-                }
-                Item item = items[i];
-                if (!isExcluded(item)) {
-                    Language lang = item.getLanguage();
-                    if (lang == Language.C || lang == Language.CPP){
-                        CsmFile langFile = langProject.findFile(item, false);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
-                        res.add(source);
+                for (int i = 0; i < items.length; i++){
+                    if (isStoped) {
+                        break;
+                    }
+                    Item item = items[i];
+                    if (!isExcluded(item)) {
+                        Language lang = item.getLanguage();
+                        if (lang == Language.C || lang == Language.CPP){
+                            CsmFile langFile = langProject.findFile(item, false);
+                            SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
+                            res.add(source);
+                        }
                     }
                 }
             }
