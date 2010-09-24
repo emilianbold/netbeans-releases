@@ -197,7 +197,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isVirtual() {
-        return ! cache.exists();
+        return false;
     }
 
     @Override
