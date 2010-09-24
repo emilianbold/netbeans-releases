@@ -386,7 +386,7 @@ public final class NbMavenProjectImpl implements Project {
                         public void run() {
                             req.setOffline(false);
                             AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(
-                                    NbMavenProjectImpl.class, "LBL_Incomplete_Loading_Progress_Handle"),
+                                    NbMavenProjectImpl.class, "LBL_Incomplete_Loading_Progress_Handle", projectFile.getParent()),
                                                 new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("fallbackOnline") },  //NOI18N
                                                     ProgressTransferListener.cancellable(), null);
                             try {
