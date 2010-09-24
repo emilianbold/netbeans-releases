@@ -111,7 +111,7 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
             if (org.netbeans.modules.versioning.util.Utils.isScanForbidden(file)) break;
             if (GitUtils.repositoryExistsFor(file)){
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
-                done.clear();   // all folders added before must be removed, they ARE in fact managed by hg
+                done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
