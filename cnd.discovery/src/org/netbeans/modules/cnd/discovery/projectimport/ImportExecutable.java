@@ -208,6 +208,7 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         });
         prjParams.setSourceFolders(list.iterator());
+        prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
             OpenProjects.getDefault().addPropertyChangeListener(this);
@@ -415,18 +416,21 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration) {
-        if (applicable.getSourceRoot() == null || applicable.getSourceRoot().length() == 0) {
+        String root = sourcesPath;
+        if (root == null || root.length()==0) {
+            root = applicable.getSourceRoot();
+        }
+        if (root == null || root.length() == 0) {
             return null;
         }
         if (applicable.getDependencies() == null || applicable.getDependencies().isEmpty()) {
             return null;
         }
         Map<String,String> dllPaths = new HashMap<String, String>();
-        String root = applicable.getSourceRoot();
         String ldLibPath = getLdLibraryPath(activeConfiguration);
         boolean search = false;
         for(String dll : applicable.getDependencies()) {
-            String p = findLocation(dll, ldLibPath, root);
+            String p = findLocation(dll, ldLibPath);
             if (p != null) {
                 dllPaths.put(dll, p);
             } else {
@@ -585,7 +589,7 @@ public class ImportExecutable implements PropertyChangeListener {
         return false;
     }
 
-    static String findLocation(String dll, String ldPath, String root){
+    static String findLocation(String dll, String ldPath){
         if (ldPath != null) {
             for(String search : ldPath.split(":")) {  // NOI18N
                 File file = new File(search, dll);

@@ -241,6 +241,7 @@ public class ImportProject implements PropertyChangeListener {
 //            }
         });
         sources = list.iterator();
+        sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
     }
 
     private void customSetup(WizardDescriptor wizard) {
