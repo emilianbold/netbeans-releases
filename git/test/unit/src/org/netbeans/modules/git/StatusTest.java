@@ -501,6 +501,34 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(ignoredFiles.isEmpty());
     }
 
+    public void testIgnoredFilesAreNotTracked () throws Exception {
+        File file = new File(repositoryLocation, "ignoredFile");
+        file.createNewFile();
+        File folder = new File(repositoryLocation, "ignoredFolder");
+        folder.mkdirs();
+        File folder2 = new File(repositoryLocation, "ignoredFolder2");
+        folder2.mkdirs();
+        File file2 = new File(folder2, "addedFile");
+        file2.createNewFile();
+        File ignoreFile = new File(repositoryLocation, ".gitignore");
+        write(ignoreFile, "ignored*");
+
+        // TODO: file2 needs to be committed, do it manually in the meantime
+
+        Map<File, GitStatus> statuses = getClient(repositoryLocation).getStatus(new File[] { repositoryLocation }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.get(file).isTracked());
+        assertFalse(statuses.get(folder).isTracked());
+        assertFalse(statuses.get(folder2).isTracked());
+
+        FileInformation fi;
+        fi = new FileInformation(statuses.get(file));
+        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        fi = new FileInformation(statuses.get(folder));
+        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        fi = new FileInformation(statuses.get(folder2));
+        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+    }
+
     // TODO add more tests when add is implemented
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented

@@ -117,7 +117,7 @@ public class StatusCommand extends GitCommand {
                     GitStatus.Status statusHeadIndex;
                     GitStatus.Status statusIndexWC;
                     GitStatus.Status statusHeadWC;
-                    boolean tracked = mHead != FileMode.MISSING.getBits() || mIndex != FileMode.MISSING.getBits();
+                    boolean tracked = mWorking != FileMode.TREE.getBits() && (mHead != FileMode.MISSING.getBits() || mIndex != FileMode.MISSING.getBits()); // is new and is not a folder
                     if (mHead == FileMode.MISSING.getBits() && mIndex != FileMode.MISSING.getBits()) {
                         statusHeadIndex = GitStatus.Status.STATUS_ADDED;
                     } else if (mIndex == FileMode.MISSING.getBits() && mHead != FileMode.MISSING.getBits()) {

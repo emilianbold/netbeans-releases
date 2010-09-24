@@ -317,6 +317,27 @@ public class StatusTest extends AbstractGitTestCase {
         assertNull(statuses.get(file6));
     }
 
+    public void testIgnoredFilesAreNotTracked () throws Exception {
+        File file = new File(workDir, "ignoredFile");
+        file.createNewFile();
+        File folder = new File(workDir, "ignoredFolder");
+        folder.mkdirs();
+        File folder2 = new File(workDir, "ignoredFolder2");
+        folder2.mkdirs();
+        File file2 = new File(folder2, "addedFile");
+        file2.createNewFile();
+        File ignoreFile = new File(workDir, ".gitignore");
+        write(ignoreFile, "ignored*");
+
+        repository.getIndex().add(workDir, file2);
+        repository.getIndex().write();
+
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.get(file).isTracked());
+        assertFalse(statuses.get(folder).isTracked());
+        assertFalse(statuses.get(folder2).isTracked());
+    }
+
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusProgressMonitor monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
