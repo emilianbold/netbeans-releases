@@ -241,7 +241,9 @@ public final class ConnectionManager {
             JSchChannelsSupport cs = connectionTask.getResult();
 
             if (cs != null) {
-                channelsSupport.put(env, cs);
+                synchronized (channelsSupport) {
+                    channelsSupport.put(env, cs);
+                }
             } else {
                 JSchConnectionTask.Problem problem = connectionTask.getProblem();
                 switch (problem.type) {
