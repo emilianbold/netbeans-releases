@@ -185,7 +185,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 }
             } else {
                 if (!CndFileVisibilityQuery.getDefault().isVisible(files[i])) {
-                    otherFileList.add(CharSequences.create(files[i].getName()));
+                    otherFileList.add(CharSequences.create(files[i].getNameExt()));
                     continue;
                 }
             }
@@ -209,7 +209,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     log.log(Level.INFO, ex.getMessage(), ex);
                     continue;
                 }
-                if (findFolderByName(file.getName()) == null) {
+                if (findFolderByName(file.getNameExt()) == null) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
@@ -217,7 +217,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
                 }
             } else {
-                String path = rootPath + '/' + file.getName();
+                String path = rootPath + '/' + file.getNameExt();
                 if (path.startsWith("./")) { // NOI18N
                     path = path.substring(2);
                 }
