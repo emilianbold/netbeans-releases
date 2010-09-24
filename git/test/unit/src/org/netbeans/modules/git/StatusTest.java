@@ -52,9 +52,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
@@ -290,6 +293,14 @@ public class StatusTest extends AbstractGitTestCase {
 
     public void testIgnoredBySharabilityAWT () throws Throwable {
         final Throwable[] th = new Throwable[1];
+        Future<Project[]> projectOpenTask = OpenProjects.getDefault().openProjects();
+        if (!projectOpenTask.isDone()) {
+            try {
+                projectOpenTask.get();
+            } catch (Exception ex) {
+                // not interested
+            }
+        }
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
