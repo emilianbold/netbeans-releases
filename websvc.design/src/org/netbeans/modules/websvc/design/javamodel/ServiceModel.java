@@ -226,8 +226,10 @@ public class ServiceModel {
         if (this.operations == null) {
             //this.operations = operations;
             this.operations = new ArrayList<MethodModel>();
-            for (MethodModel op:operations) {
+            if ( operations != null ){
+                for (MethodModel op:operations) {
                 addOperation(op);
+                }
             }
         } else {
             Map<String, MethodModel> op1 = new HashMap<String, MethodModel>();
@@ -235,8 +237,10 @@ public class ServiceModel {
             for (MethodModel model:this.operations) {
                 op1.put(model.getOperationName(), model);
             }
-            for (MethodModel model:operations) {
-                op2.put(model.getOperationName(), model);
+            if ( operations != null ){
+                for (MethodModel model:operations) {
+                    op2.put(model.getOperationName(), model);
+                }
             }
             // looking for common operations (operationName)
             Set<String> commonOperations = new HashSet<String>();
