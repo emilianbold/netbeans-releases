@@ -447,6 +447,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setConfigurations(confs);
             prjParams.setMainFile(mainFile);
             prjParams.setFullRemote(fullRemote);
+            prjParams.setHostUID(hostUID);
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
             FileObject dir = FileUtil.toFileObject(dirF);

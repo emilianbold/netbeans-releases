@@ -63,10 +63,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.Term;
@@ -76,6 +79,7 @@ import org.apache.lucene.search.MultiTermQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
 import org.apache.maven.artifact.manager.WagonManager;
@@ -113,6 +117,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.sonatype.nexus.index.ArtifactAvailablility;
@@ -159,6 +164,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
     private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
     private static final String NB_DEPENDENCY_VERSION = "nbdv"; //NOI18N
+    private static final String META_INF_MAVEN = "mim"; // NOI18N
     /*logger*/
     private static final Logger LOGGER =
             Logger.getLogger("org.netbeans.modules.maven.indexer.RepositoryIndexer");//NOI18N
@@ -288,6 +294,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 creators.add(new JarFileContentsIndexCreator());
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
+                    creators.add(new MetaInfMavenCreator());
                 }
                 try {
                     indexer.addIndexingContextForced(
@@ -871,12 +878,21 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
-                        bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")), BooleanClause.Occur.MUST)); //NOI18N
+                        bq.add(new BooleanClause(repo.isLocal() ?
+                            // XXX clumsy but Index.ANALYZED does not seem to work, and no clear way to set WhitespaceAnalyzer
+                            new WildcardQuery(new Term(META_INF_MAVEN, "* archetype-metadata.xml *")) :
+                            new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")),
+                            BooleanClause.Occur.MUST)); //NOI18N
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
                         fsr.setAiCount(MAX_RESULT_COUNT);
                         FlatSearchResponse response = repeatedFlatSearch(fsr, getContexts(new RepositoryInfo[]{repo}), false);
                         if (response != null) {
-                            infos.addAll(convertToNBVersionInfo(response.getResults()));
+                            List<NBVersionInfo> results = convertToNBVersionInfo(response.getResults());
+//                            System.err.println("XXX repo: " + repo.getId() + ":");
+//                            for (NBVersionInfo info : results) {
+//                                System.err.println("  " + info.getGroupId() + ":" + info.getArtifactId() + ":" + info.getVersion() + ":" + info.getPackaging());
+//                            }
+                            infos.addAll(results);
                         }
                         return null;
                     }
@@ -1242,4 +1258,65 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             return false;
         }
     }
+
+    private static class MetaInfMavenCreator extends AbstractIndexCreator {
+
+        private static final IndexerField FLD_META_INF_MAVEN = new IndexerField(new Field(null, "urn:MetaInfMavenCreator", META_INF_MAVEN, "Special META-INF/maven entries"),
+                IndexerFieldVersion.V3, META_INF_MAVEN, "Special META-INF/maven entries", Store.NO, Index.NOT_ANALYZED);
+
+        private static final String PREFIX = "META-INF/maven/";
+
+        private final Map<ArtifactInfo,String> data = new WeakHashMap<ArtifactInfo,String>();
+
+        public @Override Collection<IndexerField> getIndexerFields() {
+            return Collections.singletonList(FLD_META_INF_MAVEN);
+        }
+
+        public @Override void populateArtifactInfo(ArtifactContext ac) throws IOException {
+            ArtifactInfo ai = ac.getArtifactInfo();
+            data.remove(ai);
+            File artifactFile = ac.getArtifact();
+            if (artifactFile != null && artifactFile.exists() && artifactFile.getName().endsWith(".jar")) {
+                StringBuilder found = null;
+                ZipFile zf = new ZipFile(artifactFile);
+                try {
+                    for (ZipEntry entry : NbCollections.iterable(zf.entries())) {
+                        String path = entry.getName();
+                        if (path.endsWith("/")) {
+                            continue;
+                        }
+                        if (!path.startsWith(PREFIX)) {
+                            continue;
+                        }
+                        if (path.endsWith("/pom.properties") || path.endsWith("/pom.xml")) {
+                            continue;
+                        }
+                        String rest = path.substring(PREFIX.length()); // archetype-metadata.xml
+                        if (found == null) {
+                            found = new StringBuilder(" ");
+                        }
+                        found.append(rest).append(' ');
+                    }
+                } finally {
+                    zf.close();
+                }
+                if (found != null) {
+                    data.put(ai, found.toString());
+                }
+            }
+        }
+
+        public @Override void updateDocument(ArtifactInfo ai, Document doc) {
+            String val = data.get(ai);
+            if (val != null) {
+                doc.add(FLD_META_INF_MAVEN.toField(val));
+//                System.err.println("XXX " + ai.groupId + ":" + ai.artifactId + ":" + ai.version + " -> " + val);
+            }
+        }
+
+        public @Override boolean updateArtifactInfo(Document dcmnt, ArtifactInfo ai) {
+            return false;
+        }
+    }
+
 }

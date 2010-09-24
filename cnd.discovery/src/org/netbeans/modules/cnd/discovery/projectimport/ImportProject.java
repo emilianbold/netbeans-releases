@@ -283,8 +283,11 @@ public class ImportProject implements PropertyChangeListener {
         Set<FileObject> resultSet = new HashSet<FileObject>();
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
-        String workingDirRel = (fullRemote) ? nativeProjectFO.getPath() : projectFolder.getPath();
-        if (!fullRemote) { //XXX:fullRemote {
+        String workingDirRel;
+        if (fullRemote) { //XXX:fullRemote {
+            workingDirRel = nativeProjectFO.getPath();
+        } else {
+            workingDirRel = projectFolder.getPath();
             if(MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
                 workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
             } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
@@ -369,6 +372,7 @@ public class ImportProject implements PropertyChangeListener {
         prjParams.setTestFolders(tests);
         prjParams.setImportantFiles(importantItemsIterator);
         prjParams.setFullRemote(fullRemote);
+        prjParams.setHostUID(hostUID);
 
         makeProject = ProjectGenerator.createProject(prjParams);
         FileObject dir = FileUtil.toFileObject(projectFolder);

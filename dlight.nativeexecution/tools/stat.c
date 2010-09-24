@@ -44,37 +44,45 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <signal.h>
-
+#include <sys/stat.h>
 
 void usage() {
     fprintf(stderr, "Usage: \n");
-    fprintf(stderr, "   ./sigqueue pid signo value\n");
+    fprintf(stderr, "   ./stat filename\n");
 }
 
 /*
- * CLI wrapper for sigqueue.
+ * CLI wrapper for stat.
  * Usage:
- *    sigqueue pid signo value
+ *    stat filename
  *
  */
 
 int main(int argc, char** argv) {
-    if (argc < 4) {
+    if (argc < 2) {
         usage();
         exit(1);
     }
 
-    //setting pid
-    pid_t pid = atoi(argv[1]);
+    int err;
 
-    //setting signo
-    int signo = atoi(argv[2]);
+    #ifdef __linux__
+        struct stat st;
+    #else
+        struct stat64 st;
+    #endif
 
-    // setting value
-    union sigval value;
-    value.sival_int = atoi(argv[3]);
 
-    return sigqueue(pid, signo, value);
+    #ifdef __linux__
+        err = stat(argv[1], &st);
+    #else
+        err = stat64(argv[1], &st);
+    #endif
+
+    printf("inode: %ld\n", st.st_ino);
+    printf("ctime: %ld\n\n", st.st_ctime * 1000);
+    fflush(stdout);
+
+    return err;
 }
 

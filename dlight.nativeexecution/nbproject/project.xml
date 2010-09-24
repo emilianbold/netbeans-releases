@@ -177,12 +177,12 @@
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
                 <friend>com.sun.tools.analytics.discover</friend>
-                <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
+                <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
@@ -207,6 +207,7 @@
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.cesredirector</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
@@ -231,7 +232,6 @@
                 <friend>org.netbeans.modules.dlight.db.derby</friend>
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
-                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.management</friend>
@@ -244,6 +244,7 @@
                 <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
