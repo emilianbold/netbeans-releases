@@ -60,10 +60,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -137,12 +139,13 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         String rootPath = getRootPath();
         String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), rootPath);
+        AbsRootPath = CndFileUtils.normalizeAbsolutePath(AbsRootPath);
 
-        File folderFile = new File(AbsRootPath);
+        FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
 
         // Folders to be removed
-        if (!folderFile.exists()
-                || !folderFile.isDirectory()
+        if (!folderFile.isValid()
+                || !folderFile.isFolder()
                 || !VisibilityQuery.getDefault().isVisible(folderFile)
                 || getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(folderFile)) {
             // Remove it plus all subfolders and items from project
@@ -166,17 +169,17 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
         }
         // files/folders to be added
-        File files[] = folderFile.listFiles();
+        FileObject files[] = folderFile.getChildren();
         if (files == null) {
             return;
         }
-        List<File> fileList = new ArrayList<File>();
+        List<FileObject> fileList = new ArrayList<FileObject>();
         ArrayList<CharSequence> otherFileList = new ArrayList<CharSequence>();
         for (int i = 0; i < files.length; i++) {
             if (!VisibilityQuery.getDefault().isVisible(files[i])) {
                 continue;
             }
-            if (files[i].isDirectory()) {
+            if (files[i].isFolder()) {
                 if (getConfigurationDescriptor().getFolderVisibilityQuery().isVisible(files[i])) {
                     continue;
                 }
@@ -192,14 +195,14 @@ public class Folder implements FileChangeListener, ChangeListener {
             otherFileList.trimToSize();
         }
         MakeProjectFileProviderFactory.updateSearchBase(configurationDescriptor.getProject(), this, otherFileList);
-        for (File file : fileList) {
-            if (file.isDirectory()) {
+        for (FileObject file : fileList) {
+            if (file.isFolder()) {
                 try {
-                    String canPath = file.getCanonicalPath();
-                    String absPath = file.getAbsolutePath();
+                    String canPath = RemoteFileUtil.getCanonicalPath(file);
+                    String absPath = RemoteFileUtil.getAbsolutePath(file);
                     if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
                         // It seems we have recursive link
-                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folderFile.getAbsolutePath()});
+                        log.log(Level.INFO, "Ignore recursive link {0} in folder {1}", new Object[]{absPath, folderFile.getPath()});
                         continue;
                     }
                 } catch (IOException ex) {
@@ -210,7 +213,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
 
                 }
             } else {
