@@ -367,38 +367,41 @@ public class AnalyzeModel implements DiscoveryProvider {
                 if (progress != null){
                     progress.start(items.length);
                 }
-                for (int i = 0; i < items.length; i++){
-                    if (isStoped) {
-                        break;
+                try {
+                    for (int i = 0; i < items.length; i++){
+                        if (isStoped) {
+                            break;
+                        }
+                        Item item = items[i];
+                        if (isExcluded(item)) {
+                            continue;
+                        }
+                        String path = item.getAbsPath();
+                        File file = new File(path);
+                        if (CndFileUtils.exists(file)) {
+                            unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                        }
                     }
-                    Item item = items[i];
-                    if (isExcluded(item)) {
-                        continue;
+                    HashSet<String> unUnique = new HashSet<String>();
+                    for(SourceFileProperties source : getSourcesConfiguration()){
+                        if (source instanceof ModelSource){
+                            unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
+                        }
+                        if (progress != null){
+                            progress.increment(null);
+                        }
                     }
-                    String path = item.getAbsPath();
-                    File file = new File(path);
-                    if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                    for(String path : unUnique){
+                        File file = new File(path);
+                        if (CndFileUtils.exists(file)) {
+                            unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                        }
                     }
-                }
-                HashSet<String> unUnique = new HashSet<String>();
-                for(SourceFileProperties source : getSourcesConfiguration()){
-                    if (source instanceof ModelSource){
-                        unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
-                    }
+                    myIncludedFiles = new ArrayList<String>(unique);
+                } finally {
                     if (progress != null){
-                        progress.increment(null);
+                        progress.done();
                     }
-                }
-                for(String path : unUnique){
-                    File file = new File(path);
-                    if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
-                    }
-                }
-                myIncludedFiles = new ArrayList<String>(unique);
-                if (progress != null){
-                    progress.done();
                 }
             }
             return myIncludedFiles;
