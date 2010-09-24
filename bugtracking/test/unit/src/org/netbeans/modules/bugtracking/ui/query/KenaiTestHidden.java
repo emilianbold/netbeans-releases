@@ -75,13 +75,13 @@ import org.openide.windows.TopComponent;
  *
  * @author tomas
  */
-public class KenaiTest extends NbTestCase {
+public class KenaiTestHidden extends NbTestCase {
 
     private String username;
     private String password;
     private Kenai kenai;
 
-    public KenaiTest(String arg0) {
+    public KenaiTestHidden(String arg0) {
         super(arg0);
     }
 
