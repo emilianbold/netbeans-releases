@@ -378,8 +378,7 @@ public final class NbMavenProjectImpl implements Project {
                             NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report"),
                             NbBundle.getMessage(NbMavenProjectImpl.class, "LBL_Incomplete_Problem_Report_Desc"), null);
                     problemReporter.addReport(report);
-                    ProgressTransferListener ptl = new ProgressTransferListener();
-                        req.setTransferListener(ptl);
+                    req.setTransferListener(ProgressTransferListener.activeListener());
                     RELOAD_RP.post(new Runnable() {
 
                         @Override
