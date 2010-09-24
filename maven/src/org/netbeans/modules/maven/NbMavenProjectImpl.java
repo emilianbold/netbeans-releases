@@ -852,8 +852,8 @@ public final class NbMavenProjectImpl implements Project {
             setLookups(Lookups.fixed(ths, watcher, info, shara, subs, projectFO));
         }
 
-        @Override
-        protected synchronized void beforeLookup(Template<?> template) {
+        protected @Override void beforeLookup(Template<?> template) {
+            synchronized (NbMavenProjectImpl.this) {
             if (!initialized
                     && (!(ProjectInformation.class.equals(template.getType())
                     || NbMavenProject.class.equals(template.getType())
@@ -867,7 +867,7 @@ public final class NbMavenProjectImpl implements Project {
                 Lookup lkp = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, lookup), "Projects/org-netbeans-modules-maven/Lookup");
                 assert checkForForbiddenMergers(lkp) : "Cannot have a LookupMerger for ProjectInformation or SharabilityQueryImplementation";
                 setLookups(lkp); //NOI18N
-
+            }
             }
             super.beforeLookup(template);
         }
