@@ -879,7 +879,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private Item createItem(String path) {
         FileObject projectDirFO = projectDescriptor.getProject().getProjectDirectory();
-        if (!path.startsWith("/")) {
+        if (!path.startsWith("/")) { // NOI18N
             return new Item(path); //XXX:fullRemote
         }
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
