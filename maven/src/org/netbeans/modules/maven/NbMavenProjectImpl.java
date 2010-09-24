@@ -403,11 +403,10 @@ public final class NbMavenProjectImpl implements Project {
                                   if (res.hasExceptions()) {
                                        reportExceptions(res);
                                   }
-                                  ACCESSOR.doFireReload(watcher);
                                   projectInfo.reset();
-                                  doBaseProblemChecks();
-                               }
-                                
+                                }
+                                ACCESSOR.doFireReload(watcher);
+                                doBaseProblemChecks();
                            } catch (ThreadDeath d) { // download interrupted
                            } finally {
                                hndl.finish();
