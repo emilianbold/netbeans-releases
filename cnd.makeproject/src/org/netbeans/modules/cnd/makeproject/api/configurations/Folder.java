@@ -158,6 +158,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Items to be removed
         for (Item item : getItemsAsArray()) {
             FileObject fo = item.getFileObject();
+            if (fo == null) {
+                log.log(Level.INFO, "Null file object for {0}", item.getAbsolutePath()); //NOI18N
+                continue;
+            }
             if (!fo.isValid()
                     || !fo.isData()
                     || !VisibilityQuery.getDefault().isVisible(fo)
