@@ -68,9 +68,9 @@ import org.openide.windows.TopComponent;
  *
  * @author tomas
  */
-public class QTCTest extends NbTestCase {
+public class QTCTestHidden extends NbTestCase {
 
-    public QTCTest(String arg0) {
+    public QTCTestHidden(String arg0) {
         super(arg0);
     }
 
