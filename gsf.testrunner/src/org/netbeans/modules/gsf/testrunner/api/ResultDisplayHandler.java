@@ -44,6 +44,7 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
@@ -102,6 +103,8 @@ final class ResultDisplayHandler {
     JComponent getOutputComponent() {
         if (outputComponent == null) {
             outputComponent = new JPanel(new BorderLayout());
+            outputComponent.setBorder(
+                    BorderFactory.createEmptyBorder(0, 10, 0, 0)); // #181873
         }
         return outputComponent;
     }
