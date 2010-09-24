@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
@@ -408,7 +409,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         public void run() {
 
             LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-
+            
             final List<? extends FileDescriptor> files = getFileNames( text );
             if ( isCanceled ) {
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
@@ -454,17 +455,21 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
         private List<? extends FileDescriptor> getFileNames(String text) {
-            String searchField;
-            switch (searchType) {
-                case CASE_INSENSITIVE_PREFIX:
-                case CASE_INSENSITIVE_REGEXP:
-                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
-                default:
-                    searchField = FileIndexer.FIELD_NAME; break;
-            }
-
             final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
+                String searchField;
+                switch (searchType) {
+                    case CASE_INSENSITIVE_PREFIX:
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
+                    case CASE_INSENSITIVE_REGEXP:
+                        verifyRegexp(text);
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
+                    case REGEXP:
+                        verifyRegexp(text);
+                        searchField = FileIndexer.FIELD_NAME; break;
+                    default:
+                        searchField = FileIndexer.FIELD_NAME; break;
+                }
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
                 Collection<? extends IndexResult> results = q.query(searchField, text, searchType);
                 ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
@@ -568,6 +573,10 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 LOGGER.log(Level.WARNING, null, ioe);
                 return Collections.<FileDescriptor>emptyList();
             }
+        }
+        
+        private void verifyRegexp(final String text) throws PatternSyntaxException {
+            Pattern.compile(text);
         }
 
         private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
