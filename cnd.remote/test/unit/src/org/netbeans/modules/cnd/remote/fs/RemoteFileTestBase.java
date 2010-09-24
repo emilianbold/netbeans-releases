@@ -81,12 +81,12 @@ public class RemoteFileTestBase extends RemoteTestBase {
     protected CharSequence readFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         return readFile(fo);
     }
 
     protected CharSequence readFile(FileObject fo) throws Exception {
-        assertFalse("File " +  fo.getPath() + " does not exist", fo.isVirtual());
+        assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
         try {
