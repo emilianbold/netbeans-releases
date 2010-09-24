@@ -227,7 +227,7 @@ public class ImportProject implements PropertyChangeListener {
 
             @Override
             public String getFolderName() {
-                return nativeProjectFO.getName();
+                return nativeProjectFO.getNameExt();
             }
 
             @Override

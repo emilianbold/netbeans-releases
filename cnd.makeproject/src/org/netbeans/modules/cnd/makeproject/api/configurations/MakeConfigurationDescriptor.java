@@ -1314,7 +1314,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (fileFilter != null && !fileFilter.accept(file)) {
                 continue;
             }
-            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getName())) {
+            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
             if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {

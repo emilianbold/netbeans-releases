@@ -199,7 +199,7 @@ public class ImportExecutable implements PropertyChangeListener {
 
             @Override
             public String getFolderName() {
-                return getFileObject().getName();
+                return getFileObject().getNameExt();
             }
 
             @Override
