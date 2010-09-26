@@ -212,9 +212,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
                 String itemPath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                     itemPath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                 } else {
                     itemPath = files[i].getPath();
@@ -368,9 +368,9 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
                     String path;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                         path = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                     } else {
                         path = files[i].getPath();

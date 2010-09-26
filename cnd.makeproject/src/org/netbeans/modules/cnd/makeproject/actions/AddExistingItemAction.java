@@ -172,9 +172,9 @@ public class AddExistingItemAction extends NodeAction {
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                         itemPath = CndPathUtilitities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
                     } else {
                         itemPath = files[i].getPath();
