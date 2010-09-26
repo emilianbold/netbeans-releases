@@ -166,9 +166,9 @@ public class ImportExecutable implements PropertyChangeListener {
         CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel = sourcesPath;
-        if(MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+        if(MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
             workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
             workingDirRel = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
         } else {
             workingDirRel = CndPathUtilitities.toAbsolutePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
