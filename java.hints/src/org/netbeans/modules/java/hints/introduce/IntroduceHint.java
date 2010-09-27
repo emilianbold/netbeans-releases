@@ -1216,11 +1216,13 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 //#109663&#112552:
                 //the selection was inside the while-loop, the variables inside the
                 //condition&statement of the while loop need to be considered to be used again after the loop:
-                secondPass = true;
-                scan(node.getCondition(), p);
-                scan(node.getStatement(), p);
-                secondPass = false;
-                stopSecondPass = false;
+                if (!secondPass) {
+                    secondPass = true;
+                    scan(node.getCondition(), p);
+                    scan(node.getStatement(), p);
+                    secondPass = false;
+                    stopSecondPass = false;
+                }
             }
 
             return null;
@@ -1234,12 +1236,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 //#109663&#112552:
                 //the selection was inside the for-loop, the variables inside the
                 //condition, update and statement parts of the for loop need to be considered to be used again after the loop:
-                secondPass = true;
-                scan(node.getCondition(), p);
-                scan(node.getUpdate(), p);
-                scan(node.getStatement(), p);
-                secondPass = false;
-                stopSecondPass = false;
+                if (!secondPass) {
+                    secondPass = true;
+                    scan(node.getCondition(), p);
+                    scan(node.getUpdate(), p);
+                    scan(node.getStatement(), p);
+                    secondPass = false;
+                    stopSecondPass = false;
+                }
             }
 
             return null;
@@ -1253,10 +1257,12 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 //#109663&#112552:
                 //the selection was inside the do-while, the variables inside the
                 //statement part of the do-while loop need to be considered to be used again after the loop:
-                secondPass = true;
-                scan(node.getStatement(), p);
-                secondPass = false;
-                stopSecondPass = false;
+                if (!secondPass) {
+                    secondPass = true;
+                    scan(node.getStatement(), p);
+                    secondPass = false;
+                    stopSecondPass = false;
+                }
             }
 
             return null;
