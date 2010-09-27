@@ -183,6 +183,7 @@ public final class ExternalStartImpl extends AbstractExternalStart implements Ex
 	    args[1] = net_addr.toString();
 
 	    bridgeExecutor.startShellCmd(args);
+	    bridgeExecutor.reap();
 	}
 
         return true;
