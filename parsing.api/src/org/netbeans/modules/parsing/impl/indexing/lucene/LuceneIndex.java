@@ -523,7 +523,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                         if ( lastIndex == 0 ) {
                             prefix = token;
                         }
-                        sb.append(token);
+                        sb.append(Pattern.quote(token));
                         sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
                         lastIndex = index;
                     }
@@ -585,7 +585,7 @@ public class LuceneIndex implements IndexImpl, Evictable {
                         if ( lastIndex == 0 ) {
                             prefix = token;
                         }
-                        sb.append(token);
+                        sb.append(Pattern.quote(token));
                         sb.append( index != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N
                         lastIndex = index;
                     }
