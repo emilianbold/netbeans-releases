@@ -633,6 +633,43 @@ public class CompilationUnitTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
 
+    public void test157760c() throws Exception {
+        testFile = new File(getWorkDir(), "package-info.java");
+        TestUtilities.copyStringToFile(testFile, "/*\n a\n */\npackage foo;");
+
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        assertNotNull(testSourceFO);
+        ClassPath sourcePath = ClassPath.getClassPath(testSourceFO, ClassPath.SOURCE);
+        assertNotNull(sourcePath);
+        FileObject[] roots = sourcePath.getRoots();
+        assertEquals(1, roots.length);
+        final FileObject sourceRoot = roots[0];
+        assertNotNull(sourceRoot);
+        ClassPath compilePath = ClassPath.getClassPath(testSourceFO, ClassPath.COMPILE);
+        assertNotNull(compilePath);
+        ClassPath bootPath = ClassPath.getClassPath(testSourceFO, ClassPath.BOOT);
+        assertNotNull(bootPath);
+        ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, sourcePath);
+
+        String golden = "/*\n a\n */\n@AA\npackage foo;";
+
+        JavaSource javaSource = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree nue = make.addPackageAnnotation(workingCopy.getCompilationUnit(), make.Annotation(make.Identifier("AA"), Collections.<ExpressionTree>emptyList()));
+                workingCopy.rewrite(workingCopy.getCompilationUnit(), nue);
+            }
+        };
+        ModificationResult result = javaSource.runModificationTask(task);
+        result.commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
     String getGoldenPckg() {
         return "";
     }

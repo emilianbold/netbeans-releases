@@ -269,10 +269,17 @@ public class CasualDiff {
     }
 
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
-        int localPointer = 0;
+        int packageKeywordStart = 0;
+        if (oldT.pid != null) {
+            tokenSequence.move(oldT.pid.getStartPosition());
+            moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
+            packageKeywordStart = tokenSequence.offset();
+        }
+        //when adding first annotation, skip initial comments (typically a license):
+        int localPointer = oldT.packageAnnotations.isEmpty() && !newT.packageAnnotations.isEmpty() ? packageKeywordStart : 0;
         oldTopLevel = oldT;
-        localPointer = diffAnnotationsLists(oldT.packageAnnotations, newT.packageAnnotations, 0, 0);
-        localPointer = diffPackageStatement(oldT, newT, localPointer);
+        localPointer = diffAnnotationsLists(oldT.packageAnnotations, newT.packageAnnotations, localPointer, 0);
+        localPointer = diffPackageStatement(oldT, newT, packageKeywordStart, localPointer);
         PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), workingCopy);
@@ -301,7 +308,7 @@ public class CasualDiff {
         }
     }
 
-    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT, int localPointer) {
+    private int diffPackageStatement(JCCompilationUnit oldT, JCCompilationUnit newT, int packageKeywordStart, int localPointer) {
         ChangeKind change = getChangeKind(oldT.pid, newT.pid);
         switch (change) {
             // packages are the same or not available, i.e. both are null
@@ -315,9 +322,7 @@ public class CasualDiff {
 
             // package statement was deleted.
             case DELETE:
-                tokenSequence.move(oldT.pid.getStartPosition());
-                moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
-                copyTo(localPointer, tokenSequence.offset());
+                copyTo(localPointer, packageKeywordStart);
                 tokenSequence.move(endPos(oldT.pid));
                 moveToSrcRelevant(tokenSequence, Direction.FORWARD);
                 localPointer = tokenSequence.offset() + 1;
