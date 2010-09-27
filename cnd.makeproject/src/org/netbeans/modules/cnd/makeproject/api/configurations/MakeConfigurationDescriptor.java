@@ -282,6 +282,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 srcFolder.addItem(new Item(mainFilePath));
+                if(mainFilePath.endsWith(".pc")) { // NOI18N
+                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                    String itemPath = CndPathUtilitities.normalize(mainFilePath.substring(0, mainFilePath.length() - 2) + cExtensions.getDefaultExtension());
+                    Item item = new Item(itemPath);
+                    srcFolder.addItemAction(item);
+                }
             }
         }
         // Handle test folders

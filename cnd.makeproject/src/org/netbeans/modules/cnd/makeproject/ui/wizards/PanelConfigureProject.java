@@ -92,7 +92,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public HelpCtx getHelp() {
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
             return new HelpCtx("NewAppWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_DYNAMIC_LIB) {
             return new HelpCtx("NewDynamicLibWizard"); // NOI18N
