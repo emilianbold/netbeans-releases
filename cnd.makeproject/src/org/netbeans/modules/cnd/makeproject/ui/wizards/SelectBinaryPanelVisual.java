@@ -52,7 +52,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -63,6 +62,8 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -217,7 +218,23 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private String getLdLibraryPath() {
         ExecutionEnvironment eenv = ExecutionEnvironmentFactory.getLocal();
-        return HostInfoProvider.getEnv(eenv).get("LD_LIBRARY_PATH"); // NOI18N
+        String ldLibraryPathName = getLdLibraryPathName(eenv);
+        return HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
+    }
+
+    private static String getLdLibraryPathName(ExecutionEnvironment eenv) {
+        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
+        switch (platformInfo.getPlatform()) {
+            case PlatformTypes.PLATFORM_WINDOWS:
+                return platformInfo.getPathName();
+            case PlatformTypes.PLATFORM_MACOSX:
+                return "DYLD_LIBRARY_PATH"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+            case PlatformTypes.PLATFORM_LINUX:
+            default:
+                return "LD_LIBRARY_PATH"; // NOI18N
+        }
     }
 
     private CompilerSet detectCompilerSet(String compiler){

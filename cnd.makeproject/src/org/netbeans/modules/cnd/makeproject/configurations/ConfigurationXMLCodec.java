@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -82,6 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfiguration;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -878,7 +880,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     }
 
     private Item createItem(String path) {
-        FileObject projectDirFO = projectDescriptor.getProject().getProjectDirectory();
+        Project project = projectDescriptor.getProject();
+        FileObject projectDirFO = project.getProjectDirectory();
         if (!path.startsWith("/")) { // NOI18N
             return new Item(path); //XXX:fullRemote
         }
@@ -887,7 +890,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (itemFO == null) {
                 return new Item(path); //XXX:fullRemote
             } else {
-                return new Item(itemFO, projectDirFO);
+                return new Item(itemFO, projectDirFO, ProjectSupport.getPathMode(project));
             }
         } else {
             return new Item(path); //XXX:fullRemote convert this to use of file items as well

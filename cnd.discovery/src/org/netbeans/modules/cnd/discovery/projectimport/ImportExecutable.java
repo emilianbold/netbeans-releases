@@ -69,12 +69,15 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -165,14 +168,8 @@ public class ImportExecutable implements PropertyChangeListener {
         String hostUID = (String) map.get("hostUID"); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
-        String workingDirRel = sourcesPath;
-        if(MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-            workingDirRel = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        } else {
-            workingDirRel = CndPathUtilitities.toAbsolutePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        }
+        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
+                MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
@@ -456,7 +453,8 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     static String getLdLibraryPath(MakeConfiguration activeConfiguration) {
-        String ldLibPath = activeConfiguration.getProfile().getEnvironment().getenv("LD_LIBRARY_PATH"); // NOI18N
+        String ldLibraryPathName = getLdLibraryPathName(activeConfiguration);
+        String ldLibPath = activeConfiguration.getProfile().getEnvironment().getenv(ldLibraryPathName); // NOI18N
         ExecutionEnvironment eenv = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
         if (ldLibPath != null) {
             try {
@@ -466,9 +464,24 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         }
         if (ldLibPath == null) {
-            ldLibPath = HostInfoProvider.getEnv(eenv).get("LD_LIBRARY_PATH"); // NOI18N
+            ldLibPath = HostInfoProvider.getEnv(eenv).get(ldLibraryPathName); // NOI18N
         }
         return ldLibPath;
+    }
+
+    private static String getLdLibraryPathName(MakeConfiguration conf) {
+        switch (conf.getDevelopmentHost().getBuildPlatform()) {
+            case PlatformTypes.PLATFORM_WINDOWS:
+                PlatformInfo pi = conf.getPlatformInfo();
+                return pi.getPathName();
+            case PlatformTypes.PLATFORM_MACOSX:
+                return "DYLD_LIBRARY_PATH"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+            case PlatformTypes.PLATFORM_LINUX:
+            default:
+                return "LD_LIBRARY_PATH"; // NOI18N
+        }
     }
 
     private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
