@@ -109,37 +109,22 @@ public class StatusTest extends AbstractGitTestCase {
         File deleted_untracked = new File(workDir, "deleted-untracked");
         write(deleted_untracked, "deleted_untracked");
 
-        repository.getIndex().add(workDir, uptodate_uptodate);
-        repository.getIndex().add(workDir, uptodate_modified);
-        repository.getIndex().add(workDir, uptodate_deleted);
-        repository.getIndex().add(workDir, modified_uptodate);
-        repository.getIndex().add(workDir, modified_modified);
-        repository.getIndex().add(workDir, modified_reset);
-        repository.getIndex().add(workDir, modified_deleted);
-        repository.getIndex().add(workDir, deleted_uptodate);
-        repository.getIndex().add(workDir, deleted_untracked);
-        repository.getIndex().write();
-        // TODO commit through facade needed
+        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked);
+        // TODO API for commit needed
         CommitCommand cmd = new Git(repository).commit();
         cmd.setMessage("initial commit");
         cmd.call();
 //        getLocalGitRepository().commit(new File[] {uptodate_uptodate, uptodate_modified, uptodate_deleted
 //                , modified_uptodate, modified_modified, modified_deleted, deleted_uptodate, deleted_untracked}, "initial commit");
-        repository.getIndex().add(workDir, added_uptodate);
-        repository.getIndex().add(workDir, added_modified);
-        repository.getIndex().add(workDir, added_deleted);
-        repository.getIndex().write();
+        add(added_uptodate, added_modified, added_deleted);
         write(modified_deleted, "modification modified_deleted");
         write(modified_modified, "modification modified_modified");
         write(modified_reset, "modification modified_reset");
         write(modified_uptodate, "modification modified_uptodate");
-        repository.getIndex().add(workDir, modified_deleted);
-        repository.getIndex().add(workDir, modified_modified);
-        repository.getIndex().add(workDir, modified_reset);
-        repository.getIndex().add(workDir, modified_uptodate);
-        repository.getIndex().write();
+        add(modified_deleted, modified_modified, modified_reset, modified_uptodate);
         deleted_uptodate.delete();
         deleted_untracked.delete();
+        // TODO remove API needed
         repository.getIndex().remove(workDir, deleted_uptodate);
         repository.getIndex().remove(workDir, deleted_untracked);
         repository.getIndex().write();
@@ -182,19 +167,15 @@ public class StatusTest extends AbstractGitTestCase {
         File modified_modified = new File(workDir, "modified-modified");
         write(modified_modified, "modified_modified");
 
-        repository.getIndex().add(workDir, uptodate_modified);
-        repository.getIndex().add(workDir, modified_modified);
-        repository.getIndex().write();
+        add(uptodate_modified, modified_modified);
         // TODO commit through facade needed
         CommitCommand cmd = new Git(repository).commit();
         cmd.setMessage("initial commit");
         cmd.call();
         // getLocalGitRepository().commit(new File[] {uptodate_modified, modified_modified}, "initial commit");
-        repository.getIndex().add(workDir, added_modified);
-        repository.getIndex().write();
+        add(added_modified);
         write(modified_modified, "modification modified_modified");
-        repository.getIndex().add(workDir, modified_modified);
-        repository.getIndex().write();
+        add(modified_modified);
         write(added_modified, "modification2 added_modified");
         write(uptodate_modified, "modification2 uptodate_modified");
         write(modified_modified, "modification2 modified_modified");
@@ -242,14 +223,8 @@ public class StatusTest extends AbstractGitTestCase {
         File f6 = new File(folder22, "f6");
         write(f6, "f6");
 
-        // TODO commit through facade needed
-        repository.getIndex().add(workDir, f1);
-        repository.getIndex().add(workDir, f2);
-        repository.getIndex().add(workDir, f3);
-        repository.getIndex().add(workDir, f4);
-        repository.getIndex().add(workDir, f5);
-        repository.getIndex().add(workDir, f6);
-        repository.getIndex().write();
+        // TODO commit API needed
+        add(f1, f2, f3, f4, f5, f6);
         CommitCommand cmd = new Git(repository).commit();
         cmd.setMessage("initial commit");
         cmd.call();
@@ -329,8 +304,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(workDir, ".gitignore");
         write(ignoreFile, "ignored*");
 
-        repository.getIndex().add(workDir, file2);
-        repository.getIndex().write();
+        add(file2);
 
         Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.get(file).isTracked());

@@ -57,6 +57,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.utils.TestUtils;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 
 /**
  *
@@ -174,5 +175,9 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected GitClient getClient (File repository) throws GitException {
         return JGitClientFactory.getInstance().getClient(repository);
+    }
+
+    protected void add (File... files) throws GitException {
+        getClient(wc).add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 }

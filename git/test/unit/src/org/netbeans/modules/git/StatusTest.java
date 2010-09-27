@@ -61,6 +61,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -529,7 +530,34 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
     }
 
-    // TODO add more tests when add is implemented
+    public void testStatusAddFiles () throws Exception {
+        File file = new File(repositoryLocation, "file");
+        file.createNewFile();
+        File folder = new File(repositoryLocation, "folder");
+        folder.mkdirs();
+        File file2 = new File(folder, "otherFile");
+        file2.createNewFile();
+
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+
+        getClient(repositoryLocation).add(new File[] { file, folder }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
+
+        write(file2, "i am modified");
+        getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
+                Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE,
+                Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)));
+    }
+
     // TODO add more tests when remove is implemented
     // TODO add more tests when commit is implemented
     // TODO add more tests when exclusions are supported

@@ -50,6 +50,8 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
@@ -61,6 +63,19 @@ public class JGitClient extends GitClient {
 
     public JGitClient (JGitRepository gitRepository) {
         this.gitRepository = gitRepository;
+    }
+
+    /**
+     * Adds all files under the given roots to the index
+     * @param roots
+     * @param monitor
+     * @throws GitException an error occurs
+     */
+    @Override
+    public void add (File[] roots, FileProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        AddCommand cmd = new AddCommand(repository, roots, monitor);
+        cmd.execute();
     }
 
     @Override

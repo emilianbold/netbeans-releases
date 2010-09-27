@@ -40,24 +40,21 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.progress;
 
 import java.io.File;
-import java.util.Map;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public abstract class GitClient {
+public abstract class FileProgressMonitor extends ProgressMonitor {
+    public static final FileProgressMonitor NULL_PROGRESS_MONITOR = new FileProgressMonitor() {
+        @Override
+        public void notifyFile (File file) {
 
-    protected GitClient () {
-        
-    }
+        }
+    };
 
-    public abstract void add (File[] roots, FileProgressMonitor monitor) throws GitException;
-    public abstract Map<File, GitStatus> getStatus (File[] roots, StatusProgressMonitor monitor) throws GitException;
-    public abstract void init () throws GitException;
+    public abstract void notifyFile (File file);
 }
