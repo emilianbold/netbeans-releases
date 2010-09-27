@@ -283,15 +283,17 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         return cpFiles;
     }
 
-    synchronized Properties getCache() {
+    Properties getCache() {
+        String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
+        synchronized (this) {
         if (cache == null || recheck) {
-            String enabled = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_CHECKSTYLE_FORMATTING, true);
             if (enabled != null && Boolean.parseBoolean(enabled)) {
                 cache = convert();
             } else {
                 cache = new Properties();
             }
             recheck = false;
+        }
         }
         return cache;
     }
