@@ -495,7 +495,7 @@ public class RemoteServerRecord implements ServerRecord {
                 if (!osFamily.equals(cachedOsFamily) || !cpuFamily.equals(cachedCpuFamily) ) {
                     cachedOsFamily = osFamily;
                     cachedCpuFamily = cpuFamily;
-                    if (!syncFactory.isApplicable(executionEnvironment)) {
+                    if (executionEnvironment.isRemote() && !syncFactory.isApplicable(executionEnvironment)) {
                         for (RemoteSyncFactory newFactory : RemoteSyncFactory.getFactories()) {
                             if (newFactory.isApplicable(executionEnvironment)) {
                                 RemoteUtil.LOGGER.log(Level.WARNING, "Inapplicable factory for {0} : {1}; changing to {2}",

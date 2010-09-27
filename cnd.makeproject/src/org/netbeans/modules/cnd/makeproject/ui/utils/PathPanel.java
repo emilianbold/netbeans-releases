@@ -58,14 +58,18 @@ public class PathPanel extends javax.swing.JPanel {
 	setMode(MakeProjectOptions.getPathMode());
     }
     
-    private void setMode(int mode) {
+    private void setMode(MakeProjectOptions.PathMode mode) {
 	MakeOptions.getInstance().setPathMode(mode);
-        if (mode == MakeProjectOptions.REL_OR_ABS) {
-            relOrAbsRadioButton.setSelected(true);
-        } else if (mode == MakeProjectOptions.REL) {
-            relRadioButton.setSelected(true);
-        } else {
-            absRadioButton.setSelected(true);
+        switch (mode) {
+            case ABS:
+                absRadioButton.setSelected(true);
+                break;
+            case REL:
+                relRadioButton.setSelected(true);
+                break;
+            case REL_OR_ABS:
+                relOrAbsRadioButton.setSelected(true);
+                break;
         }
     }
     
@@ -152,15 +156,15 @@ public class PathPanel extends javax.swing.JPanel {
     // </editor-fold>//GEN-END:initComponents
 
     private void absRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_absRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.ABS);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.ABS);
     }//GEN-LAST:event_absRadioButtonActionPerformed
 
     private void relRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.REL);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.REL);
     }//GEN-LAST:event_relRadioButtonActionPerformed
 
     private void relOrAbsRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relOrAbsRadioButtonActionPerformed
-	MakeOptions.getInstance().setPathMode(MakeProjectOptions.REL_OR_ABS);
+	MakeOptions.getInstance().setPathMode(MakeProjectOptions.PathMode.REL_OR_ABS);
     }//GEN-LAST:event_relOrAbsRadioButtonActionPerformed
     
     

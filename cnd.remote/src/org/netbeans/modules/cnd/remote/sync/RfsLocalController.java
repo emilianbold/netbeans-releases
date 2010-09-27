@@ -341,7 +341,10 @@ class RfsLocalController extends NamedRunnable {
 
         ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
         ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(prefix));
-        ssr.execute();
+        int rc = ssr.execute();
+        if (rc != 0 ) {
+            logger.log(Level.FINE, "Error %d running script \"%s\" at %s", rc, script, execEnv);
+        }
         logger.log(Level.FINE, "New files discovery at %s took %d ms; %d lines processed; %d additional new files were discovered",
                 execEnv, System.currentTimeMillis() - time, lineCnt.get(), remoteUpdates.size() - oldSize);
     }

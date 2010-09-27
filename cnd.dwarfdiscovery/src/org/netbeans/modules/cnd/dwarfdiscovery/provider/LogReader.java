@@ -163,40 +163,43 @@ public class LogReader {
                     progress.start(100);
                 }
                 int nFoundFiles = 0;
-                while(true){
-                    if (isStoped.get()) {
-                        break;
-                    }
-                    String line = in.readLine();
-                    if (line == null){
-                        break;
-                    }
-                    read += line.length()+1;
-                    line = line.trim();
-                    while (line.endsWith("\\")) { // NOI18N
-                        String oneMoreLine = in.readLine();
-                        if (oneMoreLine == null) {
+                try {
+                    while(true){
+                        if (isStoped.get()) {
                             break;
                         }
-                        line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
-                    }
-                    line = trimBackApostropheCalls(line, pkgConfig);
+                        String line = in.readLine();
+                        if (line == null){
+                            break;
+                        }
+                        read += line.length()+1;
+                        line = line.trim();
+                        while (line.endsWith("\\")) { // NOI18N
+                            String oneMoreLine = in.readLine();
+                            if (oneMoreLine == null) {
+                                break;
+                            }
+                            line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
+                        }
+                        line = trimBackApostropheCalls(line, pkgConfig);
 
-                    String[] cmds = pattern.split(line);
-                    for (int i = 0; i < cmds.length; i++) {
-                        if (parseLine(cmds[i])){
-                            nFoundFiles++;
+                        String[] cmds = pattern.split(line);
+                        for (int i = 0; i < cmds.length; i++) {
+                            if (parseLine(cmds[i])){
+                                nFoundFiles++;
+                            }
+                        }
+                        if (read*100/length > done && done < 100){
+                            done++;
+                            if (progress != null) {
+                                progress.increment(null);
+                            }
                         }
                     }
-                    if (read*100/length > done && done < 100){
-                        done++;
-                        if (progress != null) {
-                            progress.increment(null);
-                        }
+                } finally {
+                    if (progress != null) {
+                        progress.done();
                     }
-                }
-                if (progress != null) {
-                    progress.done();
                 }
                 if (TRACE) {
                     System.out.println("Files found: " + nFoundFiles); //NOI18N

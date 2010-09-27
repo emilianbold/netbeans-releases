@@ -110,6 +110,10 @@ public final class MavenEmbedder {
         this.populator = plexus.lookup(MavenExecutionRequestPopulator.class);
         
     }
+    
+    public PlexusContainer getPlexus() {
+        return plexus;
+    }
 
     private String getLocalRepositoryPath() {
         if (embedderConfiguration.getLocalRepository() != null) {

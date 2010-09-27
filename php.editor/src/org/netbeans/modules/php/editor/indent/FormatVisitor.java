@@ -1354,17 +1354,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private void addEndOfUnbreakableSequence(int endOffset) {
+        boolean wasLastLineComment = false;
 	while (ts.moveNext()
 		&& ((ts.token().id() == PHPTokenId.WHITESPACE
 		&& countOfNewLines(ts.token().text()) == 0)
 		|| isComment(ts.token()))) {
-	    addFormatToken(formatTokens);
-	    if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
+            if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT
 		    && !"//".equals(ts.token().text().toString())) {
+                addFormatToken(formatTokens);
+                wasLastLineComment = true;
 		break;
 	    }
+	    addFormatToken(formatTokens);
+	    
 	}
-	if (ts.token().id() == PHPTokenId.PHP_LINE_COMMENT) {
+	if (wasLastLineComment) {
 	    FormatToken last = formatTokens.remove(formatTokens.size() - 1);
 	    formatTokens.add(new FormatToken.UnbreakableSequenceToken(ts.offset() + ts.token().length() - 1, null, FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
 	    formatTokens.add(last);
