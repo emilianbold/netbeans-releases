@@ -129,7 +129,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     //fileObject = RemoteFileUtil.getFileObject(path, env,
                     ExecutionEnvironment env = getSelectedExecutionEnvironment();
                     fileObject = RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
-                    projectName = (fileObject == null) ? null : fileObject.getName();
+                    projectName = (fileObject == null) ? null : fileObject.getNameExt();
                 }
                 controller.getWizardStorage().setSourcesFileObject(fileObject);
                 if (projectFolder.getText().isEmpty()) {
@@ -499,6 +499,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
         wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        wizardDescriptor.putProperty("nativeProjDir", controller.getWizardStorage().getSourcesFileObject().getPath()); // NOI18N
         initialized = false;
     }
 

@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking;
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.util.Collection;
 import java.util.Map;
@@ -80,6 +81,10 @@ public class RecentIssuesTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        Field f = BugtrackingManager.class.getDeclaredField("recentIssues");
+        f.setAccessible(true);
+        Map<String, List<RecentIssue>> ri = (Map<String, List<RecentIssue>>) f.get(BugtrackingManager.getInstance());
+        if(ri != null) ri.clear();
     }
 
     public void testGetRecentIssuesEmptyReturn() throws MalformedURLException, CoreException, IOException {
@@ -155,15 +160,17 @@ public class RecentIssuesTest extends NbTestCase {
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue6);
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue7);
 
-        // getIssues for repo1 -> repo1 issues 3..7 are returned
+        // getIssues for repo1 -> repo1 issues 1..7 are returned
         List<Issue> issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo1);
         assertNotNull(issues);
-        assertEquals(5, issues.size());
+        assertEquals(7, issues.size());
         assertEquals(repo1issue7.getID(), issues.get(0).getID());
         assertEquals(repo1issue6.getID(), issues.get(1).getID());
         assertEquals(repo1issue5.getID(), issues.get(2).getID());
         assertEquals(repo1issue4.getID(), issues.get(3).getID());
         assertEquals(repo1issue3.getID(), issues.get(4).getID());
+        assertEquals(repo1issue2.getID(), issues.get(5).getID());
+        assertEquals(repo1issue1.getID(), issues.get(6).getID());
 
         TestRepository repo2 = new TestRepository("test repo2");
         TestIssue repo2issue1 = new TestIssue(repo2, "r2i1");
@@ -183,23 +190,25 @@ public class RecentIssuesTest extends NbTestCase {
         BugtrackingManager.getInstance().addRecentIssue(repo2, repo2issue6);
         BugtrackingManager.getInstance().addRecentIssue(repo2, repo2issue7);
 
-        // getIssues for repo2 -> repo2 issues 3..7 are returned
+        // getIssues for repo2 -> repo2 issues 1..7 are returned
         issues = BugtrackingManager.getInstance().getRecentIssues(repo2);
         assertNotNull(issues);
-        assertEquals(5, issues.size());
+        assertEquals(7, issues.size());
         assertEquals(repo2issue7.getID(), issues.get(0).getID());
         assertEquals(repo2issue6.getID(), issues.get(1).getID());
         assertEquals(repo2issue5.getID(), issues.get(2).getID());
         assertEquals(repo2issue4.getID(), issues.get(3).getID());
         assertEquals(repo2issue3.getID(), issues.get(4).getID());
+        assertEquals(repo2issue2.getID(), issues.get(5).getID());
+        assertEquals(repo2issue1.getID(), issues.get(6).getID());
 
-        // getAll -> repo1 issues 3..7 are returned and repo2 issues 3..7 are returned
+        // getAll -> repo1 issues 1..7 are returned and repo2 issues 1..7 are returned
         Map<String, List<RecentIssue>> map = BugtrackingManager.getInstance().getAllRecentIssues();
         List<RecentIssue> ri = map.get(repo1.getID());
-        assertRecentIssues(ri, new Issue[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3});
+        assertRecentIssues(ri, new Issue[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
 
         ri = map.get(repo2.getID());
-        assertRecentIssues(ri, new Issue[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3});
+        assertRecentIssues(ri, new Issue[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
     }
 
     private void assertRecentIssues(List<RecentIssue> recent, Issue[] issues) {

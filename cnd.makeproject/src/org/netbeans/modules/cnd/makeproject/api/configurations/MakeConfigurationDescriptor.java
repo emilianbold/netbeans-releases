@@ -929,9 +929,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -999,9 +999,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1252,9 +1252,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         }
         if (asDiskFolder) {
             String rootPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 rootPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, dir.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 rootPath = CndPathUtilitities.toRelativePath(baseDirFO, dir.getPath());
             } else {
                 rootPath = CndPathUtilitities.toAbsolutePath(baseDirFO, dir.getPath());
@@ -1314,7 +1314,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (fileFilter != null && !fileFilter.accept(file)) {
                 continue;
             }
-            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getName())) {
+            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
             if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {

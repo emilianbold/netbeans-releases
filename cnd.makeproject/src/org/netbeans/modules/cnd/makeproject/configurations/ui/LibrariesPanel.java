@@ -237,10 +237,10 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location;
                     String workingdir;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                         location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {
@@ -355,9 +355,9 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             }
             String path = fileChooser.getSelectedFile().getPath();
             // FIXUP: why are baseDir UNIX path when remote?
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, path);
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 path = CndPathUtilitities.toRelativePath(baseDir, path);
             } else {
                 // path = path;

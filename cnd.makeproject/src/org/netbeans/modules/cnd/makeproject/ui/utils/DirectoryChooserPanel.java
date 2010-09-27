@@ -256,9 +256,9 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             itemPath = CndPathUtilitities.naturalize(itemPath);
             String bd = baseDir;
             bd = CndPathUtilitities.naturalize(bd);
-            if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(bd, itemPath);
-            } else if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (pathPanel != null && MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
             }
             itemPath = CndPathUtilitities.normalize(itemPath);

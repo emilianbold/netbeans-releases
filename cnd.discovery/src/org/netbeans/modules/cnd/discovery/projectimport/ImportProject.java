@@ -228,7 +228,7 @@ public class ImportProject implements PropertyChangeListener {
 
             @Override
             public String getFolderName() {
-                return nativeProjectFO.getName();
+                return nativeProjectFO.getNameExt();
             }
 
             @Override
@@ -290,9 +290,9 @@ public class ImportProject implements PropertyChangeListener {
             workingDirRel = nativeProjectFO.getPath();
         } else {
             workingDirRel = projectFolder.getPath();
-            if(MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if(MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 workingDirRel = CndPathUtilitities.toRelativePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
             } else {
                 workingDirRel = CndPathUtilitities.toAbsolutePath(workingDirRel, CndPathUtilitities.naturalize(workingDir));
@@ -304,9 +304,9 @@ public class ImportProject implements PropertyChangeListener {
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 buildResult = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 buildResult = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
             } else {
                 buildResult = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
@@ -342,9 +342,9 @@ public class ImportProject implements PropertyChangeListener {
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
             makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 makefilePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 makefilePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
             } else {
                 makefilePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
@@ -354,9 +354,9 @@ public class ImportProject implements PropertyChangeListener {
         }
         if (configurePath != null && configurePath.length() > 0) {
             configureFile = CndFileUtils.normalizeFile(new File(configurePath));
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 configurePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 configurePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
             } else {
                 configurePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
