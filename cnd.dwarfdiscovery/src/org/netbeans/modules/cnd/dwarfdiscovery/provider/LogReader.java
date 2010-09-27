@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -937,10 +938,21 @@ public class LogReader {
             }
             String path = d.getAbsolutePath().replace('\\', '/');
             if (!subFolders.contains(path)){
-                subFolders.add(d.getAbsolutePath());
+                subFolders.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
-                    gatherSubFolders(ff[i]);
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        }
+                        gatherSubFolders(ff[i]);
+                    }
                 }
             }
         }
