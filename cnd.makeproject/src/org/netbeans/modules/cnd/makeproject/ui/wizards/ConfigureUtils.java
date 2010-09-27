@@ -152,16 +152,15 @@ public final class ConfigureUtils {
         return false;
     }
 
-    public static String findMakefile(String folder){
+    public static FileObject findMakefile(FileObject projDirFo) {
         String pattern[] = new String[]{"GNUmakefile", "makefile", "Makefile",}; // NOI18N
-        File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead())) {
+        if (projDirFo == null || !(projDirFo.isFolder() && projDirFo.canRead())) {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder, name); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                return file.getAbsolutePath();
+            FileObject makeFO = projDirFo.getFileObject(name); // NOI18N
+            if (makeFO != null && makeFO.isValid() && makeFO.isData() && makeFO.canRead()) {
+                return makeFO;
             }
         }
         return null;

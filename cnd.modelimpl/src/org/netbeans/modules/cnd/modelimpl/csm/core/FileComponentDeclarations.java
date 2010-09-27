@@ -380,7 +380,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         if (decl instanceof VariableImpl<?>) {
             VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, true)) {
-                v.setScope(decl.getContainingFile(), true);
+                v.setScope(decl.getContainingFile());
                 addStaticVariableDeclaration(uidDecl);
             }
         }

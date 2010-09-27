@@ -486,7 +486,7 @@ public class FormatVisitor extends DefaultVisitor {
 	wrap = node.getIfFalse() != null ? true : false;
 	if (wrap) {
 	    while (ts.moveNext()
-		    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))) {
+                    && !(ts.token().id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString()))) {
 		addFormatToken(formatTokens);
 	    }
 	    int start = ts.offset();

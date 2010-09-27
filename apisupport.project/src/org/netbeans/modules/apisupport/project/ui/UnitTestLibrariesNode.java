@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -61,7 +62,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -222,29 +222,19 @@ final class UnitTestLibrariesNode extends AbstractNode {
         private void refreshKeys() {
             try {
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
-                    public Object run() throws Exception {
-                        ProjectXMLManager pxm = new ProjectXMLManager(project);
-                        final List<TestModuleDependency> keys = new ArrayList<TestModuleDependency>();
-                        SortedSet<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
+                    public @Override Object run() throws Exception {
+                        final Collection<TestModuleDependency> deps = new TreeSet<TestModuleDependency>(TestModuleDependency.CNB_COMPARATOR);
                         final AtomicBoolean missingJUnit4 = new AtomicBoolean(true);
-                        Set<TestModuleDependency> d =  pxm.getTestDependencies(
-                                project.getModuleList()).get(testType);
-                        //draw only compile time deps
-                        if(d != null){
-                            for (TestModuleDependency tmd : d) {
-                                if(tmd.isCompile()) {
-                                    deps.add(tmd);
-                                }
-                                if (tmd.getModule().getCodeNameBase().equals("org.netbeans.libs.junit4")) { // NOI18N
-                                    missingJUnit4.set(false);
-                                }
+                        for (TestModuleDependency tmd : new ProjectXMLManager(project).getTestDependencies(project.getModuleList()).get(testType)) {
+                            deps.add(tmd);
+                            if (tmd.getModule().getCodeNameBase().equals("org.netbeans.libs.junit4")) { // NOI18N
+                                missingJUnit4.set(false);
                             }
-                            keys.addAll(deps);
                         }
                         ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
-                            public void run() {
+                            public @Override void run() {
                                 ((UnitTestLibrariesNode) getNode()).setMissingJUnit4(missingJUnit4.get());
-                                setKeys(Collections.unmodifiableList(keys));
+                                setKeys(deps);
                             }
                         });
                         return null;

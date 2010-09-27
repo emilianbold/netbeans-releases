@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -121,21 +122,22 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
         ExecutionEnvironment ee = null;
         if (hostUID != null) {
             ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         CompilerSet cs = null;
         if (ee != null) {
-            cs = (CompilerSet) wizardDescriptor.getProperty("toolchain"); // NOI18N
+            cs = (CompilerSet) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
         }
         try {
             removeDocumentLiseners();
             String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
             if (path != null) {
                 boolean selected = false;
-                String makeFile = ConfigureUtils.findMakefile(path);
+                FileObject makeFileFO = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty("nativeProjFO"));
+                String makeFile = (makeFileFO == null) ? null : makeFileFO.getPath();
                 if (makeFile != null) {
                     makefileNameTextField.setText(makeFile);
                     makefileRadioButton.setSelected(true);
@@ -158,13 +160,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     void store(WizardDescriptor wizardDescriptor) {
         if (makefileRadioButton.isSelected()) {
-            wizardDescriptor.putProperty("makefileName", makefileNameTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, makefileNameTextField.getText());
             wizardDescriptor.putProperty("configureName", ""); // NOI18N
             wizardDescriptor.putProperty("configureArguments", ""); // NOI18N
             wizardDescriptor.putProperty("makeProject", makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty("runConfigure", ""); // NOI18N
         } else {
-            wizardDescriptor.putProperty("makefileName", configureMakefileNameTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, configureMakefileNameTextField.getText());
             wizardDescriptor.putProperty("configureName", configureNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("configureArguments", configureArgumentsTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("runConfigure", runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
@@ -209,13 +211,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             if (makefileRadioButton.isSelected()) {
                 if (makefileNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOMAKEFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
                 if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) || !new File(makefileNameTextField.getText()).exists() || new File(makefileNameTextField.getText()).isDirectory()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
@@ -231,18 +233,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 configureMakefileNameTextField.setText(""); // NOI18N
                 if (configureNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOCONFIGUREFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
                 File file = new File(configureNameTextField.getText());
                 if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText()) ||
                     !file.exists() || file.isDirectory()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 } else if (!ConfigureUtils.isRunnable(file)) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 

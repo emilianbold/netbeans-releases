@@ -89,7 +89,8 @@ public class CppSymbolDemanglerImplTestCase extends NativeExecutionBaseTestCase 
     }
 
     @Ifdef(section = LOCAL_COMPILER_SETS, key = "GNU")
-    public void testDemangleGnu() throws Exception {
+    //Disabled, see IZ 190546
+    public void DISABLEDtestDemangleGnu() throws Exception {
         CppSymbolDemanglerImpl d = new CppSymbolDemanglerImpl(
                 ExecutionEnvironmentFactory.getLocal(), CPPCompiler.GNU,
                 NativeExecutionTestSupport.getRcFile().get(LOCAL_COMPILER_SETS, "GNU"));

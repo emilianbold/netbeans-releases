@@ -72,7 +72,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 
@@ -155,11 +154,11 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
         // Items to be removed
         for (Item item : getItemsAsArray()) {
-            File file = item.getFile();
-            if (!file.exists()
-                    || !file.isFile()
-                    || !VisibilityQuery.getDefault().isVisible(file)
-                    || !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+            FileObject fo = item.getFileObject();
+            if (!fo.isValid()
+                    || !fo.isData()
+                    || !VisibilityQuery.getDefault().isVisible(fo)
+                    || !CndFileVisibilityQuery.getDefault().isVisible(fo)) {
                 if (log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, "------------removing item {0} in {1}", new Object[]{item.getPath(), getPath()}); // NOI18N
                 }
@@ -211,7 +210,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
-                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified, null);
+                    getConfigurationDescriptor().addFilesFromDir(this, file, true, setModified);
 
                 }
             } else {
@@ -1068,7 +1067,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 // It is possible that short-living temporary folder is created while building project
                 return;
             }
-            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
+            /*Folder top =*/ getConfigurationDescriptor().addFilesFromDir(this, file, true, false);
         }
     }
 
@@ -1145,7 +1144,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false, null);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder

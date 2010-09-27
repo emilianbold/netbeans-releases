@@ -49,15 +49,24 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -66,6 +75,7 @@ import org.openide.util.CharSequences;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider.class)
 public class UserOptionsProviderImpl implements UserOptionsProvider {
+    private static final Map<String,PkgConfig> pkgConfigs = new HashMap<String,PkgConfig>();
 
     public UserOptionsProviderImpl(){
     }
@@ -74,8 +84,12 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public List<String> getItemUserIncludePaths(List<String> includes, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         List<String> res =new ArrayList<String>(includes);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
+            String prefix = getPrefix(makeConfiguration);
             for(PackageConfiguration pc : getPackages(compilerOptions.getAllOptions(compiler), makeConfiguration)) {
-                res.addAll(pc.getIncludePaths());
+                for (String path : pc.getIncludePaths()) {
+                    res.add(prefix+path);
+                    
+                }
             }
         }
         if (makeConfiguration.isQmakeConfiguration()) {
@@ -144,31 +158,58 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         }
     }
 
-    private static PkgConfig pkgConfig;
     private static PkgConfig getPkgConfig(MakeConfiguration conf){
-        PkgConfig pkg = pkgConfig;
-        if (pkg == null) {
-            pkg = PkgConfigManager.getDefault().getPkgConfig(conf);
-            pkgConfig = pkg;
+        String hostKey = conf.getDevelopmentHost().getHostKey();
+        PkgConfig pkg = null;
+        synchronized(pkgConfigs){
+            pkg = pkgConfigs.get(hostKey);
+            if (pkg == null) {
+                pkg = PkgConfigManager.getDefault().getPkgConfig(conf);
+                pkgConfigs.put(hostKey, pkg);
+            }
         }
         return pkg;
     }
 
     @Override
-    public NativeFileSearch getPackageFileSearch() {
-        final PkgConfig pkg = getPkgConfig(null);
-        return new NativeFileSearch() {
-            @Override
-            public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
-                Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
-                ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
-                if (resolvedPath != null) {
-                    for(ResolvedPath path : resolvedPath) {
-                        res.add(CharSequences.create(path.getIncludePath()+File.separator+fileName));
+    public NativeFileSearch getPackageFileSearch(Project project) {
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp == null || !pdp.gotDescriptor()){
+            return null;
+        }
+        MakeConfigurationDescriptor make = pdp.getConfigurationDescriptor();
+        MakeConfiguration conf = make.getActiveConfiguration();
+        if (conf != null){
+            final PkgConfig pkg = getPkgConfig(conf);
+            final String prefix = getPrefix(conf);
+            return new NativeFileSearch() {
+                @Override
+                public Collection<CharSequence> searchFile(NativeProject project, String fileName) {
+                    Collection<ResolvedPath> resolvedPath = pkg.getResolvedPath(fileName);
+                    ArrayList<CharSequence> res = new ArrayList<CharSequence>(1);
+                    if (resolvedPath != null) {
+                        for(ResolvedPath path : resolvedPath) {
+                            res.add(CharSequences.create(prefix+path.getIncludePath()+File.separator+fileName));
+                        }
                     }
+                    return res;
                 }
-                return res;
+            };
+        }
+        return null;
+    }
+
+    private String getPrefix(MakeConfiguration makeConfiguration){
+        DevelopmentHostConfiguration developmentHost = makeConfiguration.getDevelopmentHost();
+        String prefix;
+        if (developmentHost.getExecutionEnvironment().isRemote()){
+            prefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(developmentHost.getExecutionEnvironment()));
+            if (prefix.endsWith("/")) { // NOI18N
+                prefix = prefix.substring(0, prefix.length()-1);
             }
-        };
+        } else {
+            prefix = ""; // NOI18N
+        }
+        return prefix;
     }
 }

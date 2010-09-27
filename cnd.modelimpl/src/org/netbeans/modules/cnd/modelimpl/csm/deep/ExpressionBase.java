@@ -63,34 +63,44 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  * Common base for all expression implementations
  * @author Vladimir Kvashin
  */
-public class ExpressionBase extends OffsetableBase implements CsmExpression {
+public final class ExpressionBase extends OffsetableBase implements CsmExpression {
     
-    private CsmExpression.Kind kind;
-    private final CsmExpression parent;
+    //private final CsmExpression.Kind kind;
+    //private final CsmExpression parent;
     private List<CsmExpression> operands;
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
     
-    public ExpressionBase(AST ast, CsmFile file, CsmExpression parent, CsmScope scope) {
+    private ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(ast, file);
-        this.parent = parent;
+        //this.parent = parent;
         if( scope != null ) {
 	    setScope(scope);
 	}
     }
 
-    public ExpressionBase(int startOffset, int endOffset, CsmFile file, CsmExpression parent, CsmScope scope) {
+    public static ExpressionBase create(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+        return new ExpressionBase(ast, file, scope);
+    }
+
+    public ExpressionBase(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, startOffset, endOffset);
-        this.parent = parent;
+        //this.parent = parent;
         if( scope != null ) {
 	    setScope(scope);
 	}
     }
 
-    public CsmExpression.Kind getKind() {
-        return kind;
+    public static ExpressionBase create(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+        return new ExpressionBase(startOffset, endOffset, file, scope);
     }
 
+    @Override
+    public CsmExpression.Kind getKind() {
+        return null; //kind;
+    }
+
+    @Override
     public CsmScope getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
@@ -110,15 +120,17 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         }
     }
 
+    @Override
     public List<CsmExpression> getOperands() {
         if( operands == null ) {
-            operands = new ArrayList<CsmExpression>();
+            operands = new ArrayList<CsmExpression>(0);
         }
         return operands;
     }
     
+    @Override
     public CsmExpression getParent() {
-        return parent;
+        return null; //parent;
     }
  
     ////////////////////////////////////////////////////////////////////////////
@@ -127,17 +139,17 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-        PersistentUtils.writeExpression(this.parent, output);
-        PersistentUtils.writeExpressionKind(this.kind, output);
+        //PersistentUtils.writeExpression(this.parent, output);
+        //PersistentUtils.writeExpressionKind(this.kind, output);
         PersistentUtils.writeExpressions(this.operands, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }  
     
     public ExpressionBase(DataInput input) throws IOException {
         super(input);
-        this.parent = PersistentUtils.readExpression(input);
-        this.kind = PersistentUtils.readExpressionKind(input);
-        this.operands = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
+        //this.parent = PersistentUtils.readExpression(input);
+        //this.kind = PersistentUtils.readExpressionKind(input);
+        this.operands = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(0), input);
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
     }      
 }

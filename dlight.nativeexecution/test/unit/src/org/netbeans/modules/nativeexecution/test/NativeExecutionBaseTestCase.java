@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.test;
 
+import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -177,6 +178,33 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     @Override
     protected int timeOut() {
         return 500000;
+    }
+
+    private static final int RETRY_MAX = 10;
+    @Override
+    public void runBare() throws Throwable {
+        // Attempt to workaround "Auth fail" in tests, see IZ 190458
+        // We rerun test if "Auth fail" exception happens
+        int retry = RETRY_MAX;
+        Throwable ex = null;
+        while (retry > 0) {
+            try {
+                super.runBare();
+                return;
+            } catch (IOException e) {
+                if (!(e.getCause() instanceof JSchException)) {
+                    throw e;
+                }
+                if (!"Auth fail".equals(e.getCause().getMessage())) { //NOI18N
+                    throw e;
+                }
+                ex = e;
+            }
+            System.out.println("AUTH_FAIL: Connection failed, re-runing test " + retry); // NOI18N
+            retry--;
+        }
+        System.out.println("AUTH_FAIL: Retry limit reached"); // NOI18N
+        throw ex;
     }
 
     /**

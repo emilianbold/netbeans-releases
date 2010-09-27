@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints.analyzer.ui;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -75,7 +77,9 @@ import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -122,9 +126,9 @@ public class Nodes {
         return new AbstractNode(new DirectChildren(nodes));
     }
     
-    private static Node constructSemiLogicalView(Project p, Map<FileObject, List<ErrorDescription>> errors, Map<ErrorDescription, List<FixDescription>> errors2Fixes) {
+    private static Node constructSemiLogicalView(final Project p, Map<FileObject, List<ErrorDescription>> errors, Map<ErrorDescription, List<FixDescription>> errors2Fixes) {
         LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-        Node view;
+        final Node view;
         
         if (lvp != null) {
             view = lvp.createLogicalView();
@@ -141,8 +145,32 @@ public class Nodes {
         
         for (FileObject file : errors.keySet()) {
             List<ErrorDescription> eds = errors.get(file);
-            
-            fileNodes.put(locateChild(view, lvp, file), eds);
+            Node foundChild = locateChild(view, lvp, file);
+
+            if (foundChild == null) {
+                Node n = new AbstractNode(Children.LEAF) {
+                    @Override
+                    public Image getIcon(int type) {
+                        return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
+                    }
+                    @Override
+                    public Image getOpenedIcon(int type) {
+                        return getIcon(type);
+                    }
+                    @Override
+                    public String getHtmlDisplayName() {
+                        return view.getHtmlDisplayName() != null ? NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getHtmlDisplayName()) : null;
+                    }
+                    @Override
+                    public String getDisplayName() {
+                        return NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName());
+                    }
+                };
+
+                return n;
+            }
+
+            fileNodes.put(foundChild, eds);
             
             for (ErrorDescription e : eds) {
                 List<FixDescription> desc = new LinkedList<FixDescription>();

@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
@@ -73,6 +74,9 @@ public class CndPathUtilitities {
      * the file is in the current directory rather than ".".
      */
     public static String getDirName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -87,6 +91,9 @@ public class CndPathUtilitities {
      * its filename.
      */
     public static String getBaseName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -173,6 +180,9 @@ public class CndPathUtilitities {
         }
     }
 
+    public static String toAbsolutePath(FileObject base, String path) {
+        return toAbsolutePath(base.getPath(), path);
+    }
     /*
      * From PicklistUtils
      */
@@ -200,6 +210,9 @@ public class CndPathUtilitities {
         return newPath;
     }
 
+    public static String toRelativePath(FileObject base, String path) {
+        return toRelativePath(base.getPath(), path);
+    }
     /*
      * From PicklistUtils
      */
@@ -219,6 +232,10 @@ public class CndPathUtilitities {
             }
         }
         return relPath;
+    }
+
+    public static String toAbsoluteOrRelativePath(FileObject base, String path) {
+        return toAbsoluteOrRelativePath(base.getPath(), path);
     }
 
     public static String toAbsoluteOrRelativePath(String base, String path) {

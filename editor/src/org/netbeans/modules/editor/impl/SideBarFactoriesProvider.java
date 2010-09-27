@@ -128,6 +128,9 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBar
                 if (ic != null && SideBarFactory.class.isAssignableFrom(ic.instanceClass())) {
                     factory = (SideBarFactory) ic.instanceCreate();
                 }
+            } catch (ClassNotFoundException cnfe) {
+                LOG.log(Level.INFO, null, cnfe);
+                continue;
             } catch (Exception e) {
                 LOG.log(Level.WARNING, null, e);
                 continue;

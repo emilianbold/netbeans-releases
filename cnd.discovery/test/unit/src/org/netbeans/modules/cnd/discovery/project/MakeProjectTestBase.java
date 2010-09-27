@@ -77,6 +77,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -233,8 +234,12 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                 public synchronized Object getProperty(String name) {
                     if ("simpleMode".equals(name)) {
                         return Boolean.TRUE;
-                    } else if ("path".equals(name)) {
+                    } else if ("nativeProjDir".equals(name)) {
                         return path;
+                    } else if ("nativeProjFO".equals(name)) {
+                        return FileUtil.toFileObject(new File(path));
+                    } else if ("projdir".equals(name)) {
+                        return new File(path);
                     } else if ("configureName".equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:

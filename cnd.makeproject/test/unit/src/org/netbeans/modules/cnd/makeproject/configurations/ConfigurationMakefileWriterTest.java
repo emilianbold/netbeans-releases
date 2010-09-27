@@ -88,7 +88,11 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         }
         dataPath += "Xxx";
         File fileDataPath = new File(dataPath);
-        return FileUtil.normalizeFile(fileDataPath);
+        fileDataPath = FileUtil.normalizeFile(fileDataPath);
+        if (!fileDataPath.exists()) {
+            fileDataPath.mkdirs();
+        }
+        return fileDataPath;
     }
 
     private void testAppWithLibraries(String testName, String flavorName, int platform, String golden) {
@@ -112,7 +116,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
             libsuffix = "dll";
         }
         File folderBase = getBaseFolder();
-        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBase.getAbsolutePath());
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(FileUtil.toFileObject(folderBase));
         MakeConfiguration conf = new MakeConfiguration(folderBase.getAbsolutePath(), "Default", MakeConfiguration.TYPE_APPLICATION);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));
@@ -202,7 +206,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
         File folderBase = getBaseFolder();
-         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(folderBase.getAbsolutePath());
+         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(FileUtil.toFileObject(folderBase));
         MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));

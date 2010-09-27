@@ -111,15 +111,15 @@ public class ArchetypeWizardUtils {
     private ArchetypeWizardUtils() {
     }
 
-    public static Archetype[] WEB_APP_ARCHS;
-    public static Archetype[] EJB_ARCHS;
-    public static Archetype[] EAR_ARCHS;
-    public static final Archetype EA_ARCH;
+    static final Archetype[] WEB_APP_ARCHS;
+    static final Archetype[] EJB_ARCHS;
+    static final Archetype[] EAR_ARCHS;
+    static final Archetype EA_ARCH;
     
-    public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
-    public static final Archetype OSGI_ARCH;
+    static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
+    static final Archetype OSGI_ARCH;
 
-    public static final String[] EE_LEVELS = new String[] {
+    static final String[] EE_LEVELS = {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
@@ -132,7 +132,6 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -152,7 +151,6 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
@@ -172,21 +170,18 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[2] = arch;
 
         EA_ARCH = new Archetype();
@@ -196,27 +191,23 @@ public class ArchetypeWizardUtils {
 
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.4"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
-        NB_MODULE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
+        NB_APP_ARCH.setVersion("1.5"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
-        NB_APP_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.1"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
-        NB_SUITE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         OSGI_ARCH = new Archetype();
         OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        OSGI_ARCH.setVersion("1.0-beta-3-SNAPSHOT"); //NOI18N
+        OSGI_ARCH.setVersion("1.0"); //NOI18N
         OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
-        OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }
 
 
@@ -246,7 +237,6 @@ public class ArchetypeWizardUtils {
         config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
         if (arch.getRepository() != null) {
-            props.setProperty("archetype.repository", arch.getRepository()); //NOI18N
             props.setProperty("archetypeRepository", arch.getRepository()); //NOI18N
         }
 

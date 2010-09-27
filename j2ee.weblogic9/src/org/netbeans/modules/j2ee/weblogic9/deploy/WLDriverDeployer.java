@@ -123,6 +123,10 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 // deploy the driers if needed
                 if (!jdbcDriverURLs.isEmpty()) {
                     File libsDir = WLPluginProperties.getDomainLibDirectory(manager);
+                    if (libsDir == null) {
+                        LOGGER.log(Level.FINE, "No domain lib, using server lib for {0}", manager.getUri());
+                        libsDir = WLPluginProperties.getServerLibDirectory(manager, false);
+                    }
                     if (libsDir != null) {
                         for (FileObject file : jdbcDriverURLs) {
                             File toJar = new File(libsDir, file.getNameExt());

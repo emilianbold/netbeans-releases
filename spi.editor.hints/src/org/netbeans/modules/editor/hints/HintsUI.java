@@ -96,7 +96,6 @@ import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.PositionRefresher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditCookie;
@@ -120,7 +119,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
+public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener  {
     
     private static HintsUI INSTANCE;
     private static final Set<String> fixableAnnotations;
@@ -144,7 +143,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
         return INSTANCE;
     }
     
-    static Logger UI_GESTURES_LOGGER = Logger.getLogger("org.netbeans.ui.editor.hints");
+    static final Logger UI_GESTURES_LOGGER = Logger.getLogger("org.netbeans.ui.editor.hints");
     
     private Reference<JTextComponent> compRef;
     private Popup listPopup;
@@ -156,7 +155,7 @@ public class HintsUI implements MouseListener, MouseMotionListener, KeyListener,
     private JTextArea errorTooltip;
     private AtomicBoolean cancel;
     
-    /** Creates a new instance of HintsUI */
+    @SuppressWarnings("LeakingThisInConstructor")
     private HintsUI() {
         EditorRegistry.addPropertyChangeListener(this);
         propertyChange(null);

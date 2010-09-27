@@ -189,8 +189,8 @@ public abstract class ClassIndexImpl {
     
     public static interface Writer {
         void clear() throws IOException;
-        void store (final Map<Pair<String,String>, Object[]> refs, final List<Pair<String,String>> topLevels) throws IOException;
-        void store(final Map<Pair<String,String>, Object[]> refs, final Set<Pair<String,String>> toDelete) throws IOException;
+        void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;
+        void deleteAndStore(final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> toDelete) throws IOException;
     }
     
     private class Ref extends WeakReference<ClassIndexImplListener> implements Runnable {

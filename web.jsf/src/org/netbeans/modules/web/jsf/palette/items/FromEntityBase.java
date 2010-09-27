@@ -240,6 +240,9 @@ public abstract class FromEntityBase {
                                 fields.add(fd);
                             }
                             continue;
+                        } else {
+                            //primitive types
+                            fields.add(fd);
                         }
                     } else if (fd.getDateTimeFormat().length() > 0) {
                         fields.add(fd);

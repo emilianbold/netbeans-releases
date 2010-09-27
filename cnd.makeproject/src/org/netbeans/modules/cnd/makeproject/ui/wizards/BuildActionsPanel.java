@@ -53,6 +53,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,20 +76,10 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
         this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
-        documentListener = new DocumentListener() {
+        documentListener = new DocumentAdapter() {
             @Override
-            public void insertUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                update(e);
-            }
-            
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                update(e);
+            protected void update(DocumentEvent e) {
+                BuildActionsPanel.this.update();
             }
         };
         
@@ -111,23 +102,6 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         outputTextField.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_AD"));
         buildCommandWorkingDirBrowseButton.getAccessibleContext().setAccessibleDescription(getString("WORKING_DIR_BROWSE_BUTTON_AD"));
         outputBrowseButton.getAccessibleContext().setAccessibleDescription(getString("OUTPUT_BROWSE_BUTTON_AD"));
-    }
-    
-    private final class MakefileDocumentListener implements DocumentListener {
-        @Override
-        public void changedUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
-        
-        @Override
-        public void insertUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
-        
-        @Override
-        public void removeUpdate( DocumentEvent e ) {
-            makefileFieldChanged();
-        }
     }
     
     private void makefileFieldChanged() {
@@ -154,12 +128,12 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return new HelpCtx(BuildActionsPanel.class);
     }
     
-    private void update(DocumentEvent e) {
+    private void update() {
         buildActionsDescriptorPanel.stateChanged(null);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String mn = (String)wizardDescriptor.getProperty("makefileName"); // NOI18N
+        String mn = (String)wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME);
         if (makefileName == null || !makefileName.equals(mn)) {
             initFields();
             makefileName = mn;
@@ -177,20 +151,20 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     boolean valid(WizardDescriptor settings) {
         if (buildCommandWorkingDirTextField.getText().length() == 0) {
             String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
-            buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+            buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
             return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg); // NOI18N
+                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }

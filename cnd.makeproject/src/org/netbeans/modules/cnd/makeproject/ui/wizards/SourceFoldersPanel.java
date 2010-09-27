@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -73,6 +72,7 @@ import org.openide.util.NbBundle;
         getAccessibleContext().setAccessibleDescription(getString("SourceFoldersPanel_AD"));
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(SourceFoldersPanel.class);
     }
@@ -81,8 +81,7 @@ import org.openide.util.NbBundle;
         if (firstTime) {
             String workingdir = (String) settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
-            File wd = new File(workingdir);
-            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
 //            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
 //                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
 //            }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.jsf.editor.el;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -80,6 +81,21 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     @Override
     public String getReferredExpression(Snapshot snapshot, int offset) {
         return null;
+    }
+
+    @Override
+    public List<VariableInfo> getManagedBeans(FileObject context) {
+        List<WebBean> beans = getWebBeans(context);
+        List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
+        for (WebBean bean : beans) {
+            result.add(new VariableInfo(bean.getName(), bean.getBeanClassName()));
+        }
+        return result;
+    }
+
+    @Override
+    public List<VariableInfo> getVariables(Snapshot snapshot, int offset) {
+        return Collections.emptyList();
     }
 
     private List<WebBean> getWebBeans(FileObject context) {

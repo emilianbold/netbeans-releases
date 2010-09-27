@@ -62,7 +62,7 @@ import org.openide.util.Utilities;
  *
  * @author ak119685
  */
-/*package*/ class FileObjectBasedFile extends File {
+public class FileObjectBasedFile extends File {
     final ExecutionEnvironment env;
 
     private final FileObject fo;
@@ -82,6 +82,10 @@ import org.openide.util.Utilities;
         this.fo = fo;
         this.path = fo.getPath();
         this.env = env;
+    }
+
+    public FileObject getFileObject() {
+        return fo;
     }
 
     @Override
