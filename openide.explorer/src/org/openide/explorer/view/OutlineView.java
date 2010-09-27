@@ -771,9 +771,11 @@ public class OutlineView extends JScrollPane {
         super.removeNotify ();
         outline.getSelectionModel().clearSelection();
         outline.getSelectionModel().removeListSelectionListener(managerListener);
-        manager.removePropertyChangeListener (wlpc);
-        manager.removeVetoableChangeListener (wlvc);
-        manager = null;
+        if (manager != null) {
+            manager.removePropertyChangeListener (wlpc);
+            manager.removeVetoableChangeListener (wlvc);
+            manager = null;
+        }
     }
 
     /**
