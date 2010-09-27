@@ -339,16 +339,26 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if(wizardtype == TYPE_DB_APPLICATION) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
-		        FileObject wizardOptions = FileUtil.getConfigFile("Templates/Project/Native/newDBApplication.xml"); //NOI18N
-		        Object panel = wizardOptions.getAttribute("databaseMasterPanel"); //NOI18N
-		        if(panel instanceof WizardDescriptor.Panel) {
-		            panels.add(panelConfigureProjectTrue);
-		            panels.add((WizardDescriptor.Panel) panel);
-		            String[] steps = createSteps(panels);
-		        }
+                panels.add(panelConfigureProjectTrue);
+                WizardDescriptor.Panel<WizardDescriptor> masterPanel = createDatabaseMasterPanel();
+                if(masterPanel != null) {
+		    panels.add(masterPanel);
+                }
+                    String[] steps = createSteps(panels);
+            }
         } else {
             throw new IllegalStateException("Illegal wizard type: " + wizardtype); //NOI18N
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    WizardDescriptor.Panel<WizardDescriptor> createDatabaseMasterPanel() {
+        FileObject wizardOptions = FileUtil.getConfigFile("Templates/Project/Native/newDBApplication.xml"); //NOI18N
+        Object panel = wizardOptions.getAttribute("databaseMasterPanel"); //NOI18N
+        if (panel instanceof WizardDescriptor.Panel) {
+            return (WizardDescriptor.Panel<WizardDescriptor>) panel;
+        }
+        return null;
     }
 
     private void setupSteps() {
