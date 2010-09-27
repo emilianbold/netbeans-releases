@@ -97,7 +97,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (first) {
             first = false;
             @SuppressWarnings("unchecked")
-            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty("sourceFoldersList"); // NOI18N
+            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
             if (roots != null) {
                 StringBuilder buf = new StringBuilder();
                 for(FolderEntry folder : roots){

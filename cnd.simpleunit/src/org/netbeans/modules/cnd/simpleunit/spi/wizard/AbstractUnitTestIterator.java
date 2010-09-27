@@ -236,9 +236,9 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
                 return false;
             }
             String itemPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
             } else {
                 itemPath = ioFile.getPath();

@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -83,12 +84,30 @@ public class RemoteFileUtil {
         }
     }
 
+    public static FileObject getFileObject(String absolutePath, Project project) {
+        String normalizedPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
+        if (CndUtils.isDebugMode() && ! normalizedPath.equals(absolutePath)) {
+            CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
+        }
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                    ExecutionEnvironment execEnv = remoteProject.getRemoteFileSystemHost();
+                    return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
+                }
+            }
+        }
+        return FileUtil.toFileObject(new File(normalizedPath));
+    }
+
     public static String getAbsolutePath(FileObject fileObject) {
         return fileObject.getPath();
     }
 
     public static String getCanonicalPath(FileObject fo) throws IOException {
         //XXX:fullRemote
-        return FileUtil.toFile(fo).getCanonicalPath();
+        File file = FileUtil.toFile(fo);
+        return (file == null) ? fo.getPath() : file.getCanonicalPath();
     }
 }

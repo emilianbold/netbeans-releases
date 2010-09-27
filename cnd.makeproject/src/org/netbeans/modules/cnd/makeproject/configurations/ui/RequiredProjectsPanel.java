@@ -202,10 +202,10 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                 for (int i = 0; i < artifacts.length; i++) {
                     String location;
                     String workingdir;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         location = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, artifacts[i].getWorkingDirectory());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                         location = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getProjectLocation());
                         workingdir = CndPathUtilitities.toRelativePath(baseDir, artifacts[i].getWorkingDirectory());
                     } else {

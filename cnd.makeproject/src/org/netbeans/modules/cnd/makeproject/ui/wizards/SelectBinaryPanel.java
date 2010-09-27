@@ -183,6 +183,11 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
         public void setSourceFolderPath(String path) {
             this.sourceFolderPath = path.trim();
+            controller.validate();
+        }
+
+        public void validate() {
+            controller.validate();
         }
     }
 }
