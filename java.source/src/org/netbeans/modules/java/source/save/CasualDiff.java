@@ -271,8 +271,7 @@ public class CasualDiff {
     protected void diffTopLevel(JCCompilationUnit oldT, JCCompilationUnit newT) {
         int localPointer = 0;
         oldTopLevel = oldT;
-        // todo (#pf): make package annotation diffing correctly
-        // diffList(oldT.packageAnnotations, newT.packageAnnotations, LineInsertionType.NONE, 0);
+        localPointer = diffAnnotationsLists(oldT.packageAnnotations, newT.packageAnnotations, 0, 0);
         localPointer = diffPackageStatement(oldT, newT, localPointer);
         PositionEstimator est = EstimatorFactory.imports(oldT.getImports(), newT.getImports(), workingCopy);
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
@@ -1741,26 +1740,10 @@ public class CasualDiff {
             // modifiers wasn't changed, return the position lastPrinted.
             return localPointer;
         }
-        int annotationsEnd = oldT.annotations.nonEmpty() ? endPos(oldT.annotations) : localPointer;
+
         int startPos = oldT.pos != Position.NOPOS ? getOldPos(oldT) : getOldPos(parent);
-        if (listsMatch(oldT.annotations, newT.annotations)) {
-            copyTo(localPointer, localPointer = (annotationsEnd != localPointer ? annotationsEnd : startPos));
-        } else {
-            tokenSequence.move(startPos);
-            tokenSequence.movePrevious();
-            if (JavaTokenId.WHITESPACE == tokenSequence.token().id()) {
-                String text = tokenSequence.token().text().toString();
-                int index = text.lastIndexOf('\n');
-                startPos = tokenSequence.offset();
-                if (index > -1) {
-                    startPos += index + 1;
-                }
-                if (startPos < localPointer) startPos = localPointer;
-            }
-            copyTo(localPointer, startPos);
-            PositionEstimator est = EstimatorFactory.annotations(oldT.getAnnotations(),newT.getAnnotations(), workingCopy, parameterPrint);
-            localPointer = diffList(oldT.annotations, newT.annotations, startPos, est, Measure.DEFAULT, printer);
-        }
+        
+        localPointer = diffAnnotationsLists(oldT.getAnnotations(), newT.getAnnotations(), startPos, localPointer);
 
         int endOffset = endPos(oldT);
 
@@ -1799,6 +1782,30 @@ public class CasualDiff {
                 copyTo(localPointer, localPointer = endOffset);
             }
         }
+        return localPointer;
+    }
+
+    private int diffAnnotationsLists(com.sun.tools.javac.util.List<JCAnnotation> oldAnnotations, com.sun.tools.javac.util.List<JCAnnotation> newAnnotations, int startPos, int localPointer) {
+        int annotationsEnd = oldAnnotations.nonEmpty() ? endPos(oldAnnotations) : localPointer;
+        
+        if (listsMatch(oldAnnotations, newAnnotations)) {
+            copyTo(localPointer, localPointer = (annotationsEnd != localPointer ? annotationsEnd : startPos));
+        } else {
+            tokenSequence.move(startPos);
+            if (tokenSequence.movePrevious() && JavaTokenId.WHITESPACE == tokenSequence.token().id()) {
+                String text = tokenSequence.token().text().toString();
+                int index = text.lastIndexOf('\n');
+                startPos = tokenSequence.offset();
+                if (index > -1) {
+                    startPos += index + 1;
+                }
+                if (startPos < localPointer) startPos = localPointer;
+            }
+            copyTo(localPointer, startPos);
+            PositionEstimator est = EstimatorFactory.annotations(oldAnnotations,newAnnotations, workingCopy, parameterPrint);
+            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.DEFAULT, printer);
+        }
+
         return localPointer;
     }
 
@@ -2584,7 +2591,7 @@ public class CasualDiff {
             copyTo(localPointer, pos, printer);
 
             if (newList.get(0).getKind() == Kind.IMPORT) {
-                printer.printImportsBlock(newList);
+                printer.printImportsBlock(newList, true);
             } else {
                 printer.print(aHead.toString());
                 for (JCTree item : newList) {
