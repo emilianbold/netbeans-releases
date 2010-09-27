@@ -86,7 +86,7 @@ public class StatusCommand extends GitCommand {
     protected void run () throws GitException {
         Repository repository = getRepository();
         try {
-            DirCache cache = repository.lockDirCache();
+            DirCache cache = repository.readDirCache();
             try {
                 TreeWalk treeWalk = new TreeWalk(repository);
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
