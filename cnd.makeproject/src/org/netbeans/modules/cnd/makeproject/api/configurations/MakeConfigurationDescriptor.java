@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -929,9 +930,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -999,9 +1000,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1251,14 +1252,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             folder.addFolder(top, true);
         }
         if (asDiskFolder) {
-            String rootPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                rootPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, dir.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-                rootPath = CndPathUtilitities.toRelativePath(baseDirFO, dir.getPath());
-            } else {
-                rootPath = CndPathUtilitities.toAbsolutePath(baseDirFO, dir.getPath());
-            }
+            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalize(rootPath);
             top.setRoot(rootPath);
         }
@@ -1354,7 +1348,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 //                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
 //                }
 //                Item item = new Item(CndPathUtilitities.normalize(filePath));
-                Item item = new Item(file, baseDirFO);
+                Item item = new Item(file, baseDirFO, ProjectSupport.getPathMode(project));
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
