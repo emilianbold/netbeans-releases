@@ -234,17 +234,20 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         if (progress != null) {
                             progress.start();
                         }
-                        Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
-                        if (progress != null) {
-                            progress.start(set.size());
-                        }
-                        if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
-                        } else {
-                            myFileProperties = new ArrayList<SourceFileProperties>();
-                        }
-                        if (progress != null) {
-                            progress.done();
+                        try {
+                            Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                            if (progress != null) {
+                                progress.start(set.size());
+                            }
+                            if (set.size() > 0) {
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
+                            } else {
+                                myFileProperties = new ArrayList<SourceFileProperties>();
+                            }
+                        } finally {
+                            if (progress != null) {
+                                progress.done();
+                            }
                         }
                     }
                     return myFileProperties;
