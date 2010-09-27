@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
@@ -211,14 +212,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             }
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
-                String itemPath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-                    itemPath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
-                } else {
-                    itemPath = files[i].getPath();
-                }
+                String itemPath = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                 itemPath = CndPathUtilitities.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
@@ -367,7 +361,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 if (files[i].isDirectory()) {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
-                    String path;
+                    String path = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                     if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
                     } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {

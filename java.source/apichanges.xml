@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TreeMaker.PackageAnnotations">
+             <api name="general"/>
+             <summary>Added TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...), TreeMaker.addPackageAnnotation, TreeMaker.insertPackageAnnotation, TreeMaker.removePackageAnnotation methods.</summary>
+             <version major="0" minor="66"/>
+             <date day="27" month="9" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...)</code>,
+                 <code>TreeMaker.addPackageAnnotation</code>, <code>TreeMaker.insertPackageAnnotation</code>,
+                 <code>TreeMaker.removePackageAnnotation</code> to allow modification of the list of package annotations.
+             </description>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="157760"/>
+        </change>
         <change id="TreeMaker.QualIdent_String">
              <api name="general"/>
              <summary>Added TreeMaker.QualIdent(String) and TreeMaker.Type(String) method.</summary>

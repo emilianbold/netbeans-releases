@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -235,14 +236,7 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
             if (!makeConfigurationDescriptor.okToChange()) {
                 return false;
             }
-            String itemPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else {
-                itemPath = ioFile.getPath();
-            }
+            String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
             itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = new Item(itemPath);
 
