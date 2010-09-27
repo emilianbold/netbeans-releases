@@ -131,8 +131,8 @@ public class StatusCommand extends GitCommand {
                     DirCacheIterator indexIterator = treeWalk.getTree(T_INDEX, DirCacheIterator.class);
                     DirCacheEntry indexEntry = indexIterator != null ? indexIterator.getDirCacheEntry() : null;
                     boolean isFolder = false;
-                    if (mWorking == FileMode.TREE.getBits()) {
-                        if (fti.isEntryIgnored() && !Utils.isUnder(pathFilters, treeWalk)) { // root is under fti
+                    if (treeWalk.isSubtree()) {
+                        if (mWorking == FileMode.TREE.getBits() && fti.isEntryIgnored() && !Utils.isUnderOrEqual(pathFilters, treeWalk)) { // root is under fti
                             statusIndexWC = statusHeadWC = GitStatus.Status.STATUS_IGNORED;
                             isFolder = true;
                         } else {

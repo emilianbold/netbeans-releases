@@ -51,6 +51,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
@@ -112,5 +113,18 @@ public class JGitClient extends GitClient {
         } catch (IOException ex) {
             throw new GitException(ex);
         }
+    }
+
+    /**
+     * Removes given files/folders from the index and/or from the working tree
+     * @param roots files/folders to remove
+     * @param cached if <code>true</code> the working tree will not be affected
+     * @param monitor
+     */
+    @Override
+    public void remove(File[] roots, boolean cached, FileProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RemoveCommand cmd = new RemoveCommand(repository, roots, cached, monitor);
+        cmd.execute();
     }
 }

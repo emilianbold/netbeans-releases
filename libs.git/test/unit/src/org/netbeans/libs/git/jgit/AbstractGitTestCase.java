@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -179,5 +180,23 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected void add (File... files) throws GitException {
         getClient(wc).add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    protected static class Monitor extends FileProgressMonitor {
+        public final HashSet<File> notifiedFiles = new HashSet<File>();
+
+        public Monitor () {
+
+        }
+
+        @Override
+        public void notifyFile (File file) {
+            notifiedFiles.add(file);
+        }
+
+        @Override
+        public void notifyError(String message) {
+            fail(message);
+        }
     }
 }

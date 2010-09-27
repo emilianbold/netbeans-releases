@@ -112,10 +112,33 @@ private Utils () {
         return relativePath.toString();
     }
 
-    public static boolean isUnder (Collection<PathFilter> filters, TreeWalk treeWalk) {
+    /**
+     * Returns true if any of the given filters denotes a path lying under the current file/folder specified by the given TreeWalk
+     * @param filters
+     * @param treeWalk
+     * @return
+     */
+    public static boolean isUnderOrEqual (Collection<PathFilter> filters, TreeWalk treeWalk) {
         boolean retval = false;
         for (PathFilter filter : filters) {
-            if (filter.include(treeWalk) && treeWalk.getPathString().length() < filter.getPath().length()) {
+            if (filter.include(treeWalk) && treeWalk.getPathString().length() <= filter.getPath().length()) {
+                retval = true;
+                break;
+            }
+        }
+        return retval;
+    }
+
+    /**
+     * Returns true if the current file/folder specified by the given TreeWalk lies under any of the given filters
+     * @param treeWalk
+     * @param filters
+     * @return
+     */
+    public static boolean isUnderOrEqual (TreeWalk treeWalk, Collection<PathFilter> filters) {
+        boolean retval = filters.isEmpty();
+        for (PathFilter filter : filters) {
+            if (filter.include(treeWalk) && treeWalk.getPathString().length() >= filter.getPath().length()) {
                 retval = true;
                 break;
             }
