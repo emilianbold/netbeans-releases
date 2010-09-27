@@ -73,6 +73,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
 
@@ -235,11 +236,16 @@ public class TreeFactory {
         return Class(flags, (com.sun.tools.javac.util.List<JCAnnotation>) modifiers.getAnnotations(), simpleName, Collections.<TypeParameterTree>emptyList(), null, implementsClauses, memberDecls);
     }
     
-    public CompilationUnitTree CompilationUnit(ExpressionTree packageDecl, 
+    public CompilationUnitTree CompilationUnit(@NonNull List<? extends AnnotationTree> packageAnnotations,
+                                               ExpressionTree packageDecl,
                                                List<? extends ImportTree> importDecls, 
                                                List<? extends Tree> typeDecls, 
                                                JavaFileObject sourceFile) {
 
+        ListBuffer<JCAnnotation> annotations = new ListBuffer<JCAnnotation>();
+        for (AnnotationTree at : packageAnnotations) {
+            annotations.add((JCAnnotation) at);
+        }
         ListBuffer<JCTree> defs = new ListBuffer<JCTree>();
         if (importDecls != null)
             for (Tree t : importDecls)
@@ -247,8 +253,8 @@ public class TreeFactory {
         if (typeDecls != null) 
             for (Tree t : typeDecls)
                 defs.append((JCTree)t);
-        JCCompilationUnit unit = make.at(NOPOS).TopLevel(com.sun.tools.javac.util.List.<JCAnnotation>nil(),
-                                               (JCExpression)packageDecl, defs.toList());
+        JCCompilationUnit unit = make.at(NOPOS).TopLevel(annotations.toList(),
+                                                          (JCExpression)packageDecl, defs.toList());
         unit.sourcefile = sourceFile;
         return unit;
     }
@@ -916,6 +922,7 @@ public class TreeFactory {
     
     private CompilationUnitTree modifyCompUnitTypeDecl(CompilationUnitTree compilationUnit, int index, Tree typeDeclaration, Operation op) {
         CompilationUnitTree copy = CompilationUnit(
+            compilationUnit.getPackageAnnotations(),
             compilationUnit.getPackageName(),
             compilationUnit.getImports(),
             c(compilationUnit.getTypeDecls(), index, typeDeclaration, op),
@@ -943,6 +950,7 @@ public class TreeFactory {
     
     private CompilationUnitTree modifyCompUnitImport(CompilationUnitTree compilationUnit, int index, ImportTree importt, Operation op) {
         CompilationUnitTree copy = CompilationUnit(
+            compilationUnit.getPackageAnnotations(),
             compilationUnit.getPackageName(),
             c(compilationUnit.getImports(), index, importt, op),
             compilationUnit.getTypeDecls(),
@@ -951,6 +959,33 @@ public class TreeFactory {
         return copy;
     }
     
+    public CompilationUnitTree addPackageAnnotation(CompilationUnitTree cut, AnnotationTree annotation) {
+        return modifyPackageAnnotation(cut, -1, annotation, Operation.ADD);
+    }
+
+    public CompilationUnitTree insertPackageAnnotation(CompilationUnitTree cut, int index, AnnotationTree annotation) {
+        return modifyPackageAnnotation(cut, index, annotation, Operation.ADD);
+    }
+
+    public CompilationUnitTree removePackageAnnotation(CompilationUnitTree cut, AnnotationTree annotation) {
+        return modifyPackageAnnotation(cut, -1, annotation, Operation.REMOVE);
+    }
+
+    public CompilationUnitTree removePackageAnnotation(CompilationUnitTree cut, int index) {
+        return modifyPackageAnnotation(cut, index, null, Operation.REMOVE);
+    }
+
+    private CompilationUnitTree modifyPackageAnnotation(CompilationUnitTree cut, int index, AnnotationTree annotation, Operation op) {
+        CompilationUnitTree copy = CompilationUnit(
+                c(cut.getPackageAnnotations(), index, annotation, op),
+                cut.getPackageName(),
+                cut.getImports(),
+                cut.getTypeDecls(),
+                cut.getSourceFile()
+        );
+        return copy;
+    }
+
     /** ErroneousTree */
     
     // ForLoop

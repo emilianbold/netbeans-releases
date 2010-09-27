@@ -85,9 +85,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         this.fileObject = fileObject;
 
         String p;
-        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
             p = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, fileObject.getPath());
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
             p = CndPathUtilitities.toRelativePath(baseDirFO, fileObject.getPath());
         } else {
             p = CndPathUtilitities.toAbsolutePath(baseDirFO, fileObject.getPath());

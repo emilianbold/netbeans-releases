@@ -104,9 +104,9 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath;
-	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                 itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                 itemPath = CndPathUtilitities.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
             } else {
                 itemPath = files[i].getPath();

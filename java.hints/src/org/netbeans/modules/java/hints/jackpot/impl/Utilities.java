@@ -794,10 +794,6 @@ public class Utilities {
 
         GeneralizePatternITT itt = new GeneralizePatternITT(gp.tree2Variable);
 
-        //TODO: workaround, ImmutableTreeTranslator needs a CompilationUnitTree (rewriteChildren(BlockTree))
-        //but sometimes no CompilationUnitTree (e.g. during BatchApply):
-        CompilationUnitTree cut = TreeFactory.instance(c).CompilationUnit(null, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList(), null);
-
         itt.attach(c, new NoImports(c), null);
 
         return itt.translate(original.getLeaf());

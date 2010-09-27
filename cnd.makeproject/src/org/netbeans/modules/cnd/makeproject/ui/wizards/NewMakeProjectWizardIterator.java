@@ -111,7 +111,10 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public static final String PROPERTY_HOST_UID = "hostUID"; // String // NOI18N
     public static final String PROPERTY_TOOLCHAIN = "toolchain"; // CompilerSet // NOI18N
     public static final String PROPERTY_READ_ONLY_TOOLCHAIN = "readOnlyToolchain"; // Boolean // NOI18N
-//NewMakeProjectWizardIterator.PROPERTY_FULL_REMOTE
+    public static final String PROPERTY_SOURCE_FOLDERS = "sourceFolders"; // Iterator<FolderEntry> // NOI18N
+    public static final String PROPERTY_SOURCE_FOLDERS_LIST = "sourceFoldersList"; // ArrayList<FolderEntry> // NOI18N
+    public static final String PROPERTY_SOURCE_FOLDERS_FILTER = "sourceFoldersFilter"; // String // NOI18N
+//NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS
 
     private final int wizardtype;
     private final boolean fullRemote;
