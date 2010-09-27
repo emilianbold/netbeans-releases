@@ -509,12 +509,13 @@ public class ImmutableTreeTranslator implements TreeVisitor<Tree,Object> {
         importAnalysis.setPackage(tree.getPackageName());
         importAnalysis.setImports(translate(tree.getImports()));
         
+        List<? extends AnnotationTree> annotations = translate(tree.getPackageAnnotations());
         List<? extends Tree> types = translate(tree.getTypeDecls());
         List<? extends ImportTree> imps = importAnalysis.getImports();
         
-	if (pid!=tree.getPackageName() || !imps.equals(tree.getImports()) ||
+	if (!annotations.equals(tree.getPackageAnnotations()) || pid!=tree.getPackageName() || !imps.equals(tree.getImports()) ||
             !types.equals(tree.getTypeDecls())) {
-	    CompilationUnitTree n = make.CompilationUnit(pid, imps, types, tree.getSourceFile());
+	    CompilationUnitTree n = make.CompilationUnit(annotations, pid, imps, types, tree.getSourceFile());
             model.setElement(n, model.getElement(tree));
 	    copyCommentTo(tree,n);
             model.setPos(n, model.getPos(tree));
