@@ -104,7 +104,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     // Wizard descriptor properies
     public static final String PROPERTY_NAME = "name"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
-    public static final String PROPERTY_MAKEFILE_NAME = "makefilename"; // String // NOI18N
+    public static final String PROPERTY_MAKEFILE_NAME = "makefileName"; // String // NOI18N
     public static final String PROPERTY_SET_AS_MAIN = "setAsMain"; // Boolean // NOI18N
     public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
     public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
