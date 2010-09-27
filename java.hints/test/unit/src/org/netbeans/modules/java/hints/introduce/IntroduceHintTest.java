@@ -1301,6 +1301,39 @@ public class IntroduceHintTest extends NbTestCase {
                        new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
                        3, 2);
     }
+    public void test152705() throws Exception {
+        performFixTest("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        ArrayList a = new ArrayList();\n" +
+                       "        for (int i = 0; i < 2; i++) {\n" +
+                       "            for (int j = 0; j < 2; j++) {\n" +
+                       "            }\n" +
+                       "            |ArrayList b = new ArrayList();\n" +
+                       "            a.add(b);|\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}",
+                       ("package test;\n" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        ArrayList a = new ArrayList();\n" +
+                       "        for (int i = 0; i < 2; i++) {\n" +
+                       "            for (int j = 0; j < 2; j++) {\n" +
+                       "            }\n" +
+                       "            name(a);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    private static void name(ArrayList a) {\n" +
+                       "        ArrayList b = new ArrayList();\n" +
+                       "        a.add(b);\n" +
+                       "    }\n" +
+                       "}").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
+                       1, 0);
+    }
 
     protected void prepareTest(String code) throws Exception {
         clearWorkDir();
