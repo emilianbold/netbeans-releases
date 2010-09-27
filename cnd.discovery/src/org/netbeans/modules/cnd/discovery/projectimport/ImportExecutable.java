@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -165,14 +166,8 @@ public class ImportExecutable implements PropertyChangeListener {
         String hostUID = (String) map.get("hostUID"); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
-        String workingDirRel = sourcesPath;
-        if(MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
-            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
-            workingDirRel = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        } else {
-            workingDirRel = CndPathUtilitities.toAbsolutePath(CndPathUtilitities.naturalize(baseDir), workingDirRel);
-        }
+        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
+                MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
