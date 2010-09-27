@@ -41,6 +41,7 @@ package org.netbeans.modules.masterfs.watcher;
 
 import com.sun.jna.Library;
 import com.sun.jna.Native;
+import com.sun.jna.NativeLibrary;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -120,9 +121,16 @@ public class LinuxNotifier extends Notifier<LinuxNotifier.LKey> {
             buff.compact();
             int len = IMPL.read(fd, buff, buff.remaining());
 
-
-            if (len <= 0) throw new IOException("error reading");
-
+            if (len <= 0) {
+                // lazily get a thread local errno
+                int errno = NativeLibrary.getInstance("c").getFunction("errno").getInt(0);
+                if (errno == 4) { // EINTR
+                    buff.flip();
+                    continue; // restart the I/O 
+                } else {
+                    throw new IOException("error reading from inotify: " + errno);
+                }
+            }
             buff.position(buff.position() + len);
             buff.flip();
         }
