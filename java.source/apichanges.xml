@@ -112,7 +112,7 @@ is the proper place.
              <api name="general"/>
              <summary>Added TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...), TreeMaker.addPackageAnnotation, TreeMaker.insertPackageAnnotation, TreeMaker.removePackageAnnotation methods.</summary>
              <version major="0" minor="66"/>
-             <date day="23" month="9" year="2010"/>
+             <date day="27" month="9" year="2010"/>
              <author login="jlahoda"/>
              <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
              <description>
