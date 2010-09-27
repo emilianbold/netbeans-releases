@@ -315,9 +315,14 @@ public class AddBreakpointPanel extends javax.swing.JPanel implements HelpCtx.Pr
             pEvent.getAccessibleContext ().getAccessibleName ()
         );
         revalidate ();
-        Window w = SwingUtilities.windowForComponent (this);
-        if (w == null) return;
-        w.pack ();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Window w = SwingUtilities.windowForComponent (AddBreakpointPanel.this);
+                if (w == null) return;
+                w.pack ();
+            }
+        });
         firePropertyChange (PROP_TYPE, old, type);
     }
 }
