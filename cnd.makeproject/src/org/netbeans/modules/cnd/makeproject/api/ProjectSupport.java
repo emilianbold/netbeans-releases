@@ -48,10 +48,13 @@ import java.io.File;
 import java.util.Date;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
@@ -101,5 +104,70 @@ public class ProjectSupport {
         }
 
         ap.invokeCustomAction(projectDescriptor, conf, customProjectActionHandler);
+    }
+
+    public static MakeProjectOptions.PathMode getPathMode(RemoteProject.Mode remoteMode) {
+        return (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
+    }
+
+    public static MakeProjectOptions.PathMode getPathMode(Project project) {
+        if (project instanceof MakeProject) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                return MakeProjectOptions.PathMode.ABS;
+            }
+        }
+        return MakeProjectOptions.getPathMode();
+    }
+
+    public static String toProperPath(FileObject base, FileObject path, Project project) {
+        return toProperPath(base, path, getPathMode(project));
+    }
+
+    public static String toProperPath(FileObject base, String path, Project project) {
+        return toProperPath(base, path, getPathMode(project));
+    }
+
+    public static String toProperPath(String base, String path, Project project) {
+        return toProperPath(base, path, getPathMode(project));
+    }
+
+    public static String toProperPath(FileObject base, FileObject path, MakeProjectOptions.PathMode pathMode) {
+        switch (pathMode) {
+            case REL_OR_ABS:
+                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+            case REL:
+                return CndPathUtilitities.toRelativePath(base, path);
+            case ABS:
+                return CndPathUtilitities.toAbsolutePath(base, path);
+            default:
+                throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
+        }
+    }
+
+    public static String toProperPath(FileObject base, String path, MakeProjectOptions.PathMode pathMode) {
+        switch (pathMode) {
+            case REL_OR_ABS:
+                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+            case REL:
+                return CndPathUtilitities.toRelativePath(base, path);
+            case ABS:
+                return CndPathUtilitities.toAbsolutePath(base, path);
+            default:
+                throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
+        }
+    }
+
+    public static String toProperPath(String base, String path, MakeProjectOptions.PathMode pathMode) {
+        switch (pathMode) {
+            case REL_OR_ABS:
+                return CndPathUtilitities.toAbsoluteOrRelativePath(base, path);
+            case REL:
+                return CndPathUtilitities.toRelativePath(base, path);
+            case ABS:
+                return CndPathUtilitities.toAbsolutePath(base, path);
+            default:
+                throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
+        }
     }
 }
