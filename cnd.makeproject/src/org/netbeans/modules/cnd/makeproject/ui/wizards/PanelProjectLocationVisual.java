@@ -114,7 +114,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField.setText("main"); // NOI18N
         createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION /*|| type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION*/) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
@@ -625,6 +625,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String)createMainComboBox.getSelectedItem());
+            } else if(type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
+                d.putProperty("mainFileName", createMainTextField.getText() + ".pc"); // NOI18N
+                d.putProperty("mainFileTemplate", "Templates/cFiles/main.pc"); // NOI18N
             } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
                 d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
