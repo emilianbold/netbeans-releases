@@ -183,6 +183,7 @@ public class ImportProject implements PropertyChangeListener {
         } else {
             executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
+        assert nativeProjectPath != null;
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
