@@ -59,10 +59,13 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import javax.xml.namespace.QName;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.netbeans.modules.maven.model.settings.Activation;
+import org.netbeans.modules.maven.model.settings.Profile;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -70,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -77,6 +81,8 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
+import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsQName;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -101,6 +107,7 @@ public class ArchetypeWizardUtils {
 
     //set in Nbmwizard
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
+    static final String DEFINE_NETBEANS_INSTALLATION = "define.netbeans.installation";
     
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ArchetypeWizardUtils.class);
@@ -376,6 +383,31 @@ public class ArchetypeWizardUtils {
                 if (setOsgiDeps != null && setOsgiDeps.booleanValue()) {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
+                }
+                if (Boolean.TRUE.equals(wiz.getProperty(DEFINE_NETBEANS_INSTALLATION))) {
+                    FileObject settingsXml = FileUtil.toFileObject(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE);
+                    if (settingsXml == null) {
+                        settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
+                    }
+                    Utilities.performSettingsModelOperations(settingsXml, Collections.<ModelOperation<SettingsModel>>singletonList(new ModelOperation<SettingsModel>() {
+                        public @Override void performOperation(SettingsModel model) {
+                            Profile netbeansIde = model.getSettings().findProfileById("netbeans-ide");
+                            if (netbeansIde != null) {
+                                return;
+                            }
+                            netbeansIde = model.getFactory().createProfile();
+                            netbeansIde.setId("netbeans-ide");
+                            Activation activation = model.getFactory().createActivation();
+                            // XXX why does the model not have this property??
+                            QName ACTIVE_BY_DEFAULT = SettingsQName.createQName("activeByDefault", true, false);
+                            activation.setChildElementText("activeByDefault", "true", ACTIVE_BY_DEFAULT);
+                            netbeansIde.setActivation(activation);
+                            org.netbeans.modules.maven.model.settings.Properties properties = model.getFactory().createProperties();
+                            properties.setProperty("netbeans.installation", new File(System.getProperty("netbeans.home")).getParent());
+                            netbeansIde.setProperties(properties);
+                            model.getSettings().addProfile(netbeansIde);
+                        }
+                    }));
                 }
                 Set<FileObject> projects = openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
                 Templates.setDefinesMainProject(wiz, projects.size() > 1);
