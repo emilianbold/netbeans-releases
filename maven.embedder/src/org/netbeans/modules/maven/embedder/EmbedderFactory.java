@@ -40,26 +40,16 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-// XXX consider applying trunk changes (see 8adec913cf27 merge):
-// ba4b1fcc88c8 - add a custom defaults populator component, fix partially the model lineage construction.
-// 8ce0d6255b77 - add model lineage embedder method
-// 0d491d8f5dc1 - make MavenJavaExecutor compile insert dummy code, comment out code as necessary
-
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.WeakHashMap;
-import java.util.jar.Attributes.Name;
-import java.util.jar.Manifest;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.UnknownRepositoryLayoutException;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -163,13 +153,8 @@ public final class EmbedderFactory {
     public static MavenEmbedder createProjectLikeEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, guiceReadyLoader(EmbedderFactory.class)) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("maven");
-
-        
-        
-        
-        
         
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
         
@@ -262,7 +247,7 @@ public final class EmbedderFactory {
     /*public*/ static MavenEmbedder createOnlineEmbedder() throws PlexusContainerException {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
-            .setClassWorld( new ClassWorld(mavenCoreRealmId, guiceReadyLoader(EmbedderFactory.class)) )
+            .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
             .setName("maven");
 
         DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
@@ -311,182 +296,6 @@ public final class EmbedderFactory {
 
         return embedder;
     }
-
-    /**
-     * Create a class loader usable for Plexus over Guice.
-     * {@link org.sonatype.guice.bean.reflect.URLClassSpace} assumes {@link URLClassLoader}, not the NB module class loader.
-     * We must provide all JARs which might be using {@link javax.inject.Inject} to register components, so guice-bean-scanners can find them.
-     * @param baseClasses representative classes from some NB modules which may also bundle some Class-Path JARs
-     * @return a {@link URLClassLoader} which has the right URLs but does not load any classes on its own
-     */
-    public static synchronized ClassLoader guiceReadyLoader(Class<?>... baseClasses) {
-        List<URL> allURLs = new ArrayList<URL>();
-        final List<ClassLoader> baseLoaders = new ArrayList<ClassLoader>();
-        for (Class<?> baseClass : baseClasses) {
-            ClassLoader baseLoader = baseClass.getClassLoader();
-            baseLoaders.add(baseLoader);
-            List<URL> urls = urlCache.get(baseLoader);
-            if (urls == null) {
-                urls = new ArrayList<URL>();
-                URL base = baseClass.getProtectionDomain().getCodeSource().getLocation();
-                if (FileUtil.isArchiveFile(base)) {
-                    // Perhaps running in a unit test; NB module system always uses folder URLs.
-                    base = FileUtil.getArchiveRoot(base);
-                }
-                try {
-                    Manifest m = new Manifest(new URL(base, "META-INF/MANIFEST.MF").openStream());
-                    String baseS = base.toString();
-                    if (baseS.matches("jar:.+!/")) {
-                        base = new URL(baseS.substring(4, baseS.length() - 2));
-                    }
-                    urls.add(base); // necessary only if we use @Inject in NB code
-                    String cp = m.getMainAttributes().getValue(Name.CLASS_PATH);
-                    if (cp != null) {
-                        for (String piece : cp.split(" +")) {
-                            urls.add(new URL(base, piece));
-                        }
-                    }
-                } catch (IOException x) {
-                    throw new AssertionError(x);
-                }
-//                System.err.println("loading classes related to " + baseClass.getName() + " from " + urls);
-                urlCache.put(baseLoader, urls);
-            }
-            allURLs.addAll(urls);
-        }
-        return new URLClassLoader(allURLs.toArray(new URL[allURLs.size()])) {
-            protected @Override synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-                for (ClassLoader baseLoader : baseLoaders) {
-                    try {
-                        Class<?> c = baseLoader.loadClass(name);
-                        if (resolve) {
-                            resolveClass(c);
-                        }
-                        return c;
-                    } catch (ClassNotFoundException x) {}
-                }
-                throw new ClassNotFoundException(name);
-            }
-        };
-    }
-    // cannot cache the actual URLClassLoader since it refers strongly to baseLoader, but anyway it is flyweight
-    private static final Map<ClassLoader,List<URL>> urlCache = new WeakHashMap<ClassLoader,List<URL>>();
-    
-//
-//    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
-//        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-//
-//
-//        ClassWorld world = new ClassWorld();
-//        File rootPackageFolder = InstalledFileLocator.getDefault().locate("modules/ext/maven/rootpackage", "org.netbeans.modules.maven.embedder", false); //NOI18N
-//        if (rootPackageFolder != null) {
-//            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
-//        }
-//        // kind of separation layer between the netbeans classloading world and maven classworld.
-//        try {
-//            ClassRealm nbRealm = world.newRealm("netbeans", loader); //NOI18N
-//            //MEVENIDE-647
-//            ClassRealm plexusRealm = world.newRealm("plexus.core", loader.getParent()); //NOI18N
-//            //loader.getParent() contains rt.jar+tools.jar (what's what we want) but also openide.modules, openide.util and startup (that's what we don't want but probably can live with)
-//
-//            // these are all packages that are from the embedder jar..
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.doxia"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.plexus"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.classworlds"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.maven"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.commons"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.log4j"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xbean"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xerces"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/maven"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/plexus"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "com.jcraft.jsch"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.aspectj"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.cyberneko"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.easymock"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "hidden.org.codehaus.plexus"); //NOI18N
-//
-//            // from netbeans allow just Lookup and the mevenide bridges
-//            plexusRealm.importFrom(nbRealm.getId(), "org.openide.util"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.bridges"); //NOI18N
-//            //have custom lifecycle executor to collect all projects in reactor..
-//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.embedder.exec"); //NOI18N
-//
-//            if (rootPackageFolder != null) { //#154108 well, the broken embedder is more broken in jnlp based netbeans..
-//                //hack to enable reports, default package is EVIL!
-//                plexusRealm.addURL(rootPackageFolder.toURI().toURL());
-//            }
-//        } catch (NoSuchRealmException ex) {
-//            ex.printStackTrace();
-//        } catch (DuplicateRealmException ex) {
-//            ex.printStackTrace();
-//        } catch (MalformedURLException ex) {
-//            ex.printStackTrace();
-//        }
-//        Configuration req = new DefaultConfiguration();
-//        req.setClassWorld(world);
-//        req.setMavenEmbedderLogger(logger);
-//        setLocalRepoPreference(req);
-//
-//        //TODO remove explicit activation
-//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-//        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE; //NOI18N
-//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-//
-//        //validating  Configuration
-//        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-//        Exception userSettingsException = cvr.getUserSettingsException();
-//        if (userSettingsException != null) {
-//            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-//                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-//        }
-//        if (userSettingsPath.exists()) {
-//            if (cvr.isValid()) {
-//                req.setUserSettingsFile(userSettingsPath);
-//            } else {
-//                LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-//                req.setUserSettingsFile(globalSettingsPath);
-//            }
-//        }
-//
-//        req.setGlobalSettingsFile(globalSettingsPath);
-//
-//        req.setConfigurationCustomizer(new ContainerCustomizer() {
-//
-//            public void customize(PlexusContainer plexusContainer) {
-//                //have custom lifecycle executor to collect all projects in reactor..
-//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(LifecycleExecutor.ROLE);
-//                desc.setImplementation(MyLifecycleExecutor.class.getName()); //NOI18N
-//                try {
-//                    PlexusConfiguration oldConf = desc.getConfiguration();
-//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-//                    copyConfig(oldConf, conf);
-//                    desc.setConfiguration(conf);
-//                } catch (PlexusConfigurationException ex) {
-//                    ex.printStackTrace();
-//                }
-//
-//                desc = plexusContainer.getComponentDescriptor(BuildPlanner.class.getName());
-//                desc.setImplementation(NBBuildPlanner.class.getName()); //NOI18N
-//                try {
-//                    PlexusConfiguration oldConf = desc.getConfiguration();
-//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-//                    copyConfig(oldConf, conf);
-//                    desc.setConfiguration(conf);
-//                } catch (PlexusConfigurationException ex) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        MavenEmbedder embedder = null;
-//        try {
-//            embedder = new MavenEmbedder(req);
-//        } catch (MavenEmbedderException e) {
-//            ErrorManager.getDefault().notify(e);
-//        }
-//        return embedder;
-//    }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {

@@ -49,17 +49,35 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -68,6 +86,10 @@ import org.openide.util.Utilities;
  */
 public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private final SelectBinaryPanel controller;
+    private static final RequestProcessor RP = new RequestProcessor("Binary Artifact Discovery", 1); // NOI18N
+    private final AtomicInteger checking = new AtomicInteger(0);
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable"); // NOI18N
+
 
     /** Creates new form SelectBinaryPanelVisual */
     public SelectBinaryPanelVisual(SelectBinaryPanel controller) {
@@ -82,13 +104,178 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             protected void update(DocumentEvent e) {
                 String path = binaryField.getText().trim();
                 controller.getWizardStorage().setBinaryPath(path);
-                updateInstruction();
+                updateRoot();
             }
         });
-        updateInstruction();
+        sourcesField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void update(DocumentEvent e) {
+                String path = sourcesField.getText().trim();
+                controller.getWizardStorage().setSourceFolderPath(path);
+            }
+        });
+        updateRoot();
     }
 
-    private void updateInstruction(){
+    private void updateRoot(){
+        sourcesField.setEnabled(false);
+        sourcesButton.setEnabled(false);
+        if (validBinary()) {
+            checking.incrementAndGet();
+            controller.getWizardStorage().validate();
+            final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
+            final Map<String, Object> map = new HashMap<String, Object>();
+            map.put("DW:buildResult", controller.getWizardStorage().getBinaryPath()); // NOI18N
+            if (extension != null) {
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        extension.discoverArtifacts(map);
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                updateArtifacts(map);
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+    private void updateArtifacts(final Map<String, Object> map){
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
+                if (compiler != null) {
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_TOOLCHAIN, compiler);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+                } else {
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
+                }
+                String root = (String) map.get("DW:rootFolder"); // NOI18N
+                if (root == null) {
+                    root = "";
+                }
+                sourcesField.setText(root);
+                int i = checking.decrementAndGet();
+                controller.getWizardStorage().validate();
+                @SuppressWarnings("unchecked")
+                List<String> dlls = (List<String>) map.get("DW:dependencies"); // NOI18N
+                if (i == 0) {
+                    boolean validBinary = validBinary();
+                    sourcesField.setEnabled(validBinary);
+                    sourcesButton.setEnabled(validBinary);
+                    if (validBinary) {
+                        checkDll(dlls, root);
+                    }
+                }
+            }
+        });
+    }
+
+
+    private void checkDll(List<String> dlls, String root){
+        Map<String,String> dllPaths = new HashMap<String, String>();
+        String ldLibPath = getLdLibraryPath();
+        boolean search = false;
+        for(String dll : dlls) {
+            String p = findLocation(dll, ldLibPath);
+            if (p != null) {
+                dllPaths.put(dll, p);
+            } else {
+                search = true;
+                dllPaths.put(dll, null);
+            }
+        }
+        if (search) {
+            for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
+                if (entry.getValue() == null) {
+                    if (logger.isLoggable(Level.INFO)) {
+                        logger.log(Level.INFO, "Not found DLL {0}", entry.getKey()); // NOI18N
+                    }
+                }
+            }
+        }
+    }
+
+    private String findLocation(String dll, String ldPath){
+        if (ldPath != null) {
+            for(String search :  ldPath.split(":")) {  // NOI18N
+                File file = new File(search, dll);
+                if (file.isFile() && file.exists()) {
+                    String path = file.getAbsolutePath();
+                    return path.replace('\\', '/');
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getLdLibraryPath() {
+        ExecutionEnvironment eenv = ExecutionEnvironmentFactory.getLocal();
+        String ldLibraryPathName = getLdLibraryPathName(eenv);
+        return HostInfoProvider.getEnv(eenv).get(ldLibraryPathName);
+    }
+
+    private static String getLdLibraryPathName(ExecutionEnvironment eenv) {
+        PlatformInfo platformInfo = PlatformInfo.getDefault(eenv);
+        switch (platformInfo.getPlatform()) {
+            case PlatformTypes.PLATFORM_WINDOWS:
+                return platformInfo.getPathName();
+            case PlatformTypes.PLATFORM_MACOSX:
+                return "DYLD_LIBRARY_PATH"; // NOI18N
+            case PlatformTypes.PLATFORM_SOLARIS_INTEL:
+            case PlatformTypes.PLATFORM_SOLARIS_SPARC:
+            case PlatformTypes.PLATFORM_LINUX:
+            default:
+                return "LD_LIBRARY_PATH"; // NOI18N
+        }
+    }
+
+    private CompilerSet detectCompilerSet(String compiler){
+        boolean isSunStudio = true;
+        if (compiler != null) {
+            isSunStudio = compiler.indexOf("Sun") >= 0; // NOI18N
+        }
+        CompilerSetManager manager = CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal());
+        if (isSunStudio) {
+            CompilerSet def = manager.getDefaultCompilerSet();
+            if (def != null && def.getCompilerFlavor().isSunStudioCompiler()) {
+                return def;
+            }
+            def = null;
+            for(CompilerSet set : manager.getCompilerSets()) {
+                if (set.getCompilerFlavor().isSunStudioCompiler()) {
+                    if ("OracleSolarisStudio".equals(set.getName())) { // NOI18N
+                        def = set;
+                    }
+                    if (def == null) {
+                        def = set;
+                    }
+                }
+            }
+            return def;
+        } else {
+            CompilerSet def = manager.getDefaultCompilerSet();
+            if (def != null && !def.getCompilerFlavor().isSunStudioCompiler()) {
+                return def;
+            }
+            def = null;
+            for(CompilerSet set : manager.getCompilerSets()) {
+                if (!set.getCompilerFlavor().isSunStudioCompiler()) {
+                    if (def == null) {
+                        def = set;
+                    }
+                }
+            }
+            return def;
+        }
     }
 
     /** This method is called from within the constructor to
@@ -105,6 +292,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         binaryField = new javax.swing.JTextField();
         binaryButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
+        sourcesLabel = new javax.swing.JLabel();
+        sourcesField = new javax.swing.JTextField();
+        sourcesButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -113,15 +303,14 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(binaryLabel, gridBagConstraints);
 
         binaryField.setText(org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.binaryField.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
@@ -134,8 +323,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(binaryButton, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -144,6 +335,37 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         add(jSeparator1, gridBagConstraints);
+
+        sourcesLabel.setLabelFor(sourcesField);
+        org.openide.awt.Mnemonics.setLocalizedText(sourcesLabel, org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.sourcesLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(sourcesLabel, gridBagConstraints);
+
+        sourcesField.setText(org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.sourcesField.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(sourcesField, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(sourcesButton, org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.sourcesButton.text")); // NOI18N
+        sourcesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sourcesButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(sourcesButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void binaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryButtonActionPerformed
@@ -181,25 +403,64 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         binaryField.setText(path);
     }//GEN-LAST:event_binaryButtonActionPerformed
 
+    private void sourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourcesButtonActionPerformed
+        String seed = sourcesField.getText();
+        JFileChooser fileChooser;
+        fileChooser = new FileChooser(
+                getString("SelectBinaryPanelVisual.Source.Browse.Title"), // NOI18N
+                getString("SelectBinaryPanelVisual.Source.Browse.Select"), // NOI18N
+                JFileChooser.DIRECTORIES_ONLY,
+                null,
+                seed,
+                false);
+        int ret = fileChooser.showOpenDialog(this);
+        if (ret == JFileChooser.CANCEL_OPTION) {
+            return;
+        }
+        File selectedFile = fileChooser.getSelectedFile();
+        if (selectedFile != null) { // seems paranoidal, but once I've seen NPE otherwise 8-()
+            String path = selectedFile.getPath();
+            sourcesField.setText(path);
+        }
+    }//GEN-LAST:event_sourcesButtonActionPerformed
+
     void read(WizardDescriptor wizardDescriptor) {
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("binary",  binaryField.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty("outputTextField",  binaryField.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty("sourceFolderPath",  sourcesField.getText().trim()); // NOI18N
+        //wizardDescriptor.putProperty("displayName",   new File(binaryField.getText().trim()).getName()); // NOI18N
         // TODO should be inited
-        wizardDescriptor.putProperty("makefileName",  ""); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
     }
 
     boolean valid() {
+        return checking.get()==0 && validBinary() && validSourceRoot();
+    }
+
+    private boolean validBinary() {
         String path = binaryField.getText().trim();
         if (path.isEmpty()) {
             return false;
         }
-        FileObject fo = FileUtil.toFileObject(new File(path));
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
         if (fo == null) {
             return false;
         }
         return MIMENames.isBinary(fo.getMIMEType());
+    }
+
+    private boolean validSourceRoot() {
+        String path = sourcesField.getText().trim();
+        if (path.isEmpty()) {
+            return false;
+        }
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
+        if (fo == null) {
+            return false;
+        }
+        return fo.isFolder();
     }
 
     private String getString(String key) {
@@ -211,6 +472,9 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private javax.swing.JTextField binaryField;
     private javax.swing.JLabel binaryLabel;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JButton sourcesButton;
+    private javax.swing.JTextField sourcesField;
+    private javax.swing.JLabel sourcesLabel;
     // End of variables declaration//GEN-END:variables
 
 }

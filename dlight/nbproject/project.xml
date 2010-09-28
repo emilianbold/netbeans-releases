@@ -105,6 +105,9 @@
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.analytics.targets.gui</friend>
+                <friend>com.sun.tools.analytics.cli</friend>
+                <friend>com.sun.tools.analytics.targets</friend>
                 <friend>com.sun.tools.analytics.management</friend>
                 <friend>com.sun.tools.analytics.coverage</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
@@ -130,6 +133,7 @@
                 <friend>org.netbeans.modules.dlight.db.h2</friend>
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.dtrace</friend>
                 <friend>org.netbeans.modules.dlight.extras</friend>
                 <friend>org.netbeans.modules.dlight.fops</friend>

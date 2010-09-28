@@ -70,6 +70,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -368,14 +369,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
             index.clear();
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
+        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
             resetPkgCache();
-            index.store(refs, topLevels);
+            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), false);
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
-            index.store(refs, toDelete);
+            index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(), true);
         }
     }
     

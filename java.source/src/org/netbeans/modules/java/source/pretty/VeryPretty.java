@@ -570,6 +570,7 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitTopLevel(JCCompilationUnit tree) {
+        printAnnotations(tree.getPackageAnnotations());
         printPackage(tree.pid);
         List<JCTree> l = tree.defs;
         ArrayList<JCImport> imports = new ArrayList<JCImport>();
@@ -577,7 +578,7 @@ public final class VeryPretty extends JCTree.Visitor {
             imports.add((JCImport) l.head);
             l = l.tail;
         }
-        printImportsBlock(imports);
+        printImportsBlock(imports, !l.isEmpty());
 	while (l.nonEmpty()) {
             printStat(l.head, true, false);
             newline();
@@ -1903,7 +1904,7 @@ public final class VeryPretty extends JCTree.Visitor {
         }
     }
 
-    public void printImportsBlock(java.util.List<? extends JCTree> imports) {
+    public void printImportsBlock(java.util.List<? extends JCTree> imports, boolean maybeAppendNewLine) {
         boolean hasImports = !imports.isEmpty();
         if (hasImports) {
             blankLines(cs.getBlankLinesBeforeImports());
@@ -1912,7 +1913,7 @@ public final class VeryPretty extends JCTree.Visitor {
             printStat(importStat);
             newline();
         }
-        if (hasImports) {
+        if (hasImports && maybeAppendNewLine) {
             blankLines(cs.getBlankLinesAfterImports());
         }
     }

@@ -71,6 +71,7 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
     static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
     private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
+    private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     private OutputWriter stdOut;
     //    private ProgressHandle handle;
     private String currentTag;
@@ -204,9 +205,15 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                     if (match.matches()) {
                         String mojoArtifact = match.group(1);
                         // XXX M3 reports artifactId of mojo whereas M2 reports goalPrefix; do not want to force every OutputProcessor to handle both
-                        Matcher match2 = mavenSomethingPlugin.matcher(mojoArtifact); // NOI18N
+                        // XXX consider searching index on ArtifactInfo.PLUGIN_PREFIX instead
+                        Matcher match2 = mavenSomethingPlugin.matcher(mojoArtifact);
                         if (match2.matches()) {
                             mojoArtifact = match2.group(1);
+                        } else {
+                            match2 = somethingMavenPlugin.matcher(mojoArtifact);
+                            if (match2.matches()) {
+                                mojoArtifact = match2.group(1);
+                            }
                         }
                         tag = mojoArtifact + ':' + match.group(2);
                     } else {

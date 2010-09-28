@@ -68,6 +68,7 @@ import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.tool.DLightTool;
 import org.netbeans.modules.dlight.api.visualizer.TableBasedVisualizerConfiguration;
 import org.netbeans.modules.dlight.api.visualizer.VisualizerConfiguration;
+import org.netbeans.modules.dlight.management.api.impl.DLightSessionAccessor;
 import org.netbeans.modules.dlight.management.api.impl.DLightSessionsStorage;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
@@ -235,6 +236,19 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     public DLightSession getActiveSession() {
         return activeSession;
     }
+    
+    public Collection<DLightSession> getSessionsByStorageKey(String storageUniqueKey){
+        Collection<DLightSession> result= new ArrayList<DLightSession>();
+        for (DLightSession session : sessions){
+            DLightSessionAccessor accessor = DLightSessionAccessor.getDefault();
+            if (accessor.isUsingSharedStorage(session)){
+                if (storageUniqueKey.equals(accessor.getSharedStorageUniqueKey(session))){
+                    result.add(session);
+                }
+            }
+        }
+        return result;
+    }
 
     public List<DLightSession> getSessionsList() {
         return sessions;
@@ -393,7 +407,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             if (tool != null) {
                 container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
             } else {
-                container.addVisualizer(toolID, toolID, visualizer);
+                tool = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(toolID);
+                container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
             }
             container.showup();
             visualizer.refresh();
@@ -625,6 +640,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    @Override
     public void mouseClickedOnIndicator(Indicator<?> source) {
         DLightSession session = findIndicatorOwner(source);
         //set active session

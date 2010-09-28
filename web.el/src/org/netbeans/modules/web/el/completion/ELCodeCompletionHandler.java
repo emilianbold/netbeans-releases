@@ -46,7 +46,6 @@ import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,10 +57,6 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -82,7 +77,6 @@ import org.netbeans.modules.web.el.ResourceBundles;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * Code completer for Expression Language.
@@ -96,23 +90,24 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
         CodeCompletionResult result = new DefaultCompletionResult(proposals, false);
         ELElement element = getElementAt(context.getParserResult(), context.getCaretOffset());
-        final String prefix = context.getPrefix() != null ? context.getPrefix() : "";
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
-
         Node target = element.findNodeAt(context.getCaretOffset());
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
             return result;
         }
-        
+        final PrefixMatcher prefixMatcher = PrefixMatcher.create(target, context);
+        if (prefixMatcher == null) {
+            return CodeCompletionResult.NONE;
+        }
         if (target instanceof AstString) {
             ResourceBundles bundle = ResourceBundles.get(getFileObject(context));
             String bundleIdentifier = bundle.findResourceBundleIdentifier(path);
             if (bundleIdentifier != null) {
-                proposeBundleKeys(context, prefix, element, bundleIdentifier, (AstString) target, proposals);
+                proposeBundleKeys(context, prefixMatcher, element, bundleIdentifier, (AstString) target, proposals);
                 return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
             }
         }
@@ -124,8 +119,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // resolve the type of the identifier, otherwise the type of the preceding
         // node.
         Node nodeToResolve;
-        if (target instanceof AstIdentifier &&
-                (previous instanceof AstIdentifier
+        if (target instanceof AstIdentifier
+                && (previous instanceof AstIdentifier
                 || previous instanceof AstPropertySuffix
                 || previous instanceof AstMethodSuffix)) {
             nodeToResolve = target;
@@ -138,13 +133,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (resolved == null) {
             // not yet working properly
             //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
-            proposeManagedBeans(context, prefix, element, typeUtilities, proposals);
-            proposeBundles(context, prefix, element, proposals);
-            proposeVariables(context, prefix, element, typeUtilities, proposals);
-            proposeImpicitObjects(context, prefix, element, typeUtilities, proposals);
-            proposeKeywords(context, prefix, element, typeUtilities, proposals);
+            proposeManagedBeans(context, prefixMatcher, element, typeUtilities, proposals);
+            proposeBundles(context, prefixMatcher, element, proposals);
+            proposeVariables(context, prefixMatcher, element, typeUtilities, proposals);
+            proposeImpicitObjects(context, prefixMatcher, element, typeUtilities, proposals);
+            proposeKeywords(context, prefixMatcher, element, typeUtilities, proposals);
         } else {
-            proposeMethods(context, resolved, prefix, element, typeUtilities, proposals);
+            proposeMethods(context, resolved, prefixMatcher, element, typeUtilities, proposals);
         }
 
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
@@ -166,7 +161,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeMethods(CodeCompletionContext context, Element resolved,
-            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         resolved = typeUtilities.getTypeFor(resolved);
         if (resolved == null || resolved.getKind() == ElementKind.TYPE_PARAMETER) {
@@ -178,7 +173,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
             String methodName = enclosed.getSimpleName().toString();
             String propertyName = RefactoringUtil.getPropertyName(methodName, true);
-            if (!propertyName.startsWith(prefix)) {
+            if (!prefix.matches(propertyName)) {
                 continue;
             }
             ELJavaCompletionItem item = new ELJavaCompletionItem(enclosed, elElement, typeUtilities);
@@ -189,10 +184,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeImpicitObjects(CodeCompletionContext context,
-            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         for (org.netbeans.modules.web.core.syntax.spi.ELImplicitObject implicitObject : ELTypeUtilities.getImplicitObjects()) {
-            if (implicitObject.getName().startsWith(prefix)) {
+            if (prefix.matches(implicitObject.getName())) {
                 ELImplictObjectCompletionItem item = new ELImplictObjectCompletionItem(implicitObject.getName(), implicitObject.getClazz());
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
                 item.setSmart(true);
@@ -200,9 +195,9 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             }
         }
     }
-    
+
     private void proposeKeywords(CodeCompletionContext context,
-            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         for (ELTokenId elToken : ELTokenId.values()) {
             if (!ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elToken)) {
@@ -211,7 +206,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             if (elToken.fixedText() == null) {
                 continue;
             }
-            if (elToken.fixedText().startsWith(prefix)) {
+            if (prefix.matches(elToken.fixedText())) {
                 ELKeywordCompletionItem item = new ELKeywordCompletionItem(elToken.fixedText());
                 item.setAnchorOffset(context.getCaretOffset() - prefix.length());
                 proposals.add(item);
@@ -221,10 +216,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeManagedBeans(CodeCompletionContext context,
-            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
-        
+            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
         for (VariableInfo bean : ELVariableResolvers.getManagedBeans(getFileObject(context))) {
-            if (!bean.name.startsWith(prefix)) {
+            if (!prefix.matches(bean.name)) {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
@@ -236,13 +231,16 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeVariables(CodeCompletionContext context,
-            String prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         for (VariableInfo bean : ELVariableResolvers.getVariables(context.getParserResult().getSnapshot(), context.getCaretOffset())) {
-            if (!bean.name.startsWith(prefix)) {
+            if (!prefix.matches(bean.name)) {
                 continue;
             }
             Element element = typeUtilities.getElementForType(bean.clazz);
+            if (element == null) {
+                continue;
+            }
             ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
             item.setSmart(true);
@@ -251,14 +249,14 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeBundles(CodeCompletionContext context,
-            String prefix, ELElement elElement, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, List<CompletionProposal> proposals) {
 
         ResourceBundles resourceBundles = ResourceBundles.get(getFileObject(context));
         if (!resourceBundles.canHaveBundles()) {
             return;
         }
         for (String bundle : resourceBundles.getBundles()) {
-            if (!bundle.startsWith(prefix)) {
+            if (!prefix.matches(bundle)) {
                 continue;
             }
             ELResourceBundleCompletionItem item = new ELResourceBundleCompletionItem(bundle);
@@ -269,8 +267,8 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeBundleKeys(CodeCompletionContext context,
-            String prefix, ELElement elElement, String bundleKey, AstString target, List<CompletionProposal> proposals) {
-        
+            PrefixMatcher prefix, ELElement elElement, String bundleKey, AstString target, List<CompletionProposal> proposals) {
+
         if (target.getImage().isEmpty()
                 || elElement.getOriginalOffset(target).getStart() >= context.getCaretOffset()) {
             return;
@@ -280,7 +278,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             return;
         }
         for (Map.Entry<String, String> entry : resourceBundles.getEntries(bundleKey).entrySet()) {
-            if (!entry.getKey().startsWith(prefix)) {
+            if (!prefix.matches(entry.getKey())) {
                 continue;
             }
             ELResourceBundleKeyCompletionItem item = new ELResourceBundleKeyCompletionItem(entry.getKey(), entry.getValue(), elElement);
@@ -291,10 +289,10 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private void proposeFunctions(CodeCompletionContext context,
-            String prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+            PrefixMatcher prefix, ELElement elElement, String bundleKey, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
-        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix)) {
-            ELFunctionCompletionItem item = 
+        for (Function function : ELFunctions.getFunctions(getFileObject(context), prefix.prefix)) {
+            ELFunctionCompletionItem item =
                     new ELFunctionCompletionItem(function.getName(), function.getFunctionInfo().getFunctionClass());
             item.setSmart(true);
             item.setAnchorOffset(context.getCaretOffset() - prefix.length());
@@ -302,32 +300,12 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         }
     }
 
-
     @Override
     public String document(ParserResult info, final ElementHandle element) {
-        if (!(element instanceof ELJavaCompletionItem.ElementHandleAdapter)) {
+        if (!(element instanceof ELElementHandle)) {
             return null;
         }
-        final String[] result = new String[1];
-        try {
-            ClasspathInfo cp = ClasspathInfo.create(info.getSnapshot().getSource().getFileObject());
-            JavaSource source = JavaSource.create(cp);
-            if (source == null) {
-                return null;
-            }
-            source.runUserActionTask(new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController parameter) throws Exception {
-                    Element javaElement = ((ELJavaCompletionItem.ElementHandleAdapter) element).getOriginalElement();
-                    result[0] = parameter.getElements().getDocComment(javaElement);
-                }
-            }, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return result[0];
+        return ((ELElementHandle) element).document(info);
     }
 
     @Override
@@ -377,4 +355,45 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return ParameterInfo.NONE;
     }
 
+    private static class PrefixMatcher {
+
+        private final String prefix;
+        private final boolean exact;
+
+        private PrefixMatcher(String value, boolean exact) {
+            this.prefix = value;
+            this.exact = exact;
+        }
+
+        static PrefixMatcher create(Node target, CodeCompletionContext context) {
+            String prefix = context.getPrefix() != null ? context.getPrefix() : "";
+            boolean isDoc = context.getQueryType() == QueryType.DOCUMENTATION;
+            if (isDoc) {
+                prefix = getPrefixForDocumentation(target);
+            }
+            // for documentation we need full prefix
+            if (isDoc && prefix.isEmpty()) {
+                return null;
+            }
+            return new PrefixMatcher(prefix, isDoc);
+        }
+
+        private static String getPrefixForDocumentation(Node target) {
+            if (target instanceof AstString) {
+                return ((AstString) target).getString();
+            }
+            return target.getImage() == null ? "" : target.getImage();
+        }
+
+        boolean matches(String str) {
+            if (exact) {
+                return prefix.equals(str);
+            }
+            return str.startsWith(prefix);
+        }
+
+        int length() {
+            return prefix.length();
+        }
+    }
 }

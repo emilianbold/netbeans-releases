@@ -77,7 +77,7 @@ public class LiteWeightModelTest extends NbTestCase {
     public void testQuoteCpu(){
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o";
-        DwarfRenderer dwarfRenderer = LWM(objFileName);
+        DwarfRenderer dwarfRenderer = LWM(objFileName, false);
         dwarfRenderer.dumpModel(System.out);
         Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
         Map<String, Declaration> cpuC = getFilename(map, "/cpu.cc");
@@ -103,6 +103,35 @@ public class LiteWeightModelTest extends NbTestCase {
         assertNotNull(cpuH);
     }
 
+    public void testQuoteCpuOnly(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o";
+        DwarfRenderer dwarfRenderer = LWM(objFileName, true);
+        dwarfRenderer.dumpModel(System.out);
+        Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
+        Map<String, Declaration> cpuC = getFilename(map, "/cpu.cc");
+///export/home/av202691/NetBeansProjects/Quote_1/cpu.cc
+//        Cpu::ComputeSupportMetric() (subprogram) :17
+//        Cpu::Cpu(int, int, int) (subprogram) :6
+//        Cpu::GetCategory() (subprogram) const char :46
+//        Cpu::GetType() (subprogram) const char :33
+        assertNotNull(cpuC);
+        Map<String, Declaration> cpuH = getFilename(map, "/cpu.h");
+///export/home/av202691/NetBeansProjects/Quote_1/cpu.h
+//        Cpu (class_type) :35
+//        Cpu::Cpu(const Cpu&) (subprogram) :35
+//        Cpu::CpuArch (enumeration_type) :38
+//        Cpu::CpuArch::INTEL (enumerator) :38
+//        Cpu::CpuArch::OPTERON (enumerator) :38
+//        Cpu::CpuArch::SPARC (enumerator) :38
+//        Cpu::CpuType (enumeration_type) :37
+//        Cpu::CpuType::HIGH (enumerator) :37
+//        Cpu::CpuType::MEDIUM (enumerator) :37
+//        Cpu::~Cpu() (subprogram) :35
+//        Module (inheritance) :35
+        assertNull(cpuH);
+    }
+
     private Map<String, Declaration> getFilename(Map<String, Map<String, Declaration>> map, String fileName) {
         for(Map.Entry<String, Map<String, Declaration>> entry : map.entrySet()) {
             if (entry.getKey().endsWith(fileName)) {
@@ -112,9 +141,10 @@ public class LiteWeightModelTest extends NbTestCase {
         return null;
     }
 
-    private DwarfRenderer LWM(String objFileName){
+    private DwarfRenderer LWM(String objFileName, boolean limit){
         //long time = System.currentTimeMillis();
-        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+
+        DwarfRenderer dwarfRenderer = limit ? DwarfRenderer.createTopLevelDeclarationsCompilationUnitsRenderer() : DwarfRenderer.createTopLevelDeclarationsRenderer();
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);

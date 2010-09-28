@@ -57,6 +57,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -67,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -174,7 +176,7 @@ public class ImageViewer extends CloneableTopComponent {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DataObject.PROP_COOKIE.equals(evt.getPropertyName()) ||
                 DataObject.PROP_NAME.equals(evt.getPropertyName())) {
-                    updateName();
+                    updateNameInEDT();
                 }
             }
         };
@@ -182,6 +184,28 @@ public class ImageViewer extends CloneableTopComponent {
         obj.addPropertyChangeListener(WeakListeners.propertyChange(nameChangeL, obj));
         
         setFocusable(true);
+    }
+
+    /**
+     * Updates name in the Event Dispatch Thread.
+     * @see Bug #181283
+     */
+    private void updateNameInEDT() {
+        if(SwingUtilities.isEventDispatchThread()) {
+            updateName();
+            return;
+        }
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    updateName();
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /**

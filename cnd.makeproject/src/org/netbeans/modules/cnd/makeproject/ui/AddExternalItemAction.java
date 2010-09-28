@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -103,14 +103,7 @@ public class AddExternalItemAction extends AbstractAction {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
                 continue;
             }
-	    String itemPath;
-	    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                itemPath = CndPathUtilitities.toRelativePath(makeProjectDescriptor.getBaseDir(), files[i].getPath());
-            } else {
-                itemPath = files[i].getPath();
-            }
+	    String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), files[i].getPath(), project);
 	    itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {

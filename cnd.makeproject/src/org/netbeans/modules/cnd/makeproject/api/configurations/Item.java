@@ -60,7 +60,9 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -80,18 +82,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     private FileObject fileObject;
     private DataObject lastDataObject = null;
 
-    public Item(FileObject fileObject, FileObject baseDirFO) {
+    public Item(FileObject fileObject, FileObject baseDirFO, MakeProjectOptions.PathMode pathMode) {
 
         this.fileObject = fileObject;
 
-        String p;
-        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-            p = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, fileObject.getPath());
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-            p = CndPathUtilitities.toRelativePath(baseDirFO, fileObject.getPath());
-        } else {
-            p = CndPathUtilitities.toAbsolutePath(baseDirFO, fileObject.getPath());
-        }
+        String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
         p = CndPathUtilitities.normalize(p);
 
         path = p;
@@ -99,6 +94,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
 
     public Item(String path) {
+        CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
 //        this.fileObject = FileUtil.toFileObject(new File(path));
 //        CndUtils.assertNotNull(fileObject, "Can't find file object for item " + path); //NOI18N

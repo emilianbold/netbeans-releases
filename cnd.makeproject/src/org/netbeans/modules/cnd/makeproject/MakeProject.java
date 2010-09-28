@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -147,7 +148,8 @@ import org.w3c.dom.Text;
 )
 public final class MakeProject implements Project, AntProjectListener, Runnable {
 
-    public static final String REMOTE_MODE_TAG = "remote-mode"; // NOI18N
+    public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
+    public static final String REMOTE_FILESYSTEM_HOST = "remote-filesystem-host"; // NOI18N
 
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
@@ -177,16 +179,17 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     private final MutableCP sourcepath;
     private final PropertyChangeListener indexerListener = new IndexerOptionsListener();
     private /*final*/ RemoteProject.Mode remoteMode;
+    private ExecutionEnvironment remoteFileSystemHost;
 
     public MakeProject(AntProjectHelper helper) throws IOException {
-        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         this.kind = new MakeProjectType();
         this.helper = helper;
         eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         refHelper = new ReferenceHelper(helper, aux, eval);
         projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
-        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         genFilesHelper = new GeneratedFilesHelper(helper);
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
@@ -202,19 +205,29 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             projectType = new Integer(typeTxt).intValue();
         }
 
-        NodeList fullRemoteNodeList = data.getElementsByTagName(REMOTE_MODE_TAG);
-        if (fullRemoteNodeList.getLength() == 1) {
-            fullRemoteNodeList = fullRemoteNodeList.item(0).getChildNodes();
-            String t = fullRemoteNodeList.item(0).getNodeValue();
+        remoteMode = RemoteProject.DEFAULT_MODE;
+        NodeList remoteModeNodeList = data.getElementsByTagName(REMOTE_MODE);
+        if (remoteModeNodeList.getLength() == 1) {
+            remoteModeNodeList = remoteModeNodeList.item(0).getChildNodes();
+            String t = remoteModeNodeList.item(0).getNodeValue();
             RemoteProject.Mode mode = RemoteProject.Mode.valueOf(t);
             CndUtils.assertNotNull(mode, "can not restore remote mode " + t); //NOI18N
             if (mode != null) {
                 remoteMode = mode;
-            } else {
-                remoteMode = RemoteProject.DEFAULT_MODE;
             }
-        } else {
-            remoteMode = RemoteProject.DEFAULT_MODE;
+        } else if(remoteModeNodeList.getLength() > 0) {
+            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
+        }
+
+        remoteFileSystemHost = ExecutionEnvironmentFactory.getLocal();
+        NodeList remoteFSHostNodeList = data.getElementsByTagName(REMOTE_FILESYSTEM_HOST);
+        if (remoteFSHostNodeList.getLength() == 1) {
+            remoteFSHostNodeList = remoteFSHostNodeList.item(0).getChildNodes();
+            String hostID = remoteFSHostNodeList.item(0).getNodeValue();
+            // XXX:fullRemote: separate user from host!
+            remoteFileSystemHost = ExecutionEnvironmentFactory.fromUniqueID(hostID);
+        } else if(remoteFSHostNodeList.getLength() > 0) {
+            CndUtils.assertTrueInConsole(false, "Wrong project.xml structure"); //NOI18N
         }
 
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
@@ -225,7 +238,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
         }
-        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
     }
 
     private void readProjectExtension(Element data, String key, Set<String> set) {
@@ -245,6 +258,14 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
 
     public RemoteProject.Mode getRemoteMode() {
         return remoteMode;
+    }
+
+    public ExecutionEnvironment getRemoteFileSystemHost() {
+        return remoteFileSystemHost;
+    }
+
+    /*package*/ void setRemoteFileSystemHost(ExecutionEnvironment remoteFileSystemHost) {
+        this.remoteFileSystemHost = remoteFileSystemHost;
     }
 
     @Override
@@ -955,12 +976,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     void setDeleted(){
-        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "set deleted MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         isDeleted.set(true);
     }
 
     private synchronized void onProjectClosed(){
-        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getName()}); // NOI18N
+        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         save();
         if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
             projectDescriptorProvider.getConfigurationDescriptor().closed();
@@ -1069,10 +1090,16 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     private class RemoteProjectImpl implements RemoteProject {
+        
         @Override
         public ExecutionEnvironment getDevelopmentHost() {
             DevelopmentHostConfiguration devHost = getDevelopmentHostConfiguration();
             return (devHost == null) ? null : devHost.getExecutionEnvironment();
+        }
+
+        @Override
+        public ExecutionEnvironment getRemoteFileSystemHost() {
+            return remoteFileSystemHost;
         }
 
         @Override

@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, ChangeListener {
+public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
     private WizardDescriptor wizardDescriptor;
     private SelectBinaryPanelVisual component;
     private String name;
@@ -64,13 +65,18 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
     public SelectBinaryPanel(){
-        name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
+        name = NbBundle.getMessage(SelectBinaryPanel.class, "SelectBinaryPanelVisual.Title"); // NOI18N
         wizardStorage = new BinaryWizardStorage(this);
     }
 
     @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
     }
 
     @Override
@@ -78,7 +84,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
@@ -156,6 +162,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     public static class BinaryWizardStorage {
         private String binaryPath = ""; // NOI18N
+        private String sourceFolderPath = ""; // NOI18N
         private final SelectBinaryPanel controller;
 
         public BinaryWizardStorage(SelectBinaryPanel controller) {
@@ -170,20 +177,18 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
             this.binaryPath = path.trim();
             controller.validate();
         }
-    }
 
-    public static class WizardDescriptorAdapter extends WizardDescriptor{
-        private BinaryWizardStorage storage;
-        public WizardDescriptorAdapter(BinaryWizardStorage storage) {
-            this.storage = storage;
+        public String getSourceFolderPath() {
+            return sourceFolderPath;
         }
-        @Override
-        public synchronized Object getProperty(String name) {
-            if ("binary".equals(name)) { // NOI18N
-                return storage.getBinaryPath();
-            }
-            return super.getProperty(name);
+
+        public void setSourceFolderPath(String path) {
+            this.sourceFolderPath = path.trim();
+            controller.validate();
+        }
+
+        public void validate() {
+            controller.validate();
         }
     }
-
 }

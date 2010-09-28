@@ -219,7 +219,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
 
         @Override
         public boolean accept(FileObject pathname) {
-            return !excludePattern.matcher(pathname.getName()).find();
+            return !excludePattern.matcher(pathname.getNameExt()).find();
         }
     }
 

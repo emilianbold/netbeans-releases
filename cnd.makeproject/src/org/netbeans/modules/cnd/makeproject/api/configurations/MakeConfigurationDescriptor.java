@@ -84,7 +84,9 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -113,6 +115,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
+    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT = "^(nbproject)$"; // NOI18N
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
@@ -280,6 +283,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 srcFolder.addItem(new Item(mainFilePath));
+                if(mainFilePath.endsWith(".pc")) { // NOI18N
+                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                    String itemPath = CndPathUtilitities.normalize(mainFilePath.substring(0, mainFilePath.length() - 2) + cExtensions.getDefaultExtension());
+                    Item item = new Item(itemPath);
+                    srcFolder.addItemAction(item);
+                }
             }
         }
         // Handle test folders
@@ -304,6 +313,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void setProjectMakefileName(String projectMakefileName) {
+        CndUtils.assertNotNull(projectMakefileName, "project makefile name should not be null"); //NOI18N
         this.projectMakefileName = projectMakefileName;
     }
 
@@ -928,9 +938,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -998,9 +1008,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1250,14 +1260,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             folder.addFolder(top, true);
         }
         if (asDiskFolder) {
-            String rootPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                rootPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, dir.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                rootPath = CndPathUtilitities.toRelativePath(baseDirFO, dir.getPath());
-            } else {
-                rootPath = CndPathUtilitities.toAbsolutePath(baseDirFO, dir.getPath());
-            }
+            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalize(rootPath);
             top.setRoot(rootPath);
         }
@@ -1313,7 +1316,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (fileFilter != null && !fileFilter.accept(file)) {
                 continue;
             }
-            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getName())) {
+            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
             if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
@@ -1353,7 +1356,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 //                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
 //                }
 //                Item item = new Item(CndPathUtilitities.normalize(filePath));
-                Item item = new Item(file, baseDirFO);
+                Item item = new Item(file, baseDirFO, ProjectSupport.getPathMode(project));
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
