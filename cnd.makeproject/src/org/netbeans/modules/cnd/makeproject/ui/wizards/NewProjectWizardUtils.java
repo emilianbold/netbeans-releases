@@ -43,13 +43,17 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,5 +85,28 @@ import org.openide.filesystems.FileUtil;
         return (hostUID == null) ?
             ServerList.getDefaultRecord().getExecutionEnvironment() :
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+    }
+
+    public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText, String buttonText, int mode, FileFilter[] filters, String initialPath, boolean useParent) {
+        JFileChooser fileChooser;
+        if (isFullRemote(wd)) {
+            String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            ExecutionEnvironment execEnv = (hostUID == null) ?
+                ExecutionEnvironmentFactory.getLocal() :
+                ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
+            fileChooser.setApproveButtonText(buttonText);
+            fileChooser.setDialogTitle(titleText);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        } else {
+            fileChooser = new FileChooser(
+                    titleText,
+                    buttonText,
+                    JFileChooser.DIRECTORIES_ONLY,
+                    null,
+                    initialPath,
+                    false);
+        }
+        return fileChooser;
     }
 }
