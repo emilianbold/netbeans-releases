@@ -51,6 +51,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
@@ -343,7 +344,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 }
             } else if ("simpleMode".equals(name)) { // NOI18N
                 return Boolean.TRUE;
-            } else if ("makefileName".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_MAKEFILE_NAME.equals(name)) { // NOI18N
                 return storage.getMake();
             } else if ("configureName".equals(name)) { // NOI18N
                 return storage.getConfigure();

@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileModelProvider;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;

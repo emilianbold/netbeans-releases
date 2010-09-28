@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;

@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -115,7 +116,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField.setText("main"); // NOI18N
         createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION /*|| type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION*/) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
@@ -624,7 +625,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         d.putProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER, new File(folder));
         d.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, projectName);
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
+        d.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder(projectsDir);
@@ -647,6 +648,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String)createMainComboBox.getSelectedItem());
+            } else if(type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
+                d.putProperty("mainFileName", createMainTextField.getText() + ".pc"); // NOI18N
+                d.putProperty("mainFileTemplate", "Templates/cFiles/main.pc"); // NOI18N
             } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
                 d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N

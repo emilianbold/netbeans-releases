@@ -40,59 +40,19 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.litemodel.api;
-
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.project.Project;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.makeproject.api.wizards;
 
 /**
- *
- * @author Alexander Simon
+ * Constants that are used by wizards
+ * @author Vladimir Kvashin
  */
-public abstract class ModelAccessor {
-    private static final ModelAccessor EMPTY = new Empty();
+public class WizardConstants {
 
-    /** default instance */
-    private static ModelAccessor defaultAccessor;
-
-    protected ModelAccessor() {
+    private WizardConstants() {
     }
 
-    /** Static method to obtain the resolver.
-     * @return the resolver
-     */
-    public static ModelAccessor getDefault() {
-        /*no need for sync synchronized access*/
-        if (defaultAccessor != null) {
-            return defaultAccessor;
-        }
-        defaultAccessor = Lookup.getDefault().lookup(ModelAccessor.class);
-        return defaultAccessor == null ? EMPTY : defaultAccessor;
-    }
+    public static final String PROPERTY_MAKEFILE_NAME = "makefileName"; // String // NOI18N
+    
 
-    public abstract Model createModel(Project project, ModelKind kind);
 
-    private static final class Empty extends ModelAccessor {
-        private Empty() {
-        }
-
-        @Override
-        public Model createModel(Project project, ModelKind kind) {
-            return new Model(){
-
-                @Override
-                public Map<String, Declaration> getFile(String path) {
-                    return Collections.<String, Declaration>emptyMap();
-                }
-            };
-        }
-    }
-
-    public enum ModelKind {
-        FULL,
-        TOP_LEVEL_DECLARATIONS,
-        TOP_LEVEL_DECLARATIONS_IN_COMPILATION_UNIT
-    }
 }

@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -282,6 +283,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 srcFolder.addItem(new Item(mainFilePath));
+                if(mainFilePath.endsWith(".pc")) { // NOI18N
+                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                    String itemPath = CndPathUtilitities.normalize(mainFilePath.substring(0, mainFilePath.length() - 2) + cExtensions.getDefaultExtension());
+                    Item item = new Item(itemPath);
+                    srcFolder.addItemAction(item);
+                }
             }
         }
         // Handle test folders
@@ -306,6 +313,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void setProjectMakefileName(String projectMakefileName) {
+        CndUtils.assertNotNull(projectMakefileName, "project makefile name should not be null"); //NOI18N
         this.projectMakefileName = projectMakefileName;
     }
 

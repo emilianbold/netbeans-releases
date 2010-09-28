@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -195,7 +196,7 @@ public class ImportProject implements PropertyChangeListener {
         nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectName = projectFolder.getName();
         if (fullRemote) {
-            makefileName = (String) wizard.getProperty("makefileName"); //NOI18N
+            makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); //NOI18N
             int pos = makefileName.lastIndexOf('/');
             if (pos > 0) {
                 makefileName = makefileName.substring(pos+1);
@@ -209,13 +210,13 @@ public class ImportProject implements PropertyChangeListener {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
             // the best guess
-            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);  // NOI18N
             if (makefilePath == null) {
                 File file = new File(nativeProjectPath + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         } else {
-            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);  // NOI18N
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
@@ -254,14 +255,14 @@ public class ImportProject implements PropertyChangeListener {
         nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectFolder = (File) wizard.getProperty("projdir"); // NOI18N
         projectName = (String) wizard.getProperty("name"); // NOI18N
-        makefileName = (String) wizard.getProperty("makefilename"); // NOI18N
+        makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); // NOI18N
         workingDir = (String) wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
         buildCommand = (String) wizard.getProperty("buildCommandTextField"); // NOI18N
         cleanCommand = (String) wizard.getProperty("cleanCommandTextField"); // NOI18N
         buildResult = (String) wizard.getProperty("outputTextField"); // NOI18N
         includeDirectories = (String) wizard.getProperty("includeTextField"); // NOI18N
         macros = (String) wizard.getProperty("macroTextField"); // NOI18N
-        makefilePath = (String) wizard.getProperty("makefileName"); // NOI18N
+        makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); // NOI18N
         configurePath = (String) wizard.getProperty("configureName"); // NOI18N
         configureArguments = (String) wizard.getProperty("configureArguments"); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
@@ -331,7 +332,7 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
+            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath).getAbsoluteFile());
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
