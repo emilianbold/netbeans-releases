@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="300"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="appframework"/>
-                    <attr name="version" stringvalue="1.1-20100928.170359-1"/>
+                    <attr name="version" stringvalue="1.0"/>
                     <attr name="repository" stringvalue="https://nexus.codehaus.org/content/repositories/snapshots/"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.swingapp.resources.Bundle#TIT_Appframework_Archetype"/>
                     <attr name="description" bundlevalue="org.netbeans.modules.swingapp.resources.Bundle#DESC_Appframework_Archetype"/>

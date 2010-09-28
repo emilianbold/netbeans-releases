@@ -88,7 +88,8 @@ public final class MavenCommandSettings {
                 toRet = "install:install-file";//NOI18N
             }
             else if (COMMAND_CREATE_ARCHETYPENG.equals(command)) {
-                toRet = "archetype:generate";//NOI18N
+                // XXX should use just archetype:generate, but all old mojo-archetypes are broken in 2.0-alpha-5
+                toRet = "org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-4:generate"; // NOI18N
             }
             else if (COMMAND_SCM_CHECKOUT.equals(command)) {
                 toRet = "scm:checkout";//NOI18N
