@@ -678,7 +678,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         Boolean readOnlyToolchain = (Boolean) settings.getProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN);
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, 
-                readOnlyToolchain, (ToolsCacheManager) settings.getProperty("ToolsCacheManager")) {
+                readOnlyToolchain, (ToolsCacheManager) settings.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) {
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled, enabled);
@@ -687,13 +687,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
         });
 
-        String projectName = (String) settings.getProperty("displayName"); //NOI18N
+        String projectName = (String) settings.getProperty(WizardConstants.PROPERTY_DISPLAY_NAME); //NOI18N
         if (projectName == null) {
-            String workingDir = (String) settings.getProperty("buildCommandWorkingDirTextField"); //NOI18N
+            String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
             if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) {
                 name = CndPathUtilitities.getBaseName(workingDir);
             } else {
-                String sourcesPath = (String) settings.getProperty("sourceFolderPath"); // NOI18N
+                String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
                 if (sourcesPath != null && sourcesPath.length() > 0) {
                     name = CndPathUtilitities.getBaseName(sourcesPath);
                 }

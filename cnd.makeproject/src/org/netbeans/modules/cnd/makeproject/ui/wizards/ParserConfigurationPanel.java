@@ -130,15 +130,15 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void store(WizardDescriptor wizardDescriptor) {
         if (manualButton.isSelected()) {
-            wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "true"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, includeTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, macroTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "true"); // NOI18N
         } else {
-            wizardDescriptor.putProperty("includeTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "false"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "false"); // NOI18N
         }
-        wizardDescriptor.putProperty("consolidationLevel", "file"); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL, "file"); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {
