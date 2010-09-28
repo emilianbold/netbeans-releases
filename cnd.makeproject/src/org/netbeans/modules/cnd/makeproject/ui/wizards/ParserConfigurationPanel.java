@@ -113,7 +113,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                             if (listFiles != null) {
                                 for (FileObject sub : listFiles){
                                     if (sub.isFolder()) {
-                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                        if (sub.getNameExt().toLowerCase().endsWith("include")) { // NOI18N
                                             buf.append(';');
                                             buf.append(RemoteFileUtil.getAbsolutePath(sub));
                                         }
