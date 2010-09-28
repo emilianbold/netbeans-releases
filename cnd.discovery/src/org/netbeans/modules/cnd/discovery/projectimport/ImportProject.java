@@ -173,10 +173,10 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
-        Boolean b = (Boolean) wizard.getProperty("fullRemote");
+        Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
         fullRemote = (b == null) ? false : b.booleanValue();
         pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
-        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) { // NOI18N
+        if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
@@ -191,7 +191,7 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
         nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
         nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
         projectName = projectFolder.getName();
@@ -220,7 +220,7 @@ public class ImportProject implements PropertyChangeListener {
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
@@ -250,11 +250,11 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void customSetup(WizardDescriptor wizard) {
-        projectFolder = (File) wizard.getProperty("projdir");  // NOI18N;
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
         nativeProjectPath = (String) wizard.getProperty("nativeProjDir");  // NOI18N
         nativeProjectFO = (FileObject) wizard.getProperty("nativeProjFO");  // NOI18N
-        projectFolder = (File) wizard.getProperty("projdir"); // NOI18N
-        projectName = (String) wizard.getProperty("name"); // NOI18N
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // NOI18N
+        projectName = (String) wizard.getProperty(WizardConstants.PROPERTY_NAME); // NOI18N
         makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); // NOI18N
         workingDir = (String) wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
         buildCommand = (String) wizard.getProperty("buildCommandTextField"); // NOI18N
@@ -268,12 +268,12 @@ public class ImportProject implements PropertyChangeListener {
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         consolidationStrategy = (String) wizard.getProperty("consolidationLevel"); // NOI18N
         @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
+        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS); // NOI18N
         sources = it;
         @SuppressWarnings("unchecked")
         Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
         tests = it2;
-        sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
+        sourceFoldersFilter = (String) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER); // NOI18N
         runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
         if (runConfigure) {
             runMake = true;
@@ -281,8 +281,8 @@ public class ImportProject implements PropertyChangeListener {
             runMake = "true".equals(wizard.getProperty("makeProject")); // NOI18N
         }
         manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
-        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
+        setAsMain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SET_AS_MAIN));  // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
@@ -332,9 +332,10 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath).getAbsoluteFile());
+            // = CndFileUtils.normalizeFile(new File(makefilePath).getAbsoluteFile());
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
+            makefileFile = new File(makefilePath).getAbsoluteFile();
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {

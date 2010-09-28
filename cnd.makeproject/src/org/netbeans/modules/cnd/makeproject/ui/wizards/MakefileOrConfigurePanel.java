@@ -123,14 +123,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
+        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         ExecutionEnvironment ee = null;
         if (hostUID != null) {
             ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         CompilerSet cs = null;
         if (ee != null) {
-            cs = (CompilerSet) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
+            cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         }
         try {
             removeDocumentLiseners();

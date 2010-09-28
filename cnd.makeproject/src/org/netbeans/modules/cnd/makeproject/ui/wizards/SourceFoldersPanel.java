@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -91,13 +92,13 @@ import org.openide.util.NbBundle;
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
         if (sourceFilesPanel.getFoldersFilter().trim().length() == 0) {
             // change empty pattern on "no ignore folder pattern"
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_FILTER, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
         } else {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
         wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getTestListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
