@@ -274,6 +274,9 @@ public class ArchetypeWizardUtils {
         try {
             jf = new JarFile(fil);
             ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
+            if (entry == null) {
+                entry = jf.getJarEntry("META-INF/maven/archetype.xml");//NOI18N
+            }
             if (entry != null) {
                 // http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-metadata.html
                 InputStream in = jf.getInputStream(entry);
