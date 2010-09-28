@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                 <file name="Archetypes">
                     <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.createIterator"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.pickArchetype"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/MavenDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
                     <attr name="template" boolvalue="true"/>
