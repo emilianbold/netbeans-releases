@@ -46,7 +46,9 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -78,6 +80,7 @@ public class ProjectGenerator {
         private String postCreationClassName;
         private String mainProject;
         private String subProjects;
+        private Map<String, Object> templateParams;
 
         /**
          *
@@ -107,6 +110,7 @@ public class ProjectGenerator {
             this.mainFile = "";
             this.postCreationClassName = null;
             this.mainProject = null;
+            this.templateParams = Collections.<String, Object>emptyMap();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
@@ -171,6 +175,11 @@ public class ProjectGenerator {
 
         public RemoteProject.Mode getRemoteMode() {
             return fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES;
+        }
+
+        public ProjectParameters setTemplateParams(Map<String, Object> params) {
+            this.templateParams = params;
+            return this;
         }
 
         public File getProjectFolder() {
@@ -265,6 +274,10 @@ public class ProjectGenerator {
          */
         public void setSubProjects(String subProjects) {
             this.subProjects = subProjects;
+        }
+
+        public Map<String, Object> getTemplateParams() {
+            return templateParams;
         }
     }
     

@@ -673,9 +673,11 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                    |
                     {shouldProceed()}?
                     external_declaration 
-                    | 
+                    |
                     {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
@@ -2850,7 +2852,7 @@ statement
 	|
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
                 {if (statementTrace>=1)
-			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
+			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
 	|
                 {if (statementTrace>=1) 

@@ -53,7 +53,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -78,6 +80,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.loaders.CreateFromTemplateHandler;
 
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
@@ -264,7 +267,7 @@ public class MakeProjectGenerator {
         // create main source file
         final String mainFilePath;
         if (mainFile.length() > 0) {
-            mainFilePath = createMain(mainFile, dirFO);
+            mainFilePath = createMain(mainFile, dirFO, prjParams.getTemplateParams());
         } else {
             mainFilePath = null;
         }
@@ -345,7 +348,7 @@ public class MakeProjectGenerator {
         return dirFO;
     }
 
-    private static String createMain(String mainFile, FileObject srcFolder) throws IOException {
+    private static String createMain(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
         String mainName = mainFile.substring(0, mainFile.indexOf('|'));
         String template = mainFile.substring(mainFile.indexOf('|') + 1);
 
@@ -367,7 +370,12 @@ public class MakeProjectGenerator {
 
         DataObject mt = DataObject.find(mainTemplate);
         DataFolder pDf = DataFolder.findFolder(srcFolder);
-        mt.createFromTemplate(pDf, createdMainName);
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        params.putAll(templateParams);
+
+        mt.createFromTemplate(pDf, createdMainName, params);
 
         return mainName;
     }
