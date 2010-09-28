@@ -414,24 +414,16 @@ public class SelectModePanel extends javax.swing.JPanel {
     private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceBrowseButtonActionPerformed
         CndUtils.assertTrue(controller.isFullRemote());
         String seed = sourceFolder.getText();
-        JFileChooser fileChooser;
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
-        if (controller.isFullRemote()) {
-            WizardDescriptor wd = controller.getWizardDescriptor();
-            String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(seed);
-            fileChooser.setApproveButtonText(approveButtonText);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        } else {
-            fileChooser = new FileChooser(
-                    NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                    approveButtonText,
-                    JFileChooser.DIRECTORIES_ONLY,
-                    null,
-                    seed,
-                    false);
-        }
+        String title = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"); //NOI18N
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
+                title,
+                approveButtonText,
+                JFileChooser.DIRECTORIES_ONLY,
+                null,
+                seed,
+                false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
