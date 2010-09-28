@@ -82,6 +82,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
     private final LibraryImplementation[] libraries = { lib };
     private Hk2JavaEEPlatformFactory pf;
+    private FileChangeListener fcl;
 
     /**
      * 
@@ -90,35 +91,53 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
-        String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File f = new File(path, "modules"); // NOI18N
-        FileUtil.toFileObject(FileUtil.normalizeFile(f)).addFileChangeListener(new FileChangeListener() {
-
-            public void fileFolderCreated(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileDataCreated(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileChanged(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileDeleted(FileEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileRenamed(FileRenameEvent fe) {
-                notifyLibrariesChanged();
-            }
-
-            public void fileAttributeChanged(FileAttributeEvent fe) {
-                // we can ignore this type of change
-            }
-        });
+        addFcl();
         initLibraries();
+    }
+
+    private void addFcl() {
+        if (null == fcl) {
+            String path = dm.getCommonServerSupport().getInstanceProperties().get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+            File f = new File(path, "modules"); // NOI18N
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
+            if (null == fo) {
+                Logger.getLogger("glassfish-javaee").log(Level.WARNING, "{0} did not exist but should", f.getAbsolutePath());
+                return;
+            }
+            fcl = new FileChangeListener() {
+
+                @Override
+                public void fileFolderCreated(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileDataCreated(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileRenamed(FileRenameEvent fe) {
+                    notifyLibrariesChanged();
+                }
+
+                @Override
+                public void fileAttributeChanged(FileAttributeEvent fe) {
+                    // we can ignore this type of change
+                }
+            };
+            fo.addFileChangeListener(fcl);
+        }
     }
 
     // Persistence provider strings
@@ -147,6 +166,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @param toolName 
      * @return 
      */
+    @Override
     public boolean isToolSupported(String toolName) {
         // Persistence Providers
         if(PERSISTENCE_PROV_ECLIPSELINK.equals(toolName)) {
@@ -223,6 +243,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @param toolName 
      * @return 
      */
+    @Override
     public File[] getToolClasspathEntries(String toolName) {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         if (null != gfRootStr) {
@@ -324,6 +345,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public java.io.File[] getPlatformRoots() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         File returnedElement;
@@ -341,7 +363,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public LibraryImplementation[] getLibraries() {
+        addFcl();
         return libraries.clone();
     }
     
@@ -349,6 +373,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public java.awt.Image getIcon() {
         return ImageUtilities.loadImage("org/netbeans/modules/j2ee/hk2/resources/server.gif"); // NOI18N
     }
@@ -357,6 +382,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public String getDisplayName() {
         return pf.getDisplayName();
     }
@@ -365,6 +391,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public Set getSupportedJavaPlatformVersions() {
         return pf.getSupportedJavaPlatforms();
     }
@@ -373,6 +400,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * 
      * @return 
      */
+    @Override
     public JavaPlatform getJavaPlatform() {
         return pf.getJavaPlatform();
     }
@@ -387,7 +415,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
     private static RequestProcessor libInitThread =
             new RequestProcessor("init libs -- Hk2JavaEEPlatformImpl");
     
-    private void initLibraries() {
+     private void initLibraries() {
         libInitThread.post(new Runnable() {
 
             @Override

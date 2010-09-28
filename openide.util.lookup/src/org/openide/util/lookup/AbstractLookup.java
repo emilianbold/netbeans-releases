@@ -887,11 +887,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 return;
             }
 
-            if (!(reference.caches instanceof Object[])) {
-                reference.caches = new Object[3];
-            }
-
-            ((Object[]) reference.caches)[0] = s;
+            setReferences(0, s);
         }
 
         @SuppressWarnings("unchecked")
@@ -907,11 +903,7 @@ public class AbstractLookup extends Lookup implements Serializable {
                 return;
             }
 
-            if (!(reference.caches instanceof Object[])) {
-                reference.caches = new Object[3];
-            }
-
-            ((Object[]) reference.caches)[1] = c;
+            setReferences(1, c);
         }
 
         @SuppressWarnings("unchecked")
@@ -927,11 +919,18 @@ public class AbstractLookup extends Lookup implements Serializable {
                 return;
             }
 
-            if (!(reference.caches instanceof Object[])) {
-                reference.caches = new Object[3];
+            setReferences(2, c.toArray(new Pair[0]));
+        }
+        
+        private void setReferences(int index, Object value) {
+            Object obj = reference.caches;
+            Object[] arr;
+            if (obj instanceof Object[]) {
+                arr = (Object[])obj;
+            } else {
+                reference.caches = arr = new Object[3];
             }
-
-            ((Object[]) reference.caches)[2] = c.toArray(new Pair[0]);
+            arr[index] = value;
         }
 
         private void clearCaches() {
