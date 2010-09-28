@@ -52,6 +52,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -97,7 +98,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (first) {
             first = false;
             @SuppressWarnings("unchecked")
-            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
+            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
             if (roots != null) {
                 StringBuilder buf = new StringBuilder();
                 for(FolderEntry folder : roots){

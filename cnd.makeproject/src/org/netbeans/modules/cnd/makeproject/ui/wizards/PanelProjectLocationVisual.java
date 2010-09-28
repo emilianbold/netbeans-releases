@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -115,7 +116,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         createMainTextField.setText("main"); // NOI18N
         createMainTextField.getDocument().addDocumentListener(PanelProjectLocationVisual.this);
 
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION /*|| type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION*/) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
@@ -622,15 +623,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         String location = projectLocationTextField.getText().trim();
         String folder = createdFolderTextField.getText().trim();
 
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER, new File(folder));
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, projectName);
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
+        d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, new File(folder));
+        d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
+        d.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder(projectsDir);
         }
 
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
+        d.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
         d.putProperty( /*XXX Define somewhere */"mainClass", null); // NOI18N
 
         MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
@@ -647,6 +648,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String)createMainComboBox.getSelectedItem());
+            } else if(type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
+                d.putProperty("mainFileName", createMainTextField.getText() + ".pc"); // NOI18N
+                d.putProperty("mainFileTemplate", "Templates/cFiles/main.pc"); // NOI18N
             } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
                 d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
                 d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
@@ -655,24 +659,24 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         Object obj = hostComboBox.getSelectedItem();
         if (obj != null && obj instanceof ServerRecord) {
             ServerRecord sr = (ServerRecord)obj;
-            d.putProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment()));
+            d.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(sr.getExecutionEnvironment()));
         }
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN, toolchainComboBox.getSelectedItem());
+        d.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, toolchainComboBox.getSelectedItem());
     }
 
     @Override
     void read(WizardDescriptor settings) {
         initialized = false;
-        File projectLocation = (File) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER); 
+        File projectLocation = (File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
         } else {
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
-        String hostUID = (String) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
-        CompilerSet cs = (CompilerSet) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
-        Boolean readOnlyToolchain = (Boolean) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN);
+        String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        CompilerSet cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+        Boolean readOnlyToolchain = (Boolean) settings.getProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN);
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, 
                 readOnlyToolchain, (ToolsCacheManager) settings.getProperty("ToolsCacheManager")) {
             @Override

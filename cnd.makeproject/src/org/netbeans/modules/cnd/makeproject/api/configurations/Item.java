@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -93,6 +94,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
 
     public Item(String path) {
+        CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
 //        this.fileObject = FileUtil.toFileObject(new File(path));
 //        CndUtils.assertNotNull(fileObject, "Can't find file object for item " + path); //NOI18N
