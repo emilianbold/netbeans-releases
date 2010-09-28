@@ -152,11 +152,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             public void run() {
                 CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
                 if (compiler != null) {
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN, compiler);
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_TOOLCHAIN, compiler);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
                 } else {
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
                 }
                 String root = (String) map.get("DW:rootFolder"); // NOI18N
                 if (root == null) {

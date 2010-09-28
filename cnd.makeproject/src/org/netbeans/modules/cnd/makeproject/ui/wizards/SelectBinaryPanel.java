@@ -47,6 +47,7 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -75,7 +76,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE));
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
     }
 
     @Override
@@ -83,7 +84,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
