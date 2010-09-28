@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.indexer;
 
+import java.io.FileNotFoundException;
 import org.codehaus.plexus.util.FileUtils;
 import java.util.Map;
 import org.apache.lucene.document.Document;
@@ -82,7 +83,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.InvalidArtifactRTException;
-import org.apache.maven.artifact.manager.WagonManager;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.DefaultProjectBuildingRequest;
@@ -139,9 +139,9 @@ import org.sonatype.nexus.index.creator.JarFileContentsIndexCreator;
 import org.sonatype.nexus.index.creator.MinimalArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.SearchEngine;
 import org.sonatype.nexus.index.context.IndexCreator;
-import org.sonatype.nexus.index.updater.DefaultIndexUpdater.WagonFetcher;
 import org.sonatype.nexus.index.updater.IndexUpdateRequest;
 import org.sonatype.nexus.index.updater.IndexUpdater;
+import org.sonatype.nexus.index.updater.jetty.JettyResourceFetcher;
 
 /**
  *
@@ -158,16 +158,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
-    private WagonManager wagonManager;
     private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
     private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
     private static final String NB_DEPENDENCY_VERSION = "nbdv"; //NOI18N
     private static final String META_INF_MAVEN = "mim"; // NOI18N
-    /*logger*/
-    private static final Logger LOGGER =
-            Logger.getLogger("org.netbeans.modules.maven.indexer.RepositoryIndexer");//NOI18N
+    private static final Logger LOGGER = Logger.getLogger(NexusRepositoryIndexerImpl.class.getName());
     /*custom Index creators*/
     /**
      * any reads, writes from/to index shal be done under mutex access.
@@ -237,7 +234,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
-                wagonManager = embedder.lookup( WagonManager.class );
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
@@ -421,10 +417,28 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             if (repo.isRemoteDownloadable()) {
                 LOGGER.finer("Indexing Remote Repository :" + repo.getId());//NOI18N
-                RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
+                final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    iur.setResourceFetcher(new WagonFetcher(wagonManager, listener, null, null));
+                    /* XXX bug in JettyResourceFetcher - throws IOE not FNFE:
+                    iur.setTransferListener(listener);
+                     */
+                    iur.setResourceFetcher(new JettyResourceFetcher() {
+                        {
+                            addTransferListener(listener);
+                        }
+                        public @Override void retrieve(String name, File targetFile) throws IOException, FileNotFoundException {
+                            try {
+                                super.retrieve(name, targetFile);
+                            } catch (IOException x) {
+                                if (x.toString().endsWith(" does not exist")) {
+                                    throw (FileNotFoundException) new FileNotFoundException(x.toString()).initCause(x);
+                                } else {
+                                    throw x;
+                                }
+                            }
+                        }
+                    });
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
                     listener.close();
@@ -440,8 +454,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
         } catch (Cancellation x) {
             LOGGER.log(Level.INFO, "canceled indexing of {0}", repo.getId());
-        } catch (IOException iOException) {
-            LOGGER.warning(iOException.getMessage());//NOI18N
+        } catch (IOException x) {
+            LOGGER.log(Level.INFO, "could not index " + repo.getId(), x);
             //handle index not found
         } finally {
             RepositoryPreferences.getInstance().setLastIndexUpdate(repo.getId(), new Date());
