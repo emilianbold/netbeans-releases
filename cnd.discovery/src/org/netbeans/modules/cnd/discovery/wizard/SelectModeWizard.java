@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -139,7 +140,7 @@ public class SelectModeWizard implements WizardDescriptor.AsynchronousValidating
     public void storeSettings(Object settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
         if (wizardDescriptor instanceof WizardDescriptor) {
-            ((WizardDescriptor)wizardDescriptor).putProperty("readOnlyToolchain", Boolean.TRUE);// NOI18N
+            ((WizardDescriptor)wizardDescriptor).putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);// NOI18N
         }
     }
 

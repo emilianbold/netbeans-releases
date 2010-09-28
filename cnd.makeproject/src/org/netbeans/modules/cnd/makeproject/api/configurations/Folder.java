@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeProjectFileProviderFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -142,6 +143,10 @@ public class Folder implements FileChangeListener, ChangeListener {
         AbsRootPath = CndFileUtils.normalizeAbsolutePath(AbsRootPath);
 
         FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, getProject());
+        CndUtils.assertNotNull(folderFile, "null folder file object"); //NOI18N
+        if (folderFile == null) {
+            return;
+        }
 
         // Folders to be removed
         if (!folderFile.isValid()

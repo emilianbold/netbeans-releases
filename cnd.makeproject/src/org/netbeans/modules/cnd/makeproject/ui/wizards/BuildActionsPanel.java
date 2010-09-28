@@ -50,6 +50,7 @@ import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -133,7 +134,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String mn = (String)wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME);
+        String mn = (String)wizardDescriptor.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);
         if (makefileName == null || !makefileName.equals(mn)) {
             initFields();
             makefileName = mn;

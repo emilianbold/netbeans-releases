@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -122,14 +123,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
+        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         ExecutionEnvironment ee = null;
         if (hostUID != null) {
             ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         CompilerSet cs = null;
         if (ee != null) {
-            cs = (CompilerSet) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
+            cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         }
         try {
             removeDocumentLiseners();
@@ -160,13 +161,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     void store(WizardDescriptor wizardDescriptor) {
         if (makefileRadioButton.isSelected()) {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, makefileNameTextField.getText());
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileNameTextField.getText());
             wizardDescriptor.putProperty("configureName", ""); // NOI18N
             wizardDescriptor.putProperty("configureArguments", ""); // NOI18N
             wizardDescriptor.putProperty("makeProject", makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty("runConfigure", ""); // NOI18N
         } else {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, configureMakefileNameTextField.getText());
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, configureMakefileNameTextField.getText());
             wizardDescriptor.putProperty("configureName", configureNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("configureArguments", configureArgumentsTextField.getText()); // NOI18N
             wizardDescriptor.putProperty("runConfigure", runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N

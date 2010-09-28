@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
@@ -151,11 +152,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             public void run() {
                 CompilerSet compiler = detectCompilerSet((String) map.get("DW:compiler")); // NOI18N
                 if (compiler != null) {
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN, compiler);
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_TOOLCHAIN, compiler);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.getLocal().getHost());
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
                 } else {
-                    controller.getWizardDescriptor().putProperty(NewMakeProjectWizardIterator.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
+                    controller.getWizardDescriptor().putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.FALSE);
                 }
                 String root = (String) map.get("DW:rootFolder"); // NOI18N
                 if (root == null) {
@@ -431,7 +432,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty("sourceFolderPath",  sourcesField.getText().trim()); // NOI18N
         //wizardDescriptor.putProperty("displayName",   new File(binaryField.getText().trim()).getName()); // NOI18N
         // TODO should be inited
-        wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
     }
 
     boolean valid() {

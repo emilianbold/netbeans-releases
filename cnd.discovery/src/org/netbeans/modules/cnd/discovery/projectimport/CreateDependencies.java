@@ -229,6 +229,8 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     ImportExecutable.switchModel(true, lastSelectedProject);
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 } finally {
                     progress.finish();
                 }
