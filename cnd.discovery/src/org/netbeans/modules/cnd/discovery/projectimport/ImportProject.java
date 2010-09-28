@@ -427,6 +427,7 @@ public class ImportProject implements PropertyChangeListener {
                 isFinished = true;
             }
         } catch (Throwable ex) {
+            isFinished = true;
             Exceptions.printStackTrace(ex);
         }
     }
@@ -898,6 +899,7 @@ public class ImportProject implements PropertyChangeListener {
                 postModelDiscovery(false);
             }
         } catch (Throwable ex) {
+            isFinished = true;
             Exceptions.printStackTrace(ex);
         }
     }
@@ -961,17 +963,22 @@ public class ImportProject implements PropertyChangeListener {
                 @Override
                 public void projectParsingFinished(CsmProject project) {
                     if (project.equals(p)) {
-                        ImportProject.listeners.remove(p);
-                        CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+                        try {
+                            ImportProject.listeners.remove(p);
+                            CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+                            }
+                            if (isFull) {
+                                modelDiscovery();
+                            } else {
+                                fixExcludedHeaderFiles();
+                            }
+                            showFollwUp(np);
+                        } catch (Throwable ex) {
+                            isFinished = true;
+                            Exceptions.printStackTrace(ex);
                         }
-                        if (isFull) {
-                            modelDiscovery();
-                        } else {
-                            fixExcludedHeaderFiles();
-                        }
-                        showFollwUp(np);
                     }
                 }
             };
