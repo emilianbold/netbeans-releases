@@ -332,9 +332,10 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath).getAbsoluteFile());
+            // = CndFileUtils.normalizeFile(new File(makefilePath).getAbsoluteFile());
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
+            makefileFile = new File(makefilePath).getAbsoluteFile();
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
