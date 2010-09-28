@@ -44,9 +44,10 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
@@ -85,7 +86,7 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
     @Override
     public void updateKeys() {
-        Vector<AbstractNode> keys = new Vector<AbstractNode>();
+        List<AbstractNode> keys = Collections.synchronizedList(new ArrayList<AbstractNode>());
         String[] childTypes = NodeTypes.getChildTypes(type);
         if ((childTypes != null)) {
             if (childTypes.length > 1) {
@@ -159,8 +160,9 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
         public void updateKeys() {
             RequestProcessor.getDefault().post(new Runnable() {
 
-                Vector<Object> keys = new Vector<Object>();
+                List<AbstractNode> keys = Collections.synchronizedList(new ArrayList<AbstractNode>());
 
+                @Override
                 public void run() {
                     GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
                     if (commonSupport != null) {
