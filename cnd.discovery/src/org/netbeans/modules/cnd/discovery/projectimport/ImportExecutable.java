@@ -137,6 +137,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 progress.start();
                 try {
                     createProject();
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 } finally {
                     progress.finish();
                 }
@@ -245,58 +247,62 @@ public class ImportExecutable implements PropertyChangeListener {
 
             @Override
             public void run() {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
-                progress.start();
-                Applicable applicable = null;
                 try {
-                    ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                    applicable = extension.isApplicable(map, lastSelectedProject);
-                    if (applicable.isApplicable()) {
-                        if (!createProjectMode) {
-                            resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
-                        }
-                        String additionalDependencies = null;
-                        if (projectKind == ProjectKind.IncludeDependencies) {
-                            additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
-                            if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
-                                map.put("DW:libraries", additionalDependencies); // NOI18N
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
+                    progress.start();
+                    Applicable applicable = null;
+                    try {
+                        ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        applicable = extension.isApplicable(map, lastSelectedProject);
+                        if (applicable.isApplicable()) {
+                            if (!createProjectMode) {
+                                resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
-                        }
-                        if (extension.canApply(map, lastSelectedProject)) {
-                            try {
-                                extension.apply(map, lastSelectedProject);
-                                discoverScripts(lastSelectedProject);
-                                saveMakeConfigurationDescriptor(lastSelectedProject);
-                                if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
-                                    cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
+                            String additionalDependencies = null;
+                            if (projectKind == ProjectKind.IncludeDependencies) {
+                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
+                                if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
+                                    map.put("DW:libraries", additionalDependencies); // NOI18N
                                 }
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                            }
+                            if (extension.canApply(map, lastSelectedProject)) {
+                                try {
+                                    extension.apply(map, lastSelectedProject);
+                                    discoverScripts(lastSelectedProject);
+                                    saveMakeConfigurationDescriptor(lastSelectedProject);
+                                    if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
+                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
+                                    }
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
                         }
+                    } finally {
+                        progress.finish();
                     }
-                } finally {
-                    progress.finish();
-                }
-                Position mainFunction = applicable.getMainFunction();
-                boolean open = true;
-                if (mainFunction != null) {
-                    FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
-                    if (toFileObject != null) {
-                        if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
-                            open = false;
+                    Position mainFunction = applicable.getMainFunction();
+                    boolean open = true;
+                    if (mainFunction != null) {
+                        FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
+                        if (toFileObject != null) {
+                            if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
+                                open = false;
+                            }
+                        }
+
+                    }
+                    switchModel(true, lastSelectedProject);
+                    if (open || cd != null) {
+                        if (open) {
+                            onProjectParsingFinished("main", lastSelectedProject); // NOI18N
+                        } else {
+                            onProjectParsingFinished(null, lastSelectedProject); // NOI18N
                         }
                     }
-
-                }
-                switchModel(true, lastSelectedProject);
-                if (open || cd != null) {
-                    if (open) {
-                        onProjectParsingFinished("main", lastSelectedProject); // NOI18N
-                    } else {
-                        onProjectParsingFinished(null, lastSelectedProject); // NOI18N
-                    }
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         };
