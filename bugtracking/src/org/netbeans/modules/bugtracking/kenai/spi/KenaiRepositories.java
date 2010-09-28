@@ -272,7 +272,8 @@ abstract class KenaiRepositories {
                             kenaiProject = KenaiUtil.getKenaiProject(url, owner.getOwner());
                         }
                     } else {
-                        BugtrackingManager.LOG.warning("kenai accessor not available");
+                        // might be deactivated
+                        BugtrackingManager.LOG.fine("kenai accessor not available");
                     }
                 } else {
                     kenaiProject = KenaiUtil.getKenaiProjectForRepository(url);
