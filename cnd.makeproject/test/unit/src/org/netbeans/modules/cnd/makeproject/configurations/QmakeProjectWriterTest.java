@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
@@ -86,8 +87,8 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         TemplateWizard wiz = new TemplateWizard();
         wiz.setTemplate(templateDO);
         projectCreator.initialize(wiz);
-        wiz.putProperty("name", destdir.getName());
-        wiz.putProperty("projdir", destdir);
+        wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+        wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
         projectCreator.instantiate();
     }
 

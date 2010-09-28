@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -236,8 +237,8 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 TemplateWizard wiz = new TemplateWizard();
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
-                wiz.putProperty("name", destdir.getName());
-                wiz.putProperty("projdir", destdir);
+                wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
                 try {
                     setRef.set(projectCreator.instantiate());
                 } catch (IOException ex) {
