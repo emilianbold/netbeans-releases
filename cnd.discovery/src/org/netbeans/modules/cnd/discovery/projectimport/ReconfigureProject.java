@@ -173,39 +173,43 @@ public class ReconfigureProject {
     }
 
     public void reconfigure(String cFlags, String cxxFlags, String linkerFlags, String otherOptions, boolean waitFinished, final InputOutput io){
-        tab = io;
-        if (waitFinished) {
-            final AtomicInteger res = new AtomicInteger();
-            final AtomicBoolean finished = new AtomicBoolean(false);
-            ExecutionListener listener = new ExecutionListener() {
-                @Override
-                public void executionStarted(int pid) {
-                }
-                @Override
-                public void executionFinished(int rc) {
-                    res.set(rc);
-                    finished.set(true);
-                    synchronized(finished) {
-                        finished.notifyAll();
+        try {
+            tab = io;
+            if (waitFinished) {
+                final AtomicInteger res = new AtomicInteger();
+                final AtomicBoolean finished = new AtomicBoolean(false);
+                ExecutionListener listener = new ExecutionListener() {
+                    @Override
+                    public void executionStarted(int pid) {
                     }
-                }
-            };
-            addExecutionListener(listener);
-            _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
-            synchronized(finished) {
-                while(true) {
-                    try {
-                        finished.wait();
-                        if (finished.get()) {
-                            return;
+                    @Override
+                    public void executionFinished(int rc) {
+                        res.set(rc);
+                        finished.set(true);
+                        synchronized(finished) {
+                            finished.notifyAll();
                         }
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                    }
+                };
+                addExecutionListener(listener);
+                _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
+                synchronized(finished) {
+                    while(true) {
+                        try {
+                            finished.wait();
+                            if (finished.get()) {
+                                return;
+                            }
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
+            } else {
+                _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
             }
-        } else {
-            _reconfigure(cFlags, cxxFlags, linkerFlags, otherOptions);
+        } catch (Throwable ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
 
