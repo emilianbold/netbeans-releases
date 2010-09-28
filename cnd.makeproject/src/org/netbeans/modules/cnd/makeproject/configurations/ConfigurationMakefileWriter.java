@@ -406,6 +406,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
         bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
+        bw.write("PROC=proc\n"); // NOI18N
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
@@ -790,7 +791,7 @@ public class ConfigurationMakefileWriter {
                             // Prototype
                             command = "Pro*C Preprocessor";
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                            command = "/home/nick/projects/instantclient_11_2/sdk/proc lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                             target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         } else {
                             continue;
@@ -893,7 +894,7 @@ public class ConfigurationMakefileWriter {
                                     // Prototype
                                     command = "Pro*C Preprocessor";
                                     MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                                    command = "/home/nick/projects/instantclient_11_2/sdk/proc lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                                    command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                                     target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                                 } else {
                                     continue;
@@ -1004,7 +1005,7 @@ public class ConfigurationMakefileWriter {
                             // Prototype
                             command = "Pro*C Preprocessor";
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                            command = "/home/nick/projects/instantclient_11_2/sdk/proc lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                             target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
                         } else {
                             continue;
