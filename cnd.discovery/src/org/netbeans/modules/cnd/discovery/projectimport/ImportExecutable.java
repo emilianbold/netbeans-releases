@@ -149,8 +149,8 @@ public class ImportExecutable implements PropertyChangeListener {
 
 
     private void createProject() {
-        String binaryPath = (String) map.get("outputTextField"); // NOI18N
-        sourcesPath = (String) map.get("sourceFolderPath"); // NOI18N
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
         File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
         String baseDir;
@@ -168,7 +168,7 @@ public class ImportExecutable implements PropertyChangeListener {
             baseDir = projectParentFolder + File.separator + projectName;
             projectFolder = new File(baseDir);
         }
-        String hostUID = (String) map.get("hostUID"); // NOI18N
+        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
