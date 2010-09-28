@@ -158,7 +158,8 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
         @Override
         public void updateKeys() {
-            RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor t = new RequestProcessor("resource-child-updater");
+        t.post(new Runnable() {
 
                 List<AbstractNode> keys = Collections.synchronizedList(new ArrayList<AbstractNode>());
 
