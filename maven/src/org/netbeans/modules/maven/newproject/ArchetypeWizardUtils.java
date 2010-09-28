@@ -124,7 +124,6 @@ public class ArchetypeWizardUtils {
     static final Archetype EA_ARCH;
     
     static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
-    static final Archetype OSGI_ARCH;
 
     static final String[] EE_LEVELS = {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
@@ -210,11 +209,6 @@ public class ArchetypeWizardUtils {
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         NB_SUITE_ARCH.setVersion("1.1"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
-
-        OSGI_ARCH = new Archetype();
-        OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        OSGI_ARCH.setVersion("1.0"); //NOI18N
-        OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
     }
 
 
@@ -280,6 +274,9 @@ public class ArchetypeWizardUtils {
         try {
             jf = new JarFile(fil);
             ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
+            if (entry == null) {
+                entry = jf.getJarEntry("META-INF/maven/archetype.xml");//NOI18N
+            }
             if (entry != null) {
                 // http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-metadata.html
                 InputStream in = jf.getInputStream(entry);

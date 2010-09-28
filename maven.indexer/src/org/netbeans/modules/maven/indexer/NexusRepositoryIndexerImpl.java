@@ -894,7 +894,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(repo.isLocal() ?
                             // XXX clumsy but Index.ANALYZED does not seem to work, and no clear way to set WhitespaceAnalyzer
-                            new WildcardQuery(new Term(META_INF_MAVEN, "* archetype-metadata.xml *")) :
+                            new WildcardQuery(new Term(META_INF_MAVEN, "* archetype*.xml *")) :
                             new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-archetype")),
                             BooleanClause.Occur.MUST)); //NOI18N
                         FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);

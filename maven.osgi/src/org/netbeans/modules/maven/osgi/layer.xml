@@ -22,7 +22,10 @@
                 <file name="OSGi">
                     <attr name="position" intvalue="290"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.SimpleWizardIterator.createOSGiIterator"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="osgi-archetype"/>
+                    <attr name="version" stringvalue="1.0"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/OSGiDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
                     <attr name="template" boolvalue="true"/>
