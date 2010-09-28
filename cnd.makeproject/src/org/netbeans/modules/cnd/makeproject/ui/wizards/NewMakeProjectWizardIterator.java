@@ -464,8 +464,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (wizardtype == TYPE_DB_APPLICATION) {
                 LinkerConfiguration linkerConfiguration = debug.getLinkerConfiguration();
                 LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh"));
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11"));
+                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
+                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 debug.setLinkerConfiguration(linkerConfiguration);
             }
@@ -478,8 +478,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (wizardtype == TYPE_DB_APPLICATION) {
                 LinkerConfiguration linkerConfiguration = release.getLinkerConfiguration();
                 LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh"));
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11"));
+                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
+                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 release.setLinkerConfiguration(linkerConfiguration);
             }
