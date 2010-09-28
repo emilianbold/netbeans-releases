@@ -123,7 +123,7 @@ public class ReconfigureProject {
             if (dao != null) {
                 String mime = dao.getPrimaryFile().getMIMEType();
                 if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                    if ("configure".equals(dao.getPrimaryFile().getName())){ // NOI18N
+                    if ("configure".equals(dao.getPrimaryFile().getNameExt())){ // NOI18N
                         configure = dao;
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){

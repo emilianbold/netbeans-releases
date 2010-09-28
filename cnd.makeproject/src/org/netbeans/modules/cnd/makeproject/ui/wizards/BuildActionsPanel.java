@@ -143,10 +143,10 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("buildCommandWorkingDirTextField", buildCommandWorkingDirTextField.getText()); // NOI18N
-        wizardDescriptor.putProperty("buildCommandTextField", buildCommandTextField.getText()); // NOI18N
-        wizardDescriptor.putProperty("cleanCommandTextField", cleanCommandTextField.getText()); // NOI18N
-        wizardDescriptor.putProperty("outputTextField", outputTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_WORKING_DIR, buildCommandWorkingDirTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_COMMAND, buildCommandTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CLEAN_COMMAND, cleanCommandTextField.getText()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT, outputTextField.getText()); // NOI18N
     }
     
     boolean valid(WizardDescriptor settings) {
