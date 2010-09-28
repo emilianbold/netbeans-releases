@@ -72,14 +72,14 @@ public abstract class ModelAccessor {
         return defaultAccessor == null ? EMPTY : defaultAccessor;
     }
 
-    public abstract Model createModel(Project project);
+    public abstract Model createModel(Project project, ModelKind kind);
 
     private static final class Empty extends ModelAccessor {
         private Empty() {
         }
 
         @Override
-        public Model createModel(Project project) {
+        public Model createModel(Project project, ModelKind kind) {
             return new Model(){
 
                 @Override
@@ -88,5 +88,11 @@ public abstract class ModelAccessor {
                 }
             };
         }
+    }
+
+    public enum ModelKind {
+        FULL,
+        TOP_LEVEL_DECLARATIONS,
+        TOP_LEVEL_DECLARATIONS_IN_COMPILATION_UNIT
     }
 }
