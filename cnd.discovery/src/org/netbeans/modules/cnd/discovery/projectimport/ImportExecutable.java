@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -137,6 +138,8 @@ public class ImportExecutable implements PropertyChangeListener {
                 progress.start();
                 try {
                     createProject();
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 } finally {
                     progress.finish();
                 }
@@ -148,8 +151,8 @@ public class ImportExecutable implements PropertyChangeListener {
     private void createProject() {
         String binaryPath = (String) map.get("outputTextField"); // NOI18N
         sourcesPath = (String) map.get("sourceFolderPath"); // NOI18N
-        File projectFolder = (File) map.get("projdir");  // NOI18N;
-        String projectName = (String) map.get("name"); // NOI18N
+        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
+        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
         String baseDir;
         if (projectFolder != null) {
             projectFolder = CndFileUtils.normalizeFile(projectFolder);
@@ -166,7 +169,7 @@ public class ImportExecutable implements PropertyChangeListener {
             projectFolder = new File(baseDir);
         }
         String hostUID = (String) map.get("hostUID"); // NOI18N
-        CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
+        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
@@ -245,58 +248,62 @@ public class ImportExecutable implements PropertyChangeListener {
 
             @Override
             public void run() {
-                ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
-                progress.start();
-                Applicable applicable = null;
                 try {
-                    ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
-                    applicable = extension.isApplicable(map, lastSelectedProject);
-                    if (applicable.isApplicable()) {
-                        if (!createProjectMode) {
-                            resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
-                        }
-                        String additionalDependencies = null;
-                        if (projectKind == ProjectKind.IncludeDependencies) {
-                            additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
-                            if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
-                                map.put("DW:libraries", additionalDependencies); // NOI18N
+                    ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getBundle(ImportExecutable.class).getString("ImportExecutable.Progress")); // NOI18N
+                    progress.start();
+                    Applicable applicable = null;
+                    try {
+                        ConfigurationDescriptorProvider provider = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                        MakeConfigurationDescriptor configurationDescriptor = provider.getConfigurationDescriptor(true);
+                        applicable = extension.isApplicable(map, lastSelectedProject);
+                        if (applicable.isApplicable()) {
+                            if (!createProjectMode) {
+                                resetCompilerSet(configurationDescriptor.getActiveConfiguration(), applicable);
                             }
-                        }
-                        if (extension.canApply(map, lastSelectedProject)) {
-                            try {
-                                extension.apply(map, lastSelectedProject);
-                                discoverScripts(lastSelectedProject);
-                                saveMakeConfigurationDescriptor(lastSelectedProject);
-                                if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
-                                    cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
+                            String additionalDependencies = null;
+                            if (projectKind == ProjectKind.IncludeDependencies) {
+                                additionalDependencies = additionalDependencies(applicable, configurationDescriptor.getActiveConfiguration());
+                                if (additionalDependencies != null && !additionalDependencies.isEmpty()) {
+                                    map.put("DW:libraries", additionalDependencies); // NOI18N
                                 }
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
+                            }
+                            if (extension.canApply(map, lastSelectedProject)) {
+                                try {
+                                    extension.apply(map, lastSelectedProject);
+                                    discoverScripts(lastSelectedProject);
+                                    saveMakeConfigurationDescriptor(lastSelectedProject);
+                                    if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
+                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
+                                    }
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
                             }
                         }
+                    } finally {
+                        progress.finish();
                     }
-                } finally {
-                    progress.finish();
-                }
-                Position mainFunction = applicable.getMainFunction();
-                boolean open = true;
-                if (mainFunction != null) {
-                    FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
-                    if (toFileObject != null) {
-                        if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
-                            open = false;
+                    Position mainFunction = applicable.getMainFunction();
+                    boolean open = true;
+                    if (mainFunction != null) {
+                        FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
+                        if (toFileObject != null) {
+                            if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
+                                open = false;
+                            }
+                        }
+
+                    }
+                    switchModel(true, lastSelectedProject);
+                    if (open || cd != null) {
+                        if (open) {
+                            onProjectParsingFinished("main", lastSelectedProject); // NOI18N
+                        } else {
+                            onProjectParsingFinished(null, lastSelectedProject); // NOI18N
                         }
                     }
-
-                }
-                switchModel(true, lastSelectedProject);
-                if (open || cd != null) {
-                    if (open) {
-                        onProjectParsingFinished("main", lastSelectedProject); // NOI18N
-                    } else {
-                        onProjectParsingFinished(null, lastSelectedProject); // NOI18N
-                    }
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         };

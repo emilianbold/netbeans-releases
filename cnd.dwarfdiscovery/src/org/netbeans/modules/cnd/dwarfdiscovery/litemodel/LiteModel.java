@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 public class LiteModel extends ModelAccessor {
 
     @Override
-    public Model createModel(Project project) {
+    public Model createModel(Project project, ModelKind kind) {
         MakeArtifactProvider artifactProvider = project.getLookup().lookup(MakeArtifactProvider.class);
         if (artifactProvider != null) {
             for(MakeArtifact artifact : artifactProvider.getBuildArtifacts()){
@@ -75,15 +75,15 @@ public class LiteModel extends ModelAccessor {
                     if (!CndPathUtilitities.isPathAbsolute(output)) {
                         output = artifact.getWorkingDirectory() + "/" + output; // NOI18N
                     }
-                    return createModel(output);
+                    return createModel(output, kind);
                 }
             }
         }
         return null;
     }
 
-    private Model createModel(String binary) {
-        DwarfRenderer renderer = LWM(binary);
+    private Model createModel(String binary, ModelKind kind) {
+        DwarfRenderer renderer = LWM(binary, kind);
         final Map<String, Map<String, Declaration>> lwm = renderer.getLWM();
         return new Model() {
             @Override
@@ -93,9 +93,21 @@ public class LiteModel extends ModelAccessor {
         };
     }
 
-    private DwarfRenderer LWM(String objFileName){
+    private DwarfRenderer LWM(String objFileName, ModelKind kind){
         //long time = System.currentTimeMillis();
-        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+        DwarfRenderer dwarfRenderer;
+        switch(kind) {
+            case TOP_LEVEL_DECLARATIONS:
+                dwarfRenderer = DwarfRenderer.createTopLevelDeclarationsRenderer();
+                break;
+            case TOP_LEVEL_DECLARATIONS_IN_COMPILATION_UNIT:
+                dwarfRenderer = DwarfRenderer.createTopLevelDeclarationsCompilationUnitsRenderer();
+                break;
+            case FULL:
+            default:
+                dwarfRenderer = DwarfRenderer.createFullRenderer();
+                break;
+        }
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
