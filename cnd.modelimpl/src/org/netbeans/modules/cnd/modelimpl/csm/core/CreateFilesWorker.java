@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -86,7 +87,7 @@ final class CreateFilesWorker {
             Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
 
         List<FileImpl> reparseOnEdit = new ArrayList<FileImpl>();
-        List<NativeFileItem> reparseOnPropertyChanged = new ArrayList<NativeFileItem>();
+        List<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedList(new ArrayList<NativeFileItem>());
         AtomicBoolean enougth = new AtomicBoolean(false);
         int size = items.size();
         int threads = CndUtils.getNumberCndWorkerThreads()*3;
