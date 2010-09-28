@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -306,6 +307,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void setProjectMakefileName(String projectMakefileName) {
+        CndUtils.assertNotNull(projectMakefileName, "project makefile name should not be null"); //NOI18N
         this.projectMakefileName = projectMakefileName;
     }
 

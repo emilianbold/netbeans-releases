@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConf
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -104,7 +105,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     // Wizard descriptor properies
     public static final String PROPERTY_NAME = "name"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
-    public static final String PROPERTY_MAKEFILE_NAME = "makefileName"; // String // NOI18N
     public static final String PROPERTY_SET_AS_MAIN = "setAsMain"; // Boolean // NOI18N
     public static final String PROPERTY_SIMPLE_MODE = "simpleMode"; // Boolean // NOI18N
     public static final String PROPERTY_FULL_REMOTE = "fullRemote"; // Boolean // NOI18N
@@ -391,7 +391,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME);
+        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);
         if (fullRemote) {
             getSelectHostWizardProvider().apply();
         }

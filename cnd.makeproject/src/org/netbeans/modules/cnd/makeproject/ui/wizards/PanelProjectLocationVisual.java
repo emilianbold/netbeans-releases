@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -624,7 +625,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         d.putProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER, new File(folder));
         d.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, projectName);
-        d.putProperty(NewMakeProjectWizardIterator.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
+        d.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder(projectsDir);

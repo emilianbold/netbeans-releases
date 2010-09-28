@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 public class ProjectGenerator {
 
@@ -109,6 +110,7 @@ public class ProjectGenerator {
         }
 
         public ProjectParameters setMakefileName(String makefile) {
+            CndUtils.assertNotNull(makefile, "project makefile name should not be null"); //NOI18N
             this.makefile = makefile;
             return this;
         }
