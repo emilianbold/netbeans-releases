@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = (String) settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+            String workingdir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
 //            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
@@ -100,7 +100,7 @@ import org.openide.util.NbBundle;
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
-        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getTestListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_TEST_FOLDERS, sourceFilesPanel.getTestListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
     }
 
