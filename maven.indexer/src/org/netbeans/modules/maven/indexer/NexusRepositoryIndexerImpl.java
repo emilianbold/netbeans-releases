@@ -420,7 +420,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    /* XXX bug in JettyResourceFetcher - throws IOE not FNFE:
+                    /* XXX NEXUS-3812: JettyResourceFetcher throws IOE not FNFE, so cannot use:
                     iur.setTransferListener(listener);
                      */
                     iur.setResourceFetcher(new JettyResourceFetcher() {
