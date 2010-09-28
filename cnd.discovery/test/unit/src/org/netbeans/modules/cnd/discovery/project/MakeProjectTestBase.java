@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
@@ -232,15 +233,15 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             WizardDescriptor wizard = new WizardDescriptor() {
                 @Override
                 public synchronized Object getProperty(String name) {
-                    if ("simpleMode".equals(name)) {
+                    if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) {
                         return Boolean.TRUE;
-                    } else if ("nativeProjDir".equals(name)) {
+                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) {
                         return path;
-                    } else if ("nativeProjFO".equals(name)) {
+                    } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
                         return FileUtil.toFileObject(new File(path));
-                    } else if ("projdir".equals(name)) {
+                    } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
                         return new File(path);
-                    } else if ("configureName".equals(name)) {
+                    } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {
                         if (OPTIMIZE_NATIVE_EXECUTIONS && makeFile.exists()){// && !configure.getAbsolutePath().endsWith("CMakeLists.txt")) {
                             // optimization on developer computer:
                             // run configure only once

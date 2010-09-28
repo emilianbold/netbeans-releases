@@ -52,6 +52,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -97,7 +98,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (first) {
             first = false;
             @SuppressWarnings("unchecked")
-            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(NewMakeProjectWizardIterator.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
+            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
             if (roots != null) {
                 StringBuilder buf = new StringBuilder();
                 for(FolderEntry folder : roots){
@@ -112,7 +113,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                             if (listFiles != null) {
                                 for (FileObject sub : listFiles){
                                     if (sub.isFolder()) {
-                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                        if (sub.getNameExt().toLowerCase().endsWith("include")) { // NOI18N
                                             buf.append(';');
                                             buf.append(RemoteFileUtil.getAbsolutePath(sub));
                                         }
@@ -129,15 +130,15 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void store(WizardDescriptor wizardDescriptor) {
         if (manualButton.isSelected()) {
-            wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "true"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, includeTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, macroTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "true"); // NOI18N
         } else {
-            wizardDescriptor.putProperty("includeTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "false"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "false"); // NOI18N
         }
-        wizardDescriptor.putProperty("consolidationLevel", "file"); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL, "file"); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {

@@ -53,6 +53,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.NewMakeProjectWizardIterator.Name;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
@@ -104,7 +105,7 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
         if (name != null) {
             name = name.replaceAll(" ", ""); // NOI18N
         }
-        wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, name);
+        wiz.putProperty(WizardConstants.PROPERTY_NAME, name);
         String wizardTitle = getString("SAMPLE_PROJECT") + name; // NOI18N
         String wizardTitleACSD = getString("SAMPLE_PROJECT_ACSD"); // NOI18N
 
@@ -120,8 +121,8 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     public void uninitialize(WizardDescriptor templateWizard) {
         panel = null;
         index = -1;
-        this.wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER, null);
-        this.wiz.putProperty(NewMakeProjectWizardIterator.PROPERTY_NAME, null);
+        this.wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, null);
+        this.wiz.putProperty(WizardConstants.PROPERTY_NAME, null);
     }
 
     @Override
@@ -136,10 +137,10 @@ public class MakeSampleProjectIterator implements TemplateWizard.ProgressInstant
     
     @Override
     public Set<DataObject> instantiate() throws IOException {
-        File projectLocation = (File) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_PROJECT_FOLDER);
-        String name = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_NAME); 
-        String hostUID = (String) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
-        CompilerSet toolchain = (CompilerSet) wiz.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
+        File projectLocation = (File) wiz.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        String name = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
+        String hostUID = (String) wiz.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        CompilerSet toolchain = (CompilerSet) wiz.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(name, projectLocation);
         prjParams.setHostToolchain(hostUID, toolchain);
         return MakeSampleProjectGenerator.createProjectFromTemplate(wiz.getTemplate().getPrimaryFile(), prjParams);

@@ -118,9 +118,9 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     private void setMode(boolean isSimple) {
         if (isSimple) {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         } else {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
         validate();
     }
@@ -158,7 +158,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
@@ -169,7 +169,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE));
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
     }
 
     // You can use a settings object to keep track of state. Normally the
@@ -179,8 +179,8 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        if (wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE) == null) {
-            wizardDescriptor.putProperty(NewMakeProjectWizardIterator.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+        if (wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE) == null) {
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         }
         getComponent().read(wizardDescriptor);
     }
@@ -342,23 +342,23 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 } else {
                     return Boolean.FALSE;
                 }
-            } else if ("simpleMode".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) { // NOI18N
                 return Boolean.TRUE;
             } else if (WizardConstants.PROPERTY_MAKEFILE_NAME.equals(name)) { // NOI18N
                 return storage.getMake();
-            } else if ("configureName".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
                 return storage.getConfigure();
-            } else if ("hostUID".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) { // NOI18N
                 return ExecutionEnvironmentFactory.toUniqueID(storage.env);
-            } else if ("toolchain".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
                 return storage.cs;
-            } else if (/*XXX Define somewhere*/"fullRemote".equals(name)) { // NOI18N
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
                 return storage.fullRemote;
-            } else if (/*XXX Define somewhere*/"nativeProjDir".equals(name)) { // NOI18N
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject().getPath();
-            } else if (/*XXX Define somewhere*/"nativeProjFO".equals(name)) { // NOI18N
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
                 return storage.getSourcesFileObject();
-            } else if (/*XXX Define somewhere*/"projdir".equals(name)) { // NOI18N
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
                 //Object o = super.getProperty(name);
                 return new File(storage.getProjectPath());
             }

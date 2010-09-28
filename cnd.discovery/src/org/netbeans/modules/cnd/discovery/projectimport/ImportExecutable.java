@@ -86,6 +86,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -148,10 +149,10 @@ public class ImportExecutable implements PropertyChangeListener {
 
 
     private void createProject() {
-        String binaryPath = (String) map.get("outputTextField"); // NOI18N
-        sourcesPath = (String) map.get("sourceFolderPath"); // NOI18N
-        File projectFolder = (File) map.get("projdir");  // NOI18N;
-        String projectName = (String) map.get("name"); // NOI18N
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
+        File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
+        String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
         String baseDir;
         if (projectFolder != null) {
             projectFolder = CndFileUtils.normalizeFile(projectFolder);
@@ -167,8 +168,8 @@ public class ImportExecutable implements PropertyChangeListener {
             baseDir = projectParentFolder + File.separator + projectName;
             projectFolder = new File(baseDir);
         }
-        String hostUID = (String) map.get("hostUID"); // NOI18N
-        CompilerSet toolchain = (CompilerSet) map.get("toolchain"); // NOI18N
+        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
+        CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)

@@ -84,32 +84,34 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
     }
 
     @Override
-    public void updateKeys(){
+    public void updateKeys() {
         Vector<AbstractNode> keys = new Vector<AbstractNode>();
         String[] childTypes = NodeTypes.getChildTypes(type);
-        if((childTypes != null) && (childTypes.length > 1)) {
-            for(int i = 0; i < childTypes.length; i++) {
-                String childtype = childTypes[i];
-                Class customizer = getCustomizer(childtype);
-                keys.add(new Hk2ItemNode(lookup,
-                    new Hk2Resources(lookup, childtype, customizer),
-                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+childtype), //TODO
-                    Hk2ItemNode.REFRESHABLE_FOLDER));
-            }
-        } else {
-            String childtype = childTypes[0];
-            GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
-            if (commonSupport != null) {
-                try {
-                    java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                    Decorator decorator = DecoratorManager.findDecorator(childtype, null,true);
-                    List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
-                    for (ResourceDesc resource : reslourcesList) {
-                        keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
+        if ((childTypes != null)) {
+            if (childTypes.length > 1) {
+                for (int i = 0; i < childTypes.length; i++) {
+                    String childtype = childTypes[i];
+                    Class customizer = getCustomizer(childtype);
+                    keys.add(new Hk2ItemNode(lookup,
+                            new Hk2Resources(lookup, childtype, customizer),
+                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + childtype), //TODO
+                            Hk2ItemNode.REFRESHABLE_FOLDER));
+                }
+            } else {
+                String childtype = childTypes[0];
+                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                if (commonSupport != null) {
+                    try {
+                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                        Decorator decorator = DecoratorManager.findDecorator(childtype, null, true);
+                        List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
+                        for (ResourceDesc resource : reslourcesList) {
+                            keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     }
-                } catch (Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         }

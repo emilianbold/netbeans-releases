@@ -123,21 +123,21 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_HOST_UID);
+        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         ExecutionEnvironment ee = null;
         if (hostUID != null) {
             ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
         }
         CompilerSet cs = null;
         if (ee != null) {
-            cs = (CompilerSet) wizardDescriptor.getProperty(NewMakeProjectWizardIterator.PROPERTY_TOOLCHAIN);
+            cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         }
         try {
             removeDocumentLiseners();
-            String path = (String) wizardDescriptor.getProperty("simpleModeFolder"); // NOI18N
+            String path = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER); // NOI18N
             if (path != null) {
                 boolean selected = false;
-                FileObject makeFileFO = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty("nativeProjFO"));
+                FileObject makeFileFO = ConfigureUtils.findMakefile((FileObject) wizardDescriptor.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO));
                 String makeFile = (makeFileFO == null) ? null : makeFileFO.getPath();
                 if (makeFile != null) {
                     makefileNameTextField.setText(makeFile);
@@ -162,16 +162,16 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     void store(WizardDescriptor wizardDescriptor) {
         if (makefileRadioButton.isSelected()) {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileNameTextField.getText());
-            wizardDescriptor.putProperty("configureName", ""); // NOI18N
-            wizardDescriptor.putProperty("configureArguments", ""); // NOI18N
-            wizardDescriptor.putProperty("makeProject", makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
-            wizardDescriptor.putProperty("runConfigure", ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, ""); // NOI18N
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, configureMakefileNameTextField.getText());
-            wizardDescriptor.putProperty("configureName", configureNameTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("configureArguments", configureArgumentsTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("runConfigure", runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
-            wizardDescriptor.putProperty("makeProject", ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, configureNameTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, configureArgumentsTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, ""); // NOI18N
         }
     }
     
