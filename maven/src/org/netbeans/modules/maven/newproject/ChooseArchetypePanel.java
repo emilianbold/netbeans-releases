@@ -344,6 +344,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     
     public @Override void run() {
         List<Archetype> archetypes = new ArrayList<Archetype>();
+        // XXX currently there will be none here; should reconsider UI of this panel
         for (ArchetypeProvider provider : Lookup.getDefault().lookupAll(ArchetypeProvider.class)) {
             for (Archetype ar : provider.getArchetypes()) {
                 if (!archetypes.contains(ar)) {
