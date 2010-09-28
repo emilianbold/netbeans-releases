@@ -449,7 +449,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false,
-                (ToolsCacheManager) wizardDescriptor.getProperty("ToolsCacheManager")) { // NOI18N
+                (ToolsCacheManager) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) { // NOI18N
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 boolean enableHost = enabled;
@@ -487,7 +487,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         } else {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); // NOI18N
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
@@ -499,9 +499,9 @@ public class SelectModePanel extends javax.swing.JPanel {
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, tc);
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
-        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); // NOI18N
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
-        wizardDescriptor.putProperty("nativeProjDir", (fo == null) ? null : fo.getPath()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); // NOI18N
         initialized = false;
     }
 

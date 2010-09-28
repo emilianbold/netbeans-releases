@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.util.Utilities;
 
@@ -275,7 +276,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) wizard.getProperty(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+                root = (String)wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }
@@ -460,7 +461,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
             String root = (String) map.get(ROOT_FOLDER);
             if (root == null) {
                 // field in project wizard
-                root = (String)map.get("buildCommandWorkingDirTextField"); // NOI18N
+                root = (String)map.get(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
                 if (root != null && Utilities.isWindows()) {
                     root = root.replace('\\','/');
                 }

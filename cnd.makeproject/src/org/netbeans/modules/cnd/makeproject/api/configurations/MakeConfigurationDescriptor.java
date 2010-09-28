@@ -1254,9 +1254,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, boolean asDiskFolder, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
-        top = folder.findFolderByName(dir.getName());
+        top = folder.findFolderByName(dir.getNameExt());
         if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
             folder.addFolder(top, true);
         }
         if (asDiskFolder) {
@@ -1288,7 +1288,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
         folder.addFolder(top, setModified);
         addFiles(top, dir, null, filesAdded, true, setModified, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null
@@ -1336,12 +1336,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     continue;
                 }
                 Folder dirfolder = folder;
-                dirfolder = folder.findFolderByName(file.getName());
+                dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
-                        dirfolder = folder.addNewFolder(file.getName(), file.getName(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getName(), file.getName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
                     }
                 }
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
