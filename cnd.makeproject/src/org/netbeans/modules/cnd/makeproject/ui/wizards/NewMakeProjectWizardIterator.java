@@ -325,6 +325,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if(wizardtype == TYPE_DB_APPLICATION) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                panelConfigureProjectTrue.setFinishPanel(false);
                 panels.add(panelConfigureProjectTrue);
                 WizardDescriptor.Panel<WizardDescriptor> masterPanel = createDatabaseMasterPanel();
                 if(masterPanel != null) {
