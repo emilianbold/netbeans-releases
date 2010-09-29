@@ -66,12 +66,12 @@ import org.openide.util.NbBundle;
 
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
+    private final ParserConfigurationDescriptorPanel controller;
     private boolean first = true;
 
     /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
-        this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
+        this.controller = sourceFoldersDescriptorPanel;
 
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
@@ -87,7 +87,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     private void update(DocumentEvent e) {
-        sourceFoldersDescriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
 
     void read(WizardDescriptor settings) {
@@ -399,7 +399,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         return outerPanel;
     }
 
-    private static class IncludesListPanel extends ListEditorPanel<String> {
+    private class IncludesListPanel extends ListEditorPanel<String> {
 
         public IncludesListPanel(List<String> objects) {
             super(objects);
@@ -415,7 +415,11 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            FileChooser fileChooser = new FileChooser(getString("INCLUDE_DIR_DIALOG_TITLE_TXT"), getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                    controller.getWizardDescriptor(),
+                    getString("INCLUDE_DIR_DIALOG_TITLE_TXT"),
+                    getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"),
+                    JFileChooser.DIRECTORIES_ONLY, null, seed, true);
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;

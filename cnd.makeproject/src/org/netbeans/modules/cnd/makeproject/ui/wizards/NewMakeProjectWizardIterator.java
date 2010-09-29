@@ -120,6 +120,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private SelectHostWizardProvider selectHostWizardProvider;
     private WizardDescriptor.Panel<WizardDescriptor> selectHostPanel;
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
+    private int lastNewHostPanel = -1;
     
     private final SelectModeDescriptorPanel importPanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
@@ -254,7 +255,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return selectHostWizardProvider;
     }
 
-    private synchronized void setupPanelsAndStepsIfNeed() {
+    private synchronized void setupPanelsAndStepsIfNeed() {        
         if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
@@ -281,6 +282,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             lastHostUid = hostUID;
             lastSimpleMode = Boolean.valueOf(isSimple());
             lastSetupHost = setupHost;
+            lastNewHostPanel = -1;
 
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
@@ -292,6 +294,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 panelsList.add(selectHostPanel);
                 if (getSelectHostWizardProvider().isNewHost()) {
                     panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
+                    lastNewHostPanel = panelsList.size() - 1;
                     panelsList.add(importPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
@@ -558,6 +561,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void nextPanel() {
         if (!hasNext()) { // will call setupPanelsAndStepsIfNeed();
             throw new NoSuchElementException();
+        }
+        if (index == lastNewHostPanel && fullRemote) {
+            getSelectHostWizardProvider().apply();
         }
         index++;
     }

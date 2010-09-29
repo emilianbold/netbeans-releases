@@ -514,7 +514,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Add item to the dataObject's lookup
         if (isProjectFiles() && notify) {
             DataObject dao = item.getDataObject();
-            NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getCookie(NativeFileItemSet.class);
+            NativeFileItemSet myNativeFileItemSet = (dao == null) ? null : dao.getLookup().lookup(NativeFileItemSet.class);
             if (myNativeFileItemSet != null) {
                 myNativeFileItemSet.add(item);
             } else {
@@ -711,7 +711,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (isProjectFiles()) {
             DataObject dataObject = item.getDataObject();
             if (dataObject != null) {
-                NativeFileItemSet myNativeFileItemSet = dataObject.getCookie(NativeFileItemSet.class);
+                NativeFileItemSet myNativeFileItemSet = dataObject.getLookup().lookup(NativeFileItemSet.class);
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
                 }

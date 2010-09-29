@@ -958,6 +958,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
+            getBugzillaRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);

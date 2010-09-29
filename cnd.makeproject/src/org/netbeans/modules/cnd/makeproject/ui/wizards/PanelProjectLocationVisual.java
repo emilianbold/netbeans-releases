@@ -83,8 +83,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
-    private PanelConfigureProject panel;
-    private String templateName;
+    private final PanelConfigureProject controller;
+    private final String templateName;
     private String name;
     private boolean makefileNameChanged = false;
     private int type;
@@ -93,7 +93,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     /** Creates new form PanelProjectLocationVisual */
     public PanelProjectLocationVisual(PanelConfigureProject panel, String name, boolean showMakefileTextField, int type) {
         initComponents();
-        this.panel = panel;
+        this.controller = panel;
         this.name = name;
         this.templateName = name;
         this.type = type;
@@ -418,7 +418,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
-        JFileChooser chooser = new JFileChooser();
+        JFileChooser chooser = new JFileChooser(); // Sic! - project is always local
         chooser.setCurrentDirectory(null);
         chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation")); // NOI18N
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -433,7 +433,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText(projectDir.getAbsolutePath());
         }
-        panel.fireChangeEvent();
+        controller.fireChangeEvent();
     }//GEN-LAST:event_browseLocationAction
 
     private void createMainCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createMainCheckBoxActionPerformed
@@ -449,7 +449,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             ServerRecord newItem = (ServerRecord) evt.getItem();
             updateToolchains(this.toolchainComboBox, newItem);
-            panel.fireChangeEvent(); // Notify that the panel changed
+            controller.fireChangeEvent(); // Notify that the panel changed
         }
     }
 
@@ -683,7 +683,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 updateToolchainsComponents(PanelProjectLocationVisual.this.hostComboBox, PanelProjectLocationVisual.this.toolchainComboBox, records, srToSelect, csToSelect, enabled, enabled);
                 initialized = true;
-                panel.fireChangeEvent(); // Notify that the panel changed
+                controller.fireChangeEvent(); // Notify that the panel changed
             }
         });
 
@@ -831,7 +831,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 makefileNameChanged = false;
             }
         }
-        panel.fireChangeEvent(); // Notify that the panel changed
+        controller.fireChangeEvent(); // Notify that the panel changed
     }
 
     static File getCanonicalFile(File file) {
