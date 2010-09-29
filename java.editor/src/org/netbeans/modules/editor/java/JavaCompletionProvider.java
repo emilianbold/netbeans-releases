@@ -399,7 +399,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void resolveToolTip(final CompilationController controller) throws IOException {
-            Env env = getCompletionEnvironment(controller, false);
+            Env env = getCompletionEnvironment(controller, queryType);
             if (env == null)
                 return;
             Tree lastTree = null;
@@ -538,7 +538,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (element != null) {
                 el = element.resolve(controller);
             } else {
-                Env e = getCompletionEnvironment(controller, false);
+                Env e = getCompletionEnvironment(controller, queryType);
                 if (e != null)
                     el = controller.getTrees().getElement(e.getPath());
             }
@@ -564,7 +564,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void resolveCompletion(CompilationController controller) throws IOException {
-            Env env = getCompletionEnvironment(controller, true);
+            Env env = getCompletionEnvironment(controller, queryType);
             if (env == null)
                 return;
             results = new ArrayList<JavaCompletionItem>();
@@ -4526,34 +4526,50 @@ public class JavaCompletionProvider implements CompletionProvider {
             return types.getDeclaredType(e, targs);
         }
         
-        private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
+        private Env getCompletionEnvironment(CompilationController controller, int queryType) throws IOException {
             controller.toPhase(Phase.PARSED);
             int offset = controller.getSnapshot().getEmbeddedOffset(caretOffset);
             if (offset < 0)
                 return null;
+            boolean complQuery = (queryType & COMPLETION_QUERY_TYPE) != 0;
             String prefix = null;
-            if (upToOffset && offset > 0) {
-                TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
-                 // When right at the token end move to previous token; otherwise move to the token that "contains" the offset
-                if (ts.move(offset) == 0 || !ts.moveNext())
-                    ts.movePrevious();
-                int len = offset - ts.offset();
-                if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
-                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
-                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
-                        && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                    prefix = ts.token().toString().substring(0, len);
-                    offset = ts.offset();
+            if (offset > 0) {
+                if (complQuery) {
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                     // When right at the token end move to previous token; otherwise move to the token that "contains" the offset
+                    if (ts.move(offset) == 0 || !ts.moveNext())
+                        ts.movePrevious();
+                    int len = offset - ts.offset();
+                    if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                            ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                            ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                            ts.token().id().primaryCategory().equals("literal")) //NOI18N
+                            && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
+                        prefix = ts.token().toString().substring(0, len);
+                        offset = ts.offset();
+                    }
+                } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                     // When right at the token start move offset to the position "inside" the token
+                    ts.move(offset);
+                    if (!ts.moveNext())
+                        ts.movePrevious();
+                    if (ts.offset() == offset && ts.token().length() > 0 &&
+                            (ts.token().id() == JavaTokenId.IDENTIFIER ||
+                            ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                            ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                            ts.token().id().primaryCategory().equals("literal"))) { //NOI18N
+                        offset++;
+                    }
                 }
             }
             TreePath path = controller.getTreeUtilities().pathFor(offset);
-            if (upToOffset) {
+            if (complQuery) {
                 TreePath treePath = path;
                 while (treePath != null) {
                     TreePath pPath = treePath.getParentPath();
                     TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
-                    Env env = getEnvImpl(controller, path, treePath, pPath, gpPath, offset, prefix, upToOffset);
+                    Env env = getEnvImpl(controller, path, treePath, pPath, gpPath, offset, prefix, complQuery);
                     if (env != null)
                         return env;
                     treePath = treePath.getParentPath();
@@ -4569,7 +4585,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     for (TreePath tp : reversePath) {
                         TreePath pPath = tp.getParentPath();
                         TreePath gpPath = pPath != null ? pPath.getParentPath() : null;
-                        Env env = getEnvImpl(controller, path, tp, pPath, gpPath, offset, prefix, upToOffset);
+                        Env env = getEnvImpl(controller, path, tp, pPath, gpPath, offset, prefix, complQuery);
                         if (env != null)
                             return env;
                     }
