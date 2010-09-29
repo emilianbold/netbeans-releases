@@ -89,20 +89,22 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
     protected Data getImpl(CharSequence path) {
         if (USE_REMOTE_FS) {
             String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
-            }
-            if (pathStartsWith(path, prefix)) {
-                CharSequence rest = path.subSequence(prefix.length(), path.length());
-                int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
-                if (slashPos >= 0) {
-                    String hostName = rest.subSequence(0, slashPos).toString();
-                    CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                    ExecutionEnvironment env = getExecutionEnvironment(hostName);
-                    if (env != null) {
-                        final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
-                        Data data = new Data(fs, remotePath.toString());
-                        return data;
+            if (prefix != null) {
+                if (Utilities.isWindows()) {
+                    path = path.toString().replace('\\', '/');
+                }
+                if (pathStartsWith(path, prefix)) {
+                    CharSequence rest = path.subSequence(prefix.length(), path.length());
+                    int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
+                    if (slashPos >= 0) {
+                        String hostName = rest.subSequence(0, slashPos).toString();
+                        CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
+                        ExecutionEnvironment env = getExecutionEnvironment(hostName);
+                        if (env != null) {
+                            final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+                            Data data = new Data(fs, remotePath.toString());
+                            return data;
+                        }
                     }
                 }
             }

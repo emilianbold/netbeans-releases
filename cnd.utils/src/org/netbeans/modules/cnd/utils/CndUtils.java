@@ -142,7 +142,7 @@ public class CndUtils {
 
     private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
