@@ -126,7 +126,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     @Override
     public synchronized H2DataStorage createStorage(String uniqueKey) {
         try {
-            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Create Storage with unique id={0}", uniqueKey);
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Create Storage with unique id={0}", uniqueKey);//NOI18N
             H2DataStorage result = new H2DataStorage(true, uniqueKey);
             result.connect();
             result.isPersistent = true;
@@ -138,7 +138,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
             return null;
         } catch (SQLException ex){     
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, 
-                    "Exception has been occured while trying to connect using storageUniqueID=" + uniqueKey , ex);
+                    "Exception has been occured while trying to connect using storageUniqueID=" + uniqueKey , ex);//NOI18N
             return null;
         }
     }
@@ -149,14 +149,14 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
             //find dburl
             String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
-                    "Trying to open storage with the uniqueID={0} and dbURL={1}", new String[]{uniqueKey, dbURL});
+                    "Trying to open storage with the uniqueID={0} and dbURL={1}", new String[]{uniqueKey, dbURL});//NOI18N
             if (dbURL != null) {
                 H2DataStorage result = new H2DataStorage(dbURL);
                 result.connect();
                 result.loadSchema();
                 result.isPersistent = true;
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
-                    "storage with the uniqueID={0} and dbURL={1} successfully OPENED" , new String[]{uniqueKey, dbURL});                
+                    "storage with the uniqueID={0} and dbURL={1} successfully OPENED" , new String[]{uniqueKey, dbURL});     //NOI18N           
                 return result;
             }
         } catch (SQLException ex) {
