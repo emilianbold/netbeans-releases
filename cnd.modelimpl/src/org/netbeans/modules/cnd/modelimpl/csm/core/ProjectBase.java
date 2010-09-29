@@ -1058,7 +1058,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
         StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
-        APTFileSearch searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(getPlatformProject())));
+        APTFileSearch searcher = null;
+        Object aPlatformProject = getPlatformProject();
+        if (aPlatformProject != null){
+            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(aPlatformProject)));
+        }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
 
