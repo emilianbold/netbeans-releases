@@ -121,7 +121,10 @@ public class Watcher extends AnnotationProvider {
         public @Override long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
             FileObject fo = FileUtil.toFileObject(dir);
             String path = dir.getAbsolutePath();
-            assert fo != null;
+
+            if (fo == null && !dir.exists()) return -1;
+
+            assert fo != null : "No fileobject for " + path;
 
             if (map.containsKey(fo)) return -1;
 
