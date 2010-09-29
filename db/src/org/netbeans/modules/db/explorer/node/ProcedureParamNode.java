@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -102,6 +102,7 @@ public class ProcedureParamNode  extends BaseNode {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                    @Override
                         public void run(Metadata metaData) {
                             Parameter parameter = paramHandle.resolve(metaData);
                             if (parameter != null) {
@@ -131,7 +132,7 @@ public class ProcedureParamNode  extends BaseNode {
     }
 
     private void updateProperties(Parameter param) {
-        PropertySupport ps = new PropertySupport.Name(this);
+        PropertySupport<String> ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         switch (param.getDirection()) {
@@ -146,9 +147,10 @@ public class ProcedureParamNode  extends BaseNode {
                 break;
         }
 
-        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
+        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType() == null ? "null" : param.getType().toString()); // NOI18N
     }
 
+    @Override
     protected void initialize() {
         setupNames();
     }
@@ -160,6 +162,7 @@ public class ProcedureParamNode  extends BaseNode {
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+                @Override
                     public void run(Metadata metaData) {
                         Parameter param = paramHandle.resolve(metaData);
                         array[0] = param.getOrdinalPosition();

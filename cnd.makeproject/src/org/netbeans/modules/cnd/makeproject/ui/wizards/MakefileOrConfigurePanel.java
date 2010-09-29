@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -63,14 +62,14 @@ import org.openide.util.NbBundle;
 
 public class MakefileOrConfigurePanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
-    private DocumentListener documentListener;
-    private MakefileOrConfigureDescriptorPanel descriptorPanel;
+    private final DocumentListener documentListener;
+    private final MakefileOrConfigureDescriptorPanel controller;
     
     
     MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        this.descriptorPanel = buildActionsDescriptorPanel;
+        this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -119,7 +118,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     private void update(DocumentEvent e) {
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
@@ -212,13 +211,15 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             if (makefileRadioButton.isSelected()) {
                 if (makefileNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOMAKEFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
-                if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) || !new File(makefileNameTextField.getText()).exists() || new File(makefileNameTextField.getText()).isDirectory()) {
+                if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) 
+                        || !NewProjectWizardUtils.fileExists(makefileNameTextField.getText(), controller.getWizardDescriptor())
+                        || NewProjectWizardUtils.isDirectory(makefileNameTextField.getText(), controller.getWizardDescriptor())) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
@@ -226,7 +227,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 int i = mn.replace('\\', '/').lastIndexOf('/');
                 if (i > 0) {// && !configureNameTextField.getText().isEmpty()) {
                     String cn = ConfigureUtils.findConfigureScript(mn.substring(0,i));
-                    if (cn != null && new File(cn).exists()) {
+                    if (cn != null && NewProjectWizardUtils.fileExists(cn, controller.getWizardDescriptor())) {
                         configureNameTextField.setText(cn);
                     }
                 }
@@ -234,18 +235,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 configureMakefileNameTextField.setText(""); // NOI18N
                 if (configureNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOCONFIGUREFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
-                File file = new File(configureNameTextField.getText());
+                FileObject file = NewProjectWizardUtils.getFileObject(configureNameTextField.getText(), controller.getWizardDescriptor());
                 if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText()) ||
-                    !file.exists() || file.isDirectory()) {
+                    !file.isValid() || file.isFolder()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 } else if (!ConfigureUtils.isRunnable(file)) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
@@ -253,7 +254,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 if (i > 0) {
                     String mn = configureNameTextField.getText().substring(0, i+1) + "Makefile";  // NOI18N
                     configureMakefileNameTextField.setText(mn); // NOI18N
-                    if (new File(mn).exists()) {
+                    if (NewProjectWizardUtils.fileExists(mn, controller.getWizardDescriptor())) {
                         makefileNameTextField.setText(mn);
                     }
                 }
@@ -492,11 +493,11 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }// </editor-fold>//GEN-END:initComponents
     
     private void configureRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureRadioButtonActionPerformed
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }//GEN-LAST:event_configureRadioButtonActionPerformed
     
     private void makefileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileRadioButtonActionPerformed
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }//GEN-LAST:event_makefileRadioButtonActionPerformed
     
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed
@@ -508,14 +509,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("CONFIGURE_CHOOSER_TITLE_TXT"),
                 getString("MAKEFILE_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
                 new FileFilter[] {FileFilterFactory.getConfigureFileFilter()},
                 seed,
-                false
-                );
+                false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
@@ -534,7 +535,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("MAKEFILE_CHOOSER_TITLE_TXT"),
                 getString("MAKEFILE_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
