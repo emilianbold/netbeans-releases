@@ -304,10 +304,12 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 fo = fo.getParent();
             }
 
-            // fo is the closest existing parent
-            for (FileObject parent = fo; parent != null; parent = parent.getParent()) {
-                // plan parent to refresh
-                addToMap(parentsToRefresh, parent, removeFromCache);
+            if (removeFromCache) {
+                // fo is the closest existing parent
+                for (FileObject parent = fo; parent != null; parent = parent.getParent()) {
+                    // plan parent to refresh
+                    addToMap(parentsToRefresh, parent, removeFromCache);
+                }
             }
         }
         
