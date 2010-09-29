@@ -65,13 +65,12 @@ import javax.swing.text.Document;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.manager.WagonManager;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.embedder.MavenEmbedder;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -94,7 +93,6 @@ import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -124,7 +122,11 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
 
     private boolean changedPackage = false;
     
+    private static final RequestProcessor RPgetver = new RequestProcessor("BasicPanelVisual-getCommandLineMavenVersion"); //NOI18N
+    private static final RequestProcessor RPprep = new RequestProcessor("BasicPanelVisual-prepareAdditionalProperties"); //NOI18N
+    
     /** Creates new form PanelProjectLocationVisual */
+    @SuppressWarnings("unchecked")
     public BasicPanelVisual(BasicWizardPanel panel) {
         this.panel = panel;
 
@@ -522,12 +524,12 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
 
     private ArtifactVersion getCommandLineMavenVersion () {
-        if (!askedForVersion) {
-            askedForVersion = true;
-            // obtain version asynchronously, as it takes some time
-            RequestProcessor.getDefault().post(this);
-        }
         synchronized (MAVEN_VERSION_LOCK) {
+            if (!askedForVersion) {
+                askedForVersion = true;
+                // obtain version asynchronously, as it takes some time
+                RPgetver.post(this);
+            }
             return mavenVersion;
         }
     }
@@ -589,7 +591,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             lblAdditionalProps.setVisible(true);
             tblAdditionalProps.setVisible(false);
             jScrollPane1.setVisible(false);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPprep.post(new Runnable() {
                 public void run() {
                     prepareAdditionalProperties(arch);
                 }
@@ -688,28 +690,30 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
                 return false;
             }
         });
-        List repos;
+        List<ArtifactRepository> repos;
         if (arch.getRepository() == null) {
-            repos = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, "http://repo1.maven.org/maven2", "central"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, "http://repo1.maven.org/maven2", "central"));//NOI18N
         } else {
             
-            repos = Collections.singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
         }
         AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(BasicPanelVisual.class, "Handle_Download"),
                 new ProgressContributor[] {
                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                null, null);
+                ProgressTransferListener.cancellable(), null);
         ProgressTransferListener.setAggregateHandle(hndl);
         try {
             hndl.start();
-            try {
-                WagonManager wagon = (WagonManager) online.getPlexusContainer().lookup(WagonManager.class);
-                wagon.setDownloadMonitor(new ProgressTransferListener());
-            } catch (ComponentLookupException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+//TODO how to rewrite to track progress?
+//            try {
+//                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
+//                wagon.setDownloadMonitor(new ProgressTransferListener());
+//            } catch (ComponentLookupException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
             online.resolve(pom, repos, online.getLocalRepository());
             online.resolve(art, repos, online.getLocalRepository());
+        } catch (ThreadDeath d) { // download interrupted
         } finally {
             hndl.finish();
             ProgressTransferListener.clearAggregateHandle();
@@ -835,9 +839,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         if (!EventQueue.isDispatchThread()) {
             // phase one, outside EQ thread
             String version = MavenSettings.getCommandLineMavenVersion();
-            synchronized (MAVEN_VERSION_LOCK) {
-                mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
-            }
+            mavenVersion = version != null ? new DefaultArtifactVersion(version.trim()) : null;
             // trigger revalidation -> phase two
             SwingUtilities.invokeLater(this);
         } else {

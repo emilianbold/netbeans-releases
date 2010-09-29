@@ -65,7 +65,7 @@ public class HelperUtility {
     private final HashMap<ExecutionEnvironment, String> cache = new HashMap<ExecutionEnvironment, String>();
     private final String pattern;
 
-    protected HelperUtility(String searchPattern) {
+    public HelperUtility(String searchPattern) {
         pattern = searchPattern;
     }
 
@@ -126,10 +126,10 @@ public class HelperUtility {
         MacroExpander expander = MacroExpanderFactory.getExpander(env);
         String path = expander.expandPredefinedMacros(pattern);
 
-        File file = fl.locate(path, null, false);
+        File file = fl.locate(path, "org.netbeans.modules.dlight.nativeexecution", false); //NOI18N
 
         if (file == null || !file.exists()) {
-            throw new MissingResourceException(path, null, null);
+            throw new MissingResourceException(path, null, null); //NOI18N
         }
 
         return file.getAbsolutePath();

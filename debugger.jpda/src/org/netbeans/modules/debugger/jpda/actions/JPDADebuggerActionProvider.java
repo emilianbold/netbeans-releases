@@ -56,6 +56,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
+import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
@@ -65,6 +68,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
+import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.openide.util.Exceptions;
 
@@ -159,7 +163,18 @@ implements PropertyChangeListener {
      * Do the action lazily in a RequestProcessor.
      * @param run The action to perform.
      */
-    protected final void doLazyAction(final Runnable run) {
+    protected final void doLazyAction(Object action, final Runnable run) {
+        //System.err.println("doLazyAction() in "+this);
+        //Logger.getLogger(JPDADebuggerActionProvider.class.getName()).fine("doLazyAction() in "+this);
+        //final long start = System.nanoTime();
+        final JPDAThreadImpl threadWithActionsPending;
+        JPDAThread ct = debugger.getCurrentThread();
+        if (ct instanceof JPDAThreadImpl && action != ActionsManager.ACTION_PAUSE) {
+            threadWithActionsPending = (JPDAThreadImpl) ct;
+            threadWithActionsPending.setPendingAction(action);
+        } else {
+            threadWithActionsPending = null;
+        }
         final Set<JPDADebuggerActionProvider> disabledActions;
         synchronized (JPDADebuggerActionProvider.class) {
             disabledActions = new HashSet<JPDADebuggerActionProvider>(providersToDisableOnLazyActions);
@@ -169,15 +184,21 @@ implements PropertyChangeListener {
             Set actions = ap.getActions();
             ap.disabled = true;
             for (Iterator ait = actions.iterator(); ait.hasNext(); ) {
-                Object action = ait.next();
-                ap.setEnabled (action, false);
+                Object a = ait.next();
+                ap.setEnabled (a, false);
                 //System.out.println(ap+".setEnabled("+action+", "+false+")");
             }
         }
         debugger.getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
+                    //long end = System.nanoTime();
+                    //System.err.println("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
+                    //Logger.getLogger(JPDADebuggerActionProvider.class.getName()).fine("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
                     run.run();
+                    if (threadWithActionsPending != null) {
+                        threadWithActionsPending.setPendingAction(null);
+                    }
                     for (Iterator<JPDADebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
                         JPDADebuggerActionProvider ap = it.next();
                         Set actions = ap.getActions();

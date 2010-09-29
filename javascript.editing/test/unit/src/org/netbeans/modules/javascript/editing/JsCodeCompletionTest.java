@@ -68,6 +68,7 @@ public class JsCodeCompletionTest extends JsTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        JsLanguage.jsClassPathRegistered = true;
         System.setProperty("CslJar", "true");
         super.setUp();
     }

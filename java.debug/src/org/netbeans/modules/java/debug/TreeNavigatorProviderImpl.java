@@ -54,6 +54,7 @@ import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
@@ -205,12 +206,21 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
     private static final AttributeSet HIGHLIGHT_PREF = AttributesUtilities.createImmutable(StyleConstants.Underline, new Color(30, 255, 0));
     
     private final class TaskImpl implements CancellableTask<CompilationInfo> {
-        
+
+        private final AtomicBoolean cancel = new AtomicBoolean();
+
         public void cancel() {
+            cancel.set(true);
         }
 
         public void run(CompilationInfo info) {
-            manager.setRootContext(TreeNode.getTree(info, new TreePath(info.getCompilationUnit())));
+            cancel.set(false);
+            
+            Node tree = TreeNode.getTree(info, new TreePath(info.getCompilationUnit()), cancel);
+
+            if (!cancel.get()) {
+                manager.setRootContext(tree);
+            }
         }
         
     }

@@ -401,14 +401,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.COMPILE));
             }
-            // XXX refactor to use project.supportedTestTypes
-            FileObject testSrcDir = project.getTestSourceDirectory("unit");
-            if (testSrcDir != null) {
-                paths.add(findClassPath(testSrcDir, ClassPath.COMPILE));
-            }
-            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
-            if (funcTestSrcDir != null) {
-                paths.add(findClassPath(funcTestSrcDir, ClassPath.COMPILE));
+            for (String testType : project.supportedTestTypes()) {
+                FileObject testSrcDir = project.getTestSourceDirectory(testType);
+                if (testSrcDir != null) {
+                    paths.add(findClassPath(testSrcDir, ClassPath.COMPILE));
+                }
             }
             calculateExtraCompilationUnits();
             paths.addAll(extraCompilationUnitsCompile.values());
@@ -417,13 +414,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.EXECUTE));
             }
-            FileObject testSrcDir = project.getTestSourceDirectory("unit");
-            if (testSrcDir != null) {
-                paths.add(findClassPath(testSrcDir, ClassPath.EXECUTE));
-            }
-            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
-            if (funcTestSrcDir != null) {
-                paths.add(findClassPath(funcTestSrcDir, ClassPath.EXECUTE));
+            for (String testType : project.supportedTestTypes()) {
+                FileObject testSrcDir = project.getTestSourceDirectory(testType);
+                if (testSrcDir != null) {
+                    paths.add(findClassPath(testSrcDir, ClassPath.EXECUTE));
+                }
             }
             calculateExtraCompilationUnits();
             paths.addAll(extraCompilationUnitsExecute.values());
@@ -432,13 +427,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             if (srcDir != null) {
                 paths.add(findClassPath(srcDir, ClassPath.SOURCE));
             }
-            FileObject testSrcDir = project.getTestSourceDirectory("unit");
-            if (testSrcDir != null) {
-                paths.add(findClassPath(testSrcDir, ClassPath.SOURCE));
-            }
-            FileObject funcTestSrcDir = project.getTestSourceDirectory("qa-functional");
-            if (funcTestSrcDir != null) {
-                paths.add(findClassPath(funcTestSrcDir, ClassPath.SOURCE));
+            for (String testType : project.supportedTestTypes()) {
+                FileObject testSrcDir = project.getTestSourceDirectory(testType);
+                if (testSrcDir != null) {
+                    paths.add(findClassPath(testSrcDir, ClassPath.SOURCE));
+                }
             }
             calculateExtraCompilationUnits();
             for (FileObject root : extraCompilationUnitsCompile.keySet()) {

@@ -54,11 +54,12 @@ import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
-import org.apache.maven.embedder.MavenEmbedder;
-import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
+import org.apache.maven.model.Build;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -67,6 +68,8 @@ import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.maven.options.MavenSettings.DownloadStrategy;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -188,21 +191,22 @@ public final class NbMavenProject {
                     AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
+                            ProgressTransferListener.cancellable(), null);
 
                     boolean ok = true;
                     try {
                         ProgressTransferListener.setAggregateHandle(hndl);
                         hndl.start();
-                        MavenExecutionRequest req = new DefaultMavenExecutionRequest();
+                        MavenExecutionRequest req = online.createMavenExecutionRequest();
                         req.setPom(pomFile);
-                        req.setTransferListener(new ProgressTransferListener());
+                        req.setTransferListener(ProgressTransferListener.activeListener());
                         MavenExecutionResult res = online.readProjectWithDependencies(req); //NOI18N
                         if (res.hasExceptions()) {
                             ok = false;
                             Exception ex = (Exception)res.getExceptions().get(0);
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbMavenProject.class, "MSG_Failed", ex.getLocalizedMessage()));
                         }
+                    } catch (ThreadDeath d) { // download interrupted
                     } finally {
                         hndl.finish();
                         ProgressTransferListener.clearAggregateHandle();
@@ -231,7 +235,7 @@ public final class NbMavenProject {
      * a project change the correct instance changes as the embedder reloads it.
      * 
      */ 
-    public MavenProject getMavenProject() {
+    public @NonNull MavenProject getMavenProject() {
         return project.getOriginalMavenProject();
     }
 
@@ -253,6 +257,21 @@ public final class NbMavenProject {
      */
     public URI[] getResources(boolean test) {
         return project.getResources(test);
+    }
+
+    /**
+     * Standardized way of finding output directory even for broken projects.
+     * @param test true for {@code target/test-classes}, false for {@code target/classes}
+     * @return the configured output directory (normalized)
+     */
+    public File getOutputDirectory(boolean test) {
+        Build build = getMavenProject().getBuild();
+        String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
+        if (path != null) {
+            return new File(path);
+        } else { // #189092
+            return new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
+        }
     }
 
     /**
@@ -343,14 +362,19 @@ public final class NbMavenProject {
     }
 
     /**
-     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode)
+     * synchronously download binaries and the trigger dependency javadoc/source download (in async mode) if download strategy is not DownloadStrategy.NEVER in options
      * Not to be called from AWT thread. The current thread will continue after downloading binaries and firing project change event.
      *
      */
     public void downloadDependencyAndJavadocSource() {
         synchronousDependencyDownload();
-        triggerSourceJavadocDownload(true);
-        triggerSourceJavadocDownload(false);
+        //see Bug 189350 : honer global  maven settings
+        if (MavenSettings.getDefault().getJavadocDownloadStrategy() != DownloadStrategy.NEVER) {
+            triggerSourceJavadocDownload(true);
+        }
+        if (MavenSettings.getDefault().getSourceDownloadStrategy() != DownloadStrategy.NEVER) {
+            triggerSourceJavadocDownload(false);
+        }
     }
 
 
@@ -358,7 +382,6 @@ public final class NbMavenProject {
         NONBINARYRP.post(new Runnable() {
             public void run() {
                 MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                @SuppressWarnings("unchecked")
                 Set<Artifact> arts = project.getOriginalMavenProject().getArtifacts();
                 ProgressContributor[] contribs = new ProgressContributor[arts.size()];
                 for (int i = 0; i < arts.size(); i++) {
@@ -366,7 +389,7 @@ public final class NbMavenProject {
                 }
                 String label = javadoc ? NbBundle.getMessage(NbMavenProject.class, "Progress_Javadoc") : NbBundle.getMessage(NbMavenProject.class, "Progress_Source");
                 AggregateProgressHandle handle = AggregateProgressFactory.createHandle(label,
-                        contribs, null, null);
+                        contribs, ProgressTransferListener.cancellable(), null);
                 handle.start();
                 try {
                     ProgressTransferListener.setAggregateHandle(handle);
@@ -375,6 +398,7 @@ public final class NbMavenProject {
                         downloadOneJavadocSources(online, contribs[index], project, a, javadoc);
                         index++;
                     }
+                } catch (ThreadDeath d) { // download interrupted
                 } finally {
                     handle.finish();
                     ProgressTransferListener.clearAggregateHandle();

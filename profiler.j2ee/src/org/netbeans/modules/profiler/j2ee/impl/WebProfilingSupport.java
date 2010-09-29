@@ -48,7 +48,6 @@ import org.netbeans.lib.profiler.client.ClientUtils.SourceCodeSelection;
 import org.netbeans.modules.profiler.j2ee.WebProjectUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.ProjectProfilingSupport;
-import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -56,7 +55,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(projectTypes={@ProjectType(id="org-netbeans-modules-web-project"), @ProjectType(id="org-netbeans-modules-maven")}, service=ProjectProfilingSupport.class)
+@ProjectServiceProvider(projectType={"org-netbeans-modules-web-project", "org-netbeans-modules-maven/war"}, service=ProjectProfilingSupport.class)
 public class WebProfilingSupport extends ProjectProfilingSupport {
     public WebProfilingSupport(Project project) {
         super(project);

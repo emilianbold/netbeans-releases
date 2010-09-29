@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicApplication;
@@ -68,7 +69,7 @@ import org.openide.util.lookup.Lookups;
  * @author sherold
  */
 public class EarDeploymentConfiguration extends WLDeploymentConfiguration
-        implements ModuleConfiguration, DeploymentPlanConfiguration {
+        implements ModuleConfiguration, DeploymentPlanConfiguration, DeploymentDescriptorConfiguration {
     
     private final File file;
     private final J2eeModule j2eeModule;
@@ -134,7 +135,12 @@ public class EarDeploymentConfiguration extends WLDeploymentConfiguration
 
     public void dispose() {
     }
-    
+
+    @Override
+    public boolean isDescriptorRequired() {
+        return true;
+    }
+
     // FIXME this is not a proper implementation - deployment PLAN should be saved
     // not a deployment descriptor    
     public void save(OutputStream os) throws ConfigurationException {

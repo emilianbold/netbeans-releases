@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.api.storage;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.dlight.util.DLightLogger;
 
@@ -61,7 +62,7 @@ public final class DataRow {
     public DataRow(List<String> colnames, List<? extends Object> data) {
         this.colnames = colnames;
         DLightLogger.assertTrue(data != null, "data parameter should not be null"); //NOI18N
-        this.data = data;
+        this.data = data == null ? new ArrayList<Object>(colnames.size()) : data;
     }
 
     /**
@@ -89,7 +90,7 @@ public final class DataRow {
 
     public String getStringValue(int idx) {
         String result = null;
-        if (idx >= 0) {
+        if (idx >= 0 && idx < data.size()) {
             result = String.valueOf(data.get(idx));
         }
         return result;
@@ -158,7 +159,7 @@ public final class DataRow {
         sb.append("\n"); //NOI18N
 
         for (Object v : data) {
-            sb.append(v.toString()).append(" | "); //NOI18N
+            sb.append((v  == null ? "NULL" : v.toString())).append(" | "); //NOI18N
         }
 
         return sb.toString();

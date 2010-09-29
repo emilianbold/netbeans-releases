@@ -46,12 +46,9 @@ package org.netbeans.editor.ext.html.test;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.BaseKit;
 import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.html.editor.api.HtmlKit;
-import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
+import org.openide.filesystems.FileObject;
 
 /**
  * @author Marek Fukala
@@ -65,20 +62,25 @@ public class TestBase extends CslTestBase {
     }
 
     protected BaseDocument createDocument() {
-        NbEditorDocument doc = new NbEditorDocument(HtmlKit.class);
-        doc.putProperty(PROP_MIME_TYPE, BaseKit.getKit(HtmlKit.class).getContentType());
+        NbEditorDocument doc = new NbEditorDocument("text/html");
+        doc.putProperty(PROP_MIME_TYPE, "text/html");
         doc.putProperty(Language.class, HTMLTokenId.language()); //hack for LanguageManager - shoudl be removed
 
         return doc;
     }
 
     @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new HtmlLanguage();
+    protected BaseDocument getDocument(FileObject fo) {
+        return super.getDocument(fo, "text/html", HTMLTokenId.language());
     }
+
+//    @Override
+//    protected DefaultLanguageConfig getPreferredLanguage() {
+//        return new HtmlLanguage();
+//    }
 
     @Override
     protected String getPreferredMimeType() {
-        return HtmlKit.HTML_MIME_TYPE;
+        return "text/html";
     }
 }

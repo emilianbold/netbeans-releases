@@ -427,7 +427,11 @@ public class LocalFileSystem extends AbstractFileSystem {
     }
 
     protected OutputStream outputStream(final String name) throws java.io.IOException {
-        OutputStream retVal = new BufferedOutputStream(new FileOutputStream(getFile(name)));
+        File f = getFile(name);
+        if (!f.exists()) {
+            f.getParentFile().mkdirs();
+        }
+        OutputStream retVal = new BufferedOutputStream(new FileOutputStream(f));
 
         // workaround for #42624
         if (Utilities.isMac()) {

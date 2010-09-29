@@ -23,13 +23,20 @@
         project node or subnode and choosing New &gt; Other, selecting the Persistence category and then selecting Entity Classes from Database.</p>
         <p>In this page of the wizard you set the following:</p>
         <ul>
-            <li><b>Class Names.</b> The text field displays the name of the class that is generated for each table listed.</li>
+            <li><b>Class Names.</b> Displays the name of the class that is generated for each table listed.
+            The Generation Type column displays if the class will be new, updated or recreated.</li>
             <li><b>Project.</b> Displays the project where the entity classes will be saved. This field is read only.</li>
             <li><b>Location.</b> Select the source folder where you want to create the entity class.</li>
             <li><b>Package. </b>Select an existing package from the Package drop-down list or type the name of a new package.</li>
             <li><b>Generate Named Query Annotations for Persistent Fields.</b> If selected, the IDE generates named query annotations in the entity classes.</li>
+            <li><b>Generate JAXB Annotations.</b> When selected, the IDE will generate annotations in the entity class
+                for mapping the class to an XML element that can then be used by a JAXB web service.</li>
         </ul>
-        
+        <ul class="note">
+            <li>If the entity class for a selected table already exists, you can choose to either recreate the
+            entity class or update the existing class by using the toggle button (...) below the Class Names table. </li>
+        </ul>
+
         <p>From this page you can click Finish to create entity classes for each of the specified tables or 
         click Next to modify the default settings used when generating the mapping annotations.</p>
 

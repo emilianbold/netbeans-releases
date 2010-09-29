@@ -144,8 +144,8 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
                 LOG.log(Level.WARNING, "Cannot configure XML parser", parserConfigurationException); // NOI18N
             } catch (SAXException sAXException) {
                 LOG.log(Level.INFO, "XML broken in " + f, sAXException); // NOI18N
-            } catch (IOException iOException) {
-                LOG.log(Level.INFO, "Cannot read " + f, iOException); // NOI18N
+            } catch (Exception any) {
+                LOG.log(Level.INFO, "Cannot read " + f, any); // NOI18N
             }
             return null;
         }

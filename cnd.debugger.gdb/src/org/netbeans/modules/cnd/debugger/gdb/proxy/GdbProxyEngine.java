@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.DialogDisplayer;
@@ -155,6 +156,11 @@ public class GdbProxyEngine {
         }
 
         proc = npb.call();
+        
+        if (ENGINE_PTY) {
+            PtySupport.disableEcho(execEnv, PtySupport.getTTY(proc));
+        }
+
         // for remote execution we need to convert encoding
         toGdb = toGdbWriter(proc.getInputStream(), proc.getOutputStream(), execEnv.isRemote());
 

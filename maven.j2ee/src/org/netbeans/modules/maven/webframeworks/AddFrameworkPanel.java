@@ -123,7 +123,8 @@ public class AddFrameworkPanel extends javax.swing.JPanel {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 163, Short.MAX_VALUE))
         );
 
-        getAccessibleContext().setAccessibleDescription("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/maven/webframeworks/Bundle"); // NOI18N
+        getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_AddFramework")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JLabel jLabel1;

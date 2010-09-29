@@ -41,17 +41,18 @@
  */
 package org.netbeans.modules.dlight.util;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -60,12 +61,26 @@ import org.openide.util.RequestProcessor;
  */
 public class DLightExecutorService {
 
-    private final static String PREFIX = "DLIGHT: "; // NOI18N
-    private final static RequestProcessor processor = new RequestProcessor(PREFIX, 50);
-    private final static Object lock;
+    private static final Logger log = DLightLogger.getLogger(DLightExecutorService.class);
+    private static final String PREFIX = "DLIGHT: "; // NOI18N
+    private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50);
+    private static final CopyOnWriteArrayList<DLightScheduledTask> scheduledTasks =
+            new CopyOnWriteArrayList<DLightScheduledTask>();
 
     static {
-        lock = DLightExecutorService.class.getName() + "Lock"; // NOI18N
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                if (!scheduledTasks.isEmpty()) {
+                    log.log(Level.WARNING, "DLightExecutorService: not all registered scheduled tasks cancelled!"); // NOI18N
+                }
+
+                for (DLightScheduledTask task : scheduledTasks) {
+                    task.cancel();
+                }
+            }
+        }));
     }
 
     private DLightExecutorService() {
@@ -74,6 +89,7 @@ public class DLightExecutorService {
     public static <T> Future<T> submit(final Callable<T> task, final String name) {
         final FutureTask<T> ftask = new FutureTask<T>(new Callable<T>() {
 
+            @Override
             public T call() throws Exception {
                 Thread.currentThread().setName(PREFIX + name);
                 return task.call();
@@ -87,6 +103,7 @@ public class DLightExecutorService {
     public static void submit(final Runnable task, final String name) {
         processor.post(new Runnable() {
 
+            @Override
             public void run() {
                 Thread.currentThread().setName(PREFIX + name);
                 task.run();
@@ -94,43 +111,19 @@ public class DLightExecutorService {
         });
     }
 
-    public static ScheduledFuture<?> scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
-        synchronized (lock) {
-            final ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
-                    new TaskThreadFactory(descr));
-
-            final ScheduledFuture<?> future = service.scheduleAtFixedRate(task, 0, period, unit);
-
-            submit(new Runnable() {
-
-                public void run() {
-                    while (!future.isDone()) {
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException ex) {
-                        }
-                    }
-
-                    // When try to shutdown service without
-                    // AccessController.doPrivileged get security exception...
-
-                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-                        public Object run() {
-                            return service.shutdownNow();
-                        }
-                    });
-                }
-            }, descr + " reaper"); // NOI18N
-
-            return future;
-        }
+    public static DLightScheduledTask scheduleAtFixedRate(final Runnable task, final long period, final TimeUnit unit, final String descr) {
+        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor(
+                new TaskThreadFactory(descr));
+        service.scheduleAtFixedRate(task, 0, period, unit);
+        DLightScheduledTask result = new DLightScheduledTask(service, descr);
+        scheduledTasks.add(result);
+        return result;
     }
 
     static class TaskThreadFactory implements ThreadFactory {
 
         final static AtomicInteger threadNumber = new AtomicInteger(1);
-        final static String namePrefix = PREFIX + "ScheduledExecutorService No. "; // NOI18N
+        final static String namePrefix = PREFIX + "DLightScheduledTask No. "; // NOI18N
         final String threadName;
         final ThreadGroup group;
 
@@ -140,20 +133,71 @@ public class DLightExecutorService {
             group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         }
 
+        @Override
         public Thread newThread(Runnable r) {
-            synchronized (lock) {
-                Thread t = new Thread(group, r, threadName, 0);
+            Thread t = new Thread(group, r, threadName, 0);
 
-                if (t.isDaemon()) {
-                    t.setDaemon(false);
-                }
-
-                if (t.getPriority() != Thread.NORM_PRIORITY) {
-                    t.setPriority(Thread.NORM_PRIORITY);
-                }
-
-                return t;
+            if (t.isDaemon()) {
+                t.setDaemon(false);
             }
+
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
+                t.setPriority(Thread.NORM_PRIORITY);
+            }
+
+            return t;
+        }
+    }
+
+    public static final class DLightScheduledTask implements Cancellable {
+
+        private final ScheduledExecutorService service;
+        private final String descr;
+
+        DLightScheduledTask(ScheduledExecutorService service, String descr) {
+            this.service = service;
+            this.descr = descr;
+            log.log(Level.FINEST, "DLightScheduledTask ({0}) started", descr); // NOI18N
+        }
+
+        /**
+         * Stops the task. If <code>timeoutSeconds</code> &gt; 0 and task is
+         * executed at the time of method call, wait for specified amount of
+         * seconds for it's completion before forcely interrupt it.
+         * @param timeoutSeconds timeout in seconds to wait for current task to
+         * finish before interrupting it
+         *
+         * @return true if the job was succesfully cancelled, false if job
+         *         can't be cancelled for some reason
+         */
+        public boolean cancel(long timeoutSeconds) {
+            try {
+                service.shutdown();
+
+                try {
+                    if (!service.awaitTermination(timeoutSeconds, TimeUnit.SECONDS)) {
+                        service.shutdownNow();
+                    }
+                } catch (InterruptedException ex) {
+                    service.shutdownNow();
+                    Thread.currentThread().interrupt();
+                }
+
+                if (service.isShutdown()) {
+                    log.log(Level.FINEST, "DLightScheduledTask ({0}) stopped", descr); // NOI18N
+                    return true;
+                } else {
+                    log.log(Level.FINEST, "DLightScheduledTask ({0}) FAILED to stop", descr); // NOI18N
+                    return false;
+                }
+            } finally {
+                scheduledTasks.remove(this);
+            }
+        }
+
+        @Override
+        public boolean cancel() {
+            return cancel(0);
         }
     }
 }

@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.gsf.testrunner.api.Status;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -137,6 +138,12 @@ public final class TestSessionVO {
     }
 
     public static final class TestCaseVO {
+        private static final String EXPECTED_SECTION_START = "--- Expected"; // NOI18N
+        private static final String EXPECTED_ROW_START = "-"; // NOI18N
+        private static final String ACTUAL_SECTION_START = "+++ Actual"; // NOI18N
+        private static final String ACTUAL_ROW_START = "+"; // NOI18N
+        private static final String DIFF_SECTION_START = "@@ @@"; // NOI18N
+
         private final List<String> stacktrace = new ArrayList<String>();
         private final String name;
         private final String file;
@@ -180,6 +187,44 @@ public final class TestSessionVO {
             return stacktrace.toArray(new String[stacktrace.size()]);
         }
 
+        public Diff getDiff() {
+            StringBuilder expected = new StringBuilder(100);
+            StringBuilder actual = new StringBuilder(100);
+            boolean diffStarted = false;
+            for (String row : stacktrace) {
+                if (row.contains(EXPECTED_SECTION_START) && row.contains(ACTUAL_SECTION_START)) {
+                    for (String part : row.split("\r?\n")) { // NOI18N
+                        if (diffStarted) {
+                            if (part.startsWith(EXPECTED_ROW_START)) {
+                                addSpace(expected);
+                                expected.append(part.substring(EXPECTED_ROW_START.length()));
+                            } else if (part.startsWith(ACTUAL_ROW_START)) {
+                                addSpace(actual);
+                                actual.append(part.substring(ACTUAL_ROW_START.length()));
+                            } else {
+                                String p = part.substring(1); // remove the first space
+                                addSpace(expected);
+                                expected.append(p);
+
+                                addSpace(actual);
+                                actual.append(p);
+                            }
+                        } else if (part.equals(DIFF_SECTION_START)) {
+                            diffStarted = true;
+                        }
+                    }
+                    break;
+                }
+            }
+            return new Diff(expected.toString(), actual.toString());
+        }
+
+        private void addSpace(StringBuilder sb) {
+            if (sb.length() > 0) {
+                sb.append("\n"); // NOI18N
+            }
+        }
+
         public long getTime() {
             return time;
         }
@@ -210,6 +255,20 @@ public final class TestSessionVO {
         public String toString() {
             return String.format("TestCaseVO{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}",
                     name, file, line, time, status, stacktrace);
+        }
+
+        public static final class Diff {
+            public final String expected;
+            public final String actual;
+
+            public Diff(String expected, String actual) {
+                this.expected = expected;
+                this.actual = actual;
+            }
+
+            public boolean isValid() {
+                return StringUtils.hasText(expected) || StringUtils.hasText(actual);
+            }
         }
     }
 }

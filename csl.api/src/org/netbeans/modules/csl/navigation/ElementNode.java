@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureItem.CollapsedDefault;
 import org.netbeans.modules.csl.navigation.actions.OpenAction;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
@@ -165,7 +166,12 @@ public class ElementNode extends AbstractNode {
     private synchronized Action getOpenAction() {
         if ( openAction == null ) {
             FileObject fo = ui.getFileObject();
-            openAction = new OpenAction(description.getElementHandle(), fo, description.getPosition());
+            try {
+                openAction = new OpenAction(description.getElementHandle(), fo,
+                        description.getPosition());
+            } catch (UnsupportedOperationException uo) {
+                return null; // root node does not have element handle
+            }
         }
         return openAction;
     }
@@ -280,14 +286,27 @@ public class ElementNode extends AbstractNode {
            
            // Reread nodes
            nodes = ch.getNodes( true );
+
+           boolean alreadyExpanded = false;
            
            for( StructureItem newSub : newDescription.getNestedItems() ) {
                 ElementNode node = oldD2node.get(newSub);
                 if ( node != null ) { // filtered out
-                    if ( !oldSubs.contains(newSub) && node.getChildren() != Children.LEAF) {                                           
+                    if ( !oldSubs.contains(newSub)) {
                         ui.expandNode(node); // Make sure new nodes get expanded
                     }     
                     node.updateRecursively( newSub ); // update the node recursively
+                } else { // a new node
+                    if (! alreadyExpanded) {
+                        alreadyExpanded = true;
+                        ui.expandNodeByDefault(this);
+                    }
+                    for (Node newNode : nodes) {
+                        if (newNode instanceof ElementNode  &&  ((ElementNode) newNode).getDescription() == newSub) {
+                            ui.expandNodeByDefaultRecursively(newNode);
+                            break;
+                        }
+                    }
                 }
            }
         }

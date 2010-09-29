@@ -56,6 +56,7 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
@@ -129,6 +130,7 @@ public abstract class IncrementalDeployment {
      * @return absolute path root directory for the specified app or
      * null if server can accept the deployment from an arbitrary directory.
      */
+    @CheckForNull
     public abstract File getDirectoryForNewApplication(Target target, J2eeModule app, ModuleConfiguration configuration);
     
     /**
@@ -140,6 +142,7 @@ public abstract class IncrementalDeployment {
      * @param configuration server specific data for deployment
      * @return absolute path root directory for the specified app or null if server can accept the deployment from an arbitrary directory.
      */
+    @CheckForNull
     public File getDirectoryForNewApplication(String deploymentName, Target target, ModuleConfiguration configuration) {
         return getDirectoryForNewApplication(target, configuration.getJ2eeModule(), configuration);
   } 

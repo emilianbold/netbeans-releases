@@ -63,9 +63,11 @@ import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentPlanConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
+import org.netbeans.modules.j2ee.weblogic9.config.gen.JspDescriptorType;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.LibraryRefType;
 import org.netbeans.modules.j2ee.weblogic9.config.gen.WeblogicWebApp;
 import org.netbeans.modules.schema2beans.AttrProp;
@@ -97,7 +99,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class WarDeploymentConfiguration extends WLDeploymentConfiguration
         implements ServerLibraryConfiguration, ModuleConfiguration,
-        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener {
+        ContextRootConfiguration, DeploymentPlanConfiguration, PropertyChangeListener, DeploymentDescriptorConfiguration {
 
 
     private final ChangeSupport serverLibraryChangeSupport = new ChangeSupport(this);
@@ -148,6 +150,11 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
             dataObject.removePropertyChangeListener(this);
         }
     }
+
+    @Override
+    public boolean isDescriptorRequired() {
+        return true;
+    }
     
     /**
      * Listen to weblogic.xml document changes.
@@ -182,7 +189,7 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
                     }
                 } else {
                     // create weblogic.xml if it does not exist yet
-                    webLogicWebApp = genereateWeblogicWebApp();
+                    webLogicWebApp = generateWeblogicWebApp();
                     ConfigUtil.writefile(file, webLogicWebApp);
                 }
             } catch (ConfigurationException ce) {
@@ -280,13 +287,16 @@ public class WarDeploymentConfiguration extends WLDeploymentConfiguration
     /**
      * Genereate Context graph.
      */
-    private WeblogicWebApp genereateWeblogicWebApp() {
+    private WeblogicWebApp generateWeblogicWebApp() {
         WeblogicWebApp webLogicWebApp = new WeblogicWebApp();
         webLogicWebApp.createAttribute("xmlns:j2ee", "xmlns:j2ee", AttrProp.CDATA | AttrProp.IMPLIED, null, null);
         webLogicWebApp.setAttributeValue("xmlns:j2ee", "http://java.sun.com/xml/ns/j2ee");
         webLogicWebApp.setAttributeValue("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance"); // NOI18N
         webLogicWebApp.setAttributeValue("xsi:schemaLocation", "http://www.bea.com/ns/weblogic/90 http://www.bea.com/ns/weblogic/90/weblogic-web-app.xsd"); // NOI18N
         webLogicWebApp.setContextRoot(new String [] {""}); // NOI18N
+        JspDescriptorType jspDescriptor = new JspDescriptorType();
+        jspDescriptor.setKeepgenerated(true);
+        webLogicWebApp.setJspDescriptor(new JspDescriptorType[] {jspDescriptor});
         return webLogicWebApp;
     }
     

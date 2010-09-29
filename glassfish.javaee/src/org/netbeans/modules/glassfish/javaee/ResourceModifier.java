@@ -82,7 +82,11 @@ public class ResourceModifier {
 
     public static void appendResource(File sunResourcesXml, String fragment) throws IOException {
         String sunResourcesBuf = readResourceFile(sunResourcesXml);
-        sunResourcesBuf = insertFragment(sunResourcesBuf, fragment);
+        if (sunResourcesXml.getAbsolutePath().contains("sun-resources.xml")) {
+            sunResourcesBuf = insertFragment(SUN_RESOURCES_XML_HEADER,sunResourcesBuf, fragment);
+        } else {
+            sunResourcesBuf = insertFragment(GF_RESOURCES_XML_HEADER,sunResourcesBuf, fragment);
+        }
         writeResourceFile(sunResourcesXml, sunResourcesBuf);
     }
 
@@ -92,11 +96,18 @@ public class ResourceModifier {
             "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " +
             "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
         "<resources>\n";
+    private static final String GF_RESOURCES_XML_HEADER =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<!DOCTYPE resources PUBLIC " +"\"-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN\" " +
+            "\"http://glassfish.org/dtds/glassfish-resources_1_5.dtd\">\n" +
+//            "\"-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN\" " +
+//            "\"http://www.sun.com/software/appserver/dtds/sun-resources_1_3.dtd\">\n" +
+        "<resources/>";
     private static final String SUN_RESOURCES_XML_FOOTER =
         "</resources>\n";
 
-    private static String insertFragment(String sunResourcesBuf, String fragment) throws IOException {
-        String header = SUN_RESOURCES_XML_HEADER;
+    private static String insertFragment(String header, String sunResourcesBuf, String fragment) throws IOException {
+        //String header = SUN_RESOURCES_XML_HEADER;
         String footer = SUN_RESOURCES_XML_FOOTER;
         boolean insertNewLine = false;
 

@@ -136,12 +136,24 @@ public class TestAction extends CallableSystemAction implements Runnable {
             parent = topComp.getParentContainer();
         }
 
-        FormModel formModel = formDesigner.getFormModel();
         RADVisualFormContainer formContainer =
             topComp instanceof RADVisualFormContainer ?
                 (RADVisualFormContainer) topComp : null;
+        
+        createPreview(topComp, formContainer);
+    }
 
+    /**
+     * Creates preview of some {@code RADVisualComponent}.
+     * 
+     * @param componentToPreview component to preview.
+     * @param formContainer corresponding {@code RADVisualFormContainer} (can be {@code null}).
+     * @return preview of {@code componentToPreview}.
+     */
+    public Frame createPreview(RADVisualComponent componentToPreview,
+            RADVisualFormContainer formContainer) {
         try {
+            FormModel formModel = componentToPreview.getFormModel();
             if (selectedLaf == null) {
                 selectedLaf = UIManager.getLookAndFeel().getClass();
             }
@@ -161,7 +173,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             // create a copy of form
             final ClassLoader classLoader = ClassPathUtils.getProjectClassLoader(formFile);
             final FormLAF.PreviewInfo previewInfo = FormLAF.initPreviewLaf(selectedLaf, classLoader);
-            final Frame frame = (Frame) FormDesigner.createFormView(topComp, previewInfo);
+            final Frame frame = (Frame) FormDesigner.createFormView(componentToPreview, previewInfo);
             frame.setEnabled(true); // Issue 178457
             frame.addWindowListener(new WindowAdapter() {
                 @Override
@@ -174,8 +186,8 @@ public class TestAction extends CallableSystemAction implements Runnable {
             // set title
             String title = frame.getTitle();
             if (title == null || "".equals(title)) { // NOI18N
-                title = topComp == formModel.getTopRADComponent() ?
-                        formModel.getName() : topComp.getName();
+                title = componentToPreview == formModel.getTopRADComponent() ?
+                        formModel.getName() : componentToPreview.getName();
                 frame.setTitle(java.text.MessageFormat.format(
                     org.openide.util.NbBundle.getBundle(TestAction.class)
                                                .getString("FMT_TestingForm"), // NOI18N
@@ -217,6 +229,7 @@ public class TestAction extends CallableSystemAction implements Runnable {
             }
             frame.setUndecorated(false);
             frame.setFocusableWindowState(true);
+            frame.setModalExclusionType(Dialog.ModalExclusionType.APPLICATION_EXCLUDE);
 
             // Issue 66594 and 12084
             final boolean pack = shouldPack;
@@ -235,10 +248,12 @@ public class TestAction extends CallableSystemAction implements Runnable {
                     frame.setVisible(true);
                 }
             });
+            return frame;
         }
         catch (Exception ex) {
             org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
         }
+        return null;
     }
 
     @Override

@@ -113,21 +113,26 @@ public final class BeforeSaveTasks {
     }
     
     private void runTasks() {
-        doc.runAtomicAsUser (new Runnable () {
-            public @Override void run () {
-                CompoundEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
-                // Since these are before-save actions they should generally not prevent
-                // the save operation to succeed. Thus the possible exceptions thrown
-                // by the tasks will be notified but they will not prevent the save to succeed.
-                try {
-                    for (Task task : tasks) {
-                        task.run(atomicEdit);
+        try {
+            doc.runAtomicAsUser (new Runnable () {
+                public @Override void run () {
+                    CompoundEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
+                    // Since these are before-save actions they should generally not prevent
+                    // the save operation to succeed. Thus the possible exceptions thrown
+                    // by the tasks will be notified but they will not prevent the save to succeed.
+                    try {
+                        for (Task task : tasks) {
+                            task.run(atomicEdit);
+                        }
+                    } catch (Exception e) {
+                        LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
                     }
-                } catch (Exception e) {
-                    LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
+
                 }
-            }
-        });
+            });
+        } finally {
+            EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
+        }
     }
 
     public interface Task {

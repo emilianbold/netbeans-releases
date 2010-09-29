@@ -47,10 +47,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
@@ -77,13 +82,27 @@ public class BinaryAnalyserTest extends NbTestCase {
 
     public void testAnnotationsIndexed() throws Exception {
         ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+            @Override
             public Void run() throws IOException, InterruptedException {
                 FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
                 FileObject indexDir = workDir.createFolder("index");
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
-                BinaryAnalyser a = new BinaryAnalyser(index, getWorkDir());
+                final Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
+                BinaryAnalyser a = new BinaryAnalyser(new ClassIndexImpl.Writer() {
+                    @Override
+                    public void clear() throws IOException {
+                        index.clear();
+                    }
+                    @Override
+                    public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
+                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
+                    }
+                    @Override
+                    public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                        index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
+                    }
+                }, getWorkDir());
 
                 assertEquals(Result.FINISHED, a.start(FileUtil.getArchiveRoot(binaryAnalyzerDataDir.toURI().toURL()), new AtomicBoolean(), new AtomicBoolean()));
 
@@ -160,8 +179,12 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     private void assertReference(Index index, String refered, String... in) throws IOException, InterruptedException {
-        List<String> result = index.getUsagesFQN(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Index.BooleanOperator.AND);
-
+        final Set<String> result = new HashSet<String>();
+        index.query(
+                new Query[] {QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD)},
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.binaryNameConvertor(),
+                result);
         assertTrue(result.containsAll(Arrays.asList(in)));
     }
 

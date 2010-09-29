@@ -46,20 +46,25 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectSettingsValidator;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
  * Key for ProjectSettingsValidator data
  * @author Vladimir Kvashin
  */
-public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
+public final class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
 
     public ProjectSettingsValidatorKey(CharSequence project) {
         super(project);
     }
 
-    public ProjectSettingsValidatorKey(DataInput in) throws IOException {
+    ProjectSettingsValidatorKey(DataInput in) throws IOException {
         super(in);
+    }
+
+    ProjectSettingsValidatorKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -86,5 +91,10 @@ public class ProjectSettingsValidatorKey extends ProjectNameBasedKey {
     @Override
     public PersistentFactory getPersistentFactory() {
         return ProjectSettingsValidator.getPersistentFactory();
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY;
     }
 }

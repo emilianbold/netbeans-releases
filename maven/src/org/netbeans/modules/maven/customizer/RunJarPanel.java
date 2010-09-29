@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.util.MissingResourceException;
@@ -766,7 +766,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     
     private POMExtensibilityElement getOrCreateChild(POMComponent parent, String name) {
         List<POMExtensibilityElement> childs = parent.getChildren(POMExtensibilityElement.class);
-        if (childs == null) {
+        if (childs != null) {
             for (POMExtensibilityElement el : childs) {
                 if (name.equals(el.getQName().getLocalPart())) {
                     return el;

@@ -88,7 +88,7 @@ public class PHPIndexTest extends TestBase {
     public void setUp() throws Exception {
         super.setUp();
         QuerySupport querySupport = QuerySupportFactory.get(Arrays.asList(createSourceClassPathsForTest()));
-        index = ElementQueryFactory.getIndexQuery(querySupport);
+        index = ElementQueryFactory.createIndexQuery(querySupport);
     }
 
     /**

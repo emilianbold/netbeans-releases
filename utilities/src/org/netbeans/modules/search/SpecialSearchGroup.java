@@ -51,8 +51,6 @@ import java.util.LinkedList;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openidex.search.DataObjectSearchGroup;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchType;
 
@@ -95,19 +93,18 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
         searchItems = new LinkedList();
         SearchInfo sInfo = searchScope.getSearchInfo();
         if (sInfo instanceof SearchInfo.Files){
-            for (Iterator j = ((SearchInfo.Files)sInfo).filesToSearch(); j.hasNext(); ) {
-                if (stopped) {
-                    return;
-                }
-                searchItems.add(j.next());
-            }
+            addSearchItems(((SearchInfo.Files)sInfo).filesToSearch());
         } else {
-            for (Iterator<DataObject> j = sInfo.objectsToSearch(); j.hasNext(); ) {
-                if (stopped) {
-                    return;
-                }
-                searchItems.add(j.next());
+            addSearchItems(sInfo.objectsToSearch());
+        }
+    }
+
+    private void addSearchItems(Iterator items) {
+        for (Iterator j = items; j.hasNext(); ) {
+            if (stopped) {
+                return;
             }
+            searchItems.add(j.next());
         }
     }
 
@@ -147,11 +144,12 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
             } else if (searchObject instanceof FileObject){
                 FileObject fileObj = (FileObject) searchObject;
                 if (basicCriteria.matches(fileObj)) {
-                    try {
-                        notifyMatchingObjectFound(DataObject.find(fileObj));
-                    } catch (DataObjectNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+//                    try {
+//                        notifyMatchingObjectFound(DataObject.find(fileObj));
+//                    } catch (DataObjectNotFoundException ex) {
+//                        Exceptions.printStackTrace(ex);
+//                    }
+                    notifyMatchingObjectFound(fileObj);
                 }
             }
             return;
@@ -169,7 +167,7 @@ final class SpecialSearchGroup extends DataObjectSearchGroup {
             notifyMatchingObjectFound((DataObject) newValue);
         }
     
-    private void notifyMatchingObjectFound(DataObject obj) {
+    private void notifyMatchingObjectFound(Object obj) {
         if (listeningSearchTask != null) {
             Charset charset = (basicCriteria != null)
                               ? basicCriteria.getLastUsedCharset()

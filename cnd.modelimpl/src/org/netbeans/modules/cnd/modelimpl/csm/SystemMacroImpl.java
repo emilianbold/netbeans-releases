@@ -72,7 +72,7 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
     private final CsmFile containingFile;
     private final CsmUID<CsmMacro> uid;
 
-    public SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
+    private SystemMacroImpl(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
         this.macroName = NameCache.getManager().getString(macroName);
         this.macroBody = TextCache.getManager().getString(macroBody);
         this.macroKind = macroKind;
@@ -85,43 +85,57 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
         this.containingFile = containingFile;
         this.uid = UIDProviderIml.createSelfUID((CsmMacro)this);
     }
+
+    public static SystemMacroImpl create(CharSequence macroName, String macroBody, List<CharSequence> macroParams, CsmFile containingFile, Kind macroKind) {
+        return new SystemMacroImpl(macroName, macroBody, macroParams, containingFile, macroKind);
+    }
     
+    @Override
     public List<CharSequence> getParameters() {
         return params;
     }
 
+    @Override
     public CharSequence getBody() {
         return macroBody;
     }
 
+    @Override
     public Kind getKind() {
         return macroKind;
     }
 
+    @Override
     public CharSequence getName() {
         return macroName;
     }
 
+    @Override
     public CsmFile getContainingFile() {
         return containingFile;
     }
 
+    @Override
     public int getStartOffset() {
         return 0;
     }
 
+    @Override
     public int getEndOffset() {
         return 0;
     }
 
+    @Override
     public Position getStartPosition() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public Position getEndPosition() {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     public CharSequence getText() {
         return "#define " + macroName + " " + macroBody; // NOI18N
     }
@@ -165,14 +179,16 @@ public final class SystemMacroImpl implements CsmMacro, CsmIdentifiable {
             retValue.append("'='"); // NOI18N
             retValue.append(getBody());
         }
-        retValue.append("' [" + (macroKind == Kind.USER_SPECIFIED ? "user defined" : "system") + "]"); // NOI18N
+        retValue.append("' [").append(macroKind == Kind.USER_SPECIFIED ? "user defined" : "system").append("]"); // NOI18N
         return retValue.toString();
     }
 
+    @Override
     public CsmParameterList<CsmMacroParameter> getParameterList() {
         return null;
     }
 
+    @Override
     public CsmUID<?> getUID() {
         return uid;
     }

@@ -60,6 +60,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.openide.util.RequestProcessor;
 
 
@@ -68,6 +69,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author   Jan Jancura
 */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions="makeCallerCurrent")
 public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     
     private RequestProcessor rp;
@@ -114,18 +116,11 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
     }
 
     static int getCurrentCallStackFrameIndex (JPDADebugger debuggerImpl) {
-        try {
-            JPDAThread t = debuggerImpl.getCurrentThread ();
-            if (t == null) return -1;
-            CallStackFrame csf = debuggerImpl.getCurrentCallStackFrame ();
-            if (csf == null) return -1;
-            CallStackFrame s[] = t.getCallStack ();
-            int i, k = s.length;
-            for (i = 0; i < k; i++)
-                if (csf.equals (s [i])) return i;
-        } catch (AbsentInformationException e) {
-        }
-        return -1;
+        JPDAThread t = debuggerImpl.getCurrentThread ();
+        if (t == null) return -1;
+        CallStackFrame csf = debuggerImpl.getCurrentCallStackFrame ();
+        if (csf == null) return -1;
+        return csf.getFrameDepth();
     }
     
     static void setCurrentCallStackFrameIndex (

@@ -294,7 +294,9 @@ public class BugzillaRepository extends Repository {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(id, taskData);
+            BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
+            ensureConfigurationUptodate(issue);
+            return issue;
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -639,6 +641,35 @@ public class BugzillaRepository extends Repository {
                 }
             }
         });
+    }
+
+    public void ensureConfigurationUptodate(BugzillaIssue issue) {
+        BugzillaConfiguration conf = getConfiguration();
+
+        String product = issue.getFieldValue(IssueField.PRODUCT);
+        String resolution = issue.getFieldValue(IssueField.RESOLUTION);
+        String severity = issue.getFieldValue(IssueField.SEVERITY);
+        String milestone = issue.getFieldValue(IssueField.MILESTONE);
+        String version = issue.getFieldValue(IssueField.VERSION);
+        String priority = issue.getFieldValue(IssueField.PRIORITY);
+        String platform = issue.getFieldValue(IssueField.PLATFORM);
+        String status = issue.getFieldValue(IssueField.STATUS);
+        String os = issue.getFieldValue(IssueField.OS);
+        String component = issue.getFieldValue(IssueField.COMPONENT);
+
+        if(!component.isEmpty() && !conf.getComponents(product).contains(component) ||
+           !os.isEmpty() && !conf.getOSs().contains(os) ||
+           !status.isEmpty() && !conf.getStatusValues().contains(status) ||
+           !platform.isEmpty() && !conf.getPlatforms().contains(platform) ||
+           !priority.isEmpty() && !conf.getPriorities().contains(priority) ||
+           !product.isEmpty() && !conf.getProducts().contains(product) ||
+           !resolution.isEmpty() && !conf.getResolutions().contains(resolution) ||
+           !severity.isEmpty() && !conf.getSeverities().contains(severity) ||
+           !milestone.isEmpty() && !conf.getTargetMilestones(product).contains(milestone) ||
+           !version.isEmpty() && !conf.getVersions(product).contains(version))
+        {
+            refreshConfiguration();
+        }
     }
 
     private class IssuesCollector extends TaskDataCollector {

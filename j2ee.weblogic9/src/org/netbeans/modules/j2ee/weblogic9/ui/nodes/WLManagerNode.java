@@ -47,6 +47,7 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import java.awt.*;
 
 import javax.enterprise.deploy.spi.*;
+import org.netbeans.modules.j2ee.deployment.common.api.Version;
 import org.netbeans.modules.j2ee.weblogic9.j2ee.WLJ2eePlatformFactory;
 
 import org.openide.util.*;
@@ -79,6 +80,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     private static final String DOMAIN_ROOT = "domainRoot"; // NOI18N
     private static final String DEBUGGER_PORT = "debuggerPort"; // NOI18N
     private static final String ADMIN_URL = "/console/login/LoginForm.jsp"; //NOI18N
+    private static final String ADMIN_URL_11_WEB = "/consoledwp#domain"; //NOI18N
     
     /**
      * Path to the node's icon that should reside in the class path
@@ -103,7 +105,18 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public String  getAdminURL() {
-         return "http://"+deploymentManager.getHost()+":"+deploymentManager.getPort()+ ADMIN_URL;
+        StringBuilder builder = new StringBuilder("http://"); // NOI18N
+        builder.append(deploymentManager.getHost());
+        builder.append(":"); // NOI18N
+        builder.append(deploymentManager.getPort());
+        if (deploymentManager.getServerVersion() != null
+                && deploymentManager.getServerVersion().isAboveOrEqual(WLDeploymentFactory.VERSION_11)
+                && deploymentManager.isWebProfile()) { // NOI18N
+            builder.append(ADMIN_URL_11_WEB);
+        } else {
+            builder.append(ADMIN_URL);
+        }
+        return builder.toString();
     }
     
     public javax.swing.Action[] getActions(boolean context) {
@@ -302,7 +315,7 @@ public class WLManagerNode extends AbstractNode implements Node.Cookie {
     }
     
     public Component getCustomizer() {
-        return new Customizer(deploymentManager);
+        return new Customizer((WLDeploymentManager)deploymentManager);
     }
     
     public WLDeploymentManager getDeploymentManager() {

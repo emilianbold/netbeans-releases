@@ -45,6 +45,8 @@ package org.netbeans.modules.refactoring.php;
 
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.api.*;
+import org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringPlugin;
+import org.netbeans.modules.refactoring.php.delete.SafeDeleteSupport;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.*;
@@ -61,6 +63,8 @@ public class PhpRefactoringsFactory implements RefactoringPluginFactory {
             return createFindUsages((WhereUsedQuery)refactoring);
         } else if (refactoring instanceof RenameRefactoring) {
             return createRename((RenameRefactoring)refactoring);
+        } else if (refactoring instanceof SafeDeleteRefactoring) {
+            return createDelete((SafeDeleteRefactoring)refactoring);
 	}
         return null;
     }
@@ -75,5 +79,11 @@ public class PhpRefactoringsFactory implements RefactoringPluginFactory {
         Lookup look = refactoring.getRefactoringSource();
         WhereUsedSupport handle = look.lookup(WhereUsedSupport.class);
         return (handle != null) ? new PhpRenameRefactoringPlugin(refactoring) : null;
+    }
+
+    private RefactoringPlugin createDelete(SafeDeleteRefactoring refactoring) {
+        Lookup look = refactoring.getRefactoringSource();
+        SafeDeleteSupport handle = look.lookup(SafeDeleteSupport.class);
+        return (handle != null) ? new PhpDeleteRefactoringPlugin(refactoring) : null;
     }
 }

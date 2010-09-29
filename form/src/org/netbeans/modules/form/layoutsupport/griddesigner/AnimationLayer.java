@@ -182,6 +182,7 @@ public class AnimationLayer implements ActionListener {
         Dimension oldSize = container.getSize();
         container.setSize(maxContDim);
         containerImage = container.createImage(maxContDim.width, maxContDim.height);
+        container.paint(containerImage.getGraphics());
         container.setSize(oldSize);
         for (Component comp : components) {
             comp.setVisible(map.get(comp));
@@ -305,6 +306,11 @@ public class AnimationLayer implements ActionListener {
             if (phase == 1f) {
                 timer.stop();
                 maxContDim = new Dimension();
+                for (Map.Entry<Component,Rectangle> entry : endBounds.entrySet()) {
+                    Component comp = entry.getKey();
+                    comp.setBounds(entry.getValue());
+                    comp.validate();
+                }
             }
         }
     }
@@ -326,7 +332,18 @@ public class AnimationLayer implements ActionListener {
         }
         comp.setBounds(bounds);
         comp.validate();
-        comp.paint(gg);
+        // Intentionally using print instead of paint.
+        // Print doesn't use double buffering and it solves some mysterious
+        // problems with modified clip during painting of containers.
+        // BTW: animated transitions library also uses print()
+        if (comp instanceof JComponent) {
+            comp.print(gg);
+        } else {
+            java.awt.peer.ComponentPeer peer = comp.getPeer();
+            if (peer != null) {
+                peer.paint(gg);
+            }
+        }
         gg.dispose();
     }
 

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.util.Exceptions;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -78,7 +79,8 @@ final class MatchingObject
         implements Comparable<MatchingObject>, PropertyChangeListener {
 
     /** */
-    private final Logger LOG = Logger.getLogger(getClass().getName());
+    private static final Logger LOG =
+            Logger.getLogger(MatchingObject.class.getName());
     /** */
     private final ResultModel resultModel;
     /** */
@@ -88,9 +90,9 @@ final class MatchingObject
     
     /**
      * matching object as returned by the {@code SearchGroup}
-     * (usually a {@code DataObject})
+     * (usually either a {@code DataObject} or a {@code FileObject})
      */
-    final Object object;
+    private final Object object;
     /**
      * charset used for full-text search of the object.
      * It is {@code null} if the object was not full-text searched.
@@ -171,7 +173,7 @@ final class MatchingObject
     /**
      */
     private void setUpDataObjValidityChecking() {
-        final DataObject dataObj = (DataObject) object;
+        final DataObject dataObj = (DataObject) getDataObject();
         if (dataObj.isValid()) {
             dataObj.addPropertyChangeListener(this);
         }
@@ -180,7 +182,7 @@ final class MatchingObject
     /**
      */
     void cleanup() {
-        final DataObject dataObj = (DataObject) object;
+        final DataObject dataObj = (DataObject) getDataObject();
         dataObj.removePropertyChangeListener(this);
     }
     
@@ -188,11 +190,11 @@ final class MatchingObject
     public void propertyChange(PropertyChangeEvent e) {
         if (DataObject.PROP_VALID.equals(e.getPropertyName())
                 && Boolean.FALSE.equals(e.getNewValue())) {
-            assert e.getSource() == (DataObject) object;
-            
-            final DataObject dataObj = (DataObject) object;
-            dataObj.removePropertyChangeListener(this);
-            
+            final DataObject dataObject = (DataObject) getDataObject();
+            if(dataObject != null) {
+                assert e.getSource() == dataObject;
+                dataObject.removePropertyChangeListener(this);
+            }
             resultModel.objectBecameInvalid(this);
         }
     }
@@ -205,11 +207,13 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        return ((DataObject) object).isValid();
+        return valid ? getDataObject().isValid() : false;
     }
     
-    private FileObject getFileObject() {
-        return ((DataObject) object).getPrimaryFile();
+    FileObject getFileObject() {
+        return object instanceof FileObject ?
+            (FileObject) object :
+            ((DataObject) getDataObject()).getPrimaryFile();
     }
     
     /**
@@ -306,14 +310,17 @@ final class MatchingObject
     /**
      */
     boolean isSubnodeSelected(int index) {
-        // #177812
-        assert (matchesSelection == null)
-               || ((index >= 0) && (index < matchesSelection.length)) :
-               "Illegal index=" + index + "in the case matchesSelection" +
-               ((matchesSelection == null) ? "=null" :
-                   ".length=" + matchesSelection.length); // NOI18N
-        return (matchesSelection == null) ? selected
-                                         : matchesSelection[index];
+        // See #189617, #177812, #129232
+        if(matchesSelection == null) {
+            return selected;
+        }
+        if((index >= 0) && (index < matchesSelection.length)) {
+            return matchesSelection[index];
+        }
+        LOG.log(Level.FINE,
+          "Illegal index={0} in the case matchesSelection.length={1}", // NOI18N
+          new Object[] { index, matchesSelection.length });
+        return false; // An associated checkbox won't be selected.
     }
     
     /**
@@ -379,6 +386,19 @@ final class MatchingObject
         return getFile().getName();
     }
 
+    String getHtmlDisplayName() {
+        String name = null;
+        if(object instanceof FileObject) {
+            // TODO return HTML text instead of plain text
+            return getFileObject().getNameExt();
+        }
+        DataObject data = (DataObject)getDataObject();
+        if(data != null) {
+            name = data.getNodeDelegate().getHtmlDisplayName();
+        }
+        return name;
+    }
+
     /**
      */
     long getTimestamp() {
@@ -433,6 +453,24 @@ final class MatchingObject
                 return Integer.MAX_VALUE;
             }
             return getName().compareToIgnoreCase(o.getName()); // locale?
+    }
+
+    /**
+     * @return the object
+     */
+    public DataObject getDataObject() {
+        try {
+            if (object instanceof DataObject) {
+                return (DataObject) object;
+            } else if (object instanceof FileObject) {
+                return DataObject.find((FileObject) object);
+            }
+            throw new IOException("Unknown object in search: " +
+                                  object);// NOI18N
+        } catch (IOException ex) {
+            valid = false;
+            return null;
+        }
     }
 
     /**
@@ -581,7 +619,8 @@ final class MatchingObject
         
         StringBuilder content = text(true);   //refresh the cache, reads the file
         
-        List<TextDetail> textMatches = resultModel.basicCriteria.getTextDetails(object);
+        List<TextDetail> textMatches = 
+                resultModel.basicCriteria.getTextDetails(getFileObject());
 
         int offsetShift = 0;
         for (int i=0; i < textMatches.size(); i++) {
@@ -659,11 +698,11 @@ final class MatchingObject
     /**
      */
     private void log(Level logLevel, String msg) {
-        String id = (object instanceof DataObject)
-                    ? ((DataObject) object).getName()
-                    : object.toString();
+        String id = (getDataObject() instanceof DataObject)
+                    ? ((DataObject) getDataObject()).getName()
+                    : getDataObject().toString();
         if (LOG.isLoggable(logLevel)) {
-            LOG.log(logLevel, id + ": " + msg);                         //NO1I8N:w
+            LOG.log(logLevel, "{0}: {1}", new Object[]{id, msg});       //NOI18N
         }
     }
     
@@ -674,4 +713,27 @@ final class MatchingObject
     public String toString() {
         return super.toString() + "[" + getName()+ "]"; // NOI18N
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MatchingObject other = (MatchingObject) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 73 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
 }

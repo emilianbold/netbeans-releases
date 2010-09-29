@@ -65,6 +65,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
@@ -102,6 +103,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -125,6 +127,7 @@ public class TreeModelNode extends AbstractNode {
     protected TreeModelRoot      treeModelRoot;
     protected Object             object;
 
+    private final LazyChildrenFactory lazyChildren;
     private String              displayName, oldDisplayName;
     private String              htmlDisplayName;
     private final Object        displayNameLock = new Object();
@@ -166,8 +169,9 @@ public class TreeModelNode extends AbstractNode {
             model,
             columns,
             object != model.getRoot() ?
-                new UnknownChildren() :
-                createChildren (model, columns, treeModelRoot, object),
+                new LazyChildrenFactory(model, columns, treeModelRoot, object) : null,
+            object != model.getRoot() ?
+                null : createChildren (model, columns, treeModelRoot, object),
             treeModelRoot,
             object
         );
@@ -179,6 +183,7 @@ public class TreeModelNode extends AbstractNode {
     protected TreeModelNode (
         final Models.CompoundModel model,
         final ColumnModel[] columns,
+        final LazyChildrenFactory lazyChildren,
         final Children children,
         final TreeModelRoot treeModelRoot,
         final Object object
@@ -186,6 +191,7 @@ public class TreeModelNode extends AbstractNode {
         this(
             model,
             columns,
+            lazyChildren,
             children,
             treeModelRoot,
             object,
@@ -195,18 +201,21 @@ public class TreeModelNode extends AbstractNode {
     private TreeModelNode (
         final Models.CompoundModel model,
         final ColumnModel[] columns,
+        final LazyChildrenFactory lazyChildren,
         final Children children,
         final TreeModelRoot treeModelRoot,
         final Object object,
         final Index[] indexPtr  // Hack, because we can not declare variables before call to super() :-(
     ) {
         super (
-            children,
+            (lazyChildren != null) ?
+                Children.createLazy(lazyChildren) : children,
             createLookup(object, model, children, indexPtr)
         );
         this.model = model;
         this.treeModelRoot = treeModelRoot;
         this.object = object;
+        this.lazyChildren = lazyChildren;
         if (indexPtr[0] != null) {
             ((IndexImpl) indexPtr[0]).setNode(this);
             setIndexWatcher(indexPtr[0]);
@@ -246,9 +255,20 @@ public class TreeModelNode extends AbstractNode {
         }
     }
 
+    private boolean areChildrenInitialized() {
+        if (lazyChildren != null) {
+            return lazyChildren.areChildrenCreated();
+        } else {
+            return true;
+        }
+    }
+
     private void setIndexWatcher(Index childrenIndex) {
         childrenIndex.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
+                if (!areChildrenInitialized()) {
+                    return ;
+                }
                 Children ch = getChildren();
                 if (ch instanceof TreeModelChildren) {
                     ((TreeModelChildren) ch).refreshChildren(new TreeModelChildren.RefreshingInfo(false));
@@ -305,10 +325,6 @@ public class TreeModelNode extends AbstractNode {
             }
             return Children.LEAF;
         }
-    }
-
-    private void updateChildren() {
-        setChildren(createChildren(model, columns, treeModelRoot, object));
     }
 
     @Override
@@ -500,9 +516,11 @@ public class TreeModelNode extends AbstractNode {
 
     private void setObjectNoRefresh (Object o) {
         object = o;
-        Children ch = getChildren ();
-        if (ch instanceof TreeModelChildren)
-            ((TreeModelChildren) ch).object = o;
+        if (areChildrenInitialized()) {
+            Children ch = getChildren ();
+            if (ch instanceof TreeModelChildren)
+                ((TreeModelChildren) ch).object = o;
+        }
     }
     
     public Object getObject () {
@@ -756,10 +774,6 @@ public class TreeModelNode extends AbstractNode {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
             }
             iconLoaded = true;
-            if (getChildren() instanceof UnknownChildren) {
-                // We do not set the children until an icon is needed, for performance reason
-                updateChildren();
-            }
         }
         return super.getIcon(type);
     }
@@ -773,10 +787,6 @@ public class TreeModelNode extends AbstractNode {
                 Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
             }
             iconLoaded = true;
-            if (getChildren() instanceof UnknownChildren) {
-                // We do not set the children until an icon is needed, for performance reason
-                updateChildren();
-            }
         }
         return super.getOpenedIcon(type);
     }
@@ -822,10 +832,10 @@ public class TreeModelNode extends AbstractNode {
      * @param refreshSubNodes If recursively refresh subnodes.
      */
     private void refreshTheChildren(Models.CompoundModel model, TreeModelChildren.RefreshingInfo refreshInfo) {
-        Children ch = getChildren();
-        if (ch instanceof UnknownChildren) {
+        if (!areChildrenInitialized()) {
             return ;
         }
+        Children ch = getChildren();
         try {
             if (ch instanceof TreeModelChildren) {
                 if (model.isLeaf(object)) {
@@ -1283,11 +1293,16 @@ public class TreeModelNode extends AbstractNode {
         protected Object[] getModelChildren(RefreshingInfo refreshInfo) throws UnknownTypeException {
             //System.err.println("! getModelChildren("+object+", "+getNode()+")");
             int count = model.getChildrenCount (object);
-            return model.getChildren (
+            Object[] ch = model.getChildren (
                 object,
                 0,
                 count
             );
+            if (ch == null) {
+                Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model+"\nreturned null children for parent '"+object+"'");
+                ch = new Object[] {};
+            }
+            return ch;
         }
 
         protected Executor getModelAsynchronous() {
@@ -1495,7 +1510,9 @@ public class TreeModelNode extends AbstractNode {
                 if (n instanceof TreeModelNode) {
                     TreeModelNode tmn = (TreeModelNode) n;
                     treeModelRoot.unregisterNode (tmn.object, tmn);
-                    destroyNodes(tmn.getChildren().getNodes());
+                    if (tmn.areChildrenInitialized()) {
+                        destroyNodes(tmn.getChildren().getNodes());
+                    }
                 }
             }
         }
@@ -1562,18 +1579,34 @@ public class TreeModelNode extends AbstractNode {
 
     }
 
-    private static class UnknownChildren extends Children {
+    private static class LazyChildrenFactory implements Callable<Children> {
 
-        @Override
-        public boolean add(Node[] nodes) {
-            return false;
+        private final Models.CompoundModel model;
+        private final ColumnModel[] columns;
+        private final TreeModelRoot treeModelRoot;
+        private final Object object;
+        private volatile boolean childrenCreated = false;
+
+        LazyChildrenFactory(final Models.CompoundModel model,
+                            final ColumnModel[] columns,
+                            final TreeModelRoot treeModelRoot,
+                            final Object object) {
+            this.model = model;
+            this.columns = columns;
+            this.treeModelRoot = treeModelRoot;
+            this.object = object;
         }
 
         @Override
-        public boolean remove(Node[] nodes) {
-            return false;
+        public Children call() throws Exception {
+            childrenCreated = true;
+            return createChildren(model, columns, treeModelRoot, object);
         }
 
+        boolean areChildrenCreated() {
+            return childrenCreated;
+        }
+        
     }
 
     // Adaptive property refresh time. Belongs to MyProperty, but can not be there since it's static :-(

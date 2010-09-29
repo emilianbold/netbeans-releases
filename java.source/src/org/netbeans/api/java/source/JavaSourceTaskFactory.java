@@ -150,10 +150,8 @@ public abstract class JavaSourceTaskFactory {
     static boolean SYNCHRONOUS_EVENTS = false;
 
     private void stateChangedImpl(List<FileObject> currentFiles) {
-        Map<JavaSource, CancellableTask<CompilationInfo>> toRemove = new HashMap<JavaSource, CancellableTask<CompilationInfo>>();
-        Map<JavaSource, CancellableTask<CompilationInfo>> toAdd = new HashMap<JavaSource, CancellableTask<CompilationInfo>>();
-        
-        synchronized (this) {
+        LOG.log(Level.FINEST, BEFORE_ADDING_REMOVING_TASKS);
+        synchronized (this.filesLock) {                
             List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
             List<FileObject> removedFiles = new ArrayList<FileObject>(file2Task.keySet());
             
@@ -168,8 +166,7 @@ public abstract class JavaSourceTaskFactory {
                     //TODO: log
                     continue;
                 }
-                
-                toRemove.put(source, file2Task.remove(r));
+                ACCESSOR2.removePhaseCompletionTask(source, file2Task.remove(r));
             }
             
             //add new tasks:
@@ -186,30 +183,11 @@ public abstract class JavaSourceTaskFactory {
 
                     if (task == null) {
                         throw new IllegalStateException("createTask(FileObject) returned null for factory: " + getClass().getName());
-                    }
-                    
-                    toAdd.put(js, task);
-                    
+                    }                    
+                    ACCESSOR2.addPhaseCompletionTask(js, task, phase, priority);                    
                     file2Task.put(a, task);
                     file2JS.put(a, js);
                 }
-            }
-        }
-        
-        LOG.log(Level.FINEST, BEFORE_ADDING_REMOVING_TASKS);
-        
-        for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toRemove.entrySet()) {
-            ACCESSOR2.removePhaseCompletionTask(e.getKey(), e.getValue());
-        }
-        
-        for (Entry<JavaSource, CancellableTask<CompilationInfo>> e : toAdd.entrySet()) {
-            try {
-                ACCESSOR2.addPhaseCompletionTask(e.getKey(), e.getValue(), phase, priority);
-            } catch (FileObjects.InvalidFileException ie) {
-                LOG.info("JavaSource.addPhaseCompletionTask called on deleted file");       //NOI18N
-            } catch (IOException ex) {
-                if (LOG.isLoggable(Level.SEVERE))
-                    LOG.log(Level.SEVERE, ex.getMessage(), ex);
             }
         }
     }
@@ -219,26 +197,29 @@ public abstract class JavaSourceTaskFactory {
      *
      * @param file task created by this factory for this file is re-run.
      */
-    protected final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
-        JavaSource source = file2JS.get(file);
+    protected final void reschedule(FileObject file) throws IllegalArgumentException {
+        synchronized(this.filesLock) {
+            JavaSource source = file2JS.get(file);
 
-        if (source == null) {
-//            throw new IllegalArgumentException("No JavaSource for given file.");
-            return ;
-}
-        
-        CancellableTask<CompilationInfo> task = file2Task.get(file);
-        
-        if (task == null) {
-//                    throw new IllegalArgumentException("This factory did not created any task for " + FileUtil.getFileDisplayName(file)); // NOI18N
-            return ;
+            if (source == null) {
+    //            throw new IllegalArgumentException("No JavaSource for given file.");
+                return ;
+    }
+
+            CancellableTask<CompilationInfo> task = file2Task.get(file);
+
+            if (task == null) {
+    //                    throw new IllegalArgumentException("This factory did not created any task for " + FileUtil.getFileDisplayName(file)); // NOI18N
+                return ;
+            }
+
+            ACCESSOR2.rescheduleTask(source, task);
         }
-        
-        ACCESSOR2.rescheduleTask(source, task);
     }
 
     private final Map<FileObject, CancellableTask<CompilationInfo>> file2Task;
     private final Map<FileObject, JavaSource> file2JS;
+    private final Object filesLock = new Object();
 
     private static RequestProcessor WORKER = new RequestProcessor("JavaSourceTaskFactory", 1); // NOI18N
     
@@ -249,7 +230,7 @@ public abstract class JavaSourceTaskFactory {
             }
         };
         ACCESSOR2 = new Accessor2() {
-            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) throws IOException {
+            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) {
                 JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js, task, phase, priority);                
             }
 
@@ -264,7 +245,7 @@ public abstract class JavaSourceTaskFactory {
     }
 
     static interface Accessor2 {
-        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority ) throws IOException;
+        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority );
         public abstract void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task );
         public abstract void rescheduleTask(JavaSource js, CancellableTask<CompilationInfo> task);
     }

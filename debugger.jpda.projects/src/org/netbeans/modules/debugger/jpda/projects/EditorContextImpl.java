@@ -159,6 +159,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@EditorContext.Registration()
 public class EditorContextImpl extends EditorContext {
 
     private static String fronting =

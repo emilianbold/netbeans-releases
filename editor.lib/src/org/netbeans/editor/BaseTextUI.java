@@ -106,7 +106,7 @@ public class BaseTextUI extends BasicTextUI implements
     
     private AbstractDocument lastDocument;
 
-    private int atomicModCount;
+    private int atomicModCount = -1;
     
     /** Instance of the <tt>GetFocusedComponentAction</tt> */
     private static final GetFocusedComponentAction gfcAction
@@ -273,7 +273,9 @@ public class BaseTextUI extends BasicTextUI implements
             return;
         }
 
-        super.uninstallUI(c);
+        if (getComponent() != null) {
+            super.uninstallUI(c);
+        }
 
         prefs.removePreferenceChangeListener(weakListener);
         prefs = null;
@@ -284,6 +286,7 @@ public class BaseTextUI extends BasicTextUI implements
             BaseDocument doc = Utilities.getDocument(comp);
             if (doc != null) {
                 doc.removeDocumentListener(this);
+                doc.removeAtomicLockListener(this);
             }
 
             comp.setKeymap(null);
@@ -432,6 +435,7 @@ public class BaseTextUI extends BasicTextUI implements
                                   
             if (newDoc != null) {
                 newDoc.addDocumentListener(this);
+                atomicModCount = -1;
                 newDoc.addAtomicLockListener(this);
             }
         } else if ("ancestor".equals(propName)) { // NOI18N
@@ -508,34 +512,39 @@ public class BaseTextUI extends BasicTextUI implements
     }
 
     private void checkLengthyAtomicEdit() {
-        if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
-            View rootView = getRootView(getComponent());
-            View view;
-            if (rootView != null && rootView.getViewCount() > 0 &&
-                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
-            {
-                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+        if (atomicModCount != -1) {
+            if (++atomicModCount == LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                View rootView = getRootView(getComponent());
+                View view;
+                if (rootView != null && rootView.getViewCount() > 0 &&
+                        (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+                {
+                    ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(+1);
+                }
             }
         }
     }
 
     @Override
     public void atomicLock(AtomicLockEvent evt) {
+        assert (atomicModCount == -1);
         atomicModCount = 0;
     }
 
     @Override
     public void atomicUnlock(AtomicLockEvent evt) {
-        if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
-            View rootView = getRootView(getComponent());
-            View view;
-            if (rootView != null && rootView.getViewCount() > 0 &&
-                    (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
-            {
-                ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+        if (atomicModCount != -1) {
+            if (atomicModCount >= LENGTHY_ATOMIC_EDIT_THRESHOLD) {
+                View rootView = getRootView(getComponent());
+                View view;
+                if (rootView != null && rootView.getViewCount() > 0 &&
+                        (view = rootView.getView(0)) instanceof org.netbeans.modules.editor.lib2.view.DocumentView)
+                {
+                    ((org.netbeans.modules.editor.lib2.view.DocumentView)view).updateLengthyAtomicEdit(-1);
+                }
             }
+            atomicModCount = -1;
         }
-        atomicModCount = 0;
     }
 
     

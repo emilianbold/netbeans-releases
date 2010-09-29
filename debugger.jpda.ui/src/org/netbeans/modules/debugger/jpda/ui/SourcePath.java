@@ -404,7 +404,7 @@ public class SourcePath {
         });
     }
 
-    private static String convertSlash (String original) {
+    static String convertSlash (String original) {
         return original.replace (File.separatorChar, '/');
     }
 
@@ -420,34 +420,20 @@ public class SourcePath {
 
     public Object annotate (
         JPDAThread t,
-        String stratumn
+        String stratumn,
+        String url,
+        int lineNumber
     ) {
-        return annotate(t, stratumn, true);
+        return annotate(t, stratumn, url, lineNumber, true);
     }
     
     public Object annotate (
         JPDAThread t,
         String stratumn,
+        String url,
+        int lineNumber,
         boolean isCurrent
     ) {
-        int lineNumber = t.getLineNumber (stratumn);
-        if (lineNumber < 1) return null;
-        String url;
-        String sourcePath;
-        try {
-            sourcePath = t.getSourcePath (stratumn);
-        } catch (AbsentInformationException e) {
-            sourcePath = "";
-        }
-        if (sourcePath.length() > 0) {
-            url = getURL (convertSlash (sourcePath), true);
-        } else {
-            String className = t.getClassName ();
-            if (className.length() == 0) {
-                return null; // nothing to annotate.
-            }
-            url = getURL (convertClassNameToRelativePath (className), true);
-        }
         Operation operation;
         List operationsAnn;
         if (isCurrent) {

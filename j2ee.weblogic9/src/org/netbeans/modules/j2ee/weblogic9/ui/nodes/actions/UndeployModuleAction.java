@@ -52,7 +52,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Petr Hejl
  */
-public class UndeployModuleAction extends NodeAction {
+public class UndeployModuleAction extends WLNodeAction {
 
     @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
@@ -78,7 +78,7 @@ public class UndeployModuleAction extends NodeAction {
             final UndeployModuleCookie cookie = nodes[i].getCookie(UndeployModuleCookie.class);
             if (cookie != null) {
                 final Node node = nodes[i].getParentNode();
-                WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
+                ACTION_RP.submit(new Runnable() {
 
                     @Override
                     public void run() {

@@ -78,6 +78,8 @@ public final class ViewUpdates implements DocumentListener {
     int rebuildStartOffset;
 
     int rebuildEndOffset;
+    
+    private boolean buildingViews;
 
     public ViewUpdates(DocumentView documentView) {
         this.documentView = documentView;
@@ -121,6 +123,24 @@ public final class ViewUpdates implements DocumentListener {
             viewFactories[i].addEditorViewFactoryListener(factoriesListener);
         }
     }
+    
+    private void buildViews(ParagraphView paragraphView, int paragraphViewIndex,
+        int startOffset, int endOffset,
+        int endModOffset, int offsetDelta, boolean createLocalViews)
+    {
+        ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView,
+                paragraphViewIndex, viewFactories, startOffset, endOffset,
+                endModOffset, offsetDelta, createLocalViews
+        );
+        buildingViews = true;
+        try {
+            viewBuilder.createViews();
+            viewBuilder.repaintAndReplaceViews();
+        } finally {
+            buildingViews = false;
+            viewBuilder.finish(); // Includes factory.finish() in each factory
+        }
+    }
 
     void reinitViews() {
         // Insert into document was performed -> update or rebuild views
@@ -129,15 +149,7 @@ public final class ViewUpdates implements DocumentListener {
         // Build views lazily; boundaries may differ from start/end of doc e.g. for fold preview
         int startOffset = documentView.getStartOffset();
         int endOffset = documentView.getEndOffset();
-        ViewBuilder viewBuilder = new ViewBuilder(
-                null, documentView, 0, viewFactories, startOffset, endOffset, endOffset, 0,
-                documentView.isAccurateSpan());
-        try {
-            viewBuilder.createViews();
-            viewBuilder.repaintAndReplaceViews();
-        } finally {
-            viewBuilder.finish(); // Includes factory.finish() in each factory
-        }
+        buildViews(null, 0, startOffset, endOffset, endOffset, 0, documentView.isAccurateSpan());
     }
 
     void initChildren(int startIndex, int endIndex, int lazyChildrenBatch) {
@@ -156,14 +168,7 @@ public final class ViewUpdates implements DocumentListener {
                 " > endOffset=" + endOffset + "\n" + documentView.toStringDetail(); // NOI18N
         assert (endOffset <= docTextLength) : "endOffset=" + endOffset + // NOI18N
                 " > docTextLength=" + docTextLength + "\n" + documentView.toStringDetail(); // NOI18N
-        ViewBuilder viewBuilder = new ViewBuilder(
-                null, documentView, startIndex, viewFactories, startOffset, endOffset, endOffset, 0, true);
-        try {
-            viewBuilder.createViews();
-            viewBuilder.repaintAndReplaceViews();
-        } finally {
-            viewBuilder.finish(); // Includes factory.finish() in each factory
-        }
+        buildViews(null, startIndex, startOffset, endOffset, endOffset, 0, true);
     }
 
     @Override
@@ -281,6 +286,7 @@ public final class ViewUpdates implements DocumentListener {
                         if (rStartOffset < childStartOffset) {
                             rebuildNecessary = true;
                         }
+                        rebuildNecessary = true; // Force rebuild until 183219 gets resolved
                         if (!rebuildNecessary) {
                             // Possibly clear text layout for the child view
                             if (childView instanceof TextLayoutView) {
@@ -305,15 +311,9 @@ public final class ViewUpdates implements DocumentListener {
                 }
 
                 if (rebuildNecessary) {
-                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                            viewFactories, rStartOffset, rEndOffset,
+                    buildViews(paragraphView, paragraphViewIndex,
+                            rStartOffset, rEndOffset,
                             insertOffset + insertLength, insertLength, true);
-                    try {
-                        viewBuilder.createViews();
-                        viewBuilder.repaintAndReplaceViews();
-                    } finally {
-                        viewBuilder.finish(); // Includes factory.finish() in each factory and checkIntegrity()
-                    }
                 }
             } finally {
                 documentView.setIncomingModification(false);
@@ -425,6 +425,7 @@ public final class ViewUpdates implements DocumentListener {
                     boolean localEdit = ((removeOffset == childStartOffset && removeEndOffset < childEndOffset) ||
                             (removeOffset > childStartOffset && removeEndOffset <= childEndOffset));
                     rebuildNecessary = !localEdit;
+                    rebuildNecessary = true; // Force rebuild until 183219 gets resolved
                     if (!rebuildNecessary) {
                         // Possibly clear text layout for the child view
                         if (childView instanceof TextLayoutView) {
@@ -449,15 +450,9 @@ public final class ViewUpdates implements DocumentListener {
 
                 if (rebuildNecessary) {
                     createLocalViews |= documentView.isAccurateSpan();
-                    ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                            viewFactories, rStartOffset, rEndOffset, 
+                    buildViews(paragraphView, paragraphViewIndex,
+                            rStartOffset, rEndOffset, 
                             removeEndOffset, -removeLength, createLocalViews);
-                    try {
-                        viewBuilder.createViews();
-                        viewBuilder.repaintAndReplaceViews();
-                    } finally {
-                        viewBuilder.finish(); // Includes factory.finish() in each factory and checkIntegrity()
-                    }
                 }
             } finally {
                 documentView.setIncomingModification(false);
@@ -537,7 +532,7 @@ public final class ViewUpdates implements DocumentListener {
             mutex.lock();
             try {
                 documentView.checkDocumentLocked();
-                if (documentView.isActive()) {
+                if (!buildingViews && documentView.isActive()) {
                     if (isRebuildNecessary()) {
                         int rStartOffset = rebuildStartOffset;
                         int rEndOffset = rebuildEndOffset;
@@ -576,15 +571,9 @@ public final class ViewUpdates implements DocumentListener {
                             paragraphView = null;
                         }
                         createLocalViews |= documentView.isAccurateSpan();
-                        ViewBuilder viewBuilder = new ViewBuilder(paragraphView, documentView, paragraphViewIndex,
-                                viewFactories, rStartOffset, rEndOffset,
+                        buildViews(paragraphView, paragraphViewIndex,
+                                rStartOffset, rEndOffset,
                                 rEndOffset, 0, createLocalViews);
-                        try {
-                            viewBuilder.createViews();
-                            viewBuilder.repaintAndReplaceViews();
-                        } finally {
-                            viewBuilder.finish(); // Includes factory.finish() in each factory
-                        }
                         resetRebuildInfo();
                     }
                 }
@@ -608,9 +597,8 @@ public final class ViewUpdates implements DocumentListener {
                     rebuildEndOffset = change.getEndOffset();
                 }
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ViewUpdates.Change <" + change.getStartOffset() +
-                            "," + change.getEndOffset() + ">"
-                            );
+                    LOG.fine("ViewUpdates.viewFactoryChanged: <" + change.getStartOffset() +
+                            "," + change.getEndOffset() + ">\n");
                 }
                 checkRebuild();
             }

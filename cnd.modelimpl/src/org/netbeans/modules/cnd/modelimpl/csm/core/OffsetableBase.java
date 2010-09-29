@@ -75,28 +75,36 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
                 pos != null ? pos.getEndOffset() : 0);      
     }
     
-    public OffsetableBase(CsmFile file, int start, int end) {
+    protected OffsetableBase(CsmFile file, int start, int end) {
         // Parameters.notNull("file can not be null", file); // NOI18N
         this.fileUID = UIDCsmConverter.fileToUID(file);
         this.fileRef = null;// to prevent error with "final"
-        this.startPosition = start;
-        this.endPosition = end;
-    }
-    
-    public int getStartOffset() {
-        return startPosition;
-    }
-    
-    public int getEndOffset() {
-        return endPosition != 0 ? endPosition : startPosition;
+        this.startPosition = PositionManager.createPositionID(fileUID, start, PositionManager.Position.Bias.FOWARD);
+        this.endPosition = PositionManager.createPositionID(fileUID, end, PositionManager.Position.Bias.BACKWARD);
     }
 
-    public Position getStartPosition() {
-        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), getStartOffset());
+    public static OffsetableBase create(CsmFile file, int start, int end) {
+        return new OffsetableBase(file, start, end);
     }
     
-    public Position getEndPosition() {
-        return new LazyOffsPositionImpl((FileImpl) this.getContainingFile(), getEndOffset());
+    @Override
+    public final int getStartOffset() {
+        return PositionManager.getOffset(fileUID, startPosition);
+    }
+    
+    @Override
+    public final int getEndOffset() {
+        return endPosition != 0 ? PositionManager.getOffset(fileUID, endPosition) : PositionManager.getOffset(fileUID, startPosition);
+    }
+
+    @Override
+    public final Position getStartPosition() {
+        return PositionManager.getPosition(fileUID, startPosition);
+    }
+    
+    @Override
+    public final Position getEndPosition() {
+        return PositionManager.getPosition(fileUID, endPosition);
     }
     
     public static int getStartOffset(AST node) {
@@ -119,14 +127,17 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
         return 0;
     }
     
+    @Override
     public CsmFile getContainingFile() {
         return _getFile();
     }
 
+    @Override
     public CharSequence getText() {
         return getContainingFile().getText(getStartOffset(), getEndOffset());
     }
 
+    @Override
     public void dispose() {
         onDispose();
     }

@@ -45,9 +45,7 @@
 package org.netbeans.modules.j2ee.weblogic9.ui.nodes;
 
 import javax.enterprise.deploy.shared.ModuleType;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -57,26 +55,13 @@ import org.openide.util.NbBundle;
  * @author Michal Mocnak
  * @author Petr Hejl
  */
-public class WLApplicationsChildren extends Children.Keys {
+public class WLApplicationsChildren extends WLNodeChildren {
     
     WLApplicationsChildren(Lookup lookup) {
-        setKeys(new Object[] {createEarApplicationsNode(lookup),
-                                createEjbModulesNode(lookup),
-                                createWebApplicationsNode(lookup)});
-    }
-    
-    protected void addNotify() {
-    }
-    
-    protected void removeNotify() {
-    }
-    
-    protected org.openide.nodes.Node[] createNodes(Object key) {
-        if (key instanceof AbstractNode){
-            return new Node[]{(AbstractNode)key};
-        }
-        
-        return null;
+        setKeys(new Object[] {
+                createEarApplicationsNode(lookup),
+                createEjbModulesNode(lookup),
+                createWebApplicationsNode(lookup)});
     }
     
     /*

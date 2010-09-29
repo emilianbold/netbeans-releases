@@ -56,15 +56,19 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * For different kinds of statements, which doesn't return specific information - continue, break, etc
  * @author Vladimir Kvashin
  */
-public class UniversalStatement extends StatementBase {
+public final class UniversalStatement extends StatementBase {
     
-    private CsmStatement.Kind kind; 
+    private final CsmStatement.Kind kind;
     
     public UniversalStatement(AST ast, CsmFile file, CsmStatement.Kind kind, CsmScope scope) {
             super(ast, file, scope);
             this.kind = kind;
     }
+    public static UniversalStatement create(AST ast, CsmFile file, CsmStatement.Kind kind, CsmScope scope) {
+        return new UniversalStatement(ast, file, kind, scope);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return kind;
     }

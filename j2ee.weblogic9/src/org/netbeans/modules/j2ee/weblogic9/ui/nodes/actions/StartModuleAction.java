@@ -52,7 +52,7 @@ import org.openide.util.actions.NodeAction;
  *
  * @author Petr Hejl
  */
-public class StartModuleAction extends NodeAction {
+public class StartModuleAction extends WLNodeAction {
 
     @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
@@ -78,7 +78,7 @@ public class StartModuleAction extends NodeAction {
             final ControlModuleCookie cookie = nodes[i].getCookie(ControlModuleCookie.class);
             if (cookie != null) {
                 final Node node = nodes[i].getParentNode();
-                WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
+                ACTION_RP.submit(new Runnable() {
 
                     @Override
                     public void run() {

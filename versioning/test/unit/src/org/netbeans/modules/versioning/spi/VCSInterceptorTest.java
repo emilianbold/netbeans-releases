@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.versioning.spi;
 
-import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.netbeans.junit.NbTestCase;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,7 +62,7 @@ import org.openide.filesystems.FileChangeAdapter;
  * 
  * @author Maros Sandor
  */
-public class VCSInterceptorTest extends TestCase {
+public class VCSInterceptorTest extends NbTestCase {
     
     private File dataRootDir;
     private TestVCSInterceptor inteceptor;
@@ -73,7 +73,7 @@ public class VCSInterceptorTest extends TestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
-        dataRootDir = new File(System.getProperty("data.root.dir"));
+        dataRootDir = getDataDir(); 
         File userdir = new File(dataRootDir + "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
@@ -194,6 +194,22 @@ public class VCSInterceptorTest extends TestCase {
         assertTrue(inteceptor.getBeforeDeleteFiles().contains(file2));
         assertTrue(inteceptor.getDoDeleteFiles().contains(file2));
         assertTrue(inteceptor.getDeletedFiles().contains(file2));
+    }
+
+    public void testFileCopied() throws IOException {
+        File f = new File(dataRootDir, "workdir/root-test-versioned");
+        FileObject fo = FileUtil.toFileObject(f);
+        fo = fo.createData("copyme.txt");
+        File from = FileUtil.toFile(fo);
+
+        FileObject fto = fo.copy(fo.getParent(), "copymeto", "txt");
+
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(from));
+        assertTrue(inteceptor.getBeforeCopyFiles().contains(FileUtil.toFile(fo)));
+        assertTrue(inteceptor.getDoCopyFiles().contains(from));
+        assertTrue(inteceptor.getDoCopyFiles().contains(FileUtil.toFile(fo)));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(from));
+        assertTrue(inteceptor.getAfterCopyFiles().contains(FileUtil.toFile(fo)));
     }
 
     private void deleteRecursively(File f) {

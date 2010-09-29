@@ -49,6 +49,8 @@ import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -61,6 +63,14 @@ import org.openide.util.NbBundle;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/SourcesView",
+                                 types=NodeModel.class),
+    @DebuggerServiceRegistration(path="SourcesView/netbeans-JPDASession/Current",
+                                 types=NodeModel.class),
+    @DebuggerServiceRegistration(path="SourcesView/netbeans-JPDASession/Remote",
+                                 types=NodeModel.class)
+})
 public class SourcesNodeModel implements NodeModel {
 
     public static final String SOURCE_ROOT =

@@ -63,14 +63,22 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.SessionProvider;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
+import org.netbeans.spi.viewmodel.CheckNodeModel;
+import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
 import org.netbeans.spi.viewmodel.Model;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.netbeans.spi.viewmodel.DnDNodeModel;
+import org.netbeans.spi.viewmodel.DnDNodeModelFilter;
+import org.netbeans.spi.viewmodel.ExtendedNodeModel;
+import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
 import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
+import org.netbeans.spi.viewmodel.ReorderableTreeModel;
+import org.netbeans.spi.viewmodel.ReorderableTreeModelFilter;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -89,6 +97,12 @@ import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
  */
 public class ViewModelListener extends DebuggerManagerAdapter {
     
+    private static final Class[] TREE_MODELS = { TreeModel.class, ReorderableTreeModel.class };
+    private static final Class[] TREE_MODEL_FILTERS = { TreeModelFilter.class, ReorderableTreeModelFilter.class };
+
+    private static final Class[] NODE_MODELS = { NodeModel.class, CheckNodeModel.class, DnDNodeModel.class, ExtendedNodeModel.class };
+    private static final Class[] NODE_MODEL_FILTERS = { NodeModelFilter.class, CheckNodeModelFilter.class, DnDNodeModelFilter.class, ExtendedNodeModelFilter.class };
+
     private String          viewType;
     private JComponent      view;
     private JComponent      buttonsPane;
@@ -97,12 +111,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
     private List<? extends SessionProvider> sessionProviders;
     private Session currentSession;
-    private List treeModels;
-    private List treeModelFilters;
+    private List[] treeModels = new List[TREE_MODELS.length];
+    private List[] treeModelFilters = new List[TREE_MODEL_FILTERS.length];
     private List treeExpansionModels;
     private List treeExpansionModelFilters;
-    private List nodeModels;
-    private List nodeModelFilters;
+    private List[] nodeModels = new List[NODE_MODELS.length];
+    private List[] nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
     private List tableModels;
     private List tableModelFilters;
     private List nodeActionsProviders;
@@ -155,9 +169,22 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             DebuggerManager.PROP_CURRENT_ENGINE,
             this
         );
-        final boolean haveModels = (treeModels != null && treeModels.size() > 0) ||
-                (nodeModels != null && nodeModels.size() > 0) ||
-                (tableModels != null && tableModels.size() > 0);
+        boolean haveTreeModels = false;
+        for (List tms : treeModels) {
+            if (tms.size() > 0) {
+                haveTreeModels = true;
+                break;
+            }
+        }
+        boolean haveNodeModels = false;
+        for (List nms : nodeModels) {
+            if (nms.size() > 0) {
+                haveNodeModels = true;
+                break;
+            }
+        }
+        final boolean haveModels = haveTreeModels || haveNodeModels ||
+                                   (tableModels != null && tableModels.size() > 0);
         if (haveModels && view.getComponentCount() > 0) {
             JComponent tree = (JComponent) view.getComponent(0);
             if (!(tree instanceof javax.swing.JTabbedPane)) {
@@ -165,12 +192,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
         }
         models.clear();
-        treeModels = null;
-        treeModelFilters = null;
+        treeModels = new List[TREE_MODELS.length];
+        treeModelFilters = new List[TREE_MODEL_FILTERS.length];
         treeExpansionModels = null;
         treeExpansionModelFilters = null;
-        nodeModels = null;
-        nodeModelFilters = null;
+        nodeModels = new List[NODE_MODELS.length];
+        nodeModelFilters = new List[NODE_MODEL_FILTERS.length];
         tableModels = null;
         tableModelFilters = null;
         nodeActionsProviders = null;
@@ -202,6 +229,14 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         updateModel ();
     }
 
+    private static void getMultiModels(ContextProvider cp, String viewPath,
+                                       List[] models, Class[] classTypes) {
+        for (int i = 0; i < classTypes.length; i++) {
+            models[i] = cp.lookup (viewPath, classTypes[i]);
+        }
+        //System.err.println("\ngetMultiModels("+viewPath+") = "+Arrays.asList(models)+"\n");
+    }
+
      private synchronized void updateModel() {
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
@@ -229,12 +264,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
 
         currentSession =        dm.getCurrentSession();
 
-        treeModels =            cp.lookup (viewPath, TreeModel.class);
-        treeModelFilters =      cp.lookup (viewPath, TreeModelFilter.class);
+        getMultiModels(cp, viewPath, treeModels, TREE_MODELS);
+        getMultiModels(cp, viewPath, treeModelFilters, TREE_MODEL_FILTERS);
         treeExpansionModels =   cp.lookup (viewPath, TreeExpansionModel.class);
         treeExpansionModelFilters = cp.lookup (viewType, TreeExpansionModelFilter.class);
-        nodeModels =            cp.lookup (viewPath, NodeModel.class);
-        nodeModelFilters =      cp.lookup (viewPath, NodeModelFilter.class);
+        getMultiModels(cp, viewPath, nodeModels, NODE_MODELS);
+        getMultiModels(cp, viewPath, nodeModelFilters, NODE_MODEL_FILTERS);
         tableModels =           cp.lookup (viewPath, TableModel.class);
         tableModelFilters =     cp.lookup (viewPath, TableModelFilter.class);
         nodeActionsProviders =  cp.lookup (viewPath, NodeActionsProvider.class);
@@ -272,6 +307,20 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         refreshModel();
     }
 
+    private static List joinLists(List[] modelLists) {
+        List models = new ArrayList();
+        for (List l : modelLists) {
+            synchronized (l) {
+                for (Object o : l) {
+                    if (!models.contains(o)) {
+                        models.add(o);
+                    }
+                }
+            }
+        }
+        return models;
+    }
+
     private synchronized void refreshModel() {
         models.clear();
         if (treeModels == null) {
@@ -279,19 +328,19 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             return ;
         }
         synchronized (treeModels) {
-            models.add(new ArrayList(treeModels));
+            models.add(joinLists(treeModels));
         }
         synchronized (treeModelFilters) {
-            models.add(new ArrayList(treeModelFilters));
+            models.add(joinLists(treeModelFilters));
         }
         synchronized (treeExpansionModels) {
             models.add(new ArrayList(treeExpansionModels));
         }
         synchronized (nodeModels) {
-            models.add(new ArrayList(nodeModels));
+            models.add(joinLists(nodeModels));
         }
         synchronized (nodeModelFilters) {
-            models.add(new ArrayList(nodeModelFilters));
+            models.add(joinLists(nodeModelFilters));
         }
         synchronized (tableModels) {
             models.add(new ArrayList(tableModels));
@@ -362,7 +411,21 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         // );
         // ====
 
-        final boolean haveModels = treeModels.size() > 0 || nodeModels.size() > 0 || tableModels.size() > 0 || hyperModels != null;
+        boolean haveTreeModels = false;
+        for (List tms : treeModels) {
+            if (tms.size() > 0) {
+                haveTreeModels = true;
+                break;
+            }
+        }
+        boolean haveNodeModels = false;
+        for (List nms : nodeModels) {
+            if (nms.size() > 0) {
+                haveNodeModels = true;
+                break;
+            }
+        }
+        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels.size() > 0 || hyperModels != null;
         final Models.CompoundModel newModel;
         if (hyperModels != null) {
             newModel = Models.createCompoundModel (hyperModels, propertiesHelpID);

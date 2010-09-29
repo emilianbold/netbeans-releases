@@ -97,7 +97,6 @@ public final class PathRegistry implements Runnable {
     private Map<URL, WeakValue> unknownRoots;
     private long timeStamp;             //Lamport event ordering
     private volatile Runnable debugCallBack;
-    private volatile boolean useLibraries = true;
     private Collection<URL>  sourcePaths;
     private Collection<URL> libraryPath;
     private Collection<URL> binaryLibraryPath;
@@ -630,7 +629,7 @@ public final class PathRegistry implements Runnable {
                     }
                     translatedRoots.put(binRoot, cacheURLs.toArray(new URL[cacheURLs.size()]));
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("T: " + binRoot + " -> " + cacheURLs); //NOI18N
+                        LOGGER.log(Level.FINE, "T: {0} -> {1}", new Object[]{binRoot, cacheURLs}); //NOI18N
                     }
 
                     if (isNewSR) {
@@ -957,8 +956,8 @@ public final class PathRegistry implements Runnable {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("pathsAdded: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
-                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                    LOGGER.log(Level.FINE, "pathsAdded: {0}, paths= {1}", new Object[]{event.getId(), event.getChangedPaths()}); //NOI18N
+                    LOGGER.log(Level.FINE, "''{0}'' -> ''{1}''", new Object[]{pathId, pk}); //NOI18N
                 }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_ADDED, pk, pathId, event.getChangedPaths());
@@ -969,8 +968,8 @@ public final class PathRegistry implements Runnable {
                 final String pathId = event.getId();
                 final PathKind pk = getPathKind (pathId);
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("pathsRemoved: " + event.getId() + ", paths=" + event.getChangedPaths()); //NOI18N
-                    LOGGER.fine("'" + pathId + "' -> '" + pk + "'"); //NOI18N
+                    LOGGER.log(Level.FINE, "pathsRemoved: {0}, paths={1}", new Object[]{event.getId(), event.getChangedPaths()}); //NOI18N
+                    LOGGER.log(Level.FINE, "''{0}'' -> ''{1}''", new Object[]{pathId, pk}); //NOI18N
                 }
                 if (pk != null) {
                     resetCacheAndFire (EventKind.PATHS_REMOVED, pk, pathId, event.getChangedPaths());
@@ -1006,7 +1005,7 @@ public final class PathRegistry implements Runnable {
 
             public @Override void stateChanged (final ChangeEvent event) {
                 if (LOGGER.isLoggable(Level.FINE)) {
-                    LOGGER.fine("stateChanged: " + event); //NOI18N
+                    LOGGER.log(Level.FINE, "stateChanged: {0}", event); //NOI18N
                 }
                 resetCacheAndFire(EventKind.PATHS_CHANGED, PathKind.BINARY_LIBRARY, null, null);
             }

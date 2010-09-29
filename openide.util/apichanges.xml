@@ -51,6 +51,23 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Exceptions.attachSeverity">
+        <api name="util"/>
+        <summary>Supress logging of not important exceptions</summary>
+        <version major="8" minor="9"/>
+        <date day="8" month="9" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                New method <code>Exceptions.attachSeverity</code> allows 
+                everyone to thrown an exception, which later will not be 
+                logged.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Exceptions"/>
+        <issue number="190079"/>
+    </change>
     <change id="RequestProcessorForClass">
         <api name="util"/>
         <summary>Simplified constructor for RequestProcessor</summary>

@@ -59,6 +59,7 @@ public interface Resources extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
         public static final String VERSION_1_0 = "1.00"; //NOI18N
         public static final String VERSION_1_2 = "1.20"; //NOI18N
         public static final String VERSION_1_3 = "1.30"; //NOI18N
+        public static final String VERSION_1_5 = "1.50"; //NOI18N
         
         public static final String CUSTOM_RESOURCE = "CustomResource";	// NOI18N
 	public static final String EXTERNAL_JNDI_RESOURCE = "ExternalJndiResource";	// NOI18N
@@ -162,14 +163,14 @@ public interface Resources extends org.netbeans.modules.j2ee.sun.dd.api.RootInte
 	public int removeConnectorConnectionPool(ConnectorConnectionPool value);
 	public ConnectorConnectionPool newConnectorConnectionPool();
 
-	public void setJmsResource(int index, JmsResource value);
-	public JmsResource getJmsResource(int index);
-	public int sizeJmsResource();
-	public void setJmsResource(JmsResource[] value);
-	public JmsResource[] getJmsResource();
-	public int addJmsResource(JmsResource value);
-	public int removeJmsResource(JmsResource value);
-	public JmsResource newJmsResource();
+//	public void setJmsResource(int index, JmsResource value);
+//	public JmsResource getJmsResource(int index);
+//	public int sizeJmsResource();
+//	public void setJmsResource(JmsResource[] value);
+//	public JmsResource[] getJmsResource();
+//	public int addJmsResource(JmsResource value);
+//	public int removeJmsResource(JmsResource value);
+//	public JmsResource newJmsResource();
         
         public void write(java.io.File f) throws java.io.IOException, Schema2BeansRuntimeException;
 }

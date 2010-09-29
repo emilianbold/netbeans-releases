@@ -117,7 +117,7 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
             Map<? extends ExecutableElement, ? extends AnnotationValue> 
                 elementValues = annotation.getElementValues();
             Set<ExecutableElement> bindingMembers = collectBindingMembers(
-                    annotation );
+                    annotation , getImplementation() );
             checkMembers(elementValues, bindingMembers, set );
         }
     }
@@ -136,7 +136,8 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
     }
     
     
-    private Set<ExecutableElement> collectBindingMembers( AnnotationMirror annotation ) 
+    static Set<ExecutableElement> collectBindingMembers( AnnotationMirror annotation ,
+            WebBeansModelImplementation impl ) 
     {
         DeclaredType annotationType  = annotation.getAnnotationType();
         TypeElement annotationElement = (TypeElement)annotationType.asElement();
@@ -145,7 +146,7 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
         for (Element member : members) {
             if ( member instanceof ExecutableElement ){
                 ExecutableElement exec = (ExecutableElement)member;
-                if ( isBindingMember( exec )){
+                if ( isBindingMember( exec , impl )){
                     bindingMembers.add( exec );
                 }
             }
@@ -153,10 +154,11 @@ class MemberBindingFilter<T extends Element> extends Filter<T> {
         return bindingMembers;
     }
     
-    private boolean isBindingMember( ExecutableElement element )
+    private static boolean isBindingMember( ExecutableElement element , 
+            WebBeansModelImplementation impl )
     {
         List<? extends AnnotationMirror> annotationMirrors = 
-            getImplementation().getHelper().getCompilationController().getElements().
+            impl.getHelper().getCompilationController().getElements().
                     getAllAnnotationMirrors( element);
         for (AnnotationMirror annotationMirror : annotationMirrors) {
             Name name = ((TypeElement)annotationMirror.getAnnotationType().asElement()).

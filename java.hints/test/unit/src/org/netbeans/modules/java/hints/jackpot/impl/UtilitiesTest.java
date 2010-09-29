@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.java.hints.jackpot.impl;
@@ -195,6 +195,30 @@ public class UtilitiesTest extends TestBase {
         assertEquals(    "5s", Utilities.toHumanReadableTime(time +=           5 * 1000));
         assertEquals(  "3m5s", Utilities.toHumanReadableTime(time +=      3 * 60 * 1000));
         assertEquals("7h3m5s", Utilities.toHumanReadableTime(time += 7 * 60 * 60 * 1000));
+    }
+    
+    public void testCatchMultiparam() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch $catch$ finally {\n }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try {\n }$catch$ finally {\n }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+    }
+    
+    public void testOrdinaryCatch() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "try {\n }\n catch (NullPointerException ex) { } finally {\n }\n", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.TRY);
+
+        String golden = "try {\n } catch (NullPointerException ex) { } finally {\n }";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
 
     public void testGeneralization() throws Exception {

@@ -52,12 +52,15 @@ import javax.swing.Action;
 import javax.swing.JButton;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.apache.maven.execution.DefaultMavenExecutionRequest;
+import org.apache.maven.execution.DefaultMavenExecutionResult;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Profile;
+import org.apache.maven.plugin.LegacySupport;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.MavenProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
-import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -68,6 +71,7 @@ import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -84,7 +88,6 @@ import org.openide.DialogDisplayer;
 import org.openide.modules.InstalledFileLocator;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -93,6 +96,8 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.sonatype.aether.impl.internal.SimpleLocalRepositoryManager;
+import org.sonatype.aether.util.DefaultRepositorySystemSession;
 
 /**
  *
@@ -144,7 +149,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                 AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(NbBundle.getMessage(NbMavenProject.class, "Progress_Download"),
                             new ProgressContributor[] {
                                 AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
-                            null, null);
+                            ProgressTransferListener.cancellable(), null);
                 ProgressTransferListener.setAggregateHandle(hndl);
                 hndl.start();
                 try {
@@ -169,24 +174,30 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     } else {
                         NbMavenProject im = prj.getLookup().lookup(NbMavenProject.class);
                         @SuppressWarnings("unchecked")
-                        List<String> profiles = im.getMavenProject().getActiveProfiles();
-                        mvnprj = im.loadAlternateMavenProject(embedder, profiles, new Properties());
-                    FileObject fo = prj.getLookup().lookup(FileObject.class);
-                    if (fo != null) {
-                        ModelSource ms = Utilities.createModelSource(fo);
-                        if (ms.isEditable()) {
-                            POMModel model = POMModelFactory.getDefault().getModel(ms);
-                            if (model != null) {
-                                ic.add(model);
+                        List<Profile> profiles = im.getMavenProject().getActiveProfiles();
+                        List<String> profileIds = new ArrayList<String>();
+                        for (Profile p : profiles) {
+                            profileIds.add(p.getId());
+                        }
+                        mvnprj = im.loadAlternateMavenProject(embedder, profileIds, new Properties());
+                        FileObject fo = prj.getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            ModelSource ms = Utilities.createModelSource(fo);
+                            if (ms.isEditable()) {
+                                POMModel model = POMModelFactory.getDefault().getModel(ms);
+                                if (model != null) {
+                                    ic.add(model);
+                                }
                             }
                         }
                     }
+
+                    if(mvnprj != null){
+                        ic.add(mvnprj);
+                        DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
+                        ic.add(root);
                     }
-                    ic.add(mvnprj);
-                    DependencyNode root = DependencyTreeFactory.createDependencyTree(mvnprj, embedder, Artifact.SCOPE_TEST);
-                    ic.add(root);
-                } catch (ComponentLookupException ex) {
-                    Exceptions.printStackTrace(ex); //this should not happen, if it does, report.
+
                 } catch (ProjectBuildingException ex) {
                     ErrorPanel pnl = new ErrorPanel(ex);
                     DialogDescriptor dd = new DialogDescriptor(pnl, NbBundle.getMessage(ArtifactMultiViewFactory.class, "TIT_Error"));
@@ -195,7 +206,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                     dd.setOptions(new Object[] { close });
                     dd.setClosingOptions(new Object[] { close });
                     DialogDisplayer.getDefault().notify(dd);
-                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
+                    File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
                     try {
                         MavenProject m = embedder.readProject(fallback);
                         m.setDescription(null);
@@ -204,6 +215,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         // oh well..
                         //NOPMD
                     }
+                } catch (ThreadDeath d) { // download interrupted
                 } finally {
                     hndl.finish();
                     ProgressTransferListener.clearAggregateHandle();
@@ -232,9 +244,14 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
         return tc;
     }
 
-    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws ComponentLookupException, ProjectBuildingException {
-        MavenProjectBuilder bldr = (MavenProjectBuilder) embedder.getPlexusContainer().lookup(MavenProjectBuilder.ROLE);
-        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository());
+    private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws  ProjectBuildingException {
+        //TODO rewrite
+        MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
+        assert bldr !=null : "MavenProjectBuilder component not found in maven";
+        DefaultRepositorySystemSession session = new DefaultRepositorySystemSession();
+        session.setLocalRepositoryManager(new SimpleLocalRepositoryManager(embedder.getLocalRepository().getBasedir()));
+        embedder.lookupComponent(LegacySupport.class).setSession(new MavenSession(embedder.getPlexus(), session, new DefaultMavenExecutionRequest(), new DefaultMavenExecutionResult()));
+        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
     }
     
     private static final String MAVEN_TC_PROPERTY = "mvn_tc_id";

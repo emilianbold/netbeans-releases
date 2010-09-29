@@ -360,20 +360,9 @@ No.
         </question>
 -->
 <answer id="exec-component">
-<p>
-FileChooserBuilder uses the following boolean system properties:
-</p>
-<ul>
-    <li><code>allow.filechooser.symlink.traversal</code>&mdash; If set to false,
-    file choosers created by instances of FileChooserBuilder will traverse
-    symlinks.  By default they do not.
-    </li>
-    <li><code>forget.recent.dirs</code>&mdash;If true, FileChooserBuilder will
-    not remember users&apos; recent directories across sessions.  This property
-    is provided for applications where a history of recently used directories is a
-    security concern.
-    </li>
-</ul>
+  <api name="fallback" group="property" type="export" category="stable">
+      See documentation of <code>FileSystem</code>.
+ </api>
 </answer>
 
 
@@ -433,6 +422,19 @@ Periodic refresh can be set.
      output streams were opened that prevent a file from being deleted because they were not closed.
      This information comes at a performance cost, however.
     </p>
+   </api>
+  </li>
+  <li>
+   <api type="export" group="systemproperty" name="allow.filechooser.symlink.traversal" category="private">
+       Used by FileChooserBuilder. If set to false,
+    file choosers created by instances of FileChooserBuilder will traverse
+    symlinks.  By default they do not.
+   </api>
+   <api type="export" group="systemproperty" name="forget.recent.dirs" category="private">
+       Used by FileChooserBuilder. If true, FileChooserBuilder will
+    not remember users&apos; recent directories across sessions.  This property
+    is provided for applications where a history of recently used directories is a
+    security concern.
    </api>
   </li>
  </ul>
@@ -854,73 +856,8 @@ No.
   
   <usecase id="login-changes" name="How to change menus, etc. after login?">
       <p>
-      Since version 7.1 there is a way to change the content of system file
-      system in a dynamic way. As system file systems contains various 
-      definitions (in NetBeans Platform menus, toolbars, layout of windows, etc.)
-      it de-facto allows global change to these settings for example when
-      user logs into some system.
-      </p>
-      
-      <p>
-          First thing to do is to create an implementation of filesystem.
-          It can be created either from scratch, or by subclassing
-          <a href="@TOP@/org/openide/filesystems/AbstractFileSystem.html">AbstractFileSystem</a>,
-          or
-          <a href="@TOP@/org/openide/filesystems/MultiFileSystem.html">MultiFileSystem</a>.
-          In this example we will subclass the 
-          <a href="@TOP@/org/openide/filesystems/MultiFileSystem.html">MultiFileSystem</a>:
-      </p>
-      
-      <pre>
-public class LoginFileSystem extends <a href="@TOP@/org/openide/filesystems/MultiFileSystem.html">MultiFileSystem</a> {
-    private static LoginFileSystem INSTANCE;
-    public LoginFileSystem() {
-        // let's create the filesystem empty, because the user
-        // is not yet logged in
-        INSTANCE = this;
-    }
-    public static void assignURL(URL u) throws SAXException {
-        INSTANCE.setDelegates(new <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>(u));
-    }
-}
-      </pre>
-      
-      <p>
-      It is necessary to register this instance in lookup by creating the file:
-      </p>
-      <ul>
-          <li><code>META-INF/services/org.openide.filesystems.FileSystem</code></li>
-      </ul>
-      <p>
-          with a single line containing the full
-          name of your filesystem - e.g. <code>your.module.LoginFileSystem</code>.
-          When done, the system will find out your registration of the filesystem
-          on startup and will merge the content of the filesystem into the 
-          default system file system. You can show a dialog letting the user
-          to log in to some system anytime later, and when the user is successfully
-          in, just call <code>LoginFileSystem.assignURL(url)</code> where the
-          URL is an XML file in <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">the same format</a>
-          as used for regular layer files inside of many NetBeans modules.
-          The system will notice the change in the content and notify all the
-          config file listeners accordingly.
-      </p>
-      
-      <p>
-          Of course, instead of 
-          <a href="@TOP@/org/openide/filesystems/XMLFileSystem.html">XMLFileSystem</a>
-          you can use for example
-          <a href="@TOP@/org/openide/filesystems/FileUtil.html#createMemoryFileSystem()">memory file system</a>,
-          or any other you write yourself.
-      </p>
-
-      <p>
-          Since version 7.23 you can use <api name="SystemFileSystem.fallback" group="property"
-          type="export" category="stable">
-              By returning <code>Boolean.TRUE</code> from call
-                    to <code>fs.getRoot().getAttribute("fallback")</code>
-                    you can place your filesystem behind all layers provided
-                    by standard modules and form a kind of <q>fallback</q>
-         </api>
+          See <a href="@TOP@/org/openide/filesystems/FileSystem.html">documentation</a>
+          about dynamically changing the system filesystem.
       </p>
   </usecase>
  </answer>

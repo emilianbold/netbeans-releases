@@ -578,6 +578,12 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
                 String realGroupId = d.getGroupId();
                 if ("${project.groupId}".equals(realGroupId)) {
                     realGroupId = getGroupId();
+                    if (realGroupId == null) {
+                        Parent parent = getPomParent();
+                        if (parent != null) {
+                            realGroupId = parent.getGroupId();
+                        }
+                    }
                 }
                 if (groupId.equals(realGroupId) && artifactId.equals(d.getArtifactId()) &&
                         (classifier == null || classifier.equals(d.getClassifier()))) {

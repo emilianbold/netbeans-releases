@@ -61,6 +61,8 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -77,6 +79,20 @@ import org.openide.util.NbPreferences;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=TableModel.class,
+                                 position=750),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types=TableModel.class,
+                                 position=750)
+})
 public class VariablesTableModel implements TableModel, Constants {
     
     private JPDADebugger debugger;
@@ -137,7 +153,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
                 if (e != null)
-                    return BoldVariablesTableModelFilterFirst.toHTML(">" + e + "<", false, false, Color.RED);
+                    return BoldVariablesTableModelFilter.toHTML(">" + e + "<", false, false, Color.RED);
                 return w.getValue ();
             } else 
             if (row instanceof Variable) {
@@ -332,6 +348,6 @@ public class VariablesTableModel implements TableModel, Constants {
             p.close();
             m += " \n"+s.toString();
         }
-        return BoldVariablesTableModelFilterFirst.toHTML(">" + m + "<", false, false, Color.RED);
+        return BoldVariablesTableModelFilter.toHTML(">" + m + "<", false, false, Color.RED);
     }
 }

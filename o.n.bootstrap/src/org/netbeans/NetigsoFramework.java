@@ -75,12 +75,17 @@ public abstract class NetigsoFramework {
         Collection<? extends Module> preregister
     );
 
-    /** Start the OSGi framework.
+    /** Get's ready for start of the OSGi framework.
      * @param allModules the modules that are in the system
      * @return returns set of additional modules (usually autoloads that need to be turned on)
      * @since 2.31 it returns set of module code name bases
      */
     protected abstract Set<String> start(Collection<? extends Module> allModules);
+    
+    /** Starts the OSGi framework by activating all bundles that shall be activated.
+     * @since 2.35
+     */
+    protected abstract void start();
 
     /** Shutdowns the framework */
     protected abstract void shutdown();
@@ -207,6 +212,13 @@ public abstract class NetigsoFramework {
             return;
         }
     }
+
+    static void startFramework() {
+        if (framework != null) {
+            framework.start();
+        }
+    }
+
 
     /** Used on shutdown */
     static void shutdownFramework() {

@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.editor.codetemplates;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.text.JTextComponent;
 
@@ -60,7 +61,9 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -71,8 +74,8 @@ import org.openide.util.Exceptions;
  */
 public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
     private CodeTemplateInsertRequest   request;
-    private ParserResult                cInfo = null;
-    private Snapshot                    snapshot = null;
+    private volatile ParserResult                cInfo = null;
+    private volatile Snapshot                    snapshot = null;
 
     private GsfCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -158,28 +161,35 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
                     return false;
                 }
             }
-
             if (js != null) {
                 try {
-                    ParserManager.parse (
+                    final AtomicBoolean done = new AtomicBoolean();
+                    final Thread me = Thread.currentThread();
+                    ParserManager.parseWhenScanFinished(
                         Collections.<Source> singleton (js),
                         new UserTask () {
                             public void run (ResultIterator resultIterator) throws IOException, ParseException {
+                                if (!Thread.currentThread().equals(me)) {
+                                    return;
+                                }
                                 Parser.Result parserResult = resultIterator.getParserResult (c.getCaretPosition ());
                                 if(!(parserResult instanceof ParserResult)) {
                                     return ;
                                 }
                                 cInfo = (ParserResult)parserResult;
                                 snapshot = parserResult.getSnapshot ();
+                                done.set(true);
                             }
                         }
                     );
+                    if (!done.get()) {
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
+                    }
                 } catch (ParseException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
             }
         }
-
         return cInfo != null;
     }
 

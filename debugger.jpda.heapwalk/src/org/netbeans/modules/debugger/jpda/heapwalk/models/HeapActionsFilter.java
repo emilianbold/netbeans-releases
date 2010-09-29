@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.heap.Instance;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import javax.security.auth.Refreshable;
 import javax.swing.Action;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -61,6 +62,8 @@ import org.netbeans.modules.debugger.jpda.heapwalk.views.InstancesView;
 import org.netbeans.modules.profiler.heapwalk.HeapFragmentWalker;
 
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
@@ -76,6 +79,17 @@ import org.openide.windows.WindowManager;
  * 
  * @author Martin Entlicher
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=1000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=1000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types=NodeActionsProviderFilter.class,
+                                 position=1000)
+})
 public class HeapActionsFilter implements NodeActionsProviderFilter {
     
     private JPDADebugger debugger;
@@ -117,6 +131,11 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
                     return false;
                 }
                 ObjectVariable var = (ObjectVariable) node;
+                if (var instanceof Refreshable) {
+                    if (!((Refreshable) var).isCurrent()) {
+                        return false;
+                    }
+                }
                 return var.getUniqueID() != 0L;
             }
             public void perform (Object[] nodes) {

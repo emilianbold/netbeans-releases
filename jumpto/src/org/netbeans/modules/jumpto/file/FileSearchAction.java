@@ -71,6 +71,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
@@ -78,6 +79,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -107,15 +109,19 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.TopComponent;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfoFactory;
 /**
@@ -233,6 +239,29 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         FileDescriptor[] result = null;
         panel = new FileSearchPanel(this, findCurrentProject());
         dialog = createDialog(panel);
+
+        Node[] arr = TopComponent.getRegistry ().getActivatedNodes();
+        if (arr.length > 0) {
+            EditorCookie ec = arr[0].getCookie (EditorCookie.class);
+            if (ec != null) {
+                JEditorPane recentPane = NbDocument.findRecentEditorPane(ec);
+                if (recentPane != null) {
+                    String initSearchText = null;
+                    if (org.netbeans.editor.Utilities.isSelectionShowing(recentPane.getCaret())) {
+                        initSearchText = recentPane.getSelectedText();
+                    }
+                    if (initSearchText != null) {
+                        panel.setInitialText(initSearchText);
+                    } else {
+                        FileObject fo = arr[0].getLookup().lookup(FileObject.class);
+                        if (fo != null) {
+                            panel.setInitialText(fo.getNameExt());
+                        }
+                    }
+                }
+            }
+        }
+
         dialog.setVisible(true);
         result = panel.getSelectedFiles();
         return result;
@@ -380,7 +409,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         public void run() {
 
             LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-
+            
             final List<? extends FileDescriptor> files = getFileNames( text );
             if ( isCanceled ) {
                 LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
@@ -426,17 +455,21 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
         private List<? extends FileDescriptor> getFileNames(String text) {
-            String searchField;
-            switch (searchType) {
-                case CASE_INSENSITIVE_PREFIX:
-                case CASE_INSENSITIVE_REGEXP:
-                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
-                default:
-                    searchField = FileIndexer.FIELD_NAME; break;
-            }
-
             final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
+                String searchField;
+                switch (searchType) {
+                    case CASE_INSENSITIVE_PREFIX:
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
+                    case CASE_INSENSITIVE_REGEXP:
+                        verifyRegexp(text);
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
+                    case REGEXP:
+                        verifyRegexp(text);
+                        searchField = FileIndexer.FIELD_NAME; break;
+                    default:
+                        searchField = FileIndexer.FIELD_NAME; break;
+                }
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
                 Collection<? extends IndexResult> results = q.query(searchField, text, searchType);
                 ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
@@ -511,8 +544,15 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
                         if (matcher.accept(file.getNameExt())) {
                             Project project = FileOwnerQuery.getOwner(file);
-                            boolean preferred = project != null && currentProject != null ? project.getProjectDirectory() == currentProject.getProjectDirectory() : false;
-                            String relativePath = FileUtil.getRelativePath(project.getProjectDirectory(), file);
+                            boolean preferred = false;
+                            String relativePath = null;
+                            if(project != null) { // #176495
+                               FileObject pd = project.getProjectDirectory();
+                               preferred = currentProject != null ?
+                                 pd == currentProject.getProjectDirectory() :
+                                 false;
+                                relativePath = FileUtil.getRelativePath(pd, file);
+                            }
                             if (relativePath == null)
                                 relativePath ="";
                             FileDescriptor fd = new FileDescription(
@@ -533,6 +573,10 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 LOGGER.log(Level.WARNING, null, ioe);
                 return Collections.<FileDescriptor>emptyList();
             }
+        }
+        
+        private void verifyRegexp(final String text) throws PatternSyntaxException {
+            Pattern.compile(text);
         }
 
         private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {

@@ -51,6 +51,7 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
 /**
@@ -120,7 +121,7 @@ final class ResultTreeModel implements TreeModel {
             } else {
                 MatchingObject mo = (MatchingObject) parent;
                 Node[] detailNodes = resultModel.searchAndReplace ? 
-                    resultModel.basicCriteria.getDetails(mo.object) :
+                    resultModel.basicCriteria.getDetails(mo.getFileObject()) :
                     resultModel.getDetails(mo);
                 if ((detailNodes == null) || (index >= detailNodes.length)) {
                     ret = null;
@@ -147,8 +148,8 @@ final class ResultTreeModel implements TreeModel {
             ret = objectsCount;
         } else if (parent.getClass() == MatchingObject.class) {
             if (resultModel.searchAndReplace) {
-                ret = resultModel.basicCriteria.getDetailsCount(
-                                            ((MatchingObject) parent).object);
+                FileObject fo = ((MatchingObject) parent).getFileObject();
+                ret = resultModel.basicCriteria.getDetailsCount(fo);
             } else if (resultModel.canHaveDetails() == Boolean.FALSE) {
                 ret = 0;
             } else {
@@ -209,7 +210,7 @@ final class ResultTreeModel implements TreeModel {
                 Node[] detailNodes
                         = resultModel.searchAndReplace
                           ? resultModel.basicCriteria.getDetails(
-                                        matchingObject.object)
+                                        matchingObject.getFileObject())
                           : resultModel.getDetails(matchingObject);
                 if (detailNodes != null) {
                     for (int i = 0; i < detailNodes.length; i++) {
@@ -520,7 +521,7 @@ final class ResultTreeModel implements TreeModel {
         }
 
         Node[] children = resultModel.basicCriteria
-                          .getDetails(matchingObj.object);
+                          .getDetails(matchingObj.getFileObject());
         int[] indices = new int[children.length];
         for (int i = 0; i < indices.length; i++) {
             indices[i] = i;
@@ -547,7 +548,7 @@ final class ResultTreeModel implements TreeModel {
 
         int[] changedIndices = new int[] { index };
         Node[] detailNodes = resultModel.basicCriteria
-                             .getDetails(matchingObj.object);
+                             .getDetails(matchingObj.getFileObject());
         Node[] changedNodes = (detailNodes.length == 1)
                               ? detailNodes
                               : new Node[] { detailNodes[index] };

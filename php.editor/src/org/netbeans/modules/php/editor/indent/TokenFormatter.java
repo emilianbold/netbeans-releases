@@ -52,10 +52,12 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -326,11 +328,13 @@ public class TokenFormatter {
      */
     private int countOfNewLines(CharSequence chs) {
 	int count = 0;
-	for (int i = 0; i < chs.length(); i++) {
-	    if (chs.charAt(i) == '\n') { // NOI18N
-		count++;
-	    }
-	}
+        if (chs != null) {
+            for (int i = 0; i < chs.length(); i++) {
+                if (chs.charAt(i) == '\n') { // NOI18N
+                    count++;
+                }
+            }
+        }
 	return count;
     }
 
@@ -372,13 +376,18 @@ public class TokenFormatter {
                     start.set(System.currentTimeMillis());
 
                     int delta = 0;
+                    // keeps the indentation of the php code. In a file, where is php
+                    // mixed together with html it reflects also the "html" shift.
+                    // It can be very different in html code.
                     int indent = docOptions.initialIndent;
+                    // reflect only the php indentation itself. It's mainly used for
+                    // finding position of open php tag in a html code.
+                    int lastPHPIndent = 0;
                     final boolean templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null; //NOI18N
                     final int caretOffset = EditorRegistry.lastFocusedComponent() != null
                             ? EditorRegistry.lastFocusedComponent().getCaretPosition()
                             : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
                     boolean caretInTemplateSolved = false;
-                    int lastPHPIndent = -1;
                     int htmlIndent = -1;
                     int index = 0;
                     int newLines = 0;
@@ -390,7 +399,7 @@ public class TokenFormatter {
                     String newText = null;
                     String oldText = null;
                     int changeOffset = -1;
-                    int deltaForLastRightParen = 0;
+                    int deltaForLastMoveBeforeLineComment = 0;
                     FormatToken.AnchorToken lastAnchor = null;
 
                     while (index < formatTokens.size()) {
@@ -921,14 +930,18 @@ public class TokenFormatter {
                                         indentLine = true;
                                         break;
                                     case INDENT:
-                                        indent += ((FormatToken.IndentToken) formatToken).getDelta();
+                                        int indentDelta = ((FormatToken.IndentToken) formatToken).getDelta();
+                                        indent += indentDelta;
+                                        lastPHPIndent += indentDelta;
                                         break;
                                     case ANCHOR:
                                         lastAnchor = (FormatToken.AnchorToken) formatToken;
                                         lastAnchor.setAnchorColumn(column + 1);
                                         break;
                                     case WHITESPACE_BEFORE_OPEN_PHP_TAG:
-                                        Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
+                                        // we rely on AbstractIndenter.lineIndents that comes from html formatter.
+                                        // we have to be also sure that the html formatter is called before the php one.
+                                        Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents"); // NOI18N
 
                                         if (oldText == null) {
                                             try {
@@ -946,9 +959,23 @@ public class TokenFormatter {
                                                     indentRule = true;
                                                     changeOffset = lineOffset - delta;
                                                     oldText = doc.getText(lineOffset, firstNW - lineOffset);
-                                                    htmlIndent = suggestedIndent.intValue(); 
-                                                    indent = suggestedIndent.intValue() + docOptions.initialIndent;
-                                                    countSpaces = htmlIndent;
+                                                    htmlIndent = suggestedIndent.intValue();
+                                                    // the indentation is composed from html inden + php indent
+                                                    indent = suggestedIndent.intValue() + docOptions.initialIndent + lastPHPIndent;
+                                                    countSpaces = htmlIndent == 0 ? 0 : htmlIndent + lastPHPIndent;
+                                                    
+                                                    // try to find, whether there is no indend tag after open tag
+                                                    int indentIndex = index;
+                                                    while (indentIndex < formatTokens.size()
+                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.INDENT
+                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.TEXT) {
+                                                        indentIndex ++;
+                                                    }
+                                                    if (indentIndex < formatTokens.size()
+                                                            && formatTokens.get(indentIndex).getId() == FormatToken.Kind.INDENT) {
+                                                        countSpaces += ((FormatToken.IndentToken)formatTokens.get(indentIndex)).getDelta();
+                                                    }
+
                                                     indentOfOpenTag = countSpaces;
                                                 }
                                             } catch (BadLocationException ex) {
@@ -978,7 +1005,6 @@ public class TokenFormatter {
                                                 int offset = formatToken.getOffset() + delta;
                                                 int lineNumber = Utilities.getLineOffset(doc, offset);
                                                 Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
-                                                lastPHPIndent = indent;
                                                 if (suggestedIndent != null) {
                                                     int lineOffset = Utilities.getRowStart(doc, offset);
                                                     int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
@@ -987,12 +1013,16 @@ public class TokenFormatter {
                                                         newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
                                                     }
                                                     else {
-    //						    newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
                                                         if (isAfterLineComment(formatTokens, index)) {
                                                             // there should be logic, which will remove whitespaces at the end of line comment in the case // comment ?>
                                                             countSpaces = 0;
                                                         } else {
                                                         countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;
+                                                        }
+                                                        if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
+                                                            newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                        } else {
+                                                            newLines = 0;
                                                         }
                                                     }
                                                     indent = suggestedIndent;
@@ -1181,9 +1211,9 @@ public class TokenFormatter {
                                         hIndex--;
                                     }
                                     if (hIndex > 0 && formatTokens.get(hIndex).getId() == FormatToken.Kind.TEXT
-                                            && ")".equals(formatTokens.get(hIndex).getOldText())) {
-                                        int origDelta = delta;
-                                        delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + 1 - (delta - deltaForLastRightParen), hIndex + 1, "", newText + "{", delta, templateEdit);
+                                            && (")".equals(formatTokens.get(hIndex).getOldText())   // NOI18N
+                                            || "else".equals(formatTokens.get(hIndex).getOldText()))) { // NOI18N
+                                        delta = replaceString(doc, formatTokens.get(hIndex).getOffset() + formatTokens.get(hIndex).getOldText().length() - (delta - deltaForLastMoveBeforeLineComment), hIndex + 1, "", newText + "{", delta, templateEdit); // NOI18N
                                         delta = replaceString(doc, changeOffset, index, oldText, "", delta, templateEdit);
                                         delta = replaceString(doc, formatToken.getOffset(), index, formatToken.getOldText(), "", delta, templateEdit);
                                         newText = null;
@@ -1197,6 +1227,7 @@ public class TokenFormatter {
                             switch (formatToken.getId()) {
                                 case INDENT:
                                     indent += ((FormatToken.IndentToken) formatToken).getDelta();
+                                    lastPHPIndent += ((FormatToken.IndentToken) formatToken).getDelta();
                                     break;
                                 case COMMENT:
                                 case DOC_COMMENT:
@@ -1214,31 +1245,27 @@ public class TokenFormatter {
                                 case HTML:
                                     if (htmlIndent > -1) {
                                         oldText = formatToken.getOldText();
+                                        int firstNW = 0;
+                                        while (firstNW < oldText.length() &&
+                                                Character.isWhitespace(oldText.charAt(firstNW))) {
+                                            firstNW++;
+                                        }
                                         int lineOffset = formatToken.getOffset() + delta;
                                         try {
+                                            // the first line of the html block
                                             int firstLine = Utilities.getLineOffset(doc, lineOffset);
-                                            Map<Integer, Integer> suggestedLineIndents = (Map<Integer, Integer>)doc.getProperty("AbstractIndenter.lineIndents");
-                                            int lineHTMLIndent = 0;
-                                            if (suggestedLineIndents != null) {
-                                                // find previous suggested html indentation. 
-                                                int suggestedLineIndent = firstLine;
-                                                while (suggestedLineIndent > -1 && suggestedLineIndents.get(suggestedLineIndent) == null) {
-                                                    suggestedLineIndent--;
-                                                }
-                                                if (suggestedLineIndent > -1) {
-                                                    lineHTMLIndent = suggestedLineIndents.get(suggestedLineIndent);
-                                                }
-                                            }
-                                            
+
+                                            boolean countInitialIndent = docOptions.initialIndent > 0 && lastPHPIndent > 0 ;
+
                                             int indexInST = 0;
                                             for (StringTokenizer st = new StringTokenizer(oldText, "\n", true); st.hasMoreTokens();) { //NOI18N
                                                 String token = st.nextToken();
                                                 int currentOffset = formatToken.getOffset() + delta + indexInST;
                                                 indexInST = indexInST + token.length();
                                                 int currentLine = Utilities.getLineOffset(doc, currentOffset);
-                                                if (firstLine < currentLine ) {
+                                                if (firstLine < currentLine  && !token.equals("\n")) {  //NOI18N
                                                     int lineIndent = Utilities.getRowIndent(doc, currentOffset + 1);
-                                                    int finalIndent = lastPHPIndent + lineIndent - lineHTMLIndent;
+                                                    int finalIndent = lastPHPIndent + lineIndent + (countInitialIndent ? docOptions.initialIndent : 0);// - lineHTMLIndent;
                                                     if (finalIndent == docOptions.initialIndent && finalIndent != 0) {
                                                         finalIndent = 0;
                                                     }
@@ -1257,10 +1284,11 @@ public class TokenFormatter {
                                     }
                                     break;
                                 case TEXT:
-                                    if (")".equals(formatToken.getOldText())) {
-                                        // remember the delta for last paren due to
-                                        // possible moving { after the )
-                                        deltaForLastRightParen = delta;
+                                    if (")".equals(formatToken.getOldText())                    // NOI18N
+                                            || "else".equals(formatToken.getOldText())) {       // NOI18N
+                                        // remember the delta for last paren or else keyword due to
+                                        // possible moving { before line comment
+                                        deltaForLastMoveBeforeLineComment = delta;
                                     }
                                     break;
                             }
@@ -1568,7 +1596,11 @@ public class TokenFormatter {
 
             private int startOffset = -1;
             private int endOffset = -1;
-            private int previousLineIndent = 0;
+            // prviousIndentDelta keeps information, when a template is inserted and
+            // the code is not formatted according setted rules. Like initial indentation, etc.
+            // Basically it contain difference between number of spaces in document and 
+            // the position if the document will be formatted according our rules.
+            private int previousIndentDelta = 0;
             private String previousOldIndentText = "";
             private String previousNewIndentText = "";
 
@@ -1578,11 +1610,13 @@ public class TokenFormatter {
 		}
 
                 if(startOffset == -1) {
+                    // set the range, where the formatting should be done
                     startOffset = formatContext.startOffset();
                     endOffset = formatContext.endOffset();
                 }
                 if (startOffset > 0 && (startOffset - oldText.length()) > offset
                         && newText != null && newText.indexOf('\n') > -1) {
+                    // will be formatted new line that the first one has to be special 
                     previousNewIndentText = newText;
                     previousOldIndentText = oldText;
                 }
@@ -1590,35 +1624,37 @@ public class TokenFormatter {
                         || (startOffset > 0 && (startOffset - oldText.length()) == offset))) {
                     int realOffset = offset + delta;
                     if (startOffset > 0 && (startOffset - oldText.length()) == offset) {
+                        // this should be a line with a place, where the template is inserted.
                         if (previousOldIndentText.length() == 0 && previousNewIndentText.length() == 0) {
                             // probably we are at the begining of file, so keep the current possition
                             previousOldIndentText = oldText;
                             previousNewIndentText = newText;
                         }
+                        // find difference between the new text and old text of the previous formatting rule
                         int indexOldTextLine = previousOldIndentText.lastIndexOf('\n');
                         int indexNewTextLine = previousNewIndentText.lastIndexOf('\n');
-                        if (indexOldTextLine > -1 && indexNewTextLine > -1) {
-                            int addToLength = 0;
-                            int indexOldText = indexOldTextLine;
-                            while (indexOldText < previousOldIndentText.length()
-                                    && (indexOldText =previousOldIndentText.indexOf('\t', indexOldText)) != -1) {
-                                addToLength += docOptions.tabSize - 1;
-                                indexOldText++;
-                            }
-                            previousLineIndent = previousNewIndentText.length() - indexNewTextLine - previousOldIndentText.length() - addToLength + indexOldTextLine;
-                        }
 
-                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        previousNewIndentText = indexNewTextLine == -1 ? previousNewIndentText : previousNewIndentText.substring(indexNewTextLine + 1);
+                        previousOldIndentText = indexOldTextLine == -1 ? previousOldIndentText : previousOldIndentText.substring(indexOldTextLine + 1);
+
+                        previousIndentDelta = countOfSpaces(previousOldIndentText, docOptions.tabSize)
+                                - countOfSpaces(previousNewIndentText, docOptions.tabSize);
+
+                        // find the indent of the new text
                         indexNewTextLine = newText.lastIndexOf('\n');
                         String replaceNew = indexNewTextLine == -1 ? newText : newText.substring(indexNewTextLine + 1);
-                        if (previousLineIndent != 0 && indexNewTextLine > -1 && (replaceNew.length()) >= 0) {
-                            int newSpaces = replaceNew.length() - previousLineIndent;
-                            replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
-                        }
-                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
-                        
+                        int replaceNewLength = countOfSpaces(replaceNew, docOptions.tabSize);
 
-                        if (!replaceOld.equals(replaceNew)) {
+                        // if there was a difference on the previous line, apply the difference for the current line as well.
+                        if (previousIndentDelta != 0 && indexNewTextLine > -1 && (replaceNewLength >= 0)) {
+                            replaceNewLength += previousIndentDelta;
+                            replaceNew = createWhitespace(document, 0, Math.max(0, replaceNewLength));
+                        }
+                        indexOldTextLine = oldText.lastIndexOf('\n');
+                        String replaceOld = indexOldTextLine == -1 ? oldText : oldText.substring(indexOldTextLine + 1);
+                        int replaceOldLength = countOfSpaces(replaceOld, docOptions.tabSize);
+
+                        if (replaceOldLength != replaceNewLength) {
                             delta = replaceSimpleString(document, realOffset + indexOldTextLine + 1, replaceOld, replaceNew, delta);
                         }
                     }
@@ -1650,10 +1686,10 @@ public class TokenFormatter {
                                         indexNewTextLine = newText.length();
                                     replaceOld = indexOldText == indexOldTextLine && oldText.length() > 0 ? "\n" : oldText.substring(indexOldText, indexOldTextLine); // NOI18N
                                     replaceNew = indexNewText == indexNewTextLine ? "\n" : newText.substring(indexNewText, indexNewTextLine); // NOI18N
-                                    if (previousLineIndent != 0 && indexNewText != indexNewTextLine 
+                                    if (previousIndentDelta != 0 && indexNewText != indexNewTextLine
                                             && indexNewText > 0
                                             && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
-                                        int newSpaces = replaceNew.length() - previousLineIndent;
+                                        int newSpaces = countOfSpaces(replaceNew, docOptions.tabSize) + previousIndentDelta;
                                         replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                     }
                                     if (!replaceOld.equals(replaceNew)
@@ -1680,10 +1716,11 @@ public class TokenFormatter {
                                             indexNewTextLine = newText.length();
                                         }
                                         replaceNew = newText.substring(indexNewText, indexNewTextLine == -1 ? newText.length() : indexNewTextLine); // NOI18N
-                                        if (previousLineIndent != 0 && indexNewText != indexNewTextLine
+                                        int newSpaces = countOfSpaces(replaceNew, docOptions.tabSize);
+                                        if (previousIndentDelta != 0 && indexNewText != indexNewTextLine
                                                 && indexNewText > 0
-                                                && indexNewTextLine > -1 && (replaceNew.length()) > 0) {
-                                            int newSpaces = replaceNew.length() - previousLineIndent;
+                                                && indexNewTextLine > -1 && (newSpaces > 0)) {
+                                            newSpaces = newSpaces + previousIndentDelta;
                                             replaceNew = createWhitespace(document, 0, Math.max(0, newSpaces));
                                         }
                                         sb.append(replaceNew);
@@ -1781,6 +1818,20 @@ public class TokenFormatter {
 	    token = tokens.get(++index);
 	}
 	return token.getId() == FormatToken.Kind.LINE_COMMENT;
+    }
+
+    private int countOfSpaces(String text, int tabSize) {
+        int spaces = 0;
+        int index = 0;
+        while (index < text.length()) {
+            if (text.charAt(index) == '\t') {
+                spaces += tabSize;
+            } else {
+                spaces++;
+            }
+            index++;
+        }
+        return spaces;
     }
 
     private FormatToken getPreviousNonWhite(List<FormatToken> tokens, int index) {

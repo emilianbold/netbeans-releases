@@ -69,6 +69,7 @@ import org.netbeans.modules.websvc.wsitconf.util.ServerUtils;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -76,6 +77,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Martin Grebac
  */
+@ProjectServiceProvider(service=WsitProvider.class, projectType="org-netbeans-modules-maven")
 public class MavenWsitProvider extends WsitProvider {
 
     private static final Logger logger = Logger.getLogger(MavenWsitProvider.class.getName());

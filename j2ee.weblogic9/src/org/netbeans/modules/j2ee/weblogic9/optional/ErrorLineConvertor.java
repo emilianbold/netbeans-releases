@@ -98,9 +98,9 @@ class ErrorLineConvertor implements LineConvertor {
                             accessible = true;
                         }
                         catch (NumberFormatException nfe) {
-                            // ignore it
-                            Logger.getLogger(ErrorLineConvertor.class.getName()).log(
-                                    Level.INFO, null, nfe);
+                            /* This means that line has wrong pattern.
+                             * Ignore exception and skip this line 
+                             */
                         }
                         if (lineLenght > nextColonIdx) {
                             message = logLine.substring(nextColonIdx + 1,
@@ -128,9 +128,9 @@ class ErrorLineConvertor implements LineConvertor {
                             accessible = true;
                         }
                         catch (NumberFormatException nfe) {
-                            // ignore it
-                            Logger.getLogger(ErrorLineConvertor.class.getName()).log(
-                                    Level.INFO, null, nfe);
+                            /* This means that line has wrong pattern.
+                             * Ignore exception and skip this line 
+                             */
                         }
                         if (lineLenght > thirdColonIdx) {
                             message = logLine.substring(thirdColonIdx + 1,

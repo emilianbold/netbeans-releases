@@ -82,7 +82,7 @@ public class AnnotationProcessorTestUtils {
         try {
             PrintWriter pw = new PrintWriter(w);
             String pkg = clazz.replaceFirst("\\.[^.]+$", "");
-            if (!pkg.equals(clazz)) {
+            if (!pkg.equals(clazz) && !clazz.endsWith(".package-info")) {
                 pw.println("package " + pkg + ";");
             }
             for (String line : content) {

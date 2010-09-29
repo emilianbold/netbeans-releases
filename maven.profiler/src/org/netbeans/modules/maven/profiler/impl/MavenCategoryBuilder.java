@@ -51,7 +51,12 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service=CategoryBuilder.class, projectType="org-netbeans-modules-maven")
+@ProjectServiceProvider(service=CategoryBuilder.class, projectType={
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM
+})
 public class MavenCategoryBuilder extends CategoryBuilder {
 
     public MavenCategoryBuilder(Project proj) {

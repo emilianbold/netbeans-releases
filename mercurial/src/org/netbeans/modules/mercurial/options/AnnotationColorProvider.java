@@ -112,7 +112,7 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
     protected MessageFormat createFormat (Color color, boolean isTooltip) {
         StringBuilder annotationFormatString = new StringBuilder("{0}"); //NOI18N
         if (color != null) {
-            annotationFormatString = new StringBuilder("<font color=\"") //NOI18N
+            annotationFormatString = new StringBuilder("<font color=\"#") //NOI18N
                     .append(to2Hex(color.getRed())).append(to2Hex(color.getGreen())).append(to2Hex(color.getBlue())).append("\"").append(">{0}</font>"); //NOI18N
         }
         if (!isTooltip) {

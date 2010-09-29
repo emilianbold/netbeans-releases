@@ -123,6 +123,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String PHP_UNIT_BOOTSTRAP_FOR_CREATE_TESTS = "phpunit.bootstrap.create.tests"; // NOI18N
     public static final String PHP_UNIT_CONFIGURATION = "phpunit.configuration"; // NOI18N
     public static final String PHP_UNIT_SUITE = "phpunit.suite"; // NOI18N
+    public static final String PHP_UNIT_RUN_TEST_FILES = "phpunit.run.test.files"; // NOI18N
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
 
@@ -210,6 +211,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private Boolean phpUnitBootstrapForCreateTests;
     private String phpUnitConfiguration;
     private String phpUnitSuite;
+    private Boolean phpUnitRunTestFiles;
     private Set<PhpModuleCustomizerExtender> customizerExtenders;
 
     // CustomizerRun
@@ -444,6 +446,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.phpUnitSuite = phpUnitSuite;
     }
 
+    public Boolean getPhpUnitRunTestFiles() {
+        if (phpUnitRunTestFiles == null) {
+            phpUnitRunTestFiles = ProjectPropertiesSupport.runAllTestFilesUsingPhpUnit(project);
+        }
+        return phpUnitRunTestFiles;
+    }
+
+    public void setPhpUnitRunTestFiles(Boolean phpUnitRunTestFiles) {
+        this.phpUnitRunTestFiles = phpUnitRunTestFiles;
+    }
+
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
             customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
@@ -540,6 +553,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (phpUnitSuite != null) {
             projectProperties.setProperty(PHP_UNIT_SUITE, relativizeFile(phpUnitSuite));
+        }
+        if (phpUnitRunTestFiles != null) {
+            projectProperties.setProperty(PHP_UNIT_RUN_TEST_FILES, phpUnitRunTestFiles.toString());
         }
 
         // configs

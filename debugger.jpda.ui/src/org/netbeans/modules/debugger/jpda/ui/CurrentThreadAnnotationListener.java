@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.*;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -71,9 +72,11 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
+@DebuggerServiceRegistration(types=LazyDebuggerManagerListener.class)
 public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     
     private static final int ANNOTATION_SCHEDULE_TIME = 100;
+    private static final int ANNOTATION_STACK_SCHEDULE_TIME = 500;
 
     // annotation for current line
     private transient Object                currentPC;
@@ -245,20 +248,11 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
 
     private void annotate (JPDADebugger debugger, final JPDAThread currentThread, final SourcePath sourcePath) {
         // 1) no current thread => remove annotations
-        CallStackFrame[] stack;
+        CallStackFrame[] stack = null;
         final CallStackFrame csf;
         final String language;
 
         // 2) get call stack & Line
-        try {
-            stack = currentThread.getCallStack ();
-        } catch (AbsentInformationException ex) {
-            synchronized (currentPCLock) {
-                currentPCSet = false; // The annotation is goint to be removed
-            }
-            removeAnnotations ();
-            return;
-        }
         csf = debugger.getCurrentCallStackFrame ();
         Session s;
         try {
@@ -277,6 +271,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             CallStackFrame frameToShow = csf;
             int lineNumber = frameToShow.getLineNumber(language);
             if (lineNumber < 1) {
+                try {
+                    stack = currentThread.getCallStack ();
+                } catch (AbsentInformationException ex) {
+                    synchronized (currentPCLock) {
+                        currentPCSet = false; // The annotation is goint to be removed
+                    }
+                    removeAnnotations ();
+                    return;
+                }
                 for (int x = 0; x < stack.length; x++) {
                     if (csf.equals(stack[x])) {
                         for (int xx = x + 1; xx < stack.length; xx++) {
@@ -291,20 +294,43 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             } // if
             sourcePath.showSource (frameToShow, language);
         }
+        final int lineNumber = currentThread.getLineNumber (language);
+        final String url = getTheURL(sourcePath, currentThread, language);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 // show current line
                 synchronized (currentPCLock) {
                     if (currentPC != null)
                         EditorContextBridge.getContext().removeAnnotation (currentPC);
-                    if (csf != null && sourcePath != null && currentThread != null) {
+                    if (csf != null && sourcePath != null && currentThread != null && url != null && lineNumber >= 0) {
                         // annotate current line
-                        currentPC = sourcePath.annotate (currentThread, language);
+                        currentPC = sourcePath.annotate (currentThread, language, url, lineNumber);
                     }
                 }
             }
         });
-        annotateCallStack (stack, sourcePath);
+        annotateCallStack (currentThread, stack, sourcePath);
+    }
+
+    private String getTheURL(SourcePath sourcePath, JPDAThread currentThread, String language) {
+        final String url;
+        String sPath;
+        try {
+            sPath = currentThread.getSourcePath (language);
+        } catch (AbsentInformationException e) {
+            sPath = "";
+        }
+        if (sPath.length() > 0) {
+            url = sourcePath.getURL (SourcePath.convertSlash (sPath), true);
+        } else {
+            String className = currentThread.getClassName ();
+            if (className.length() == 0) {
+                url = null;
+            } else {
+                url = sourcePath.getURL (SourcePath.convertClassNameToRelativePath (className), true);
+            }
+        }
+        return url;
     }
 
     private void showCurrentFrame(final CallStackFrame frame) {
@@ -337,6 +363,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
     // there is at most one
     private RequestProcessor.Task taskRemove;
     private RequestProcessor.Task taskAnnotate;
+    private JPDAThread threadToAnnotate;
     private CallStackFrame[] stackToAnnotate;
     private SourcePath sourcePathToAnnotate;
 
@@ -345,11 +372,15 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskRemove == null) {
                 taskRemove = rp.create (new RemoveAnnotationsTask());
             }
+            if (taskAnnotate != null) {
+                taskAnnotate.cancel();
+            }
         }
         taskRemove.schedule(ANNOTATION_SCHEDULE_TIME);
     }
 
     private void annotateCallStack (
+        JPDAThread thread,
         CallStackFrame[] stack,
         SourcePath sourcePath
     ) {
@@ -357,13 +388,14 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             if (taskRemove != null) {
                 taskRemove.cancel();
             }
+            this.threadToAnnotate = thread;
             this.stackToAnnotate = stack;
             this.sourcePathToAnnotate = sourcePath;
             if (taskAnnotate == null) {
                 taskAnnotate = rp.create (new AnnotateCallStackTask());
             }
         }
-        taskAnnotate.schedule(ANNOTATION_SCHEDULE_TIME);
+        taskAnnotate.schedule(ANNOTATION_STACK_SCHEDULE_TIME);
     }
     
     private class RemoveAnnotationsTask implements Runnable {
@@ -388,14 +420,29 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         public void run () {
             CallStackFrame[] stack;
             SourcePath sourcePath;
+            JPDAThread thread = null;
             synchronized (rp) {
                 if (stackToAnnotate == null) {
-                    return ; // Nothing to do
+                    if (threadToAnnotate != null) {
+                        thread = threadToAnnotate;
+                    } else {
+                        return ; // Nothing to do
+                    }
                 }
                 stack = stackToAnnotate;
                 sourcePath = sourcePathToAnnotate;
+                threadToAnnotate = null;
                 stackToAnnotate = null;
                 sourcePathToAnnotate = null;
+            }
+            if (thread != null) {
+                try {
+                    stack = thread.getCallStack();
+                } catch (AbsentInformationException ex) {
+                    // Nothing to annotate
+                    return ;
+                }
+
             }
             HashMap newAnnotations = new HashMap ();
             int i, k = stack.length;
@@ -576,7 +623,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
             for (JPDAThread t : threadsToAnnotate) {
                 Object annotation;
                 if (theCurrentSourcePath != null) {
-                    annotation = theCurrentSourcePath.annotate(t, language, false);
+                    final int lineNumber = t.getLineNumber (language);
+                    final String url = getTheURL(theCurrentSourcePath, t, language);
+                    annotation = theCurrentSourcePath.annotate(t, language, url, lineNumber, false);
                 } else {
                     annotation = null;
                 }

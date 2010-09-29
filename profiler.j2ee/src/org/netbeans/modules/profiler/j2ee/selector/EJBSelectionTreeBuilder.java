@@ -52,17 +52,17 @@ import org.netbeans.modules.profiler.selector.java.impl.ProjectSelectionTreeBuil
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorChildren;
 import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
-import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  *
  * @author Jaroslav Bachorik
  */
-@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectTypes = {
-    @ProjectType(id = "org-netbeans-modules-j2ee-earproject"),
-    @ProjectType(id = "org-netbeans-modules-j2ee-ejbjarproject"),
-    @ProjectType(id = "org-netbeans-modules-maven")
+@ProjectServiceProvider(service = SelectionTreeBuilder.class, projectType = {
+    "org-netbeans-modules-j2ee-earproject",
+    "org-netbeans-modules-j2ee-ejbjarproject",
+    "org-netbeans-modules-maven/ear",
+    "org-netbeans-modules-maven/ejb"
 })
 public class EJBSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
 

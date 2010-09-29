@@ -84,7 +84,10 @@ public class RelatedCMPHelper {
     
     private boolean cmpFieldsInInterface;
     private boolean generateFinderMethods;
-    private boolean useColumnNamesInRelationships;
+    private boolean generateJAXBAnnotations;
+    private boolean generateValidationConstraints;
+
+    private boolean useColumnNamesInRelationships = true;
 
 
     private DbSchemaEjbGenerator generator;
@@ -264,6 +267,22 @@ public class RelatedCMPHelper {
     
     public void setGenerateFinderMethods(boolean generateFinderMethods) {
         this.generateFinderMethods = generateFinderMethods;
+    }
+
+    public boolean isGenerateJAXBAnnotations() {
+        return this.generateJAXBAnnotations;
+    }
+
+    public void setGenerateJAXBAnnotations(boolean generateJAXBAnnotations) {
+        this.generateJAXBAnnotations = generateJAXBAnnotations;
+    }
+
+    public boolean isGenerateValidationConstraints() {
+        return generateValidationConstraints;
+    }
+
+    public void setGenerateValidationConstraints(boolean generateValidationConstraints) {
+        this.generateValidationConstraints = generateValidationConstraints;
     }
 
     public boolean isFullyQualifiedTableNames() {

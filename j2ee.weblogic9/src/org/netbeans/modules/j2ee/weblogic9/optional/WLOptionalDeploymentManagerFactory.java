@@ -58,6 +58,7 @@ import org.netbeans.modules.j2ee.weblogic9.config.WLDatasourceManager;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibraryManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDriverDeployer;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLIncrementalDeployment;
 import org.netbeans.modules.j2ee.weblogic9.ui.wizard.WLInstantiatingIterator;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 
@@ -97,7 +98,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public IncrementalDeployment getIncrementalDeployment(DeploymentManager dm) {
-        return null;
+        return new WLIncrementalDeployment((WLDeploymentManager) dm);
     }
 
     /**
@@ -112,7 +113,7 @@ public class WLOptionalDeploymentManagerFactory extends OptionalDeploymentManage
      */
     @Override
     public FindJSPServlet getFindJSPServlet(DeploymentManager dm) {
-        return null;
+        return new WLFindJSPServlet((WLDeploymentManager) dm);
     }
 
     @Override

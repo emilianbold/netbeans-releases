@@ -118,6 +118,8 @@ public class NbEditorUI extends EditorUI {
         return new SystemActionUpdater(editorActionName, updatePerformer, syncEnabling);
     }
 
+    private static final RequestProcessor WORKER = new RequestProcessor(NbEditorUI.class.getName(), 1, false, false);
+    
     public NbEditorUI() {
         focusL = new FocusAdapter() {
             public @Override void focusGained(FocusEvent evt) {
@@ -129,7 +131,7 @@ public class NbEditorUI extends EditorUI {
                         final FileObject fo = dob.getPrimaryFile();
                         if (fo != null) {
                             // Fixed #48151 - posting the refresh outside of AWT thread
-                            RequestProcessor.getDefault().post(new Runnable() {
+                            WORKER.post(new Runnable() {
                                 public void run() {
                                     fo.refresh();
                                 }

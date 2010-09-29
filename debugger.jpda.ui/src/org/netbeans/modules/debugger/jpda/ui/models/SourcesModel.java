@@ -67,6 +67,9 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistration;
+import org.netbeans.spi.debugger.ui.ColumnModelRegistrations;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
@@ -80,6 +83,7 @@ import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
+import org.netbeans.spi.viewmodel.NodeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -94,6 +98,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/SourcesView", types={ NodeActionsProvider.class, NodeModelFilter.class, TreeModel.class })
 public class SourcesModel implements TreeModel, CheckNodeModelFilter, /*ExtendedNodeModelFilter,*/
 NodeActionsProvider {
 
@@ -449,6 +454,10 @@ NodeActionsProvider {
      * Defines model for one table view column. Can be used together with
      * {@link org.netbeans.spi.viewmodel.TreeModel} for tree table view representation.
      */
+    @ColumnModelRegistrations({
+        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Current"),
+        @ColumnModelRegistration(path="SourcesView/netbeans-JPDASession/Remote")
+    })
     public static class DefaultSourcesColumn extends AbstractColumn {
 
         /**

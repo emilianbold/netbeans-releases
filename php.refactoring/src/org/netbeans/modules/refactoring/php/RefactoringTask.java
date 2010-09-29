@@ -53,11 +53,16 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.refactoring.php.findusages.RefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -68,52 +73,115 @@ import org.openide.windows.TopComponent;
 public abstract class RefactoringTask extends UserTask implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(RefactoringTask.class.getName());
-    private final JTextComponent textC;
-    private final int caret;
-    private RefactoringUI ui;
-    private final Document document;
+    protected RefactoringUI ui;
 
-    public RefactoringTask(final EditorCookie ec) {
-        this.textC = ec.getOpenedPanes()[0];
-        this.document = textC.getDocument();
-        this.caret = textC.getCaretPosition();
-        assert caret != -1;
+    public final RefactoringUI getRefactoringUI() {
+        return ui;
     }
 
-    @Override
-    public void run() {
-        try {
-            Source source = Source.create(document);
-            ParserManager.parse(Collections.singleton(source), this);
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
-            return;
+    public static abstract class NodeToFileTask extends RefactoringTask {
+
+        private final Node node;
+        private FileObject fileObject;
+
+        public NodeToFileTask(Node node) {
+            this.node = node;
         }
 
-        TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-        if (ui != null) {
-            UI.openRefactoringUI(ui, activetc);
-        } else {
-            JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
-        }
-    }
-
-    @Override
-    public void run(ResultIterator resultIterator) throws Exception {
-        ParserResult cc = (ParserResult) resultIterator.getParserResult();
-        Program root = RefactoringUtils.getRoot(cc);
-        if (root == null) {
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            Result parserResult = resultIterator.getParserResult();
+            if (parserResult instanceof PHPParseResult) {
+                Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
+                if (root != null) {
+                    ui = createRefactoringUI((PHPParseResult) parserResult);
+                    return;
+                }
+            }
             // TODO How do I add some kind of error message?
             RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
-            return;
         }
-        ui = createRefactoringUI(cc, caret);
+
+        @Override
+        public void run() {
+            DataObject dobj = node.getLookup().lookup(DataObject.class);
+            if (dobj != null) {
+                fileObject = dobj.getPrimaryFile();
+
+                if (fileObject.isFolder()) {
+                    //folder
+                    JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+                } else {
+                    //css file
+                    Source source = Source.create(fileObject);
+                    try {
+                        ParserManager.parse(Collections.singletonList(source), this);
+                    } catch (ParseException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                        return;
+                    }
+                    TopComponent activetc = TopComponent.getRegistry().getActivated();
+
+                    if (ui != null) {
+                        UI.openRefactoringUI(ui, activetc);
+                    } else {
+                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+                    }
+                }
+            }
+
+        }
+
+        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info);
     }
 
-    protected abstract RefactoringUI createRefactoringUI(final ParserResult info, final int offset);
+    public static abstract class TextComponentTask extends RefactoringTask {
 
-    public RefactoringUI getRefactoringUI() {
-        return ui;
+        private final JTextComponent textC;
+        private final int caret;
+        private final Document document;
+
+        public TextComponentTask(final EditorCookie ec) {
+            this.textC = ec.getOpenedPanes()[0];
+            this.document = textC.getDocument();
+            this.caret = textC.getCaretPosition();
+            assert caret != -1;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Source source = Source.create(document);
+                ParserManager.parse(Collections.singleton(source), this);
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+                return;
+            }
+
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+
+            if (ui != null) {
+                UI.openRefactoringUI(ui, activetc);
+            } else {
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+            }
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            Result parserResult = resultIterator.getParserResult();
+            if (parserResult instanceof PHPParseResult) {
+                Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
+                if (root != null) {
+                    ui = createRefactoringUI((PHPParseResult)parserResult, caret);
+                    return;
+                }
+            }
+            // TODO How do I add some kind of error message?
+            RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
+
+        }
+
+        protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset);
     }
 }

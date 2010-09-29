@@ -402,6 +402,8 @@ tokens {
 	protected static final DeclSpecifier dsFRIEND = new DeclSpecifier("dsFRIEND");
 
         protected static final String LITERAL___global_ext = "__global";
+        protected static final String LITERAL_EXEC = "EXEC";
+        protected static final String LITERAL_SQL = "SQL";
 
 	// typedef int QualifiedItem;
 	protected static final int qiInvalid     = 0x0;
@@ -671,9 +673,11 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                    |
                     {shouldProceed()}?
                     external_declaration 
-                    | 
+                    |
                     {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
@@ -2846,6 +2850,11 @@ statement
 		}	
                 default_statement
 	|
+                { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                {if (statementTrace>=1)
+			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
+		}
+	|
                 {if (statementTrace>=1) 
 			printf("statement_5[%d]: expression\n", LT(1).getLine());
 		}	
@@ -3161,6 +3170,26 @@ asm_block
     )
     {#asm_block = #(#[CSM_ASM_BLOCK, "CSM_ASM_BLOCK"], #asm_block);}
     ;
+
+pro_c_statement
+    :
+        ID ID
+        (options {greedy=false;}:
+                balanceCurlies
+            |
+                balanceSquaresInExpression
+            |
+                balanceParensInExpression
+            |
+                ~(SEMICOLON | RCURLY | LCURLY | LSQUARE | LPAREN | RPAREN)
+            |
+                (RCURLY | RPAREN)
+                { reportError(new NoViableAltException(LT(0), getFilename())); }
+        )*
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON!) //{end_of_stmt();}
+    ;
+
 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////

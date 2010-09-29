@@ -106,6 +106,7 @@ import org.openide.NotifyDescriptor;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
@@ -117,6 +118,7 @@ import org.openide.util.NbBundle;
  *
  * @author  Martin Entlicher
  */
+@ActionsProvider.Registration(path="netbeans-JPDASession", actions={"runIntoMethod"})
 public class RunIntoMethodActionProvider extends ActionsProviderSupport 
                                          implements PropertyChangeListener,
                                                     ActionsManagerListener {

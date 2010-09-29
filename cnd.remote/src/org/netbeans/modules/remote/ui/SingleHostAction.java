@@ -78,6 +78,12 @@ public abstract class SingleHostAction extends NodeAction {
         return env != null && env.isRemote();
     }
 
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 1) {
             ExecutionEnvironment env = activatedNodes[0].getLookup().lookup(ExecutionEnvironment.class);

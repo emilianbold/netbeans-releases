@@ -320,7 +320,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (guard != null) {
                     if (guard instanceof APTToken) {
                         APTToken aptGuard = ((APTToken) guard);
-                        return new OffsetableBase(file, aptGuard.getOffset(), aptGuard.getEndOffset());
+                        return OffsetableBase.create(file, aptGuard.getOffset(), aptGuard.getEndOffset());
                     }
                 }
             } catch (FileNotFoundException ex) {
@@ -425,7 +425,9 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     @Override
     public Collection<CsmInclude> getBrokenIncludes(CsmFile file) {
         if (file instanceof FileImpl) {
-            return ((FileImpl) file).getBrokenIncludes();
+            if (((FileImpl) file).hasBrokenIncludes()) {
+                return ((FileImpl) file).getBrokenIncludes();
+            }
         }
         return Collections.<CsmInclude>emptyList();
     }

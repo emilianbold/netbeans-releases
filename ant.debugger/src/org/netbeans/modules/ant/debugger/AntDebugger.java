@@ -442,8 +442,10 @@ public class AntDebugger extends ActionsProviderSupport {
                 (TargetLister.Target) topFrame, 
                 nextTargetName
             );
-        updateOutputWindow (currentLine);
-        Utils.markCurrent (currentLine);
+        if (currentLine != null) {
+            updateOutputWindow (currentLine);
+            Utils.markCurrent (currentLine);
+        }
         getCallStackModel ().fireChanges ();
     }
     

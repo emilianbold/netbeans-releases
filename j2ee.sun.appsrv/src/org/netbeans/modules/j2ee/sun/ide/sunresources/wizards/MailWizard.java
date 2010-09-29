@@ -72,7 +72,8 @@ import org.openide.ErrorManager;
 
 public final class MailWizard implements WizardDescriptor.InstantiatingIterator, WizardConstants{
     
-           
+    private Project project;
+
     private static final String DATAFILE = "org/netbeans/modules/j2ee/sun/sunresources/beans/MailWizard.xml";  //NOI18N
         
     /** An array of all wizard panels */
@@ -106,7 +107,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
     
     public Set instantiate(){
         try{
-            ResourceUtils.saveMailResourceDatatoXml(this.helper.getData());
+            ResourceUtils.saveMailResourceDatatoXml(this.helper.getData(),Util.getBaseName(project));
         }catch (Exception ex){
                                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                                         ex);
@@ -122,7 +123,7 @@ public final class MailWizard implements WizardDescriptor.InstantiatingIterator,
         wiz.putProperty("NewFileWizard_Title", NbBundle.getMessage(MailWizard.class, "Templates/SunResources/JavaMail_Resource")); //NOI18N
         index = 0;
                 
-        Project project = Templates.getProject(wiz);
+        project = Templates.getProject(wiz);
         
         panels = createPanels();
         // Make sure list of steps is accurate.

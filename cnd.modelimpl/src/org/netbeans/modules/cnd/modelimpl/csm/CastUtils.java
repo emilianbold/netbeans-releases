@@ -116,7 +116,7 @@ public class CastUtils {
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(NameCache.getManager().getString(token.getText()));
+                    l.add(NameCache.getManager().getString(AstUtil.getText(token)));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;

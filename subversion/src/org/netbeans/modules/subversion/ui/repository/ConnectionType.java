@@ -455,110 +455,12 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         }
     }
 
-    static class SvnSSHJhl extends ConnectionType {
-        private SvnSSHJhlPanel panel = new SvnSSHJhlPanel();
-        public SvnSSHJhl(Repository repository) {
+    /*
+     * The dialog and settings look the same as for https
+     */
+    static class SvnSSHSvnKit extends Http {
+        public SvnSSHSvnKit(Repository repository) {
             super(repository);
-            panel.passwordField.getDocument().addDocumentListener(this);
-            panel.certPasswordField.getDocument().addDocumentListener(this);
-            panel.certFileTextField.getDocument().addDocumentListener(this);
-            panel.passwordField.addFocusListener(this);
-            panel.certPasswordField.addFocusListener(this);
-            panel.passwordRadioButton.addActionListener(this);
-            panel.privateKeyRadioButton.addActionListener(this);
-            panel.browseButton.addActionListener(this);
-            addSelectOnFocusFields(panel.certPasswordField, panel.passwordField);
-        }
-
-        @Override
-        JPanel getPanel() {
-            return panel;
-        }
-
-        @Override
-        protected void refresh(RepositoryConnection rc) {
-            panel.passwordField.setText(rc.getPassword() == null ? "" : new String(rc.getPassword())); //NOI18N
-            panel.certPasswordField.setText(rc.getCertPassword() == null ? "" : new String(rc.getCertPassword())); //NOI18N
-            panel.certFileTextField.setText(rc.getCertFile());
-        }
-
-        @Override
-        void setEditable(boolean editable) {
-            panel.passwordField.setEditable(editable);
-            panel.certPasswordField.setEditable(editable);
-            panel.certFileTextField.setEditable(editable);
-        }
-
-        @Override
-        protected void storeConfigValues() {
-//            RepositoryConnection rc = repository.getSelectedRCIntern();
-//            if(rc == null) {
-//                return; // uups
-//            }
-//
-//            try {
-//                SVNUrl repositoryUrl = rc.getSvnUrl();
-//                if(repositoryUrl.getProtocol().startsWith("svn+")) {
-//                    SvnConfigFiles.getInstance().setExternalCommand(getTunnelName(repositoryUrl.getProtocol()), panel.tunnelCommandTextField.getText());
-//                }
-//            } catch (MalformedURLException mue) {
-//                // should not happen
-//                Subversion.LOG.log(Level.INFO, null, mue);
-//            }
-        }
-
-        @Override
-        protected boolean savePassword() {
-            return true;
-        }
-
-        @Override
-        protected void setEnabled(boolean b) {
-            if(panel.passwordRadioButton.isSelected()) {
-                panel.passwordField.setEnabled(b);
-                panel.certPasswordField.setEnabled(false);
-                panel.certFileTextField.setEnabled(false);
-            } else if (panel.privateKeyRadioButton.isSelected()) {
-                panel.passwordField.setEnabled(false);
-                panel.certPasswordField.setEnabled(b);
-                panel.certFileTextField.setEnabled(b);
-            }
-            panel.browseButton.setEnabled(b);
-            panel.passwordRadioButton.setEnabled(b);
-            panel.privateKeyRadioButton.setEnabled(b);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if(e.getSource() == panel.passwordRadioButton || 
-               e.getSource() == panel.privateKeyRadioButton)
-            {
-                setEnabled(true);
-            } else if (e.getSource() == panel.browseButton) {
-                onBrowse(panel.certFileTextField);
-            } else {
-                super.actionPerformed(e);
-            }
-        }
-
-        @Override
-        public void onSelectedRepositoryChange(String urlString) {
-//            if(urlString.startsWith("svn+")) {
-//                String tunnelName = getTunnelName(urlString).trim();
-//                if( panel.tunnelCommandTextField.getText().trim().equals("") &&
-//                    tunnelName != null &&
-//                    !tunnelName.equals("") )
-//                {
-//                    panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance().getExternalCommand(tunnelName));
-//                }
-//            }
-        }
-
-        @Override
-        protected void fillRC(RepositoryConnection rc) {
-            rc.setPassword(panel.passwordField.getPassword());
-            rc.setCertPassword(panel.certPasswordField.getPassword());
-            rc.setCertFile(panel.certFileTextField.getText());
         }
 
         @Override
@@ -573,6 +475,11 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
                 idx = urlString.length();
             }
             return urlString.substring(4, idx);
+        }
+        
+        @Override
+        protected void updateVisibility (String url) {
+            ((HttpPanel)getPanel()).sslPanel.setVisible(true);
         }
     }
 }

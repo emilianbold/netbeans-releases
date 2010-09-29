@@ -71,12 +71,12 @@ import org.netbeans.modules.j2ee.common.DatasourceHelper;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -85,6 +85,8 @@ import org.openide.util.NbBundle;
 public class WLDriverDeployer implements JDBCDriverDeployer {
 
     private static final Logger LOGGER = Logger.getLogger(WLDriverDeployer.class.getName());
+
+    private static final RequestProcessor DRIVER_DEPLOYMENT_RP = new RequestProcessor("Weblogic Driver Deployment", 1); // NOI18N
 
     private final WLDeploymentManager manager;
 
@@ -113,7 +115,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING,
                 NbBundle.getMessage(WLDriverDeployer.class, "MSG_CheckingMissingDrivers")));
 
-        WLDeploymentFactory.getInstance().getExecutorService().submit(new Runnable() {
+        DRIVER_DEPLOYMENT_RP.submit(new Runnable() {
 
             @Override
             public void run() {
@@ -121,6 +123,10 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 // deploy the driers if needed
                 if (!jdbcDriverURLs.isEmpty()) {
                     File libsDir = WLPluginProperties.getDomainLibDirectory(manager);
+                    if (libsDir == null) {
+                        LOGGER.log(Level.FINE, "No domain lib, using server lib for {0}", manager.getUri());
+                        libsDir = WLPluginProperties.getServerLibDirectory(manager, false);
+                    }
                     if (libsDir != null) {
                         for (FileObject file : jdbcDriverURLs) {
                             File toJar = new File(libsDir, file.getNameExt());
@@ -208,7 +214,7 @@ public class WLDriverDeployer implements JDBCDriverDeployer {
                 cp.addAll(Arrays.asList(files));
             }
         }
-        File serverLib = WLPluginProperties.getServerLibDirectory(manager);
+        File serverLib = WLPluginProperties.getServerLibDirectory(manager, false);
         if (serverLib != null) {
             File[] files = serverLib.listFiles(CLASSPATH_FILTER);
             if (files != null) {

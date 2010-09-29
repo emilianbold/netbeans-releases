@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
@@ -58,7 +59,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
  */
 public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
-    private final TokenItem<CppTokenId> token;
+    private final TokenItem<TokenId> token;
     private CsmObject target = null;
     private CsmObject owner = null;
     private boolean findDone = false;
@@ -66,7 +67,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private CsmReferenceKind kind;
     private FileReferencesContext fileReferencesContext;
 
-    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
+    public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<TokenId> token, CsmReferenceKind kind) {
         super(doc, file, offset);
         this.token = token;
         this.offset = offset;
@@ -122,7 +123,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         return this.offset;
     }
 
-    /*package*/ final TokenItem<CppTokenId> getToken() {
+    /*package*/ final TokenItem<TokenId> getToken() {
         return this.token;
     }
 

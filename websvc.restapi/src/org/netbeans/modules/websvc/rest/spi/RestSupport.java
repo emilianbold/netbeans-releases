@@ -68,6 +68,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
@@ -100,6 +101,7 @@ public abstract class RestSupport {
     public static final String SWDP_LIBRARY = "restlib"; //NOI18N
     public static final String RESTAPI_LIBRARY = "restapi"; //NOI18N
     protected static final String GFV3_RESTLIB = "restlib_gfv3ee6"; // NOI18N
+    protected static final String GFV31_RESTLIB = "restlib_gfv31ee6"; // NOI18N
     public static final String PROP_SWDP_CLASSPATH = "libs.swdp.classpath"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_DIR = "restbeans.test.dir"; //NOI18N
     public static final String PROP_RESTBEANS_TEST_FILE = "restbeans.test.file";//NOI18N
@@ -200,6 +202,32 @@ public abstract class RestSupport {
         }
         return null;
     }
+    
+    private static ClassPath getClassPath( Project project, String type ) {
+        ClassPathProvider provider = project.getLookup().lookup(
+                ClassPathProvider.class);
+        if ( provider == null ){
+            return null;
+        }
+        Sources sources = project.getLookup().lookup(Sources.class);
+        if ( sources == null ){
+            return null;
+        }
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        List<ClassPath> classPaths = new ArrayList<ClassPath>( sourceGroups.length); 
+        for (SourceGroup sourceGroup : sourceGroups) {
+            String sourceGroupId = sourceGroup.getName();
+            if ( sourceGroupId!= null && sourceGroupId.contains("test")) {  // NOI18N
+                continue;
+            }
+            FileObject rootFolder = sourceGroup.getRootFolder();
+            ClassPath path = provider.findClassPath( rootFolder, type);
+            classPaths.add( path );
+        }
+        return ClassPathSupport.createProxyClassPath( classPaths.toArray( 
+                new ClassPath[ classPaths.size()] ));
+    }
 
     public void addModelListener(PropertyChangeListener listener) {
         modelListeners.add(listener);
@@ -243,11 +271,20 @@ public abstract class RestSupport {
         FileObject sourceRoot = findSourceRoot();
         if (restApplicationModel == null && sourceRoot != null) {
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
-            MetadataUnit metadataUnit = MetadataUnit.create(
+            /*
+             * Fix for BZ#158250 -  NullPointerException: The classPath parameter cannot be null 
+             * 
+             MetadataUnit metadataUnit = MetadataUnit.create(
                     cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
                     cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
                     cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
-                    null);
+                    null);*/
+            MetadataUnit metadataUnit = MetadataUnit.create(
+                    getClassPath(getProject(), ClassPath.BOOT),
+                    getClassPath(getProject(), ClassPath.COMPILE),
+                    getClassPath(getProject(), ClassPath.SOURCE),
+                    null
+                    );
             restApplicationModel =
                     RestServicesMetadataModelFactory.createApplicationMetadataModel(metadataUnit, project);
         }
@@ -372,9 +409,12 @@ public abstract class RestSupport {
         copyFile(testdir, "images/pbsel.png");
         copyFile(testdir, "images/bg_gradient.gif");
         copyFile(testdir, "images/pname.png");
+        copyFile(testdir, "images/level1_deselect.jpg");
         copyFile(testdir, "images/level1_selected-1lvl.jpg");
         copyFile(testdir, "images/primary-enabled.gif");
         copyFile(testdir, "images/masthead.png");
+        copyFile(testdir, "images/masthead_link_enabled.gif");
+        copyFile(testdir, "images/masthead_link_roll.gif");
         copyFile(testdir, "images/primary-roll.gif");
         copyFile(testdir, "images/pbdis.png");
         copyFile(testdir, "images/secondary-enabled.gif");

@@ -198,13 +198,6 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         if (minorAxisChildrenSpanChange) {
             setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
         }
-        if (modified) {
-            updateSpans(boxView, result, index, removeCount, addedViews.length,
-                    majorAxisChildrenSpanChange, visualOffset,
-                    addedSpan, removedSpan, removedTillEnd,
-                    minorAxisChildrenSpanChange, alloc
-            );
-        } // Otherwise the repaint bounds and other vars in result stay unfilled
         // Update boxView's length to actual length of children.
         // It cannot be done relatively by just adding offsetDelta to original boxView's length
         // since box views with unitialized children already have proper length
@@ -212,6 +205,13 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         // Also this must be done after updateSpans() was called since it updates
         // relative offsets of the local views necessary for proper getLength() result.
         boxView.setLength(getLength(), 0, 0);
+        if (modified) {
+            updateSpans(boxView, result, index, removeCount, addedViews.length,
+                    majorAxisChildrenSpanChange, visualOffset,
+                    addedSpan, removedSpan, removedTillEnd,
+                    minorAxisChildrenSpanChange, alloc
+            );
+        } // Otherwise the repaint bounds and other vars in result stay unfilled
         return result;
     }
 

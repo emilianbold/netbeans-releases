@@ -189,6 +189,9 @@ public class LexUtilities {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());
 
         if (ts == null) {
+            ts = th.tokenSequence(JsTokenId.jsonLanguage());
+        }
+        if (ts == null) {
             // Possibly an embedding scenario such as an RHTML file
             // First try with backward bias true
             List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);

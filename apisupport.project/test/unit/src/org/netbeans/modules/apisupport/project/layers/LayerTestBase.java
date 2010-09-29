@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.apisupport.project.layers;
 
-import java.io.IOException;
 import junit.framework.Assert;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.junit.NbTestCase;
@@ -52,9 +51,8 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.xml.EntityCatalog;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * Superclass for tests that work with XML layers.
@@ -112,22 +110,12 @@ public abstract class LayerTestBase extends NbTestCase {
     /**
      * In the actual IDE, the default NetBeans Catalog will already be "mounted", so just for testing:
      */
-    private static final class TestCatalog extends UserCatalog implements EntityResolver {
+    private static final class TestCatalog extends UserCatalog {
         
         public TestCatalog() {}
         
         public EntityResolver getEntityResolver() {
-            return this;
-        }
-        
-        public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            if ("-//NetBeans//DTD Filesystem 1.1//EN".equals(publicId)) {
-                return new InputSource(LayerTestBase.class.getClassLoader().getResource("org/openide/filesystems/filesystem1_1.dtd").toExternalForm());
-            } else if ("-//NetBeans//DTD Filesystem 1.0//EN".equals(publicId)) {
-                return new InputSource(LayerTestBase.class.getClassLoader().getResource("org/openide/filesystems/filesystem.dtd").toExternalForm());
-            } else {
-                return null;
-            }
+            return EntityCatalog.getDefault();
         }
         
     }

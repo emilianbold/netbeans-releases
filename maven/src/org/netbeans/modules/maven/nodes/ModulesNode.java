@@ -69,11 +69,15 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * display the modules for pom packaged project
@@ -83,7 +87,7 @@ public class ModulesNode extends AbstractNode {
 
     /** Creates a new instance of ModulesNode */
     public ModulesNode(NbMavenProjectImpl proj) {
-        super(new ModulesChildren(proj));
+        super(Children.create(new ModulesChildFactory(proj), true));
         setName("Modules"); //NOI18N
         setDisplayName(org.openide.util.NbBundle.getMessage(ModulesNode.class, "LBL_Modules"));
     }
@@ -113,81 +117,77 @@ public class ModulesNode extends AbstractNode {
         LogicalViewProvider provider;
         NbMavenProjectImpl proj;
     }
-
-    static class ModulesChildren extends Children.Keys<Wrapper> {
-
-        private NbMavenProjectImpl project;
-        private PropertyChangeListener listener;
-
-        ModulesChildren(NbMavenProjectImpl proj) {
+    
+   
+    
+    static class ModulesChildFactory extends ChildFactory<Wrapper>{
+        private final NbMavenProjectImpl project;
+        private final PropertyChangeListener listener;
+        
+         ModulesChildFactory(NbMavenProjectImpl proj) {
             project = proj;
+            NbMavenProject watcher = project.getProjectWatcher();
             listener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
-                        loadModules();
-                    }
-                }
-            };
+                                       @Override
+                                       public void propertyChange(PropertyChangeEvent evt) {
+                                           if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
+                                               refresh(false);
+                                           }
+                                       }
+                                   };
+             
+            watcher.addPropertyChangeListener(WeakListeners.propertyChange(listener, watcher));                       
+            
+ 
         }
-
+         
         @Override
-        public void addNotify() {
-            setKeys(Collections.<Wrapper>emptyList());
-            loadModules();
-            NbMavenProject.addPropertyChangeListener(project, listener);
-        }
-
-        @Override
-        public void removeNotify() {
-            NbMavenProject.removePropertyChangeListener(project, listener);
-            setKeys(Collections.<Wrapper>emptyList());
-        }
-
-        protected Node[] createNodes(Wrapper wr) {
-            return new Node[]{new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isPOM)};
-        }
-
-        private void loadModules() {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    Collection<Wrapper> modules = new ArrayList<Wrapper>();
-                    File base = project.getOriginalMavenProject().getBasedir();
-                    for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
-                        String elem = (String) it.next();
-                        File projDir = FileUtil.normalizeFile(new File(base, elem));
-                        FileObject fo = FileUtil.toFileObject(projDir);
-                        if (fo != null) {
-                            try {
-                                Project prj = ProjectManager.getDefault().findProject(fo);
-                                if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
-                                    Wrapper wr = new Wrapper();
-                                    wr.proj = (NbMavenProjectImpl)prj;
-                                    wr.isPOM = "pom".equals(wr.proj.getOriginalMavenProject().getPackaging()); //NOI18N
-                                    wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
-                                    modules.add(wr);
-                                }
-                            } catch (IllegalArgumentException ex) {
-                                ex.printStackTrace();
-                            } catch (IOException ex) {
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            //TODO broken module reference.. show as such..
+        protected boolean createKeys(final List<Wrapper> modules) {
+            File base = project.getOriginalMavenProject().getBasedir();
+            for (Iterator it = project.getOriginalMavenProject().getModules().iterator(); it.hasNext();) {
+                String elem = (String) it.next();
+                File projDir = FileUtil.normalizeFile(new File(base, elem));
+                FileObject fo = FileUtil.toFileObject(projDir);
+                if (fo != null) {
+                    try {
+                        Project prj = ProjectManager.getDefault().findProject(fo);
+                        if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
+                            Wrapper wr = new Wrapper();
+                            wr.proj = (NbMavenProjectImpl) prj;
+                            wr.isPOM = "pom".equals(wr.proj.getOriginalMavenProject().getPackaging()); //NOI18N
+                            wr.provider = prj.getLookup().lookup(LogicalViewProvider.class);
+                            modules.add(wr);
                         }
+                    } catch (IllegalArgumentException ex) {
+                        ex.printStackTrace();//TODO log ?
+                    } catch (IOException ex) {
+                        ex.printStackTrace();//TODO log ?
                     }
-                    setKeys(modules);
+                } else {
+                    //TODO broken module reference.. show as such..
                 }
-            });
-        }
-    }
 
+            }
+            
+            return true;
+
+        }
+
+        @Override
+        protected Node createNodeForKey(Wrapper wr) {
+             return new ProjectFilterNode(project, wr.proj, wr.provider.createLogicalView(), wr.isPOM);
+        }
+        
+        
+    }
+  
     private static class ProjectFilterNode extends FilterNode {
 
         private NbMavenProjectImpl project;
         private NbMavenProjectImpl parent;
 
         ProjectFilterNode(NbMavenProjectImpl parent, NbMavenProjectImpl proj, Node original, boolean isPom) {
-            super(original, isPom ? new ModulesChildren(proj) : Children.LEAF);
+            super(original, isPom ? Children.create(new ModulesChildFactory(proj), true) : Children.LEAF);
 //            disableDelegation(DELEGATE_GET_ACTIONS);
             project = proj;
             this.parent = parent;
@@ -196,7 +196,7 @@ public class ModulesNode extends AbstractNode {
         @Override
         public Action[] getActions(boolean b) {
             ArrayList<Action> lst = new ArrayList<Action>();
-            lst.add(new OpenProjectAction(project));
+            lst.add(OpenProjectAction.SINGLETON);
             lst.add(new RemoveModuleAction(parent, project));
 //            lst.addAll(Arrays.asList(super.getActions(b)));
             return lst.toArray(new Action[lst.size()]);
@@ -204,7 +204,7 @@ public class ModulesNode extends AbstractNode {
 
         @Override
         public Action getPreferredAction() {
-            return new OpenProjectAction(project);
+            return OpenProjectAction.SINGLETON;
         }
     }
 
@@ -219,12 +219,14 @@ public class ModulesNode extends AbstractNode {
             this.parent = parent;
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(ModulesNode.class, "MSG_Remove_Module"), NotifyDescriptor.YES_NO_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
                 FileObject fo = FileUtil.toFileObject(parent.getPOMFile());
                 ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    @Override
                     public void performOperation(POMModel model) {
                         List<String> modules = model.getProject().getModules();
                         if (modules != null) {
@@ -247,21 +249,23 @@ public class ModulesNode extends AbstractNode {
         }
     }
 
-    private static class OpenProjectAction extends AbstractAction implements Runnable {
+    private static class OpenProjectAction extends AbstractAction implements ContextAwareAction {
 
-        private NbMavenProjectImpl project;
+        static final OpenProjectAction SINGLETON = new OpenProjectAction();
 
-        public OpenProjectAction(NbMavenProjectImpl proj) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project"));
-            project = proj;
+        private OpenProjectAction() {}
+
+        public @Override void actionPerformed(ActionEvent e) {
+            assert false;
         }
 
-        public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(this);
-        }
-
-        public void run() {
-            OpenProjects.getDefault().open(new Project[]{project}, false);
+        public @Override Action createContextAwareInstance(final Lookup context) {
+            return new AbstractAction(NbBundle.getMessage(ModulesNode.class, "BTN_Open_Project")) {
+                public @Override void actionPerformed(ActionEvent e) {
+                    Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
+                    OpenProjects.getDefault().open(projects.toArray(new NbMavenProjectImpl[projects.size()]), false, true);
+                }
+            };
         }
     }
 }

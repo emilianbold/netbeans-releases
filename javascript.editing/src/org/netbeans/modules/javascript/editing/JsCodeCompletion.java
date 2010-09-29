@@ -806,7 +806,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<SyntaxElement> elementsList = htmlResult.elementsList();
+                        List<SyntaxElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> classes = new HashSet<String>();
                         for (SyntaxElement s : elementsList) {
                             if (s.type() == SyntaxElement.TYPE_TAG) {
@@ -847,7 +847,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        List<SyntaxElement> elementsList = htmlResult.elementsList();
+                        List<SyntaxElement> elementsList = htmlResult.getSyntaxAnalyzerResult().getElements().items();
                         Set<String> tagNames = new HashSet<String>();
                         for (SyntaxElement s : elementsList) {
                             if (s.type() == SyntaxElement.TYPE_TAG) {
@@ -888,8 +888,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                     @Override
                     void run(ResultIterator resultIterator) throws Exception {
                         HtmlParserResult htmlResult = (HtmlParserResult) resultIterator.getParserResult();
-                        Set<SyntaxElement.TagAttribute> elementIds = new HashSet<SyntaxElement.TagAttribute>(htmlResult.elementsList().size() / 10);
-                        for (SyntaxElement element : htmlResult.elementsList()) {
+                        Set<SyntaxElement.TagAttribute> elementIds = new HashSet<SyntaxElement.TagAttribute>();
+                        for (SyntaxElement element : htmlResult.getSyntaxAnalyzerResult().getElements().items()) {
                             if (element.type() == SyntaxElement.TYPE_TAG) {
                                 SyntaxElement.TagAttribute attr = ((SyntaxElement.Tag) element).getAttribute("id"); //NOI18N
                                 if (attr != null) {

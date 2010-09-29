@@ -366,7 +366,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 TreePath currentPath = new TreePath(getCurrentPath(), node);
                 TypeMirror designed = designedTypeHack != null ? designedTypeHack.get(ident) : null;//info.getTrees().getTypeMirror(p);
 
-                boolean bind = true;
+                boolean bind;
 
                 if (designed != null && designed.getKind() != TypeKind.ERROR) {
                     TypeMirror real = info.getTrees().getTypeMirror(currentPath);
@@ -375,6 +375,8 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                         bind = info.getTypes().isAssignable(real, designed);
                     else
                         bind = false;
+                } else {
+                    bind = designed == null;
                 }
 
                 if (bind) {
@@ -1291,7 +1293,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         VerifyResult matchingResult;
         
         if (!nodeEl.getModifiers().contains(Modifier.STATIC)) {
-            if (nodeEl.getKind().isClass() && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
+            if ((nodeEl.getKind().isClass() || nodeEl.getKind().isInterface()) && info.getElementUtilities().enclosingTypeElement(nodeEl) == null) {
                 //top-level class:
                 matchingResult = VerifyResult.MATCH;
             } else {

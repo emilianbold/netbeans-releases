@@ -70,6 +70,7 @@ import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
 import org.netbeans.modules.debugger.jpda.ui.IOManager;
 import org.netbeans.modules.debugger.jpda.ui.VariablesFormatter;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.jpda.VariablesFilter;
 import org.netbeans.spi.debugger.jpda.VariablesFilterAdapter;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -86,6 +87,7 @@ import org.openide.util.WeakListeners;
  *
  * @author   Martin Entlicher
  */
+@VariablesFilter.Registration(path="netbeans-JPDASession")
 public class VariablesFormatterFilter extends VariablesFilterAdapter {
 
     static Map<Object, String> FORMATTED_CHILDREN_VARS = new WeakHashMap<Object, String>();

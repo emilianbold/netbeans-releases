@@ -91,6 +91,7 @@ import org.netbeans.modules.glassfish.spi.ServerCommand.GetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.ServerCommand.SetPropertyCommand;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.netbeans.modules.glassfish.spi.WSDesc;
 
 
 /** 
@@ -297,6 +298,40 @@ public class CommandRunner extends BasicTask<OperationState> {
         return result;
     }
     
+    /**
+     * Sends list-web-services command to server (synchronous)
+     *
+     * @return String array of names of deployed applications.
+     */
+    public List<WSDesc> getWebServices() {
+        List<WSDesc> result = Collections.emptyList();
+        try {
+            List<String> wss = Collections.emptyList();
+            Commands.ListWebservicesCommand cmd = new Commands.ListWebservicesCommand();
+            serverCmd = cmd;
+            Future<OperationState> task = executor().submit(this);
+            OperationState state = task.get();
+            if (state == OperationState.COMPLETED) {
+                wss = cmd.getWebserviceList();
+
+                result = processWebServices(wss);
+            }
+        } catch (InterruptedException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        } catch (ExecutionException ex) {
+            Logger.getLogger("glassfish").log(Level.INFO, ex.getMessage(), ex);  // NOI18N
+        }
+        return result;
+    }
+
+    private List<WSDesc> processWebServices(List<String> wssList){
+        List<WSDesc> result = new  ArrayList<WSDesc>();
+        for (String a : wssList) {
+            result.add(new WSDesc(a, a+"?wsdl", a+"?Tester")); // NOI18N
+        }
+        return result;
+    }
+
     public List<ResourceDesc> getResources(String type) {
         List<ResourceDesc> result = Collections.emptyList();
         try {
@@ -390,16 +425,19 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> deploy(File dir, String moduleName, String contextRoot)  {
-        return deploy(dir, moduleName, contextRoot, null);
+        return deploy(dir, moduleName, contextRoot, null, new File[0]);
     }
     
-    Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties) {
+    public Future<OperationState> deploy(File dir, String moduleName, String contextRoot, Map<String,String> properties, File[] libraries) {
+        LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.DeployCommand(dir, moduleName,
-                contextRoot, computePreserveSessions(ip), properties));
+                contextRoot, computePreserveSessions(ip), properties, libraries));
     }
-        public Future<OperationState> redeploy(String moduleName, String contextRoot)  {
+
+    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
+        LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
-                computePreserveSessions(ip)));
+                computePreserveSessions(ip), libraries, resourcesChanged));
     }
 
     private static Boolean computePreserveSessions(Map<String,String> ip) {
@@ -414,6 +452,7 @@ public class CommandRunner extends BasicTask<OperationState> {
     }
     
     public Future<OperationState> undeploy(String moduleName) {
+        LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.UndeployCommand(moduleName));
     }
     
@@ -473,7 +512,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         String commandUrl;
         
         try {
-            commandUrl = constructCommandUrl(serverCmd.getCommand(), serverCmd.getQuery());
+            commandUrl = constructCommandUrl(serverCmd.getSrc(), serverCmd.getCommand(), serverCmd.getQuery());
         } catch (URISyntaxException ex) {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdException",  // NOI18N
                     serverCmd.toString(), instanceName, ex.getLocalizedMessage());
@@ -481,7 +520,7 @@ public class CommandRunner extends BasicTask<OperationState> {
 
         int retries = 1; // disable ("version".equals(cmd) || "__locations".equals(cmd)) ? 1 : 3;
         Logger.getLogger("glassfish").log(Level.FINEST, "CommandRunner.call({0}) called on thread \"{1}\"", new Object[]{commandUrl, Thread.currentThread().getName()}); // NOI18N
-        
+
         // Create a connection for this command
         try {
             urlToConnectTo = new URL(commandUrl);
@@ -550,6 +589,9 @@ public class CommandRunner extends BasicTask<OperationState> {
                             hconn.setChunkedStreamingMode(0);
                         }
                         hconn.setRequestProperty("User-Agent", "hk2-agent"); // NOI18N
+                        if (serverCmd.acceptsGzip()) {
+                            hconn.setRequestProperty("Accept-Encoding", "gzip");
+                        }
 
 //                        // Set up an authorization header with our credentials
 //                        Hk2Properties tp = tm.getHk2Properties();
@@ -613,15 +655,15 @@ public class CommandRunner extends BasicTask<OperationState> {
                     serverCmd.toString(), instanceName);
         } else {
             return fireOperationStateChanged(OperationState.FAILED, "MSG_ServerCmdFailed", // NOI18N
-                    serverCmd.toString(), instanceName);
+                    serverCmd.toString(), instanceName, serverCmd.getServerMessage());
         }
     }
     
-    private String constructCommandUrl(final String cmd, final String query) throws URISyntaxException {
+    private String constructCommandUrl(final String cmdSrc, final String cmd, final String query) throws URISyntaxException {
         String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
         boolean useAdminPort = !"false".equals(System.getProperty("glassfish.useadminport")); // NOI18N
         int port = Integer.parseInt(ip.get(useAdminPort ? GlassfishModule.ADMINPORT_ATTR : GlassfishModule.HTTPPORT_ATTR));
-        URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, "/__asadmin/" + cmd, query, null); // NOI18N
+        URI uri = new URI(Utils.getHttpListenerProtocol(host,port), null, host, port, cmdSrc + cmd, query, null); // NOI18N
         return uri.toASCIIString().replace("+", "%2b"); // these characters don't get handled by GF correctly... best I can tell.
     }
     
@@ -687,7 +729,7 @@ public class CommandRunner extends BasicTask<OperationState> {
         boolean result = false;
         InputStream httpInputStream = hconn.getInputStream();
         try {
-            result = serverCmd.readResponse(httpInputStream);
+            result = serverCmd.readResponse(httpInputStream, hconn);
         } finally {
             try {
                 httpInputStream.close();

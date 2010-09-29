@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -60,6 +61,10 @@ final public class GraphContainerKey extends ProjectNameBasedKey {
 
     public GraphContainerKey(DataInput in) throws IOException {
         super(in);
+    }
+
+    GraphContainerKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -91,5 +96,10 @@ final public class GraphContainerKey extends ProjectNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+        return KeyObjectFactory.KEY_GRAPH_CONTAINER_KEY;
     }
 }

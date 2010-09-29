@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -197,9 +198,9 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         int i = 0;
         for(String obj : set){
             i++;
-            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj);
+            DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
             if (applicable.isApplicable()) {
-                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio());
+                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
             }
             if (i > 25) {
                 return ApplicableImpl.NotApplicable;
@@ -223,7 +224,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 }
                 
                 @Override
-                public List<Configuration> getDependencies() {
+                public List<String> getDependencies() {
                     return null;
                 }
                 
@@ -233,17 +234,20 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         if (progress != null) {
                             progress.start();
                         }
-                        Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
-                        if (progress != null) {
-                            progress.start(set.size());
-                        }
-                        if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null);
-                        } else {
-                            myFileProperties = new ArrayList<SourceFileProperties>();
-                        }
-                        if (progress != null) {
-                            progress.done();
+                        try {
+                            Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                            if (progress != null) {
+                                progress.start(set.size());
+                            }
+                            if (set.size() > 0) {
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
+                            } else {
+                                myFileProperties = new ArrayList<SourceFileProperties>();
+                            }
+                        } finally {
+                            if (progress != null) {
+                                progress.done();
+                            }
                         }
                     }
                     return myFileProperties;
@@ -357,7 +361,18 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
-                    gatherSubFolders(ff[i], set);
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        }
+                        gatherSubFolders(ff[i], set);
+                    }
                 }
             }
         }

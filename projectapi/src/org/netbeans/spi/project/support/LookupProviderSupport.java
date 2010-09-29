@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -107,6 +109,13 @@ public final class LookupProviderSupport {
     
     static class DelegatingLookupImpl extends ProxyLookup implements LookupListener, ChangeListener {
         private final Lookup baseLookup;
+        static class UnmergedLookup extends ProxyLookup {
+            void _setLookups(Lookup... lookups) {
+                setLookups(lookups);
+            }
+        }
+        private final UnmergedLookup unmergedLookup = new UnmergedLookup();
+        private final Map<LookupMerger<?>,Object> mergerResults = new WeakHashMap<LookupMerger<?>,Object>();
         private final Lookup.Result<LookupProvider> providerResult;
         private final LookupListener providerListener;
         private List<LookupProvider> old = Collections.emptyList();
@@ -195,14 +204,14 @@ public final class LookupProviderSupport {
             old = new ArrayList<LookupProvider>(providers);
             currentLookups = newLookups;
             newLookups.add(baseLookup);
-            Lookup lkp = new ProxyLookup(newLookups.toArray(new Lookup[newLookups.size()]));
+            unmergedLookup._setLookups(newLookups.toArray(new Lookup[newLookups.size()]));
             List<Class<?>> filteredClasses = new ArrayList<Class<?>>();
             List<Object> mergedInstances = new ArrayList<Object>();
             LookupListener l = listenerRef != null ? listenerRef.get() : null;
             if (l != null) {
                 mergers.removeLookupListener(l);
             }
-            mergers = lkp.lookupResult(LookupMerger.class);
+            mergers = unmergedLookup.lookupResult(LookupMerger.class); // XXX maybe do this just in ctor
             l = WeakListeners.create(LookupListener.class, this, mergers);
             listenerRef = new WeakReference<LookupListener>(l);
             mergers.addLookupListener(l);
@@ -222,32 +231,31 @@ public final class LookupProviderSupport {
                     continue;
                 }
                 filteredClasses.add(c);
-                mergedInstances.add(lm.merge(lkp));
-                Lookup.Result<?> result = lkp.lookupResult(c);
+                Object merge = mergerResults.get(lm);
+                if (merge == null) {
+                    merge = lm.merge(unmergedLookup);
+                    mergerResults.put(lm, merge);
+                }
+                mergedInstances.add(merge);
+                Lookup.Result<?> result = unmergedLookup.lookupResult(c);
                 result.addLookupListener(this);
                 results.add(result);
             }
-            lkp = Lookups.exclude(lkp, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
+            Lookup filtered = Lookups.exclude(unmergedLookup, filteredClasses.toArray(new Class<?>[filteredClasses.size()]));
             Lookup fixed = Lookups.fixed(mergedInstances.toArray(new Object[mergedInstances.size()]));
-            setLookups(fixed, lkp);
+            setLookups(fixed, filtered);
         }
         }
     }
     
     
     private static class SourcesMerger implements LookupMerger<Sources> {
-        private SourcesImpl merger;
-        
         public @Override Class<Sources> getMergeableClass() {
             return Sources.class;
         }
 
         public @Override Sources merge(Lookup lookup) {
-            if (merger == null) {
-                merger = new SourcesImpl();
-            } 
-            merger.setLookup(lookup);
-            return merger;
+            return new SourcesImpl(lookup);
         }
     }
     
@@ -256,10 +264,7 @@ public final class LookupProviderSupport {
         private Lookup.Result<Sources> delegates;
         private Collection<Sources> currentDelegates = new ArrayList<Sources>();
         
-        public SourcesImpl() {
-        }
-
-        private void setLookup(Lookup lookup) {
+        public SourcesImpl(Lookup lookup) {
             if (currentDelegates.size() > 0) {
                 for (Sources old : currentDelegates) {
                     old.removeChangeListener(this);
@@ -271,6 +276,7 @@ public final class LookupProviderSupport {
             }
             Lookup.Result<Sources> srcs = lookup.lookupResult(Sources.class);
             for (Sources ns : srcs.allInstances()) {
+                assert ns != this;
                 ns.addChangeListener(this);
                 currentDelegates.add(ns);
             }

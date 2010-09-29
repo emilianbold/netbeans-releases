@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 
 <transformations version="1.0">
     <transformationgroup>
-        <description>Old editor settings and completion APIs have been deprecated, see http://wiki.netbeans.org/EditorSettingsUpgrade and update your module.</description>
+        <description>The old editor settings and completion APIs have been deprecated, see http://wiki.netbeans.org/EditorSettingsUpgrade and update your module.</description>
         <transformation>
             <trigger-dependency type="older">
                 <module-dependency codenamebase="org.netbeans.modules.editor" major="3" spec="1.41"/>
@@ -56,7 +56,23 @@ made subject to such option by the copyright holder.
             <implies>
                 <result>
                     <module-dependency codenamebase="org.netbeans.modules.editor.deprecated.pre61completion" major="0" spec="1.0"/>
+                </result>
+                <result>
                     <module-dependency codenamebase="org.netbeans.modules.editor.deprecated.pre61settings" major="0" spec="1.0"/>
+                </result>
+            </implies>
+        </transformation>
+    </transformationgroup>
+    
+    <transformationgroup>
+        <description>The old editor formatting API have been deprecated, see http://wiki.netbeans.org/EditorFormattingAPIUpgrade and update your module.</description>
+        <transformation>
+            <trigger-dependency type="older">
+                <module-dependency codenamebase="org.netbeans.modules.editor" major="3" spec="1.53"/>
+            </trigger-dependency>
+            <implies>
+                <result>
+                    <module-dependency codenamebase="org.netbeans.modules.editor.deprecated.pre65formatting" major="0" spec="1.0"/>
                 </result>
             </implies>
         </transformation>

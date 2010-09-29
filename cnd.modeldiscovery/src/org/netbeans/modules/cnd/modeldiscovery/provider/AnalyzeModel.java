@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -202,11 +203,11 @@ public class AnalyzeModel implements DiscoveryProvider {
             gatherSubFolders(f, set);
         }
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
-        for (Iterator it = set.iterator(); it.hasNext();){
+        for (Iterator<String> it = set.iterator(); it.hasNext();){
             if (isStoped) {
                 break;
             }
-            File d = new File((String)it.next());
+            File d = new File(it.next());
             if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
@@ -244,7 +245,18 @@ public class AnalyzeModel implements DiscoveryProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
-                    gatherSubFolders(ff[i], set);
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
+                        }
+                        gatherSubFolders(ff[i], set);
+                    }
                 }
             }
         }
@@ -271,7 +283,7 @@ public class AnalyzeModel implements DiscoveryProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
-        return new ApplicableImpl(true, null, 40, false);
+        return new ApplicableImpl(true, null, 40, false, null, null, null);
     }
     
     private class MyConfiguration implements Configuration{
@@ -295,7 +307,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         }
        
         @Override
-        public List<Configuration> getDependencies() {
+        public List<String> getDependencies() {
             return null;
         }
         
@@ -311,30 +323,32 @@ public class AnalyzeModel implements DiscoveryProvider {
         
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
-            Map<String,List<String>> searchBase = search(root);
-            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
-            boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
-            Item[] items = makeConfigurationDescriptor.getProjectItems();
-            Map<String,Item> projectSearchBase = new HashMap<String,Item>();
-            for (int i = 0; i < items.length; i++){
-                if (isStoped) {
-                    break;
+            if (root != null) {
+                Map<String,List<String>> searchBase = search(root);
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(makeConfigurationDescriptor.getActiveConfiguration());
+                boolean preferLocal = ((Boolean)getProperty(PREFER_LOCAL_FILES).getValue()).booleanValue();
+                Item[] items = makeConfigurationDescriptor.getProjectItems();
+                Map<String,Item> projectSearchBase = new HashMap<String,Item>();
+                for (int i = 0; i < items.length; i++){
+                    if (isStoped) {
+                        break;
+                    }
+                    Item item = items[i];
+                    String path = item.getNormalizedPath();
+                    projectSearchBase.put(path, item);
                 }
-                Item item = items[i];
-                String path = item.getNormalizedFile().getAbsolutePath();
-                projectSearchBase.put(path, item);
-            }
-            for (int i = 0; i < items.length; i++){
-                if (isStoped) {
-                    break;
-                }
-                Item item = items[i];
-                if (!isExcluded(item)) {
-                    Language lang = item.getLanguage();
-                    if (lang == Language.C || lang == Language.CPP){
-                        CsmFile langFile = langProject.findFile(item, false);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
-                        res.add(source);
+                for (int i = 0; i < items.length; i++){
+                    if (isStoped) {
+                        break;
+                    }
+                    Item item = items[i];
+                    if (!isExcluded(item)) {
+                        Language lang = item.getLanguage();
+                        if (lang == Language.C || lang == Language.CPP){
+                            CsmFile langFile = langProject.findFile(item, false);
+                            SourceFileProperties source = new ModelSource(item, langFile, searchBase, projectSearchBase, pkgConfig, preferLocal);
+                            res.add(source);
+                        }
                     }
                 }
             }
@@ -357,38 +371,41 @@ public class AnalyzeModel implements DiscoveryProvider {
                 if (progress != null){
                     progress.start(items.length);
                 }
-                for (int i = 0; i < items.length; i++){
-                    if (isStoped) {
-                        break;
+                try {
+                    for (int i = 0; i < items.length; i++){
+                        if (isStoped) {
+                            break;
+                        }
+                        Item item = items[i];
+                        if (isExcluded(item)) {
+                            continue;
+                        }
+                        String path = item.getAbsPath();
+                        File file = new File(path);
+                        if (CndFileUtils.exists(file)) {
+                            unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                        }
                     }
-                    Item item = items[i];
-                    if (isExcluded(item)) {
-                        continue;
+                    HashSet<String> unUnique = new HashSet<String>();
+                    for(SourceFileProperties source : getSourcesConfiguration()){
+                        if (source instanceof ModelSource){
+                            unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
+                        }
+                        if (progress != null){
+                            progress.increment(null);
+                        }
                     }
-                    String path = item.getAbsPath();
-                    File file = new File(path);
-                    if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                    for(String path : unUnique){
+                        File file = new File(path);
+                        if (CndFileUtils.exists(file)) {
+                            unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
+                        }
                     }
-                }
-                HashSet<String> unUnique = new HashSet<String>();
-                for(SourceFileProperties source : getSourcesConfiguration()){
-                    if (source instanceof ModelSource){
-                        unUnique.addAll( ((ModelSource)source).getIncludedFiles() );
-                    }
+                    myIncludedFiles = new ArrayList<String>(unique);
+                } finally {
                     if (progress != null){
-                        progress.increment(null);
+                        progress.done();
                     }
-                }
-                for(String path : unUnique){
-                    File file = new File(path);
-                    if (CndFileUtils.exists(file)) {
-                        unique.add(CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath()));
-                    }
-                }
-                myIncludedFiles = new ArrayList<String>(unique);
-                if (progress != null){
-                    progress.done();
                 }
             }
             return myIncludedFiles;

@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -405,6 +406,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
         bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
+        bw.write("PROC=proc\n"); // NOI18N
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
@@ -785,7 +787,15 @@ public class ConfigurationMakefileWriter {
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
                     } else {
-                        continue;
+                        if(file.endsWith(".pc")) {  // NOI18N
+                            // Prototype
+                            command = "Pro*C Preprocessor"; // NOI18N
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        } else {
+                            continue;
+                        }
                     }
                 } else {
                     assert false;
@@ -880,7 +890,15 @@ public class ConfigurationMakefileWriter {
                                 comment = customToolConfiguration.getDescription().getValue();
                                 additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
                             } else {
-                                continue;
+                                if(file.endsWith(".pc")) {  // NOI18N
+                                    // Prototype
+                                    command = "Pro*C Preprocessor"; // NOI18N
+                                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                    command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                                    target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                                } else {
+                                    continue;
+                                }
                             }
                         } else {
                             assert false;
@@ -983,7 +1001,15 @@ public class ConfigurationMakefileWriter {
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
                     } else {
-                        continue;
+                        if(file.endsWith(".pc")) {  // NOI18N
+                            // Prototype
+                            command = "Pro*C Preprocessor"; // NOI18N
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        } else {
+                            continue;
+                        }
                     }
                 } else {
                     assert false;
@@ -1136,8 +1162,21 @@ public class ConfigurationMakefileWriter {
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && itemConfiguration.getCustomToolConfiguration().getModified()) {
-                    bw.write("\t${RM} " + itemConfiguration.getCustomToolConfiguration().getOutputs().getValue() + "\n"); // NOI18N
+                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                    if(itemConfiguration.getCustomToolConfiguration().getModified()) {
+                        bw.write("\t${RM} " + itemConfiguration.getCustomToolConfiguration().getOutputs().getValue() + "\n"); // NOI18N
+                    } else {
+                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                        if (compilerSet != null) {
+                            String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
+                            if(file.endsWith(".pc")) {  // NOI18N
+                                // Prototype
+                                MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                String target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                                bw.write("\t${RM} " + target + "\n"); // NOI18N
+                            }
+                        }
+                    }
                 }
             }
         } else if (conf.isMakefileConfiguration()) {
@@ -1303,7 +1342,32 @@ public class ConfigurationMakefileWriter {
             bw.write("\n"); // NOI18N
             bw.write("CND_PACKAGE_PATH_" + makeConf.getName() + "=" + outputPath); // NOI18N
             bw.write("\n"); // NOI18N
+
+            // Sys includes
+            CompilerSet compilerSet = makeConf.getCompilerSet().getCompilerSet();
+            if (compilerSet != null) {
+                AbstractCompiler cComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCompiler);
+                bw.write("CND_SYSINCLUDES_C_" + makeConf.getName() + "=" + // NOI18N
+                        dumpList(cComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
+                AbstractCompiler cppComp = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                bw.write("CND_SYSINCLUDES_CPP_" + makeConf.getName() + "=" + // NOI18N
+                        dumpList(cppComp.getSystemIncludeDirectories()) + "\n"); // NOI18N
+            }
         }
+    }
+
+    private String dumpList(List<String> list) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (String item : list) {
+            if (!first) {
+                sb.append(',');
+            } else {
+                first = false;
+            }
+            sb.append(item);
+        }
+        return sb.toString();
     }
 
     private void writePackagingScript(MakeConfiguration conf) {

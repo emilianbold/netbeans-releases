@@ -92,7 +92,10 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardIterator;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
+import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
@@ -102,6 +105,7 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
@@ -136,7 +140,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private static final String JAVA_EXT = "java"; //NOI18N
     public static final String JSF2_GENERATOR_PROPERTY = "jsf2Generator"; // "true" if set otherwise undefined
     private static final String CSS_FOLDER = "resources/css/";  //NOI18N
-  
+
     private transient WebModuleExtender wme;
     
     public Set instantiate(TemplateWizard wizard) throws IOException
@@ -147,8 +151,18 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         final FileObject javaPackageRoot = (FileObject)wizard.getProperty(WizardProperties.JAVA_PACKAGE_ROOT_FILE_OBJECT);
         final String jpaControllerPkg = (String) wizard.getProperty(WizardProperties.JPA_CLASSES_PACKAGE);
         final String controllerPkg = (String) wizard.getProperty(WizardProperties.JSF_CLASSES_PACKAGE);
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        final FileObject resourcePackageRoot = (sgs.length > 0) ? sgs[0].getRootFolder() : javaPackageRoot;
         Boolean ajaxifyBoolean = (Boolean) wizard.getProperty(WizardProperties.AJAXIFY_JSF_CRUD);
         final boolean ajaxify = ajaxifyBoolean == null ? false : ajaxifyBoolean.booleanValue();
+
+        // add framework to project first:
+        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+        JSFFrameworkProvider fp = new JSFFrameworkProvider();
+        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
+            updateWebModuleExtender(project, wm, fp);
+            wme.extend(wm);
+        }
 
         Preferences preferences = ProjectUtils.getPreferences(project, ProjectUtils.class, true);
         final String preferredLanguage = preferences.get("jsf.language", "JSP");  //NOI18N
@@ -167,13 +181,6 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                         Util.addPersistenceUnitToProject( project, punit );
                     }
             }
-        }
-        
-        WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-        JSFFrameworkProvider fp = new JSFFrameworkProvider();
-        if (!fp.isInWebModule(wm)) {    //add jsf if not already present
-            updateWebModuleExtender(project, wm, fp);
-            wme.extend(wm);
         }
         
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
@@ -204,15 +211,15 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                             }
                             else
                             {
-                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
+//                                assert !jsf2Generator : "jsf2 generator works only with EJBs";
                                 JpaControllerIterator.generateJpaControllers(progressContributor, progressPanel, entities, project, jpaControllerPkg, jpaControllerPackageFileObject, embeddedPkSupport, true, false);
                             }
                             FileObject jsfControllerPackageFileObject = FileUtil.createFolder(javaPackageRoot, controllerPkg.replace('.', '/'));
-                            if (jsf2Generator) {
+                            if (jsf2Generator || "Facelets".equals(preferredLanguage)) {
                                 Sources srcs = ProjectUtils.getSources(project);
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
-                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot);
+                                generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot, resourcePackageRoot);
                                 PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage});
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
@@ -422,7 +429,8 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             int progressIndex,
             FileObject webRoot,
             String bundleName,
-            FileObject javaPackageRoot) throws IOException {
+            FileObject javaPackageRoot,
+            FileObject resourcePackageRoot) throws IOException {
         String progressMsg;
 
         //copy util classes
@@ -493,15 +501,23 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             params.put("controllerPackageName", controllerPkg);
             params.put("controllerClassName", controllerClassName);
             params.put("entityFullClassName", entityClass);
-            params.put("ejbFullClassName", jpaControllerPkg+"."+simpleJpaControllerName);
-            params.put("ejbClassName", simpleJpaControllerName);
+            params.put(genSessionBean ? "ejbFullClassName" : "jpaControllerFullClassName", jpaControllerPkg+"."+simpleJpaControllerName);
+            params.put(genSessionBean ? "ejbClassName" : "jpaControllerClassName", simpleJpaControllerName);
             params.put("entityClassName", simpleClassName);
             params.put("comment", Boolean.FALSE); // NOI18N
             params.put("bundle", bundleName); // NOI18N
+            boolean isInjected = Util.isContainerManaged(project);
+            if (!genSessionBean && isInjected) {
+                params.put("isInjected", true); //NOI18N
+            }
+            String persistenceUnitName = Util.getPersistenceUnitAsString(project, simpleClassName);
+            if ( persistenceUnitName != null) {
+                params.put("persistenceUnitName", persistenceUnitName); //NOI18N
+            }
             FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
 
             JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
-
+            
             params = FromEntityBase.createFieldParameters(webRoot, entityClass, managedBean, managedBean+".selected", false, true);
             bundleData.add(new TemplateData(simpleClassName, (List<FromEntityBase.TemplateData>)params.get("entityDescriptors")));
             params.put("controllerClassName", controllerClassName);
@@ -527,9 +543,9 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         params.put("entities", bundleData);
         params.put("comment", Boolean.FALSE);
         String bundleFileName = getBundleFileName(bundleName);
-        FileObject target = javaPackageRoot.getFileObject(bundleFileName);
+        FileObject target = resourcePackageRoot.getFileObject(bundleFileName);
         if (target == null) {
-            target = FileUtil.createData(javaPackageRoot, bundleFileName);
+            target = FileUtil.createData(resourcePackageRoot, bundleFileName);
         }
         JSFPaletteUtilities.expandJSFTemplate(template, params, target);
 
@@ -714,13 +730,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
          
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
 
-        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL)) {    //NOI18N
+        if (wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_WEB) || wm.getJ2eeProfile().equals(Profile.JAVA_EE_6_FULL) || JSFUtils.isJSF20(wm)) {    //NOI18N
             wizard.putProperty(JSF2_GENERATOR_PROPERTY, "true");
             helpCtx = new HelpCtx("persistence_entity_selection_javaee6");  //NOI18N
         } else {
             helpCtx = new HelpCtx("persistence_entity_selection_javaee5");  //NOI18N
         }
 
+        wizard.putProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION, Boolean.TRUE);
         WizardDescriptor.Panel secondPanel = new ValidationPanel(
                 new PersistenceClientEntitySelection(NbBundle.getMessage(PersistenceClientIterator.class, "LBL_EntityClasses"),
                         helpCtx, wizard)); // NOI18N

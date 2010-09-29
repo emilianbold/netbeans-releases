@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.maven.actions;
 
-import hidden.org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.FileUtils;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.embedder.MavenEmbedder;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.progress.ProgressHandle;
@@ -69,6 +69,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.DialogDescriptor;
@@ -135,7 +136,8 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     }
 
     private Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Create_Library"));
+        ProgressHandle handle = ProgressHandleFactory.createHandle(org.openide.util.NbBundle.getMessage(CreateLibraryAction.class, "MSG_Create_Library"),
+                ProgressTransferListener.cancellable());
         int count = includeArtifacts.size() * (allSourceAndJavadoc ? 3 : 1) + 5;
         handle.start(count);
         try {
@@ -222,6 +224,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        } catch (ThreadDeath d) { // download interrupted
         } finally {
             handle.finish();
         }

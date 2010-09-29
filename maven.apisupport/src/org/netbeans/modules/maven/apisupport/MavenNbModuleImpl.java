@@ -54,14 +54,15 @@ import java.util.List;
 import java.util.Set;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
-import hidden.org.codehaus.plexus.util.IOUtil;
-import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.xml.Xpp3DomBuilder;
 import java.awt.BorderLayout;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -82,6 +83,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.AuxiliaryProperties;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -96,6 +98,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=NbModuleProvider.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class MavenNbModuleImpl implements NbModuleProvider {
     private Project project;
     private DependencyAdder dependencyAdder = new DependencyAdder();
@@ -392,24 +395,30 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     public SpecificationVersion getDependencyVersion(String codenamebase) throws IOException {
         String artifactId = codenamebase.replaceAll("\\.", "-"); //NOI18N
         NbMavenProject watch = project.getLookup().lookup(NbMavenProject.class);
-        Set set = watch.getMavenProject().getDependencyArtifacts();
-        if (set != null) {
-            Iterator it = set.iterator();
-            while (it.hasNext()) {
-                Artifact art = (Artifact)it.next();
-                if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
-                    ExamineManifest exa = new ExamineManifest();
-                    exa.setJarFile(art.getFile());
-                    if (exa.getSpecVersion() != null) {
-                        return new SpecificationVersion(exa.getSpecVersion());
-                    }
+        for (Artifact art : watch.getMavenProject().getArtifacts()) {
+            if (art.getGroupId().startsWith("org.netbeans") && art.getArtifactId().equals(artifactId)) { //NOI18N
+                ExamineManifest exa = new ExamineManifest();
+                exa.setJarFile(art.getFile());
+                try {
+                    exa.checkFile();
+                } catch (MojoExecutionException x) {
+                    throw new IOException(x);
+                }
+                if (exa.getSpecVersion() != null) {
+                    return new SpecificationVersion(exa.getSpecVersion());
                 }
             }
         }
+        // XXX #190149: as in addDependency, look up artifact in repo with same version as some existing org.netbeans.api:* dep
         File fil = lookForModuleInPlatform(artifactId);
         if (fil != null) {
             ExamineManifest exa = new ExamineManifest();
             exa.setJarFile(fil);
+            try {
+                exa.checkFile();
+            } catch (MojoExecutionException x) {
+                throw new IOException(x);
+            }
             if (exa.getSpecVersion() != null) {
                 return new SpecificationVersion(exa.getSpecVersion());
             }

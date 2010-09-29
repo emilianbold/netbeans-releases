@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.java.project.NewJavaFileWizardIterator.Type;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -81,10 +82,10 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
 
     private Project project;
     private SourceGroup folders[];
-    private int type;
+    private final Type type;
     private boolean isValidPackageRequired;
 
-    public JavaTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel<WizardDescriptor> bottomPanel, int type, boolean isValidPackageRequired ) {
+    public JavaTargetChooserPanel(Project project, SourceGroup folders[], WizardDescriptor.Panel<WizardDescriptor> bottomPanel, Type type, boolean isValidPackageRequired) {
         this.project = project;
         this.folders = folders;
         this.bottomPanel = bottomPanel;
@@ -118,7 +119,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
            setErrorMessage( null );
            return false;
         }        
-        if ( type == NewJavaFileWizardIterator.TYPE_PACKAGE) {
+        if (type == Type.PACKAGE) {
             if (gui.getTargetName() == null) {
                 setInfoMessage("INFO_JavaTargetChooser_ProvidePackageName");
                 return false;
@@ -131,8 +132,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
                 return false;
             }
-        }
-        else if (type == NewJavaFileWizardIterator.TYPE_PKG_INFO) {
+        } else if (type == Type.PKG_INFO) {
             //Change in firing order caused that isValid is called before readSettings completed => no targetName available
             if (gui.getTargetName() == null) {
                 setInfoMessage("INFO_JavaTargetChooser_ProvideClassName");
@@ -173,7 +173,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         boolean returnValue=true;
         FileObject rootFolder = gui.getRootFolder();
         SpecificationVersion specVersion = null;
-        if (type != NewJavaFileWizardIterator.TYPE_PACKAGE) {
+        if (type != Type.PACKAGE) {
             String sl = SourceLevelQuery.getSourceLevel(rootFolder);
             specVersion = sl != null? new SpecificationVersion(sl): null;
         }
@@ -183,7 +183,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         if (errorMessage!=null) returnValue=false;                
         
-        if (type != NewJavaFileWizardIterator.TYPE_PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion)<=0) { 
+        if (type != Type.PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion) <= 0) {
             if(isValidPackageRequired){
                 setInfoMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
                 return false;
@@ -292,7 +292,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         assert gui != null;
         FileObject rootFolder = gui.getRootFolder();
         FileObject folder = null;
-        if ( type != NewJavaFileWizardIterator.TYPE_PACKAGE ) {
+        if (type != Type.PACKAGE) {
             String packageFileName = gui.getPackageFileName();
             folder = rootFolder.getFileObject( packageFileName );
             if ( folder == null ) {

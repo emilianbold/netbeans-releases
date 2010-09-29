@@ -163,6 +163,7 @@ import org.openide.util.lookup.Lookups;
 *
 * @author   Jan Jancura
 */
+@JPDADebugger.Registration(path="netbeans-JPDASession")
 public class JPDADebuggerImpl extends JPDADebugger {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda");
@@ -779,8 +780,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 try {
                     ThreadReference t = StackFrameWrapper.thread(sf);
                     JPDAThread tr = getThread(t);
-                    c = tr.getCallStack(0, 1)[0];
-                    csf = (CallStackFrameImpl) c;
+                    CallStackFrame[] stackFrames = tr.getCallStack(0, 1);
+                    if (stackFrames.length > 0) {
+                        c = stackFrames[0];
+                        csf = (CallStackFrameImpl) c;
+                    }
                 } catch (InternalExceptionWrapper ex) {
                 } catch (InvalidStackFrameExceptionWrapper ex) {
                 } catch (VMDisconnectedExceptionWrapper ex) {
@@ -794,7 +798,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
         }
 
         JPDAThread frameThread = csf.getThread();
-        Lock lock = ((JPDAThreadImpl) frameThread).accessLock.writeLock();
+        JPDAThreadImpl frameThreadImpl = (JPDAThreadImpl) frameThread;
+        //Object pendingAction = frameThreadImpl.getPendingAction();
+        //if (pendingAction != null) { For the case that evaluation should be blocked by pending action
+        //    //return frameThreadImpl.getPendingVariable(pendingActions);
+        //    throw new InvalidExpressionException(frameThreadImpl.getPendingString(pendingAction));
+        //}
+        Lock lock = frameThreadImpl.accessLock.writeLock();
         lock.lock();
         Variable vr;
         try {
@@ -822,6 +832,10 @@ public class JPDADebuggerImpl extends JPDADebugger {
                                 } catch (PropertyVetoException pvex) {
                                     throw new RuntimeException(
                                         new InvalidExpressionException (pvex.getMessage()));
+                                } catch (ThreadDeath td) {
+                                    throw td;
+                                } catch (Throwable t) {
+                                    Exceptions.printStackTrace(t);
                                 }
                                 resumedThread[0] = theResumedThread;
                             }
@@ -943,6 +957,16 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     threadSuspended = true;
                 } catch (PropertyVetoException pvex) {
                     throw new InvalidExpressionException (pvex.getMessage());
+                } catch (RuntimeException rex) {
+                    // Give up
+                    thread.notifyMethodInvokeDone();
+                    throw rex;
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Error e) {
+                    // Give up
+                    thread.notifyMethodInvokeDone();
+                    throw e;
                 }
                 try {
                     Value v = org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.

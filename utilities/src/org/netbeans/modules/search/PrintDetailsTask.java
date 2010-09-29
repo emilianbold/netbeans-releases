@@ -98,7 +98,8 @@ final class PrintDetailsTask implements Runnable {
             /* Collect details about the found node: */
             Node[] allDetails = null;
             if (basicSearchCriteria != null) {
-                Node[] details = basicSearchCriteria.getDetails(obj.object);
+                Node[] details =
+                        basicSearchCriteria.getDetails(obj.getFileObject());
                 if (details != null && details.length != 0) {
                     allDetails = details;
                 }

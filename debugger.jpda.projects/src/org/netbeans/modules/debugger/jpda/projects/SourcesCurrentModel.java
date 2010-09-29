@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
@@ -96,6 +97,10 @@ import org.openide.util.WeakListeners;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="SourcesView/netbeans-JPDASession/Current",
+                             types={ TreeModel.class,
+                                     CheckNodeModelFilter.class,
+                                     NodeActionsProvider.class })
 public class SourcesCurrentModel implements TreeModel, CheckNodeModelFilter,
 NodeActionsProvider {
 

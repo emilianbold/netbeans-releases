@@ -87,6 +87,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.execution.ModuleConfigurationProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.config.DeploymentDescriptorConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinationConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ServerLibraryConfiguration;
 import org.openide.util.Mutex.Action;
@@ -373,6 +374,15 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
         if (libraryConfiguration != null) {
             libraryConfiguration.removeLibraryChangeListener(listener);
         }
+    }
+
+    @Override
+    public boolean isDescriptorRequired() {
+        DeploymentDescriptorConfiguration descriptorConfiguration = getDeploymentDescriptorConfiguration();
+        if (descriptorConfiguration != null) {
+            return descriptorConfiguration.isDescriptorRequired();
+        }
+        return false;
     }
 
     public Set<Datasource> getDatasources() throws ConfigurationException {
@@ -807,6 +817,17 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
             ModuleConfiguration config = getModuleConfiguration();
             if (config != null) {
                 return config.getLookup().lookup(ServerLibraryConfiguration.class);
+            }
+        }
+        return null;
+    }
+
+    @CheckForNull
+    private DeploymentDescriptorConfiguration getDeploymentDescriptorConfiguration() {
+        if (server != null) {
+            ModuleConfiguration config = getModuleConfiguration();
+            if (config != null) {
+                return config.getLookup().lookup(DeploymentDescriptorConfiguration.class);
             }
         }
         return null;

@@ -39,12 +39,13 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.gsf;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
@@ -55,6 +56,11 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.css.editor.CssPreferences;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.lexer.MutableTextInput;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -68,7 +74,7 @@ public class CssHintsProvider implements HintsProvider {
      * Compute hints applicable to the given compilation info and add to the given result list.
      */
     @Override
-    public void computeHints(HintsManager manager, RuleContext context,List<Hint> hints) {
+    public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
     }
 
     /**
@@ -94,24 +100,41 @@ public class CssHintsProvider implements HintsProvider {
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        for(Error e : context.parserResult.getDiagnostics()) {
+        for (Error e : context.parserResult.getDiagnostics()) {
 
-            assert e.getDescription() != null;
+            if (CssPreferences.isErrorCheckingDisabledForCssErrorKey(e.getKey())) {
+                //add hint for reenabling the property
+                hints.add(new Hint(new CssRule(HintSeverity.WARNING),
+                        getMessageKey(e.getKey(), true), //NOI18N
+                        context.parserResult.getSnapshot().getSource().getFileObject(),
+                        new OffsetRange(0, 0),
+                        Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), true)),
+                        10));
 
-            Hint h = new Hint(getCssRule(e.getSeverity()),
-                    e.getDescription(),
-                    e.getFile(),
-                    new OffsetRange(e.getStartPosition(), e.getEndPosition()),
-                    Collections.<HintFix>emptyList(),
-                    10);
-            
-            hints.add(h);
+            } else {
+
+                assert e.getDescription() != null;
+
+                List<HintFix> fixes = CssAnalyser.isConfigurableError(e.getKey())
+                        ? Collections.<HintFix>singletonList(new ErrorCheckFix(context.parserResult.getSnapshot(), e.getKey(), cancelled))
+                        : Collections.<HintFix>emptyList();
+
+                Hint h = new Hint(getCssRule(e.getSeverity()),
+                        e.getDescription(),
+                        e.getFile(),
+                        new OffsetRange(e.getStartPosition(), e.getEndPosition()),
+                        fixes,
+                        10);
+
+                hints.add(h);
+            }
         }
     }
 
     /**
      * Cancel in-progress processing of hints.
      */
+    @Override
     public void cancel() {
         this.cancelled = true;
     }
@@ -131,7 +154,6 @@ public class CssHintsProvider implements HintsProvider {
      *
      * @return A list of rules that are builtin, or null or an empty list when there are no builtins
      */
-
     @Override
     public List<Rule> getBuiltinRules() {
         return null;
@@ -147,12 +169,11 @@ public class CssHintsProvider implements HintsProvider {
     public RuleContext createRuleContext() {
         return new RuleContext();
     }
-
     private static final CssRule ERROR_RULE = new CssRule(HintSeverity.ERROR);
     private static final CssRule WARNING_RULE = new CssRule(HintSeverity.WARNING);
 
     private static CssRule getCssRule(Severity s) {
-        switch(s) {
+        switch (s) {
             case WARNING:
                 return WARNING_RULE;
             case ERROR:
@@ -170,26 +191,112 @@ public class CssHintsProvider implements HintsProvider {
             this.severity = severity;
         }
 
+        @Override
         public Set<?> getCodes() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean appliesTo(RuleContext context) {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return "css"; //NOI18N //does this show up anywhere????
         }
 
+        @Override
         public boolean showInTasklist() {
             return true;
         }
 
+        @Override
         public HintSeverity getDefaultSeverity() {
             return severity;
         }
-
     }
 
+    private static String getMessageKey(String errorKey, boolean enabled) {
+            String param = null;
+            String keyEnable = null;
+            String keyDisable = null;
+            if (CssAnalyser.isUnknownPropertyError(errorKey)) {
+                keyEnable = "MSG_Disable_Ignore_Property"; //NOI18N
+                keyDisable = "MSG_Enable_Ignore_Property"; //NOI18N
+                param = CssAnalyser.getUnknownPropertyName(errorKey);
+            } else {
+                keyEnable = "MSG_Disable_Check"; //NOI18N
+                keyDisable = "MSG_Enable_Check"; //NOI18N
+
+            }
+            return enabled
+                    ? NbBundle.getMessage(CssHintsProvider.class, keyEnable, param)
+                    : NbBundle.getMessage(CssHintsProvider.class, keyDisable, param);
+
+    }
+    
+
+    private static final class ErrorCheckFix implements HintFix {
+
+        private String errorKey;
+        private boolean enabled;
+        private Snapshot snapshot;
+
+        public ErrorCheckFix(Snapshot snapshot, String errorKey, boolean enabled) {
+            assert CssAnalyser.isConfigurableError(errorKey);
+
+            this.snapshot = snapshot;
+            this.errorKey = errorKey;
+            this.enabled = enabled;
+        }
+
+        @Override
+        public String getDescription() {
+            return getMessageKey(errorKey, enabled);
+        }
+
+        @Override
+        public void implement() throws Exception {
+            CssPreferences.setCssErrorChecking(errorKey, enabled);
+            forceReparse(snapshot);
+        }
+
+        @Override
+        public boolean isSafe() {
+            return true;
+        }
+
+        @Override
+        public boolean isInteractive() {
+            return false;
+        }
+        
+    }
+
+    //force reparse of *THIS document only* => hints update
+    private static void forceReparse(Snapshot snapshot) {
+        final Document doc = snapshot.getSource().getDocument(false);
+        if (doc == null) {
+            return;
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                NbEditorDocument nbdoc = (NbEditorDocument) doc;
+                nbdoc.runAtomic(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
+                        if (mti != null) {
+                            mti.tokenHierarchyControl().rebuild();
+                        }
+                    }
+                });
+            }
+        });
+    }
 }

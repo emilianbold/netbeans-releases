@@ -516,7 +516,12 @@ abstract class Lookup implements ContextProvider {
                 assert service != null;
                 this.service = service;
                 fillInstances(l, lr, s);
-                listenOnDisabledModules();
+                RP.post(new Runnable() {
+                    public void run() {
+                        // This may take a while...
+                        listenOnDisabledModules();
+                    }
+                });
             }
             
             private void fillInstances(List<String> l, Result<T> lr, Set<String> s) {
@@ -532,7 +537,8 @@ abstract class Lookup implements ContextProvider {
                     //System.err.println("ID = '"+li.getId()+"' => serviceName = '"+serviceName+"'");
                     // We do not recognize method calls correctly
                     if (s != null && (s.contains (serviceName) || s.contains (serviceName+"()"))) continue;
-                    add(new LazyInstance<T>(service, li));
+                    //add(new LazyInstance<T>(service, li));
+                    fillServiceInstance(li);
                 }
                 /*
                 for (Object lri : lr.allInstances()) {
@@ -572,6 +578,31 @@ abstract class Lookup implements ContextProvider {
                     listenOn(instance.getClass().getClassLoader());
                 } else if (checkClassName(className)) {
                     add(new LazyInstance<T>(service, className), className);
+                }
+            }
+
+            private String getClassName(Item li) {
+                String id = li.getId();
+                int i = id.lastIndexOf("/");
+                if (i >= 0) id = id.substring(i+1);
+                return id.replace('-', '.');
+            }
+
+            private void fillServiceInstance(Item<T> li) {
+                String className = getClassName(li);
+                Object instance = null;
+                synchronized(instanceCache) {
+                    instance = instanceCache.get (className);
+                }
+                if (instance != null) {
+                    try {
+                        add(service.cast(instance), className);
+                    } catch (ClassCastException cce) {
+                        Logger.getLogger(Lookup.class.getName()).log(Level.WARNING, null, cce);
+                    }
+                    listenOn(instance.getClass().getClassLoader());
+                } else {
+                    add(new LazyInstance<T>(service, li));
                 }
             }
 
@@ -683,13 +714,24 @@ abstract class Lookup implements ContextProvider {
                 protected T getEntry() {
                     Object instance = null;
                     if (lookupItem != null) {
-                        instance = lookupItem.getInstance();
-                        //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
-                        if (instance instanceof ContextAwareService) {
-                            ContextAwareService cas = (ContextAwareService) instance;
-                            instance = cas.forContext(Lookup.MetaInf.this.context);
-                            //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
-                            lookupItem = null;
+                        String cn = getClassName(lookupItem);
+                        synchronized (instanceCreationLock) {
+                            synchronized(instanceCache) {
+                                instance = instanceCache.get (cn);
+                            }
+                            if (instance == null) {
+                                instance = lookupItem.getInstance();
+                                //System.err.println("Lookup.LazyInstance.getEntry(): have instance = "+instance+" for lookupItem = "+lookupItem);
+                                if (instance instanceof ContextAwareService) {
+                                    ContextAwareService cas = (ContextAwareService) instance;
+                                    instance = cas.forContext(Lookup.MetaInf.this.context);
+                                    //System.err.println("  "+cas+".forContext("+Lookup.MetaInf.this.context+") = "+instance);
+                                    lookupItem = null;
+                                }
+                                synchronized (instanceCache) {
+                                    instanceCache.put (cn, instance);
+                                }
+                            }
                         }
                     }
                     if (instance == null) {

@@ -270,7 +270,14 @@ is divided into following sections:
                 <property name="excludes" value=""/>            
                 <path id="endorsed.classpath.path" path="${{endorsed.classpath}}"/>
                 <condition property="endorsed.classpath.cmd.line.arg" value="-Xbootclasspath/p:'${{toString:endorsed.classpath.path}}'" else="">
-                    <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    <and>
+                        <isset property="endorsed.classpath"/>
+                        <length length="0" string="${{endorsed.classpath}}" when="greater"/>
+                    </and>
+                </condition>
+                <!-- #189395 - temporary workaround till GlassFish issue #13144 is fixed -->
+                <condition property="is.server.weblogic" value="true">
+                    <equals arg1="j2ee.server.type" arg2="WebLogic9"/>
                 </condition>
             </target>
             
@@ -832,6 +839,23 @@ exists or setup the property manually. For example like this:
                 <property name="ap.cmd.line.internal" value=""/>
             </target>
 
+            <target name="profile-init" depends="-profile-pre-init, init, -profile-post-init, -profile-init-check"/>
+
+            <target name="-profile-pre-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
+            <target name="-profile-post-init">
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+            <target name="-profile-init-check">
+                <xsl:attribute name="depends">-profile-pre-init, init, -profile-post-init</xsl:attribute>
+                <fail unless="profiler.info.jvm">Must set JVM to use for profiling in profiler.info.jvm</fail>
+                <fail unless="profiler.info.jvmargs.agent">Must set profiler agent JVM arguments in profiler.info.jvmargs.agent</fail>
+            </target>
+
 
             <target name="init">
                 <xsl:attribute name="depends">-pre-init,-init-private,-init-userdir,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-taskdefs,-init-ap-cmdline</xsl:attribute>
@@ -989,15 +1013,53 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
-            <target name="library-inclusion-in-archive" depends="compile">
-                <xsl:for-each select="//ejbjarproject3:included-library">
+            <target name="library-inclusion-in-archive" depends="compile" if="is.server.weblogic">
+<!--                <xsl:for-each select="//ejbjarproject3:included-library">
                     <xsl:variable name="included.prop.name">
                         <xsl:value-of select="."/>
                     </xsl:variable>
                     <copyfiles todir="${{build.classes.dir}}">
                        <xsl:attribute name="files"><xsl:value-of select="concat('${',$included.prop.name,'}')"/></xsl:attribute>
                     </copyfiles>
-                </xsl:for-each>   
+                </xsl:for-each>    -->
+                <xsl:for-each select="//ejbjarproject3:included-library">
+                    <basename>
+                        <xsl:variable name="included.prop.name">
+                            <xsl:value-of select="."/>
+                        </xsl:variable>
+                        <xsl:attribute name="property">
+                            <xsl:value-of select="concat('manifest.', $included.prop.name)"/>
+                        </xsl:attribute>
+                        <xsl:attribute name="file">
+                            <xsl:value-of select="concat('${', $included.prop.name, '}')"/>
+                        </xsl:attribute>
+                    </basename>
+                </xsl:for-each>
+                <manifest file="${{build.ear.classes.dir}}/META-INF/MANIFEST.MF" mode="update">
+                    <xsl:if test="//ejbjarproject3:included-library">
+                        <attribute>
+                            <xsl:attribute name="name">Extension-List</xsl:attribute>
+                            <xsl:attribute name="value">
+                                <xsl:for-each select="//ejbjarproject3:included-library">
+                                    <xsl:value-of select="concat('jar-', position(), ' ')"/>
+                                </xsl:for-each>
+                            </xsl:attribute>
+                        </attribute>
+                        <xsl:for-each select="//ejbjarproject3:included-library">
+                            <attribute>
+                                <xsl:attribute name="name">
+                                    <xsl:value-of select="concat('jar-', position(), '-Extension-Name')"/>
+                                </xsl:attribute>
+                                <xsl:attribute name="value">
+                                    <xsl:variable name="included.prop.name">
+                                        <xsl:value-of select="."/>
+                                    </xsl:variable>
+                                    <xsl:value-of select="concat('${manifest.', $included.prop.name, '}')"/>
+                                </xsl:attribute>
+                            </attribute>
+                        </xsl:for-each>
+                    </xsl:if>
+                </manifest>
             </target> 
             
             <target name="library-inclusion-in-manifest" depends="compile">
@@ -1332,7 +1394,71 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix</xsl:attribute>
             </target>
-            
+
+            <xsl:comment>
+            =================
+            PROFILING SECTION
+            =================
+            </xsl:comment>
+
+            <target name="profile">
+                <xsl:attribute name="description">Profile a J2EE project in the IDE.</xsl:attribute>
+                <condition>
+                    <xsl:attribute name="property">profiler.startserver.target</xsl:attribute>
+                    <xsl:attribute name="value">start-profiled-server-extraargs</xsl:attribute>
+                    <xsl:attribute name="else">start-profiled-server</xsl:attribute>
+                    <isset>
+                        <xsl:attribute name="property">profiler.info.jvmargs.extra</xsl:attribute>
+                    </isset>
+                </condition>
+                <antcall>
+                    <xsl:attribute name="target">${profiler.startserver.target}</xsl:attribute>
+                </antcall>
+                <antcall>
+                    <xsl:attribute name="target">run</xsl:attribute>
+                </antcall>
+                <antcall>
+                    <xsl:attribute name="target">start-loadgen</xsl:attribute>
+                </antcall>
+            </target>
+
+            <target name="start-profiled-server">
+                <nbstartprofiledserver>
+                    <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
+                    <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
+                    <xsl:attribute name="javaPlatform">${profiler.info.javaPlatform}</xsl:attribute>
+                    <jvmarg>
+                        <xsl:attribute name="value">${profiler.info.jvmargs.agent}</xsl:attribute>
+                    </jvmarg>
+                    <jvmarg>
+                        <xsl:attribute name="value">${profiler.j2ee.agentID}</xsl:attribute>
+                    </jvmarg>
+                </nbstartprofiledserver>
+            </target>
+
+            <target name="start-profiled-server-extraargs">
+                <nbstartprofiledserver>
+                    <xsl:attribute name="forceRestart">${profiler.j2ee.serverForceRestart}</xsl:attribute>
+                    <xsl:attribute name="startupTimeout">${profiler.j2ee.serverStartupTimeout}</xsl:attribute>
+                    <xsl:attribute name="javaPlatform">${profiler.info.javaPlatform}</xsl:attribute>
+                    <jvmarg>
+                        <xsl:attribute name="value">${profiler.info.jvmargs.extra}</xsl:attribute>
+                    </jvmarg>
+                    <jvmarg>
+                        <xsl:attribute name="value">${profiler.info.jvmargs.agent}</xsl:attribute>
+                    </jvmarg>
+                    <jvmarg>
+                        <xsl:attribute name="value">${profiler.j2ee.agentID}</xsl:attribute>
+                    </jvmarg>
+                </nbstartprofiledserver>
+            </target>
+
+            <target name="start-loadgen" if="profiler.loadgen.path">
+                    <loadgenstart>
+                        <xsl:attribute name="path">${profiler.loadgen.path}</xsl:attribute>
+                    </loadgenstart>
+            </target>
+
             <xsl:comment>
                 JAVADOC SECTION
             </xsl:comment>
@@ -1604,7 +1730,42 @@ exists or setup the property manually. For example like this:
                 <xsl:attribute name="if">netbeans.home</xsl:attribute>
                 <xsl:attribute name="depends">init,-pre-debug-fix,-do-debug-fix-test</xsl:attribute>
             </target>
-            
+
+        <xsl:comment>
+        =========================
+        TESTS PROFILING  SECTION
+        =========================
+        </xsl:comment>
+
+          <target name="profile-test-single">
+              <xsl:attribute name="if">netbeans.home</xsl:attribute>
+              <xsl:attribute name="depends">profile-init,compile-test-single</xsl:attribute>
+              <nbprofiledirect>
+                  <classpath>
+                      <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
+                  </classpath>
+              </nbprofiledirect>
+
+              <junit showoutput="true" fork="true" dir="${{profiler.info.dir}}"  jvm="${{profiler.info.jvm}}" failureproperty="tests.failed" errorproperty="tests.failed">
+                  <env key="${{profiler.info.pathvar}}" path="${{profiler.info.agentpath}}:${{profiler.current.path}}"/>
+                  <jvmarg value="${{profiler.info.jvmargs.agent}}" />
+                  <jvmarg line="${{profiler.info.jvmargs}}"/>
+                  <test name="${{profile.class}}"/>
+                  <classpath>
+                      <path path="${{run.test.classpath}}"/>
+                      <path path="${{j2ee.platform.classpath}}"/>
+                  </classpath>
+                  <syspropertyset>
+                      <propertyref prefix="test-sys-prop."/>
+                      <mapper type="glob" from="test-sys-prop.*" to="*"/>
+                  </syspropertyset>
+                  <formatter type="brief" usefile="false"/>
+                  <formatter type="xml"/>
+              </junit>
+          </target>
+
+
             <xsl:comment>
                 CLEANUP SECTION
             </xsl:comment>

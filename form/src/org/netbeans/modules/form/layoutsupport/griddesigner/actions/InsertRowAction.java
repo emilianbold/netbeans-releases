@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class InsertRowAction implements GridAction {
+public class InsertRowAction extends AbstractGridAction {
     private String name;
     /** Determines whether the new row should be inserted before of after the focused row. */
     private boolean insertAfter;

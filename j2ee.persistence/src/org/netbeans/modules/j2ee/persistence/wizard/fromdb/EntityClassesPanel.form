@@ -44,21 +44,31 @@
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="spacerPanel" max="32767" attributes="0"/>
-                  <Component id="packageComboBox" alignment="0" pref="377" max="32767" attributes="2"/>
-                  <Component id="locationComboBox" alignment="0" pref="377" max="32767" attributes="2"/>
-                  <Component id="projectTextField" alignment="1" pref="377" max="32767" attributes="2"/>
-                  <Component id="classNamesScrollPane" alignment="0" pref="377" max="32767" attributes="2"/>
+                  <Component id="spacerPanel" pref="428" max="32767" attributes="0"/>
+                  <Component id="packageComboBox" alignment="0" pref="428" max="32767" attributes="2"/>
+                  <Component id="locationComboBox" alignment="0" pref="428" max="32767" attributes="2"/>
+                  <Component id="projectTextField" alignment="1" pref="428" max="32767" attributes="2"/>
+                  <Component id="classNamesScrollPane" alignment="0" pref="428" max="32767" attributes="2"/>
               </Group>
           </Group>
-          <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
-          <Component id="generateFinderMethodsCheckBox" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="1" attributes="0">
+              <Component id="createPUWarningLabel" pref="500" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="generateJAXBCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="generateFinderMethodsCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="createPUCheckbox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <Component id="createPUWarningLabel" pref="471" max="32767" attributes="0"/>
+              <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -70,7 +80,7 @@
               <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classNamesLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="classNamesScrollPane" pref="46" max="32767" attributes="0"/>
+                  <Component id="classNamesScrollPane" pref="30" max="32767" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="spacerPanel" min="-2" pref="24" max="-2" attributes="0"/>
@@ -92,10 +102,12 @@
               <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
               <Component id="generateFinderMethodsCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="generateJAXBCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="cmpFieldsInInterfaceCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="createPUCheckbox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="33" max="-2" attributes="0"/>
               <Component id="createPUWarningLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -213,7 +225,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace pref="353" max="32767" attributes="0"/>
+                  <EmptySpace pref="404" max="32767" attributes="0"/>
                   <Component id="tableActionsButton" min="-2" pref="24" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -278,6 +290,22 @@
       <Events>
         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="createPUCheckboxItemStateChanged"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="generateJAXBCheckBox">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="TXT_GenerateJAXBAnnotations" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="TXT_ToolTipJAXB" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+            <EmptyBorder/>
+          </Border>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

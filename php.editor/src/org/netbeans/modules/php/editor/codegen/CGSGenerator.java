@@ -9,16 +9,22 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileObject;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
 import org.netbeans.modules.php.editor.codegen.ui.ConstructorPanel;
 import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -34,6 +40,7 @@ public class CGSGenerator implements CodeGenerator {
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
     private static final String CURSOR = "${cursor}";                           //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
+    private static final String UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE = "${UpFirstLetterPropertyWithoutUnderscore}";  //NOI18N
 
     public enum GenType {
         CONSTRUCTOR,
@@ -44,15 +51,21 @@ public class CGSGenerator implements CodeGenerator {
     }
 
     public enum GenWay {
-        AS_JAVA(START_OF_GETTER + UP_FIRST_LETTER_PROPERTY, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY),
-        WITH_UNDERSCORE(START_OF_GETTER + "_" + PROPERTY, START_OF_SETTER + "_" + PROPERTY);    //NOI18N
+        AS_JAVA(NbBundle.getMessage(CGSGenerator.class, "JAVA_STYLE"), START_OF_GETTER + UP_FIRST_LETTER_PROPERTY, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY), //NOI18N
+        WITH_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "ADD_UNDERSCORE"), START_OF_GETTER + "_" + PROPERTY, START_OF_SETTER + "_" + PROPERTY), //NOI18N
+        WITHOUT_UNDERSCORE(NbBundle.getMessage(CGSGenerator.class, "REMOVE_UNDERSCORE"), START_OF_GETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, START_OF_SETTER + UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE);    //NOI18N
 
         private String getterTemplate;
         private String setterTemplate;
+        /**
+         * The description will appear in the ui combobox.
+         */
+        private String simpleDescription;
 
-        private GenWay(String getterTemplate, String setterTemplate) {
+        private GenWay(String simpleDescription, String getterTemplate, String setterTemplate) {
             this.getterTemplate = getterTemplate;
             this.setterTemplate = setterTemplate;
+            this.simpleDescription = simpleDescription;
         }
 
         public String getGetterTemplate() {
@@ -61,6 +74,10 @@ public class CGSGenerator implements CodeGenerator {
 
         public String getSetterTemplate() {
             return setterTemplate;
+        }
+
+        public String getSimpleDescription() {
+            return simpleDescription;
         }
 
         public String getGetterExample(String property) {
@@ -78,8 +95,11 @@ public class CGSGenerator implements CodeGenerator {
             }
             if (template.contains(UP_FIRST_LETTER_PROPERTY)) {
                 example = example.replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(property));
-            }return example;
-
+            }
+            if (template.contains(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE)) {
+                example = example.replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, upFirstLetterWithoutUnderscore(property));
+            }
+            return example;
         }
     }
 
@@ -95,6 +115,8 @@ public class CGSGenerator implements CodeGenerator {
     private final CGSInfo cgsInfo;
     private final JTextComponent component;
 
+    private static final String GETTER_SETTER_PROJECT_PROPERTY = "getter.setter.method.name.generation";
+
     private CGSGenerator(JTextComponent component, CGSInfo cgsInfo, GenType type) {
         this.type = type;
         this.cgsInfo = cgsInfo;
@@ -104,8 +126,24 @@ public class CGSGenerator implements CodeGenerator {
     @Override
     public void invoke() {
         String dialogTitle = null;
-
         JPanel panel = null;
+
+        // obtain the generation from project properties
+        FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
+        Project project = FileOwnerQuery.getOwner(fo);
+        AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
+        EditableProperties properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        String methodGenerationWay = properties.getProperty(GETTER_SETTER_PROJECT_PROPERTY);
+        if (methodGenerationWay != null) {
+            try {
+                cgsInfo.setHowToGenerate(GenWay.valueOf(methodGenerationWay));
+            } catch (IllegalArgumentException exception) {
+                cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
+            }
+        } else {
+            cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
+        }
+       
         switch (type) {
             case CONSTRUCTOR:
                 dialogTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_TITLE_CONSTRUCTOR");    //NOI18N
@@ -130,8 +168,6 @@ public class CGSGenerator implements CodeGenerator {
 
         }
 
-        //TODO obtain the value from project properties
-        cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
         DialogDescriptor desc = new DialogDescriptor(panel, dialogTitle);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
         dialog.setVisible(true);
@@ -140,7 +176,9 @@ public class CGSGenerator implements CodeGenerator {
             CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
             CodeTemplate template = manager.createTemporary(getTemplateText());
             template.insert(component);
-            //TODO save the gen type value to the project properties
+            //save the gen type value to the project properties
+            properties.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
+            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
         }
     }
 
@@ -225,8 +263,10 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleGetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
-                        getters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName));
+                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE 
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        methodName = getUnusedMethodName(createdMethods, changedName);
+                        getters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         getters.append(NEW_LINE);
                     }
                 }
@@ -237,8 +277,10 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
-                        setters.append(setterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName));
+                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        methodName = getUnusedMethodName(createdMethods, changedName);
+                        setters.append(setterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         setters.append(NEW_LINE);
                     }
                 }
@@ -249,10 +291,12 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
-                        gettersAndSetters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)));
+                        String changedName = cgsInfo.getHowToGenerate() == GenWay.WITHOUT_UNDERSCORE
+                                ? upFirstLetterWithoutUnderscore(name) : upFirstLetter(name);
+                        methodName = getUnusedMethodName(createdMethods, changedName);
+                        gettersAndSetters.append(getterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(setterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)));
+                        gettersAndSetters.append(setterTemplate.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)).replace(UP_FIRST_LETTER_PROPERTY_WITHOUT_UNDERSCORE, methodName));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }
@@ -291,5 +335,10 @@ public class CGSGenerator implements CodeGenerator {
 
     private static String upFirstLetter(String name) {
         return name.substring(0, 1).toUpperCase() + name.substring(1);
+    }
+
+    private static String upFirstLetterWithoutUnderscore(String name) {
+        String result = (name.length() > 0 && name.charAt(0) == '_') ? name.substring(1) : name;
+        return upFirstLetter(result);
     }
 }

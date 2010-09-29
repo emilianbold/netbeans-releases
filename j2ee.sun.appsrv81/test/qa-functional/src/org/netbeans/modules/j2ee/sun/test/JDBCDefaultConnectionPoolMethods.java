@@ -105,7 +105,7 @@ public class JDBCDefaultConnectionPoolMethods extends NbTestCase implements Wiza
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             cpdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveConnPoolDatatoXml(cpdata);
+            ResourceUtils.saveConnPoolDatatoXml(cpdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

@@ -57,8 +57,8 @@ import java.util.List;
                <tr><td>artifactId</td><td>mandatory</td><td></td></tr>
                <tr><td>version</td><td>mandatory</td><td></td></tr>
                <tr><td>repository</td><td>optional</td><td>url of the archetype's repository</td></tr>
-               <tr><td>nameBundleKey</td><td>optional</td><td>key in bundle file that holds localized name</td></tr>
-               <tr><td>descriptionBundleKey</td><td>optional</td><td>key in bundle file that holds localized description</td></tr>
+               <tr><td>displayName</td><td>optional</td><td>localized name (use bundlevalue)</td></tr>
+               <tr><td>description</td><td>optional</td><td>localized description (use bundlevalue)</td></tr>
            </tbody>
        </table>
      <p>

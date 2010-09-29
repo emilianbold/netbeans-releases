@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.api.Repository;
@@ -61,6 +62,11 @@ public class HashMapRepository implements Repository {
 
     @Override
     public void debugDistribution() {
+    }
+
+    @Override
+    public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
+        return null;
     }
 
     /** represents a single unit */

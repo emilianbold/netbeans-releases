@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.maven.configurations;
 
-import hidden.org.codehaus.plexus.util.StringUtils;
+import org.codehaus.plexus.util.StringUtils;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -97,6 +97,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     static String CONFIG_PROFILES_ATTR = "profiles"; //NOI18N
     static String CONFIG_ID_ATTR = "id"; //NOI18N
 
+    private static final RequestProcessor RP = new RequestProcessor(M2ConfigProvider.class.getName(),10);
     
     public M2ConfigProvider(NbMavenProjectImpl proj, AuxiliaryConfiguration aux, ProjectProfileHandler prof) {
         project = proj;
@@ -109,7 +110,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             NodeList list = el.getElementsByTagNameNS(NAMESPACE, ACTIVATED);
             if (list.getLength() > 0) {
                 Element enEl = (Element)list.item(0);
-                initialActive = new String(enEl.getTextContent());
+                initialActive = enEl.getTextContent();
             }
         }
         
@@ -120,7 +121,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
                         public void run() {
                             checkActiveAgainstAll(getConfigurations(), false);
                             firePropertyChange();
@@ -151,7 +152,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                     }
                 };
             if (async) {
-                RequestProcessor.getDefault().post(dothis);
+                RP.post(dothis);
             } else {
                 dothis.run();
             }
@@ -241,7 +242,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 }
             }
             if (initialActive != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     public void run() {
                         try {
                             doSetActiveConfiguration(DEFAULT, null);

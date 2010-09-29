@@ -42,9 +42,10 @@
 
 package org.netbeans.modules.web.jsf.api.components;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.web.jsf.spi.components.JsfComponentProvider;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -55,9 +56,15 @@ public final class JsfComponents {
     private final static String COMPONENTS_PATH = "j2ee/jsf/components";    //NOI18N
 
 
-    public static List<? extends JsfComponentsProvider> getJsfComponents() {
-        Collection<? extends JsfComponentsProvider> components =
-                Lookups.forPath(COMPONENTS_PATH).lookupAll(JsfComponentsProvider.class);
-        return new ArrayList<JsfComponentsProvider>(components);
+    public static Set<? extends JsfComponentDescriptor> findJsfComponents() {
+        Collection<? extends JsfComponentProvider> componentProvider =
+                Lookups.forPath(COMPONENTS_PATH).lookupAll(JsfComponentProvider.class);
+        Set<JsfComponentDescriptor> result = new HashSet<JsfComponentDescriptor>();
+        for (JsfComponentProvider provider: componentProvider) {
+            for(JsfComponentDescriptor descriptor: provider.getComponents()) {
+                result.add(descriptor);
+            }
+        }
+        return result;
     }
 }

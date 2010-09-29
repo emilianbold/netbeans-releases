@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -268,7 +269,7 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                         String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
                         if (relPath != null) {
                             if (!SourceUtils.isScanInProgress()) {
-                                if (!SourceUtils.getMainClasses(fo).isEmpty()) {
+                                if (SourceUtils.isMainClass(relPath.replaceFirst("[.]java$", "").replace('/', '.'), ClasspathInfo.create(fo))) {
                                     return action + ".main";//NOI18N
                                 }
                             }

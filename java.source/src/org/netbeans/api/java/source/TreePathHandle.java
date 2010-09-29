@@ -270,7 +270,7 @@ public final class TreePathHandle {
                     && clsSym.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
                     && clsSym.sourcefile.toUri().isAbsolute()) {
                     u = clsSym.sourcefile.toUri().toURL();
-                } else {
+                } else if (clsSym.classfile != null) {
                     u = clsSym.classfile.toUri().toURL();
                 }
             } catch (MalformedURLException ex) {
@@ -436,7 +436,15 @@ public final class TreePathHandle {
             if (tp != null && new KindPath(tp).equals(kindPath)) {
                 return tp;
             }
-            tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset() + 1);
+            int pos = position.getOffset();
+            tp = resolvePathForPos(compilationInfo, pos + 1);
+            if (tp != null) return tp;
+            tp = resolvePathForPos(compilationInfo, pos);
+            return tp;
+        }
+
+        private TreePath resolvePathForPos(final CompilationInfo compilationInfo, int pos) {
+            TreePath tp = compilationInfo.getTreeUtilities().pathFor(pos);
             while (tp != null) {
                 KindPath kindPath1 = new KindPath(tp);
                 kindPath.getList().remove(Tree.Kind.ERRONEOUS);

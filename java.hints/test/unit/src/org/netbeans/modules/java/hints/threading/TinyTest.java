@@ -367,6 +367,17 @@ public class TinyTest extends TestBase {
                         "}\n").replaceAll("[\t\n ]+", " "));
     }
 
+    public void testLockUnlock186434() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "public class Test {\n" +
+                            "     private void n(java.util.concurrent.locks.Lock l) {\n" +
+                            "         l.lock();\n" +
+                            "         l.unlock();\n" +
+                            "     }\n" +
+                            "}\n");
+    }
+
     public void testUnsyncedWait1() throws Exception {
         performAnalysisTest("test/Test.java",
                             "package test;\n" +

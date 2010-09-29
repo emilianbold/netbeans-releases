@@ -53,7 +53,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionHandler;
@@ -61,9 +60,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
@@ -154,8 +155,8 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
         MakeConfiguration conf = pae.getConfiguration();
         File[] sourceDirs = RemoteProjectSupport.getProjectSourceDirs(pae.getProject(), conf);
 
-        final RemoteSyncWorker worker =  RemoteSyncSupport.createSyncWorker(
-                execEnv, out, err, privProjectStorage, sourceDirs);
+        RemoteSyncFactory syncFactory = conf.getRemoteSyncFactory();
+        final RemoteSyncWorker worker = (syncFactory == null) ? null : syncFactory.createNew(execEnv, out, err, privProjectStorage, sourceDirs);
         CndUtils.assertTrue(worker != null, "RemoteSyncWorker shouldn't be null"); //NOI18N
         if (worker == null) {
             delegate.execute(io);
@@ -189,6 +190,9 @@ class RemoteBuildProjectActionHandler implements ProjectActionHandler {
             System.setProperty(testWorkerRunningProp, "false"); // NOI18N
             for (ExecutionListener l : listeners) {
                 l.executionFinished(-8);
+            }
+            if (err != null) {
+                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Build_Failed"));
             }
         }
     }

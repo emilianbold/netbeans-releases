@@ -57,6 +57,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
@@ -70,6 +71,9 @@ import org.openide.util.WeakSet;
  *
  * @author   Martin Entlicher
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                             types=TreeExpansionModelFilter.class,
+                             position=12000)
 public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilter {
     
     private static final Map<JPDADebugger, DebuggingTreeExpansionModelFilter> FILTERS = new WeakHashMap<JPDADebugger, DebuggingTreeExpansionModelFilter>();

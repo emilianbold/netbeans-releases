@@ -51,8 +51,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.ext.html.parser.AstNode;
-import org.netbeans.editor.ext.html.parser.SyntaxTree;
+import org.netbeans.editor.ext.html.parser.api.AstNode;
+//import org.netbeans.editor.ext.html.parser.SyntaxTreeBuilder;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.Error;
@@ -186,7 +186,9 @@ public class HtmlHintsProvider implements HintsProvider {
 
     private static Collection<HintFix> getCustomHintFixesForError(final RuleContext context, final Error e) {
         List<HintFix> fixes = new ArrayList<HintFix>();
-        if(e.getKey().equals(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES)) {
+        //XXX fix
+//        if(e.getKey().equals(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES)) {
+        if(true) {
             fixes.add(new HintFix() {
                 
                 @Override
@@ -197,7 +199,9 @@ public class HtmlHintsProvider implements HintsProvider {
                 @Override
                 public void implement() throws Exception {
                     AstNode node = HtmlParserResult.getBoundAstNode(e);
-                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTree.MISSING_REQUIRED_ATTRIBUTES);
+                    //XXX FIX
+//                    Collection<String> missingAttrs = (Collection<String>)node.getProperty(SyntaxTreeBuilder.MISSING_REQUIRED_ATTRIBUTES);
+                    Collection<String> missingAttrs = Collections.emptyList();
                     assert missingAttrs != null;
                     int astOffset = node.startOffset() + 1 + node.name().length();
                     int insertOffset = context.parserResult.getSnapshot().getOriginalOffset(astOffset);

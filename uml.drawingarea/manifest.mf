@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module-Install: org/netbeans/modules/uml/drawingarea/DrawingAreaModule.class
-OpenIDE-Module: org.netbeans.modules.uml.drawingarea/1
-OpenIDE-Module-Layer: org/netbeans/modules/uml/drawingarea/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/uml/drawingarea/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.4
-AutoUpdate-Show-In-Client: false
-

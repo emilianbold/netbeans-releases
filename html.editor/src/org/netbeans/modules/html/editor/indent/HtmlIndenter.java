@@ -43,16 +43,17 @@
 package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.BadLocationException;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.modules.css.formatting.api.support.MarkupAbstractIndenter;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.dtd.DTD;
-import org.netbeans.editor.ext.html.dtd.DTD.Element;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -60,21 +61,19 @@ import org.openide.util.Exceptions;
 
 public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
-    private DTD dtd;
+    private HtmlModel model;
 
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
         try {
-            SyntaxParserContext parserContext = SyntaxParserContext.createContext(getDocument().getText(0, getDocument().getLength()));
-            dtd = SyntaxParser.parse(parserContext).getDTD();
+            CharSequence code = getDocument().getText(0, getDocument().getLength());
+            HtmlSource source = new HtmlSource(code);
+            SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+            model = result.getHtmlModel();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        assert dtd != null : "cannot find any DTD - perhaps NbReaderProvider.setupReaders() was not called?";
-    }
-
-    private DTD getDTD() {
-        return dtd;
+        assert model != null;
     }
 
     @Override
@@ -135,25 +134,25 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected boolean isClosingTagOptional(String tagName) {
-        Element elem = getDTD().getElement(tagName);
+        HtmlTag elem = model.getTag(tagName);
         if (elem == null) {
             return false;
         }
-        return elem.hasOptionalEnd();
+        return elem.hasOptionalEndTag();
     }
 
     @Override
     protected boolean isOpeningTagOptional(String tagName) {
-        Element elem = getDTD().getElement(tagName);
+        HtmlTag elem = model.getTag(tagName);
         if (elem == null) {
             return false;
         }
-        return elem.hasOptionalStart();
+        return elem.hasOptionalOpenTag();
     }
 
     @Override
     protected Boolean isEmptyTag(String tagName) {
-        Element elem = getDTD().getElement(tagName);
+       HtmlTag elem = model.getTag(tagName);
         if (elem == null) {
             return false;
         }
@@ -174,29 +173,14 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
 
     @Override
     protected Set<String> getTagChildren(String tagName) {
-        Element elem = getDTD().getElement(tagName);
-        if (elem == null) {
+        HtmlTag tag = model.getTag(tagName);
+        if(tag == null) {
             return null;
         }
         Set<String> set = new TreeSet<String>();
-        for (DTD.Element el : (Set<DTD.Element>)elem.getContentModel().getIncludes()) {
-            if (el != null) {
-                set.add(el.getName());
-            }
-        }
-        for (DTD.Element el : (Set<DTD.Element>)elem.getContentModel().getExcludes()) {
-            if (el != null) {
-                set.remove(el.getName());
-            }
-        }
-        for (DTD.Element el : (Set<DTD.Element>)elem.getContentModel().getContent().getPossibleElements()) {
-            if (el != null) {
-                set.add(el.getName());
-            }
-        }
-        if (tagName.equalsIgnoreCase("HTML")) {
-            // XXXXXXXXXXXXXXXXX TODO:
-            set.add("BODY");
+        for(HtmlTag child : tag.getChildren()) {
+            String name = child.getName().toUpperCase(); //the MarkupAbstractIndenter needs the names to be uppercase
+            set.add(name);
         }
         return set;
     }

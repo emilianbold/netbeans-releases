@@ -288,7 +288,7 @@ Group system
             assertEquals("Modified now", true, obj.isModified());
         }
 
-        Node[] origNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
+        Node[] origNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
         assertEquals("One node", 1, origNodes.length);
         assertEquals("the obj", obj, origNodes[0].getLookup().lookup(DataObject.class));
 

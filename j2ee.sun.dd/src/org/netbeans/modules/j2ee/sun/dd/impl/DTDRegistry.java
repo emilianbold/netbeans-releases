@@ -107,6 +107,10 @@ public final class DTDRegistry {
     public static final String TAGLIB_11_DTD_SYSTEM_ID =
         "http://java.sun.com/dtd/web-jsptaglibrary_1_1.dtd";
 
+    public static final String GLASSFISH_RESOURCE_15_DTD_PUBLIC_ID =
+        "-//GlassFish.org//DTD GlassFish Application Server 3.1 Resource Definitions//EN";
+    public static final String GLASSFISH_RESOURCE_15_DTD_SYSTEM_ID =
+        "http://glassfish.org/dtds/glassfish-resources_1_5.dtd";
     public static final String SUN_RESOURCE_13_DTD_PUBLIC_ID =
         "-//Sun Microsystems, Inc.//DTD Application Server 9.0 Resource Definitions //EN";
     public static final String SUN_RESOURCE_13_DTD_SYSTEM_ID =

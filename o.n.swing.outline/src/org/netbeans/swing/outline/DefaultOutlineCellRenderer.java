@@ -53,14 +53,17 @@ import javax.swing.BorderFactory;
 import javax.swing.CellRendererPane;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.AbstractLayoutCache;
 import javax.swing.tree.TreePath;
+import org.openide.awt.HtmlRenderer;
 
 /** An outline-aware TableCellRenderer which knows how to paint expansion
  * handles and indent child nodes an appropriate amount. 
@@ -80,6 +83,8 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     private Reference<RenderDataProvider> lastRendererRef = new WeakReference<RenderDataProvider>(null); // Used by lazy tooltip
     private Reference<Object> lastRenderedValueRef = new WeakReference<Object>(null);                    // Used by lazy tooltip
     private static final Border expansionBorder = new ExpansionHandleBorder();
+    private static final boolean swingRendering = Boolean.getBoolean("nb.useSwingHtmlRendering"); //NOI18N
+    private HtmlRenderer.Renderer htmlRenderer = (swingRendering) ? null : HtmlRenderer.createRenderer();
     
     /** Creates a new instance of DefaultOutlineTreeCellRenderer */
     public DefaultOutlineCellRenderer() {
@@ -102,13 +107,24 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
      */
     @Override
     public final void setBorder (Border b) {
+        if (!swingRendering) {
+            super.setBorder(b);
+            return ;
+        }
         if (b == expansionBorder) {
             super.setBorder(b);
         } else {
             super.setBorder(BorderFactory.createCompoundBorder (b, expansionBorder));
         }
     }
-    
+
+    @Override
+    protected void setValue(Object value) {
+        if (swingRendering) {
+            super.setValue(value);
+        }
+    }
+
     private static Icon getDefaultOpenIcon() {
 	return UIManager.getIcon("Tree.openIcon"); //NOI18N
     }
@@ -208,9 +224,13 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
     public Component getTableCellRendererComponent(JTable table, Object value,
                           boolean isSelected, boolean hasFocus, int row, 
                           int column) {
-    
-        Component c = (DefaultOutlineCellRenderer) super.getTableCellRendererComponent(
-              table, value, isSelected, hasFocus, row, column);
+
+        super.getTableCellRendererComponent(
+                  table, value, isSelected, hasFocus, row, column);
+        JLabel label = null;
+        if (!swingRendering) {
+            label = (JLabel) htmlRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        }
         Outline tbl = (Outline) table;
         if (tbl.isTreeColumnIndex(column)) {
             AbstractLayoutCache layout = tbl.getLayoutCache();
@@ -232,9 +252,17 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 String displayName = rendata.getDisplayName(value);
                 if (displayName != null) {
                     if (rendata.isHtmlDisplayName(value)) {
-                        setText("<html>" + displayName.replaceAll(" ", "&nbsp;") + "</html>"); // NOI18N
+                        if (swingRendering) {
+                            setText("<html>" + displayName.replaceAll(" ", "&nbsp;") + "</html>"); // NOI18N
+                        } else {
+                            label.setText("<html>" + displayName.replaceAll(" ", "&nbsp;") + "</html>"); // NOI18N
+                        }
                     } else {
-                        setText (displayName);
+                        if (swingRendering) {
+                            setText (displayName);
+                        } else {
+                            label.setText (displayName);
+                        }
                     }
                 }
                 lastRendererRef = new WeakReference<RenderDataProvider>(rendata);
@@ -242,16 +270,34 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                 Color bg = rendata.getBackground(value);
                 Color fg = rendata.getForeground(value);
                 if (bg != null && !isSelected) {
-                    setBackground (bg);
+                    if (swingRendering) {
+                        setBackground (bg);
+                    } else {
+                        label.setBackground (bg);
+                    }
                 } else {
-                    setBackground (isSelected ? 
-                        tbl.getSelectionBackground() : tbl.getBackground());
+                    if (swingRendering) {
+                        setBackground (isSelected ?
+                            tbl.getSelectionBackground() : tbl.getBackground());
+                    } else {
+                        label.setBackground (isSelected ?
+                            tbl.getSelectionBackground() : tbl.getBackground());
+                    }
                 }
                 if (fg != null && !isSelected) {
-                    setForeground (fg);
+                    if (swingRendering) {
+                        setForeground (fg);
+                    } else {
+                        label.setForeground (fg);
+                    }
                 } else {
-                    setForeground (isSelected ? 
-                        tbl.getSelectionForeground() : tbl.getForeground());
+                    if (swingRendering) {
+                        setForeground (isSelected ?
+                            tbl.getSelectionForeground() : tbl.getForeground());
+                    } else {
+                        label.setForeground (isSelected ?
+                            tbl.getSelectionForeground() : tbl.getForeground());
+                    }
                 }
                 icon = rendata.getIcon(value);
 
@@ -270,26 +316,47 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
                     }
                 }
                 setCheckBox(cb);
-            } 
+            }
             if (icon == null) {
                 if (!isleaf) {
                     if (isExpanded) {
-                        setIcon (getDefaultOpenIcon());
+                        icon = getDefaultOpenIcon();
                     } else { // ! expanded
-                        setIcon (getDefaultClosedIcon());
+                        icon = getDefaultClosedIcon();
                     }
                 } else { // leaf
-                    setIcon (getDefaultLeafIcon());
+                    icon = getDefaultLeafIcon();
                 }
-            } else { // icon != null
+            }
+            if (swingRendering) {
                 setIcon(icon);
+            } else {
+                label.setIcon(icon);
             }
         
         } else { // ! tbl.isTreeColumnIndex(column)
-            setIcon(null);
-            setShowHandle(false);
+            if (swingRendering) {
+                setIcon(null);
+            } else {
+                label.setIcon(null);
             }
-        return this;
+            setShowHandle(false);
+        }
+
+        if (swingRendering) {
+            return this;
+        } else {
+            Border b = getBorder();
+            if (b == null) {
+                label.setBorder(expansionBorder);
+            } else {
+                label.setBorder(BorderFactory.createCompoundBorder (b, expansionBorder));
+            }
+            label.setOpaque(true);
+
+            label.putClientProperty(DefaultOutlineCellRenderer.class, this);
+            return label;
+        }
     }
 
     @Override
@@ -322,7 +389,11 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         }
 
         public Insets getBorderInsets(Component c) {
-            DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer) c;
+            DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer)
+                    ((JComponent) c).getClientProperty(DefaultOutlineCellRenderer.class);
+            if (ren == null) {
+                ren = (DefaultOutlineCellRenderer) c;
+            }
             if (ren.isShowHandle()) {
                 insets.left = getExpansionHandleWidth() + (ren.getNestingDepth() *
                     getNestingWidth());
@@ -348,7 +419,11 @@ public class DefaultOutlineCellRenderer extends DefaultTableCellRenderer {
         }
         
         public void paintBorder(Component c, java.awt.Graphics g, int x, int y, int width, int height) {
-            DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer) c;
+            DefaultOutlineCellRenderer ren = (DefaultOutlineCellRenderer)
+                    ((JComponent) c).getClientProperty(DefaultOutlineCellRenderer.class);
+            if (ren == null) {
+                ren = (DefaultOutlineCellRenderer) c;
+            }
             if (ren.isShowHandle() && !ren.isLeaf()) {
                 Icon icon = ren.isExpanded() ? getExpandedIcon() : getCollapsedIcon();
                 int iconY;

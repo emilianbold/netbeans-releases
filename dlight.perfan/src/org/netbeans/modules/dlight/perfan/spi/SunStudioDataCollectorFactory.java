@@ -65,6 +65,7 @@ public final class SunStudioDataCollectorFactory
 
     private SunStudioDataCollector currentCollector = null;
 
+    @Override
     public SunStudioDataCollector create(SunStudioDCConfiguration configuration) {
         SunStudioDCConfigurationAccessor confInfo =
                 SunStudioDCConfigurationAccessor.getDefault();
@@ -83,10 +84,12 @@ public final class SunStudioDataCollectorFactory
         }
     }
 
+    @Override
     public String getID() {
         return SunStudioIDsProvider.DATA_COLLECTOR_ID;
     }
 
+    @Override
     public void reset() {
         synchronized (this) {
             currentCollector = null;

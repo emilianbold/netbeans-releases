@@ -669,8 +669,8 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         try {
 
             ServiceInfo serviceInfo = new ServiceInfo();
-            serviceInfo.setEjb(J2eeModule.Type.EJB.equals(moduleType));
-            resolveServiceInfo(serviceInfo);
+            boolean isEjb = J2eeModule.Type.EJB.equals(moduleType);
+            resolveServiceInfo(serviceInfo, isEjb);
 
             boolean fromStack = false;
             WSStack<JaxWs> jaxWsStack = stackUtils.getWsStack(JaxWs.class);
@@ -759,17 +759,17 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
         ServiceInfo serviceInfo = new ServiceInfo();
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
         boolean isEjb = J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType());
-        serviceInfo.setEjb(isEjb);
         try {
-            resolveServiceInfo(serviceInfo);
+            resolveServiceInfo(serviceInfo, isEjb);
         } catch (UnsupportedEncodingException ex) {}
         return serviceInfo;
     }
 
-    private void resolveServiceInfo(ServiceInfo serviceInfo) throws UnsupportedEncodingException {
+    private void resolveServiceInfo(final ServiceInfo serviceInfo, final boolean inEjbProject) throws UnsupportedEncodingException {
         final String[] serviceName = new String[1];
         final String[] name = new String[1];
         final boolean[] isProvider = {false};
+        serviceInfo.setEjb(inEjbProject);
         JavaSource javaSource = getImplBeanJavaSource();
         if (javaSource != null) {
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {
@@ -789,6 +789,9 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
                                     isProvider[0] = true;
                                 }
                             }
+                        }
+                        if (!inEjbProject) {
+                            serviceInfo.setEjb(isStatelessEjb(controller, typeElement));
                         }
                     }
                 }
@@ -820,6 +823,21 @@ public class JaxWsNode extends AbstractNode implements ConfigureHandlerCookie {
             name[0] = URLEncoder.encode(name[0], "UTF-8"); //NOI18N
         }
         serviceInfo.setPortName(name[0]);
+    }
+
+    private boolean isStatelessEjb(CompilationController controller, TypeElement targetElement) {
+        boolean foundEjbAnnotation = false;
+        TypeElement statelessElement = controller.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+        if (statelessElement != null) {
+            List<? extends AnnotationMirror> annotations = targetElement.getAnnotationMirrors();
+            for (AnnotationMirror anMirror : annotations) {
+                if (controller.getTypes().isSameType(statelessElement.asType(), anMirror.getAnnotationType())) {
+                    foundEjbAnnotation = true;
+                    break;
+                } // end if
+            } // end for
+        }
+        return foundEjbAnnotation;
     }
 
     private boolean resolveServiceUrl(CompilationController controller, TypeElement targetElement, TypeElement wsElement, String[] serviceName, String[] name) throws IOException {

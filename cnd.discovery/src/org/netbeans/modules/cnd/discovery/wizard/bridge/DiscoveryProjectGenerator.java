@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -97,6 +99,7 @@ public class DiscoveryProjectGenerator {
     public void process(){
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
         Folder sourceRoot = projectBridge.getRoot();
+        createFolderStructure(projectConfigurations, sourceRoot);
         level = wizard.getLevel();
         Set<Item> used = new HashSet<Item>();
         for (ProjectConfiguration config: projectConfigurations){
@@ -330,7 +333,42 @@ public class DiscoveryProjectGenerator {
                 used.add(path);
             }
         }
+        used.addAll(compureRoots(used));
         return used;
+    }
+
+    private Set<String> compureRoots(Set<String> roots) {
+        Set<String> res = new HashSet<String>();
+        ArrayList<String> root = null;
+        for(String s : roots) {
+            if (root == null) {
+                root = new ArrayList<String>();
+                root.addAll(Arrays.asList(s.split("/"))); // NOI18N
+                continue;
+            }
+            int i = 0;
+            for(String segment : s.split("/")) { // NOI18N
+                if (i < root.size()) {
+                    if (!segment.equals(root.get(i))) {
+                        while(root.size() > i) {
+                            root.remove(root.size()-1);
+                        }
+                    }
+                } else {
+                    break;
+                }
+                i++;
+            }
+        }
+        if (root.size() > 1) {
+            StringBuilder buf = new StringBuilder();
+            for(String s : root) {
+                buf.append(s);
+                buf.append('/');
+            }
+            res.add(buf.toString());
+        }
+        return res;
     }
 
     private Map<String,Folder> prefferedFolders(){
@@ -436,7 +474,7 @@ public class DiscoveryProjectGenerator {
         for (Map.Entry<String,Item> entry : sorted.entrySet()){
             String path = entry.getKey();
             Item item = entry.getValue();
-            String canonicalPath = item.getNormalizedFile().getAbsolutePath();
+            String canonicalPath = item.getNormalizedPath();
             if (!(relatives.contains(path) || used.contains(path) ||
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
@@ -567,9 +605,21 @@ public class DiscoveryProjectGenerator {
         return false;
     }
 
+    private void createFolderStructure(List<ProjectConfiguration> projectConfigurations, Folder sourceRoot ){
+        Map<String,Set<Pair>> configurationStructure = new HashMap<String,Set<Pair>>();
+        for (ProjectConfiguration config: projectConfigurations){
+            analyzeConfigurationStructure(config.getFiles(), config.getLanguageKind(), configurationStructure);
+        }
+        List<Pair> orphan = detectOrphan(configurationStructure, null);
+        if (orphan.size() > 0) {
+            createOrphan(sourceRoot, orphan, null);
+        }
+    }
+
     private void addConfiguration(Folder sourceRoot, ProjectConfiguration conf, Set<Item> used){
         ItemProperties.LanguageKind lang = conf.getLanguageKind();
-        Map<String,Set<Pair>> configurationStructure = analyzeConfigurationStructure(conf.getFiles(), lang);
+        Map<String,Set<Pair>> configurationStructure = new HashMap<String,Set<Pair>>();
+        analyzeConfigurationStructure(conf.getFiles(), lang, configurationStructure);
         List<Pair> orphan = detectOrphan(configurationStructure, lang);
         if (orphan.size() > 0) {
             createOrphan(sourceRoot, orphan, lang);
@@ -661,7 +711,9 @@ public class DiscoveryProjectGenerator {
                     if (DEBUG) {System.err.println("Orphan pair found by path "+file);} // NOI18N
                 }
                 pair.item = item;
-                setupFile(pair.fileConfiguration, pair.item, lang);
+                if (lang != null) {
+                    setupFile(pair.fileConfiguration, pair.item, lang);
+                }
             } else {
                 if (DEBUG) {System.err.println("Cannot find pair by path "+file);} // NOI18N
             }
@@ -706,7 +758,9 @@ public class DiscoveryProjectGenerator {
                         pair.item = item;
                         folder.addItem(item);
                     }
-                    setupFile(pair.fileConfiguration, item, lang);
+                    if (lang != null) {
+                        setupFile(pair.fileConfiguration, item, lang);
+                    }
                 }
             } else {
                 for(Pair pair : list){
@@ -717,30 +771,28 @@ public class DiscoveryProjectGenerator {
         return orphan;
     }
 
-    private Map<String,Set<Pair>> analyzeConfigurationStructure(List<FileConfiguration> files, ItemProperties.LanguageKind lang){
-        Map<String,Set<Pair>> folders = new HashMap<String,Set<Pair>>();
+    private void analyzeConfigurationStructure(List<FileConfiguration> files, ItemProperties.LanguageKind lang, Map<String,Set<Pair>> folders){
         for (FileConfiguration file : files){
-            String path = file.getFilePath();
-            if (Utilities.isWindows()) {
-                path = path.replace('\\', '/');
-            }
-            int i = path.lastIndexOf('/');
-            if (i >= 0){
-                String folder = path.substring(0,i);
-                Set<Pair> set = folders.get(folder);
-                if (set == null){
-                    set = new HashSet<Pair>();
-                    folders.put(folder,set);
-                }
-                String relPath = projectBridge.getRelativepath(path);
-                Item item = projectBridge.getProjectItem(relPath);
-                if (item != null) {
-                    setupFile(file,item, lang);
-                }
-                set.add(new Pair(file,item));
-            }
+            analyzeConfigurationStructure(file.getFilePath(), folders, file, lang);
         }
-        return folders;
+    }
+    private void analyzeConfigurationStructure(String aPath, Map<String, Set<Pair>> folders, FileConfiguration file, LanguageKind lang) {
+        String path = Utilities.isWindows() ? aPath.replace('\\', '/') : aPath;
+        int i = path.lastIndexOf('/');
+        if (i >= 0) {
+            String folder = path.substring(0, i);
+            Set<Pair> set = folders.get(folder);
+            if (set == null) {
+                set = new HashSet<Pair>();
+                folders.put(folder, set);
+            }
+            String relPath = projectBridge.getRelativepath(path);
+            Item item = projectBridge.getProjectItem(relPath);
+            if (item != null && lang != null) {
+                setupFile(file, item, lang);
+            }
+            set.add(new Pair(file, item));
+        }
     }
 
     private static class Pair{

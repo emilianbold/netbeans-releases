@@ -83,9 +83,9 @@ public final class Unresolved implements Disposable {
     }
 
     public final class UnresolvedClass extends ClassEnumBase<CsmClass> implements CsmClass {
-        public UnresolvedClass(String name) {
-            super(name, unresolvedFile, null);
-            initScope(unresolvedNamespace, null);
+        private UnresolvedClass(String name) {
+            super(NameHolder.createName(name), unresolvedFile, null);
+            initScope(unresolvedNamespace);
             initQualifiedName(unresolvedNamespace, null);
         }
 

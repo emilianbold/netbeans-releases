@@ -53,6 +53,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -62,11 +63,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.usages.ResultConvertor;
 
 /**
  *
@@ -96,11 +97,11 @@ public class LucenePerformanceTest extends NbTestCase {
         final File indexDir = new File (this.getWorkDir(),"index");
         indexDir.mkdirs();
         final Index index = LuceneIndex.create (indexDir);
-        Map<Pair<String,String>,Object[]> data = prepareData(20000,1000,50);
+        List<Pair<Pair<String,String>,Object[]>> data = prepareData(20000,1000,50);
 //        Map<String,List<String>> data = loadData(new File ("/tmp/data"));
 //        storeData(new File ("/tmp/data"),data);
         long startTime = System.currentTimeMillis();
-        index.store (data, Collections.<Pair<String,String>>emptySet());
+        index.store (data, Collections.<Pair<String,String>>emptySet(), DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), true);
         long endTime = System.currentTimeMillis();
         long delta = (endTime-startTime);
         System.out.println("Indexing: " + delta);
@@ -111,7 +112,8 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
-        index.getPackageNames("",true,result);
+        final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
+        index.queryTerms(filter.second, filter.first,result);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);
@@ -122,7 +124,11 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<ElementHandle<TypeElement>> result2 = new HashSet<ElementHandle<TypeElement>>();
         startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("All classes: " + delta);
@@ -130,9 +136,18 @@ public class LucenePerformanceTest extends NbTestCase {
             assertTrue("All classes took too much time: " +delta+ "ms",false);
         }
         
-        result2 = new TreeSet<ElementHandle<TypeElement>>();
-        startTime = System.currentTimeMillis();
-        index.getDeclaredTypes("Class7", NameKind.PREFIX,ResultConvertor.elementHandleConvertor(),result2);
+        result2 = new TreeSet<ElementHandle<TypeElement>>(new Comparator<ElementHandle<TypeElement>>() {
+            @Override
+            public int compare(ElementHandle<TypeElement> o1, ElementHandle<TypeElement> o2) {
+                return o1.getBinaryName().compareTo(o2.getBinaryName());
+            }
+        });
+        startTime = System.currentTimeMillis(); 
+        index.query(
+                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX),
+                DocumentUtil.declaredTypesFieldSelector(),
+                DocumentUtil.elementHandleConvertor(),
+                result2);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Prefix classes: " + delta + " size: " + result.size());
@@ -142,8 +157,8 @@ public class LucenePerformanceTest extends NbTestCase {
     }
     
     
-    private static Map<Pair<String,String>, Object[]> prepareData (final int count, final int pkgLimit, final int refLimit) {
-        final Map<Pair<String,String>,Object[]> result = new HashMap<Pair<String,String>,Object[]> ();
+    private static List<Pair<Pair<String,String>,Object[]>> prepareData (final int count, final int pkgLimit, final int refLimit) {
+        final List<Pair<Pair<String,String>,Object[]>> result = new ArrayList<Pair<Pair<String,String>,Object[]>> ();
         final List<String> refs = new LinkedList<String>();
         final Random r = new Random (System.currentTimeMillis());
         for (int i=0; i<count; i++) {
@@ -156,8 +171,8 @@ public class LucenePerformanceTest extends NbTestCase {
                     l.add(s);
                 }
             }
-            String name = String.format("pkg%d.Class%d",r.nextInt(pkgLimit),i);
-            result.put(Pair.<String,String>of(name,null),new Object[]{l});
+            String name = String.format("pkg%d.Class%dC",r.nextInt(pkgLimit),i);
+            result.add(Pair.<Pair<String,String>,Object[]>of(Pair.<String,String>of(name,null),new Object[]{l,null,null}));
             refs.add (name);                    
         }
         return result;

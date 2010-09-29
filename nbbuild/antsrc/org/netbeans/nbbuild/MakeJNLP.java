@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -125,6 +127,10 @@ public class MakeJNLP extends Task {
     
     public void setKeystore(String k) {
         getSignTask().setKeystore(k);
+    }
+
+    public void setStoreType(String t) {
+        getSignTask().setStoretype(t);
     }
     
     private String codebase = "$$codebase";
@@ -539,15 +545,15 @@ public class MakeJNLP extends Task {
             if (n.endsWith(".jar")) {
                 n = n.substring(0, n.length() - 4);
             }
-            
+            File ext = new File(new File(targetFile, dashcnb), s.replace("../", "").replace('/', '-'));
+
             if (isSigned(e) != null) {
                 Copy copy = (Copy)getProject().createTask("copy");
                 copy.setFile(e);
-                File t = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
-                copy.setTofile(t);
+                copy.setTofile(ext);
                 copy.execute();
                 
-                String extJnlpName = dashcnb + '-' + t.getName().replaceFirst("\\.jar$", "") + ".jnlp";
+                String extJnlpName = dashcnb + '-' + ext.getName().replaceFirst("\\.jar$", "") + ".jnlp";
                 File jnlp = new File(targetFile, extJnlpName);
 
                 FileWriter writeJNLP = new FileWriter(jnlp);
@@ -560,7 +566,7 @@ public class MakeJNLP extends Task {
                 writeJNLP.write("  </information>\n");
                 writeJNLP.write(permissions +"\n");
                 writeJNLP.write("  <resources>\n");
-                writeJNLP.write(constructJarHref(t, dashcnb));
+                writeJNLP.write(constructJarHref(ext, dashcnb));
                 writeJNLP.write("  </resources>\n");
                 writeJNLP.write("  <component-desc/>\n");
                 writeJNLP.write("</jnlp>\n");
@@ -568,7 +574,6 @@ public class MakeJNLP extends Task {
                 
                 fileWriter.write("    <extension name='" + e.getName().replaceFirst("\\.jar$", "") + "' href='" + extJnlpName + "'/>\n");
             } else {
-                File ext = new File(new File(targetFile, dashcnb), s.replace('/', '-'));
                 signOrCopy(e, ext);
 
                 fileWriter.write(constructJarHref(ext, dashcnb));
@@ -642,11 +647,16 @@ public class MakeJNLP extends Task {
         signOrCopy(ext, null);
     }
 
-    private static String relative(File file, File root) {
+    private String relative(File file, File root) {
         String sfile = file.toString().replace(File.separatorChar, '/');
         String sroot = (root.toString() + File.separator).replace(File.separatorChar, '/');
         if (sfile.startsWith(sroot)) {
-            return sfile.substring(sroot.length());
+            try {
+                String result = new URI(null, sfile.substring(sroot.length()), null).normalize().getPath();
+                return result;
+            } catch (URISyntaxException x) {
+                throw new BuildException(x, getLocation()); // or just ignore?
+            }
         }
         return sfile;
     }

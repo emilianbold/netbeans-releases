@@ -110,7 +110,7 @@ public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             cpdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveConnPoolDatatoXml(cpdata);
+            ResourceUtils.saveConnPoolDatatoXml(cpdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
@@ -164,7 +164,7 @@ public class JDBCResourceMethods extends NbTestCase implements WizardConstants{
             falseProject.createFolder("setup");
             dsdata.setTargetFileObject(falseProject);
             cpdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
+            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

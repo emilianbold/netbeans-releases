@@ -1,4 +1,0 @@
-!%/**
-  %%documentation%%
-   */
-%!!%%%visibility%% %!!%%%static%% %!!%%%final%% %!!%%%transient%% %!!%%%volatile%% %!%%IfVar <test="useCollectionOverride" var="collectionOverride"><var="typeName">%% %%name%%!%%%IfVar <test="dontUseCollectionOverride" var="java_dimensions.gt">%%%!!% = %%attributeInitializer%%%!;

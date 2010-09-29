@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  *
  * @author Vladimir Voskresensky
  */
-public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
+public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements CsmMacro {
     
     /** name of macros, i.e. SUM or MACRO */
     private final CharSequence name;
@@ -97,10 +97,10 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     private final List<CharSequence> params;
     
     public static SystemMacroImpl createSystemMacro(CharSequence macroName, String macroBody, CsmFile unresolved, Kind kind) {
-        return new SystemMacroImpl(macroName, macroBody, null, unresolved, kind);
+        return SystemMacroImpl.create(macroName, macroBody, null, unresolved, kind);
     }
     
-    public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
+    private MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
         super(containingFile, macroPos);
         macroName = macroName == null ? CharSequences.empty() : macroName;
         assert(macroBody != null);
@@ -113,24 +113,28 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
             this.params = null;
         }
     }
-    
-    public MacroImpl(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos) {
-        this(macroName, macroParams, macroBody, containingFile, macroPos, Kind.DEFINED);
+
+    public static MacroImpl create(CharSequence macroName, List<CharSequence> macroParams, String macroBody, CsmFile containingFile, CsmOffsetable macroPos, Kind kind) {
+        return new MacroImpl(macroName, macroParams, macroBody, containingFile, macroPos, kind);
     }
     
+    @Override
     public List<CharSequence> getParameters() {
         return params;
     }
     
+    @Override
     public CharSequence getBody() {
         // see APTParseFileWalker.createMacro() for details.
         return body;
     }
     
+    @Override
     public Kind getKind() {
         return kind;
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
@@ -171,7 +175,7 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
         return retValue;
     }
     
-    private static final boolean equals(MacroImpl one, MacroImpl other) {
+    private static boolean equals(MacroImpl one, MacroImpl other) {
         // compare only name and start offset
         return (one.getStartOffset() == other.getStartOffset()) && 
                 (CharSequences.comparator().compare(one.getName(), other.getName()) == 0);
@@ -207,10 +211,12 @@ public class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implements C
     }
 
 
+    @Override
     protected CsmUID<CsmMacro> createUID() {
         return UIDUtilities.createMacroUID(this);
     }
 
+    @Override
     public CsmParameterList<CsmMacroParameter> getParameterList() {
         throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }

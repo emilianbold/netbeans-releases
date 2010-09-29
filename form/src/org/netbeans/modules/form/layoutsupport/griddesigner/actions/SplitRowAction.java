@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class SplitRowAction implements GridAction {
+public class SplitRowAction extends AbstractGridAction {
     private String name;
 
     public SplitRowAction() {

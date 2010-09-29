@@ -11,7 +11,7 @@ and open the template in the editor.
     <body>
         <?php
         echo '';
-        echo '';
+	echo '';
         ?>
     </body>
 </html>

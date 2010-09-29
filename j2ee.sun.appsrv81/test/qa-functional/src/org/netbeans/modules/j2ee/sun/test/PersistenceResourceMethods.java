@@ -112,7 +112,7 @@ public class PersistenceResourceMethods extends NbTestCase implements WizardCons
             falseProject.createFolder("setup");
             cpdata.setTargetFileObject(falseProject);
             cpdata.setTargetFile("poolTest");
-            ResourceUtils.saveConnPoolDatatoXml(cpdata);
+            ResourceUtils.saveConnPoolDatatoXml(cpdata,"sun-resources");
             SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/poolTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
@@ -149,7 +149,7 @@ public class PersistenceResourceMethods extends NbTestCase implements WizardCons
             falseProject.createFolder("setup");
             dsdata.setTargetFileObject(falseProject);
             dsdata.setTargetFile("resourceTest");
-            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata);
+            ResourceUtils.saveJDBCResourceDatatoXml(dsdata,cpdata,"sun-resources");
             SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/resourceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
@@ -188,7 +188,7 @@ public class PersistenceResourceMethods extends NbTestCase implements WizardCons
             falseProject.createFolder("setup");
             pmdata.setTargetFileObject(falseProject);
             pmdata.setTargetFile("persistenceTest");
-            ResourceUtils.savePMFResourceDatatoXml(pmdata,dsdata,cpdata);
+            ResourceUtils.savePMFResourceDatatoXml(pmdata,dsdata,cpdata,"sun-resources");
             SunResourceDataObject resourceObj = (SunResourceDataObject)SunResourceDataObject.find(falseProject.getFileObject("setup/persistenceTest.sun-resource"));
             Resources res = Util.getResourcesObject(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

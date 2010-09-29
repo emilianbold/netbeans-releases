@@ -87,6 +87,10 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
     public J2eeModule getModule() {
         return moduleProvider.getJ2eeModule ();
     }
+
+    public J2eeModuleProvider getModuleProvider() {
+        return moduleProvider;
+    }
     
     public ModuleChangeReporter getModuleChangeReporter() {
         return moduleProvider.getModuleChangeReporter ();
@@ -128,7 +132,7 @@ public final class DeploymentTargetImpl implements DeploymentTarget {
         if (clientModule != null && clientModule.getType().equals(J2eeModule.Type.WAR)) {
             url = findWebUrl(clientModule);
             if (url != null) {
-                if (partUrl.startsWith("/")) { // NOI18N
+                if (partUrl.startsWith("/") || partUrl.length() == 0) { // NOI18N
                     return (url + partUrl);
                 } else {
                     return (url + "/" + partUrl); //NOI18N

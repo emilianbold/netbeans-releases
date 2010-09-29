@@ -64,12 +64,27 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 
 /**
  *
  * @author Libor Kotouc
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/CallStackView",
+                                 types={ TreeModelFilter.class,
+                                         NodeModel.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProvider.class }),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/DebuggingView",
+                                 types={ TreeModelFilter.class,
+                                         NodeModel.class,
+                                         TableModelFilter.class,
+                                         NodeActionsProvider.class },
+                                 position=11000)
+})
 public class HiddenCallStackFramesFilter implements TreeModelFilter,
                                                     NodeModel,
                                                     TableModelFilter,

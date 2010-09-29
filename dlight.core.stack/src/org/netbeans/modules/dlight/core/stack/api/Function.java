@@ -43,25 +43,33 @@ package org.netbeans.modules.dlight.core.stack.api;
 
 /**
  * Function represents an offset in the function.
- * Represantaion format is:
- * [library`][type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
+ * Representation format is:
+ * [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
  */
 public interface Function {
 
     /**
-     * @return [type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
+     * @return [type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
      */
     public String getName();
 
     /**
      *
-     * @return [q-name-namspace::][q-name-class::]name
+     * @return [q-name-namespace::][q-name-class::]name
      */
     public String getQuilifiedName();
 
     /**
      *
-     * @return [library`][type][*|&][space][q-name-namspace::][q-name-class::]name[(prameter-list)]+offset
+     * @return [library`][type][*|&][space][q-name-namespace::][q-name-class::]name[(parameter-list)]+offset
      */
     public String getSignature();
+    
+    
+    public String getModuleName();
+    
+    public String getModuleOffset();
+    
+    public  String getSourceFile();
+    
 }

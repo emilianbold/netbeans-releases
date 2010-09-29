@@ -42,9 +42,11 @@
 
 package org.netbeans.modules.php.editor.model;
 
+import org.netbeans.modules.php.editor.api.AliasedName;
+
 /**
  * @author Radek Matous
  */
 public interface UseElement extends ModelElement {
-    String getAliasName();
+    AliasedName getAliasedName();
 }

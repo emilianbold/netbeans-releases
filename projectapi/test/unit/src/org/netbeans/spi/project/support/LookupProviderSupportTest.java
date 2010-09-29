@@ -45,9 +45,13 @@
 package org.netbeans.spi.project.support;
 
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -63,6 +67,8 @@ import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -113,18 +119,14 @@ public class LookupProviderSupportTest extends NbTestCase {
         assertNotNull(del.lookup(JRadioButton.class));
                 
         // test merger..
-        butt = del.lookup(JButton.class);
-        assertNotNull(butt);
-        assertEquals("CORRECT", butt.getText());
+        assertEquals(butt, del.lookup(JButton.class));
         assertEquals(1, del.lookupAll(JButton.class).size());
         assertEquals(2, merger.expectedCount);
         
         pro1.ic.add(new JButton());
         
         // test merger..
-        butt = del.lookup(JButton.class);
-        assertNotNull(butt);
-        assertEquals("CORRECT", butt.getText());
+        assertEquals(butt, del.lookup(JButton.class));
         assertEquals(1, del.lookupAll(JButton.class).size());
         assertEquals(3, merger.expectedCount);
         
@@ -134,7 +136,7 @@ public class LookupProviderSupportTest extends NbTestCase {
         SourcesImpl impl0 = new SourcesImpl();
         SourceGroupImpl grp0 = new SourceGroupImpl();
         grp0.name = id;
-        impl0.grpMap.put("java", new SourceGroup[] {grp0});
+        impl0.grpMap.put("java", Arrays.<SourceGroup>asList(grp0));
         return impl0;
     }
     
@@ -204,6 +206,30 @@ public class LookupProviderSupportTest extends NbTestCase {
         Lookup l = LookupProviderSupport.createCompositeLookup(Lookup.EMPTY, "nowhere");
         assertEquals(Collections.<Object>emptySet(), new HashSet<Object>(l.lookupAll(Object.class)));
     }
+
+    public void testNestedComposites() throws Exception {
+        SourcesImpl impl1 = createImpl("group1");
+        SourcesImpl impl2 = createImpl("group2");
+        SourcesImpl impl3 = createImpl("group3");
+        Lookup base = Lookups.fixed(impl1, LookupProviderSupport.createSourcesMerger());
+        class Prov implements LookupProvider {
+            final SourcesImpl instance;
+            Prov(SourcesImpl instance) {
+                this.instance = instance;
+            }
+            public @Override Lookup createAdditionalLookup(Lookup baseContext) {
+                return Lookups.singleton(instance);
+            }
+        }
+        Lookup inner = new LookupProviderSupport.DelegatingLookupImpl(base, Lookups.fixed(new Prov(impl2)), null);
+        Lookup outer = new LookupProviderSupport.DelegatingLookupImpl(inner, Lookups.fixed(new Prov(impl3)), null);
+        List<String> names = new ArrayList<String>();
+        for (SourceGroup g : outer.lookup(Sources.class).getSourceGroups("java")) {
+            names.add(g.getName());
+        }
+        Collections.sort(names);
+        assertEquals("[group1, group2, group3]", names.toString());
+    }
     
     private class LookupProviderImpl implements LookupProvider {
         InstanceContent ic = new InstanceContent();
@@ -236,24 +262,33 @@ public class LookupProviderSupportTest extends NbTestCase {
             return JButton.class;
         }
 
-        public JButton merge(Lookup lookup) {
+        public @Override JButton merge(final Lookup lookup) {
             expectedCount = lookup.lookupAll(JButton.class).size();
+            lookup.lookupResult(JButton.class).addLookupListener(new LookupListener() {
+                public @Override void resultChanged(LookupEvent ev) {
+                    expectedCount = lookup.lookupAll(JButton.class).size();
+                }
+            });
             return new JButton("CORRECT");
         }
         
     }
     
     private static class SourcesImpl implements Sources {
-        public HashMap<String, SourceGroup[]> grpMap = new HashMap<String, SourceGroup[]>();
+        public Map<String,List<SourceGroup>> grpMap = new HashMap<String,List<SourceGroup>>();
         
         public SourceGroup[] getSourceGroups(String type) {
-            return grpMap.get(type);
+            return grpMap.get(type).toArray(new SourceGroup[0]);
         }
 
         public void addChangeListener(ChangeListener listener) {
         }
 
         public void removeChangeListener(ChangeListener listener) {
+        }
+
+        public @Override String toString() {
+            return grpMap.toString();
         }
     }
     
@@ -286,6 +321,10 @@ public class LookupProviderSupportTest extends NbTestCase {
         }
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+        }
+
+        public @Override String toString() {
+            return name;
         }
     }
     

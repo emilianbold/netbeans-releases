@@ -216,12 +216,12 @@ public class SunResourceDataObject extends XMLDataObject implements FileChangeLi
                 }
                 
                 // import JMS Resources and convert to Admin Object
-                JmsResource[] jmsResources = resources.getJmsResource();
-                if (jmsResources.length != 0) {
-                    JMSBean currJmsBean = JMSBean.createBean(jmsResources[0]);
-                    type = this.JMS;
-                    setJMS(currJmsBean);
-                }
+//                JmsResource[] jmsResources = resources.getJmsResource();
+//                if (jmsResources.length != 0) {
+//                    JMSBean currJmsBean = JMSBean.createBean(jmsResources[0]);
+//                    type = this.JMS;
+//                    setJMS(currJmsBean);
+//                }
                 
                 // import Admin Object Resources
                 AdminObjectResource[] aoResources = resources.getAdminObjectResource();

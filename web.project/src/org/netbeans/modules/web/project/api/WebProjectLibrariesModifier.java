@@ -50,8 +50,9 @@ import java.net.URL;
 
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 
-public interface WebProjectLibrariesModifier {
+public interface WebProjectLibrariesModifier extends CompilationOnlyClassPathModifier {
     
     /**
      * Adds libraries into the project. These libraries will not be added into the projects's classpath
@@ -75,25 +76,6 @@ public interface WebProjectLibrariesModifier {
      */
     public boolean removePackageLibraries(Library[] libraries, String path) throws IOException;
 
-    /**
-     * Adds libraries into the project's classpath if the libraries are not already included. These libraries
-     * will not be included in the created WAR file.
-     * @param libraries to be added
-     * @return true in case the classpath was changed (at least one library was added to the classpath),
-     * the value false is returned when all the libraries are already included on the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean addCompileLibraries(Library[] libraries) throws IOException;
-    
-    /**
-     * Removes libraries from the project's classpath if the libraries were not already removed.
-     * @param libraries to be removed
-     * @return true in case the classpath was changed (at least one library was removed from the classpath),
-     * the value false is returned when all the libraries were already removed from the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean removeCompileLibraries(Library[] libraries) throws IOException;
-    
     /**
      * Adds artifacts (e.g. subprojects) into the project. These artifacts will not be added into the projects's classpath
      * but will be included in the created WAR file.
@@ -123,31 +105,6 @@ public interface WebProjectLibrariesModifier {
     public boolean removePackageAntArtifacts(AntArtifact[] artifacts, URI[] artifactElements, String path) throws IOException;
 
     /**
-     * Adds artifacts (e.g. subprojects) into the project's classpath if the artifacts are not already included.
-     * These artifacts will not be included in the created WAR file.
-     * @param artifacts to be added
-     * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
-     * as artifacts.
-     * (must be owned by the artifact and be relative to it)
-     * @return true in case the classpath was changed (at least one artifact was added to the classpath),
-     * the value false is returned when all the artifacts are already included on the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean addCompileAntArtifacts(AntArtifact[] artifacts, URI[] artifactElements) throws IOException;
-    
-    /**
-     * Removes artifacts (e.g. subprojects) from the project's classpath if the artifacts were not already removed.
-     * @param artifacts to be removed
-     * @param artifactElements the URIs of the build output, the artifactElements has to have the same length
-     * as artifacts.
-     * (must be owned by the artifact and be relative to it)
-     * @return true in case the classpath was changed (at least one artifact was removed from the classpath),
-     * the value false is returned when all the artifacts were already removed from the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean removeCompileAntArtifacts(AntArtifact[] artifacts, URI[] artifactElements) throws IOException;
-    
-    /**
      * Adds archive files or folders into the project. These archive files or folders will not be added into
      * the projects's classpath but will be included in the created WAR file.
      * @param roots to be added
@@ -169,23 +126,4 @@ public interface WebProjectLibrariesModifier {
      */
     public boolean removePackageRoots(URL[] roots, String path) throws IOException;
 
-    /**
-     * Adds archive files or folders into the project's classpath if the archive files or folders are not already
-     * included. These archive files or folders will not be included in the created WAR file.
-     * @param roots to be added
-     * @return true in case the classpath was changed (at least one archive file or folder was added to the classpath),
-     * the value false is returned when all the archive files or folders are already included on the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean addCompileRoots(URL[] roots) throws IOException;
-    
-    /**
-     * Removes archive files or folders from the project's classpath if the archive files or folders were not already
-     * removed.
-     * @param roots to be removed
-     * @return true in case the classpath was changed (at least one archive file or folder was removed from the classpath),
-     * the value false is returned when all the archive files or folders were already removed from the classpath.
-     * @exception IOException in case the project metadata cannot be changed
-     */
-    public boolean removeCompileRoots(URL[] roots) throws IOException;
 }

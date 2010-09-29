@@ -44,6 +44,7 @@
 package org.netbeans.modules.cnd.repository.impl;
 
 import java.util.Set;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -175,5 +176,10 @@ public final class DelegateRepository implements Repository {
     @Override
     public void debugDistribution() {
         delegate.debugDistribution();
+    }
+
+    @Override
+    public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
+        return delegate.getDatabaseTable(unitKey, tableID);
     }
 }

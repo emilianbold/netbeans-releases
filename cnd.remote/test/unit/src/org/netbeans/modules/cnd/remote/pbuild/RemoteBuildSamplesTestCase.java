@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
+import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 /**
@@ -58,6 +60,23 @@ public class RemoteBuildSamplesTestCase extends RemoteBuildTestBase {
 
     public RemoteBuildSamplesTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    private Level oldLevel;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        oldLevel = RemoteUtil.LOGGER.getLevel();
+        RemoteUtil.LOGGER.setLevel(Level.ALL);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (oldLevel != null) {
+            RemoteUtil.LOGGER.setLevel(oldLevel);
+        }
     }
 
     @ForAllEnvironments

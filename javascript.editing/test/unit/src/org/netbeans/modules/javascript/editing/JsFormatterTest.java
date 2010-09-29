@@ -208,6 +208,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/issue144248-minimal.js", new IndentPrefs(4,4));
     }
 
+    public void testJsonSimple01() throws Exception {
+        reformatFileContents("testfiles/formatting/simple01.json", new IndentPrefs(4,4));
+    }
+
+    public void testJsonSimple02() throws Exception {
+        reformatFileContents("testfiles/formatting/simple02.json", new IndentPrefs(4,4));
+    }
+
     public void testSimpleBlock() throws Exception {
         format("if (true) {\nfoo();\n  }\n",
                "if (true) {\n    foo();\n}\n", null);

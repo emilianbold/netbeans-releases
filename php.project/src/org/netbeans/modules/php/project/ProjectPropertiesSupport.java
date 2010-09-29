@@ -428,6 +428,13 @@ public final class ProjectPropertiesSupport {
     }
 
     /**
+     * @return {@code true} if all *Test files should be run via PhpUnit (default is {@code false})
+     */
+    public static boolean runAllTestFilesUsingPhpUnit(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.PHP_UNIT_RUN_TEST_FILES, false);
+    }
+
+    /**
      * @return instance of Pair<String, String> or null
      */
     private static Pair<String, String> getCopySupportPair(PhpProject project) {
@@ -447,7 +454,7 @@ public final class ProjectPropertiesSupport {
 
     private static boolean getBoolean(PhpProject project, String property, boolean defaultValue) {
         String boolValue = project.getEvaluator().getProperty(property);
-        if (boolValue != null && boolValue.trim().length() > 0) {
+        if (StringUtils.hasText(boolValue)) {
             return Boolean.parseBoolean(boolValue);
         }
         return defaultValue;

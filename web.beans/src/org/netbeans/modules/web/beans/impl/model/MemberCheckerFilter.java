@@ -102,7 +102,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         {
             ExecutableElement execElement = entry.getKey();
             AnnotationValue value = entry.getValue();
-            if ( getMemebers().contains( execElement )) {
+            if ( getMembers().contains( execElement )) {
                 checkMember( execElement, value, set );
             }
         }    
@@ -214,7 +214,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         return true;
     }
     
-    private boolean equals( AnnotationValue value1 , AnnotationValue value2 ){
+    static boolean equals( AnnotationValue value1 , AnnotationValue value2 ){
         if ( value1== null ){
             return value2 == null;
         }
@@ -236,7 +236,7 @@ class MemberCheckerFilter<T extends Element> extends Filter<T> {
         return myValues;
     }
     
-    private Set<ExecutableElement> getMemebers(){
+    private Set<ExecutableElement> getMembers(){
         return myMembers;
     }
     

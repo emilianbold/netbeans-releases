@@ -49,6 +49,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -59,7 +60,6 @@ import javax.swing.JLayeredPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.util.ui.DLightUIPrefs;
 import org.openide.awt.Actions;
 
@@ -77,7 +77,7 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     private final JComponent hAxis;
     private final JComponent vAxis;
     private final JButton button;
-    private List<Action> actions;
+    private final List<Action> actions = new ArrayList<Action>();
     private final JComponent graphPanel;
     private JComponent overlay;
 
@@ -96,7 +96,10 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     }
 
     public void setPopupActions(List<Action> actions) {
-        this.actions = actions;
+        this.actions.clear();
+        if (actions != null) {
+            this.actions.addAll(actions);
+        }
     }
 
     @Override
@@ -172,9 +175,10 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
     }
 
     private JPopupMenu createPopupMenu() {
-        if (actions == null || actions.isEmpty()) {
+        if (actions.isEmpty()) {
             return null;
         }
+
         JPopupMenu pm = new JPopupMenu();
         for (Action action : actions) {
             JMenuItem menuItem = new JMenuItem();
@@ -182,10 +186,9 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
             pm.add(menuItem);
         }
         return pm;
-
     }
 
-    private class PopupMenuListener extends MouseAdapter{
+    private class PopupMenuListener extends MouseAdapter {
 
         PopupMenuListener() {
         }
@@ -209,10 +212,6 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
                 }
             }
         }
-
-
-
-
     }
 
     protected final G getGraph() {

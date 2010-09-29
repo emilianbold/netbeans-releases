@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.project.CompilationOnlyClassPathModifier;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
@@ -83,7 +84,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -371,10 +371,10 @@ public final class EarProjectGenerator {
                 if (project == null) {
                     continue;
                 }
-                ProjectClassPathExtender pcpe = project.getLookup().lookup(ProjectClassPathExtender.class);
+                CompilationOnlyClassPathModifier pcpe = project.getLookup().lookup(CompilationOnlyClassPathModifier.class);
                 URI[] locations = artifact.getArtifactLocations();
                 if (pcpe != null && locations.length > 0) { // sanity check
-                    pcpe.addAntArtifact(artifact, locations[0].normalize());
+                    pcpe.addCompileAntArtifacts(new AntArtifact[]{artifact}, new URI[]{locations[0].normalize()});
                 }
             }
         }

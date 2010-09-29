@@ -88,6 +88,7 @@ import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
@@ -257,25 +258,30 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         if (tooltipVariable != null) {
-            final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
             final ObjectVariable var = tooltipVariable;
-            et.addExpansionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
-                    et.removeAll();
-                    et.setWidthCheck(false);
-                    et.add(ToolTipView.getToolTipView(expression, var));
-                    et.revalidate();
-                    et.repaint();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+            final String toolTip = toolTipText;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
+                    et.addExpansionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
+                            et.removeAll();
+                            et.setWidthCheck(false);
+                            et.add(ToolTipView.getToolTipView(expression, var));
+                            et.revalidate();
+                            et.repaint();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public @Override void run() {
+                                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                                }
+                            });
                         }
                     });
+                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
                 }
             });
-            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
         } else {
             firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
         }
@@ -429,7 +435,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                         }
                         if (kind == Tree.Kind.CLASS && className[0].length() == 0) {
                             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
-                            className[0] = typeElement.getQualifiedName().toString();
+                            className[0] = ElementUtilities.getBinaryName(typeElement);
                         }
                         path = path.getParentPath();
                     }

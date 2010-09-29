@@ -287,7 +287,7 @@ public class StartTask extends BasicTask<OperationState> {
         // create a logger to the server's output stream so that a user
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(ip.get(GlassfishModule.URL_ATTR));
-        logger.readInputStreams(recognizers, serverProcess.getInputStream(), serverProcess.getErrorStream());
+        logger.readInputStreams(recognizers, false, serverProcess.getInputStream(), serverProcess.getErrorStream());
 
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {

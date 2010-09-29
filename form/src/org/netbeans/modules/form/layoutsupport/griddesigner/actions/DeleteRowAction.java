@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
-public class DeleteRowAction implements GridAction {
+public class DeleteRowAction extends AbstractGridAction {
     private String name;
 
     public DeleteRowAction() {
@@ -85,20 +85,16 @@ public class DeleteRowAction implements GridAction {
 
         int[] newRowBounds = gridInfo.getRowBounds();
         int[] newColumnBounds = gridInfo.getColumnBounds();
-        if (newColumnBounds.length < originalColumnBounds.length) {
-            // columns with the highest indices disappeared
-            // when the last components were deleted from them
-            int[] columnBounds = new int[originalColumnBounds.length];
-            System.arraycopy(newColumnBounds, 0, columnBounds, 0, newColumnBounds.length);
-            for (int i=newColumnBounds.length; i<columnBounds.length; i++) {
-                columnBounds[i] = columnBounds[newColumnBounds.length-1];
-            }
-            newColumnBounds = columnBounds;
+        int[] rowBounds;
+        if (row == originalRowBounds.length-2) {
+            // The last row deleted
+            rowBounds = newRowBounds;
+        } else {
+            rowBounds = new int[newRowBounds.length+1];
+            System.arraycopy(newRowBounds, 0, rowBounds, 0, row+1);
+            rowBounds[row+1]=rowBounds[row];
+            System.arraycopy(newRowBounds, row+1, rowBounds, row+2, newRowBounds.length-row-1);
         }
-        int[] rowBounds = new int[newRowBounds.length+1];
-        System.arraycopy(newRowBounds, 0, rowBounds, 0, row+1);
-        rowBounds[row+1]=rowBounds[row];
-        System.arraycopy(newRowBounds, row+1, rowBounds, row+2, newRowBounds.length-row-1);
         return new GridBoundsChange(originalColumnBounds, originalRowBounds, newColumnBounds, rowBounds);
     }
 

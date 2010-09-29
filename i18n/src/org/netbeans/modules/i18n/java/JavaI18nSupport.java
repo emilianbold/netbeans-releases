@@ -686,6 +686,33 @@ public class JavaI18nSupport extends I18nSupport {
          * @param rbString holds replacing values */
         public void replace(final HardCodedString hcString,
                             final I18nString i18nString) {
+            // comment out?
+            if (i18nString.getKey() == null) {
+                final StyledDocument document = i18nString.getSupport().getDocument();
+                NbDocument.runAtomic(
+                document,
+                new Runnable() {
+                    public void run() {
+                        try {
+                            // find the end of line
+                            int idx = hcString.getEndPosition().getOffset() + 1;
+                            String text = document.getText(idx, document.getLength() - idx);
+                            for (; idx < text.length() && text.charAt(idx) != '\n' ; idx++);
+
+                            document.insertString(idx, " //NOI18N", null); //NOI18N
+                        } catch (BadLocationException ble) {
+                            NotifyDescriptor.Message message
+                                    = new NotifyDescriptor.Message(
+                                            NbBundle.getMessage(JavaI18nSupport.class,
+                                                                "MSG_CouldNotReplace"),//NOI18N
+                                            NotifyDescriptor.ERROR_MESSAGE);
+                            DialogDisplayer.getDefault().notify(message);
+                        }
+                    }
+                });
+                return;
+            }
+
             if (!(i18nString instanceof JavaI18nString)) {
                 throw new IllegalArgumentException(
                         "I18N module: i18nString have to be an instance of JavaI18nString.");//NOI18N

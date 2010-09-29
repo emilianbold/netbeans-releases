@@ -189,7 +189,7 @@ public class QualifiedName {
     }
     public static QualifiedName createUnqualifiedName(String name) {
         QualifiedNameKind kind = QualifiedNameKind.resolveKind(name);
-        assert kind.equals(QualifiedNameKind.UNQUALIFIED);
+        assert kind.equals(QualifiedNameKind.UNQUALIFIED) : name;
         return new QualifiedName(false, Collections.singletonList(name));
     }
     public static QualifiedName createFullyQualified(String name, String namespaceName) {

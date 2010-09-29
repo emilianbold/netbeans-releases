@@ -91,6 +91,23 @@ public class SchemaUtils {
         return mXsiTypeAttr;
     }
 
+    public static synchronized GlobalAttribute getXsiAttr(String nodeName) {
+        if (nodeName == null)
+        	return null;
+        if (nodeName.equals("type"))
+        	return getXsiTypeAttr();
+        	// Any other xsi attr
+            SchemaModel sModel = getXsiModel();
+            Collection<GlobalAttribute> gAttrs = sModel.getSchema().getAttributes();
+            for (GlobalAttribute gAttr : gAttrs) {
+                String name = gAttr.getName();
+                if (nodeName.equals(name)) { // NOI18N
+                    return gAttr;
+                }
+            }
+        return null;
+    }
+
     private static SchemaModel createXsiModel() {
         javax.swing.text.Document document;
         SchemaModel sModel;
@@ -125,8 +142,13 @@ public class SchemaUtils {
             if (toSContext != null) {
                 SchemaComponent lastSComp = XPathSchemaContext.Utilities.
                         getSchemaComp(toSContext);
-                if (lastSComp == getXsiTypeAttr()) {
+                /*if (lastSComp == getXsiTypeAttr()) {
                     return true;
+                }*/
+                if(lastSComp instanceof GlobalAttribute) {
+                	if (lastSComp.equals(getXsiAttr(((GlobalAttribute)lastSComp).getName()))) {
+	                    return true;
+	                }
                 }
             }
         }

@@ -493,6 +493,12 @@ made subject to such option by the copyright holder.
                 </api>
             </li>
             <li>
+                <api type="export" group="systemproperty" name="netbeans.user.dir" category="devel">
+                    If this property is provided, it is used as the current working
+                    directory regardless of the value of <code>user.dir</code>.
+                </api>
+            </li>
+            <li>
                 <api type="export" group="systemproperty" name="netbeans.user" category="devel">
                     NetBeans user directory.
                 </api>

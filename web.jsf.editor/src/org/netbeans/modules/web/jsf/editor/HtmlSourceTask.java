@@ -123,7 +123,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         InputAttributes inputAttributes = (InputAttributes) doc.getProperty(InputAttributes.class);
         if (inputAttributes == null) {
             inputAttributes = new InputAttributes();
-            inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
+//            inputAttributes.setValue(HTMLTokenId.language(), "enable el", new Object(), false); //NOI18N
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
 

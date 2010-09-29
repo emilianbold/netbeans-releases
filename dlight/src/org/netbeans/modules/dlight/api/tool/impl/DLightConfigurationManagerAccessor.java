@@ -78,20 +78,20 @@ public abstract class DLightConfigurationManagerAccessor {
     public DLightConfigurationManagerAccessor() {
     }
 
-    public abstract DLightConfiguration getDefaultConfiguration(DLightConfigurationManager manager);
+    public abstract DLightConfiguration getDefaultConfiguration();
 
-    public abstract List<DLightConfiguration> getDLightConfigurations(DLightConfigurationManager manager);
+    public abstract List<DLightConfiguration> getDLightConfigurations();
 
-    public abstract boolean registerTool(DLightConfigurationManager manager, String configurationName, DLightTool tool);
+    public abstract boolean registerTool(String configurationName, DLightTool tool);
 
     public abstract boolean registerTool(String configurationName, String toolID, boolean isOneByDefault);
-    
-    public abstract boolean deleteTool(DLightConfigurationManager manager, String configurationName, DLightTool tool);
 
-    public abstract DLightConfiguration registerConfiguration(DLightConfigurationManager manager, String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
+    public abstract boolean deleteTool(String configurationName, DLightTool tool);
 
-    public abstract DLightConfiguration registerConfigurationAsACopy(DLightConfigurationManager manager, DLightConfiguration configuration,
-                 String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
+    public abstract DLightConfiguration registerConfiguration(String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
+
+    public abstract DLightConfiguration registerConfigurationAsACopy(DLightConfiguration configuration,
+            String configurationName, String displayedName, String category, List<String> platforms, String collector, List<String> indicators);
 
     public abstract boolean removeConfiguration(String configurationName);
 

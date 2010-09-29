@@ -129,6 +129,14 @@ public abstract class CacheIndex {
         }
 
         File parent = file.getParentFile();
+        if (parent == null) {
+            // this should not happen
+            LOG.log(Level.INFO, "add: trying to add a FS root {0})", new Object[]{file}); //NOI18N
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "add: trying to add a FS root", new Exception()); //log also the stacktrace
+            }
+            return;
+        }
         synchronized(this) {
             Set<File> set = index.get(parent);
             if(set == null) {

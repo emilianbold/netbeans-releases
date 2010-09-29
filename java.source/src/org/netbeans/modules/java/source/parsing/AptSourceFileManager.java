@@ -66,6 +66,8 @@ import org.openide.util.Exceptions;
 public class AptSourceFileManager extends SourceFileManager {
 
     public static final String ORIGIN_FILE = "apt-origin";    //NOI18N
+    public static final String ORIGIN_SOURCE_ELEMENT_URL = "apt-source-element";   //NOI18N
+    public static final String ORIGIN_RESOURCE_ELEMENT_URL = "apt-resource-element";  //NOI18N
 
     private final ClassPath userRoots;
     private final SiblingProvider siblings;

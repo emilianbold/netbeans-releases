@@ -95,7 +95,7 @@ public final class WebFragmentProvider {
             return createWebFragment(fo.getInputStream(), version);
         }
         catch (SAXException ex) {
-            LOG.log(Level.SEVERE, "Parsing failed!", ex);
+            LOG.log(Level.INFO, "Parsing failed!", ex);
             throw new IOException("Parsing failed: "+ex);
         }
     }

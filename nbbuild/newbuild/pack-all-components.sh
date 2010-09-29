@@ -77,9 +77,6 @@ pack_all_components()
 
     rm -rf extra
 
-    pack_component $DIST_DIR/zip/moduleclusters $NAME uml "uml*"
-    rm -rf uml*
-
     pack_component $DIST_DIR/zip/moduleclusters $NAME visualweb "visualweb*"
     rm -rf visualweb*
 

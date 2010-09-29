@@ -53,6 +53,10 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import java.awt.Toolkit;
 import java.util.ResourceBundle;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.openide.util.Lookup;
 
 
 /**
@@ -94,5 +98,18 @@ public class Util {
         String result = val.substring(0, i);
         result = result.concat(val.substring(i+1, val.length()));
         return result;
+    }
+
+    static String getBaseName(Project project) {
+            String baseName;
+            Lookup lookup = project.getLookup();
+            J2eeModuleProvider provider = (J2eeModuleProvider) lookup.lookup(J2eeModuleProvider.class);
+            String id = provider.getServerID();
+            if ("gfv3ee6wc".equals(id))
+                baseName = "glassfish-resources";
+            else
+                baseName = "sun-resources";
+            return baseName;
+
     }
 }

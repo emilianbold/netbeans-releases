@@ -1,9 +1,0 @@
-Class Declaration
- Modifiers
-  { final, Modifier }
- { FinalClassTestFile, Name }
- Generalization
- Realization
- Body
-  { {, Class Body Start }
-  { }, Class Body End }

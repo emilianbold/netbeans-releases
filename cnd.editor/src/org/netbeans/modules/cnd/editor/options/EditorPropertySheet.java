@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -62,14 +64,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.PreviewPreferencesModel.Filter;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -98,7 +97,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private PreviewPreferencesModel preferencesModel;
     private Filter filter;
     private PropertySheet holder;
-    private Object[] originalEditorProperties = null;
 
     EditorPropertySheet(EditorOptionsPanelController topControler, CodeStyle.Language language, PreviewPreferencesModel preferencesModel, Filter filter) {
         this.topController = topControler;
@@ -383,9 +381,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
 
     void load() {
         loaded = false;
-        if (filter == Filter.All) {
-            originalEditorProperties = preserveEditorProperties();
-        }
         initLanguageMap();
         initLanguageCategory();
         loaded = true;
@@ -448,10 +443,6 @@ public class EditorPropertySheet extends javax.swing.JPanel
         holder.setNodes(null);
         if (filter != Filter.All) {
             return;
-        }
-        if (originalEditorProperties != null) {
-            restoreEditorProperties(originalEditorProperties);
-            originalEditorProperties = null;
         }
         preferencesModel.clear(language);
     }
@@ -581,7 +572,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
                     is.close();
                 }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                Logger.getLogger(EditorPropertySheet.class.getName()).log(Level.FINE, null, ioe);
             }
             return sb.toString();
         } else {
@@ -593,127 +584,10 @@ public class EditorPropertySheet extends javax.swing.JPanel
         pane.setText(getPreviewText());
         BaseDocument bd = (BaseDocument) pane.getDocument();
         CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
-        setEditorProperties(p);
         try {
-            if (TRACE) {
-                System.err.println("Refreshing preview"); // NOI18N
-                System.err.println("          tabSize=" + IndentUtils.tabSize(bd)+"/"+codeStyle.getTabSize()); // NOI18N
-                System.err.println("       expandTabs=" + IndentUtils.isExpandTabs(bd)+"/"+codeStyle.expandTabToSpaces()); // NOI18N
-                System.err.println("  indentLevelSize=" + IndentUtils.indentLevelSize(bd)+"/"+codeStyle.indentSize()); // NOI18N
-                System.err.println("  doc=" + bd); //NOI18N
-            }
             new Reformatter(bd, codeStyle).reformat();
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void setEditorProperties(Preferences p) {
-        Preferences def = null;
-        switch (language){
-            case C:
-                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (def != null) {
-            def.putInt(SimpleValueNames.TAB_SIZE, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            def.putInt(SimpleValueNames.SPACES_PER_TAB, p.getInt(EditorOptions.tabSize, EditorOptions.tabSizeDefault));
-            def.putBoolean(SimpleValueNames.EXPAND_TABS, p.getBoolean(EditorOptions.expandTabToSpaces, EditorOptions.expandTabToSpacesDefault));
-            def.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, p.getInt(EditorOptions.indentSize, EditorOptions.indentSizeDefault));
-        }
-    }
-
-    private Object[] preserveEditorProperties() {
-        Preferences def = null;
-        Object oldValues[] = null;
-        switch (language){
-            case C:
-                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (def != null) {
-            oldValues = new Object[]{null, null, null, null};
-            if (null != def.get(SimpleValueNames.TAB_SIZE, null)) {
-                oldValues[0] = def.getInt(SimpleValueNames.TAB_SIZE, EditorOptions.tabSizeDefault);
-            }
-            if (null != def.get(SimpleValueNames.SPACES_PER_TAB, null)) {
-                oldValues[1] = def.getInt(SimpleValueNames.SPACES_PER_TAB, EditorOptions.tabSizeDefault);
-            }
-            if (null != def.get(SimpleValueNames.EXPAND_TABS, null)) {
-                oldValues[2] = def.getBoolean(SimpleValueNames.EXPAND_TABS, EditorOptions.expandTabToSpacesDefault);
-            }
-            if (null != def.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null)) {
-                oldValues[3] = def.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, EditorOptions.indentSizeDefault);
-            }
-            if (TRACE) {
-                System.err.println("Preserving editor properties:"); //NOI18N
-                System.err.println("           tabSize=" + oldValues[0]); //NOI18N
-                System.err.println("      spacesPerTab=" + oldValues[1]); //NOI18N
-                System.err.println("        expandTabs=" + oldValues[2]); //NOI18N
-                System.err.println("  indentShiftWidth=" + oldValues[3]); //NOI18N
-            }
-        }
-        return oldValues;
-    }
-
-    private void restoreEditorProperties(Object[] oldValues) {
-        Preferences def = null;
-        switch (language){
-            case C:
-                def = MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case HEADER:
-                def = MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class);
-                break;
-            case CPP:
-            default:
-                def = MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class);
-                break;
-        }
-        if (def != null && oldValues != null) {
-            if (TRACE) {
-                System.err.println("Restoring editor properties:"); //NOI18N
-                System.err.println("           tabSize=" + oldValues[0]); //NOI18N
-                System.err.println("      spacesPerTab=" + oldValues[1]); //NOI18N
-                System.err.println("        expandTabs=" + oldValues[2]); //NOI18N
-                System.err.println("  indentShiftWidth=" + oldValues[3]); //NOI18N
-            }
-            if (oldValues[0] == null) {
-                def.remove(SimpleValueNames.TAB_SIZE);
-            } else {
-                def.putInt(SimpleValueNames.TAB_SIZE, ((Integer)oldValues[0]).intValue());
-            }
-            if (oldValues[1] == null) {
-                def.remove(SimpleValueNames.SPACES_PER_TAB);
-            } else {
-                def.putInt(SimpleValueNames.SPACES_PER_TAB, ((Integer)oldValues[1]).intValue());
-            }
-            if (oldValues[2] == null) {
-                def.remove(SimpleValueNames.EXPAND_TABS);
-            } else {
-                def.putBoolean(SimpleValueNames.EXPAND_TABS, ((Boolean)oldValues[2]).booleanValue());
-            }
-            if (oldValues[3] == null) {
-                def.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
-            } else {
-                def.putInt(SimpleValueNames.INDENT_SHIFT_WIDTH, ((Integer)oldValues[3]).intValue());
-            }
         }
     }
 

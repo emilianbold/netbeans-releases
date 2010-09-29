@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.gotodeclaration.symbol;
 
+import com.sun.org.apache.xpath.internal.functions.FunctionDef1Arg;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -243,6 +245,20 @@ public class CppSymbolProvider implements SymbolProvider {
             if (cancelled) {
                 break;
             }
+            CsmSelect.CsmFilter definitions = CsmSelect.getFilterBuilder().createCompoundFilter(nameFilter,  CsmSelect.getFilterBuilder().createKindFilter(Kind.FUNCTION_DEFINITION));
+            Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(csmFile, definitions);
+            while (declarations.hasNext() && !cancelled) {
+                CsmOffsetableDeclaration decl = declarations.next();
+                if (CsmKindUtilities.isFunctionDefinition(decl) && ((CsmFunction)decl).isStatic()) {
+                    CsmFunction func = (CsmFunction) decl;
+                    if (func.equals(func.getDeclaration()) && CsmKindUtilities.isFile(func.getScope())) {
+                        symbols.add(new CppSymbolDescriptor(func));
+                    }
+                }
+            }
+            if (cancelled) {
+                break;
+            }
             // static variables
             Iterator<CsmVariable> vars = CsmSelect.getStaticVariables(csmFile, nameFilter);
             while (vars.hasNext() && !cancelled) {
@@ -271,6 +287,9 @@ public class CppSymbolProvider implements SymbolProvider {
         
         Iterator<? extends CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(namespace, simpleNameAndKindFilter);
         while (declarations.hasNext()) {
+            if (cancelled) {
+                break;
+            }
             CsmOffsetableDeclaration decl = declarations.next();
             if (CsmKindUtilities.isFunction(decl)) {
                 // do not add declarations if their definitions exist
@@ -293,11 +312,17 @@ public class CppSymbolProvider implements SymbolProvider {
 
         declarations = CsmSelect.getDeclarations(namespace, compoundKindFilter);
         while (declarations.hasNext()) {
+            if (cancelled) {
+                break;
+            }
             addDeclarationIfNeed(declarations.next(), nameAcceptor, symbols);
         }
 
         // process nested namespaces
         for (CsmNamespace child : namespace.getNestedNamespaces()) {
+            if (cancelled) {
+                break;
+            }
             collectSymbols(child, nameAcceptor, symbols);
         }
     }

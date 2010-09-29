@@ -97,7 +97,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.singleton(PhpSourcePath.SOURCE_CP),
                 Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet());
-        final Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(findRoots));
+        final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
@@ -159,7 +159,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.singleton(PhpSourcePath.SOURCE_CP),
                 Collections.singleton(PhpSourcePath.BOOT_CP),
                 Collections.<String>emptySet());
-        final Index index = ElementQueryFactory.getIndexQuery(QuerySupportFactory.get(findRoots));
+        final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         QualifiedName queryName = QualifiedName.create(textForQuery);

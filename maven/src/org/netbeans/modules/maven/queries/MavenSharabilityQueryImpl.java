@@ -60,36 +60,51 @@ import org.openide.filesystems.FileUtil;
 public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation {
     
     private final NbMavenProjectImpl project;
-    /** Creates a new instance of MavenSharabilityQueryImpl */
+
     public MavenSharabilityQueryImpl(NbMavenProjectImpl proj) {
         project = proj;
     }
     
-    private Boolean checkShare(File file) {
+    public @Override int getSharability(File file) {
+        //#119541 for the project's root, return MIXED right away.
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null && fo.equals(project.getProjectDirectory())) {
+            return SharabilityQuery.MIXED;
+        }
         File basedir = FileUtil.toFile(project.getProjectDirectory());
         // is this condition necessary?
         if (!file.getAbsolutePath().startsWith(basedir.getAbsolutePath())) {
-            return null;
+            return SharabilityQuery.UNKNOWN;
         }
-        if (basedir.equals(file.getParentFile()) && "nbproject".equals(file.getName())) { //NOI18N
-            // screw the netbeans profiler directory creation.
-            // #98662
-            return false;
-        }
-        if (file.equals(new File(basedir, "profiles.xml"))) { //NOI18N
-            //profiles.xml are not meant to be put in version control.
-            return false;
-        }
-        if (file.getName().startsWith("nbactions") && file.getParentFile().equals(basedir)) { //NOI18N
-            //non shared custom configurations shall not be added to version control.
-            M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-            if (configs != null) {
-                Collection<M2Configuration> col = configs.getNonSharedConfigurations();
-                for (M2Configuration conf : col) {
-                    if (file.getName().equals(M2Configuration.getFileNameExt(conf.getId()))) {
-                        return false;
+        if (basedir.equals(file.getParentFile())) {
+            // Interesting cases are of direct children.
+            if (file.getName().equals("pom.xml")) { // NOI18N
+                return SharabilityQuery.SHARABLE;
+            }
+            if ("nbproject".equals(file.getName())) { //NOI18N
+                // screw the netbeans profiler directory creation.
+                // #98662
+                return SharabilityQuery.NOT_SHARABLE;
+            }
+            if (file.getName().equals("profiles.xml")) { //NOI18N
+                //profiles.xml are not meant to be put in version control.
+                return SharabilityQuery.NOT_SHARABLE;
+            }
+            if (file.getName().startsWith("nbactions")) { //NOI18N
+                //non shared custom configurations shall not be added to version control.
+                M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
+                if (configs != null) {
+                    Collection<M2Configuration> col = configs.getNonSharedConfigurations();
+                    for (M2Configuration conf : col) {
+                        if (file.getName().equals(M2Configuration.getFileNameExt(conf.getId()))) {
+                            return SharabilityQuery.NOT_SHARABLE;
+                        }
                     }
                 }
+            }
+            if (file.getName().equals("src")) { // NOI18N
+                // hardcoding this name since Maven will only report particular subtrees
+                return SharabilityQuery.SHARABLE; // #174010
             }
         }
 
@@ -100,38 +115,16 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
         if (build != null && build.getDirectory() != null) {
             File target = new File(build.getDirectory());
             if (target.equals(file) || file.getAbsolutePath().startsWith(target.getAbsolutePath())) {
-                return false;
+                return SharabilityQuery.NOT_SHARABLE;
             }
         }
-        return true;
-    }
-    
-    public int getSharability(File file) {
-        //#119541 for the project's root, return MIXED right away.
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo != null && fo.equals(project.getProjectDirectory())) {
+
+        // Some other subdir with potentially unknown contents.
+        if (file.isDirectory()) {
             return SharabilityQuery.MIXED;
-        }
-        Boolean check = checkShare(file);
-        if (check == null) {
+        } else {
             return SharabilityQuery.UNKNOWN;
         }
-        if (Boolean.TRUE.equals(check)) {
-            if (file.isDirectory()) {
-                //#119541 let's play safe  here and always return MIXED for directories.
-                //consider this setup:
-                // project root
-                //     -- modules
-                //            -- subproject1
-                //            -- subproject2
-                // The "modules" folder itself doesn't contain a project, therefore belongs to root project
-                // however it cannot be marked as SHARABLE because the subproject1+2 folder would be added automatically then.
-                
-                return SharabilityQuery.MIXED;
-            }
-            return SharabilityQuery.SHARABLE;
-        }
-        return SharabilityQuery.NOT_SHARABLE;
     }
     
 }

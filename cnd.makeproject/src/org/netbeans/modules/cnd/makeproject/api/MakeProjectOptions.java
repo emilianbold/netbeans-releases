@@ -44,12 +44,33 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.openide.util.NbBundle;
 
 public final class MakeProjectOptions {
 
-    public static final int REL_OR_ABS = 0;
-    public static final int REL = 1;
-    public static final int ABS = 2;
+    public static enum PathMode {
+        
+        REL_OR_ABS(NbBundle.getMessage(MakeProjectOptions.class, "TXT_Auto")),
+        REL(NbBundle.getMessage(MakeProjectOptions.class, "TXT_AlwaysRelative")),
+        ABS(NbBundle.getMessage(MakeProjectOptions.class, "TXT_AlwaysAbsolute"));
+
+        private final String displayName;
+
+        private PathMode(String displayName) {
+            this.displayName = displayName;
+        }
+
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        /** to be able to use in UI without writing renderer */
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
 
     private MakeProjectOptions() {
     }
@@ -66,7 +87,7 @@ public final class MakeProjectOptions {
         return MakeOptions.getInstance().getShowProfiling();
     }
 
-    public static int getPathMode() {
+    public static MakeProjectOptions.PathMode getPathMode() {
         return MakeOptions.getInstance().getPathMode();
     }
 }

@@ -45,6 +45,7 @@ package org.netbeans.modules.form.layoutsupport.griddesigner;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.GridActionPerformer;
 
@@ -147,6 +148,14 @@ public interface GridManager {
      * @param rowIndex index of the row to delete.
      */
     void deleteRow(int rowIndex);
+
+    /**
+     * Encloses given set of components in a new container.
+     * 
+     * @param components set of subcomponents of the managed container.
+     * @return the enclosing container.
+     */
+    Container encloseInContainer(Set<Component> components);
 
     /**
      * Updates the layout from the model. The modification methods

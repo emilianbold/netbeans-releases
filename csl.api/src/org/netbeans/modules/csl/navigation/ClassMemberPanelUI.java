@@ -115,7 +115,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             new SortByNameAction( filters ),
             new SortBySourceAction( filters ),
             null,
-            new FilterSubmenuAction(filters.getInstance())            
+            new FilterSubmenuAction(filters)            
         };
 
         // See http://www.netbeans.org/issues/show_bug.cgi?id=186407
@@ -134,6 +134,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                         if (!includeFilters) {
                             //issue #132883 workaround
                             filters.disableFiltering = true;
+                        }
+                        if (!configuration.isSortable()) {
+                            actions = new Action[] {
+                                new FilterSubmenuAction(filters)
+                            };
                         }
                     }
                 }
@@ -237,32 +242,25 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                     elementView.setAutoWaitCursor(false);
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
 
-                    boolean expand = true;
+                    int expandDepth = -1;
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(fileObject.getMIMEType());
                     if (language != null && language.getStructure() != null) {
                         StructureScanner scanner = language.getStructure();
                         Configuration configuration = scanner.getConfiguration();
                         if (configuration != null) {
-                            expand = configuration.getExpandDepth() != 0;
+                            expandDepth = configuration.getExpandDepth();
                         }
                     }
-                    if (expand) {
-                        boolean scrollOnExpand = elementView.getScrollOnExpand();
-                        elementView.setScrollOnExpand( false );
-                        elementView.expandAll();
-                        elementView.setScrollOnExpand( scrollOnExpand );
-                    } else {
-                        // Expand just the top levels, especially if we're dealing with a mimeroot
-                        Node[] nodes = manager.getRootContext().getChildren().getNodes();
-                        for (Node node : nodes) {
-                            elementView.expandNode(node);
-                        }
-                    }
+                    boolean scrollOnExpand = elementView.getScrollOnExpand();
+                    elementView.setScrollOnExpand( false );
+                    expandNodeByDefaultRecursively(manager.getRootContext(), 0, expandDepth);
+                    elementView.setScrollOnExpand( scrollOnExpand );
                     elementView.setAutoWaitCursor(true);
                     long endTime = System.currentTimeMillis();
                     Logger.getLogger("TIMER").log(Level.FINE, "Navigator Initialization",
                             new Object[] {fileObject, endTime - startTime});
                 }
+
             } );
             
         }
@@ -279,7 +277,35 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     public void expandNode( Node n ) {
         elementView.expandNode(n);
     }
-    
+
+    void expandNodeByDefaultRecursively(Node node) {
+        // using 0, -1 since we cannot quickly resolve currentDepth
+        expandNodeByDefaultRecursively(node, 0, -1);
+    }
+
+    private void expandNodeByDefaultRecursively(Node node, int currentDepth, int maxDepth) {
+        if (maxDepth >= 0  &&  currentDepth >= maxDepth) {
+            return;
+        }
+        if (! expandNodeByDefault (node)) {
+            return;
+        }
+        for (Node subNode : node.getChildren().getNodes()) {
+            expandNodeByDefaultRecursively(subNode, currentDepth + 1, maxDepth);
+        }
+    }
+
+    boolean expandNodeByDefault(Node node) {
+        if (node instanceof ElementNode) {
+            StructureItem item = ((ElementNode) node).getDescription();
+            if (item instanceof StructureItem.CollapsedDefault  &&  ((StructureItem.CollapsedDefault) item).isCollapsedByDefault()) {
+                return false;
+            }
+        }
+        expandNode(node);
+        return true;
+    }
+
     public Action[] getActions() {
         return actions;
     }

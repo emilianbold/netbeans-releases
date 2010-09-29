@@ -62,15 +62,15 @@ public interface ResourceConfiguratorInterface {
 
     public boolean isJMSResourceDefined(String jndiName, File dir);
 
-    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir);
+    public void createJMSResource(String jndiName, String msgDstnType, String msgDstnName, String ejbName, File dir, String resourcesXmlName);
     
-    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir);
+    public MessageDestination createJMSResource(String jndiName, MessageDestination.Type type, String ejbName, File dir, String resourcesXmlName);
 
     public void createJDBCDataSourceFromRef(String refName, String databaseInfo, File dir);
 
     public String createJDBCDataSourceForCmp(String beanName, String databaseInfo, File dir);
     
-    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir) throws DatasourceAlreadyExistsException;
+    public Datasource createDataSource(String jndiName, String url, String username, String password, String driver, File dir, String resourcesXmlName) throws DatasourceAlreadyExistsException;
     
     public HashSet getServerDataSources();  
     

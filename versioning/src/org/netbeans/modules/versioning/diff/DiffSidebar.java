@@ -664,9 +664,9 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                     if (ad != null) {
                         g.setColor(getColor(ad));
                         if (ad.getType() == Difference.DELETE) {
-                            yCoords[0] = (int) y + editorUI.getLineAscent();
-                            yCoords[1] = (int) y + editorUI.getLineAscent() * 3 / 2;
-                            yCoords[2] = (int) y + editorUI.getLineAscent() * 2;
+                            yCoords[0] = (int) rec2.getY() + editorUI.getLineAscent();
+                            yCoords[1] = (int) rec2.getY() + editorUI.getLineAscent() * 3 / 2;
+                            yCoords[2] = (int) rec2.getY() + editorUI.getLineAscent() * 2;
                             g.fillPolygon(new int[]{2, BAR_WIDTH, 2}, yCoords, 3);
                             g.setColor(colorBorder);
                             g.drawLine(2, yCoords[0], 2, yCoords[2] - 1);
@@ -780,12 +780,13 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private List<DiffMark> getMarksForDifferences() {
-            if ((currentDiff == null) || !isVisible() || (getWidth() <= 0)) {
+            Difference[] diffs = currentDiff;
+            if ((diffs == null) || !isVisible() || (getWidth() <= 0)) {
                 return Collections.emptyList();
             }
-            List<DiffMark> marksList = new ArrayList<DiffMark>(currentDiff.length);
-            for (int i = 0; i < currentDiff.length; i++) {
-                Difference difference = currentDiff[i];
+            List<DiffMark> marksList = new ArrayList<DiffMark>(diffs.length);
+            for (int i = 0; i < diffs.length; i++) {
+                Difference difference = diffs[i];
                 marksList.add(new DiffMark(difference, getColor(difference)));
             }
             return marksList;

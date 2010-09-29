@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.dlight.dtrace.collector.support;
 
+import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.dtrace.collector.DtraceParser;
 import java.io.File;
 import java.io.IOException;
@@ -57,16 +58,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
-import org.netbeans.modules.dlight.api.execution.Validateable;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.dtrace.collector.DTDCConfiguration;
@@ -82,11 +79,11 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.dlight.util.Util;
 import org.netbeans.modules.dlight.util.usagetracking.SunStudioUserCounter;
@@ -120,7 +117,7 @@ public final class DtraceDataCollector
                 DTDCConfiguration.DTRACE_PROC,
                 DTDCConfiguration.DTRACE_USER
             });
-    private static final String cmd_dtrace = "/usr/sbin/dtrace"; // NOI18N
+    private static final String command = "/usr/sbin/dtrace"; // NOI18N
     private static final Logger log =
             DLightLogger.getLogger(DtraceDataCollector.class);
     private final Set<String> requiredPrivilegesSet = new HashSet<String>();
@@ -130,12 +127,6 @@ public final class DtraceDataCollector
     private String scriptPath;
     private CollectorRunner dtraceRunner = null;
     private DTDCConfiguration configuration;
-    private ValidationStatus validationStatus =
-            ValidationStatus.initialStatus();
-    private List<ValidationListener> validationListeners =
-            Collections.synchronizedList(new ArrayList<ValidationListener>());
-    private String command;
-    private String argsTemplate;
     private DataStorage storage;
     private List<DataTableMetadata> dataTablesMetadata;
     private DtraceParser parser;
@@ -147,15 +138,13 @@ public final class DtraceDataCollector
     private DtraceDataCollector parentCollector;
     private final Map<String, DtraceDataCollector> slaveCollectors;
     private DtraceDataCollector lastSlaveCollector;
-    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
-    private boolean terminated = false;
+    private volatile boolean terminated = false;
     private boolean isDeploymentTarget = false;
+    private final DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
 
     DtraceDataCollector(boolean multiScriptMode, DTDCConfiguration configuration) {
+        super("DTrace"); // NOI18N
         this.multiScriptMode = multiScriptMode;
-
-        this.command = cmd_dtrace;
-        this.argsTemplate = null;
 
         final DTDCConfigurationAccessor cfgInfo =
                 DTDCConfigurationAccessor.getDefault();
@@ -212,70 +201,18 @@ public final class DtraceDataCollector
         terminated = false;
     }
 
-/**
-     * Adds collector state listener, all listeners will be notified about
-     * collector state change.
-     * @param listener add listener
-     */
     @Override
     public final void addDataCollectorListener(DataCollectorListener listener) {
-        if (listener == null) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
+        dclsupport.addListener(listener);
     }
 
-    /**
-     * Remove collector listener
-     * @param listener listener to remove from the list
-     */
     @Override
     public final void removeDataCollectorListener(DataCollectorListener listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
+        dclsupport.removeListener(listener);
     }
 
-    /**
-     * Notifies listeners target state changed in separate thread
-     * @param oldState state target was
-     * @param newState state  target is
-     */
     protected final void notifyListeners(final CollectorState state) {
-        DataCollectorListener[] ll;
-
-        synchronized (this) {
-            ll = listeners.toArray(new DataCollectorListener[0]);
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final DataCollectorListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        l.collectorStateChanged(DtraceDataCollector.this, state);
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-
+        dclsupport.notifyListeners(state);
     }
 
     /*package*/ void addSlaveConfiguration(DTDCConfiguration configuration) {
@@ -304,13 +241,9 @@ public final class DtraceDataCollector
         slaveCollectors.put(accessor.getOutputPrefix(configuration), slaveCollector);
 
     }
-   
+
     void setParentCollector(DtraceDataCollector parentCollector) {
         this.parentCollector = parentCollector;
-    }
-
-    public String getName() {
-        return "DTrace";//NOI18N
     }
 
     void setOutputProcessor(LineProcessor callback) {
@@ -343,6 +276,7 @@ public final class DtraceDataCollector
      * {@link org.netbeans.modules.dlight.core.storage.model.DataStorageType}
      * data collector can put data into
      */
+    @Override
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
         DataStorageTypeFactory dstf = DataStorageTypeFactory.getInstance();
         DataStorageType sqlStorageType =
@@ -352,6 +286,7 @@ public final class DtraceDataCollector
         return Arrays.asList(sqlStorageType, stackStorageType);
     }
 
+    @Override
     public boolean isAttachable() {
         return true;
     }
@@ -411,14 +346,17 @@ public final class DtraceDataCollector
         }
     }
 
+    @Override
     public String getCmd() {
         return command;
     }
 
+    @Override
     public String[] getArgs() {
         return null;
     }
 
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
         List<DataTableMetadata> ret = new ArrayList<DataTableMetadata>();
         ret.addAll(dataTablesMetadata);
@@ -439,19 +377,19 @@ public final class DtraceDataCollector
         super.suggestIndicatorsRepaint();
     }
 
-    private void targetFinished(DLightTarget target) {
+    @Override
+    protected void targetFinished(DLightTarget target) {
         if (!isSlave) {
             if (dtraceRunner != null) {
                 // It could be already done here, because tracked process is
                 // finished and, depending on command-line utility, it may exit
                 // as well... But, if not - terminate it.
-                log.fine("Stopping DtraceDataCollector: " + // NOI18N
-                        dtraceRunner.toString());
+                log.log(Level.FINE, "Stopping DtraceDataCollector: {0}", dtraceRunner.toString());
 
                 dtraceRunner.shutdown();
             }
         }
-        if (isDeploymentTarget && terminated){
+        if (isDeploymentTarget && terminated) {
             return;
         }
 
@@ -473,7 +411,8 @@ public final class DtraceDataCollector
         return NbBundle.getMessage(DtraceDataCollector.class, key, param);
     }
 
-    private ValidationStatus doValidation(final DLightTarget target) {
+    @Override
+    protected ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
         final ExecutionEnvironment execEnv = target.getExecEnv();
@@ -484,6 +423,7 @@ public final class DtraceDataCollector
         if (!isConnected) {
             Runnable doOnConnect = new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -550,6 +490,7 @@ public final class DtraceDataCollector
         if (!status) {
             Runnable onPrivilegesGranted = new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -563,40 +504,12 @@ public final class DtraceDataCollector
                     requestPrivilegesAction);
         }
 
+        SunStudioUserCounter.countDLight(target.getExecEnv());
         return ValidationStatus.validStatus();
     }
 
-    public ValidationStatus validate(final DLightTarget target) {
-        ValidationStatus status = validate(target, this, true);
-        if (status.isValid()) {
-            SunStudioUserCounter.countDLight(target.getExecEnv());
-        }
-        return status;
-    }
-
-    ValidationStatus validate(final DLightTarget target, Validateable<DLightTarget> validatebleSource, boolean notify) {
-        if (validationStatus.isValid()) {
-            return validationStatus;
-        }
-
-        ValidationStatus oldStatus = validationStatus;
-        ValidationStatus newStatus = doValidation(target);
-        if (notify) {
-            notifyStatusChanged(validatebleSource, oldStatus, newStatus);
-        }
-        validationStatus = newStatus;
-        return newStatus;
-    }
-
-    public void invalidate() {
-        validationStatus = ValidationStatus.initialStatus();
-    }
-
-    public ValidationStatus getValidationStatus() {
-        return validationStatus;
-    }
-
-    private void targetStarted(DLightTarget target) {
+    @Override
+    protected void targetStarted(DLightTarget target) {
         if (isSlave || scriptPath == null) {
             return;
         }
@@ -609,11 +522,11 @@ public final class DtraceDataCollector
         }
         String extraParams = getCollectorTaskExtraParams();
         isDeploymentTarget = target instanceof DLightDeploymentTarget;
-        if (extraParams != null && target instanceof DLightDeploymentTarget){
-            DLightDeploymentTarget deploymentTarget = (DLightDeploymentTarget)target;
+        if (extraParams != null && target instanceof DLightDeploymentTarget) {
+            DLightDeploymentTarget deploymentTarget = (DLightDeploymentTarget) target;
             Collection<DLightDeploymentService> services = deploymentTarget.getDeploymentServices();
 
-            for (DLightDeploymentService s : services){
+            for (DLightDeploymentService s : services) {
                 String paramToReplace = "@" + s.getName(); // NOI18N
 
                 if (!extraParams.contains(paramToReplace)) {
@@ -642,42 +555,11 @@ public final class DtraceDataCollector
 
         this.dtraceRunner = new CollectorRunner(new FakeIndicatorNotificationListener(), npb, getOutputProcessor(), DTraceScriptUtils.EOF_MARKER, "DTrace"); // NOI18N
 
-        log.fine("DtraceDataCollector (" + dtraceRunner.toString() + // NOI18N
-                ") for " + taskCommand + " STARTED"); // NOI18N
+        log.log(Level.FINE, "DtraceDataCollector ({0}) for {1} STARTED", // NOI18N
+                new Object[]{dtraceRunner.toString(), taskCommand});
     }
 
-    public void addValidationListener(ValidationListener listener) {
-        if (!validationListeners.contains(listener)) {
-            validationListeners.add(listener);
-        }
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
-    }
-
-    void notifyStatusChanged(Validateable<DLightTarget> validatable,
-            ValidationStatus oldStatus, ValidationStatus newStatus) {
-        if (oldStatus.equals(newStatus)) {
-            return;
-        }
-
-        ValidationListener[] ll =
-                validationListeners.toArray(new ValidationListener[0]);
-
-        if (validatable == null) {
-            validatable = this;
-        }
-        for (ValidationListener l : ll) {
-            l.validationStateChanged(validatable, oldStatus, newStatus);
-        }
-    }
-
-    protected void notifyStatusChanged(
-            ValidationStatus oldStatus, ValidationStatus newStatus) {
-        notifyStatusChanged(this, oldStatus, newStatus);
-    }
-
+    @Override
     public void targetStateChanged(DLightTargetChangeEvent event) {
         switch (event.state) {
             case RUNNING:
@@ -702,6 +584,7 @@ public final class DtraceDataCollector
         }
     }
 
+    @Override
     public void dataFiltersChanged(List<DataFilter> newSet, boolean isAdjusting) {
     }
 
@@ -734,7 +617,7 @@ public final class DtraceDataCollector
         }
 
         private void addDataRow(DataRow dataRow) {
-            if (isDeploymentTarget && terminated){
+            if (isDeploymentTarget && terminated) {
                 return;
             }
             if (dataRow != null) {
@@ -813,7 +696,7 @@ public final class DtraceDataCollector
 
         @Override
         public void suggestRepaint() {
-            if (isDeploymentTarget && terminated){
+            if (isDeploymentTarget && terminated) {
                 return;
             }
             suggestIndicatorsRepaint();
@@ -821,7 +704,7 @@ public final class DtraceDataCollector
 
         @Override
         public void updated(List<DataRow> data) {
-            if (isDeploymentTarget && terminated){
+            if (isDeploymentTarget && terminated) {
                 return;
             }
             notifyIndicators(data);

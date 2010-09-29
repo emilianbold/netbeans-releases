@@ -185,6 +185,12 @@ public final class NamingFactory {
             } else {
                 // Reference impl.
                 Reference r = (Reference)NamingFactory.nameMap.put(retVal.getId(), refRetVal);
+                if (r != null && !retVal.equals(r.get())) {
+                    final List l = new ArrayList();
+                    l.add(r);
+                    l.add(refRetVal);
+                    NamingFactory.nameMap.put(retVal.getId(), l);
+                }
             }
         }
 

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.refactoring.php.rename;
 
+import org.netbeans.modules.refactoring.php.RetoucheCommit;
+import org.netbeans.modules.refactoring.php.DiffElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

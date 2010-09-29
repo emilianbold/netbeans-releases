@@ -422,11 +422,11 @@ public class J2SEPlatformImpl extends JavaPlatform {
         OFFICIAL_JAVADOC.put("1.0", null); // NOI18N
         OFFICIAL_JAVADOC.put("1.1", null); // NOI18N
         OFFICIAL_JAVADOC.put("1.2", null); // NOI18N
-        OFFICIAL_JAVADOC.put("1.3", "http://java.sun.com/j2se/1.3/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.4", "http://java.sun.com/j2se/1.4.2/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.5", "http://java.sun.com/j2se/1.5.0/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.6", "http://java.sun.com/javase/6/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.7", "http://java.sun.com/javase/7/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.3", "http://download.oracle.com/javase/1.3/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.4", "http://download.oracle.com/javase/1.4.2/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.5", "http://download.oracle.com/javase/1.5.0/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.6", "http://download.oracle.com/javase/6/docs/api/"); // NOI18N
+        OFFICIAL_JAVADOC.put("1.7", "http://download.oracle.com/javase/7/docs/api/"); // NOI18N
     }
     
 }

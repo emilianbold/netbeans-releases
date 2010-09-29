@@ -69,6 +69,7 @@ import org.openide.ErrorManager;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -324,8 +325,9 @@ public class Utils {
     }
     
     public static class SunResourceFileFilter implements FileFilter {
+        @Override
         public boolean accept(File f) {
-            return ((! f.isDirectory()) && f.getName().equals("sun-resources.xml")); //NOI18N
+            return ((! f.isDirectory()) && (f.getName().equals("sun-resources.xml") || f.getName().equals("glassfish-resources.xml"))); //NOI18N
         }
     }
     
@@ -337,6 +339,8 @@ public class Utils {
                 
                 resources = DDProvider.getDefault().getResourcesGraph(in);
             }
+        } catch (SAXException ex) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);
         } catch (IOException ex) {
             // the primary file should not be null
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,ex);

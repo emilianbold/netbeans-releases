@@ -63,6 +63,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -76,6 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Jancura
  */
+@DebuggerServiceRegistration(types={LazyDebuggerManagerListener.class})
 public class PersistenceManager implements LazyDebuggerManagerListener {
 
     private static Reference<PersistenceManager> instanceRef = new WeakReference<PersistenceManager>(null);

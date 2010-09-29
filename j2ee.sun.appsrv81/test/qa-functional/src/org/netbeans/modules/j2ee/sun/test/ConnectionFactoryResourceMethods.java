@@ -94,7 +94,7 @@ public class ConnectionFactoryResourceMethods extends NbTestCase implements Wiza
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             jmsdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
+            ResourceUtils.saveJMSResourceDatatoXml(jmsdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();
@@ -132,7 +132,7 @@ public class ConnectionFactoryResourceMethods extends NbTestCase implements Wiza
             FileObject falseProject = FileUtil.createFolder(fpf);
             falseProject.createFolder("setup");
             jmsdata.setTargetFileObject(falseProject);
-            ResourceUtils.saveJMSResourceDatatoXml(jmsdata);
+            ResourceUtils.saveJMSResourceDatatoXml(jmsdata,"sun-resources");
             File resourceObj = FileUtil.toFile(falseProject.getFileObject("sun-resources.xml"));
             Resources res = ResourceUtils.getResourcesGraph(resourceObj);
             ServerInterface mejb = ((SunDeploymentManagerInterface)inst.getDeploymentManager()).getManagement();

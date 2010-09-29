@@ -69,7 +69,6 @@ import org.netbeans.api.extexecution.ExternalProcessSupport;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.extexecution.input.InputReaderTask;
 import org.netbeans.api.extexecution.input.InputReaders;
-import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
@@ -92,8 +91,6 @@ import org.openide.windows.InputOutput;
  */
 public final class WLStartServer extends StartServer {
 
-    private static final String SUN = "Sun";        // NOI18N
-
     /**
      * The socket timeout value for server ping. Unfortunately there is no right
      * value and the server state should be checked in different (more reliable)
@@ -109,9 +106,6 @@ public final class WLStartServer extends StartServer {
     private final WLDeploymentManager dm;
 
     private final ExecutorService service = Executors.newCachedThreadPool();
-
-    /* GuardedBy("this") */
-    private Process serverProcess;
 
     public WLStartServer(WLDeploymentManager dm) {
         this.dm = dm;
@@ -142,10 +136,7 @@ public final class WLStartServer extends StartServer {
 
     @Override
     public boolean isRunning() {
-        Process proc = null;
-        synchronized (this) {
-            proc = serverProcess;
-        }
+        Process proc = dm.getServerProcess();
 
         if (!isRunning(proc)) {
             return false;
@@ -265,6 +256,13 @@ public final class WLStartServer extends StartServer {
     }
 
     private static boolean ping(String host, int port, int timeout) {
+        if (pingPath(host, port, timeout, "/console/login/LoginForm.jsp")) {
+            return true;
+        }
+        return pingPath(host, port, timeout, "/consoledwp");
+    }
+
+    private static boolean pingPath(String host, int port, int timeout, String path) {
         // checking whether a socket can be created is not reliable enough, see #47048
         Socket socket = new Socket();
         try {
@@ -276,12 +274,10 @@ public final class WLStartServer extends StartServer {
                     BufferedReader in = new BufferedReader(
                             new InputStreamReader(socket.getInputStream()));
                     try {
-                        // request for the login form - we guess that OK response
-                        // means pinging the WL server
-                        out.println("GET /console/login/LoginForm.jsp HTTP/1.1\nHost:\n"); // NOI18N
-
-                        // check response
-                        return "HTTP/1.1 200 OK".equals(in.readLine()); // NOI18N
+                        out.println("GET " + path + " HTTP/1.1\nHost:\n"); // NOI18N
+                        String line = in.readLine();
+                        return "HTTP/1.1 200 OK".equals(line)
+                                || "HTTP/1.1 302 Moved Temporarily".equals(line);
                     } finally {
                         in.close();
                     }
@@ -387,35 +383,44 @@ public final class WLStartServer extends StartServer {
                                 "MSG_START_PROFILED_SERVER_FAILED",
                                 dm.getInstanceProperties().getProperty(
                                         InstanceProperties.DISPLAY_NAME_ATTR)));
-                Process process = null;
-                synchronized (WLStartServer.this) {
-                    process = serverProcess;
+                Process process = dm.getServerProcess();
+                if (process != null) {
+                    Map<String, String> mark = new HashMap<String, String>();
+                    mark.put(WLStartTask.KEY_UUID, dm.getUri());
+                    ExternalProcessSupport.destroy(process, mark);
                 }
-                process.destroy();
             }
         }
 
         @Override
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
-
+        protected ExternalProcessBuilder setJavaOptionsEnv(ExternalProcessBuilder builder) {
             ExternalProcessBuilder result = builder;
-            JavaPlatform javaPlatform = getSettings().getJavaPlatform();
-            String vendor = javaPlatform.getVendor();
+            /*JavaPlatform javaPlatform = getSettings().getJavaPlatform();
+            vendor = javaPlatform.getVendor();
 
             String javaHome = getJavaHome(javaPlatform);
-            result = result.addEnvironmentVariable("JAVA_HOME", javaHome);  // NOI18N
+            result = result.addEnvironmentVariable("JAVA_HOME", javaHome); // NOI18N
             if (SUN.equals(vendor)) {
-                result = result.addEnvironmentVariable("SUN_JAVA_HOME",     // NOI18N
+                result = result.addEnvironmentVariable("SUN_JAVA_HOME", // NOI18N
                         javaHome);
-            }
+            }*/
 
             StringBuilder javaOptsBuilder = new StringBuilder();
             String[] profJvmArgs = getSettings().getJvmArgs();
             for (int i = 0; i < profJvmArgs.length; i++) {
                 javaOptsBuilder.append(" ").append(profJvmArgs[i]);         // NOI18N
             }
-            result = result.addEnvironmentVariable("JAVA_OPTIONS",          // NOI18N
+            String javaOpts = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                javaOptsBuilder.append( " " );                              // NOI18N
+                javaOptsBuilder.append( javaOpts.trim() );
+            }
+            
+            if ( profJvmArgs.length >0 ){
+                result = result.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE, 
                     javaOptsBuilder.toString());
+            }
             return result;
         }
 
@@ -449,20 +454,44 @@ public final class WLStartServer extends StartServer {
         }
 
         @Override
-        protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder) {
+        protected ExternalProcessBuilder setJavaOptionsEnv(
+                ExternalProcessBuilder builder )
+        {
             int debugPort = 4000;
             debugPort = Integer.parseInt(dm.getInstanceProperties().getProperty(
                     WLPluginProperties.DEBUGGER_PORT_ATTR));
 
-            ExternalProcessBuilder result = builder.addEnvironmentVariable("JAVA_OPTIONS",
-                    "-Xdebug -Xnoagent -Djava.compiler=none " +
-                    "-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address="
-                    + debugPort);   //NOI18N
+            StringBuilder javaOptsBuilder = new StringBuilder();
+            String javaOpts = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                javaOptsBuilder.append( javaOpts.trim() );
+            }
+            if ( javaOptsBuilder.length()> 0 ){
+                javaOptsBuilder.append(" ");                                    // NOI18N
+            }
+            javaOptsBuilder.append("-Xdebug -Xnoagent -Djava.compiler=none ");  // NOI18N
+            javaOptsBuilder.append("-Xrunjdwp:server=y,suspend=n,transport=dt_socket,address=");// NOI18N
+            javaOptsBuilder.append( debugPort );
+            ExternalProcessBuilder result = builder.addEnvironmentVariable(
+                    JAVA_OPTIONS_VARIABLE,
+                    javaOptsBuilder.toString());   
             return result;
+
         }
     }
 
     private class WLStartTask implements Runnable {
+
+        static final String JAVA_VENDOR_VARIABLE = "JAVA_VENDOR";    // NOI18N
+
+        static final String JAVA_OPTIONS_VARIABLE = "JAVA_OPTIONS";  // NOI18N
+        
+        static final String MEMORY_OPTIONS_VARIABLE= "USER_MEM_ARGS";// NOI18N
+
+        static final String MEMORY_OPTIONS_VARIABLE_11_WEB = "MEM_ARGS";// NOI18N
+
+        private static final String KEY_UUID = "NB_EXEC_WL_START_PROCESS_UUID"; //NOI18N
 
         /**
          * The amount of time in milliseconds during which the server should
@@ -484,6 +513,16 @@ public final class WLStartServer extends StartServer {
          * Name of the startup script for windows
          */
         private static final String STARTUP_BAT = "startWebLogic.cmd"; // NOI18N
+
+        /**
+         * Name of the startup script for Unices
+         */
+        private static final String STARTUP_SH_11_WEB = "startServer.sh";   // NOI18N
+
+        /**
+         * Name of the startup script for windows
+         */
+        private static final String STARTUP_BAT_11_WEB = "startServer.cmd"; // NOI18N
 
         private final String uri;
 
@@ -512,23 +551,39 @@ public final class WLStartServer extends StartServer {
             try {
                 long start = System.currentTimeMillis();
 
-                ExternalProcessBuilder builder = new ExternalProcessBuilder(Utilities.isWindows()
-                            ? new File(domainHome, STARTUP_BAT).getAbsolutePath() // NOI18N
-                            : new File(domainHome, STARTUP_SH).getAbsolutePath()); // NOI18N
-                builder = builder.workingDirectory(domainHome);
+                File startup = null;
+                boolean needsJavaHome = false;
+                if (Utilities.isWindows()) {
+                    startup = new File(domainHome, STARTUP_BAT);
+                    if (!startup.exists()) {
+                        startup = new File(new File(domainHome, "bin"), STARTUP_BAT_11_WEB); // NOI18N
+                        needsJavaHome = true;
+                    }
+                } else {
+                    startup = new File(domainHome, STARTUP_SH);
+                    if (!startup.exists()) {
+                        startup = new File(new File(domainHome, "bin"), STARTUP_SH_11_WEB); // NOI18N
+                        needsJavaHome = true;
+                    }
+                }
+
+                ExternalProcessBuilder builder = new ExternalProcessBuilder(startup.getAbsolutePath());
+                builder = builder.workingDirectory(domainHome)
+                        .addEnvironmentVariable(KEY_UUID, dm.getUri());
                 
                 String mwHome = dm.getProductProperties().getMiddlewareHome();
                 if (mwHome != null) {
                     builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
                 }
+                
+                if (needsJavaHome) {
+                    builder = builder.addEnvironmentVariable("JAVA_HOME", WLPluginProperties.getDefaultPlatformHome());
+                }
 
                 builder = initBuilder(builder);
 
-                Process process = null;
-                synchronized (WLStartServer.this) {
-                    serverProcess = builder.call();
-                    process = serverProcess;
-                }
+                Process process = builder.call();
+                dm.setServerProcess(process);
 
                 ExecutorService service = Executors.newFixedThreadPool(2);
                 startService(uri, process, service);
@@ -578,7 +633,39 @@ public final class WLStartServer extends StartServer {
         }
 
         protected ExternalProcessBuilder initBuilder(ExternalProcessBuilder builder){
-            return builder;
+            ExternalProcessBuilder result = builder;
+            
+            result = setJavaOptionsEnv( result );
+            String vendor = dm.getInstanceProperties().getProperty(WLPluginProperties.VENDOR);
+            if (vendor != null && vendor.trim().length() >0) {
+                result = builder.addEnvironmentVariable(JAVA_VENDOR_VARIABLE,         
+                        vendor.trim());
+            }
+            String memoryOptions = dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.MEM_OPTS);
+            if (memoryOptions != null && memoryOptions.trim().length() >0) {
+                // FIXME DWP
+                if (dm.isWebProfile()) {
+                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE_11_WEB,
+                            memoryOptions.trim());
+                } else {
+                    result = builder.addEnvironmentVariable(MEMORY_OPTIONS_VARIABLE,
+                            memoryOptions.trim());
+                }
+            }  
+            return result;
+        }
+        
+        protected ExternalProcessBuilder setJavaOptionsEnv( 
+                ExternalProcessBuilder builder)
+        {
+            ExternalProcessBuilder result = builder;
+            String javaOpts = dm.getInstanceProperties().getProperty(WLPluginProperties.JAVA_OPTS);
+            if ( javaOpts!= null && javaOpts.trim().length() >0 ){
+                result = builder.addEnvironmentVariable(JAVA_OPTIONS_VARIABLE,          
+                        javaOpts.trim());
+            }
+            return result;
         }
 
         protected boolean isRunning(){
@@ -648,33 +735,51 @@ public final class WLStartServer extends StartServer {
                         NbBundle.getMessage(WLStartServer.class, "MSG_NO_DOMAIN_HOME"));
                 return;
             }
+            File shutdown = null;
+            if (Utilities.isWindows()) {
+                shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_BAT); // NOI18N
+            } else {
+                shutdown = new File(new File(domainHome, "bin"), SHUTDOWN_SH); // NOI18N
+            }
 
             ExecutorService stopService = null;
+            Process stopProcess = null;
+            String serverName = dm.getInstanceProperties().getProperty(
+                    InstanceProperties.DISPLAY_NAME_ATTR);
+
             try {
                 long start = System.currentTimeMillis();
                 String uuid = UUID.randomUUID().toString();
 
-                ExternalProcessBuilder builder = new ExternalProcessBuilder(Utilities.isWindows()
-                            ? new File(new File(domainHome, "bin"), SHUTDOWN_BAT).getAbsolutePath() // NOI18N
-                            : new File(new File(domainHome, "bin"), SHUTDOWN_SH).getAbsolutePath()); // NOI18N
+                if (shutdown.exists()) {
+                    ExternalProcessBuilder builder = new ExternalProcessBuilder(shutdown.getAbsolutePath());
 
-                builder = builder.workingDirectory(domainHome)
-                        .addEnvironmentVariable(KEY_UUID, uuid)
-                        .addArgument(username)
-                        .addArgument(password)
-                        .addArgument("t3://" + host + ":" + port);
+                    builder = builder.workingDirectory(domainHome)
+                            .addEnvironmentVariable(KEY_UUID, uuid)
+                            .addArgument(username)
+                            .addArgument(password)
+                            .addArgument("t3://" + host + ":" + port);
 
-                String mwHome = dm.getProductProperties().getMiddlewareHome();
-                if (mwHome != null) {
-                    builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                    String mwHome = dm.getProductProperties().getMiddlewareHome();
+                    if (mwHome != null) {
+                        builder = builder.addEnvironmentVariable("MW_HOME", mwHome); // NOI18N
+                    }
+
+                    stopProcess = builder.call();
+                    stopService = Executors.newFixedThreadPool(2);
+                    startService(uri, stopProcess, stopService);
+                } else {
+                        Process process = dm.getServerProcess();
+                        if (process == null) {
+                            // FIXME what to do here
+                            serverProgress.notifyStop(StateType.FAILED,
+                                NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_FAILED", serverName));
+                            return;
+                        }
+                        Map<String, String> mark = new HashMap<String, String>();
+                        mark.put(WLStartTask.KEY_UUID, dm.getUri());
+                        ExternalProcessSupport.destroy(process, mark);
                 }
-
-                Process stopProcess = builder.call();
-                stopService = Executors.newFixedThreadPool(2);
-                startService(uri, stopProcess, stopService);
-
-                String serverName = dm.getInstanceProperties().getProperty(
-                        InstanceProperties.DISPLAY_NAME_ATTR);
 
                 while ((System.currentTimeMillis() - start) < TIMEOUT) {
                     if (isRunning() && isRunning(stopProcess)) {
@@ -684,18 +789,20 @@ public final class WLStartServer extends StartServer {
                             Thread.sleep(DELAY);
                         } catch (InterruptedException e) {
                             serverProgress.notifyStart(StateType.FAILED,
-                                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
+                                    NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_INTERRUPTED"));
                             Thread.currentThread().interrupt();
                             return;
                         }
                     } else {
-                        try {
-                            stopProcess.waitFor();
-                        } catch (InterruptedException ex) {
-                            serverProgress.notifyStart(StateType.FAILED,
-                                    NbBundle.getMessage(WLStartServer.class, "MSG_START_SERVER_INTERRUPTED"));
-                            Thread.currentThread().interrupt();
-                            return;
+                        if (stopProcess != null) {
+                            try {
+                                stopProcess.waitFor();
+                            } catch (InterruptedException ex) {
+                                serverProgress.notifyStart(StateType.FAILED,
+                                        NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_INTERRUPTED"));
+                                Thread.currentThread().interrupt();
+                                return;
+                            }
                         }
 
                         if (isRunning()) {
@@ -715,10 +822,12 @@ public final class WLStartServer extends StartServer {
                         NbBundle.getMessage(WLStartServer.class, "MSG_STOP_SERVER_TIMEOUT"));
 
                 // do the cleanup
-                Map<String, String> mark = new HashMap<String, String>();
-                mark.put(KEY_UUID, uuid);
-                ExternalProcessSupport.destroy(stopProcess, mark);
-                stopService(stopService);
+                if (stopProcess != null) {
+                    Map<String, String> mark = new HashMap<String, String>();
+                    mark.put(KEY_UUID, uuid);
+                    ExternalProcessSupport.destroy(stopProcess, mark);
+                    stopService(stopService);
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, null, e);
             }

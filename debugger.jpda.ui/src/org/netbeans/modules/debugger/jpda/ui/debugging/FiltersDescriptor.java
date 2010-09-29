@@ -47,6 +47,8 @@ package org.netbeans.modules.debugger.jpda.ui.debugging;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -232,7 +234,7 @@ public final class FiltersDescriptor {
         
         private boolean isSelected;
         private Group group;
-        private JToggleButton toggleButton; // [TODO]
+        private Reference<JToggleButton> toggleButtonRef;
         
         Item (String name, String displayName, String tooltip,
                 boolean isSelected, Icon selectedIcon) {
@@ -274,26 +276,22 @@ public final class FiltersDescriptor {
                 return;
             }
             isSelected = state;
-            toggleButton.setSelected(state);
+            JToggleButton toggleButton = toggleButtonRef.get();
+            if (toggleButton != null) {
+                toggleButton.setSelected(state);
+            }
             if (state && group != null) {
                 for (Item item : group.getItems()) {
                     if (item != this && item.isSelected()) {
-                        JToggleButton tb = item.getToggleButton();
-                        item.isSelected = false; // do not call item.setSelected() here
-                        item.writeValue();
-                        tb.setSelected(false);
+                        item.setSelected(false);
                     } // if
                 } // for
             } // if
             writeValue();
         }
 
-        public JToggleButton getToggleButton() {
-            return toggleButton;
-        }
-        
         public void setToggleButton(JToggleButton button) {
-            toggleButton = button;
+            toggleButtonRef = new WeakReference<JToggleButton>(button);
 //            if (group != null && isSelected) {
 //                toggleButton.setEnabled(false);
 //            }

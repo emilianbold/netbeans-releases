@@ -783,6 +783,18 @@ final class PropUtils {
      */
     static PropertyEditor getPropertyEditor(Class<?> c) {
         PropertyEditor result = PropertyEditorManager.findEditor(c);
+        ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
+        ClassLoader now = Thread.currentThread().getContextClassLoader();
+        if (
+            result == null && global != null && now != global
+        ) {
+            try {
+                Thread.currentThread().setContextClassLoader(global);
+                result = PropertyEditorManager.findEditor(c);
+            } finally {
+                Thread.currentThread().setContextClassLoader(now);
+            }
+        }
         
         if (result == null && Enum.class.isAssignableFrom(c)) {
             // XXX should this rather be done in Node.getPropertyEditor?

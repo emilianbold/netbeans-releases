@@ -62,7 +62,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
-import hidden.org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.IOUtil;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -455,7 +455,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     outStr = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
                     Format form = Format.getRawFormat().setEncoding(encoding);
                     form = form.setLineSeparator(System.getProperty("line.separator")); //NOI18N
-                    @SuppressWarnings("unchecked")
                     List<NetbeansActionMapping> maps = mapping.getActions();
                     //no packaging elements make sense in nbactions files.
                     for (NetbeansActionMapping m : maps) {

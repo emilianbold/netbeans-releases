@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
 
@@ -84,6 +85,7 @@ import org.openide.util.RequestProcessor.Task;
 /**
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ClassesView", types={TreeModel.class})
 public class ClassesTreeModel implements TreeModel {
 
     

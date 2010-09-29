@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -166,7 +167,7 @@ public class Dwarf {
 
     private List<MemberHeader> getObjectTable(RandomAccessFile reader) throws IOException{
         byte[] next = new byte[60];
-        ArrayList<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
+        List<MemberHeader> offsetsList= new ArrayList<MemberHeader>();
         while(true) {
             if (reader.getFilePointer()+60 >= reader.length()){
                 break;
@@ -244,7 +245,7 @@ public class Dwarf {
         return result;
     }
 
-    private List<CompilationUnit> getArchiveCompilationUnits(RandomAccessFile reader) throws IOException {
+    private List<CompilationUnit> getArchiveCompilationUnits(MyRandomAccessFile reader) throws IOException {
         List<CompilationUnit> result = new LinkedList<CompilationUnit>();
         for (MemberHeader member : offsets) {
             long shiftIvArchive = member.getOffset();
@@ -328,10 +329,10 @@ public class Dwarf {
 
     private class ArchiveIterator implements Iterator<CompilationUnit>{
         private int archiveIndex = 0;
-        private RandomAccessFile reader;
+        private MyRandomAccessFile reader;
         private Iterator<CompilationUnit> currentIterator;
 
-        public ArchiveIterator(RandomAccessFile reader) throws IOException {
+        public ArchiveIterator(MyRandomAccessFile reader) throws IOException {
             this.reader = reader;
             advanceArchive();
         }

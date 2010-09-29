@@ -168,7 +168,7 @@ public class EntriesCache {
     }
 
     private Map<String, String> getFileAttributes(File file, boolean mergeWithParent) throws IOException, SAXException {
-        File entriesFile = SvnWcUtils.getEntriesFile(file);
+        File entriesFile = file == null ? null : SvnWcUtils.getEntriesFile(file);
         if(entriesFile==null) {
             return null;
         }

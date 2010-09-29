@@ -143,9 +143,9 @@ final class BasicSearchCriteria {
 
     /**
      * Holds information about occurences of matching strings within individual
-     * {@code DataObject}s.
+     * {@code FileObject}s.
      */
-    private Map<DataObject, List<TextDetail>> detailsMap;
+    private Map<FileObject, List<TextDetail>> detailsMap;
 
     /**
      * Holds a {@code DataObject} that will be used to create
@@ -159,7 +159,7 @@ final class BasicSearchCriteria {
 
     BasicSearchCriteria() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": <init>()");                 //NOI18N
+            LOG.log(FINER, "#{0}: <init>()", instanceId);              //NOI18N
         }
     }
     
@@ -170,7 +170,7 @@ final class BasicSearchCriteria {
      */
     BasicSearchCriteria(BasicSearchCriteria template) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": <init>(template)");         //NOI18N
+            LOG.log(FINER, "#{0}: <init>(template)", instanceId);      //NOI18N
         }
 
         /* check-boxes: */
@@ -224,7 +224,9 @@ final class BasicSearchCriteria {
      */
     void setTextPattern(String pattern) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setTextPattern(" + pattern + ')');               //NOI18N
+            LOG.log(FINER,
+                    "setTextPattern({0}{1}",
+                    new Object[]{pattern, ')'});               //NOI18N
         }
         if ((pattern != null) && (pattern.length() == 0)) {
             pattern = null;
@@ -277,15 +279,14 @@ final class BasicSearchCriteria {
      */
     private boolean compileRegexpPattern() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+            LOG.log(FINER, "#{0}: compileRegexpPattern()", instanceId);//NOI18N
         }
         assert regexp;
         assert textPatternExpr != null;
         try {
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + 
-                           textPatternExpr +
-                           '"');  //NOI18N
+                LOG.log(FINEST, " - textPatternExpr = \"{0}{1}",
+                        new Object[]{textPatternExpr, '"'});  //NOI18N
             }
             int flags = 0;
             if (!caseSensitive) {
@@ -327,7 +328,7 @@ final class BasicSearchCriteria {
      */
     private void compileSimpleTextPattern() {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("#" + instanceId + ": compileRegexpPattern()");   //NOI18N
+            LOG.log(FINER, "#{0}: compileRegexpPattern()", instanceId);//NOI18N
         }
         assert textPatternExpr != null;
         try {
@@ -337,18 +338,18 @@ final class BasicSearchCriteria {
                 flags |= Pattern.UNICODE_CASE;
             }
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - textPatternExpr = \"" + 
-                           textPatternExpr +
-                           '"');  //NOI18N
+                LOG.log(FINEST, " - textPatternExpr = \"{0}{1}",
+                        new Object[]{textPatternExpr, '"'});  //NOI18N
             }
 	    String searchRegexp = RegexpMaker.makeRegexp(textPatternExpr,
                                                          wholeWords);
             if (LOG.isLoggable(FINEST)) {
-                LOG.finest(" - regexp = \"" + searchRegexp + '"');      //NOI18N
+                LOG.log(FINEST, " - regexp = \"{0}{1}",
+                        new Object[]{searchRegexp, '"'});      //NOI18N
             }
             textPattern = Pattern.compile(searchRegexp, flags);
         } catch (PatternSyntaxException ex) {
-            LOG.finest(" - invalid regexp");                            //NOI18N
+            LOG.finest(" - invalid regexp");                           //NOI18N
             assert false;
             textPattern = null;
         }
@@ -360,10 +361,11 @@ final class BasicSearchCriteria {
     
     void setRegexp(boolean regexp) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setRegexp(" + regexp + ')');                     //NOI18N
+            LOG.log(FINER, "setRegexp({0}{1}",
+                    new Object[]{regexp, ')'});                         //NOI18N
         }
         if (regexp == this.regexp) {
-            LOG.finest(" - no change");                                 //NOI18N
+            LOG.finest(" - no change");                                //NOI18N
             return;
         }
         
@@ -387,10 +389,11 @@ final class BasicSearchCriteria {
     
     void setWholeWords(boolean wholeWords) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setWholeWords(" + wholeWords + ')');             //NOI18N
+            LOG.log(FINER, "setWholeWords({0}{1}",
+                    new Object[]{wholeWords, ')'});                     //NOI18N
         }
         if (wholeWords == this.wholeWords) {
-            LOG.finest(" - no change");                                 //NOI18N
+            LOG.finest(" - no change");                                //NOI18N
             return;
         }
         
@@ -407,7 +410,8 @@ final class BasicSearchCriteria {
     
     void setCaseSensitive(boolean caseSensitive) {
         if (LOG.isLoggable(FINER)) {
-            LOG.finer("setCaseSensitive(" + caseSensitive + ')');       //NOI18N
+            LOG.log(FINER, "setCaseSensitive({0}{1}",
+                    new Object[]{caseSensitive, ')'});       //NOI18N
         }
         if (caseSensitive == this.caseSensitive) {
             LOG.finest(" - no change");                                 //NOI18N
@@ -740,6 +744,7 @@ final class BasicSearchCriteria {
      *          matching the pattern, {@code false} otherwise
      */
     private boolean checkFileContent(FileObject fo) {
+        assert fo != null;
         lastCharset = FileEncodingQuery.getEncoding(fo);
         SearchPattern sp = createSearchPattern();
         BufferedCharSequence bcs = null;
@@ -750,29 +755,32 @@ final class BasicSearchCriteria {
             if (txtDetails.isEmpty()){
                 return false;
             }
-            assert dataObject != null;
-            getDetailsMap().put(dataObject, txtDetails);
+            getDetailsMap().put(fo, txtDetails);
             freeDataObject();
             return true;
         }
         catch(DataObjectNotFoundException e){
-            LOG.severe("Unable to get data object for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unable to get data object for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch (FileNotFoundException e) {
-            LOG.severe("Unable to get input stream for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unable to get input stream for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch(BufferedCharSequence.SourceIOException e){
-            LOG.severe("IOException during process for the " + fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "IOException during process for the {0}", fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
         catch(Exception e){
-            LOG.severe("Unexpected Exception during process for the " +
-                       fo); // NOI18N
+            LOG.log(Level.SEVERE,
+                    "Unexpected Exception during process for the {0}",
+                    fo); // NOI18N
             LOG.throwing(BasicSearchCriteria.class.getName(),
                     "checkFileContent", e); // NOI18N
         }
@@ -846,14 +854,15 @@ final class BasicSearchCriteria {
     }
 
     /**
-     * @param  resultObject  <code>DataObject</code> to create the nodes for
-     * @return  <code>DetailNode</code>s representing the matches,
+     *
+     * @param fo {@code FileObject} to create the nodes for.
+     * @return {@codeDetailNode}s representing the matches,
      *          or <code>null</code> if no matching string is known for the
-     *          specified object
+     *          specified {@code FileObject}
      * @see  DetailNode
      */
-    public Node[] getDetails(Object resultObject) {
-        List<TextDetail> details = getDetailsMap().get(resultObject);
+    public Node[] getDetails(FileObject fo) {
+        List<TextDetail> details = getDetailsMap().get(fo);
         if (details == null) {
             return null;
         }
@@ -867,14 +876,14 @@ final class BasicSearchCriteria {
     }
 
     /** Gets details map. */
-    private Map<DataObject, List<TextDetail>> getDetailsMap() {
+    private Map<FileObject, List<TextDetail>> getDetailsMap() {
         if (detailsMap != null) {
             return detailsMap;
         }
         
         synchronized(this) {
             if (detailsMap == null) {
-                detailsMap = new HashMap<DataObject, List<TextDetail>>(20);
+                detailsMap = new HashMap<FileObject, List<TextDetail>>(20);
             }
         }
         
@@ -888,27 +897,33 @@ final class BasicSearchCriteria {
      *          a <code>DataObject</code> or if no matching string is known for
      *          the specified object
      */
-    public Node[] getDetails(Node node) {
-        DataObject dataObject = node.getCookie(DataObject.class);
-        
-        if (dataObject == null) {
-            return null;
-        }
-        
-        return getDetails(dataObject);
-    }
+// vvg: a FileObject should be stored in the node's cooke !?
+//    public Node[] getDetails(Node node) {
+//        DataObject data = node.getCookie(DataObject.class);
+//
+//        if (data == null) {
+//            return null;
+//        }
+//
+//        return getDetails(data);
+//    }
     
     /**
      */
-    public int getDetailsCount(Object resultObject) {
+    int getDetailsCount(FileObject resultObject) {
         List<TextDetail> details = getDetailsMap().get(resultObject);
         return (details != null) ? details.size() : 0;
     }
     
     /**
+     * Returns a list of the {@code TextDetail}s associated with the specified
+     * {@code FileObject}.
+     *
+     * @param fo the {@code FileObject}.
+     * @return a list of the {@code TextDetail}s if any, otherwise {@code null}.
      */
-    public List<TextDetail> getTextDetails(Object resultObject) {
-        List<TextDetail> obtained = getDetailsMap().get(resultObject);
+    List<TextDetail> getTextDetails(FileObject fo) {
+        List<TextDetail> obtained = getDetailsMap().get(fo);
         return (obtained != null) ? new ArrayList<TextDetail>(obtained) : null;
     }
 

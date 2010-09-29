@@ -77,7 +77,7 @@ import org.netbeans.modules.csl.api.SelectPreviousCamelCasePosition;
 import org.netbeans.modules.csl.api.ToggleBlockCommentAction;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.editor.hyperlink.GoToSupport;
-import org.netbeans.modules.csl.editor.semantic.GoToMarkOccurrencesAction;
+import org.netbeans.modules.csl.api.GoToMarkOccurrencesAction;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;

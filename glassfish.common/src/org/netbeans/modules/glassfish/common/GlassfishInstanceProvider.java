@@ -82,9 +82,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private volatile static GlassfishInstanceProvider ee6Provider;
     private volatile static GlassfishInstanceProvider ee6WCProvider;
 
-    static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
-    static private String EE6WC_PROP_ROOT = "org.glassfish.v3ee6wc."; // NOI18N
-    static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
+    final static private String EE6_PROP_ROOT = "org.glassfish.v3ee6."; // NOI18N
+    final static private String EE6WC_PROP_ROOT = "org.glassfish.v3ee6wc."; // NOI18N
+    final static private String INSTALL_ROOT_SUFFIX = "installRoot"; // NOI18N
     static private String EE6_INSTALL_ROOT_PROP = EE6_PROP_ROOT + INSTALL_ROOT_SUFFIX;
     static private String EE6WC_INSTALL_ROOT_PROP = EE6WC_PROP_ROOT + INSTALL_ROOT_SUFFIX;
     static private String PRELUDE_PROP_ROOT = "org.glassfish.v3."; // NOI18N
@@ -126,7 +126,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V3_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     "GlassFish_Server_3", // NOI18N
-                    "http://java.net/download/glassfish/3.0.1/release/glassfish-3_0_1.zip", // NOI18N
+                    "http://java.net/download/glassfish/3.0.1/release/glassfish-3.0.1-ml.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3.txt", // NOI18N
                     "last-v3ee6-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "schemas" + File.separator + "web-app_3_0.xsd"}, // NOI18N
@@ -144,7 +144,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return "";
                 }
-            });
+            },
+                    "sun-resources");
             ee6Provider.init();
         }
         return ee6Provider;
@@ -159,7 +160,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_V31_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     EE6WC_DEFAULT_NAME, // NOI18N
-                    "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip", // NOI18N
+                    "http://java.net/download/glassfish/3.1/promoted/latest-glassfish.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69v3-1.txt", // NOI18N
                     "last-v3ee6wc-install-root", // NOI18N
                     new String[]{"lib" + File.separator + "dtds" + File.separator + "glassfish-web-app_3_0-1.dtd"}, // NOI18N
@@ -177,7 +178,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return -1 == debugPort ? "debug=false" : "debug=true";
                 }
-            });
+            },
+                    "glassfish-resources");
             ee6WCProvider.init();
         }
         return ee6WCProvider;
@@ -195,7 +197,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_REGISTERED_NAME", new Object[]{}),  // NOI18N
                     org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class, "STR_PRELUDE_AUTO_CREATED_NAME", new Object[]{}),  // NOI18N
                     PRELUDE_DEFAULT_NAME, 
-                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", // NOI18N
+                    "http://java.net/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip?nbretriever=fallback", // NOI18N
                     "http://serverplugins.netbeans.org/glassfishv3/post69prelude.txt", // NOI18N
                     "last-install-root", // NOI18N
                     new String[0],
@@ -214,7 +216,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 public String getRestartQuery(int debugPort) {
                     return "";
                 }
-                    });
+                    },
+                    "sun-resources");
             preludeProvider.init();
         }
         return preludeProvider;
@@ -243,13 +246,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     private String[] javadocFilenames;
     private List<String> noPasswordOptions;
     private CommandFactory cf;
+    private String resourceXmlName;
 
     private GlassfishInstanceProvider(String[] uriFragments, String[] instancesDirNames,
             String displayName, String propName, String defaultName, String personalName,
             String installName, String direct, String indirect, String prefKey,
             String[] requiredFiles, String[] excludedFiles, boolean needsJdk6,
             String[] javadocFilenames,
-            String[] noPasswordOptionsArray, CommandFactory cf) {
+            String[] noPasswordOptionsArray, CommandFactory cf, String resourceXmlName) {
         this.instancesDirNames = instancesDirNames;
         this.displayName = displayName;
         this.uriFragments = uriFragments;
@@ -269,6 +273,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             noPasswordOptions.addAll(Arrays.asList(noPasswordOptionsArray));
         }
         this.cf = cf;
+        this.resourceXmlName = resourceXmlName;
     }
 
     public static synchronized boolean initialized() {
@@ -370,7 +375,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                 activeDisplayNames.remove(si.getDisplayName());
                 // If this was the last of its type, need to remove the
                 // resolver catalog contents
-                if (instanceMap.size() == 0) {
+                if (instanceMap.isEmpty()) {
                     RegisteredDDCatalog catalog = getDDCatalog();
                     if (null != catalog) {
                         catalog.refreshRunTimeDDCatalog(this, null);
@@ -521,7 +526,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                 instanceMap.put(si.getDeployerUri(), si);
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
-                                getLogger().finer("Unable to create glassfish instance for " + instanceFOs[i].getPath()); // NOI18N
+                                getLogger().log(Level.FINER, "Unable to create glassfish instance for {0}", instanceFOs[i].getPath()); // NOI18N
                             }
                         } catch(IOException ex) {
                             getLogger().log(Level.INFO, null, ex);
@@ -559,7 +564,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             instance = GlassfishInstance.create(ip,this,false);
         } else {
-            getLogger().finer("GlassFish folder " + instanceFO.getPath() + " is not a valid install."); // NOI18N
+            getLogger().log(Level.FINER, "GlassFish folder {0} is not a valid install.", instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
 
@@ -696,9 +701,11 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                     "--user", //NOI18N
                     uname,
                     "--domaindir", //NOI18N
-                    domainDir,
-                    "--portbase", //NOI18N
-                    portBase,}));
+                    domainDir}));
+        if (null != portBase) {
+            retVal.add("--portbase"); //NOI18N
+            retVal.add(portBase);
+        }
         if (noPasswordOptions.size() > 0) {
             retVal.addAll(noPasswordOptions);
         }
@@ -708,5 +715,9 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     CommandFactory getCommandFactory() {
        return cf;
+    }
+
+    String getResourcesXmlName() {
+        return resourceXmlName;
     }
 }

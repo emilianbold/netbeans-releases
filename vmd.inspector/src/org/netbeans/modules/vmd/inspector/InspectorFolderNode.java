@@ -97,7 +97,7 @@ final class InspectorFolderNode extends AbstractNode {
 
     @Override
     public String getHtmlDisplayName() {
-        if (component == null) {
+        if (component == null || component.get() == null || getComponent() == null || getComponent().getDocument() == null) {
             return ""; //NOI18N
         }
         final String[] componentTypeName = new String[1];

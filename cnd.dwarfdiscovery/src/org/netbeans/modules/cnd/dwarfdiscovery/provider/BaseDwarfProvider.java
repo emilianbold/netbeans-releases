@@ -53,11 +53,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -67,7 +69,9 @@ import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -100,13 +104,13 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped.set(true);
     }
 
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress, ProjectProxy project, Set<String> dlls){
         CountDownLatch countDownLatch = new CountDownLatch(objFileName.length);
         RequestProcessor rp = new RequestProcessor("Parallel analyzing", CndUtils.getNumberCndWorkerThreads()); // NOI18N
         try{
             Map<String,SourceFileProperties> map = new ConcurrentHashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
-                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project);
+                MyRunnable r = new MyRunnable(countDownLatch, file, map, progress, project, dlls);
                 rp.post(r);
             }
             try {
@@ -125,7 +129,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
     }
 
-    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project) {
+    private boolean processObjectFile(String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls) {
         if (isStoped.get()) {
             return true;
         }
@@ -145,7 +149,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 restrictCompileRoot = CndFileUtils.normalizeFile(new File(s)).getAbsolutePath();
             }
         }
-        for (SourceFileProperties f : getSourceFileProperties(file, map, project)) {
+        for (SourceFileProperties f : getSourceFileProperties(file, map, project, dlls)) {
             if (isStoped.get()) {
                 break;
             }
@@ -187,10 +191,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return false;
     }
     
-    protected ApplicableImpl sizeComilationUnit(String objFileName){
+    protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls){
         int res = 0;
         int sunStudio = 0;
         Dwarf dump = null;
+        String commonRoot = null;
+        Position position = null;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
             dump = new Dwarf(objFileName);
@@ -203,6 +209,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
+                        continue;
+                    }
+                    String path = cu.getSourceFileAbsolutePath();
+                    File normalizeFile = CndFileUtils.normalizeFile(new File(path));
+                    if (!normalizeFile.exists()) {
                         continue;
                     }
                     ItemProperties.LanguageKind language = null;
@@ -222,6 +233,31 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
+                    path = normalizeFile.getAbsolutePath().replace('\\', '/');
+                    if (commonRoot == null) {
+                        int i = path.lastIndexOf('/');
+                        if (i >= 0) {
+                            commonRoot = path.substring(0, i+1);
+                        }
+                    } else {
+                        if (!path.startsWith(commonRoot)) {
+                            while(true) {
+                                int i = commonRoot.lastIndexOf('/');
+                                if (i < 0) {
+                                    break;
+                                }
+                                commonRoot = commonRoot.substring(0, i);
+                                i = commonRoot.lastIndexOf('/');
+                                if (i < 0) {
+                                    break;
+                                }
+                                commonRoot = commonRoot.substring(0, i+1);
+                                if (path.startsWith(commonRoot)) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
                     String compilerName = DwarfSource.extractCompilerName(cu, language);
                     if (compilerName != null) {
                         AtomicInteger count = compilers.get(compilerName);
@@ -234,6 +270,30 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (DwarfSource.isSunStudioCompiler(cu)) {
                         sunStudio++;
                     }
+                    if (position == null) {
+                        List<DwarfEntry> topLevelEntries = cu.getTopLevelEntries();
+                        for(DwarfEntry entry : topLevelEntries) {
+                            if (entry.getKind() == TAG.DW_TAG_subprogram) {
+                                if ("main".equals(entry.getName())) { // NOI18N
+                                    if (entry.isExternal()) {
+                                        //VIS visibility = entry.getVisibility();
+                                        //if (visibility == VIS.DW_VIS_exported) {
+                                            position = new MyPosition(path, entry.getLine());
+                                        //}
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (dlls != null) {
+                List<String> pubNames = dump.readPubNames();
+                synchronized (dlls) {
+                    for (String dll : pubNames) {
+                        dlls.add(dll);
+                    }
+
                 }
             }
         } catch (FileNotFoundException ex) {
@@ -257,10 +317,14 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 top = entry.getKey();
             }
         }
-        return new ApplicableImpl(res > 0, top, res, sunStudio > res/2);
+        if (dlls != null) {
+            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, new ArrayList<String>(dlls), commonRoot, position);
+        } else {
+            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, null, commonRoot, position);
+        }
     }
     
-    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project) {
+    protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try {
@@ -326,10 +390,15 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     }
                 }
             }
-            //System.out.println("Required DLLs:"); // NOI18N
-            //for(String dll : dump.readPubNames()) {
-            //    System.out.println("\t"+dll); // NOI18N
-            //}
+            if (dlls != null) {
+                List<String> pubNames = dump.readPubNames();
+                synchronized(dlls) {
+                    for(String dll : pubNames) {
+                        dlls.add(dll);
+                    }
+
+                }
+            }
         } catch (FileNotFoundException ex) {
             // Skip Exception
             if (TRACE_READ_EXCEPTIONS) {
@@ -461,24 +530,45 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private Progress progress;
         private CountDownLatch countDownLatch;
         private ProjectProxy project;
+        private Set<String> dlls;
 
-        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project){
+        private MyRunnable(CountDownLatch countDownLatch, String file, Map<String, SourceFileProperties> map, Progress progress, ProjectProxy project, Set<String> dlls){
             this.file = file;
             this.map = map;
             this.progress = progress;
             this.countDownLatch = countDownLatch;
             this.project = project;
+            this.dlls = dlls;
         }
         @Override
         public void run() {
             try {
                 if (!isStoped.get()) {
                     Thread.currentThread().setName("Parallel analyzing "+file); // NOI18N
-                    processObjectFile(file, map, progress, project);
+                    processObjectFile(file, map, progress, project, dlls);
                 }
             } finally {
                 countDownLatch.countDown();
             }
+        }
+    }
+    private static class MyPosition implements Position {
+        private final String path;
+        private final int line;
+
+        private MyPosition(String path, int line){
+            this.path = path;
+            this.line = line;
+        }
+
+        @Override
+        public String getFilePath() {
+            return path;
+        }
+
+        @Override
+        public int getLine() {
+            return line;
         }
     }
 }

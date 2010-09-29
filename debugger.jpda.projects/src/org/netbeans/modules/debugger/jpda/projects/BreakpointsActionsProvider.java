@@ -61,6 +61,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ThreadBreakpoint;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -79,6 +80,7 @@ import org.openide.util.RequestProcessor;
 /**
  * @author   Martin Entlicher
  */
+@DebuggerServiceRegistration(path="BreakpointsView", types=NodeActionsProviderFilter.class)
 public class BreakpointsActionsProvider implements NodeActionsProviderFilter {
     
     private static final Action GO_TO_SOURCE_ACTION = Models.createAction (

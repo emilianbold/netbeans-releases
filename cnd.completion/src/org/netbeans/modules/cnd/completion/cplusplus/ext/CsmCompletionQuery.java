@@ -48,6 +48,7 @@ import java.awt.Graphics;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Map;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -247,7 +248,7 @@ abstract public class CsmCompletionQuery {
             // find last separator position
             final int lastSepOffset = sup.getLastCommandSeparator(offset);
             final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-            final CndTokenProcessor<Token<CppTokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
+            final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(doc, tp, offset);
             if(etp instanceof CsmExpandedTokenProcessor) {
                 tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
             }
@@ -687,19 +688,22 @@ abstract public class CsmCompletionQuery {
         if (doc == null) {
             return false;
         }
-        TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, false);
+        TokenSequence<TokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset, false, false);
         if (cppTokenSequence == null) {
             return false;
         }
         boolean inIncludeDirective = false;
         if (cppTokenSequence.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
-            TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
+            TokenSequence<TokenId> embedded = (TokenSequence<TokenId>)cppTokenSequence.embedded();
             if (CndTokenUtilities.moveToPreprocKeyword(embedded)) {
-                switch (embedded.token().id()) {
-                    case PREPROCESSOR_INCLUDE:
-                    case PREPROCESSOR_INCLUDE_NEXT:
-                        inIncludeDirective = true;
+                final TokenId id = embedded.token().id();
+                if(id instanceof CppTokenId) {
+                    switch ((CppTokenId)id) {
+                        case PREPROCESSOR_INCLUDE:
+                        case PREPROCESSOR_INCLUDE_NEXT:
+                            inIncludeDirective = true;
+                    }
                 }
             }
         }
@@ -1114,9 +1118,13 @@ abstract public class CsmCompletionQuery {
                 }
 
                 case CsmCompletionExpression.LABEL: {
-                    String name = exp.getParameter(0).getTokenText(0);
+                    CsmCompletionExpression item = exp.getParameter(0);
+                    String name = item.getTokenText(0);
                     List res = finder.findLabel(contextElement, name, false, false);
-                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, endOffset, 0, 0, isProjectBeeingParsed(), contextElement, instantiateTypes); // NOI18N
+                    result = new CsmCompletionResult(component, getBaseDocument(), res, "*", exp, // NOI18N
+                            name.isEmpty() ? endOffset : item.getTokenOffset(0), 
+                            name.isEmpty() ? 0 : item.getTokenLength(0),
+                            0, isProjectBeeingParsed(), contextElement, instantiateTypes);
                     break;
                 }
 
@@ -2261,20 +2269,20 @@ abstract public class CsmCompletionQuery {
          * to be displayed. It's used to display the inner classes
          * of the main class to exclude the initial part of the name.
          */
-        private int classDisplayOffset;
+        private final int classDisplayOffset;
         /** Expression to substitute */
-        private CsmCompletionExpression substituteExp;
+        private final CsmCompletionExpression substituteExp;
         /** Starting position of the text to substitute */
-        private int substituteOffset;
+        private final int substituteOffset;
         /** Length of the text to substitute */
-        private int substituteLength;
+        private final int substituteLength;
         /** Component to update */
-        private JTextComponent component;
+        private final JTextComponent component;
         /**
          * baseDocument to work with
          */
         private BaseDocument baseDocument;
-        private List<CompletionItem> items;
+        private final List<CompletionItem> items;
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
                 CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {

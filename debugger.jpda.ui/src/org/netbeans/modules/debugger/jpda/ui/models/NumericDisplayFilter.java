@@ -55,6 +55,8 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.util.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 
 /**
  * Implements the "Display As Decimal/Hexadecimal/Octal/Binary/Char"
@@ -63,6 +65,21 @@ import java.awt.event.ActionEvent;
  *
  * @author Maros Sandor, Jan Jancura, Martin Entlicher
  */
+@DebuggerServiceRegistrations({
+    @DebuggerServiceRegistration(path="WatchesView", types=TableModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
+                                 types={ NodeActionsProviderFilter.class, TableModelFilter.class },
+                                 position=800),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types={ NodeActionsProviderFilter.class, TableModelFilter.class },
+                                 position=800),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types={ NodeActionsProviderFilter.class, TableModelFilter.class },
+                                 position=800),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types={ NodeActionsProviderFilter.class, TableModelFilter.class },
+                                 position=800)
+})
 public class NumericDisplayFilter implements TableModelFilter, 
 NodeActionsProviderFilter, Constants {
 

@@ -54,6 +54,7 @@ import java.util.Vector;
 import java.util.WeakHashMap;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -70,6 +71,7 @@ import org.openide.util.WeakSet;
  *
  * @author   Jan Jancura
  */
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ThreadsView", types=TableModel.class)
 public class ThreadsTableModel implements TableModel, Constants {
     
     private Vector listeners = new Vector ();

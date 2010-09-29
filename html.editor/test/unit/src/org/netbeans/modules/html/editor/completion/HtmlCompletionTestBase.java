@@ -56,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.dtd.Registry;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -71,7 +72,7 @@ import org.netbeans.modules.html.editor.test.TestBase;
  *
  * @author marekfukala
  */
-public class HtmlCompletionTestBase extends TestBase {
+public abstract class HtmlCompletionTestBase extends TestBase {
 
     private static final String DATA_DIR_BASE = "testfiles/completion/";
 
@@ -83,6 +84,8 @@ public class HtmlCompletionTestBase extends TestBase {
     public HtmlCompletionTestBase(String name) {
         super(name);
     }
+
+    protected abstract HtmlVersion getExpectedVersion();
 
     protected String getPublicID() {
         return null;
@@ -109,11 +112,11 @@ public class HtmlCompletionTestBase extends TestBase {
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 
-        DTD dtd = Registry.getDTD(getPublicID(), null);
-        assertNotNull(dtd);
-        if (getPublicID() != null) {
-            assertEquals(getPublicID(), dtd.getIdentifier());
-        }
+//        DTD dtd = Registry.getDTD(getPublicID(), null);
+//        assertNotNull(dtd);
+//        if (getPublicID() != null) {
+//            assertEquals(getPublicID(), dtd.getIdentifier());
+//        }
 
         final HtmlParserResult[] result = new HtmlParserResult[1];
         Source source = Source.create(doc);
@@ -127,7 +130,11 @@ public class HtmlCompletionTestBase extends TestBase {
 
         assertNotNull(result[0]);
 
-        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
+        assertSame(getExpectedVersion(), result[0].getSyntaxAnalyzerResult().getHtmlVersion());
+
+        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
+//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
+
         if (expectedItemsNames.length == 0 && completionResult == null) {
             //result may be null if we do not expect any result, nothing to test then
             return;
@@ -171,11 +178,11 @@ public class HtmlCompletionTestBase extends TestBase {
         component.setDocument(doc);
         component.getCaret().setDot(pipeOffset);
 
-        DTD dtd = Registry.getDTD(getPublicID(), null);
-        assertNotNull(dtd);
-        if (getPublicID() != null) {
-            assertEquals(getPublicID(), dtd.getIdentifier());
-        }
+//        DTD dtd = Registry.getDTD(getPublicID(), null);
+//        assertNotNull(dtd);
+//        if (getPublicID() != null) {
+//            assertEquals(getPublicID(), dtd.getIdentifier());
+//        }
 
         final HtmlParserResult[] result = new HtmlParserResult[1];
         Source source = Source.create(doc);
@@ -189,7 +196,8 @@ public class HtmlCompletionTestBase extends TestBase {
 
         assertNotNull(result[0]);
 
-        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
+        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
+//        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0], dtd);
 
         assertNotNull(result);
         Collection<? extends CompletionItem> items = completionResult.getItems();

@@ -1,6 +1,0 @@
-read global
-
-exclude uml/core/src/**/resources/**/*.gif
-exclude uml/core/src/**/resources/**/*.jpeg
-exclude uml/core/src/**/resources/**/*.jpg
-exclude uml/core/src/**/resources/**/*.png

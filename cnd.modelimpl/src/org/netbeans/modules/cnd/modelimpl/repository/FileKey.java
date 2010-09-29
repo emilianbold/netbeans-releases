@@ -48,23 +48,29 @@ import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /*package*/
 final class FileKey extends ProjectFileNameBasedKey {
     
-    public FileKey(FileImpl file) {
+    FileKey(FileImpl file) {
 	super(ProjectFileNameBasedKey.getProjectName(file), file.getAbsolutePath());
     }
     
     /*package*/ FileKey(DataInput aStream) throws IOException {
 	super(aStream);
     }
+
+    FileKey(KeyDataPresentation presentation) {
+        super(presentation);
+    }
     
     /*package-local*/ CharSequence getName() {
         return getFileName();
     }
     
+    @Override
     public String toString() {
 	return "FileKey (" + getProjectName() + ", " + getFileNameSafe() + ")"; // NOI18N
     }
@@ -74,14 +80,17 @@ final class FileKey extends ProjectFileNameBasedKey {
         return 37*KeyObjectFactory.KEY_FILE_KEY + super.hashCode();
     }
     
+    @Override
     public PersistentFactory getPersistentFactory() {
 	return CsmObjectFactory.instance();
     }
     
+    @Override
     public int getSecondaryDepth() {
 	return 1;
     }
     
+    @Override
     public int getSecondaryAt(int level) {
 	assert level == 0;
 	return KeyObjectFactory.KEY_FILE_KEY;
@@ -90,5 +99,10 @@ final class FileKey extends ProjectFileNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public final short getKindPresentation() {
+	return KeyObjectFactory.KEY_FILE_KEY;
     }
 }

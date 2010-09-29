@@ -61,7 +61,6 @@ import javax.lang.model.type.*;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
-import javax.swing.JToolTip;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -717,6 +716,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case BREAK:
                     insideBreak(env);
                     break;
+                case STRING_LITERAL:
+                    insideStringLiteral(env);
+                    break;
             }
         }
         
@@ -954,17 +956,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 startPos = (int)sourcePositions.getEndPosition(root, retType) + 1;
             }
-            Tree lastThr = null;
+            Tree last = null;
             for (Tree thr: mth.getThrows()) {
                 int thrPos = (int)sourcePositions.getEndPosition(root, thr);
                 if (thrPos == Diagnostic.NOPOS || offset <= thrPos)
                     break;
-                lastThr = thr;
+                last = thr;
                 startPos = thrPos;
             }
-            if (lastThr != null) {
-                TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
-                if (last != null && last.token().id() == JavaTokenId.COMMA) {
+            if (last != null) {
+                TokenSequence<JavaTokenId> lastToken = findLastNonWhitespaceToken(env, startPos, offset);
+                if (lastToken != null && lastToken.token().id() == JavaTokenId.COMMA) {
                     if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
                         controller.toPhase(Phase.RESOLVED);
                         Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(new TreePath(path, mth.getBody()));
@@ -975,7 +977,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             for (Iterator<TypeMirror> it = exs.iterator(); it.hasNext();)
                                 if (types.isSubtype(it.next(), t))
                                     it.remove();
-                            if (thr == lastThr)
+                            if (thr == last)
                                 break;
                         }
                         Elements elements = controller.getElements();
@@ -987,11 +989,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 return;
             }
+            for (VariableTree param : mth.getParameters()) {
+                int parPos = (int)sourcePositions.getEndPosition(root, param);
+                if (parPos == Diagnostic.NOPOS || offset <= parPos)
+                    break;
+                last = param;
+                startPos = parPos;
+            }
             String headerText = controller.getText().substring(startPos, offset);
             int parStart = headerText.indexOf('('); //NOI18N
+            if (parStart < 0 && last != null)
+                parStart = 0;
             if (parStart >= 0) {
                 int parEnd = headerText.indexOf(')', parStart); //NOI18N
-                if (parEnd > parStart) {
+                if (parEnd >= parStart) {
                     headerText = headerText.substring(parEnd + 1).trim();
                     if (THROWS_KEYWORD.equals(headerText)) {
                         if (queryType == COMPLETION_QUERY_TYPE && mth.getBody() != null) {
@@ -1014,12 +1025,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                     }
                 } else {
-                    for (VariableTree param : mth.getParameters()) {
-                        int parPos = (int)sourcePositions.getEndPosition(root, param);
-                        if (parPos == Diagnostic.NOPOS || offset <= parPos)
-                            break;
-                        parStart = parPos - startPos;
-                    }
                     headerText = headerText.substring(parStart).trim();
                     if ("(".equals(headerText) || ",".equals(headerText)) { //NOI18N
                         addMemberModifiers(env, Collections.<Modifier>emptySet(), true);
@@ -2082,6 +2087,19 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addValueKeywords(env);
                     }
                 }
+            }
+        }
+        
+        private void insideStringLiteral(Env env) throws IOException {
+            TreePath path = env.getPath();
+            TreePath parentPath = path.getParentPath();
+            TreePath grandParentPath = parentPath.getParentPath();
+            if (grandParentPath != null && grandParentPath.getLeaf().getKind() == Tree.Kind.ANNOTATION
+                    && parentPath.getLeaf().getKind() == Tree.Kind.ASSIGNMENT
+                    && ((AssignmentTree)parentPath.getLeaf()).getExpression() == path.getLeaf()) {
+                ExpressionTree var = ((AssignmentTree)parentPath.getLeaf()).getVariable();
+                if (var.getKind() == Tree.Kind.IDENTIFIER)
+                    insideAnnotationAttribute(env, grandParentPath, ((IdentifierTree)var).getName());
             }
         }
         
@@ -3221,37 +3239,31 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
 
-        private void addAttributeValues(Env env, Element element, AnnotationMirror annotation, ExecutableElement member) {
+        private void addAttributeValues(Env env, Element element, AnnotationMirror annotation, ExecutableElement member) throws IOException {
             CompilationController controller = env.getController();
-            Elements elements = controller.getElements();
+            TreeUtilities tu = controller.getTreeUtilities();
+            ElementUtilities eu = controller.getElementUtilities();
             String prefix = env.getPrefix();
-            for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, null)) {
-                String value = completion.getValue();
-                TypeElement typeElement = null;
-                TypeMirror type = member.getReturnType();
-                if (type.getKind() == TypeKind.ARRAY) {
-                    type = ((ArrayType)type).getComponentType();
-                }
-                if (type.getKind() == TypeKind.DECLARED) {
-                    CharSequence fqn = ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName();
-                    if ("java.lang.String".contentEquals(fqn)) { //NOI18N
-                        if (!value.startsWith("\"")) //NOI18N
-                            value = "\"" + value + "\""; //NOI18N
-                    } else if ("java.lang.Class".contentEquals(fqn)) {
-                        String name;
-                        if (value.endsWith(".class")) { //NOI18N
-                            name = value.substring(0, value.length() - 6);
-                        } else {
-                            name = value;
-                            value += ".class"; //NOI18N
-                        }
-                        typeElement = elements.getTypeElement(name);
-                        if (typeElement != null && !startsWith(env, typeElement.getSimpleName().toString(), prefix))
-                            continue;
-                        env.addToExcludes(typeElement);
+            for (javax.annotation.processing.Completion completion : SourceUtils.getAttributeValueCompletions(controller, element, annotation, member, prefix)) {
+                String value = completion.getValue().trim();
+                if (value.length() > 0) {
+                    TypeMirror type = member.getReturnType();
+                    TypeElement typeElement = null;
+                    while (type.getKind() == TypeKind.ARRAY) {
+                        type = ((ArrayType)type).getComponentType();
                     }
+                    if (type.getKind() == TypeKind.DECLARED) {
+                        CharSequence fqn = ((TypeElement)((DeclaredType)type).asElement()).getQualifiedName();
+                        if ("java.lang.Class".contentEquals(fqn)) {
+                            String name = value.endsWith(".class") ?  value.substring(0, value.length() - 6) : value; //NOI18N
+                            TypeMirror tm = tu.parseType(name, eu.outermostTypeElement(element));
+                            typeElement = tm != null && tm.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)tm).asElement() : null;
+                            if (typeElement != null && startsWith(env, typeElement.getSimpleName().toString(), prefix))
+                                env.addToExcludes(typeElement);
+                        }
+                    }
+                    results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, completion.getMessage(), typeElement, anchorOffset));
                 }
-                results.add(JavaCompletionItem.createAttributeValueItem(env.getController(), value, typeElement, anchorOffset));
             }
         }
 
@@ -4527,7 +4539,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ts.movePrevious();
                 int len = offset - ts.offset();
                 if (len > 0 && (ts.token().id() == JavaTokenId.IDENTIFIER ||
-                        (ts.token().id().primaryCategory().startsWith("keyword")) || ts.token().id().primaryCategory().equals("literal"))
+                        ts.token().id().primaryCategory().startsWith("keyword") || //NOI18N
+                        ts.token().id().primaryCategory().startsWith("string") || //NOI18N
+                        ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
                     prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();

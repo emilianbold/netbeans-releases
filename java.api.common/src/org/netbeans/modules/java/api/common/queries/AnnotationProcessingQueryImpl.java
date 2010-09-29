@@ -57,13 +57,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
@@ -73,6 +77,7 @@ import org.openide.util.WeakListeners;
  */
 final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
 
+    private static final SpecificationVersion JDK_5 = new SpecificationVersion("1.5");  //NOI18N
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final String annotationProcessingEnabledProperty;
@@ -101,7 +106,7 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
         Result current = cache != null ? cache.get() : null;
 
         if (current == null) {
-            cache = new WeakReference<Result>(current = new ResultImpl());
+            cache = new WeakReference<Result>(current = new ResultImpl(SourceLevelQuery.getSourceLevel2(file)));
         }
 
         return current;
@@ -109,20 +114,27 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
 
     private static final Set<String> TRUE = new HashSet<String>(Arrays.asList("true", "on", "1"));
     
-    private final class ResultImpl implements Result, PropertyChangeListener {
+    private final class ResultImpl implements Result, PropertyChangeListener, ChangeListener {
 
+        private final SourceLevelQuery.Result slqResult;
         private final ChangeSupport cs = new ChangeSupport(this);
 
-        public ResultImpl() {
-            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        public ResultImpl(final @NullAllowed SourceLevelQuery.Result slqResult) {
+            this.slqResult = slqResult.supportsChanges() ? slqResult : null;
+            if (this.slqResult != null) {
+                this.slqResult.addChangeListener(WeakListeners.change(this, this.slqResult));
+            }
+            evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));            
         }
 
         public Set<? extends Trigger> annotationProcessingEnabled() {
             EnumSet<Trigger> set = EnumSet.noneOf(Trigger.class);
-            if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledProperty)))
-                set.add(Trigger.ON_SCAN);
-            if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledInEditorProperty)))
-                set.add(Trigger.IN_EDITOR);
+            if (checkSourceLevel()) {
+                if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledProperty)))
+                    set.add(Trigger.ON_SCAN);
+                if (TRUE.contains(evaluator.getProperty(annotationProcessingEnabledInEditorProperty)))
+                    set.add(Trigger.IN_EDITOR);
+            }
             return set;
         }
 
@@ -196,5 +208,29 @@ final class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryIm
             }
         }
 
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            cs.fireChange();
+        }
+        
+        private boolean checkSourceLevel() {
+            if (slqResult == null) {
+                return true;
+            }
+            String sl = slqResult.getSourceLevel();
+            if (sl == null) {
+                return true;
+            }
+            try {
+                final SpecificationVersion sourceLevel = new SpecificationVersion(sl);
+                if (JDK_5.compareTo(sourceLevel)<0) {
+                    return true;
+                }
+                return TRUE.contains(evaluator.getProperty(runAllAnnotationProcessorsProperty));
+            } catch (NumberFormatException nfe) {
+                return true;
+            }
+            
+        }
     }
 }

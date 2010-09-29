@@ -62,7 +62,7 @@ import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOption;
 import org.netbeans.modules.xml.jaxb.cfg.schema.XjcOptions;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardIterator;
 import org.netbeans.modules.xml.jaxb.ui.JAXBWizardSchemaNode;
-import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
+import org.netbeans.modules.xml.jaxb.spi.JAXBWizModuleConstants;
 import org.netbeans.modules.xml.jaxb.util.ProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;

@@ -60,6 +60,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;  
@@ -74,7 +75,6 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -100,7 +100,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     private static List<HistoryEntry> emptyHistory = new ArrayList<HistoryEntry>(0);
     private static Map<Long, String> emptyLabels = new HashMap<Long, String>();
     private static StoreEntry[] emptyStoreEntryArray = new StoreEntry[0];            
-    
+
+    private Set<File> lockedFolders = Collections.synchronizedSet(new HashSet<File>(5));
+
     private static FilenameFilter fileEntriesFilter = 
             new FilenameFilter() {
                 public boolean accept(File dir, String fileName) {
@@ -125,7 +127,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                     }
                 }, 
                 20, -1);
-    }    
+    }
 
     public synchronized void fileCreate(File file, long ts) {
         try {
@@ -142,8 +144,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         String tsString = Long.toString(ts);
         File storeFile = null;
         if(file.isFile()) {
-            storeFile = getStoreFile(file, tsString, true); 
-            FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                                 
+            try {
+                storeFile = getStoreFile(file, tsString, true);
+                FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
+            } finally {
+                // release lock
+                lockedFolders.remove(storeFile.getParentFile());
+            }
             LocalHistory.logCreate(file, storeFile, ts, from, to);
         } 
         touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
@@ -162,8 +169,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }        
         if(file.isFile()) { 
             try {
-                File storeFile = getStoreFile(file, Long.toString(ts), true);
-                FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                    
+                File storeFile = null;
+                try {
+                    storeFile = getStoreFile(file, Long.toString(ts), true);
+                    FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
+                } finally {
+                    // release lock
+                    lockedFolders.remove(storeFile.getParentFile());
+                }
                 LocalHistory.logChange(file, storeFile, ts);
                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
             } catch (IOException ioe) {
@@ -635,23 +648,23 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             
             File[] secondLevelFiles = topLevelFile.listFiles();
             if(secondLevelFiles == null || secondLevelFiles.length == 0) {
-                FileUtils.deleteRecursively(topLevelFile);
+                deleteRecursivelly(topLevelFile);
                 continue;
             }
             
             boolean allEmpty = true;
-            for(File secondLevelFile : secondLevelFiles) {                                                                   
-                boolean empty = cleanUpFolder(secondLevelFile, ttl, now);    
+            for(File secondLevelFile : secondLevelFiles) {
+                boolean empty = !lockedFolders.contains(secondLevelFile) && cleanUpFolder(secondLevelFile, ttl, now);
                 if(empty) {                        
                     if(secondLevelFile.exists()) {
-                        FileUtils.deleteRecursively(secondLevelFile);
+                        deleteRecursivelly(secondLevelFile);
                     }
                 } else {
                     allEmpty = false;
                 }             
             }
             if(allEmpty) {
-                FileUtils.deleteRecursively(topLevelFile);
+                deleteRecursivelly(topLevelFile);
             }                    
         }                     
     }
@@ -674,6 +687,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } else {
            return cleanUpStoredFolder(folder, ttl, now);
         }        
+    }
+
+    public void deleteRecursivelly(File file) {
+        if (!lockedFolders.contains(file)) {
+            FileUtils.deleteRecursively(file);
+        }
     }
     
     private boolean cleanUpStoredFile(File store, long ttl, long now) {
@@ -856,12 +875,15 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }       
         return ret.toString();
     }
-    
-    private File getStoreFile(File file, String name, boolean mkdirs) {
-        File storeFolder = getStoreFolder(file);                                    
-        if(mkdirs && !storeFolder.exists()) {
-            storeFolder.mkdirs();                                                                
-        } 
+
+    private File getStoreFile(File file, String name, boolean forceCreate) {
+        File storeFolder = getStoreFolder(file);
+        if(forceCreate) {
+            lockedFolders.add(storeFolder);
+            if(!storeFolder.exists()) {
+                storeFolder.mkdirs();
+            }
+        }
         return new File(storeFolder, name); 
     }
 

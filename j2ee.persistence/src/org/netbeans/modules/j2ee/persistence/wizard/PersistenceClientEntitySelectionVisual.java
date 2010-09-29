@@ -99,6 +99,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     private boolean createPU = true;//right now this panel is used in wizards with required pu (but need to handle if pu already created)
 
     private EntityClosure entityClosure;
+    private final boolean disableNoIdSelection;
 
 
     /** Creates new form CrudSetupPanel */
@@ -115,6 +116,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         };
         listAvailable.getSelectionModel().addListSelectionListener(selectionListener);
         listSelected.getSelectionModel().addListSelectionListener(selectionListener);
+        disableNoIdSelection = wizard.getProperty(PersistenceClientEntitySelection.DISABLENOIDSELECTION) == Boolean.TRUE;
     }
 
     /**
@@ -126,7 +128,14 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     private Set<String> getSelectedEntities(JList list) {
         Set<String> result = new HashSet<String>();
-        for (Object elem : list.getSelectedValues()){
+        for (Object elem : Util.getSelectedItems(list, true)){
+            result.add((String) elem);
+        }
+        return result;
+    }
+    private Set<String> getEnabledEntities(JList list) {
+        Set<String> result = new HashSet<String>();
+        for (Object elem : Util.getEnabledItems(list)){
             result.add((String) elem);
         }
         return result;
@@ -148,12 +157,12 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         labelSelectedEntities = new javax.swing.JLabel();
         createPUCheckbox = new javax.swing.JCheckBox();
 
-        listAvailable.setCellRenderer(ENTITY_LIST_RENDERER);
+        listAvailable.setCellRenderer(ENTITY_LIST_RENDERER_AV);
         jScrollPane1.setViewportView(listAvailable);
         listAvailable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_AvailableEntitiesList")); // NOI18N
         listAvailable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_AvailableEntitiesList")); // NOI18N
 
-        listSelected.setCellRenderer(ENTITY_LIST_RENDERER);
+        listSelected.setCellRenderer(ENTITY_LIST_RENDERER_SEL);
         jScrollPane2.setViewportView(listSelected);
         listSelected.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "LBL_SelectedEntitiesList")); // NOI18N
         listSelected.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_SelectedEntitiesList")); // NOI18N
@@ -232,7 +241,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 .add(buttonAddAll)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(buttonRemoveAll)
-                .addContainerGap(103, Short.MAX_VALUE))
+                .addContainerGap(127, Short.MAX_VALUE))
         );
 
         buttonRemove.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ACSD_Remove")); // NOI18N
@@ -315,7 +324,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_buttonRemoveAllActionPerformed
 
     private void buttonAddAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddAllActionPerformed
-        entityClosure.addAllEntities();
+        entityClosure.addEntities(getEnabledEntities(listAvailable));
         listAvailable.clearSelection();
         updateButtons();
         changeSupport.fireChange();
@@ -436,14 +445,15 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
     }
 
     private void updateButtons() {
-        buttonAdd.setEnabled(listAvailable.getSelectedValues().length > 0);
+        Set selectedItems = Util.getSelectedItems(listAvailable, true);
+        buttonAdd.setEnabled(!selectedItems.isEmpty());
         updateAddAllButton();
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         buttonRemoveAll.setEnabled(entityClosure.getSelectedEntities().size() > 0);
     }
 
     private void updateAddAllButton(){
-        buttonAddAll.setEnabled(entityClosure.getAvailableEntities().size() > 0);
+        buttonAddAll.setEnabled(!Util.getEnabledItems(listAvailable).isEmpty());
     }
     
     public void updatePersistenceUnitButton() {
@@ -469,7 +479,8 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
         createPUCheckbox.setVisible(visible);
     }
 
-    private final ListCellRenderer ENTITY_LIST_RENDERER = new EntityListCellRenderer();
+    private final ListCellRenderer ENTITY_LIST_RENDERER_AV = new EntityListCellRenderer( true );
+    private final ListCellRenderer ENTITY_LIST_RENDERER_SEL = new EntityListCellRenderer( false );
 
     private class EntityListModel extends AbstractListModel implements ChangeListener {
 
@@ -516,15 +527,20 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
 
     private final class EntityListCellRenderer extends JLabel implements ListCellRenderer {
 
-        public EntityListCellRenderer() {
+        private boolean available;
+
+        public EntityListCellRenderer(boolean available) {
             setOpaque(true);
+            this.available = available;
         }
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String text = null;
+            boolean disable = false;
             if (value instanceof Entity) {
-                text = ((Entity) value).getClass2();
+                Entity entity = ((Entity) value);
+                text = entity.getClass2();
                 if (text != null) {
                     String simpleName = JavaIdentifiers.unqualify(text);
                     String packageName = text.length() > simpleName.length() ? text.substring(0, text.length() - simpleName.length() - 1) : "<default package>";
@@ -532,9 +548,17 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 } else {
                     Logger.getLogger("global").log(Level.INFO, "Entity:" + value + " returns null from getClass2(); see IZ 80024"); //NOI18N
                 }
+                if(disableNoIdSelection && available && entityClosure.haveId(entity.getClass2())!=Boolean.TRUE){
+                    text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
+                    disable = disableNoIdSelection;
+                }
             }
             if (text == null) {
                 text = value.toString();
+                if(disableNoIdSelection && available && entityClosure.haveId(text)!=Boolean.TRUE && entityClosure.getEntity(text)!=null){
+                    text += " (" + NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoId") + ")";//NOI18N
+                    disable = disableNoIdSelection;
+                }
             }
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
@@ -543,7 +567,7 @@ public class PersistenceClientEntitySelectionVisual extends javax.swing.JPanel {
                 setBackground(list.getBackground());
                 setForeground(list.getForeground());
             }
-            setEnabled(entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value));
+            setEnabled((entityClosure.getAvailableEntities().contains(value) || entityClosure.getWantedEntities().contains(value)) && !disable);
             setFont(list.getFont());
             setText(text);
             return this;

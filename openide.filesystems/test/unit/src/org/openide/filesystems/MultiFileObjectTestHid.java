@@ -45,6 +45,9 @@
 package org.openide.filesystems;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MultiFileObjectTestHid extends TestBaseHid {
     private static String[] resources = new String [] {
@@ -60,6 +63,24 @@ public class MultiFileObjectTestHid extends TestBaseHid {
 
     protected String[] getResources (String testName) {
         return resources;
+    }
+    
+    public void testNoDisplayNameNeededForGetAttribute() {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setReadOnly(true);
+        final int[] cnt = new int[1];
+        FileSystem mfs = new MultiFileSystem (new FileSystem[] {lfs, this.testedFS}) {
+            @Override
+            public String getDisplayName() {
+                cnt[0]++;
+                return super.getDisplayName();
+            }
+        };
+        String resource = "/fold20/fold23.txt";
+        
+        FileObject fo = mfs.findResource(resource);                
+        assertNull(fo.getAttribute("not-there"));
+        assertEquals("No call to getDisplayName", 0, cnt[0]);
     }
 
     /** #18820*/
@@ -178,5 +199,24 @@ public class MultiFileObjectTestHid extends TestBaseHid {
         } finally {
             lock.releaseLock();
         }
+    }
+    
+    public void testOverridenAttributes187991() throws Exception {
+        MultiFileSystem mfs = (MultiFileSystem)this.testedFS;
+        List<FileSystem> all = new ArrayList<FileSystem>(Arrays.asList(mfs.getDelegates()));
+        XMLFileSystem xml = new XMLFileSystem(MultiFileObjectTestHid.class.getResource("test-layer-attribs.xml"));
+        all.add(xml);
+        FileObject fo = xml.findResource("foo/bar");
+        assertNotNull("Foo bar found", fo);
+        assertEquals("val", fo.getAttribute("x"));
+        
+        FileObject nfo = FileUtil.createData(all.get(0).getRoot(), "foo/bar");
+        nfo.setAttribute("x", "mal");
+        
+        mfs.setDelegates(all.toArray(new FileSystem[0]));
+        
+        FileObject t = mfs.findResource("foo/bar");
+        assertEquals("1st test", "mal", t.getAttribute("x"));
+        assertEquals("2nd test", "mal", t.getAttribute("x"));
     }
 }

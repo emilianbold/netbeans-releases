@@ -44,6 +44,8 @@
 
 package org.openide.nodes;
 
+import org.netbeans.junit.RandomlyFails;
+
 public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     {
         System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
@@ -61,5 +63,10 @@ public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
     @Override
     protected Node createNode (Children ch) {
         return new FilterNode (new AbstractNode (ch));
+    }
+    
+    @Override @RandomlyFails
+    public void testSetChildrenDoNotCallAddNotify() {
+        super.testSetChildrenDoNotCallAddNotify();
     }
 }

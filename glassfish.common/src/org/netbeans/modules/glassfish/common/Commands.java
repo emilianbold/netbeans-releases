@@ -46,10 +46,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,9 +61,11 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPInputStream;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerCommand;
 import org.netbeans.modules.glassfish.spi.Utils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -287,6 +292,18 @@ public class Commands {
         }
     };
 
+    private static void appendLibraries(StringBuilder cmd, File[] libraries) {
+        cmd.append(ServerCommand.PARAM_SEPARATOR).append("libraries="); // NOI18N
+        boolean firstOne = true;
+        for (File f : libraries) {
+            if (!firstOne) {
+                cmd.append(",");
+            }
+            cmd.append(f.getPath()); // NOI18N
+            firstOne = false;
+        }
+    }
+
     /**
      * Command to deploy a directory
      */
@@ -295,7 +312,7 @@ public class Commands {
         private final boolean isDirDeploy;
         private final File path;
 
-        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties) {
+        public DeployCommand(final File path, final String name, final String contextRoot, final Boolean preserveSessions, final Map<String,String> properties, File[] libraries) {
             super("deploy"); // NOI18N
 
             this.isDirDeploy = path.isDirectory();
@@ -311,6 +328,9 @@ public class Commands {
             if(contextRoot != null && contextRoot.length() > 0) {
                 cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
+            }
+            if (libraries.length > 0) {
+                appendLibraries(cmd, libraries);
             }
             cmd.append(PARAM_SEPARATOR).append("force=true"); // NOI18N
             addProperties(cmd,properties);
@@ -377,7 +397,8 @@ public class Commands {
      */
     public static final class RedeployCommand extends ServerCommand {
 
-        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions) {
+        public RedeployCommand(final String name, final String contextRoot, final Boolean preserveSessions, 
+                final File[] libraries, final boolean resourcesChanged) {
             super("redeploy"); // NOI18N
 
             StringBuilder cmd = new StringBuilder(128);
@@ -387,15 +408,26 @@ public class Commands {
                 cmd.append(PARAM_SEPARATOR).append("contextroot="); // NOI18N
                 cmd.append(contextRoot);
             }
-            addKeepSessions(cmd, preserveSessions);
+            if (libraries.length > 0) {
+                appendLibraries(cmd, libraries);
+            }
+            addProperties(cmd, preserveSessions, resourcesChanged);
             query = cmd.toString();
         }
     }
 
-    private static void addKeepSessions(StringBuilder cmd, Boolean preserveSessions) {
-        if(Boolean.TRUE.equals(preserveSessions)) {
+    private static void addProperties(StringBuilder cmd, Boolean preserveSessions, boolean resourcesChanged) {
+        if(Boolean.TRUE.equals(preserveSessions) || resourcesChanged) {
             cmd.append(ServerCommand.PARAM_SEPARATOR).append("properties="); // NOI18N
+        }
+        if(Boolean.TRUE.equals(preserveSessions)) {
             cmd.append("keepSessions=true");  // NOI18N
+            if (!resourcesChanged) {
+                cmd.append(":"); // NOI18N
+            }
+        }
+        if (!resourcesChanged) {
+            cmd.append("preserveAppScopedResources=true"); // NOI18N
         }
     }
 
@@ -515,5 +547,123 @@ public class Commands {
             return true;
         }
     }
+    
+    /*
+     * Command to get log data from the server
+     */
+    public static final class FetchLogData extends ServerCommand {
+        private String lines = "";
+        private String nextURL = "";
+        
+        public FetchLogData(String query) {
+            super("view-log");
+            this.query = query;
         }
+        
+        public String getLines() {
+            return lines;
+        }
+
+        public String getNextQuery() {
+            return nextURL;
+        }
+
+        @Override
+        public boolean acceptsGzip() {
+            return true;
+        }
+        
+        @Override
+        public boolean readResponse(InputStream in, HttpURLConnection hconn) {
+            StringWriter sw = new StringWriter();
+            try {
+                InputStream cooked = in;
+                String ce = hconn.getContentEncoding();
+                if (null != ce && ce.contains("gzip")) {
+                    cooked = new GZIPInputStream(in);
+                }
+                java.io.InputStreamReader isr = new java.io.InputStreamReader(cooked);
+                java.io.BufferedReader br = new java.io.BufferedReader(isr);
+                while (br.ready()) {
+                    sw.write(br.readLine());
+                    sw.write("\n");
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                try {
+                    sw.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            lines = sw.toString();
+            nextURL = hconn.getHeaderField("X-Text-Append-Next");
+            int delim = nextURL.lastIndexOf("?");
+            if (-1 != delim) {
+                nextURL = nextURL.substring(delim+1);
+            }
+            return -1 == delim ? false : true;
+        }
+        
+        @Override
+        public String getSrc() {
+            return "/management/domain/";
+        }
+    }
+
+    static class ListWebservicesCommand extends ServerCommand {
+
+        private Manifest manifest;
+        private List<String> wsList;
+
+        public ListWebservicesCommand() {
+            super("__list-webservices"); // NOI18N
+        }
+
+        public List<String> getWebserviceList() {
+            // !PW Can still modify sublist... is there a better structure?
+            if(wsList != null) {
+                return Collections.unmodifiableList(wsList);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            this.manifest = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(manifest == null) {
+                return false;
+            }
+            
+            Map <String, String> filter = new HashMap<String, String>();
+
+            Iterator<String> keyIterator = manifest.getEntries().keySet().iterator();
+            while (keyIterator.hasNext()) {
+                String k = keyIterator.next();
+                if (!k.contains("address:/")) // NOI18N
+                    continue;
+                if (k.contains("address:/wsat-wsat")) // NOI18N
+                    continue;
+                if (k.contains("address:/__wstx-services")) // NOI18N
+                    continue;
+                String a = k.replaceFirst(".* address:/", "").replaceFirst("\\. .*", ""); // NOI18N
+                if (filter.containsKey(a))
+                    continue;
+                filter.put(a,a);
+                if(wsList == null) {
+                    wsList = new ArrayList<String>();
+                }
+                wsList.add(a);
+            }
+
+            return true;
+        }
+    }
+}
 

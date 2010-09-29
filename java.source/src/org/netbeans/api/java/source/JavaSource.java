@@ -78,6 +78,7 @@ import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.NewComilerTask;
+import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -653,6 +654,7 @@ public final class JavaSource {
         }        
         else {
             final ModificationResult result = new ModificationResult(this);
+            final ElementOverlay overlay = new ElementOverlay();
             long start = System.currentTimeMillis();
             try {
                 final JavacParser[] theParser = new JavacParser[1];
@@ -664,7 +666,7 @@ public final class JavaSource {
                             Parser.Result parserResult = resultIterator.getParserResult();
                             final CompilationController cc = CompilationController.get(parserResult);
                             assert cc != null;
-                            final WorkingCopy copy = new WorkingCopy (cc.impl);
+                            final WorkingCopy copy = new WorkingCopy (cc.impl, overlay);
                             copy.setJavaSource(JavaSource.this);
                             task.run (copy);
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
@@ -859,6 +861,11 @@ public final class JavaSource {
         @Override
         public Map<?, int[]> getTagsFromModificationResult(ModificationResult mr) {
             return mr.tag2Span;
+        }
+
+        @Override
+        public ClassIndex createClassIndex(ClassPath bootPath, ClassPath classPath, ClassPath sourcePath, boolean supportsChanges) {
+            return new ClassIndex(bootPath, classPath, sourcePath, supportsChanges);
         }
     }                                                
 }

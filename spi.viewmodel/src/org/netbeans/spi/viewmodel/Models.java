@@ -308,16 +308,17 @@ public final class Models {
             ml.treeExpansionModels = Collections.singletonList((TreeExpansionModel) defaultExpansionModel);
         }
         /*
-        System.out.println("Tree Models = "+treeModels);
-        System.out.println("Tree Model Filters = "+treeModelFilters);
-        System.out.println("Tree Expans Models = "+treeExpansionModels);
-        System.out.println("Node Models = "+nodeModels);
-        System.out.println("Node Model Filters = "+nodeModelFilters);
-        System.out.println("Table Models = "+tableModels);
-        System.out.println("Table Model Filters = "+tableModelFilters);
-        System.out.println("Node Action Providers = "+nodeActionsProviders);
-        System.out.println("Node Action Provider Filters = "+nodeActionsProviderFilters);
-        System.out.println("Column Models = "+columnModels);
+        System.out.println("ALL MODELS = "+models+"\n");
+        System.out.println("Tree Models = "+ml.treeModels);
+        System.out.println("Tree Model Filters = "+ml.treeModelFilters);
+        System.out.println("Tree Expans Models = "+ml.treeExpansionModels);
+        System.out.println("Node Models = "+ml.nodeModels);
+        System.out.println("Node Model Filters = "+ml.nodeModelFilters);
+        System.out.println("Table Models = "+ml.tableModels);
+        System.out.println("Table Model Filters = "+ml.tableModelFilters);
+        System.out.println("Node Action Providers = "+ml.nodeActionsProviders);
+        System.out.println("Node Action Provider Filters = "+ml.nodeActionsProviderFilters);
+        System.out.println("Column Models = "+ml.columnModels);
          */
         return createCompoundModel(ml, propertiesHelpID);
     }

@@ -57,34 +57,41 @@ public class JhlClientTest extends NbTestCase {
     public JhlClientTest(String arg0) {
         super(arg0);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
     
     public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        SvnClientTestFactory.setClientType("javahl");
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BlameTest.class);
-        suite.addTestSuite(CancelTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(ImportTest.class);
-        suite.addTestSuite(InfoTest.class);
-        suite.addTestSuite(ListTest.class);
-        suite.addTestSuite(LogTest.class);
-        suite.addTestSuite(MergeTest.class);
-        suite.addTestSuite(MkdirTest.class);
-        suite.addTestSuite(MoveTest.class);
-        suite.addTestSuite(ParsedStatusTest.class);
-        suite.addTestSuite(PropertyTest.class);
-        suite.addTestSuite(RelocateTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(ResolvedTest.class);
-        suite.addTestSuite(RevertTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(TreeConflictsTest.class);
-        suite.addTestSuite(SwitchToTest.class);
-        suite.addTestSuite(UpdateTest.class);
+
+        System.setProperty("svnClientAdapterFactory", "javahl");
+
+        TestSuite suite = new TestSuite();        
+        suite.addTestSuite(AddTestHidden.class);
+        suite.addTestSuite(BlameTestHidden.class);
+          // suite.addTestSuite(CancelTest.class); XXX works only for cli
+        suite.addTestSuite(CatTestHidden.class);
+        suite.addTestSuite(CheckoutTestHidden.class);
+        suite.addTestSuite(CommitTestHidden.class);
+        suite.addTestSuite(CopyTestHidden.class);
+        suite.addTestSuite(ImportTestHidden.class);
+        suite.addTestSuite(InfoTestHidden.class);
+        suite.addTestSuite(ListTestHidden.class);
+        suite.addTestSuite(LogTestHidden.class);
+        suite.addTestSuite(MergeTestHidden.class);
+        suite.addTestSuite(MkdirTestHidden.class);
+        suite.addTestSuite(MoveTestHidden.class);
+        suite.addTestSuite(ParsedStatusTestHidden.class);
+        suite.addTestSuite(PropertyTestHidden.class);
+        suite.addTestSuite(RelocateTestHidden.class);
+        suite.addTestSuite(RemoveTestHidden.class);
+        suite.addTestSuite(ResolvedTestHidden.class);
+        suite.addTestSuite(RevertTestHidden.class);
+        suite.addTestSuite(StatusTestHidden.class);
+        suite.addTestSuite(TreeConflictsTestHidden.class);
+        suite.addTestSuite(SwitchToTestHidden.class);
+        suite.addTestSuite(UpdateTestHidden.class);
         
         return suite;
     }

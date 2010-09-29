@@ -127,19 +127,19 @@ public class SvnClientFactory {
     }
 
     public static boolean isCLI() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
     }
 
     public static boolean isJavaHl() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.javahl;
     }
 
     public static boolean isSvnKit() {
-        init();
+        if(!isClientAvailable()) return false;
         assert factory != null;
         return factory.connectionType() == ConnectionType.svnkit;
     }
@@ -282,7 +282,7 @@ public class SvnClientFactory {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
             }
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new SvnClientCallback(repositoryUrl, handledExceptions);
+                return new JhlClientCallback(repositoryUrl, handledExceptions);
             }
             protected ConnectionType connectionType() {
                 return ConnectionType.javahl;
@@ -467,10 +467,28 @@ public class SvnClientFactory {
                 return new SvnClientInvocationHandler(adapter, desc, support, handledExceptions);
             }
             protected ISVNPromptUserPassword createCallback(SVNUrl repositoryUrl, int handledExceptions) {
-                return new SvnClientCallback(repositoryUrl, handledExceptions);
+                return new SvnKitClientCallback(repositoryUrl, handledExceptions);
             }
             protected ConnectionType connectionType() {
                 return ConnectionType.svnkit;
+            }
+            
+            @Override
+            /**
+             * Slightly different from the default one
+             */
+            protected void setupAdapter(ISVNClientAdapter adapter, String username, char[] password, ISVNPromptUserPassword callback) {
+                if (callback != null) {
+                    adapter.addPasswordCallback(callback);
+                }
+                try {
+                    File configDir = FileUtil.normalizeFile(new File(SvnConfigFiles.getNBConfigPath()));
+                    adapter.setConfigDirectory(configDir);
+                } catch (SVNClientException ex) {
+                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                }
+                adapter.setUsername(username);
+                adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
         };
         LOG.info("svnClientAdapter running on svnkit");
@@ -624,6 +642,7 @@ public class SvnClientFactory {
             if(callback != null) {
                 adapter.addPasswordCallback(callback);
             } else {
+                // do not set password for javahl, it seems that in that case the password is stored permanently in ~/.subversion/auth
                 adapter.setPassword(password == null ? "" : new String(password)); //NOI18N
             }
             try {

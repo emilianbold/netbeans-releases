@@ -88,11 +88,11 @@ import org.openide.windows.InputOutput;
  */
 public abstract class PhpUnit extends PhpProgram {
     // for keeping log files to able to evaluate and fix issues
-    public static final boolean KEEP_LOGS = Boolean.getBoolean(PhpUnit.class.getName() + ".keepLogs"); // NOI18N
+    public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // options
     public static final String OPTIONS_SUB_PATH = "PhpUnit"; // NOI18N
     // test files suffix
-    private static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
+    public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
     // suite files suffix
     private static final String SUITE_CLASS_SUFFIX = "Suite"; // NOI18N
@@ -102,6 +102,7 @@ public abstract class PhpUnit extends PhpProgram {
     private static final String REQUIRE_ONCE_TPL_END = "%s';"; // NOI18N
     // cli options
     public static final String PARAM_VERSION = "--version"; // NOI18N
+    public static final String PARAM_FILTER = "--filter"; // NOI18N
     public static final String PARAM_COVERAGE_LOG = "--coverage-clover"; // NOI18N
     public static final String PARAM_SKELETON = "--skeleton-test"; // NOI18N
     // for older PHP Unit versions

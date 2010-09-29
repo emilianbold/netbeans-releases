@@ -108,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -115,16 +116,16 @@ import org.openide.util.Exceptions;
  */
 public class SourceAnalyser {    
     
-    private final Index index;
-    private final Map<Pair<String, String>, Object[]> references;
+    private final ClassIndexImpl.Writer writer;
+    private final List<Pair<Pair<String, String>, Object[]>> references;
     private final Set<Pair<String,String>> toDelete;
     private static final boolean fullIndex = Boolean.getBoolean(SourceAnalyser.class.getName()+".fullIndex");   //NOI18N
     
     /** Creates a new instance of SourceAnalyser */
-    public SourceAnalyser (final Index index) {
-        assert index != null;
-        this.index = index;
-        this.references = new HashMap<Pair<String,String>, Object[]> ();
+    SourceAnalyser (final @NonNull ClassIndexImpl.Writer writer) {
+        Parameters.notNull("writer", writer);   //NOI18N
+        this.writer = writer;
+        this.references = new ArrayList<Pair<Pair<String, String>, Object[]>>();
         this.toDelete = new HashSet<Pair<String,String>> ();
     }
     
@@ -132,17 +133,13 @@ public class SourceAnalyser {
     public void store () throws IOException {
         if (this.references.size() > 0 || this.toDelete.size() > 0) {
             try {
-                this.index.store(this.references, toDelete);
+                this.writer.deleteAndStore(this.references, toDelete);
             } finally {
                 this.references.clear();
                 this.toDelete.clear();
             }
         }
-    }
-    
-    public boolean isValid () throws IOException {
-        return this.index.isValid(true);
-    }
+    }    
     
     public void analyse (final Iterable<? extends CompilationUnitTree> data, JavacTaskImpl jt, JavaFileManager manager,
         final CompileTuple tuple,
@@ -211,7 +208,7 @@ public class SourceAnalyser {
     void analyseUnitAndStore (final CompilationUnitTree cu, final JavacTaskImpl jt, final JavaFileManager manager) throws IOException {
         try {
             final Map<Pair<String,String>,Data> usages = new HashMap<Pair<String,String>,Data> ();
-            final List<Pair<String,String>> topLevels = new ArrayList<Pair<String,String>>();
+            final Set<Pair<String,String>> topLevels = new HashSet<Pair<String,String>>();
             UsagesVisitor uv = new UsagesVisitor (jt, cu, manager, cu.getSourceFile(), topLevels);
             uv.scan(cu,usages);
             for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
@@ -219,7 +216,7 @@ public class SourceAnalyser {
                 final Data data = oe.getValue();
                 addClassReferences (key,data);
             }
-            this.index.store(this.references, topLevels);
+            this.writer.deleteEnclosedAndStore(this.references, topLevels);
         } catch (IllegalArgumentException iae) {
             Exceptions.printStackTrace(iae);
         }catch (OutputFileManager.InvalidSourcePath e) {
@@ -257,27 +254,9 @@ public class SourceAnalyser {
         result[0] = ru;
         result[1] = fidents.toString();
         result[2] = idents.toString();
-        this.references.put(name,result);
+        this.references.add(Pair.<Pair<String,String>,Object[]>of(name,result));
     }    
     
-    
-    private static void dumpUsages(final Map<Pair<String,String>, Data> usages) throws IOException {
-        assert usages != null;
-        for (Map.Entry<Pair<String,String>,Data> oe : usages.entrySet()) {
-            System.out.println("Usages in class: " + oe.getKey());      // NOI18N
-            for (Map.Entry<String,Set<ClassIndexImpl.UsageType>> ue : oe.getValue().usages.entrySet()) {
-                System.out.println("\t"+ue.getKey()+"\t: "+ue.getValue().toString());   // NOI18N
-            }
-            System.out.println("Feature idents in class: " + oe.getKey());      // NOI18N
-            for (CharSequence s : oe.getValue().featuresIdents) {
-                System.out.println("\t"+s);   // NOI18N
-            }
-            System.out.println("All idents in class: " + oe.getKey());      // NOI18N
-            for (CharSequence s : oe.getValue().idents) {
-                System.out.println("\t"+s);   // NOI18N
-            }
-        }
-    }
     
     static class Data {
         final Map<String, Set<ClassIndexImpl.UsageType>> usages = new HashMap<String, Set<ClassIndexImpl.UsageType>>();
@@ -290,8 +269,6 @@ public class SourceAnalyser {
         enum State {EXTENDS, IMPLEMENTS, GT, OTHER, IMPORT, PACKAGE_ANN};
         
         private final Stack<Pair<String,String>> activeClass;
-        private JavaFileManager manager;
-        private final JavacTaskImpl jt;
         private final Name errorName;
         private final CompilationUnitTree cu;        
         private final Types types;
@@ -299,7 +276,7 @@ public class SourceAnalyser {
         private final URL siblingUrl;
         private final String sourceName;
         private final boolean signatureFiles;
-        private final List<? super Pair<String,String>> topLevels;
+        private final Set<? super Pair<String,String>> topLevels;
         private final Set<? super ElementHandle<TypeElement>> newTypes;
         private final Set<String> imports;
         private final Set<String> staticImports;
@@ -335,14 +312,12 @@ public class SourceAnalyser {
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
             this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
-            this.jt = jt;
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = true;
-            this.manager = manager;
             this.virtual = tuple.virtual;
             this.siblingUrl = virtual ? tuple.indexable.getURL() : sibling.toUri().toURL();
             this.sourceName = inferBinaryName(manager, sibling);
@@ -355,7 +330,7 @@ public class SourceAnalyser {
                 CompilationUnitTree cu,
                 JavaFileManager manager,
                 javax.tools.JavaFileObject sibling,
-                List<? super Pair<String,String>> topLevels) throws MalformedURLException, IllegalArgumentException {
+                Set<? super Pair<String,String>> topLevels) throws MalformedURLException, IllegalArgumentException {
 
             assert jt != null;
             assert cu != null;
@@ -368,14 +343,12 @@ public class SourceAnalyser {
             this.importIdents = new HashSet<CharSequence>();
             this.packageAnnotationIdents = new HashSet<CharSequence>();
             this.packageAnnotations = new HashSet<Pair<String, ClassIndexImpl.UsageType>>();
-            this.jt = jt;
             this.errorName = Names.instance(jt.getContext()).error;
             this.state = State.OTHER;
             this.types = com.sun.tools.javac.code.Types.instance(jt.getContext());
             this.trans = TransTypes.instance(jt.getContext());
             this.cu = cu;
             this.signatureFiles = false;
-            this.manager = manager;
             this.siblingUrl = sibling.toUri().toURL();
             this.sourceName = inferBinaryName(manager, sibling);
             this.topLevels = topLevels;

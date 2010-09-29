@@ -273,6 +273,9 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
     }
     
     private void resetSplashPreview() throws NumberFormatException {
+        Image oldImage = splashImage.image;
+        if (null != oldImage)
+            oldImage.flush();
         splashImage.setSplashImageIcon(splashSource);
         Rectangle tRectangle = (Rectangle)runningTextBounds.getValue();
         Rectangle pRectangle = (Rectangle)progressBarBounds.getValue();
@@ -522,6 +525,7 @@ public final class SplashBrandingPanel extends AbstractBrandingPanel {
             try {
                 splashSource = file.toURI().toURL();
                 Image oldImage = splashImage.image;
+                oldImage.flush();
                 splashImage.setSplashImageIcon(splashSource);
                 Image newImage = splashImage.image;
                 int newWidth = newImage.getWidth(null);

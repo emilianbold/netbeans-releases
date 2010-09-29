@@ -113,6 +113,8 @@ public class RetrieverTest implements Retriever.Updater {
                         "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
                         "glassfishv3");
                 r.run();
+                System.out.println("message="+message);
+                System.out.println("status="+status);
                 assert message.startsWith("Download & Install completed in") : message;
                 assert status.equals("") : status;
             } finally {
@@ -128,6 +130,8 @@ public class RetrieverTest implements Retriever.Updater {
                         "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
                         "glassfishv3");
                 r.run();
+                System.out.println("message="+message);
+                System.out.println("status="+status);
                 assert message.startsWith("Download & Install completed in") : message;
                 assert status.equals("") : status;
             } finally {
@@ -143,6 +147,8 @@ public class RetrieverTest implements Retriever.Updater {
                         "http://localhost:" + server.getPort() + "/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip", this,
                         "glassfishv3");
                 r.run();
+                System.out.println("message="+message);
+                System.out.println("status="+status);
                 assert message.startsWith("Invalid URL: http://java.tent/download/glassfish/v3-prelude/release/glassfish-v3-prelude-ml.zip") : message;
                 assert status.equals("I/O Exception: java.tent") : status;
             } finally {
@@ -158,8 +164,12 @@ public class RetrieverTest implements Retriever.Updater {
                         "http://java.net/download/glassfish/v3-FFFprelude/release/glassfish-v3-prelude-ml.zip", this,
                         "glassfishv3");
                 r.run();
+                System.out.println("message="+message);
+                System.out.println("status="+status);
                 assert message.startsWith("Invalid URL: http://") : message;
-                assert status.startsWith("I/O Exception: http://") : status ;
+                assert status.startsWith("I/O Exception: http://") ||
+                        status.startsWith("I/O Exception: connect timed out") ||
+                        status.startsWith("I/O Exception: java.net") : status ;
             } finally {
                 deleteJunk(file);
             }

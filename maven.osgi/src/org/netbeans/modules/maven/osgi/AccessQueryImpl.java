@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.osgi.util.PackageDefinitionUtil;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,15 +59,14 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
 
-    private NbMavenProject mavenProject;
-    private Project project;
+    private final NbMavenProject mavenProject;
     private WeakReference<List<Pattern>> ref;
     private static String DEFAULT_IMP = "*";
     
     public AccessQueryImpl(Project prj) {
-        project = prj;
         mavenProject = prj.getLookup().lookup(NbMavenProject.class);
     }
     

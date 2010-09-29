@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 import java.io.DataInput;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmObjectFactory;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 
 /**
@@ -59,8 +60,12 @@ final public class FileContainerKey extends ProjectNameBasedKey {
         //System.err.printf(">>>>> new FileContainerKey %s \n", project);
     }
 
-    public FileContainerKey(DataInput in) throws IOException {
+    FileContainerKey(DataInput in) throws IOException {
         super(in);
+    }
+
+    FileContainerKey(KeyDataPresentation presentation) {
+        super(presentation);
     }
 
     @Override
@@ -92,5 +97,10 @@ final public class FileContainerKey extends ProjectNameBasedKey {
     @Override
     public boolean hasCache() {
         return true;
+    }
+
+    @Override
+    public short getKindPresentation() {
+        return KeyObjectFactory.KEY_FILE_CONTAINER_KEY;
     }
 }

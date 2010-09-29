@@ -562,7 +562,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
     private void projectLicenseComboBoxPopupMenuWillBecomeVisible(PopupMenuEvent evt) {//GEN-FIRST:event_projectLicenseComboBoxPopupMenuWillBecomeVisible
-        if (projectLicenseComboBox.getSelectedItem().equals(EMPTY_ELEMENT)) {
+        if (EMPTY_ELEMENT.equals(projectLicenseComboBox.getSelectedItem())) {
             projectLicenseComboBox.removeItem(EMPTY_ELEMENT);
         }
     }//GEN-LAST:event_projectLicenseComboBoxPopupMenuWillBecomeVisible

@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class DDHelper {
 
-    private static final String RESOURCE_FOLDER = "org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
+    private static final String RESOURCE_FOLDER = "/org/netbeans/modules/j2ee/common/dd/resources/"; //NOI18N
 
     private DDHelper() {
     }
@@ -168,6 +168,83 @@ public class DDHelper {
             return action.getResult();
     }
 
+    /**
+     * Created validation.xml deployment descriptor
+     * @param j2eeProfile Java EE profile
+     * @param dir Directory where validation.xml should be created
+     * @return validation.xml file as FileObject
+     * @throws IOException
+     * @since 1.52
+     */
+    public static FileObject createValidationXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        return createValidationXml(j2eeProfile, dir, "validation");
+    }
+
+    /**
+     * Created validation.xml deployment descriptor
+     * @param j2eeProfile Java EE profile
+     * @param dir Directory where validation.xml should be created
+     * @param name name of configuration file to create;
+     * @return validation.xml file as FileObject
+     * @throws IOException
+     * @since 1.52
+     */
+    public static FileObject createValidationXml(Profile j2eeProfile, FileObject dir, String name) throws IOException {
+        String template = null;
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            template = "validation.xml"; //NOI18N
+        }
+
+        if (template == null)
+            return null;
+
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, name+".xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
+    }
+
+    /**
+     * Created Constraint declaration deployment descriptor
+     * @param j2eeProfile Java EE profile
+     * @param dir Directory where constraint.xml should be created
+     * @return validation.xml file as FileObject
+     * @throws IOException
+     * @since 1.52
+     */
+    public static FileObject createConstraintXml(Profile j2eeProfile, FileObject dir) throws IOException {
+        return createValidationXml(j2eeProfile, dir, "constraint");
+    }
+
+    /**
+     * Created Constraint declaration deployment descriptor
+     * @param j2eeProfile Java EE profile
+     * @param dir Directory where constraint.xml should be created
+     * @param name name of configuration file to create;
+     * @return validation.xml file as FileObject
+     * @throws IOException
+     * @since 1.52
+     */
+    public static FileObject createConstraintXml(Profile j2eeProfile, FileObject dir, String name) throws IOException {
+        String template = null;
+        if (Profile.JAVA_EE_6_FULL == j2eeProfile || Profile.JAVA_EE_6_WEB == j2eeProfile) {
+            template = "constraint.xml"; //NOI18N
+        }
+
+        if (template == null)
+            return null;
+
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, name+".xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null)
+            throw action.getException();
+        else
+            return action.getResult();
+    }
+
+
     // -------------------------------------------------------------------------
     private static class MakeFileCopy implements Runnable {
         private String fromFile;
@@ -197,7 +274,7 @@ public class DDHelper {
                     throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
                 }
                 FileObject xml = FileUtil.createData(toDir, toFile);
-                String content = readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(fromFile));
+                String content = readResource(DDHelper.class.getResourceAsStream(fromFile));
                 if (content != null) {
                     FileLock lock = xml.lock();
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(xml.getOutputStream(lock)));

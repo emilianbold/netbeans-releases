@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.maven.apisupport;
 
-import hidden.org.codehaus.plexus.util.DirectoryScanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -52,17 +52,19 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
+@ProjectServiceProvider(service=ExecutionResultChecker.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class ExecutionChecker implements ExecutionResultChecker {
 
     private Project project;
 
-    ExecutionChecker(Project prj) {
+    public ExecutionChecker(Project prj) {
         project = prj;
     }
 

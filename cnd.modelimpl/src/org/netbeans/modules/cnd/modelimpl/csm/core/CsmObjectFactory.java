@@ -115,6 +115,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         return instance;
     }
 
+    @Override
     public boolean canWrite(Persistent obj) {
         if (obj instanceof FileImpl) {
             return ((FileImpl) obj).getBuffer().isFileBased();
@@ -123,6 +124,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         }
     }
 
+    @Override
     protected int getHandler(Object object) {
         assert object != null;
         int aHandler;
@@ -136,6 +138,14 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = GRAPH_CONTAINER;
         } else if (object instanceof FileImpl) {
             aHandler = FILE_IMPL;
+        } else if (object instanceof FileComponentDeclarations) {
+            aHandler = FILE_DECLARATIONS;
+        } else if (object instanceof FileComponentMacros) {
+            aHandler = FILE_MACROS;
+        } else if (object instanceof FileComponentIncludes) {
+            aHandler = FILE_INCLUDES;
+        } else if (object instanceof FileComponentReferences) {
+            aHandler = FILE_REFERENCES;
 //        } else if (object instanceof Unresolved.UnresolvedFile) {
 //            aHandler = UNRESOLVED_FILE;
 //        } else if (object instanceof Unresolved.UnresolvedClass) {
@@ -172,10 +182,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             } else {
                 aHandler = CLASS_FORWARD_DECLARATION_IMPL;
             }
-        } else if (object instanceof FunctionImpl) {
+        } else if (object instanceof FunctionImpl<?>) {
             // we have several FunctionImpl subclasses
-            if (object instanceof FunctionImplEx) {
-                if (object instanceof FunctionDefinitionImpl) {
+            if (object instanceof FunctionImplEx<?>) {
+                if (object instanceof FunctionDefinitionImpl<?>) {
                     // we have several FunctionDefinitionImpl subclasses
                     if (object instanceof DestructorDefinitionImpl) {
                         aHandler = DESTRUCTOR_DEF_IMPL;
@@ -195,9 +205,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                         aHandler = FUNCTION_IMPL_EX;
                     }
                 }
-            } else if (object instanceof MethodImpl) {
+            } else if (object instanceof MethodImpl<?>) {
                 // we have several MethodImpl subclusses
-                if (object instanceof MethodDDImpl) {
+                if (object instanceof MethodDDImpl<?>) {
                     // we have two MethodDDImpl classses:
                     if (object instanceof DestructorDDImpl) {
                         aHandler = DESTRUCTOR_DEF_DECL_IMPL;
@@ -213,7 +223,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 } else {
                     aHandler = METHOD_IMPL;
                 }
-            } else if (object instanceof FunctionDDImpl) {
+            } else if (object instanceof FunctionDDImpl<?>) {
                 if (object instanceof CsmFriendFunction) {
                     aHandler = FRIEND_FUNCTION_DEF_DECL_IMPL;
                 } else {
@@ -226,7 +236,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                     aHandler = FUNCTION_IMPL;
                 }
             }
-        } else if (object instanceof VariableImpl) {
+        } else if (object instanceof VariableImpl<?>) {
             // we have several VariableImpl subclasses
             if (object instanceof VariableDefinitionImpl) {
                 aHandler = VARIABLE_DEF_IMPL;
@@ -245,7 +255,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = INCLUDE_IMPL;
         } else if (object instanceof InheritanceImpl) {
             aHandler = INHERITANCE_IMPL;
-        } else if (object instanceof ParameterListImpl) {
+        } else if (object instanceof ParameterListImpl<?,?>) {
             aHandler = PARAM_LIST_IMPL;
             if (object instanceof FunctionParameterListImpl) {
                 aHandler = FUNCTION_PARAM_LIST_IMPL;
@@ -257,15 +267,17 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
             aHandler = MACRO_IMPL;
         } else if (object instanceof FriendClassImpl) {
             aHandler = FRIEND_CLASS_IMPL;
-        } else if (object instanceof DeclarationContainer) {
-            aHandler = DECLARATION_CONTAINER;
+        } else if (object instanceof DeclarationContainerProject) {
+            aHandler = DECLARATION_CONTAINER_PROJECT;
+        } else if (object instanceof DeclarationContainerNamespace) {
+            aHandler = DECLARATION_CONTAINER_NAMESPACE;
         } else if (object instanceof ClassifierContainer) {
             aHandler = CLASSIFIER_CONTAINER;
         } else if (object instanceof TemplateParameterImpl) {
             aHandler = TEMPLATE_PARAMETER_IMPL;
-        } else if (object instanceof ProgramImpl) {
+        } else if (object instanceof ProgramImpl<?>) {
             aHandler = PROGRAM_IMPL;
-        } else if (object instanceof SubroutineImpl) {
+        } else if (object instanceof SubroutineImpl<?>) {
             aHandler = SUBROUTINE_IMPL;
         } else if (object instanceof ModuleImpl) {
             aHandler = MODULE_IMPL;
@@ -275,6 +287,7 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         return aHandler;
     }
 
+    @Override
     protected SelfPersistent createObject(int handler, DataInput stream) throws IOException {
         SelfPersistent obj;
 
@@ -299,7 +312,23 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FileImpl(stream);
                 break;
 
-//            case UNRESOLVED_FILE:
+            case FILE_DECLARATIONS:
+                obj = new FileComponentDeclarations(stream);
+                break;
+
+            case FILE_MACROS:
+                obj = new FileComponentMacros(stream);
+                break;
+
+            case FILE_INCLUDES:
+                obj = new FileComponentIncludes(stream);
+                break;
+
+            case FILE_REFERENCES:
+                obj = new FileComponentReferences(stream);
+                break;
+
+                //            case UNRESOLVED_FILE:
 //                obj = new Unresolved.UnresolvedFile(stream);
 //                break;
 //                
@@ -475,8 +504,12 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
                 obj = new FriendFunctionDDImpl(stream);
                 break;
 
-            case DECLARATION_CONTAINER:
-                obj = new DeclarationContainer(stream);
+            case DECLARATION_CONTAINER_PROJECT:
+                obj = new DeclarationContainerProject(stream);
+                break;
+
+            case DECLARATION_CONTAINER_NAMESPACE:
+                obj = new DeclarationContainerNamespace(stream);
                 break;
 
             case CLASSIFIER_CONTAINER:
@@ -526,10 +559,15 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int LIB_PROJECT_IMPL               = PROJECT_IMPL + 1;    
     private static final int FILES_CONTAINER                = LIB_PROJECT_IMPL + 1;
     private static final int GRAPH_CONTAINER                = FILES_CONTAINER + 1;
-    private static final int DECLARATION_CONTAINER	        = GRAPH_CONTAINER + 1;
-    private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER + 1;
+    private static final int DECLARATION_CONTAINER_PROJECT  = GRAPH_CONTAINER + 1;
+    private static final int DECLARATION_CONTAINER_NAMESPACE= DECLARATION_CONTAINER_PROJECT + 1;
+    private static final int CLASSIFIER_CONTAINER           = DECLARATION_CONTAINER_NAMESPACE + 1;
     private static final int FILE_IMPL                      = CLASSIFIER_CONTAINER + 1;
-    private static final int ENUM_IMPL                      = FILE_IMPL + 1;
+    private static final int FILE_DECLARATIONS              = FILE_IMPL + 1;
+    private static final int FILE_MACROS                    = FILE_DECLARATIONS + 1;
+    private static final int FILE_INCLUDES                  = FILE_MACROS + 1;
+    private static final int FILE_REFERENCES                = FILE_INCLUDES + 1;
+    private static final int ENUM_IMPL                      = FILE_REFERENCES + 1;
     private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
     private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;
     private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;

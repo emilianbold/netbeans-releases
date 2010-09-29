@@ -62,6 +62,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -111,6 +112,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.WeakSet;
 
 /**
  *
@@ -397,7 +399,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         }
     }
 
-    private static Map<Document, Dictionary> doc2DictionaryCache = new WeakHashMap<Document, Dictionary>();
+    private static Set<Document> knownDocuments = new WeakSet<Document>();
     private static Map<Locale, DictionaryImpl> locale2UsersLocalDictionary = new HashMap<Locale, DictionaryImpl>();
     private static Map<Project, Reference<DictionaryImpl>> project2Reference = new WeakHashMap<Project, Reference<DictionaryImpl>>();
     
@@ -428,7 +430,7 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
     }
     
     public static synchronized Dictionary getDictionary(Document doc) {
-        Dictionary result = doc2DictionaryCache.get(doc);
+        Dictionary result = (Dictionary) doc.getProperty(CompoundDictionary.class);
         
         if (result != null) {
             return result;
@@ -468,14 +470,18 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         dictionaries.add(d);
         
         result = CompoundDictionary.create(dictionaries.toArray(new Dictionary[0]));
-        
-        doc2DictionaryCache.put(doc, result);
+
+        doc.putProperty(CompoundDictionary.class, result);
+        knownDocuments.add(doc);
         
         return result;
     }
 
     static synchronized void clearDoc2DictionaryCache() {
-        doc2DictionaryCache.clear();
+        for (Document d : knownDocuments) {
+            d.putProperty(CompoundDictionary.class, null);
+        }
+        knownDocuments.clear();
     }
 
     private boolean isCanceled() {

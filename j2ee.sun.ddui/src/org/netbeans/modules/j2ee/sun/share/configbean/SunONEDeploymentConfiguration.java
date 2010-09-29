@@ -342,7 +342,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
 
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if (rci != null) {
-            ds = rci.createDataSource(jndiName, url, username, password, driver, resourceDir);
+            ds = rci.createDataSource(jndiName, url, username, password, driver, resourceDir,"sun-resources");
         }
         return ds;
     }
@@ -381,7 +381,7 @@ public class SunONEDeploymentConfiguration extends GlassfishConfiguration implem
         ResourceConfiguratorInterface rci = getResourceConfigurator();
         if (rci != null) {
             if (!rci.isJMSResourceDefined(name, resourceDir)) {
-                jmsResource = rci.createJMSResource(name, type, name, resourceDir);
+                jmsResource = rci.createJMSResource(name, type, name, resourceDir, "sun-resouces");
             }
         }
         return jmsResource;

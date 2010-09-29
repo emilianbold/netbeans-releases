@@ -51,12 +51,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
+import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
+@DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                             types=TreeModelFilter.class,
+                             position=350)
 public class EvaluatorTreeModelFilter implements TreeModelFilter {
 
     public static final String HISTORY_NODE =

@@ -43,7 +43,6 @@ package org.netbeans.modules.dlight.tools.impl;
 
 import java.io.IOException;
 import java.util.concurrent.CancellationException;
-import org.netbeans.modules.dlight.api.execution.DLightTargetChangeEvent;
 import org.netbeans.modules.dlight.api.datafilter.DataFilter;
 import org.netbeans.modules.dlight.tools.*;
 import java.io.File;
@@ -53,32 +52,28 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.dlight.api.execution.AttachableTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget;
 import org.netbeans.modules.dlight.api.execution.DLightTarget.ExecutionEnvVariablesProvider;
-import org.netbeans.modules.dlight.api.execution.ValidationListener;
 import org.netbeans.modules.dlight.api.execution.ValidationStatus;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.extras.api.support.CollectorRunner;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
+import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
@@ -99,87 +94,28 @@ public class LLDataCollector
         ExecutionEnvVariablesProvider {
 
     private static final boolean ALLOW_ON_MACOSX = Boolean.getBoolean("cnd.tools.prof_agent.allow_on_macos"); // NOI18N
-
     private final Object lock = LLDataCollector.class.getName();
     private final EnumSet<LLDataCollectorConfiguration.CollectedData> collectedData;
-    private final Set<ValidationListener> validationListeners;
-    private final String name;
-    private DLightTarget target;
-    private ValidationStatus validationStatus;
     private CollectorRunner profRunner;
-    private final List<DataCollectorListener> listeners = new ArrayList<DataCollectorListener>();
+    private final DataCollectorListenersSupport dclsupport = new DataCollectorListenersSupport(this);
 
     public LLDataCollector(LLDataCollectorConfiguration configuration) {
+        super(LLDataCollectorConfigurationAccessor.getDefault().getName());
         collectedData = EnumSet.of(LLDataCollectorConfigurationAccessor.getDefault().getCollectedData(configuration));
-        name = LLDataCollectorConfigurationAccessor.getDefault().getName();
-        validationStatus = ValidationStatus.initialStatus();
-        validationListeners = Collections.synchronizedSet(new HashSet<ValidationListener>());
     }
 
-/**
-     * Adds collector state listener, all listeners will be notified about
-     * collector state change.
-     * @param listener add listener
-     */
     @Override
     public final void addDataCollectorListener(DataCollectorListener listener) {
-        if (listener == null) {
-            return;
-        }
-
-        synchronized (this) {
-            if (!listeners.contains(listener)) {
-                listeners.add(listener);
-            }
-        }
+        dclsupport.addListener(listener);
     }
 
-    /**
-     * Remove collector listener
-     * @param listener listener to remove from the list
-     */
     @Override
     public final void removeDataCollectorListener(DataCollectorListener listener) {
-        synchronized (this) {
-            listeners.remove(listener);
-        }
+        dclsupport.removeListener(listener);
     }
 
-    /**
-     * Notifies listeners target state changed in separate thread
-     * @param oldState state target was
-     * @param newState state  target is
-     */
     protected final void notifyListeners(final CollectorState state) {
-        DataCollectorListener[] ll;
-
-        synchronized (this) {
-            ll = listeners.toArray(new DataCollectorListener[0]);
-        }
-
-        final CountDownLatch doneFlag = new CountDownLatch(ll.length);
-
-        // Will do notification in parallel, but wait until all listeners
-        // finish processing of event.
-        for (final DataCollectorListener l : ll) {
-            DLightExecutorService.submit(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        l.collectorStateChanged(LLDataCollector.this, state);
-                    } finally {
-                        doneFlag.countDown();
-                    }
-                }
-            }, "Notifying " + l); // NOI18N
-        }
-
-        try {
-            doneFlag.await();
-        } catch (InterruptedException ex) {
-        }
-
+        dclsupport.notifyListeners(state);
     }
 
     public void addConfiguration(LLDataCollectorConfiguration configuration) {
@@ -188,10 +124,7 @@ public class LLDataCollector
         }
     }
 
-    public String getName() {
-        return name;
-    }
-
+    @Override
     public List<DataTableMetadata> getDataTablesMetadata() {
         List<DataTableMetadata> tables = new ArrayList<DataTableMetadata>();
         synchronized (lock) {
@@ -208,10 +141,12 @@ public class LLDataCollector
         return tables;
     }
 
+    @Override
     public Collection<DataStorageType> getRequiredDataStorageTypes() {
         return Collections.singletonList(DataStorageTypeFactory.getInstance().getDataStorageType(SQLDataStorage.SQL_DATA_STORAGE_TYPE));
     }
 
+    @Override
     public void init(Map<DataStorageType, DataStorage> storages, DLightTarget target) {
         ExecutionEnvironment env = target.getExecEnv();
         if (!env.isLocal()) {
@@ -230,10 +165,6 @@ public class LLDataCollector
             // /proc serves this purpose on other platforms.
             collectedData.remove(LLDataCollectorConfiguration.CollectedData.CPU);
         }
-
-        synchronized (lock) {
-            this.target = target;
-        }
     }
 
     private void upload(ExecutionEnvironment execEnv, File localFile, String remoteDir, int mode) {
@@ -249,15 +180,18 @@ public class LLDataCollector
         }
     }
 
+    @Override
     public boolean isAttachable() {
         return true;
     }
 
+    @Override
     public String getCmd() {
         // should not be called
         return null;
     }
 
+    @Override
     public String[] getArgs() {
         // should not be called
         return null;
@@ -308,21 +242,8 @@ public class LLDataCollector
         return NativeToolsUtil.getCompatibleBinaries(env, "prof_monitor"); // NOI18N
     }
 
-    public void targetStateChanged(DLightTargetChangeEvent event) {
-        switch (event.state) {
-            case RUNNING:
-                startMonitor();
-                break;
-            case DONE:
-            case FAILED:
-            case STOPPED:
-            case TERMINATED:
-                stopMonitor();
-                break;
-        }
-    }
-
-    private void startMonitor() {
+    @Override
+    protected void targetStarted(DLightTarget target) {
         final AttachableTarget at;
         final ExecutionEnvironment env;
         final EnumSet<LLDataCollectorConfiguration.CollectedData> cdata;
@@ -373,7 +294,8 @@ public class LLDataCollector
         }
     }
 
-    private void stopMonitor() {
+    @Override
+    protected void targetFinished(DLightTarget target) {
         final CollectorRunner collectorToStop;
 
         synchronized (lock) {
@@ -391,6 +313,7 @@ public class LLDataCollector
     }
 
     private class FakeIndicatorNotificationListener implements IndicatorNotificationsListener {
+
         @Override
         public void reset() {
             resetIndicators();
@@ -443,36 +366,8 @@ public class LLDataCollector
         }
     }
 
-// validation stuff ////////////////////////////////////////////////////////////
-    public ValidationStatus validate(final DLightTarget objectToValidate) {
-        synchronized (lock) {
-            if (validationStatus.isValid()) {
-                return validationStatus;
-            }
-
-            ValidationStatus oldStatus = validationStatus;
-            ValidationStatus newStatus = doValidation(objectToValidate);
-
-            notifyStatusChanged(oldStatus, newStatus);
-
-            validationStatus = newStatus;
-            return newStatus;
-        }
-    }
-
-    public void invalidate() {
-        synchronized (lock) {
-            validationStatus = ValidationStatus.initialStatus();
-        }
-    }
-
-    public ValidationStatus getValidationStatus() {
-        synchronized (lock) {
-            return validationStatus;
-        }
-    }
-
-    private ValidationStatus doValidation(final DLightTarget target) {
+    @Override
+    protected ValidationStatus doValidation(final DLightTarget target) {
         DLightLogger.assertNonUiThread();
 
         ExecutionEnvironment env = target.getExecEnv();
@@ -480,6 +375,7 @@ public class LLDataCollector
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             AsynchronousAction connectAction = ConnectionManager.getInstance().getConnectToAction(env, new Runnable() {
 
+                @Override
                 public void run() {
                     DLightManager.getDefault().revalidateSessions();
                 }
@@ -512,22 +408,6 @@ public class LLDataCollector
         }
 
         return ValidationStatus.validStatus();
-    }
-
-    private void notifyStatusChanged(ValidationStatus oldStatus, ValidationStatus newStatus) {
-        if (!oldStatus.equals(newStatus)) {
-            for (ValidationListener vl : validationListeners.toArray(new ValidationListener[0])) {
-                vl.validationStateChanged(this, oldStatus, newStatus);
-            }
-        }
-    }
-
-    public void addValidationListener(ValidationListener listener) {
-        validationListeners.add(listener);
-    }
-
-    public void removeValidationListener(ValidationListener listener) {
-        validationListeners.remove(listener);
     }
 
     private static String getMessage(String key) {

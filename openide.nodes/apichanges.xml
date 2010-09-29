@@ -49,6 +49,24 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="Children.createLazy">
+        <api name="nodes"/>
+        <summary>A mechanism to provide node's children lazily.</summary>
+        <version major="7" minor="18"/>
+        <date day="9" month="9" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+        <description>
+            <p>
+            <a href="@TOP@/org/openide/nodes/Children.html">Children</a> have
+            a new createLazy(Callable&lt;Children&gt; factory) method, that can be used
+            to provide a lazy children implementation. Callable.call() is called
+            just when node's children are really needed.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="Node"/>
+        <issue number="190115"/>
+    </change>
     <change id="IndexedNode.LookupConstr">
         <api name="nodes"/>
         <summary>New constructor of IndexedNode</summary>

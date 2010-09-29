@@ -457,6 +457,10 @@ public final class ActionsManager {
         for (i = 0; i < k; i++) {
             LazyActionsManagerListener l = (LazyActionsManagerListener)
                 lazyListeners.get (i);
+            if (l == null) {
+                // instance could not be created.
+                continue;
+            }
             String[] props = l.getProperties ();
             if (props == null) {
                 addActionsManagerListener (l);
@@ -475,6 +479,10 @@ public final class ActionsManager {
         for (i = 0; i < k; i++) {
             LazyActionsManagerListener l = (LazyActionsManagerListener)
                 lazyListeners.get (i);
+            if (l == null) {
+                // instance could not be created.
+                continue;
+            }
             String[] props = l.getProperties ();
             if (props == null) {
                 removeActionsManagerListener (l);

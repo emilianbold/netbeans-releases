@@ -21,7 +21,7 @@ public final class IDPProvider {
     private IDPProvider() {
     }
 
-    public static final IDPProvider getInstance() {
+    public static IDPProvider getInstance() {
         if (instance == null) {
             instance = new IDPProvider();
         }
@@ -33,19 +33,23 @@ public final class IDPProvider {
      * @param configuraiton
      * @return new instance of data collector is returned each time this method is invoked;
      */
-    public IndicatorDataProvider create(IndicatorDataProviderConfiguration configuraiton) {
-        Collection<? extends IndicatorDataProviderFactory> result = Lookup.getDefault().lookupAll(IndicatorDataProviderFactory.class);
+    public <T extends IndicatorDataProviderConfiguration> IndicatorDataProvider<T> create(T configuraiton) {
+        @SuppressWarnings("unchecked")
+        Collection<IndicatorDataProviderFactory<?>> result = (Collection<IndicatorDataProviderFactory<?>>) Lookup.getDefault().lookupAll(IndicatorDataProviderFactory.class);
+
         if (result.isEmpty()) {
             return null;
         }
-        for (IndicatorDataProviderFactory idpFactory : result) {
+
+        for (IndicatorDataProviderFactory<?> idpFactory : result) {
             if (idpFactory.getID().equals(configuraiton.getID())) {
                 @SuppressWarnings("unchecked")
                 // Impossible to do it in checked manner. Have to rely on factory ID check.
-                IndicatorDataProvider<?> indicatorDataProvider = idpFactory.create(configuraiton);
+                IndicatorDataProvider<T> indicatorDataProvider = ((IndicatorDataProviderFactory<T>) idpFactory).create(configuraiton);
                 return indicatorDataProvider;
             }
         }
+
         return null;
     }
 }

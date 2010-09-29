@@ -44,15 +44,15 @@
 
 package org.netbeans.modules.html.palette.items;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.editor.ext.html.parser.SyntaxParserContext;
-import org.netbeans.editor.ext.html.parser.SyntaxParserResult;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Exceptions;
@@ -157,9 +157,8 @@ public class RADIO implements ActiveEditorDrop {
 
         List<String> names = new ArrayList<String>();
         //search for the input tags
-        SyntaxParserContext context = SyntaxParserContext.createContext(code);
-        SyntaxParserResult parseResult = SyntaxParser.parse(context);
-        for(SyntaxElement e : parseResult.getElements()) {
+        Collection<SyntaxElement> elements = SyntaxAnalyzer.create(new HtmlSource(code)).analyze().getElements().items();
+        for(SyntaxElement e : elements) {
             if(e.type() == SyntaxElement.TYPE_TAG) {
                 SyntaxElement.Tag tag = (SyntaxElement.Tag)e;
                 if(tag.getName().equalsIgnoreCase("input")) { //NOI18N

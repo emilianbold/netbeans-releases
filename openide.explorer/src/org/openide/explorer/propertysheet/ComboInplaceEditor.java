@@ -360,6 +360,13 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     /** Overridden to do the focus-popup handling that would normally be done
      * by the look and feel */
     public void processFocusEvent(FocusEvent fe) {
+        if ((fe.getID() == fe.FOCUS_LOST) &&
+            fe.getOppositeComponent() == getEditor().getEditorComponent() &&
+            isPopupVisible()) {
+            
+            return ; // If the popup is visible and the focus is transferred to the editor component,
+                     // ignore the event - it would close the popup.
+        }
         super.processFocusEvent(fe);
 
         if (PropUtils.isLoggable(ComboInplaceEditor.class)) {

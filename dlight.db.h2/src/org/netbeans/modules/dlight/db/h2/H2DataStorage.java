@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
@@ -89,7 +89,7 @@ public final class H2DataStorage extends SQLDataStorage {
 
     static {
         try {
-            Class driver = Class.forName("org.h2.Driver"); // NOI18N
+            Class<?> driver = Class.forName("org.h2.Driver"); // NOI18N
             logger.log(Level.FINE, "Driver for H2DB ({0}) Loaded ", driver.getName()); // NOI18N
         } catch (ClassNotFoundException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -218,8 +218,8 @@ public final class H2DataStorage extends SQLDataStorage {
     }
 
     @Override
-    protected void connect(String dburl) throws SQLException {
-        connection = DriverManager.getConnection(dburl, "admin", ""); // NOI18N
+    public void connect() throws SQLException {
+        connection = DriverManager.getConnection(getDbURL(), "admin", ""); // NOI18N
     }
 
 //    public int putStack(List<CharSequence> stack, long sampleDuration) {
@@ -271,9 +271,19 @@ public final class H2DataStorage extends SQLDataStorage {
 //        return stackStorage.getHotSpotFunctions(metric, limit);
 //    }
     @Override
-    protected String getSQLQueriesDelimeter() {
+    public String getSQLQueriesDelimeter() {
         return SQL_QUERY_DELIMETER;
     }
+    
+    @Override
+    public String getAutoIncrementExpresion() {
+        return "AUTO_INCREMENT"; // NOI18N
+    }
+
+    @Override
+    public String getPrimaryKeyExpression() {
+        return "PRIMARY KEY"; // NOI18N
+    }    
 
 //    public List<FunctionCallWithMetric> getFunctionsList(DataTableMetadata metadata, List<Column> metricsColumn, FunctionDatatableDescription functionDescription) {
 //        return stackStorage.getFunctionsList(metadata, metricsColumn, functionDescription);
@@ -295,7 +305,8 @@ public final class H2DataStorage extends SQLDataStorage {
     @Override
     public void loadSchema(){
         try {
-            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null, "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
+            ResultSet rs = select("INFORMATION_SCHEMA.TABLES", null,  // NOI18N
+                    "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE LIKE 'TABLE'");// NOI18N
             if (rs == null) {
                 return;
             }

@@ -65,6 +65,7 @@ import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.util.PersistenceProviderComboboxHelper;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
+import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPanel.TableGeneration;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -427,11 +428,15 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel {
         String warning = null;
         if(prov != null){
             if(Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(prov))){
+                if(Util.isJPAVersionSupported(project, Persistence.VERSION_2_0)){
                     String sourceLevel = SourceLevelChecker.getSourceLevel(project);
                     if(sourceLevel !=null ){
                         if(!("1.6".equals(sourceLevel) || Double.parseDouble(sourceLevel)>=1.6))
                         warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_WrongSourceLevel", sourceLevel);
                     }
+                } else {
+                    warning  = NbBundle.getMessage(PersistenceUnitWizard.class, "ERR_UnsupportedJpaVersion", Persistence.VERSION_2_0);
+                }
             }
         }
         ImageIcon icon = null;

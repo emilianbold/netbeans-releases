@@ -77,6 +77,12 @@ public final class EarProjectUtil {
      */
     public static boolean isDDCompulsory(Project earProject) {
         assert earProject != null;
+        J2eeModuleProvider provider = earProject.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            if (provider.getConfigSupport().isDescriptorRequired()) {
+                return true;
+            }
+        }
         //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
         EarImplementation impl = earProject.getLookup().lookup(EarImplementation.class);
         if (impl != null) {

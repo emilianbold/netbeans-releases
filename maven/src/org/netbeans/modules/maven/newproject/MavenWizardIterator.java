@@ -42,68 +42,65 @@
 
 package org.netbeans.modules.maven.newproject;
 
-import java.awt.Component;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
  *
  *@author mkleint
  */
-public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
+public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 1L;
-    
-    private static final String USER_DIR_PROP = "user.dir"; //NOI18N
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
     private transient int index;
-    private transient WizardDescriptor.Panel[] panels;
+    private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
-    private final List<ChangeListener> listeners;
+    public static final String KEY_GROUP_ID = "groupId", KEY_ARTIFACT_ID = "artifactId", KEY_VERSION = "version", KEY_REPOSITORY = "repository";
+    private final Archetype archetype;
     
-    public MavenWizardIterator() {
-        listeners = new ArrayList<ChangeListener>();
-    }
-    
-    public static MavenWizardIterator createIterator() {
-        return new MavenWizardIterator();
+    private MavenWizardIterator(Archetype archetype) {
+        this.archetype = archetype;
     }
 
-    
-    private WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {
-        return new WizardDescriptor.Panel[] {
-            new ChooseWizardPanel(),
-            new BasicWizardPanel(vg)
-        };
+    /** Wizard iterator which prompts the user to select an archetype from several lists. */
+    public static WizardDescriptor.Iterator<?> pickArchetype() {
+        return new MavenWizardIterator(null);
+    }
+
+    /**
+     * Wizard iterator using a predetermined archetype.
+     * @param params list of keys among {@link #KEY_GROUP_ID}, {@link #KEY_ARTIFACT_ID}, {@link #KEY_VERSION}, optionally {@link #KEY_REPOSITORY}
+     */
+    public static WizardDescriptor.Iterator<?> definedArchetype(Map<String,String> params) {
+        Archetype arch = new Archetype();
+        arch.setGroupId(params.get(KEY_GROUP_ID));
+        arch.setArtifactId(params.get(KEY_ARTIFACT_ID));
+        arch.setVersion(params.get(KEY_VERSION));
+        arch.setRepository(params.get(KEY_REPOSITORY)); // null OK
+        return new MavenWizardIterator(arch);
     }
     
-    private String[] createSteps() {
-        return new String[] {
-            NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep"),
-            NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep2")
-        };
-    }
-    
-    @Override
-    public Set/*<FileObject>*/ instantiate() throws IOException {
+    public @Override Set<FileObject> instantiate() throws IOException {
         assert false : "Cannot call this method if implements WizardDescriptor.ProgressInstantiatingIterator."; //NOI18N
         return null;
     }
     
     @Override
-    public Set instantiate(ProgressHandle handle) throws IOException {
+    public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         return ArchetypeWizardUtils.instantiate(handle, wiz);
     }
     
@@ -112,8 +109,22 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         this.wiz = wiz;
         index = 0;
         ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
-        panels = createPanels(vg);
-        updateSteps();
+        panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+        List<String> steps = new ArrayList<String>();
+        if (archetype == null) {
+            panels.add(new ChooseWizardPanel());
+            steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep"));
+        }
+        panels.add(new BasicWizardPanel(vg));
+        steps.add(NbBundle.getMessage(MavenWizardIterator.class, "LBL_CreateProjectStep2"));
+        for (int i = 0; i < panels.size(); i++) {
+            JComponent c = (JComponent) panels.get(i).getComponent();
+            c.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, i);
+            c.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
+      }
+        if (archetype != null) {
+            wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, archetype);
+        }
     }
     
     @Override
@@ -122,18 +133,15 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
         wiz.putProperty("name",null); //NOI18N
         this.wiz = null;
         panels = null;
-        listeners.clear();
     }
     
-    @Override
-    public String name() {
-        return MessageFormat.format(org.openide.util.NbBundle.getMessage(MavenWizardIterator.class, "NameFormat"),
-                new Object[] {new Integer(index + 1), new Integer(panels.length)});
+    public @Override String name() {
+        return NbBundle.getMessage(MavenWizardIterator.class, "NameFormat", index + 1, panels.size());
     }
     
     @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panels.size() - 1;
     }
     
     @Override
@@ -158,55 +166,12 @@ public class MavenWizardIterator implements WizardDescriptor.ProgressInstantiati
     }
     
     @Override
-    public WizardDescriptor.Panel current() {
-        return panels[index];
+    public WizardDescriptor.Panel<WizardDescriptor> current() {
+        return panels.get(index);
     }
     
-    // If nothing unusual changes in the middle of the wizard, simply:
-    @Override
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
+    public @Override void addChangeListener(ChangeListener l) {}
     
-    @Override
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
+    public @Override void removeChangeListener(ChangeListener l) {}
 
-    private void fireChange() {
-        synchronized (listeners) {
-            for (ChangeListener list : listeners) {
-                list.stateChanged(new ChangeEvent(this));
-            }
-        }
-    }
-
-    private void updateSteps() {
-        // Make sure list of steps is accurate.
-        String[] steps = new String[panels.length];
-        String[] basicOnes = createSteps();
-        System.arraycopy(basicOnes, 0, steps, 0, basicOnes.length);
-        for (int i = 0; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
-            if (i >= basicOnes.length || steps[i] == null) {
-                // Default step name to component name of panel.
-                // Mainly useful for getting the name of the target
-                // chooser to appear in the list of steps.
-                steps[i] = c.getName();
-            }
-            if (c instanceof JComponent) {
-                // assume Swing components
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); //NOI18N
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty("WizardPanel_contentData", steps); //NOI18N
-            }
-        }
-    }
-    
 }

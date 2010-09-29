@@ -212,7 +212,8 @@
                         <attr name="position" intvalue="1960"/>
                     </file>                    
                 </folder>
-                
+
+                <!-- XXX broken if groovy but not ruby cluster is enabled (check ValidateLayerConsistencyTest.testValidShadows)
                 <folder name="text">
                     <folder name="html">
                         <folder name="CodeTemplates">
@@ -224,6 +225,7 @@
                         </folder>
                     </folder>
                 </folder>
+                -->
             </folder>
         </folder>
     </folder>

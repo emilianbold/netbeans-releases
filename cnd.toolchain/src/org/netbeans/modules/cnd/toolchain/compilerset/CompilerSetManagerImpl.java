@@ -323,17 +323,25 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             return;
         }
         String progressMessage = NbBundle.getMessage(getClass(), "PROGRESS_TEXT", executionEnvironment.getDisplayName()); // NOI18N
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
-        progressHandle.start();
-        initializationTask = RP.post(new Runnable() {
+
+        Runnable runnable = new Runnable() {
+
             @Override
             public void run() {
                 initCompilerSetsImpl(dirlist);
             }
-        });
-        initializationTask.waitFinished();
-        initializationTask = null;
-        progressHandle.finish();
+        };
+
+        if (CndUtils.isStandalone()) { // this means we run in tests or standalone application
+            runnable.run();
+        } else {
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressMessage);
+            progressHandle.start();
+            initializationTask = RP.post(runnable);
+            initializationTask.waitFinished();
+            initializationTask = null;
+            progressHandle.finish();
+        }
     }
 
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
@@ -812,6 +820,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private static final String ALIAS_SunStudio = "SunStudio"; // NOI18N
     private static final String ALIAS_OracleSolarisStudio = "OracleSolarisStudio"; // NOI18N
     private static final String[] KNOWN_STUDIO = new String[] {
+        "OracleSolarisStudioExpressSpica", // NOI18N
         "OracleSolarisStudio_12.2", // NOI18N
         "OracleSolarisStudioExpress", // NOI18N
         "SunStudio_12.1", // NOI18N

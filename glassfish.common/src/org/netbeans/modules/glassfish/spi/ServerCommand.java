@@ -45,6 +45,7 @@ package org.netbeans.modules.glassfish.spi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -67,6 +68,11 @@ public abstract class ServerCommand {
     protected final String command;
     protected String query = null;
     protected boolean retry = false;
+    private String serverMessage = "";
+
+    public String getServerMessage() {
+        return serverMessage;
+    }
 
     public ServerCommand(String command) {
         this.command = command;
@@ -191,7 +197,7 @@ public abstract class ServerCommand {
      * @return true if response was read correctly.
      * @throws java.io.IOException in case of stream error.
      */
-    public boolean readResponse(InputStream in) throws IOException {
+    public boolean readResponse(InputStream in, HttpURLConnection hconn) throws IOException {
         boolean result = false;
 
         Manifest m = new Manifest();
@@ -208,6 +214,8 @@ public abstract class ServerCommand {
             // set the retry flag.
             if(message != null && message.contains("please wait")) {
                 retry = true;
+            } else {
+                serverMessage = message;
             }
             Logger.getLogger("glassfish").log(Level.WARNING, message);
         }
@@ -246,6 +254,14 @@ public abstract class ServerCommand {
     @Override
     public String toString() {
         return (query == null) ? command : command + QUERY_SEPARATOR + query;
+    }
+
+    public String getSrc() {
+        return "/__asadmin/";
+    }
+
+    public boolean acceptsGzip() {
+        return false;
     }
 
     /**
