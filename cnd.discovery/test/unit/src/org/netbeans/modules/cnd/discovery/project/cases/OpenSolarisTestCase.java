@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.cnd.discovery.project.cases;
 
-import java.lang.reflect.Method;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.project.StandAlone;
-import org.netbeans.modules.cnd.makeproject.MakeProjectType;
-import org.openide.util.Lookup;
 
 /**
  * Not in suite
@@ -61,7 +58,7 @@ public class OpenSolarisTestCase extends NbTestCase {
 
     public void testCreateproject() {
         StandAlone.main(new String[]{"-project=open-solaris"
-                                     ,"-root=/net/elif/export1/sside/pomona/java_cp/wsb138"
+                                     ,"-root=/net/elif/export1/sside/pomona/java_cp/onnv-gate"
                                      //,"-root=/export/opensolaris/testws88"
                                      //,"-netbeans-project=/export/opensolaris/testws88/pomona"
                                      ,"-netbeans-project=/var/tmp/pomona"
