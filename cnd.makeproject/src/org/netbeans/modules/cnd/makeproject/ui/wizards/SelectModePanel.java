@@ -382,7 +382,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String seed = projectFolder.getText();
         JFileChooser fileChooser;
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_BUTTON_TXT"); // NOI18N
-        fileChooser = new FileChooser(
+        fileChooser = new FileChooser( // Sic! - project is always local
                 NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 approveButtonText,
                 JFileChooser.DIRECTORIES_ONLY,

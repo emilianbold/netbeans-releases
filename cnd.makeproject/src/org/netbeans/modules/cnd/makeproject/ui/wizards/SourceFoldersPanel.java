@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
     public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
         this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel, true);
+        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;

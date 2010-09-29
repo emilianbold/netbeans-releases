@@ -216,7 +216,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     return false;
                 }
 
-                if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) || !new File(makefileNameTextField.getText()).exists() || new File(makefileNameTextField.getText()).isDirectory()) {
+                if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) 
+                        || !NewProjectWizardUtils.fileExists(makefileNameTextField.getText(), descriptorPanel.getWizardDescriptor())
+                        || NewProjectWizardUtils.isDirectory(makefileNameTextField.getText(), descriptorPanel.getWizardDescriptor())) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
                     descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;

@@ -156,7 +156,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
-            if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) || !new File(buildCommandWorkingDirTextField.getText()).exists()) {
+            if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
+                    || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), buildActionsDescriptorPanel.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
                 buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
