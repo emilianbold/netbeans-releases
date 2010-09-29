@@ -45,6 +45,10 @@ package org.netbeans.modules.git;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
@@ -118,5 +122,74 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected GitClient getClient (File repositoryLocation) throws GitException {
         return GitClientFactory.getInstance(null).getClient(repositoryLocation);
+    }
+
+    protected class StatusRefreshLogHandler extends Handler {
+        private Set<File> filesToRefresh;
+        private boolean filesRefreshed;
+        private final HashSet<File> refreshedFiles = new HashSet<File>();
+        private final File topFolder;
+        private final Set<String> interestingFiles = new HashSet<String>();
+
+        public StatusRefreshLogHandler (File topFolder) {
+            this.topFolder = topFolder;
+        }
+
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
+                synchronized (this) {
+                    if (refreshedFiles.equals(filesToRefresh)) {
+                        filesRefreshed = true;
+                        notifyAll();
+                    }
+                }
+            } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
+                synchronized (this) {
+                    for (File f : (Set<File>) record.getParameters()[0]) {
+                        if (f.getAbsolutePath().startsWith(topFolder.getAbsolutePath()))
+                        refreshedFiles.add(f);
+                    }
+                    notifyAll();
+                }
+            } else if (record.getMessage().equals("refreshAllRoots() file status: {0} {1}")) {
+                interestingFiles.add((String) record.getParameters()[0]);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        public void setFilesToRefresh (Set<File> files) {
+            filesToRefresh = files;
+            refreshedFiles.clear();
+            filesRefreshed = false;
+        }
+
+        public boolean waitForFilesToRefresh () throws InterruptedException {
+            for (int i = 0; i < 20; ++i) {
+                synchronized (this) {
+                    if (filesRefreshed) {
+                        return true;
+                    }
+                    wait(500);
+                }
+            }
+            return false;
+        }
+
+        public boolean getFilesRefreshed () {
+            return filesRefreshed;
+        }
+
+        Set<String> getInterestingFiles () {
+            return new HashSet<String>(interestingFiles);
+        }
+
     }
 }

@@ -170,7 +170,7 @@ public class StatusTest extends AbstractGitTestCase {
         fileC1.createNewFile();
         fileC2.createNewFile();
 
-        LogHandler handler = new LogHandler(getWorkDir());
+        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(getWorkDir());
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(folderA));
         FileInformation status = getCache().getStatus(folderA);
@@ -185,7 +185,7 @@ public class StatusTest extends AbstractGitTestCase {
         status = getCache().getStatus(fileA2);
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
         assertFalse(handler.waitForFilesToRefresh());
-        assertFalse(handler.filesRefreshed);
+        assertFalse(handler.getFilesRefreshed());
 
         handler.setFilesToRefresh(Collections.singleton(fileB1));
         status = getCache().getStatus(fileB1);
@@ -243,7 +243,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "file1");
 
-        LogHandler handler = new LogHandler(getWorkDir());
+        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(getWorkDir());
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(fileA1));
         FileInformation status = getCache().getStatus(fileA1);
@@ -325,7 +325,7 @@ public class StatusTest extends AbstractGitTestCase {
         file1.createNewFile();
         file2.createNewFile();
 
-        LogHandler handler = new LogHandler(getWorkDir());
+        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(getWorkDir());
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(file1));
         FileInformation status = getCache().getStatus(file1);
@@ -415,17 +415,17 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "folder");
 
-        LogHandler handler = new LogHandler(repositoryLocation);
+        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
         handler.waitForFilesToRefresh();
-        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.interestingFiles);
+        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.getInterestingFiles());
 
         handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
         getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         handler.waitForFilesToRefresh();
-        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.interestingFiles);
+        assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.getInterestingFiles());
     }
 
     public void testToggleIgnoreFolder () throws Exception {
@@ -568,67 +568,6 @@ public class StatusTest extends AbstractGitTestCase {
         for (File f : files) {
             assertTrue(getCache().getStatus(f).getStatus().equals(EnumSet.of(status)));
         }
-    }
-
-    private class LogHandler extends Handler {
-        private Set<File> filesToRefresh;
-        private boolean filesRefreshed;
-        private final HashSet<File> refreshedFiles = new HashSet<File>();
-        private final File topFolder;
-        private final Set<String> interestingFiles = new HashSet<String>();
-
-        private LogHandler (File topFolder) {
-            this.topFolder = topFolder;
-        }
-
-        @Override
-        public void publish(LogRecord record) {
-            if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
-                synchronized (this) {
-                    if (refreshedFiles.equals(filesToRefresh)) {
-                        filesRefreshed = true;
-                        notifyAll();
-                    }
-                }
-            } else if (record.getMessage().contains("refreshAllRoots() roots: ")) {
-                synchronized (this) {
-                    for (File f : (Set<File>) record.getParameters()[0]) {
-                        if (f.getAbsolutePath().startsWith(topFolder.getAbsolutePath()))
-                        refreshedFiles.add(f);
-                    }
-                    notifyAll();
-                }
-            } else if (record.getMessage().equals("refreshAllRoots() file status: {0} {1}")) {
-                interestingFiles.add((String) record.getParameters()[0]);
-            }
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-
-        private void setFilesToRefresh (Set<File> files) {
-            filesToRefresh = files;
-            refreshedFiles.clear();
-            filesRefreshed = false;
-        }
-
-        private boolean waitForFilesToRefresh () throws InterruptedException {
-            for (int i = 0; i < 20; ++i) {
-                synchronized (this) {
-                    if (filesRefreshed) {
-                        return true;
-                    }
-                    wait(500);
-                }
-            }
-            return false;
-        }
-
     }
 
     @ServiceProvider(service=SharabilityQueryImplementation.class)
