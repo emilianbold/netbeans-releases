@@ -486,6 +486,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         int source_file_index = -1;
         //check if there is a source file name information        
         if (sourceFileInfo != null && sourceFileInfo.getFileName() != null){
+            //funcName = FunctionNameUtils.getFullFunctionName(funcName);
+//            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+//            if (0 <= plusPos) {
+//                funcName = funcName.substring(0, plusPos);
+//            }            
             try {
                 PreparedStatement ps = getPreparedStatement(
                         "SELECT id from SourceFiles where source_file=?"); // NOI18N
@@ -509,6 +514,11 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }else{
+            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+            if (0 <= plusPos) {
+                funcName = funcName.substring(0, plusPos);
+            }            
         }
 
         

@@ -42,7 +42,12 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import javax.swing.event.TreeModelListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
@@ -52,24 +57,51 @@ import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
  * @author mt154047
  */
 final class CallStackTreeModel {
-
-    private final List<FunctionCall> stack;
+//    private final List<List<FunctionCall
     private final SourceFileInfoDataProvider dataProvider;
+    private final DefaultTreeModel treeModel;
+    private final DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode();
 
-    CallStackTreeModel(SourceFileInfoDataProvider dataProvider, List<FunctionCall> stack) {
-        this.stack = stack;
+    CallStackTreeModel(SourceFileInfoDataProvider dataProvider) {
         this.dataProvider = dataProvider;
+        treeModel = new DefaultTreeModel(treeNode);
     }
-
-    FunctionCall getCaller(FunctionCall call){
-        //find in the list
-        int index = stack.indexOf(call);
-        //if the last one show it self
-        //return the next one
-        if (index == 0 ){
-            return null;
+    
+    void addTreeModelListener(TreeModelListener l){
+        treeModel.addTreeModelListener(l);
+    }
+    
+    void addStack(List<FunctionCall> stack){
+        //try to find the appropriate place
+        //reverse 
+        List<FunctionCall> functionCalls = new ArrayList<FunctionCall>();
+        functionCalls.addAll(stack);
+        Collections.reverse(functionCalls);        
+        //functionCalls are correctly ordered right now, let's start with the beginning
+        FunctionCall rootCall = functionCalls.get(0);
+        for (int i = 0; i < treeNode.getChildCount(); i++){
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode)treeNode.getChildAt(i);
+            FunctionCall call = (FunctionCall)child.getUserObject();
+            //we need to compare them
         }
-        return stack.get(index - 1);
+        
+        
+    }
+    
+    
+
+    List<FunctionCall> getCallers(FunctionCall call){
+        //find the function call 
+        
+//        //find in the list
+//        int index = stack.indexOf(call);
+//        //if the last one show it self
+//        //return the next one
+//        if (index == 0 ){
+//            return null;
+//        }
+//        return stack.get(index - 1);
+        return null;
     }
 
     SourceFileInfo getSourceFileInfo(FunctionCall call){
@@ -80,5 +112,7 @@ final class CallStackTreeModel {
         return dataProvider;
     }
 
+    
+    
 
 }
