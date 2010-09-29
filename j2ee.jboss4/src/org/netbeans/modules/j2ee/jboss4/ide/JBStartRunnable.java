@@ -255,25 +255,27 @@ class JBStartRunnable implements Runnable {
 
             String serverDir = ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR);
 
+            // port -1 means the service is not binded at all
+
             String strJNPServicePort = JBPluginUtils.getJnpPort(serverDir);
-            int JNPServicePort = new Integer(strJNPServicePort).intValue();
-            if (!JBPluginUtils.isPortFree(JNPServicePort)) {
+            int JNPServicePort = Integer.parseInt(strJNPServicePort);
+            if (JNPServicePort >= 0 && !JBPluginUtils.isPortFree(JNPServicePort)) {
                 fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_JNP_PORT_IN_USE", strJNPServicePort));//NOI18N
                 return false;
             }
 
             String strRMINamingServicePort = JBPluginUtils.getRMINamingServicePort(serverDir);
-            int RMINamingServicePort = new Integer(strRMINamingServicePort).intValue();
-            if (!JBPluginUtils.isPortFree(RMINamingServicePort)) {
+            int RMINamingServicePort = Integer.parseInt(strRMINamingServicePort);
+            if (RMINamingServicePort >= 0 && !JBPluginUtils.isPortFree(RMINamingServicePort)) {
                 fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_RMI_PORT_IN_USE", strRMINamingServicePort));//NOI18N
                 return false;
             }
 
             String server = ip.getProperty(JBPluginProperties.PROPERTY_SERVER);
-            if (!"minimal".equals(server)) {
+            if (!"minimal".equals(server)) { // NOI18N
                 String strRMIInvokerPort = JBPluginUtils.getRMIInvokerPort(serverDir);
-                int RMIInvokerPort = new Integer(strRMIInvokerPort).intValue();
-                if (!JBPluginUtils.isPortFree(RMIInvokerPort)) {
+                int RMIInvokerPort = Integer.parseInt(strRMIInvokerPort);
+                if (RMIInvokerPort >= 0 && !JBPluginUtils.isPortFree(RMIInvokerPort)) {
                     fireStartProgressEvent(StateType.FAILED, createProgressMessage("MSG_START_SERVER_FAILED_INVOKER_PORT_IN_USE", strRMIInvokerPort));//NOI18N
                     return false;
                 }
