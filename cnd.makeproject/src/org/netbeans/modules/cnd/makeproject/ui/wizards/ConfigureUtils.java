@@ -119,6 +119,17 @@ public final class ConfigureUtils {
         return null;
     }
 
+    public static boolean isRunnable(FileObject fileObject) {
+        if (fileObject != null && fileObject.isValid()) {
+            File file = FileUtil.toFile(fileObject);
+            if (file != null) {
+                return isRunnable(file); // XXX:fullRemote: a temporary fixup
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isRunnable(File file) {
         if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
             FileObject configureFileObject = FileUtil.toFileObject(file);

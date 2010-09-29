@@ -365,7 +365,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             FileFilterFactory.getElfStaticLibraryFileFilter(),
             FileFilterFactory.getElfDynamicLibraryFileFilter()};
         }
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("OUTPUT_CHOOSER_TITLE_TXT"),
                 getString("OUTPUT_CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
@@ -394,7 +395,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             seed = System.getProperty("user.home"); // NOI18N
         }
         
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("WORKING_DIR_CHOOSER_TITLE_TXT"),
                 getString("WORKING_DIR_BUTTON_TXT"),
                 JFileChooser.DIRECTORIES_ONLY,
