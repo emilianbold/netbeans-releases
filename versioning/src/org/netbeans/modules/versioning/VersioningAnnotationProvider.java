@@ -430,6 +430,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             }
             set.add(fo);
             if (removeFromCache) {
+                if (LOG.isLoggable(Level.FINEST)) {
+                    // TODO: remove after fix
+                    LOG.log(Level.FINEST, "addToMap(): removing from cache {0}", new Object[] {fo}); //NOI18N
+                }
                 labelCache.removeAllFor(fo);
                 iconCache.removeAllFor(fo);
             }
@@ -465,6 +469,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             @Override
             protected boolean removeEldestEntry(Entry<ItemKey<T, KEY>, Item<T>> eldest) {
                 if (size() >= CACHE_SIZE) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.removeEldestEntry(): {1}", new Object[]{type, eldest.getKey().getFiles()}); //NOI18N
+                    }
                     removeFromIndex(eldest.getKey());
                     return true;
                 }
@@ -533,6 +541,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         return false;
                     }
                 }
+                if (LOG.isLoggable(Level.FINEST)) {
+                    // TODO: remove after fix
+                    LOG.log(Level.FINEST, "{0}.setValue(): inserting for {1}:{2}", new Object[]{type, key.getFiles(), value}); //NOI18N
+                }
                 synchronized (cachedValues) {
                     cachedValues.put(key, new Item(value));
                 }
@@ -544,7 +556,15 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         sets = new HashSet<ItemKey<T, KEY>>();
                         index.put(fo, sets);
                     }
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.setValue(): before add to index: {1}", new Object[]{type, sets}); //NOI18N
+                    }
                     sets.add(key);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.setValue(): after add to index {1}", new Object[]{type, sets}); //NOI18N
+                    }
                 }
                 removeOldValues();
             }
@@ -559,6 +579,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             for (Iterator<Map.Entry<ItemKey<T, KEY>, Item<T>>> it = cachedValues.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry<ItemKey<T, KEY>, Item<T>> e = it.next();
                 if (!e.getValue().isValid()) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.removeOldValues(): {1}", new Object[]{type, e.getKey().getFiles()}); //NOI18N
+                    }
                     removeFromIndex(e.getKey());
                     synchronized (cachedValues) {
                         it.remove();
@@ -656,12 +680,20 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 Set<ItemKey<T, KEY>> keys = index.get(fo);
                 if (keys != null) {
                     for (ItemKey<T, KEY> key : keys) {
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            // TODO: remove after fix
+                            LOG.log(Level.FINEST, "{0}.removeAllFor(): remove from cache: {1}", new Object[]{type, key.getFiles()}); //NOI18N
+                        }
                         synchronized (cachedValues) {
                             cachedValues.remove(key);
                         }
                     }
                     ItemKey<T, KEY>[] keysArray = keys.toArray(new ItemKey[keys.size()]);
                     for (ItemKey<T, KEY> key : keysArray) {
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            // TODO: remove after fix
+                            LOG.log(Level.FINEST, "{0}.removeAllFor(): remove from index: {1}", new Object[]{type, key.getFiles()}); //NOI18N
+                        }
                         removeFromIndex(key);
                     }
                 }
@@ -675,10 +707,18 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             for (FileObject fo : files) {
                 Set<ItemKey<T, KEY>> sets = index.get(fo);
                 if (sets != null) {
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.removeFromIndex(): before remove {1}", new Object[]{type, sets}); //NOI18N
+                    }
                     sets.remove(key);
                     if (sets.isEmpty()) {
                         // remove the whole entry
                         index.remove(fo);
+                    }
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        // TODO: remove after fix
+                        LOG.log(Level.FINEST, "{0}.removeAllFor(): after remove {1}", new Object[]{type, sets}); //NOI18N
                     }
                 }
             }
