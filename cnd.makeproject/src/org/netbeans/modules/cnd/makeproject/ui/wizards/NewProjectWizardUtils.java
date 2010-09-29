@@ -104,7 +104,11 @@ import org.openide.filesystems.FileUtil;
         }
     }
 
-    public static JFileChooser createFileChooser(Project project, String titleText, String buttonText, int mode, FileFilter[] filters, String initialPath, boolean useParent) {
+    public static JFileChooser createFileChooser(Project project,
+            String titleText, String buttonText,
+            int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+        
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
@@ -117,7 +121,10 @@ import org.openide.filesystems.FileUtil;
         return createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
     }
 
-    public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText, String buttonText, int mode, FileFilter[] filters, String initialPath, boolean useParent) {
+    public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText,
+            String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
         ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         if (isFullRemote(wd)) {
             String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
