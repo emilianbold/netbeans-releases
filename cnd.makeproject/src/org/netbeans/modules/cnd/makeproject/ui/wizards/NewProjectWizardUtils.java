@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import java.io.File;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -87,18 +88,52 @@ import org.openide.filesystems.FileUtil;
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
     }
 
+    public static boolean fileExists(String absolutePath, WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            return RemoteFileUtil.fileExists(absolutePath, getExecutionEnvironment(wizardDescriptor));
+        } else {
+            return new File(absolutePath).exists();
+        }
+    }
+
+    public static boolean isDirectory(String absolutePath, WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            return RemoteFileUtil.isDirectory(absolutePath, getExecutionEnvironment(wizardDescriptor));
+        } else {
+            return new File(absolutePath).isDirectory();
+        }
+    }
+
+    public static JFileChooser createFileChooser(Project project, String titleText, String buttonText, int mode, FileFilter[] filters, String initialPath, boolean useParent) {
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                    execEnv = remoteProject.getRemoteFileSystemHost();
+                }
+            }
+        }
+        return createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
     public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText, String buttonText, int mode, FileFilter[] filters, String initialPath, boolean useParent) {
-        JFileChooser fileChooser;
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
         if (isFullRemote(wd)) {
             String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
-            ExecutionEnvironment execEnv = (hostUID == null) ?
-                ExecutionEnvironmentFactory.getLocal() :
-                ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
-            fileChooser.setApproveButtonText(buttonText);
-            fileChooser.setDialogTitle(titleText);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        } else {
+            if (hostUID != null) {
+                execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
+        }
+        return createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+    public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+        
+        JFileChooser fileChooser;
+        if (execEnv.isLocal()) {
             fileChooser = new FileChooser(
                     titleText,
                     buttonText,
@@ -106,6 +141,11 @@ import org.openide.filesystems.FileUtil;
                     null,
                     initialPath,
                     false);
+        } else {
+            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
+            fileChooser.setApproveButtonText(buttonText);
+            fileChooser.setDialogTitle(titleText);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         }
         return fileChooser;
     }

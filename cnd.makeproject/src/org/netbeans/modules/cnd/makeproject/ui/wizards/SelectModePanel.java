@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -86,8 +85,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     private volatile boolean initialized = false;
 
     /** Creates new form SelectModePanel */
-    public SelectModePanel(SelectModeDescriptorPanel wizard) {
-        this.controller = wizard;
+    public SelectModePanel(SelectModeDescriptorPanel controller) {
+        this.controller = controller;
         initComponents();
         sourceFolderLabel.setVisible(controller.isFullRemote());
         sourceFolder.setVisible(controller.isFullRemote());
@@ -382,7 +381,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String seed = projectFolder.getText();
         JFileChooser fileChooser;
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_BUTTON_TXT"); // NOI18N
-        fileChooser = new FileChooser(
+        fileChooser = new FileChooser( // Sic! - project is always local
                 NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 approveButtonText,
                 JFileChooser.DIRECTORIES_ONLY,

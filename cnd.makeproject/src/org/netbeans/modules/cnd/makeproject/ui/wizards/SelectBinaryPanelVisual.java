@@ -387,7 +387,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             };
         }
 
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N
                 getString("SelectBinaryPanelVisual.Browse.Select"), // NOI18N
                 JFileChooser.FILES_ONLY,

@@ -59,6 +59,16 @@ import org.openide.filesystems.FileUtil;
  */
 public class RemoteFileUtil {
 
+    public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment) {
+        FileObject fo = getFileObject(absolutePath, executionEnvironment);
+        return (fo != null && fo.isValid());
+    }
+
+    public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {
+        FileObject fo = getFileObject(absolutePath, executionEnvironment);
+        return (fo != null && fo.isFolder());
+    }
+
     private RemoteFileUtil() {}
     
     public static FileObject getFileObject(String absolutePath, ExecutionEnvironment execEnv, RemoteProject.Mode remoteMode) {

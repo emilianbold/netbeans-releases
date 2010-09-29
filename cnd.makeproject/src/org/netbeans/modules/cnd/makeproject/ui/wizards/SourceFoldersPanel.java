@@ -54,14 +54,14 @@ import org.openide.util.NbBundle;
 
 /*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
-    private SourceFilesPanel sourceFilesPanel;
+    private final SourceFoldersDescriptorPanel controller;
+    private final SourceFilesPanel sourceFilesPanel;
     private boolean firstTime = true;
 
-    public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
+    public SourceFoldersPanel(SourceFoldersDescriptorPanel controller) {
         initComponents();
-        this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel, true);
+        this.controller = controller;
+        sourceFilesPanel = new SourceFilesPanel(controller);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;

@@ -161,6 +161,10 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = false;
     }
 
+    WizardDescriptor getWizardDescriptor(){
+        return wizardDescriptor;
+    }
+
     @Override
     public boolean isFinishPanel() {
         return true;
