@@ -639,18 +639,22 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                         if (platform == null) {
                             //Create a node platfrom like from bean.
                             final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
-                            try {
-                                final Object instance = ic.instanceCreate();
-                                if (instance instanceof JavaPlatform) {
-                                    node = new FilterNode (new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
-                                    platform = (JavaPlatform) instance;
+                            if (ic != null) {
+                                try {
+                                    final Object instance = ic.instanceCreate();
+                                    if (instance instanceof JavaPlatform) {
+                                        node = new FilterNode (new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
+                                        platform = (JavaPlatform) instance;
+                                    }
+                                } catch (Exception e) {
+                                    //report and continue with next platform
+                                    Exceptions.printStackTrace(Exceptions.attachMessage(
+                                            e,
+                                            "Exception while loading platform:" +   //NOI18N
+                                            FileUtil.getFileDisplayName(dobj.getPrimaryFile())));
                                 }
-                            } catch (Exception e) {
-                                //report and continue with next platform
-                                Exceptions.printStackTrace(Exceptions.attachMessage(
-                                        e,
-                                        "Exception while loading platform:" +   //NOI18N
-                                        FileUtil.getFileDisplayName(dobj.getPrimaryFile())));
+                            } else {
+                                LOG.log(Level.FINE, "No platform provided for file: {0}", FileUtil.getFileDisplayName(dobj.getPrimaryFile())); //NOI18N
                             }
                         }
                         if (platform != null) {
