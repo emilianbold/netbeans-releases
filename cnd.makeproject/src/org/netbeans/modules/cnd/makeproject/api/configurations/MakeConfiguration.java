@@ -646,6 +646,10 @@ public class MakeConfiguration extends Configuration {
         return remoteMode;
     }
 
+    public ExecutionEnvironment getRemoteFileSystemHost() {
+        return getDevelopmentHost().getExecutionEnvironment();
+    }
+
     public void setRemoteMode(RemoteProject.Mode mode) {
         CndUtils.assertNotNull(mode, "Null remote mode"); //NOI18N
         remoteMode = mode;

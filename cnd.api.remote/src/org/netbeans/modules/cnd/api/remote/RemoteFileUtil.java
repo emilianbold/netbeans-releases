@@ -44,11 +44,15 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,5 +123,36 @@ public class RemoteFileUtil {
         //XXX:fullRemote
         File file = FileUtil.toFile(fo);
         return (file == null) ? fo.getPath() : file.getCanonicalPath();
+    }
+
+    public static JFileChooser createFileChooser(RemoteProject.Mode remoteMode, ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
+        return createFileChooser(
+                (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? execEnv : ExecutionEnvironmentFactory.getLocal(),
+                titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+    public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
+        JFileChooser fileChooser;
+        if (execEnv.isLocal()) {
+            fileChooser = new FileChooser(
+                    titleText,
+                    buttonText,
+                    JFileChooser.DIRECTORIES_ONLY,
+                    null,
+                    initialPath,
+                    false);
+        } else {
+            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
+            fileChooser.setApproveButtonText(buttonText);
+            fileChooser.setDialogTitle(titleText);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        }
+        return fileChooser;
     }
 }

@@ -131,12 +131,14 @@ public class LookupMergerSupport {
                 }
                 wsDataProviders.clear();
             }
+            delegates.removeLookupListener( this );
             for (WebServiceDataProvider ns : delegates.allInstances()) {
                     for (PropertyChangeListener pcl:changeSupport.getPropertyChangeListeners()) {
                         ns.addPropertyChangeListener(pcl);
                     }
                 wsDataProviders.add(ns);
             }
+            delegates.addLookupListener( this );
         }
 
         public List<WebService> getServiceProviders() {
