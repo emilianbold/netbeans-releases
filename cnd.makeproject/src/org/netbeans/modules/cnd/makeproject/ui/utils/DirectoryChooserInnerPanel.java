@@ -46,20 +46,24 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
 import javax.swing.JFileChooser;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
 
-    private String baseDir;
+    private final String baseDir;
     private boolean addPathPanel;
+    private final ExecutionEnvironment executionEnvironment;
 
-    public DirectoryChooserInnerPanel(String baseDir, List<String> list) {
+    public DirectoryChooserInnerPanel(String baseDir, List<String> list, ExecutionEnvironment execEnv) {
         super(list);
         this.baseDir = baseDir;
+        this.executionEnvironment = execEnv;
         getDefaultButton().setVisible(false);
     }
 
@@ -72,7 +76,12 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
         if (seed == null) {
             seed = baseDir;
         }
-        FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                executionEnvironment,
+                getString("ADD_DIRECTORY_DIALOG_TITLE"),
+                getString("ADD_DIRECTORY_BUTTON_TXT"),
+                JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+
         PathPanel pathPanel = null;
         if (addPathPanel) {
             pathPanel = new PathPanel();
