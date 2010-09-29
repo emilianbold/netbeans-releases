@@ -62,9 +62,9 @@ import org.openide.util.Utilities;
 
 public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
-    private DocumentListener documentListener;
+    private final DocumentListener documentListener;
     private boolean valid = false;
-    private BuildActionsDescriptorPanel buildActionsDescriptorPanel;
+    private final BuildActionsDescriptorPanel controller;
     private String makefileName = null;
     
     private static String DEF_WORKING_DIR = ""; // NOI18N
@@ -76,7 +76,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     /*package-local*/ BuildActionsPanel(BuildActionsDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        this.buildActionsDescriptorPanel = buildActionsDescriptorPanel;
+        this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentAdapter() {
             @Override
             protected void update(DocumentEvent e) {
@@ -130,7 +130,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     private void update() {
-        buildActionsDescriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
@@ -152,21 +152,21 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     boolean valid(WizardDescriptor settings) {
         if (buildCommandWorkingDirTextField.getText().length() == 0) {
             String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOWORKINGDIR"); // NOI18N
-            buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
             return false;
         }
         if (buildCommandWorkingDirTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(buildCommandWorkingDirTextField.getText()) 
-                    || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), buildActionsDescriptorPanel.getWizardDescriptor())) {
+                    || !NewProjectWizardUtils.fileExists(buildCommandWorkingDirTextField.getText(), controller.getWizardDescriptor())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "WORKINGDIRDOESNOTEXIST"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }
         if (outputTextField.getText().length() > 0) {
             if (!CndPathUtilitities.isPathAbsolute(outputTextField.getText())) {
                 String msg = NbBundle.getMessage(BuildActionsPanel.class, "BUILDRESULTNOTABSOLUTE"); // NOI18N
-                buildActionsDescriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                 return false;
             }
         }

@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -86,8 +85,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     private volatile boolean initialized = false;
 
     /** Creates new form SelectModePanel */
-    public SelectModePanel(SelectModeDescriptorPanel wizard) {
-        this.controller = wizard;
+    public SelectModePanel(SelectModeDescriptorPanel controller) {
+        this.controller = controller;
         initComponents();
         sourceFolderLabel.setVisible(controller.isFullRemote());
         sourceFolder.setVisible(controller.isFullRemote());

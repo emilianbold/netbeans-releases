@@ -52,8 +52,8 @@ import org.openide.util.NbBundle;
  */
 public class PanelConfigureProjectVisual extends JPanel {
 
-    private PanelConfigureProject controller;
-    private SettingsPanel projectLocationPanel;
+    private final PanelConfigureProject controller;
+    private final SettingsPanel projectLocationPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField, int type) {

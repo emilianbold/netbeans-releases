@@ -66,12 +66,12 @@ import org.openide.util.NbBundle;
 
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
+    private final ParserConfigurationDescriptorPanel controller;
     private boolean first = true;
 
     /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
-        this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
+        this.controller = sourceFoldersDescriptorPanel;
 
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
@@ -87,7 +87,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     private void update(DocumentEvent e) {
-        sourceFoldersDescriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
 
     void read(WizardDescriptor settings) {

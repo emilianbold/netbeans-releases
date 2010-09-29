@@ -63,14 +63,14 @@ import org.openide.util.NbBundle;
 
 public class MakefileOrConfigurePanel extends javax.swing.JPanel implements HelpCtx.Provider{
     
-    private DocumentListener documentListener;
-    private MakefileOrConfigureDescriptorPanel descriptorPanel;
+    private final DocumentListener documentListener;
+    private final MakefileOrConfigureDescriptorPanel controller;
     
     
     MakefileOrConfigurePanel(MakefileOrConfigureDescriptorPanel buildActionsDescriptorPanel) {
         initComponents();
         instructionsTextArea.setBackground(instructionPanel.getBackground());
-        this.descriptorPanel = buildActionsDescriptorPanel;
+        this.controller = buildActionsDescriptorPanel;
         documentListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -119,7 +119,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
     
     private void update(DocumentEvent e) {
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
     
     void read(WizardDescriptor wizardDescriptor) {
@@ -212,15 +212,15 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             if (makefileRadioButton.isSelected()) {
                 if (makefileNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOMAKEFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
                 if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) 
-                        || !NewProjectWizardUtils.fileExists(makefileNameTextField.getText(), descriptorPanel.getWizardDescriptor())
-                        || NewProjectWizardUtils.isDirectory(makefileNameTextField.getText(), descriptorPanel.getWizardDescriptor())) {
+                        || !NewProjectWizardUtils.fileExists(makefileNameTextField.getText(), controller.getWizardDescriptor())
+                        || NewProjectWizardUtils.isDirectory(makefileNameTextField.getText(), controller.getWizardDescriptor())) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
@@ -236,18 +236,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                 configureMakefileNameTextField.setText(""); // NOI18N
                 if (configureNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOCONFIGUREFILE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
                 File file = new File(configureNameTextField.getText());
                 if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText()) ||
                     !file.exists() || file.isDirectory()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 } else if (!ConfigureUtils.isRunnable(file)) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEISNOTEXECUTABLE"); // NOI18N
-                    descriptorPanel.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
 
@@ -494,11 +494,11 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }// </editor-fold>//GEN-END:initComponents
     
     private void configureRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureRadioButtonActionPerformed
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }//GEN-LAST:event_configureRadioButtonActionPerformed
     
     private void makefileRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_makefileRadioButtonActionPerformed
-        descriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }//GEN-LAST:event_makefileRadioButtonActionPerformed
     
     private void configureBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configureBrowseButtonActionPerformed

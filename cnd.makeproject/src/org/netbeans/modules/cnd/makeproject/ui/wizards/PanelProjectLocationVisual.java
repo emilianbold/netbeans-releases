@@ -83,8 +83,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
-    private PanelConfigureProject controller;
-    private String templateName;
+    private final PanelConfigureProject controller;
+    private final String templateName;
     private String name;
     private boolean makefileNameChanged = false;
     private int type;
