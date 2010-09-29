@@ -75,6 +75,7 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
     private final BeanTreeView treeView;
     private Lookup lookup;
     private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
+    private boolean mergeStacks;
 
     private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -91,7 +92,7 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         };
         rootNode = new MultipleCallStackRootNode(expandAll);
         manager.setRootContext(rootNode);//NOI18N
-
+        this.mergeStacks  = false;
         final JPopupMenu popup = new JPopupMenu();
         popup.add(expandAll);
         addMouseListener(new MouseAdapter() {
