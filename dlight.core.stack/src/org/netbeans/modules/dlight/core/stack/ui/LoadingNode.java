@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,74 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.awt.Image;
-import javax.swing.Action;
+import org.netbeans.modules.dlight.core.stack.api.Function;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mt154047
+ * @author Alexander Simon
  */
- class PlainListFunctionCallNode extends  AbstractNode implements GoToSourceAction.GoToSourceActionReadnessListener {
-
-    private final FunctionCall functionCall;
-    private GoToSourceAction action;
-
-    PlainListFunctionCallNode(SourceFileInfoDataProvider sourceFileInfoDataProvider,  FunctionCall functionCall) {
+public class LoadingNode extends AbstractNode {
+        //implements Call {
+    public LoadingNode() {
         super(Children.LEAF);
-        this.functionCall = functionCall;
-        action = new GoToSourceAction(sourceFileInfoDataProvider, functionCall, this);
+        setName("dummy"); // NOI18N
+        setDisplayName(NbBundle.getMessage(getClass(), "Loading")); // NOI18N
+    }
+    
+    @Override
+    public Image getIcon(int param) {
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/callgraph/resources/waitNode.gif"); // NOI18N
     }
 
-    @Override
-    public String getDisplayName() {
-        return functionCall.getDisplayedName();
+    public void open() {
     }
 
-    @Override
-    public Image getIcon(int type) {
-        return ImageUtilities.mergeImages(CallStackUISupport.functionIcon, CallStackUISupport.upBadge, 0, 0);
+    public Function getCallee() {
+        return null;
     }
 
-    @Override
-    public Image getOpenedIcon(int type) {
-        return getIcon(type);
+    public Function getCaller() {
+        return null;
     }
 
-    @Override
-    public Action[] getActions(boolean context) {
-        return new Action[]{action};
+    public int compareTo(FunctionCall o) {
+        return -1;
     }
 
-    @Override
-    public Action getPreferredAction() {
-        return action;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        if (!action.isEnabled()) {
-            String baseName = super.getHtmlDisplayName();
-            baseName = baseName != null ? baseName : getDisplayName();
-            return "<font color='!controlShadow'>" + baseName.replaceAll("<", "&lt;").replaceAll(">", "&gt;"); // NOI18N
-        }
-        return super.getHtmlDisplayName();
-    }
-
-    @Override
-    public void ready() {
-        fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
+    public String getDescription() {
+        return getName();
     }
 }
