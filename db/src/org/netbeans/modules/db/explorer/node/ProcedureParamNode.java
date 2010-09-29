@@ -146,7 +146,7 @@ public class ProcedureParamNode  extends BaseNode {
                 break;
         }
 
-        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType().toString());
+        addProperty(DATATYPE, DATATYPEDESC, String.class, false, param.getType() == null ? "null" : param.getType().toString()); // NOI18N
     }
 
     protected void initialize() {
