@@ -81,9 +81,10 @@ public class AddCommand extends GitCommand {
     protected void run() throws GitException {
         Repository repository = getRepository();
         try {
-            DirCache cache = repository.lockDirCache();
+            DirCache cache = null;
+            ObjectInserter inserter = repository.newObjectInserter();
             try {
-                ObjectInserter inserter = repository.newObjectInserter();
+                cache = repository.lockDirCache();
                 DirCacheBuilder builder = cache.builder();
                 TreeWalk treeeWalk = new TreeWalk(repository);
                 Collection<String> relativePaths = Utils.getRelativePaths(repository.getWorkTree(), roots);
@@ -129,7 +130,10 @@ public class AddCommand extends GitCommand {
                 inserter.flush();
                 builder.commit();
             } finally {
-                cache.unlock();
+                inserter.release();
+                if (cache != null ) {
+                    cache.unlock();
+                }
             }
         } catch (CorruptObjectException ex) {
             throw new GitException(ex);
