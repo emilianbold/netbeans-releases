@@ -130,12 +130,8 @@ import org.sonatype.nexus.index.IndexerFieldVersion;
 import org.sonatype.nexus.index.NexusIndexer;
 import org.sonatype.nexus.index.context.IndexingContext;
 import org.sonatype.nexus.index.creator.AbstractIndexCreator;
-import org.sonatype.nexus.index.creator.JarFileContentsIndexCreator;
-import org.sonatype.nexus.index.creator.MinimalArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.SearchEngine;
 import org.sonatype.nexus.index.context.IndexCreator;
-import org.sonatype.nexus.index.creator.MavenArchetypeArtifactInfoIndexCreator;
-import org.sonatype.nexus.index.creator.MavenPluginArtifactInfoIndexCreator;
 import org.sonatype.nexus.index.updater.IndexUpdateRequest;
 import org.sonatype.nexus.index.updater.IndexUpdater;
 import org.sonatype.nexus.index.updater.jetty.JettyResourceFetcher;
@@ -157,12 +153,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
     private boolean inited = false;
-    private static final String[] CREATORS = {
-        MinimalArtifactInfoIndexCreator.ID,
-        MavenPluginArtifactInfoIndexCreator.ID,
-        MavenArchetypeArtifactInfoIndexCreator.ID,
-        JarFileContentsIndexCreator.ID,
-    };
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
     private static final String NB_DEPENDENCY_ARTIFACT = "nbda"; //NOI18N
@@ -287,13 +277,11 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     LOGGER.finer("Index Not Available :" + info.getId() + " At :" + loc.getAbsolutePath());//NOI18N
                 }
 
-                List<IndexCreator> creators = new ArrayList<IndexCreator>(3);
-                for (String id : CREATORS) {
-                    try {
-                        creators.add(embedder.lookup(IndexCreator.class, id));
-                    } catch (ComponentLookupException x) {
-                        LOGGER.log(Level.WARNING, "Could not create " + id, x);
-                    }
+                List<IndexCreator> creators = new ArrayList<IndexCreator>();
+                try {
+                    creators.addAll(embedder.lookupList(IndexCreator.class));
+                } catch (ComponentLookupException x) {
+                    throw new IOException(x);
                 }
                 if (info.isLocal()) { // #164593
                     creators.add(new NbIndexCreator());
