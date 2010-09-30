@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.spi;
+package org.netbeans.modules.remote.spi;
 
 import java.util.Collection;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
