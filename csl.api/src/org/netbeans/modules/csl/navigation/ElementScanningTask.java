@@ -207,7 +207,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
     }
 
     public @Override Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+        return CSLNavigatorScheduler.class;
     }
 
     public @Override synchronized void cancel() {
