@@ -86,6 +86,7 @@ public final class MavenVersionSettings {
     public String getVersion(String plugin) {
         String toRet = getProperty(plugin);
         if (toRet == null) {
+            // XXX these should rather read the most recent version from the repository index
             if (VERSION_RESOURCES.equals(plugin)) {
                 toRet = "2.2"; //NOI18N
             }
