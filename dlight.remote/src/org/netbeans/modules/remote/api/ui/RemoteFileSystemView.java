@@ -71,7 +71,7 @@ import org.openide.util.Exceptions;
     public static final String LOADING_STATUS = "ls"; //  NOI18N
     private final FileSystem fs;
     private final PropertyChangeSupport changeSupport;
-     final ExecutionEnvironment env;
+    private final ExecutionEnvironment env;
     private static final String newFolderString =
             UIManager.getString("FileChooser.other.newFolder");//  NOI18N
     private static final String newFolderNextString  =
@@ -223,5 +223,7 @@ import org.openide.util.Exceptions;
         return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");//NOI18N
     }
 
-
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return env;
+    }
 }

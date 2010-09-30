@@ -104,8 +104,8 @@ public final class FileChooserBuilder {
             String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
             Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
 
-            UIManager.put(openDialogTitleTextKey, currentOpenTitle + " @ " + env.getDisplayName()); // NOI18N
-            UIManager.put(saveDialogTitleTextKey, currentSaveTitle + " @ " + env.getDisplayName()); // NOI18N
+            UIManager.put(openDialogTitleTextKey, decorateTitle(currentOpenTitle, env));
+            UIManager.put(saveDialogTitleTextKey, decorateTitle(currentSaveTitle, env));
 
             RemoteFileSystemView remoteFileSystemView = new RemoteFileSystemView("/", env); // NOI18N
 
@@ -118,6 +118,10 @@ public final class FileChooserBuilder {
 
             return chooser;
         }
+    }
+
+    private static String decorateTitle(String title, ExecutionEnvironment env) {
+        return title + " @ " + env.getDisplayName();
     }
 
     private static class LocalFileChooserImpl extends JFileChooserEx {
@@ -151,7 +155,7 @@ public final class FileChooserBuilder {
     private static class RemoteFileChooserImpl extends JFileChooserEx
             implements PropertyChangeListener {
 
-        public RemoteFileChooserImpl(String currentDirectory, FileSystemView fsv) {
+        public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv) {
             super(currentDirectory, fsv);
         }
 
@@ -224,6 +228,16 @@ public final class FileChooserBuilder {
                     }
                 });
             }
+        }
+
+        @Override
+        public RemoteFileSystemView getFileSystemView() {
+            return (RemoteFileSystemView) super.getFileSystemView();
+        }
+
+        @Override
+        public void setDialogTitle(String dialogTitle) {
+            super.setDialogTitle(decorateTitle(dialogTitle, getFileSystemView().getExecutionEnvironment()));
         }
     }
 }

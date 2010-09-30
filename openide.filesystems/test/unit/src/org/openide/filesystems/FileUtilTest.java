@@ -253,6 +253,44 @@ public class FileUtilTest extends NbTestCase {
     /** Tests normalizeFile() method. */
     public void testNormalizeFile() throws IOException {
         // pairs of path before and after normalization
+        Map<String, String> paths = createNormalizedPaths();
+
+        for (String path : paths.keySet()) {
+            File file = new File(path);
+            assertTrue("Idempotency violated for path: " + path, FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
+            assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
+        }
+    }
+
+    public void testNormalizeFileIsCached() throws Exception {
+        File f = new File(getWorkDir(), "text.txt");
+        CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File one = FileUtil.normalizeFile(f);
+        String msg = "FileUtil.normalizeFile for " + f;
+        if (log.toString().indexOf(msg) == -1) {
+            fail("One querfy for the file shall be in logs:\n" + log);
+        }
+        CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
+        File two = FileUtil.normalizeFile(f);
+        if (log2.toString().contains(msg)) {
+            fail("No second FileUtil.normalizeFile for in:\n" + log);
+        }
+        assertEquals("Files are equal", one, two);
+    }
+
+    /** Tests normalizePath() method. */
+    public void testNormalizePath() throws IOException {
+        // pairs of path before and after normalization
+        Map<String, String> paths = createNormalizedPaths();
+
+        for (String path : paths.keySet()) {
+            assertTrue("Idempotency violated for path: " + path, FileUtil.normalizePath(FileUtil.normalizePath(path)).equals(FileUtil.normalizePath(path)));
+            assertEquals("File path not normalized: " + path, paths.get(path), FileUtil.normalizePath(path));
+        }
+    }
+
+    private Map<String, String> createNormalizedPaths() throws IOException {
+        // pairs of path before and after normalization
         Map<String, String> paths = new HashMap<String, String>();
         if (Utilities.isWindows()) {
             paths.put("A:\\", "A:\\");
@@ -291,30 +329,25 @@ public class FileUtilTest extends NbTestCase {
         // #137407 - java.io.File(".") should be normalized
         paths.put(".", new File(".").getCanonicalPath());
         paths.put("..", new File("..").getCanonicalPath());
-
-        for (String path : paths.keySet()) {
-            File file = new File(path);
-            assertTrue("Idempotency violated for path: " + path, FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
-            assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
-        }
+        return paths;
     }
-
-    public void testNormalizeFileIsCached() throws Exception {
-        File f = new File(getWorkDir(), "text.txt");
+    
+    public void testNormalizePathIsCached() throws Exception {
+        File f = new File(getWorkDir(), "textPath.txt");
+        String path = f.getPath();
         CharSequence log = Log.enable(FileUtil.class.getName(), Level.FINE);
-        File one = FileUtil.normalizeFile(f);
+        String one = FileUtil.normalizePath(path);
         String msg = "FileUtil.normalizeFile for " + f;
         if (log.toString().indexOf(msg) == -1) {
             fail("One querfy for the file shall be in logs:\n" + log);
         }
         CharSequence log2 = Log.enable(FileUtil.class.getName(), Level.FINE);
-        File two = FileUtil.normalizeFile(f);
+        String two = FileUtil.normalizePath(path);
         if (log2.toString().contains(msg)) {
             fail("No second FileUtil.normalizeFile for in:\n" + log);
         }
         assertEquals("Files are equal", one, two);
     }
-
 
     /** Tests that only resolvers are queried which supply at least one of
      * MIME types given in array in FileUtil.getMIMEType(fo, String[]).
