@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.csl.navigation;
 
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
@@ -68,6 +70,8 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
 
     private static ClassMemberNavigatorSourceFactory instance = null;
     private ClassMemberPanelUI ui;
+    private PropertyChangeListener listener;
+    private Lookup context;
     
     public static synchronized ClassMemberNavigatorSourceFactory getInstance() {
         if (instance == null) {
@@ -83,44 +87,34 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
 //        System.out.println("~~~ ClassMemberNavigatorSourceFactory: file=" + snapshot.getSource().getFileObject().getPath() + ", ui=" + ui);
-        return Collections.singleton(new ProxyElementScanningTask());
+        return Arrays.asList(new ProxyElementScanningTask(CSLNavigatorScheduler.class)
+                , new ProxyElementScanningTask(Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER)
+                );
     }
-
-// XXX: parsingapi
-//    public List<FileObject> getFileObjects() {
-//        List<FileObject> result = new ArrayList<FileObject>();
-//
-//        // Filter uninteresting files from the lookup
-//        LanguageRegistry registry = LanguageRegistry.getInstance();
-//        for( FileObject fileObject : super.getFileObjects() ) {
-//            if (!registry.isSupported(FileUtil.getMIMEType(fileObject))) {
-//                continue;
-//            }
-//            result.add(fileObject);
-//        }
-//
-//        if (result.size() == 1)
-//            return result;
-//
-//        return Collections.emptyList();
-//    }
 
     public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
         this.ui = ui;
+        this.context = l;
+        if (listener != null) {
+            listener.propertyChange(null);
+        }
     }
 
-// XXX: parsingapi
-//    @Override
-//    protected void lookupContentChanged() {
-//          // System.out.println("lookupContentChanged");
-//          if ( ui != null ) {
-//            ui.showWaitNode(); // Creating new task (file changed)
-//          }
-//    }
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        listener = l;
+    }
 
+    Lookup getContext() {
+        return context;
+    }
 
     private final class ProxyElementScanningTask extends ParserResultTask<ParserResult> {
         private ElementScanningTask task = null;
+        private Class<? extends Scheduler> clazz;
+
+        public ProxyElementScanningTask(Class<? extends Scheduler> c) {
+            this.clazz = c;
+        }
 
         private ElementScanningTask getTask() {
             synchronized (ClassMemberNavigatorSourceFactory.this) {
@@ -150,7 +144,7 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
         }
 
         public @Override Class<? extends Scheduler> getSchedulerClass() {
-            return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+            return clazz;
         }
     };
 }

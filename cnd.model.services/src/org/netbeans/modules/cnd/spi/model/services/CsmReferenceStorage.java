@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,37 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.java.platform;
+package org.netbeans.modules.cnd.spi.model.services;
 
-import org.openide.WizardDescriptor;
-
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.openide.util.Lookup;
 
 /**
- * Defines an API for registering custom Java platform installer. The installer
- * is responsible for instantiation of {@link JavaPlatform} through the provided
- * TemplateWizard.Iterator. If your installer selects the platform on the local disk you
- * probably don't want to use this class, the {@link PlatformInstall} class
- * creates an platform chooser for you. You want to use this class if the
- * platform is not on the local disk, eg. you want to download it from the web.
- * 
- * Consult the {@link GeneralPlatformInstall} javadoc about the {@link CustomPlatformInstall} registration.
- * 
- * @author Tomas Zezula
- * @since 1.5
+ *
+ * @author Alexander Simon
  */
-public abstract class CustomPlatformInstall extends GeneralPlatformInstall {
+public abstract class CsmReferenceStorage {
+    private static final CsmReferenceStorage DEFAULT = new Default();
+
+    protected CsmReferenceStorage() {
+    }
+
+    /** Static method to obtain the Repository.
+     * @return the Repository
+     */
+    public static CsmReferenceStorage getDefault() {
+        /*no need for sync synchronized access*/
+        return DEFAULT;
+    }
+
+    public abstract boolean put(CsmReference ref, CsmObject referencedObject);
+
+    public abstract CsmReference get(CsmOffsetable ref);
     
     /**
-     * Returns the {@link WizardDescriptor#InstantiatingIterator} used to install
-     * the platform. The platform definition file returned by the instantiate method
-     * should be created in the Services/Platforms/org-netbeans-api-java-Platform
-     * folder on the system filesystem.
-     * @return TemplateWizard.Iterator instance responsible for instantiating
-     * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the platform definition file.
+     * Implementation of the default selector
      */
-    public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator();
-    
+    private static final class Default extends CsmReferenceStorage {
+        private final Lookup.Result<CsmReferenceStorage> res;
+        Default() {
+            res = Lookup.getDefault().lookupResult(CsmReferenceStorage.class);
+        }
+
+        @Override
+        public boolean put(CsmReference ref, CsmObject referencedObject) {
+            for (CsmReferenceStorage selector : res.allInstances()) {
+                if (selector.put(ref, referencedObject)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        @Override
+        public CsmReference get(CsmOffsetable ref) {
+            for (CsmReferenceStorage selector : res.allInstances()) {
+                CsmReference reference = selector.get(ref);
+                if (reference != null) {
+                    return reference;
+                }
+            }
+            return null;
+        }
+    }
 }

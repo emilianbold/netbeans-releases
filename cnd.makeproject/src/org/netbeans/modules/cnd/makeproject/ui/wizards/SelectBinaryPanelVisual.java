@@ -433,7 +433,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH,  sourcesField.getText().trim()); // NOI18N
         //wizardDescriptor.putProperty(WizardConstants.PROPERTY_DISPLAY_NAME,   new File(binaryField.getText().trim()).getName()); // NOI18N
         // TODO should be inited
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH,  ""); // NOI18N
     }
 
     boolean valid() {

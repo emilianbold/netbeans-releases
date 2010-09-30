@@ -86,14 +86,17 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
         this.kind = kind;
     }
 
+    @Override
     public CsmObject getReferencedObject() {
         return targetDelegate.getObject();
     }
 
+    @Override
     public CsmObject getOwner() {
         return ownerDelegate.getObject();
     }
 
+    @Override
     public CsmReferenceKind getKind() {
         return this.kind;
     }
@@ -128,26 +131,32 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
         return true;
     }
 
+    @Override
     public int getStartOffset() {
         return startPosition;
     }
     
+    @Override
     public int getEndOffset() {
         return endPosition;
     }
 
+    @Override
     public Position getStartPosition() {
         throw new UnsupportedOperationException("use getStartOffset instead");//NOI18N
     }
     
+    @Override
     public Position getEndPosition() {
         throw new UnsupportedOperationException("use getEndOffset instead");//NOI18N
     }  
     
+    @Override
     public CsmFile getContainingFile() {
         return _getFile();
     }
 
+    @Override
     public CharSequence getText() {
         CsmFile file = getContainingFile();
         if (file != null) {

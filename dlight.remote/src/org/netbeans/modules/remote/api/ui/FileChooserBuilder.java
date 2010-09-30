@@ -121,7 +121,7 @@ public final class FileChooserBuilder {
     }
 
     private static String decorateTitle(String title, ExecutionEnvironment env) {
-        return title + " @ " + env.getDisplayName();
+        return title + " @ " + env.getDisplayName(); // NOI18N
     }
 
     private static class LocalFileChooserImpl extends JFileChooserEx {

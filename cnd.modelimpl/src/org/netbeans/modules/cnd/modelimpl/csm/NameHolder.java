@@ -48,9 +48,11 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.openide.util.CharSequences;
 
@@ -63,6 +65,7 @@ public class NameHolder {
     private final CharSequence name;
     private int start = 0;
     private int end = 0;
+    private boolean isMacroExpanded = false;
     private static final int FUNCTION = 0;
     private static final int DESTRUCTOR = 1;
     private static final int DESTRUCTOR_DEFINITION = 2;
@@ -120,6 +123,7 @@ public class NameHolder {
     public static NameHolder createSimpleName(AST ast) {
         NameHolder nameHolder = new NameHolder(AstUtil.getText(ast));
         nameHolder.start = OffsetableBase.getStartOffset(ast);
+        nameHolder.isMacroExpanded = isMacroExpandedToken(ast);
         nameHolder.end = OffsetableBase.getEndOffset(ast);
         return nameHolder;
     }
@@ -141,7 +145,7 @@ public class NameHolder {
 
     public void addReference(CsmFile file, final CsmObject decl) {
         if (file instanceof FileImpl) {
-            if (start > 0) {
+            if (start > 0 && !isMacroExpanded) {
                 final FileImpl fileImpl = (FileImpl) file;
                 final CsmReferenceKind kind;
                 if (CsmKindUtilities.isFunctionDefinition(decl) ||
@@ -200,7 +204,13 @@ public class NameHolder {
                 fileImpl.addReference(ref, decl);
             }
         }
-        
+    }
+
+    private static boolean isMacroExpandedToken(AST ast) {
+        if (ast instanceof CsmAST) {
+            return APTUtils.isMacroExpandedToken(((CsmAST)ast).getToken());
+        }
+        return false;
     }
 
     private CharSequence findDestructorDefinitionName(AST node) {
@@ -212,6 +222,7 @@ public class NameHolder {
             token = AstUtil.findChildOfType(token, CPPTokenTypes.TILDE);
             if (token != null) {
                 start = OffsetableBase.getStartOffset(token);
+                isMacroExpanded = isMacroExpandedToken(token);
                 end = OffsetableBase.getEndOffset(token);
                 token = token.getNextSibling();
                 if (token != null && token.getType() == CPPTokenTypes.ID) {
@@ -241,6 +252,7 @@ public class NameHolder {
 	    return "operator ???"; // NOI18N
 	}
         start = OffsetableBase.getStartOffset(operator);
+        isMacroExpanded = isMacroExpandedToken(operator);
         end = OffsetableBase.getEndOffset(operator);
 	StringBuilder sb = new StringBuilder(operator.getText());
 	sb.append(' ');
@@ -303,6 +315,7 @@ public class NameHolder {
         int type = token.getType();
         if( type == CPPTokenTypes.ID ) {
             start = OffsetableBase.getStartOffset(token);
+            isMacroExpanded = isMacroExpandedToken(token);
             end = OffsetableBase.getEndOffset(token);
             return AstUtil.getText(token);
         } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
@@ -335,6 +348,7 @@ public class NameHolder {
                 }
                 if( last.getType() == CPPTokenTypes.ID ) {
                     start = OffsetableBase.getStartOffset(last);
+                    isMacroExpanded = isMacroExpandedToken(last);
                     end = OffsetableBase.getEndOffset(last);
                     return AstUtil.getText(last);
                 } else {
@@ -342,6 +356,7 @@ public class NameHolder {
                     AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
                     if( operator != null ) {
                         start = OffsetableBase.getStartOffset(operator);
+                        isMacroExpanded = isMacroExpandedToken(operator);
                         end = OffsetableBase.getEndOffset(operator);
                         StringBuilder sb = new StringBuilder(operator.getText());
                         sb.append(' ');
@@ -354,6 +369,7 @@ public class NameHolder {
                         AST first = token.getFirstChild();
                         if (first.getType() == CPPTokenTypes.ID) {
                             start = OffsetableBase.getStartOffset(first);
+                            isMacroExpanded = isMacroExpandedToken(first);
                             end = OffsetableBase.getEndOffset(first);
                             return AstUtil.getText(first);
                         }
@@ -376,6 +392,7 @@ public class NameHolder {
                 if (token.getType() == CPPTokenTypes.ID) {
                     //typedef enum C { a2, b2, c2 } D;
                     start = OffsetableBase.getStartOffset(token);
+                    isMacroExpanded = isMacroExpandedToken(token);
                     end = OffsetableBase.getEndOffset(token);
                     aName = AstUtil.getText(token);
                 }
@@ -404,12 +421,14 @@ public class NameHolder {
             }
             else if( type == CPPTokenTypes.ID ) {
                 start = OffsetableBase.getStartOffset(token);
+                isMacroExpanded = isMacroExpandedToken(token);
                 end = OffsetableBase.getEndOffset(token);
                 return AstUtil.getText(token);
             }
             else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
 		if( qualified ) {
                     start = OffsetableBase.getStartOffset(token);
+                    isMacroExpanded = isMacroExpandedToken(token);
                     end = OffsetableBase.getEndOffset(token);
 		    return AstUtil.getText(token);
 		}
@@ -417,6 +436,7 @@ public class NameHolder {
                 if( last != null) {
                     if( last.getType() == CPPTokenTypes.ID ) {
                         start = OffsetableBase.getStartOffset(last);
+                        isMacroExpanded = isMacroExpandedToken(last);
                         end = OffsetableBase.getEndOffset(last);
                         return AstUtil.getText(last);
                     }
@@ -424,6 +444,7 @@ public class NameHolder {
                         AST first = token.getFirstChild();
                         if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
                             start = OffsetableBase.getStartOffset(first);
+                            isMacroExpanded = isMacroExpandedToken(first);
                             end = OffsetableBase.getEndOffset(first);
                             StringBuilder sb = new StringBuilder(first.getText());
                             sb.append(' ');
@@ -436,6 +457,7 @@ public class NameHolder {
                         } else if (first.getType() == CPPTokenTypes.ID){
                             start = OffsetableBase.getStartOffset(first);
                             end = OffsetableBase.getEndOffset(first);
+                            isMacroExpanded = isMacroExpandedToken(first);
                             return AstUtil.getText(first);
                         }
                     }
