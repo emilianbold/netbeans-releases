@@ -77,7 +77,9 @@ import org.openide.util.MutexException;
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of,
         PropertyChangeListener, Runnable, InstanceContent.Convertor {
-    
+
+    private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class);
+
     private PlatformConvertor() {
         //to avoid instantiation
     }
@@ -537,7 +539,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     private static void updateBuildProperties(final J2MEPlatform p) {
         final String name = p.getName();
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     ProjectManager.mutex().writeAccess(
