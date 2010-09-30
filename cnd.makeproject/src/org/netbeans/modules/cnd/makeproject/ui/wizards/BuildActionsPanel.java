@@ -134,7 +134,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
     }
     
     void read(WizardDescriptor wizardDescriptor) {
-        String mn = (String)wizardDescriptor.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);
+        String mn = (String)wizardDescriptor.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);
         if (makefileName == null || !makefileName.equals(mn)) {
             initFields();
             makefileName = mn;

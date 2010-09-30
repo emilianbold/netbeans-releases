@@ -47,16 +47,18 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -66,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
@@ -75,11 +78,13 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public class FileComponentReferences extends FileComponent implements Persistent, SelfPersistent {
 
+    private static final boolean TRACE = false;
+
     public static boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
         return ref instanceof FileComponentReferences.ReferenceImpl && kinds.contains(ref.getKind());
     }
 
-    private final Map<ReferenceImpl, CsmUID<CsmObject>> references;
+    private final SortedMap<ReferenceImpl, CsmUID<CsmObject>> references;
     private final ReadWriteLock referencesLock = new ReentrantReadWriteLock();
     private final CsmUID<CsmFile> fileUID;
 
@@ -97,7 +102,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     public FileComponentReferences(FileImpl file) {
         super(new FileReferencesKey(file));
-        references = new HashMap<ReferenceImpl, CsmUID<CsmObject>>();
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         this.fileUID = file.getUID();
         put();
     }
@@ -107,10 +112,10 @@ public class FileComponentReferences extends FileComponent implements Persistent
         UIDObjectFactory defaultFactory = UIDObjectFactory.getDefaultFactory();
         fileUID = defaultFactory.readUID(input);
         int collSize = input.readInt();
-        references = new HashMap<ReferenceImpl, CsmUID<CsmObject>>(collSize);
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         for(int i = 0; i < collSize; i++) {
             CsmUID<CsmObject> refObj = UIDObjectFactory.getDefaultFactory().readUID(input);
-            ReferenceImpl ref = new ReferenceImpl(fileUID, defaultFactory, input, refObj);
+            ReferenceImpl ref = new ReferenceImpl(fileUID, refObj, defaultFactory, input);
             references.put(ref, refObj);
         }
     }
@@ -118,7 +123,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     // only for EMPTY static field
     private FileComponentReferences() {
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
-        references = new HashMap<ReferenceImpl, CsmUID<CsmObject>>();
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         fileUID = null;
     }
 
@@ -170,9 +175,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         if (true) {
             referencesLock.readLock().lock();
             try {
-                for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
+                for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.tailMap(new ReferenceImpl(offset)).entrySet()) {
                     if (entry.getKey().start <= offset && offset < entry.getKey().end) {
                         return entry.getKey();
+                    } else {
+                        return null;
                     }
                 }
             } finally {
@@ -182,21 +189,49 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return null;
     }
 
-    void addReference(CsmReference ref, CsmObject referencedObject) {
-        CsmUID<CsmObject> referencedUID = UIDs.get(referencedObject);
-        if (!(referencedUID == null || referencedUID instanceof SelfPersistent)) {
+    boolean addReference(CsmReference ref, CsmObject referencedObject) {
+       if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
             // ignore local references
-            //new Exception("Ignore reference to local object "+referencedObject).printStackTrace();
-        } else {
-            ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID);
-            referencesLock.writeLock().lock();
-            try {
-                references.put(refImpl, referencedUID);
-            } finally {
-                referencesLock.writeLock().unlock();
+            if (TRACE) {
+                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(); // NOI18N
             }
-            put();
+            return false;
+       }
+        CsmUID<CsmObject> referencedUID = UIDs.get(referencedObject);
+        if (!UIDProviderIml.isPersistable(referencedUID)) {
+            // ignore local references
+            if (TRACE) {
+                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(); // NOI18N
+            }
+            return false;
         }
+        CsmUID<CsmObject> ownerUID = null;
+        CsmObject owner = ref.getOwner();
+        if (owner != null) {
+            if (UIDCsmConverter.isIdentifiable(owner)) {
+                CsmUID<CsmObject> anOwnerUID = UIDs.get(owner);
+                if (UIDProviderIml.isPersistable(anOwnerUID)) {
+                    ownerUID = anOwnerUID;
+                } else {
+                    if (TRACE) {
+                        new Exception("Ignore local owners "+owner).printStackTrace(); // NOI18N
+                    }
+                }
+            } else {
+                if (TRACE) {
+                    new Exception("Ignore local owners "+owner).printStackTrace(); // NOI18N
+                }
+            }
+        }
+        ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID);
+        referencesLock.writeLock().lock();
+        try {
+            references.put(refImpl, referencedUID);
+        } finally {
+            referencesLock.writeLock().unlock();
+        }
+        put();
+        return true;
     }
 
     @Override
@@ -216,7 +251,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
     }
 
-    private static final class ReferenceImpl implements CsmReference {
+    private static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
         private final CsmUID<CsmFile> file;
         private final CsmReferenceKind refKind;
         private final CsmUID<CsmObject> refObj;
@@ -225,35 +260,57 @@ public class FileComponentReferences extends FileComponent implements Persistent
         private final CharSequence identifier;
         private final CsmUID<CsmObject> ownerUID;
 
+        // to search
+        private ReferenceImpl(int start) {
+            this.start = start;
+            this.end = start;
+            this.file = null;
+            this.refKind = null;
+            this.refObj = null;
+            this.identifier = null;
+            this.ownerUID = null;
+        }
+
         private ReferenceImpl(CsmUID<CsmFile> file, CsmReferenceKind refKind, CsmUID<CsmObject> refObj,
                 CsmUID<CsmObject> owner, int start, int end, CharSequence identifier) {
             this.file = file;
             this.refKind = refKind;
             this.refObj = refObj;
+            assert refObj != null;
             this.start = start;
             this.end = end;
             this.identifier = identifier;
             this.ownerUID = owner;
         }
 
-        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmReference delegate, CsmUID<CsmObject> refObj) {
+        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmReference delegate, CsmUID<CsmObject> refObj, CsmUID<CsmObject> ownerUID) {
             this.file = fileUID;
             this.refKind = delegate.getKind();
             this.refObj = refObj;
+            assert refObj != null;
             this.start = PositionManager.createPositionID(fileUID, delegate.getStartOffset(), PositionManager.Position.Bias.FOWARD);
             this.end = PositionManager.createPositionID(fileUID, delegate.getEndOffset(), PositionManager.Position.Bias.BACKWARD);
             this.identifier = NameCache.getManager().getString(delegate.getText());
-            this.ownerUID = UIDs.get(delegate.getOwner());
+            this.ownerUID = ownerUID;
         }
 
-        private ReferenceImpl(CsmUID<CsmFile> fileUID, UIDObjectFactory defaultFactory, DataInput input, CsmUID<CsmObject> refObj) throws IOException {
+        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, DataInput input) throws IOException {
             this.file = fileUID;
+            this.refObj = refObj;
+            assert refObj != null;
             this.start = input.readInt();
             this.end = input.readInt();
             this.identifier = PersistentUtils.readUTF(input, NameCache.getManager());
             this.refKind = CsmReferenceKind.values()[input.readByte()];
             this.ownerUID = defaultFactory.readUID(input);
-            this.refObj = refObj;
+        }
+
+        private void write(UIDObjectFactory defaultFactory, DataOutput out) throws IOException {
+            out.writeInt(this.start);
+            out.writeInt(this.end);
+            PersistentUtils.writeUTF(identifier, out);
+            out.writeByte(this.refKind.ordinal());
+            defaultFactory.writeUID(this.ownerUID, out);
         }
 
         @Override
@@ -263,7 +320,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
         @Override
         public CsmObject getReferencedObject() {
-            return UIDCsmConverter.UIDtoCsmObject(refObj);
+            CsmObject out = UIDCsmConverter.UIDtoCsmObject(refObj);
+            if (out == null) {
+                Logger.getLogger("xRef").log(Level.INFO, "how can we store nulls? {0}", refObj); // NOI18N
+            }
+            return out;
         }
 
         @Override
@@ -304,7 +365,6 @@ public class FileComponentReferences extends FileComponent implements Persistent
         @Override
         public int hashCode() {
             int hash = 5;
-            hash = 17 * hash + (this.refKind != null ? this.refKind.hashCode() : 0);
             hash = 17 * hash + this.start;
             hash = 17 * hash + this.end;
             hash = 17 * hash + (this.identifier != null ? this.identifier.hashCode() : 0);
@@ -320,9 +380,6 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 return false;
             }
             final ReferenceImpl other = (ReferenceImpl) obj;
-            if (this.refKind != other.refKind) {
-                return false;
-            }
             if (this.start != other.start) {
                 return false;
             }
@@ -334,13 +391,27 @@ public class FileComponentReferences extends FileComponent implements Persistent
             }
             return true;
         }
-
-        private void write(UIDObjectFactory defaultFactory, DataOutput out) throws IOException {
-            out.writeInt(this.start);
-            out.writeInt(this.end);
-            PersistentUtils.writeUTF(identifier, out);
-            out.writeByte(this.refKind.ordinal());
-            defaultFactory.writeUID(this.ownerUID, out);
+        @Override
+        public int compareTo(ReferenceImpl o) {
+            int res = start - o.start;
+            if (res != 0) {
+                return res;
+            }
+            res = end - o.end;
+            if (res != 0) {
+                return res;
+            }
+            if (identifier != null && o.identifier != null) {
+                res = identifier.hashCode() - o.identifier.hashCode();
+            }
+            return res;
         }
+
+        @Override
+        public String toString() {
+            return "ReferenceImpl{" + "file=" + file + "refKind=" + refKind + "refObj=" + refObj + "start=" + start + "end=" + end + "identifier=" + identifier + "ownerUID=" + ownerUID + '}'; // NOI18N
+        }
+
+        
     }
 }
