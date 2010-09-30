@@ -288,12 +288,17 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
             return false;
         try {
             URL url = fo.getURL();
-            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString(), checkOnly)) {
-                JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
+            boolean apEnabledOnScan = aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN);
+            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, apEnabledOnScan ? Boolean.TRUE.toString() : null, checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to change in annotation processing options"); //NOI18N
                 return true;
             }
-            if (JavaIndex.ensureAttributeValue(url, APT_ENABLED, aptOptions.annotationProcessingEnabled().contains(Trigger.ON_SCAN) ? Boolean.TRUE.toString() : null, checkOnly)) {
-                JavaIndex.LOG.fine("forcing reindex due to change in annotation processing options"); //NOI18N
+            if (!apEnabledOnScan) {
+                //no need to check further:
+                return false;
+            }
+            if (JavaIndex.ensureAttributeValue(url, PROCESSOR_PATH, processorPath.toString(), checkOnly)) {
+                JavaIndex.LOG.fine("forcing reindex due to processor path change"); //NOI18N
                 return true;
             }
             if (JavaIndex.ensureAttributeValue(url, ANNOTATION_PROCESSORS, encodeToStirng(aptOptions.annotationProcessorsToRun()), checkOnly)) {
