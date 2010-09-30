@@ -442,7 +442,6 @@ made subject to such option by the copyright holder.
                 <project>../../mobility.deployment.webdav</project>
                 <project>../../mobility.editor</project>
                 <project>../../mobility.end2end</project>
-                <project>../../mobility.end2end.kit</project>
                 <project>../../mobility.j2meunit</project>
                 <project>../../mobility.javahelp</project>
                 <project>../../mobility.jsr172</project>
