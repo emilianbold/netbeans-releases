@@ -40,44 +40,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl.spi;
+package org.netbeans.modules.remote.spi;
 
-import java.util.Collection;
+import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
 
 /**
- * A temporary solution until we have an official file system provider in thus module
- * @author Andrew Krasny
- * @author Vladimir Kvashin
+ *
+ * @author ak119685
  */
-public abstract class FileSystemProvider {
+public interface AutocompletionProviderFactory {
 
-    private static final FileSystemProvider DEFAULT = new FileSystemProviderImpl();
+    public AutocompletionProvider newInstance(ExecutionEnvironment env);
 
-    protected FileSystemProvider() {
-    }
-
-    protected abstract FileSystem getFileSystemImpl(ExecutionEnvironment env, String root);
-
-    public static FileSystem getFileSystem(ExecutionEnvironment env, String root) {
-        return DEFAULT.getFileSystemImpl(env, root);
-    }
-
-    private static class FileSystemProviderImpl extends FileSystemProvider {
-
-        public FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-            Collection<? extends FileSystemProvider> allProviders = Lookup.getDefault().lookupAll(FileSystemProvider.class);
-            FileSystem result = null;
-
-            for (FileSystemProvider provider : allProviders) {
-                if ((result = provider.getFileSystemImpl(env, root)) != null) {
-                    break;
-                }
-            }
-
-            return result;
-        }
-    }
+    public boolean supports(ExecutionEnvironment env);
 }

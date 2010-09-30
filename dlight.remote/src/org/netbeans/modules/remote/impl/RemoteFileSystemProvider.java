@@ -40,22 +40,67 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.impl;
 
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.util.WeakHashMap;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author ak119685
  */
-@ServiceProvider(service=org.netbeans.modules.remote.impl.spi.FileSystemProvider.class)
-public class FileSystemProviderImpl extends org.netbeans.modules.remote.impl.spi.FileSystemProvider {
+@ServiceProvider(service = FileSystemProvider.class)
+public class RemoteFileSystemProvider extends FileSystemProvider {
+
+    WeakHashMap<ExecutionEnvironment, RemoteFileSystem> cache =
+            new WeakHashMap<ExecutionEnvironment, RemoteFileSystem>();
 
     @Override
-    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-        return RemoteFileSystemManager.getInstance().get(env);
-    }
+    protected synchronized FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+        if (env.isLocal()) {
+            return null;
+        }
+        // XXX:remoteAsAService probably some spi is needed here
+        // if (!ConnectionSupport.connect(env)) {
+        //     return null;
+        // }
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                return null;
+            }
+            try {
+                ConnectionManager.getInstance().connectTo(env);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
+        RemoteFileSystem fs = cache.get(env);
+        if (fs == null) {
+            fs = new RemoteFileSystem(env);
+
+            try {
+                fs.setRootDirectory(root);
+            } catch (PropertyVetoException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            cache.put(env, fs);
+        }
+
+        return fs;
+    }
 }
