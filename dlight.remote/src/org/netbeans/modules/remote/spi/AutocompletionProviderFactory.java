@@ -40,22 +40,18 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.fs;
+package org.netbeans.modules.remote.spi;
 
+import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author ak119685
  */
-@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProvider.class)
-public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.FileSystemProvider {
+public interface AutocompletionProviderFactory {
 
-    @Override
-    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-        return RemoteFileSystemManager.getInstance().get(env);
-    }
+    public AutocompletionProvider newInstance(ExecutionEnvironment env);
 
+    public boolean supports(ExecutionEnvironment env);
 }

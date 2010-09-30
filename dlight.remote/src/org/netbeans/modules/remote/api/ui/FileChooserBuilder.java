@@ -166,6 +166,12 @@ public final class FileChooserBuilder {
         }
 
         @Override
+        public void removeNotify() {
+            super.removeNotify();
+            setCursor(Cursor.getDefaultCursor());
+        }
+
+        @Override
         public FileObject[] getSelectedFileObjects() {
             File[] files = getSelectedFiles();
             if (files == null) {
@@ -213,11 +219,12 @@ public final class FileChooserBuilder {
             super.fireActionPerformed(command);
         }
         
-        
-
+        @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (RemoteFileSystemView.LOADING_STATUS.equals(evt.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
                     public void run() {
                         FileObjectBasedFile file = (FileObjectBasedFile) evt.getNewValue();
                         if (file == null) {
