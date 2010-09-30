@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -398,6 +399,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         try {
             handle.start();
             return instantiate();
+        } catch (IOException ex) {
+            ex.printStackTrace(); // since caller doesn't report this
+            throw ex;
         } finally {
             handle.finish();
         }
@@ -415,7 +419,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);
+        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);
         if (fullRemote) {
             getSelectHostWizardProvider().apply();
         }

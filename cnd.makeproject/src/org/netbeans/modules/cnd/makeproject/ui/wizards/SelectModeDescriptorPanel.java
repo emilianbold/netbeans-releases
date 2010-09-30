@@ -344,7 +344,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 }
             } else if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) { // NOI18N
                 return Boolean.TRUE;
-            } else if (WizardConstants.PROPERTY_MAKEFILE_NAME.equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_USER_MAKEFILE_PATH.equals(name)) { // NOI18N
                 return storage.getMake();
             } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
                 return storage.getConfigure();

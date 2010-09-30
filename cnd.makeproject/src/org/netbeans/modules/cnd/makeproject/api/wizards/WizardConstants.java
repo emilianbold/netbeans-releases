@@ -51,7 +51,8 @@ public class WizardConstants {
     private WizardConstants() {
     }
 
-    public static final String PROPERTY_MAKEFILE_NAME = "makefileName"; // String // NOI18N
+    public static final String PROPERTY_USER_MAKEFILE_PATH = "makefileName"; // String // NOI18N
+    public static final String PROPERTY_GENERATED_MAKEFILE_NAME = "generatedMakefileName"; // String // NOI18N
     public static final String PROPERTY_NAME = "name"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
     public static final String PROPERTY_SET_AS_MAIN = "setAsMain"; // Boolean // NOI18N
