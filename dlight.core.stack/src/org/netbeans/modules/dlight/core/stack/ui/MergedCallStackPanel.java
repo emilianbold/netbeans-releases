@@ -51,7 +51,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -68,29 +67,30 @@ import org.openide.util.NbBundle;
  *
  * @author mt154047
  */
-public final class MultipleCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
+public final class MergedCallStackPanel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
 
     private final ExplorerManager manager = new ExplorerManager();
-    private final MultipleCallStackRootNode rootNode;
+    private final MergedStackRootNode rootNode;
     private final BeanTreeView treeView;
     private Lookup lookup;
-    private final SourceFileInfoDataProvider sourceFileInfoDataProvider;
+    private SourceFileInfoDataProvider sourceFileInfoDataProvider;
 
-    private MultipleCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
+    private MergedCallStackPanel(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
         lookup = ExplorerUtils.createLookup(manager, new ActionMap());
         treeView = new MyOwnBeanTreeView();
         treeView.setRootVisible(false);
         add(treeView);
-        Action expandAll = new AbstractAction(NbBundle.getMessage(MultipleCallStackPanel.class, "ExpandAll")) {//NOI18N
+        Action expandAll = new AbstractAction(NbBundle.getMessage(MergedCallStackPanel.class, "ExpandAll")) {//NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                MultipleCallStackPanel.this.treeView.expandAll();
+                MergedCallStackPanel.this.treeView.expandAll();
             }
         };
-        rootNode = new MultipleCallStackRootNode(expandAll);
+        CallStackTreeModel treeModel  = new CallStackTreeModel(this.sourceFileInfoDataProvider);
+        rootNode = new MergedStackRootNode(expandAll, treeModel);
         manager.setRootContext(rootNode);//NOI18N
         final JPopupMenu popup = new JPopupMenu();
         popup.add(expandAll);
@@ -99,7 +99,7 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    popup.show(MultipleCallStackPanel.this, e.getX(), e.getY());
+                    popup.show(MergedCallStackPanel.this, e.getX(), e.getY());
                 }
             }
         });
@@ -110,12 +110,18 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         treeView.setActionMap(map);
     }
 
-    public static MultipleCallStackPanel createInstance() {
-        return new MultipleCallStackPanel(null);
+    public static MergedCallStackPanel createInstance() {
+        return new MergedCallStackPanel(null);
+    }
+    
+    public void setSourceProvider(SourceFileInfoDataProvider sourceFileInfoDataProvider){
+        this.sourceFileInfoDataProvider = sourceFileInfoDataProvider;
+        this.rootNode.setSourceFileInfoProvider(sourceFileInfoDataProvider);
+        
     }
 
-    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
-        return new MultipleCallStackPanel(sourceFileInfoDataProvider);
+    public static MergedCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
+        return new MergedCallStackPanel(sourceFileInfoDataProvider);
     }
 
     @Override
@@ -170,27 +176,22 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         rootNode.setDisplayName(rootName);
     }
 
-    public final void add(String rootName, Icon icon, List<FunctionCall> stack, Action[] actions) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack, actions));
+    public final void add(List<FunctionCall> stack) {
+        rootNode.addStack(stack);
     }
 
 
-    public final void add(String rootName, Icon icon, List<FunctionCall> stack) {
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, icon, rootName, stack));
-    }
 
-    public final void add(String rootName, boolean isRootVisible, List<FunctionCall> stack) {
-        treeView.setRootVisible(false);
-        rootNode.add(new StackRootNode(sourceFileInfoDataProvider, rootName, stack));
-    }
 
     public void update() {
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
 
+    @Override
     public Lookup getLookup() {
         return lookup;
     }
@@ -206,6 +207,7 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
             if (!EventQueue.isDispatchThread()){
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         MyOwnBeanTreeView.super.expandAll();
                     }
