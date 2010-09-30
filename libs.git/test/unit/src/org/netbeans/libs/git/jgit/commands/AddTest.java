@@ -77,6 +77,18 @@ public class AddTest extends AbstractGitTestCase {
         repository = getRepository(getLocalGitRepository());
     }
 
+    public void testAddNoRoots () throws Exception {
+        File file = new File(workDir, "file");
+        file.createNewFile();
+        assertNullDirCacheEntry(Collections.singleton(file));
+        GitClient client = getClient(workDir);
+        Monitor m = new Monitor();
+        client.add(new File[0], m);
+        assertEquals(Collections.singleton(file), m.notifiedFiles);
+        assertDirCacheSize(1);
+        assertDirCacheEntry(Collections.singleton(file));
+    }
+    
     public void testAddFileToEmptyIndex () throws Exception {
         File file = new File(workDir, "file");
         file.createNewFile();

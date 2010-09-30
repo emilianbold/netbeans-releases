@@ -45,8 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
@@ -110,12 +108,7 @@ public class StatusTest extends AbstractGitTestCase {
         write(deleted_untracked, "deleted_untracked");
 
         add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked);
-        // TODO API for commit needed
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("initial commit");
-        cmd.call();
-//        getLocalGitRepository().commit(new File[] {uptodate_uptodate, uptodate_modified, uptodate_deleted
-//                , modified_uptodate, modified_modified, modified_deleted, deleted_uptodate, deleted_untracked}, "initial commit");
+        commit(workDir);
         add(added_uptodate, added_modified, added_deleted);
         write(modified_deleted, "modification modified_deleted");
         write(modified_modified, "modification modified_modified");
@@ -124,10 +117,7 @@ public class StatusTest extends AbstractGitTestCase {
         add(modified_deleted, modified_modified, modified_reset, modified_uptodate);
         deleted_uptodate.delete();
         deleted_untracked.delete();
-        // TODO remove API needed
-        repository.getIndex().remove(workDir, deleted_uptodate);
-        repository.getIndex().remove(workDir, deleted_untracked);
-        repository.getIndex().write();
+        remove(true, deleted_uptodate, deleted_untracked);
         write(added_modified, "modification2 added_modified");
         write(uptodate_modified, "modification2 uptodate_modified");
         write(modified_modified, "modification2 modified_modified");
@@ -168,11 +158,7 @@ public class StatusTest extends AbstractGitTestCase {
         write(modified_modified, "modified_modified");
 
         add(uptodate_modified, modified_modified);
-        // TODO commit through facade needed
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("initial commit");
-        cmd.call();
-        // getLocalGitRepository().commit(new File[] {uptodate_modified, modified_modified}, "initial commit");
+        commit(uptodate_modified, modified_modified);
         add(added_modified);
         write(modified_modified, "modification modified_modified");
         add(modified_modified);
@@ -223,12 +209,8 @@ public class StatusTest extends AbstractGitTestCase {
         File f6 = new File(folder22, "f6");
         write(f6, "f6");
 
-        // TODO commit API needed
         add(f1, f2, f3, f4, f5, f6);
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("initial commit");
-        cmd.call();
-        //getLocalGitRepository().commit(new File[] {f1, f2, f3, f4, f5, f6}, "initial commit");
+        commit(f1, f2, f3, f4, f5, f6);
 
         GitClient client = getClient(workDir);
         TestStatusProgressMonitor monitor = new TestStatusProgressMonitor();

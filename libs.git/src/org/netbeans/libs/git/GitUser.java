@@ -40,33 +40,23 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+package org.netbeans.libs.git;
 
 /**
- *
- * @author ondra
+ * identification of git user
+ * @author Jan Becicka
  */
-public class CommandsTestSuite extends NbTestSuite {
+public interface GitUser {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
-    }
+    /**
+     * user's name
+     * @return
+     */
+    public String getName ();
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        return suite;
-    }
-
+    /**
+     * users email address
+     * @return
+     */
+    public String getEmailAddress ();
 }

@@ -40,33 +40,47 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+package org.netbeans.libs.git;
 
 /**
- *
- * @author ondra
+ * @author Jan Becicka
  */
-public class CommandsTestSuite extends NbTestSuite {
+public interface GitRevisionInfo {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
-    }
+    /**
+     * revision string
+     * @return
+     */
+    public String getRevision ();
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        return suite;
-    }
+    /**
+     * returns short message
+     * @return
+     */
+    public String getShortMessage ();
 
+    /**
+     * returns full message
+     *
+     * @return
+     */
+    public String getFullMessage ();
+
+    /**
+     * getter for commit time
+     * @return
+     */
+    public long getCommitTime ();
+
+    /**
+     * returns author of this change set
+     * @return
+     */
+    public GitUser getAuthor ();
+    
+    /**
+     * files affected by this change set
+     * @return
+     */
+    public java.util.Map<java.io.File, GitFileInfo> getModifiedFiles ();
 }

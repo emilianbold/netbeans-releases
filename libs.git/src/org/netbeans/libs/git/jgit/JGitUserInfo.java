@@ -42,31 +42,38 @@
 
 package org.netbeans.libs.git.jgit;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import org.eclipse.jgit.lib.PersonIdent;
+import org.netbeans.libs.git.GitUser;
 
 /**
- *
- * @author ondra
+ * identification of git user
+ * @author Jan Becicka
  */
-public class CommandsTestSuite extends NbTestSuite {
+public final class JGitUserInfo implements GitUser {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
+    private final String name;
+    private final String email;
+
+    JGitUserInfo(PersonIdent authorIdent) {
+        this.name = authorIdent.getName();
+        this.email = authorIdent.getEmailAddress();
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        return suite;
+    /**
+     * user's name
+     * @return
+     */
+    @Override
+    public String getName() {
+        return name;
     }
 
+    /**
+     * users email address
+     * @return
+     */
+    @Override
+    public String getEmailAddress() {
+        return email;
+    }
 }

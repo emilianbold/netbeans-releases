@@ -39,34 +39,47 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.libs.git.jgit;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+import java.io.IOException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public class ExactPathFilter extends TreeFilter {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
+    public static ExactPathFilter create (PathFilter filter) {
+        return new ExactPathFilter(filter);
+    }
+    final String pathStr;
+    final byte[] pathRaw;
+    private final PathFilter filter;
+
+    private ExactPathFilter (final PathFilter filter) {
+        pathStr = filter.getPath();
+        pathRaw = Constants.encode(pathStr);
+        this.filter = filter;
     }
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(StatusTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        return suite;
+    @Override
+    public TreeFilter clone() {
+        return this;
     }
 
+    @Override
+    public boolean include(TreeWalk walker) throws MissingObjectException, IncorrectObjectTypeException, IOException {
+        return filter.include(walker) && walker.isPathSuffix(pathRaw, pathRaw.length);
+    }
+
+    @Override
+    public boolean shouldBeRecursive() {
+        return true;
+    }
 }

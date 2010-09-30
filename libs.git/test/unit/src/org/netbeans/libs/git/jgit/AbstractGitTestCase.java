@@ -59,6 +59,7 @@ import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.utils.TestUtils;
 import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -180,6 +181,14 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected void add (File... files) throws GitException {
         getClient(wc).add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    protected void commit (File... files) throws GitException {
+        getClient(wc).commit(files, "commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    protected void remove (boolean cached, File... files) throws GitException {
+        getClient(wc).remove(files, cached, FileProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     protected static class Monitor extends FileProgressMonitor {

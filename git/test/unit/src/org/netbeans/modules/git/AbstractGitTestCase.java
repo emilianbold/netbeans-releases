@@ -53,6 +53,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -122,6 +124,18 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
     protected GitClient getClient (File repositoryLocation) throws GitException {
         return GitClientFactory.getInstance(null).getClient(repositoryLocation);
+    }
+
+    protected void add (File... files) throws GitException {
+        getClient(repositoryLocation).add(files == null ? new File[0] : files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    protected void commit (File... files) throws GitException {
+        getClient(repositoryLocation).commit(files == null ? new File[0] : files, "blablabla", ProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    protected void delete (boolean cached, File... files) throws GitException {
+        getClient(repositoryLocation).remove(files == null ? new File[0] : files, cached, FileProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     protected class StatusRefreshLogHandler extends Handler {

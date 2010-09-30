@@ -47,19 +47,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
+import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 /**
  *
  * @author ondra
  */
 public final class Utils {
-private Utils () {
-
+    private Utils () {
     }
 
     public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
@@ -76,6 +79,24 @@ private Utils () {
     
     public static Collection<PathFilter> getPathFilters (File workDir, File[] roots) {
         Collection<String> relativePaths = getRelativePaths(workDir, roots);
+        return getPathFilters(relativePaths);
+    }
+
+    public static TreeFilter getExcludeExactPathsFilter (File workDir, File[] roots) {
+        Collection<String> relativePaths = getRelativePaths(workDir, roots);
+        TreeFilter filter = null;
+        if (relativePaths.size() > 0) {
+            Collection<PathFilter> filters = getPathFilters(relativePaths);
+            List<TreeFilter> exactPathFilters = new LinkedList<TreeFilter>();
+            for (PathFilter f : filters) {
+                exactPathFilters.add(ExactPathFilter.create(f));
+            }
+            return NotTreeFilter.create(exactPathFilters.size() == 1 ? exactPathFilters.get(0) : OrTreeFilter.create(exactPathFilters));
+        }
+        return filter;
+    }
+
+    private static Collection<PathFilter> getPathFilters (Collection<String> relativePaths) {
         Collection<PathFilter> filters = new LinkedList<PathFilter>();
         for (String path : relativePaths) {
             filters.add(PathFilter.create(path));
@@ -83,8 +104,8 @@ private Utils () {
         return filters;
     }
 
-    public static Collection<String> getRelativePaths(File workDir, File[] roots) {
-        Collection<String> paths = new ArrayList<String>(roots.length);
+    public static List<String> getRelativePaths(File workDir, File[] roots) {
+        List<String> paths = new ArrayList<String>(roots.length);
         for (File root : roots) {
             if (workDir.equals(root)) {
                 paths.clear();

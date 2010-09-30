@@ -48,8 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
@@ -76,15 +74,33 @@ public class RemoveTest extends AbstractGitTestCase {
         repository = getRepository(getLocalGitRepository());
     }
 
+    public void testRemoveNoRoots () throws Exception {
+        File file = new File(workDir, "toRemove");
+        file.createNewFile();
+        File file2 = new File(workDir, "unversioned");
+        file2.createNewFile();
+
+        GitClient client = getClient(workDir);
+        add(file);
+        commit(file);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+
+        Monitor m = new Monitor();
+        client.remove(new File[0], false, m);
+        assertEquals(new HashSet<File>(Arrays.asList(file, file2)), m.notifiedFiles);
+        assertFalse(file.exists());
+        assertFalse(file2.exists());
+    }
+
     public void testRemoveFileHard () throws Exception {
         File file = new File(workDir, "toRemove");
         file.createNewFile();
 
         GitClient client = getClient(workDir);
         add(file);
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("adding file");
-        cmd.call();
+        commit(file);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -97,9 +113,7 @@ public class RemoveTest extends AbstractGitTestCase {
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        cmd = new Git(repository).commit();
-        cmd.setMessage("deleting file");
-        cmd.call();
+        commit(file);
         statuses = client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
@@ -109,9 +123,7 @@ public class RemoveTest extends AbstractGitTestCase {
         File file = new File(workDir, "toRemove");
         file.createNewFile();
         add(file);
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("adding file");
-        cmd.call();
+        commit(file);
 
         GitClient client = getClient(workDir);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -126,9 +138,7 @@ public class RemoveTest extends AbstractGitTestCase {
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
 
-        cmd = new Git(repository).commit();
-        cmd.setMessage("deleting from cache");
-        cmd.call();
+        commit(file);
 
         statuses = client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
@@ -152,9 +162,7 @@ public class RemoveTest extends AbstractGitTestCase {
         File[] folders = new File[] { folder1, folder2 };
         add(folders);
         add(file);
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("adding files");
-        cmd.call();
+        commit(workDir);
         GitClient client = getClient(workDir);
         Map<File, GitStatus> statuses = client.getStatus(folders, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
@@ -181,9 +189,7 @@ public class RemoveTest extends AbstractGitTestCase {
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        cmd = new Git(repository).commit();
-        cmd.setMessage("deleting files");
-        cmd.call();
+        commit(workDir);
         statuses = client.getStatus(folders, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
     }
@@ -206,9 +212,7 @@ public class RemoveTest extends AbstractGitTestCase {
         File[] folders = new File[] { folder1, folder2 };
         add(folders);
         add(file);
-        CommitCommand cmd = new Git(repository).commit();
-        cmd.setMessage("adding files");
-        cmd.call();
+        commit(workDir);
         GitClient client = getClient(workDir);
         Map<File, GitStatus> statuses = client.getStatus(folders, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
@@ -231,9 +235,7 @@ public class RemoveTest extends AbstractGitTestCase {
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        cmd = new Git(repository).commit();
-        cmd.setMessage("deleting from cache");
-        cmd.call();
+        commit(workDir);
         statuses = client.getStatus(folders,StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(3, statuses.size());
         assertStatus(statuses, workDir, file1, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);

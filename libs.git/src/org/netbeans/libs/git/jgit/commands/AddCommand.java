@@ -96,7 +96,7 @@ public class AddCommand extends GitCommand {
                 treeeWalk.addTree(new DirCacheBuildIterator(builder));
                 treeeWalk.addTree(new FileTreeIterator(repository));
                 String lastAddedFile = null;
-                while (treeeWalk.next()) {
+                while (treeeWalk.next() && !monitor.isCanceled()) {
                     String path = treeeWalk.getPathString();
                     WorkingTreeIterator f = treeeWalk.getTree(1, WorkingTreeIterator.class);
                     if (treeeWalk.getTree(0, DirCacheIterator.class) == null && f != null && f.isEntryIgnored()) {
@@ -127,8 +127,10 @@ public class AddCommand extends GitCommand {
                         }
                     }
                 }
-                inserter.flush();
-                builder.commit();
+                if (!monitor.isCanceled()) {
+                    inserter.flush();
+                    builder.commit();
+                }
             } finally {
                 inserter.release();
                 if (cache != null ) {

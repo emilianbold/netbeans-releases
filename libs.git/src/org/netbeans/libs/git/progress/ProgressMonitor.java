@@ -47,6 +47,7 @@ package org.netbeans.libs.git.progress;
  * @author ondra
  */
 public class ProgressMonitor {
+    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new ProgressMonitor();
     private boolean canceled;
 
     public final synchronized void cancel () {

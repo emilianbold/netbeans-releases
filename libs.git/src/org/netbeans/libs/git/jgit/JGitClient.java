@@ -50,9 +50,12 @@ import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
@@ -77,6 +80,21 @@ public class JGitClient extends GitClient {
         Repository repository = gitRepository.getRepository();
         AddCommand cmd = new AddCommand(repository, roots, monitor);
         cmd.execute();
+    }
+
+    /**
+     * Commits all changes made in the index to all files under the given roots
+     * @param roots
+     * @param commitMessage 
+     * @param monitor
+     * @throws GitException an error occurs
+     */
+    @Override
+    public GitRevisionInfo commit (File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CommitCommand cmd = new CommitCommand(repository, roots, commitMessage, monitor);
+        cmd.execute();
+        return cmd.revision;
     }
 
     @Override

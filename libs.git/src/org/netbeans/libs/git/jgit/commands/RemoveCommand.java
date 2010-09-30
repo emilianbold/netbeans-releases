@@ -91,7 +91,7 @@ public class RemoveCommand extends GitCommand {
                 treeWalk.reset();
                 treeWalk.addTree(new DirCacheIterator(cache));
                 treeWalk.addTree(new FileTreeIterator(repository));
-		while (treeWalk.next()) {
+		while (treeWalk.next() && !monitor.isCanceled()) {
                     File path = new File(repository.getWorkTree(), treeWalk.getPathString());
                     if (!treeWalk.isPostChildren()) {
                         if (treeWalk.isSubtree()) {
