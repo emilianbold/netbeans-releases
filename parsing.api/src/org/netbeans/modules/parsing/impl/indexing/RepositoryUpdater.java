@@ -1998,7 +1998,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         boolean indexResult=true;
                         try {
-                            indexResult=index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
+                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
                             if (indexResult) {
                                 crawler.storeTimestamps();
                                 return true;
