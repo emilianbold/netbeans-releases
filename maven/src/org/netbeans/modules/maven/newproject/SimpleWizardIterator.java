@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -124,6 +125,8 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
         this.wiz = wiz;
         // set archetype to run
         this.wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, archetype);
+        // XXX perhaps should display a GUI listing possible versions of org.netbeans.cluster:platform as choices?
+        wiz.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, Collections.singletonMap("netbeansVersion", "RELEASE691")); // NOI18N
 
         // Make sure list of steps is accurate.
         String[] steps = createSteps();

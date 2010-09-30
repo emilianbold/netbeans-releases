@@ -105,6 +105,9 @@ import org.xml.sax.SAXException;
  */
 public class ArchetypeWizardUtils {
 
+    /** {@code Map<String,String>} of custom archetype properties to define. */
+    public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
+
     //set in Nbmwizard
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
     static final String DEFINE_NETBEANS_INSTALLATION = "define.netbeans.installation";
@@ -325,7 +328,7 @@ public class ArchetypeWizardUtils {
         Boolean setOsgiDeps = (Boolean)wiz.getProperty(OSGIDEPENDENCIES);
         
         @SuppressWarnings("unchecked")
-        Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
+        Map<String,String> additional = (Map<String,String>) wiz.getProperty(ADDITIONAL_PROPS);
 
         try {
             ProjectInfo ear_vi = (ProjectInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
