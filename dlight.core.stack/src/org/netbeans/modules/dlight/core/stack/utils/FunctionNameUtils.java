@@ -190,7 +190,7 @@ public final class FunctionNameUtils {
     }
     
     public static String getFullFunctionName(String functionSignature){
-        return getFunctionModule(functionSignature) + "`" + getFunctionName(functionSignature);
+        return getFunctionModule(functionSignature) + "`" + getFunctionName(functionSignature); // NOI18N
     }
 
     public static String getFunctionName(String functionSignature) {
