@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -319,6 +320,7 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                             }
                         }
                         ref = refObj;
+                        CsmReferenceStorage.getDefault().put(this, refObj);
                     }
                 }
             }
