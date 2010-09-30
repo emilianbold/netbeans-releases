@@ -175,7 +175,7 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, TokenItem<TokenId> token) {
+    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
@@ -553,36 +553,6 @@ public final class ReferencesSupport {
         return doc;
     }
 
-    static CsmReferenceKind getReferenceKind(CsmReference ref) {
-        CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
-        CsmObject owner = ref.getOwner();
-        if (CsmKindUtilities.isType(owner) || CsmKindUtilities.isInheritance(owner)) {
-            kind = getReferenceUsageKind(ref);
-        } else if (CsmKindUtilities.isInclude(owner)) {
-            kind = CsmReferenceKind.DIRECT_USAGE;
-        } else {
-            CsmObject target = ref.getReferencedObject();
-            if (target == null) {
-                kind = getReferenceUsageKind(ref);
-            } else {
-                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
-                CsmObject targetDecl = decDef[0];
-                CsmObject targetDef = decDef[1];
-                assert targetDecl != null;
-                kind = CsmReferenceKind.DIRECT_USAGE;
-                if (owner != null) {
-                    if (owner.equals(targetDef)) {
-                        kind = CsmReferenceKind.DEFINITION;
-                    } else if (CsmReferenceSupport.sameDeclaration(owner, targetDecl)) {
-                        kind = CsmReferenceKind.DECLARATION;
-                    } else {
-                        kind = getReferenceUsageKind(ref);
-                    }
-                }
-            }
-        }
-        return kind;
-    }
    
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
@@ -684,6 +654,7 @@ public final class ReferencesSupport {
      */
     public static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
         int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
+            @Override
             public int compare(CsmReference o1, CsmReference o2) {
                 if (o1 instanceof RefOffsetKey) {
                     if (o2.getStartOffset() <= o1.getStartOffset() &&
@@ -716,38 +687,47 @@ public final class ReferencesSupport {
             this.offset = offset;
         }
 
+        @Override
         public CsmReferenceKind getKind() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public CsmObject getReferencedObject() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public CsmObject getOwner() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public CsmFile getContainingFile() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public int getStartOffset() {
             return offset;
         }
 
+        @Override
         public int getEndOffset() {
             return offset;
         }
 
+        @Override
         public Position getStartPosition() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public Position getEndPosition() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
+        @Override
         public CharSequence getText() {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }

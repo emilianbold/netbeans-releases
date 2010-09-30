@@ -1371,8 +1371,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileReferences().getReferences(objects);
     }
 
-    public void addReference(CsmReference ref, CsmObject referencedObject) {
-        getFileReferences().addReference(ref, referencedObject);
+    public boolean addReference(CsmReference ref, CsmObject referencedObject) {
+        return getFileReferences().addReference(ref, referencedObject);
     }
 
     public CsmReference getReference(int offset) {
