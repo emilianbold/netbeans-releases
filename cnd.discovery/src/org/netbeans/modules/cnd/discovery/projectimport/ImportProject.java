@@ -195,28 +195,20 @@ public class ImportProject implements PropertyChangeListener {
         nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);  // NOI18N
         nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);  // NOI18N
         projectName = projectFolder.getName();
-        if (fullRemote) {
-            makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); //NOI18N
-            int pos = makefileName.lastIndexOf('/');
-            if (pos > 0) {
-                makefileName = makefileName.substring(pos+1);
-            }
-        } else {
-            makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
-        }
+        makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
         workingDir = nativeProjectPath;
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);  // NOI18N
         if (configurePath != null) {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
             // the best guess
-            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
             if (makefilePath == null) {
                 File file = new File(nativeProjectPath + "/Makefile"); // NOI18N
                 makefilePath = file.getAbsolutePath();
             }
         } else {
-            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
@@ -255,14 +247,14 @@ public class ImportProject implements PropertyChangeListener {
         nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);  // NOI18N
         projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // NOI18N
         projectName = (String) wizard.getProperty(WizardConstants.PROPERTY_NAME); // NOI18N
-        makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); // NOI18N
+        makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME); // NOI18N
         workingDir = (String) wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
         buildCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_COMMAND); // NOI18N
         cleanCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CLEAN_COMMAND); // NOI18N
         buildResult = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
         includeDirectories = (String) wizard.getProperty(WizardConstants.PROPERTY_INCLUDES); // NOI18N
         macros = (String) wizard.getProperty(WizardConstants.PROPERTY_MACROS); // NOI18N
-        makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME); // NOI18N
+        makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); // NOI18N
         configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH); // NOI18N
         configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS); // NOI18N
         runConfigure = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)); // NOI18N

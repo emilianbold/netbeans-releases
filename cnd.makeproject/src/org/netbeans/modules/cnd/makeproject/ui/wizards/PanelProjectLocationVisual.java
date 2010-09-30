@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -132,6 +133,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             createMainComboBox.setSelectedIndex(0);
         } else {
             createMainCheckBox.setVisible(false);
+            createMainCheckBox.setSelected(false);
             createMainTextField.setVisible(false);
             createMainComboBox.setVisible(false);
         }
@@ -577,7 +579,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         }
         if (destFolder.exists()) {
             if (destFolder.isFile()) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_NotAFolder", makefileTextField.getText()));  // NOI18N
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_NotAFolder", destFolder.getPath()));  // NOI18N
                 return false;
             }
             if (new File(destFolder.getPath(), makefileTextField.getText()).exists()) {
@@ -625,7 +627,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
         d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, new File(folder));
         d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
-        d.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileTextField.getText());
+        d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
         File projectsDir = new File(this.projectLocationTextField.getText());
         if (projectsDir.isDirectory()) {
             ProjectChooser.setProjectsFolder(projectsDir);
@@ -634,8 +636,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         d.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN, setAsMainCheckBox.isSelected() && setAsMainCheckBox.isVisible() ? Boolean.TRUE : Boolean.FALSE);
         d.putProperty( /*XXX Define somewhere */"mainClass", null); // NOI18N
 
-        MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-        MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+        MIMEExtensions cExtensions = MIMEExtensions.get(MIMENames.C_MIME_TYPE);
+        MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
 
         d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
         if (createMainCheckBox.isSelected() && createMainTextField.getText().length() > 0) {
@@ -737,28 +739,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     // Implementation of DocumentListener --------------------------------------
     @Override
     public void changedUpdate(DocumentEvent e) {
-        updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-        }
-        if (this.createMainTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
-        }
+        update(e);
     }
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        updateTexts(e);
-        if (this.projectNameTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());
-        }
-        if (this.createMainTextField.getDocument() == e.getDocument()) {
-            firePropertyChange(PROP_MAIN_NAME, null, this.createMainTextField.getText());
-        }
+        update(e);
     }
 
     @Override
     public void removeUpdate(DocumentEvent e) {
+        update(e);
+    }
+
+    private void update(DocumentEvent e) {
         updateTexts(e);
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange(PROP_PROJECT_NAME, null, this.projectNameTextField.getText());

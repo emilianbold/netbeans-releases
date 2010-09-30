@@ -160,13 +160,13 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     
     void store(WizardDescriptor wizardDescriptor) {
         if (makefileRadioButton.isSelected()) {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, makefileNameTextField.getText());
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, makefileNameTextField.getText());
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, ""); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, ""); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_REBUILD, makeCheckBox.isSelected() ? "true" : "false"); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, ""); // NOI18N
         } else {
-            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME, configureMakefileNameTextField.getText());
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH, configureMakefileNameTextField.getText());
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH, configureNameTextField.getText()); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS, configureArgumentsTextField.getText()); // NOI18N
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_RUN_CONFIGURE, runConfigureCheckBox.isSelected() ? "true" : "false"); // NOI18N
