@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -129,25 +128,18 @@ public final class CndFileUtils {
                 CndUtils.assertTrueInConsole(false, "path for normalization must be absolute " + path);
             }
         }
-        //calls++;
-        Map<String, String> normalizedPaths = getNormalizedFilesMap();
-        String normalized = normalizedPaths.get(path);
-        if (normalized == null) {
-            // small optimization for true case sensitive OSs
-            boolean caseSensitive = isSystemCaseSensitive();
-            if (!caseSensitive) {
-                // with case sensitive "path"s returned by remote compilers
-                path = FileSystemsProvider.getCaseInsensitivePath(path);
-            }
-            if (!caseSensitive || (path.endsWith("/.") || path.endsWith("\\.") || path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
-                normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
-            } else {
-                normalized = path;
-            }
-            normalizedPaths.put(path, normalized);
-        } else {
-            //hits ++;
+        boolean caseSensitive = isSystemCaseSensitive();
+        if (!caseSensitive) {
+            // with case sensitive "path"s returned by remote compilers
+            path = FileSystemsProvider.getCaseInsensitivePath(path);
         }
+        String normalized;
+        // small optimization for true case sensitive OSs
+        if (!caseSensitive || (path.endsWith("/.") || path.endsWith("\\.") || path.contains("..") || path.contains("./") || path.contains(".\\"))) { // NOI18N
+            normalized = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
+        } else {
+            normalized = path;
+        }        
         return normalized;
     }
 
@@ -327,23 +319,6 @@ public final class CndFileUtils {
         return map;
     }
 
-    private static Map<String, String> getNormalizedFilesMap() {
-        Map<String, String> map = normalizedRef.get();
-        if (map == null) {
-            try {
-                mapNormalizedRefLock.lock();
-                map = normalizedRef.get();
-                if (map == null) {
-                    map = new ConcurrentHashMap<String, String>();
-                    normalizedRef = new SoftReference<Map<String, String>>(map);
-                }
-            } finally {
-                mapNormalizedRefLock.unlock();
-            }
-        }
-        return map;
-    }
-
     private static boolean existsImpl(File file) {
        FileSystemsProvider.Data data = FileSystemsProvider.get(file);
        if (data == null) {
@@ -373,10 +348,8 @@ public final class CndFileUtils {
 
 
     private static final Lock maRefLock = new ReentrantLock();
-    private static final Lock mapNormalizedRefLock = new ReentrantLock();
     
     private static Reference<ConcurrentMap<String, Flags>> mapRef = new SoftReference<ConcurrentMap<String, Flags>>(new ConcurrentHashMap<String, Flags>());
-    private static Reference<Map<String, String>> normalizedRef = new SoftReference<Map<String, String>>(new ConcurrentHashMap<String, String>());
     private final static class Flags {
 
         private final boolean exist;
