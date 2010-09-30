@@ -2,7 +2,7 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     <folder name="Templates">
-        <folder name="OSGI">
+        <folder name="OSGi">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.osgi.Bundle"/>
             <attr name="position" intvalue="723"/>
             <file name="Activator.java" url="templates/activator.java.template">
