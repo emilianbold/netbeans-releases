@@ -52,7 +52,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.InstallerRegistry;
 import org.netbeans.modules.java.platform.InstallerRegistryAccessor;
@@ -76,8 +79,9 @@ public class PlatformInstallIteratorTest extends NbTestCase {
     protected @Override boolean runInEQ() {
         return true;
     }
-
-    public void testSinglePlatformInstall () throws IOException {
+    
+    public void testSinglePlatformInstall () throws IOException, UnsupportedLookAndFeelException {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
         InstallerRegistry regs = InstallerRegistryAccessor.prepareForUnitTest(new GeneralPlatformInstall[] {
             new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
@@ -117,7 +121,8 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         assertFalse ("Should not have previous panel", iterator.hasPrevious());
     }
     
-    public void testMultipleGenralPlatformInstalls () throws IOException {
+    public void testMultipleGenralPlatformInstalls () throws IOException, UnsupportedLookAndFeelException {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
         GeneralPlatformInstall[] installers = new GeneralPlatformInstall[] {
             new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
@@ -158,7 +163,8 @@ public class PlatformInstallIteratorTest extends NbTestCase {
         assertTrue ("Should have previous panel", iterator.hasPrevious());
     }
     
-    public void testMultipleFileBasedPlatformInstalls () throws IOException {
+    public void testMultipleFileBasedPlatformInstalls () throws IOException, UnsupportedLookAndFeelException {
+        UIManager.setLookAndFeel(new MetalLookAndFeel());
         GeneralPlatformInstall[] installers = new GeneralPlatformInstall[] {
             new FileBasedPlatformInstall ("FileBased1", Collections.<WizardDescriptor.Panel<WizardDescriptor>>singletonList(
                 new Panel ("FileBased1_panel1")
