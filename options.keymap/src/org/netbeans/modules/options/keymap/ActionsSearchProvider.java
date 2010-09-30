@@ -67,6 +67,7 @@ import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -285,7 +286,18 @@ public class ActionsSearchProvider implements SearchProvider {
             // be careful, some actions throws assertions etc, because they
             // are not written to be invoked directly
             try {
-                command.actionPerformed(createActionEvent(command));
+                Action a = command;
+                ActionEvent ae = createActionEvent(command);
+                Object p = ae.getSource();
+                if (p instanceof CloneableEditor) {
+                    JEditorPane pane = ((CloneableEditor) p).getEditorPane();
+                    Action activeCommand = pane.getActionMap().get(command.getValue(Action.NAME));
+                    if (activeCommand != null) {
+                        a = activeCommand;
+                    }
+                }
+
+                a.actionPerformed(ae);
                 uiLog();
             } catch (Throwable thr) {
                 if (thr instanceof ThreadDeath) {
