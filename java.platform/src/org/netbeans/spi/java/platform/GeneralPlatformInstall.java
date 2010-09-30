@@ -44,9 +44,47 @@
 
 package org.netbeans.spi.java.platform;
 
+import org.netbeans.api.java.platform.JavaPlatform;
+
 /**
  * An super class of all the platform installers. You never subclass directly
  * this class but either the {@link CustomPlatformInstall} or {@link PlatformInstall}
+ * <p>The {@link PlatformInstall} or {@link CustomPlatformInstall} instances should be
+ * registered in the org-netbeans-api-java/platform/installers folder on the system filesystem.
+ * </p>
+ * <div class="nonnormative">
+ * <p>Registration example:</p>
+ * <pre>
+ * &#64;ServiceProvider(
+      service=GeneralPlatformInstall.class,
+      path="org-netbeans-api-java/platform/installers"
+   )
+   public final class MyPlatformInstall extends PlatformInstall {
+ * ...
+ * }
+ * </pre>
+ * 
+ * <p>The platform definition file has to provide the {@link JavaPlatform} instance in its {@link DataObject}'s lookup.</p>
+ * <p>The platform persistence can be solved using the ConvertAsJavaBean annotation as shown on the example.</p>
+ * <pre>
+ *     public java.util.Set instantiate() throws IOException {
+ *          MyPlatform p = new MyPlatform();
+ *          p.setDisplayName(theName);
+ *          p.setVendor(theVendor);
+ *          return Collections.singleton(InstanceDataObject.create(
+ *              DataFolder.findFolder(FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform")),
+ *              theName,
+ *              p,
+ *              null,
+ *              true));
+ *     }
+ * 
+ *     &#64;ConvertAsJavaBean
+ *     public static class MyPlatform extends JavaPlatform {
+ *     ...
+ *     }
+ * </pre>
+ * </div>
  * @author Tomas Zezula
  * @since 1.5
  */
