@@ -37,40 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
 import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
+import org.netbeans.modules.dlight.core.stack.dataprovider.SourceFileInfoDataProvider;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author mt154047
  */
-final class FunctionCallChildren extends Children.Keys<FunctionCall> {
-    private final CallStackTreeModel stackModel;
-    private final List<FunctionCall> calls;
+final class MergedStackRootNode extends AbstractNode{
+    private final CallStackTreeModel callStackTreeModel;
+    private final Action prefferedAction;
 
-    FunctionCallChildren(CallStackTreeModel stackModel, List<FunctionCall> call) {
-        this.stackModel = stackModel;
-        this.calls = call;
+    MergedStackRootNode(Action action, CallStackTreeModel callStackTreeModel) {
+        super(Children.LEAF);
+        setDisplayName("Root");//NOI18N
+        this.prefferedAction = action;
+        this.callStackTreeModel = callStackTreeModel;
     }
 
     @Override
-    protected void addNotify() {
-        super.addNotify();
-        setKeys(calls);
+    public Action[] getActions(boolean context) {
+        return new Action[]{prefferedAction};
     }
 
+    synchronized void addStack(final List<FunctionCall> stack) {
+        callStackTreeModel.addStack(stack);
+        setChildren(Children.LEAF);
+        List<FunctionCall> children = callStackTreeModel.getRootChildren();
+        if (children.isEmpty()){
+            return;
+        }
+        setChildren(new FunctionCallChildren(callStackTreeModel, children));
 
-
-    @Override
-    protected Node[] createNodes(FunctionCall key) {
-        return new FunctionCallNode[]{new FunctionCallNode(stackModel, key)};
     }
+    
+    void setSourceFileInfoProvider(SourceFileInfoDataProvider p){
+        callStackTreeModel.setSourceFileInfoProvider(p);
+    }
+    void removeAll() {
+        callStackTreeModel.clear();
+        setChildren(Children.LEAF);
+    }
+
 
 }
