@@ -143,15 +143,15 @@ public class RemoteFileUtil {
             fileChooser = new FileChooser(
                     titleText,
                     buttonText,
-                    JFileChooser.DIRECTORIES_ONLY,
+                    mode,
                     null,
                     initialPath,
                     false);
-        } else {
+        } else {            
             fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
             fileChooser.setApproveButtonText(buttonText);
             fileChooser.setDialogTitle(titleText);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fileChooser.setFileSelectionMode(mode);
         }
         return fileChooser;
     }
