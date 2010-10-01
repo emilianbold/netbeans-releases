@@ -419,7 +419,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);
+        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
         if (fullRemote) {
             getSelectHostWizardProvider().apply();
         }
