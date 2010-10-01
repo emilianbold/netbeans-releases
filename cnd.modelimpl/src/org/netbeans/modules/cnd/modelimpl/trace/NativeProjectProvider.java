@@ -102,19 +102,27 @@ public final class NativeProjectProvider {
 
     // XXX:FileObject conversion: remove
     public static NativeFileItem.Language getLanguage(File file, DataObject dobj) {
+        CndUtils.assertNotNull(file, "null file"); //NOI18N
         FileObject fo = null;
         if (dobj != null) {
             fo = dobj.getPrimaryFile();
-        } else {
-            fo = FileUtil.toFileObject(file);
         }
-        return getLanguage(fo, dobj);
+        String mimeType = "";
+        if (fo != null) {
+            mimeType = MIMESupport.getFileMIMEType(fo);
+        } else {
+            mimeType = MIMESupport.getFileMIMEType(file);
+        }
+        return getLanguage(mimeType);
     }
 
     public static NativeFileItem.Language getLanguage(FileObject fo, DataObject dobj) {
         CndUtils.assertNotNull(fo, "null file object"); //NOI18N
-        String mimeType = "";
-        mimeType = MIMESupport.getFileMIMEType(fo);
+        String mimeType = MIMESupport.getFileMIMEType(fo);
+        return getLanguage(mimeType);
+    }
+
+    private static NativeFileItem.Language getLanguage(String mimeType) {
         if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.CPP;
         } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
