@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
@@ -77,9 +78,14 @@ public class LHFileSystemTest extends FileSystemFactoryHid {
     protected void setUp() throws Exception {
         super.setUp();
         File f = getWorkDir("userdir");
+        // cleanup first
+        FileUtils.deleteRecursively(f.getParentFile());
+
         f.mkdirs();
         System.setProperty("netbeans.user", f.getAbsolutePath());
         MockServices.setServices(new Class[] {FileBasedURLMapper.class});
+
+        // ensure test files are handled by LH
         System.setProperty("netbeans.localhistory.historypath", System.getProperty("work.dir"));
     }
     
