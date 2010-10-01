@@ -91,7 +91,7 @@ public final class SemanticEntitiesProvider {
         return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
             @Override
             public String getName() {
-                return "class-fields"; // NOI18N
+                return "fast-class-fields"; // NOI18N
             }
             @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
@@ -133,7 +133,7 @@ public final class SemanticEntitiesProvider {
         return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
             @Override
             public String getName() {
-                return "functions-names"; // NOI18N
+                return "fast-functions-names"; // NOI18N
             }
             @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
