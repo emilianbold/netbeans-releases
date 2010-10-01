@@ -50,6 +50,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -68,6 +69,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private CsmObject target = null;
     private CsmObject owner = null;
     private boolean findDone = false;
+    private boolean restoreDone = false;
     private final int offset;
     private CsmReferenceKind kind;
     private FileReferencesContext fileReferencesContext;
@@ -83,15 +85,18 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     @Override
     public CsmObject getReferencedObject() {
         if (!findDone && isValid()) {
-            CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
-            if (candidate != null) {
-                target = candidate.getReferencedObject();
-            }
+            restoreIfPossible();
 
             if (target == null) {
-                if (candidate != null) {
-                    Logger.getLogger("xRef").log(Level.INFO, "{0} \n doesn't have target in candidate {1}\n", new Object[] {this, candidate});
-                }
+                //if (getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
+                //    if (("sort".contentEquals(getText())) && getStartOffset() == 1478) {
+                //        if (!CsmKindUtilities.isInstantiation(target)) {
+                //            CsmObject referencedObject = ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
+                //                    this.offset, token, fileReferencesContext);
+                //            Logger.getLogger("xRef").log(Level.INFO, "{0} \n with {1} \n and owner {2}\n", new Object[]{this, referencedObject, target});
+                //        }
+                //    }
+                //}
                 target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
                         this.offset, token, fileReferencesContext);
                 if (target != null) {
@@ -106,10 +111,40 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         return target;
     }
 
+    private synchronized void restoreIfPossible() {
+        if (!restoreDone) {
+
+            CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
+            //if (this.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
+            //    if (("sort".contentEquals(this.getText())) && this.getStartPosition().getLine() == 49) {
+            //        Logger.getLogger("xRef").log(Level.INFO, "{0} \n with candidate {1}\n", new Object[]{this, candidate});
+            //    }
+            //}
+            if (candidate != null) {
+                target = candidate.getReferencedObject();
+                if (target == null) {
+                    Logger.getLogger("xRef").log(Level.INFO, "{0} \n doesn't have target in candidate {1}\n", new Object[]{this, candidate});
+                }
+                CsmReferenceKind aKind = candidate.getKind();
+                assert this.kind == null || this.kind == aKind : this.kind + " vs. " + aKind;
+                this.kind = aKind;
+                CsmObject anOwner = candidate.getOwner();
+                assert this.owner == null || anOwner == null || this.owner.equals(anOwner) : this.owner + " vs. " + anOwner;
+                if (this.owner == null) {
+                    this.owner = anOwner;
+                }
+            }
+            restoreDone = true;
+        }
+    }
+
     @Override
     public CsmObject getOwner() {
         if (owner == null && isValid()) {
-            owner = ReferencesSupport.findOwnerObject(getContainingFile(), this.offset, token);
+            restoreIfPossible();
+            if (owner == null) {
+                owner = ReferencesSupport.findOwnerObject(getContainingFile(), this.offset, token);
+            }
         }
         return owner;
     }
@@ -157,40 +192,43 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     @Override
     public CsmReferenceKind getKind() {
         if (this.kind == null) {
+            restoreIfPossible();
             initKind(target);
         }
         return this.kind;
     }
 
-    private CsmReferenceKind initKind(CsmObject anTarget) {
-        kind = CsmReferenceKind.UNKNOWN;
-        CsmObject anOwner = getOwner();
-        if (CsmKindUtilities.isType(anOwner) || CsmKindUtilities.isInheritance(anOwner)) {
-            kind = ReferencesSupport.getReferenceUsageKind(this);
-        } else if (CsmKindUtilities.isInclude(anOwner)) {
-            kind = CsmReferenceKind.DIRECT_USAGE;
-        } else {
-            anTarget = anTarget == null ? getReferencedObject() : anTarget;
-            if (anTarget == null) {
-                kind = ReferencesSupport.getReferenceUsageKind(this);
+    private void initKind(CsmObject anTarget) {
+        if (this.kind == null) {
+            CsmReferenceKind outKind = CsmReferenceKind.UNKNOWN;
+            CsmObject anOwner = getOwner();
+            if (CsmKindUtilities.isType(anOwner) || CsmKindUtilities.isInheritance(anOwner)) {
+                outKind = ReferencesSupport.getReferenceUsageKind(this);
+            } else if (CsmKindUtilities.isInclude(anOwner)) {
+                outKind = CsmReferenceKind.DIRECT_USAGE;
             } else {
-                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(anTarget, true);
-                CsmObject targetDecl = decDef[0];
-                CsmObject targetDef = decDef[1];
-                assert targetDecl != null;
-                kind = CsmReferenceKind.DIRECT_USAGE;
-                if (anOwner != null) {
-                    if (anOwner.equals(targetDef)) {
-                        kind = CsmReferenceKind.DEFINITION;
-                    } else if (CsmReferenceSupport.sameDeclaration(anOwner, targetDecl)) {
-                        kind = CsmReferenceKind.DECLARATION;
-                    } else {
-                        kind = ReferencesSupport.getReferenceUsageKind(this);
+                anTarget = anTarget == null ? getReferencedObject() : anTarget;
+                if (anTarget == null) {
+                    outKind = ReferencesSupport.getReferenceUsageKind(this);
+                } else {
+                    CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(anTarget, true);
+                    CsmObject targetDecl = decDef[0];
+                    CsmObject targetDef = decDef[1];
+                    assert targetDecl != null;
+                    outKind = CsmReferenceKind.DIRECT_USAGE;
+                    if (anOwner != null) {
+                        if (anOwner.equals(targetDef)) {
+                            outKind = CsmReferenceKind.DEFINITION;
+                        } else if (CsmReferenceSupport.sameDeclaration(anOwner, targetDecl)) {
+                            outKind = CsmReferenceKind.DECLARATION;
+                        } else {
+                            outKind = ReferencesSupport.getReferenceUsageKind(this);
+                        }
                     }
                 }
             }
+            this.kind = outKind;
         }
-        return kind;
     }
 
     void setFileReferencesContext(FileReferencesContext fileReferencesContext) {

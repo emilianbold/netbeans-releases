@@ -406,13 +406,7 @@ public class ImportProject implements PropertyChangeListener {
                     if (runMake) {
                         makeProject(true, null);
                     } else {
-                        RP.post(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                discovery(0, null);
-                            }
-                        });
+                        discovery(0, null);
                     }
                 }
             } else {
@@ -541,11 +535,20 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#{0} {1}", new Object[]{configureFile, configureArguments}); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
+                Future<Integer> task = ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute configure script"); // NOI18N
+                }
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                CMakeAction.performAction(node, listener, null, makeProject, null);
+                Future<Integer> task = CMakeAction.performAction(node, listener, null, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute cmake"); // NOI18N
+                }
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                QMakeAction.performAction(node, listener, null, makeProject, null);
+                Future<Integer> task = QMakeAction.performAction(node, listener, null, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute qmake"); // NOI18N
+                }
             } else {
                 if (TRACE) {
                     logger.log(Level.INFO, "#Configure script does not supported"); // NOI18N
@@ -556,13 +559,16 @@ public class ImportProject implements PropertyChangeListener {
                 postModelDiscovery(true);
             }
         } catch (DataObjectNotFoundException e) {
+            logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
+            isFinished = true;
+        } catch (Throwable e) {
+            logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
             isFinished = true;
         }
     }
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment env = null;
             if (executionEnvironment.isRemote()) {
                 String remoteFile = HostInfoProvider.getMapper(executionEnvironment).getRemotePath(file.getAbsolutePath());
                 try {
@@ -578,6 +584,8 @@ public class ImportProject implements PropertyChangeListener {
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -685,7 +693,16 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, null, makeProject, null, null); // NOI18N
+        try {
+            Future<Integer> task = MakeAction.execute(node, arguments, listener, null, makeProject, null, null);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute make clean"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void postMake(Node node) {
@@ -733,7 +750,19 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null); // NOI18N
+        if (TRACE) {
+            logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
+        }
+        try {
+            Future<Integer> task = MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute make"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private String getArguments(String command){

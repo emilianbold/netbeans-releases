@@ -500,6 +500,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         }
     }
 
+    protected static void trace(String message) {
+        if (TRACE) {
+            logger.log(Level.INFO, message);
+        }
+    }
+
     protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
         if (!checkConnection(execEnv)) {
             return null;

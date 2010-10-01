@@ -72,7 +72,7 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     private final Collection<DataStorageType> supportedStorageTypes = new ArrayList<DataStorageType>();
     //should keep somehow the storages: store them somehow
 
-    {
+   static{
 
         String rcFileName = System.getProperty("dlight.h2.rcfile"); // NOI18N
         if (rcFileName == null) {
@@ -114,8 +114,9 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
     @Override
     public synchronized H2DataStorage createStorage() {
         try {
-            H2DataStorage result =  new H2DataStorage();
+            H2DataStorage result =  new H2DataStorage();            
             result.connect();
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, "Storage created with the dbURL={0}", result.dbURL);//NOI18N
             return result;
         } catch (SQLException ex) {
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.SEVERE, null, ex);
