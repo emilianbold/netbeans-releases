@@ -45,8 +45,6 @@ package org.netbeans.modules.maven.navigator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -122,7 +121,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             if (file != null) {
                 try {
                     List<Model> lin = EmbedderFactory.createModelLineage(file, EmbedderFactory.getOnlineEmbedder());
-                    final Children ch = new PomChildren(lin);
+                    final Children ch = Children.create(new PomChildren(lin), false);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                            treeView.setRootVisible(false);
@@ -224,47 +223,46 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         return an;
     }
     
-    private static class PomChildren extends Children.Keys<List<Model>> {
+    private static class PomChildren extends ChildFactory<Model> {
 
-        public PomChildren(List<Model> lineage) {
-            setKeys(new List[] {lineage});
+        private final List<Model> lineage;
+
+        PomChildren(List<Model> lineage) {
+            this.lineage = lineage;
+        }
+
+        protected @Override boolean createKeys(List<Model> toPopulate) {
+            toPopulate.addAll(lineage);
+            return true;
         }
         
-        @Override
-        protected Node[] createNodes(List<Model> key) {
-            Iterator<Model> it = key.listIterator();
-            List<POMNode> nds = new ArrayList<POMNode>();
-            String parentVersion = null;
-            while (it.hasNext()) {
-                Model mdl = it.next();
-                File fl = mdl.getPomFile();
-                String version = mdl.getVersion();
-                if (fl == null && version != null) {
-                    ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
-                    DefaultArtifactHandler handler = new DefaultArtifactHandler();
-                    handler.setExtension("pom");
-                    fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
-                }
-                if (fl != null) {
-                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
-                    DataObject dobj = null;
-                    if (fo != null) {
-                        try {
-                            dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                        } catch (DataObjectNotFoundException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-
-                    nds.add(0, new POMNode(fl, mdl, dobj, parentVersion));
-                    if (version != null) {
-                        parentVersion = version;
-                    }
-                }
+        protected @Override Node createNodeForKey(Model mdl) {
+            File fl = mdl.getPomFile();
+            String version = mdl.getVersion();
+            if (version == null && mdl.getParent() != null) {
+                version = mdl.getParent().getVersion();
             }
-            return nds.toArray(new Node[0]);
+            if (fl == null && version != null) {
+                ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+                DefaultArtifactHandler handler = new DefaultArtifactHandler();
+                handler.setExtension("pom");
+                fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
+            }
+            if (fl != null) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
+                DataObject dobj = null;
+                if (fo != null) {
+                    try {
+                        dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
+                    } catch (DataObjectNotFoundException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return new POMNode(fl, mdl, dobj, version);
+            } else {
+                return null;
+            }
         }
-        
     }
 
     
@@ -273,14 +271,10 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
         private final DataObject dobj;
-        private POMNode(File key, Model mdl, DataObject dobj, String parentVersion) {
+        private POMNode(File key, Model mdl, DataObject dobj, String version) {
             super(Children.LEAF);
-            String version = mdl.getVersion();
-            if (version == null) {
-                version = parentVersion;
-            }
             setDisplayName(NbBundle.getMessage(POMInheritancePanel.class, "TITLE_PomNode", mdl.getArtifactId(), version));
-            if (key.getName().endsWith("pom")) { //NOI18N
+            if (!dobj.getPrimaryFile().canWrite()) {
                 //coming from repository
                 readonly = true;
             }
@@ -335,4 +329,4 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             }
         }
     }
-}
+    }
