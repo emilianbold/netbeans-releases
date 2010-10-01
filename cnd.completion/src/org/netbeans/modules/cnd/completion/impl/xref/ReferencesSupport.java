@@ -109,7 +109,6 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 
 /**
  *
