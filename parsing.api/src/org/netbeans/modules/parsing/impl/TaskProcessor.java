@@ -44,7 +44,6 @@ package org.netbeans.modules.parsing.impl;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -178,7 +177,7 @@ public class TaskProcessor {
                     "org.netbeans.api.java.source.JavaSource", //NOI18N
                     "org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper"); //NOI18N
             if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
-                LOGGER.warning("ParserManager.parse called in AWT event thread by: " + stackTraceElement); // NOI18N
+                LOGGER.log(Level.WARNING, "ParserManager.parse called in AWT event thread by: {0}", stackTraceElement); // NOI18N
             }
         }
         final Request request = currentRequest.getTaskToCancel();
@@ -331,8 +330,8 @@ public class TaskProcessor {
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
             Collection<Request> rqs = finishedRequests.get(source);
-            boolean found = false;
             for (SchedulerTask task : tasks) {
+                boolean found = false;
                 final String taskClassName = task.getClass().getName();
                 if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
                     if (includedTasks == null || !includedTasks.matcher(taskClassName).matches()) {
@@ -384,7 +383,7 @@ public class TaskProcessor {
                                     it.remove();
                                     fr.schedulerType = schedulerType;
                                     aRequests.add(fr);
-                                    if (cr.size()==0) {
+                                    if (cr.isEmpty()) {
                                         finishedRequests.remove(source);
                                     }
                                     break;
@@ -549,6 +548,7 @@ public class TaskProcessor {
      private static class CompilationJob implements Runnable {
         
         @SuppressWarnings ("unchecked") //NOI18N
+        @Override
         public void run () {
             try {
                 while (true) {                   
@@ -564,7 +564,7 @@ public class TaskProcessor {
                                             it2.remove();
                                         }
                                     }
-                                    if (cr.size()==0) {
+                                    if (cr.isEmpty()) {
                                         it.remove();
                                     }
                                 }
@@ -581,7 +581,7 @@ public class TaskProcessor {
                                     try {
                                         try {
                                             if (LOGGER.isLoggable(Level.FINE)) {
-                                                LOGGER.fine("Running Special Task: " + r.toString());
+                                                LOGGER.log(Level.FINE, "Running Special Task: {0}", r.toString());
                                             }
                                             // needs some description!!!! (tzezula)
                                             ((ParserResultTask) r.task).run (null, null);
@@ -660,7 +660,7 @@ public class TaskProcessor {
                                                                     final long startTime = System.currentTimeMillis();
                                                                     if (r.task instanceof ParserResultTask) {
                                                                         if (LOGGER.isLoggable(Level.FINE)) {
-                                                                            LOGGER.fine("Running Task: " + r.toString());
+                                                                            LOGGER.log(Level.FINE, "Running Task: {0}", r.toString());
                                                                         }
                                                                         ParserResultTask parserResultTask = (ParserResultTask) r.task;
                                                                         SchedulerEvent schedulerEvent = SourceAccessor.getINSTANCE ().getSchedulerEvent (source, parserResultTask.getSchedulerClass ());
@@ -741,7 +741,7 @@ public class TaskProcessor {
                     }                    
                 }
             } catch (InterruptedException ie) {
-                ie.printStackTrace();
+                Exceptions.printStackTrace(ie);
                 // stop the service.
             }
         }                        
@@ -833,6 +833,7 @@ public class TaskProcessor {
      */
     //@ThreadSafe
     private static class RequestPriorityComparator implements Comparator<Request> {
+        @Override
         public int compare (Request r1, Request r2) {
             assert r1 != null && r2 != null;
             return r1.task.getPriority() - r2.task.getPriority();
@@ -847,6 +848,7 @@ public class TaskProcessor {
         
         private Thread t;
         
+        @Override
         public Thread newThread(Runnable r) {
             assert this.t == null;
             this.t = new Thread(r, "Parsing & Indexing Loop (" + System.getProperty("netbeans.buildnumber") + ")"); //NOI18N
@@ -1054,6 +1056,7 @@ public class TaskProcessor {
             this.canceled = new AtomicBoolean (false);
         }
 
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             if (this.sync.getCount() == 0) {
                 return false;
@@ -1073,20 +1076,24 @@ public class TaskProcessor {
             return false;
         }
 
+        @Override
         public boolean isCancelled() {
             return this.canceled.get();
         }
 
+        @Override
         public synchronized boolean isDone() {
             return this.sync.getCount() == 0;
         }
 
+        @Override
         public Void get() throws InterruptedException, ExecutionException {
             checkCaller();
             this.sync.await();
             return null;
         }
 
+        @Override
         public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             checkCaller();
             this.sync.await(timeout, unit);
