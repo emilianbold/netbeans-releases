@@ -502,6 +502,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     private static final byte cannotWriteFolder = 3;
     private static final byte alreadyNbPoject = 4;
     private static final byte notFoundMakeAndConfigure = 5;
+    private static final byte notRoot = 6;
     private byte messageKind = noMessage;
 
     boolean valid() {
@@ -515,13 +516,16 @@ public class SelectModePanel extends javax.swing.JPanel {
             File projectDirParent = projectDirFile.getParentFile();
             // in the cse of full remote the directory should not necessarily exist, but its parent should
             File fileToCheck = controller.isFullRemote() ? projectDirParent : projectDirFile;
-            if (!(fileToCheck.isDirectory() && fileToCheck.canRead())) {
-                if (fileToCheck.isDirectory()) {
+            if (fileToCheck == null || !fileToCheck.isDirectory() || !fileToCheck.canRead()) {
+                if (fileToCheck == null) {
+                    messageKind = notRoot;
+                }
+                else if(fileToCheck.isDirectory()) {
                     messageKind = cannotReadFolder;
                 } else {
                     messageKind = notFolder;
                 }
-                path = fileToCheck.getAbsolutePath();
+                path = (fileToCheck == null) ? "" : fileToCheck.getAbsolutePath(); //NOI18N
                 return false;
             }
 

@@ -92,7 +92,7 @@ public class RemoteFileUtil {
             CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
         }
         if (execEnv.isRemote()) {
-            return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
+            return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
         } else {
             return FileUtil.toFileObject(new File(normalizedPath));
         }
@@ -108,7 +108,7 @@ public class RemoteFileUtil {
             if (remoteProject != null) {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
                     ExecutionEnvironment execEnv = remoteProject.getRemoteFileSystemHost();
-                    return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
+                    return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
                 }
             }
         }
