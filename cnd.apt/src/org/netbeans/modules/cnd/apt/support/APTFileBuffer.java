@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public interface APTFileBuffer {
-    public File getFile();
+    public File getFile(); // XXX:FileObject conversion: remove
     public FileObject getFileObject();
     public CharSequence getAbsolutePath();
     public Reader getReader() throws IOException;    

@@ -167,7 +167,7 @@ public class APTSerializeUtils {
         String prefix = "cnd_apt_"+(fileIndex++); // NOI18N
         String suffix = file.getNameExt();
         try {
-            File out = File.createTempFile(prefix, suffix);                
+            File out = File.createTempFile(prefix, suffix); // File - sic!
             if (TRACE) { System.out.println("...saving APT of file " + file.getPath() + " into tmp file " + out); } // NOI18N
             long astTime = System.currentTimeMillis();
             // write
