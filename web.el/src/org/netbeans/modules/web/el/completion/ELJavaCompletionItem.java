@@ -43,6 +43,7 @@ package org.netbeans.modules.web.el.completion;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -128,6 +129,19 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
             return ImageUtilities.loadImageIcon(ICON_PATH, false);
         }
         return super.getIcon();
+    }
+
+    @Override
+    public List<String> getInsertParams() {
+        if (!adapter.isMethod()) {
+            return null;
+        }
+        return typeUtilities.getParameterNames((ExecutableElement) javaElement);
+    }
+
+    @Override
+    public String[] getParamListDelimiters() {
+        return new String[]{"(", ")"};
     }
 
     final class ElementHandleAdapter extends ELElementHandle {
