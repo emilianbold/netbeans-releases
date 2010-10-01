@@ -90,6 +90,42 @@ public class RemoveUselessCastTest extends ErrorHintsTestBase {
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testRedundantCastRemoveParentheses1() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = |(String) (\"a\" + \"b\");\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        String s = \"a\" + \"b\";\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testRedundantCastRemoveParentheses2() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        Integer b = new Integer(18);\n" +
+                       "        int a = (|(Integer) b).intValue();\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        Integer b = new Integer(18);\n" +
+                       "        int a = b.intValue();\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new RemoveUselessCast().run(info, null, pos, path, null);
