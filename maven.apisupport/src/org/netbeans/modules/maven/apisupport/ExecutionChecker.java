@@ -77,10 +77,15 @@ public class ExecutionChecker implements ExecutionResultChecker {
             scanner.setBasedir(basedir);
             scanner.setIncludes(new String[]{
                         "**/modules/*.jar", //NOI18N
+                        "**/modules/eager/*.jar", //NOI18N
+                        "**/modules/autoload/*.jar" //NOI18N
                     });
             scanner.scan();
             String[] incl = scanner.getIncludedFiles();
             if (incl != null && incl.length > 0) {
+                if (incl[0].indexOf("eager") > -1 || incl[0].indexOf("autoload") > -1) { //NOI18N
+                    res.getInputOutput().getErr().println("NetBeans: Cannot reload 'autoload' or 'eager' modules.");
+                }
                 try {
                     res.getInputOutput().getOut().println("NetBeans: Deploying NBM module in development IDE...");
                     TestModuleDeployer.deployTestModule(FileUtil.normalizeFile(new File(basedir, incl[0])));
