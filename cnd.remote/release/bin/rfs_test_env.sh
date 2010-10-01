@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh
 
 if [ "$1" -eq "64" ]; then
     suffix_64="_64"
@@ -29,10 +29,15 @@ platform_name="${platform_name}${suffix_64}"
 
 #echo platform_name: ${platform_name}
 
-base_dir="`pwd`/../release/bin"
+#base_dir="`pwd`/../release/bin"
+base_dir="`pwd`"
 platform_dir=${base_dir}/${platform_name}
 
 output=`mktemp`
+
+if [ ! -x ${platform_dir}/rfs_test_env ]; then
+    chmod u+x ${platform_dir}/rfs_test_env
+fi
 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${platform_dir} \
     LD_PRELOAD=rfs_preload.so \
