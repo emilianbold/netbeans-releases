@@ -35,6 +35,10 @@ platform_dir=${base_dir}/${platform_name}
 
 output=`mktemp`
 
+if [ ! -x ${platform_dir}/rfs_test_env ]; then
+    chmod u+x ${platform_dir}/rfs_test_env
+fi
+
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${platform_dir} \
     LD_PRELOAD=rfs_preload.so \
     RFS_TEST_ENV=1 \
