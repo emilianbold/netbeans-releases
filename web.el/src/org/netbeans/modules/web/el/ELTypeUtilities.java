@@ -52,6 +52,7 @@ import com.sun.el.parser.AstTrue;
 import com.sun.el.parser.Node;
 import com.sun.el.parser.NodeVisitor;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -228,6 +229,22 @@ public final class ELTypeUtilities {
             }
         };
 
+        runTask(task);
+        return task.getResult();
+    }
+
+    public List<String> getParameterNames(final ExecutableElement method) {
+        SourceTask<List<String>> task = new SourceTask<List<String>>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                List<String> result = new ArrayList<String>();
+                for (VariableElement param : method.getParameters()) {
+                    result.add(param.getSimpleName().toString());
+                }
+                setResult(result);
+            }
+        };
         runTask(task);
         return task.getResult();
     }
