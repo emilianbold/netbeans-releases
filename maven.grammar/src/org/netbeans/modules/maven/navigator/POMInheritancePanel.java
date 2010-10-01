@@ -53,10 +53,12 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.openide.actions.EditAction;
 import org.openide.cookies.EditCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -71,11 +73,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -239,27 +238,27 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             while (it.hasNext()) {
                 Model mdl = it.next();
                 File fl = mdl.getPomFile();
+                String version = mdl.getVersion();
+                if (fl == null && version != null) {
+                    ArtifactRepository repo = EmbedderFactory.getProjectEmbedder().getLocalRepository();
+                    DefaultArtifactHandler handler = new DefaultArtifactHandler();
+                    handler.setExtension("pom");
+                    fl = new File(repo.getBasedir(), repo.pathOf(new DefaultArtifact(mdl.getGroupId(), mdl.getArtifactId(), version, null, "pom", null, handler)));
+                }
                 if (fl != null) {
                     FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(fl));
-                    InstanceContent ic = new InstanceContent();
+                    DataObject dobj = null;
                     if (fo != null) {
                         try {
-                            DataObject dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
-                            if (dobj != null) {
-                                ic.add(dobj);
-                                EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                                if (ec != null) {
-                                    ic.add(ec);
-                                }
-                            }
+                            dobj = DataObject.find(ROUtil.checkPOMFileObjectReadOnly(fo, fl));
                         } catch (DataObjectNotFoundException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                     }
 
-                    nds.add(0, new POMNode(fl, mdl, new AbstractLookup(ic), parentVersion));
-                    if (mdl.getVersion() != null) {
-                        parentVersion = mdl.getVersion();
+                    nds.add(0, new POMNode(fl, mdl, dobj, parentVersion));
+                    if (version != null) {
+                        parentVersion = version;
                     }
                 }
             }
@@ -273,8 +272,9 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
         
         private Image icon = ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/Maven2Icon.gif"); // NOI18N
         private boolean readonly = false;
-        private POMNode(File key, Model mdl, Lookup lkp, String parentVersion) {
-            super( Children.LEAF, lkp);
+        private final DataObject dobj;
+        private POMNode(File key, Model mdl, DataObject dobj, String parentVersion) {
+            super(Children.LEAF);
             String version = mdl.getVersion();
             if (version == null) {
                 version = parentVersion;
@@ -285,6 +285,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
                 readonly = true;
             }
             setShortDescription(key.getAbsolutePath());
+            this.dobj = dobj;
         }
 
         @Override
@@ -296,7 +297,7 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
 
         @Override
         public Action getPreferredAction() {
-            return EditAction.get(EditAction.class);
+            return new MyEditAction();
         }
 
         @Override
@@ -321,13 +322,15 @@ public class POMInheritancePanel extends javax.swing.JPanel implements ExplorerM
             
             public MyEditAction() {
                 putValue(NAME, NbBundle.getMessage(POMInheritancePanel.class, "ACTION_Edit"));
-                setEnabled(true);
+                setEnabled(dobj != null);
             }
             
-            public void actionPerformed(ActionEvent e) {
-                EditCookie ec = POMNode.this.getLookup().lookup(EditCookie.class);
-                if (ec != null) {
-                    ec.edit();
+            public @Override void actionPerformed(ActionEvent e) {
+                if (dobj != null) {
+                    EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
+                    if (ec != null) {
+                        ec.edit();
+                    }
                 }
             }
         }
