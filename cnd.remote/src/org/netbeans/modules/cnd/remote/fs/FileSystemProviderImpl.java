@@ -40,45 +40,22 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.remote.impl;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.remote.spi.FileSystemProvider;
-import java.beans.PropertyVetoException;
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.LocalFileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author ak119685
+ * @author Vladimir Kvashin
  */
-@ServiceProvider(service = FileSystemProvider.class, position=100)
-public final class LocalFileSystemProvider extends FileSystemProvider {
-
-    private LocalFileSystem fs = null;
+@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProvider.class, position=50)
+public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.FileSystemProvider {
 
     @Override
     protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
-        if (env.isLocal()) {
-            synchronized (this) {
-                if (fs == null) {
-                    fs = new LocalFileSystem();
-                    try {
-                        fs.setRootDirectory(new File(root));
-                    } catch (PropertyVetoException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-            return fs;
-        }
-
-        return null;
+        return RemoteFileSystemManager.getInstance().get(env);
     }
+
 }
