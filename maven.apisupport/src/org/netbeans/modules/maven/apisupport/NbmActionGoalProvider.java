@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
@@ -59,20 +58,20 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=55)
+@ServiceProvider(service=MavenActionsProvider.class, position=55)
 public class NbmActionGoalProvider implements MavenActionsProvider {
     static final String NBMRELOAD = "nbmreload";
     
     private AbstractMavenActionsProvider platformDelegate = new AbstractMavenActionsProvider() {
 
-        protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/apisupport/platformActionMappings.xml"; //NOI18N
+        protected @Override InputStream getActionDefinitionStream() {
+            String path = "platformActionMappings.xml"; //NOI18N
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
@@ -85,8 +84,8 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     };
     private AbstractMavenActionsProvider ideDelegate = new AbstractMavenActionsProvider() {
 
-        protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/apisupport/ideActionMappings.xml"; //NOI18N
+        protected @Override InputStream getActionDefinitionStream() {
+            String path = "ideActionMappings.xml"; //NOI18N
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
@@ -99,11 +98,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     };
 
 
-    /** Creates a new instance of NbmActionGoalProvider */
-    public NbmActionGoalProvider() {
-    }
-    
-    public Set<String> getSupportedDefaultActions() {
+    public @Override Set<String> getSupportedDefaultActions() {
         return Collections.singleton(NBMRELOAD);
     }
     
@@ -114,7 +109,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return a;
     }
 
-    public synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
+    public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
         if (!ActionProvider.COMMAND_RUN.equals(action) &&
                 !ActionProvider.COMMAND_DEBUG.equals(action) &&
                 !NBMRELOAD.equals(action)) {
@@ -129,7 +124,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return false;
     }
 
-    public RunConfig createConfigForDefaultAction(String actionName,
+    public @Override RunConfig createConfigForDefaultAction(String actionName,
             Project project,
             Lookup lookup) {
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
@@ -146,7 +141,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return null;
     }
 
-    public NetbeansActionMapping getMappingForAction(String actionName,
+    public @Override NetbeansActionMapping getMappingForAction(String actionName,
             Project project) {
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
