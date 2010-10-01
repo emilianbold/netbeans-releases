@@ -79,6 +79,10 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 public class FileComponentReferences extends FileComponent implements Persistent, SelfPersistent {
 
     private static final boolean TRACE = false;
+    //private static int request = 0;
+    //private static int request_hit = 0;
+    //private static int respons = 0;
+    //private static int respons_hit = 0;
 
     public static boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
         return ref instanceof FileComponentReferences.ReferenceImpl && kinds.contains(ref.getKind());
@@ -172,31 +176,37 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
 
     CsmReference getReference(int offset) {
-        if (true) {
-            referencesLock.readLock().lock();
-            try {
-                for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.tailMap(new ReferenceImpl(offset)).entrySet()) {
-                    if (entry.getKey().start <= offset && offset < entry.getKey().end) {
-                        return entry.getKey();
-                    } else {
-                        return null;
-                    }
+        //if (request > 0 && request%1000 == 0) {
+        //    System.err.println("Reference statictic:");
+        //    System.err.println("\tRequest:"+request+" hit "+request_hit);
+        //    System.err.println("\tPut:"+respons+" hit "+respons_hit);
+        //}
+        //request++;
+        referencesLock.readLock().lock();
+        try {
+            for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.tailMap(new ReferenceImpl(offset)).entrySet()) {
+                if (entry.getKey().start <= offset && offset < entry.getKey().end) {
+                    //request_hit++;
+                    return entry.getKey();
+                } else {
+                    return null;
                 }
-            } finally {
-                referencesLock.readLock().unlock();
             }
+        } finally {
+            referencesLock.readLock().unlock();
         }
         return null;
     }
 
     boolean addReference(CsmReference ref, CsmObject referencedObject) {
-       if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
+        //respons++;
+        if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
             // ignore local references
             if (TRACE) {
                 new Exception("Ignore reference to local object "+referencedObject).printStackTrace(); // NOI18N
             }
             return false;
-       }
+        }
         CsmUID<CsmObject> referencedUID = UIDs.get(referencedObject);
         if (!UIDProviderIml.isPersistable(referencedUID)) {
             // ignore local references
@@ -224,6 +234,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
             }
         }
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID);
+        //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
+        //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {
+        //        Logger.getLogger("xRef").log(Level.INFO, "{0} \n with {1} \n and owner {2}\n", new Object[]{ref, referencedObject, ownerUID});
+        //    }
+        //}
         referencesLock.writeLock().lock();
         try {
             references.put(refImpl, referencedUID);
@@ -231,6 +246,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             referencesLock.writeLock().unlock();
         }
         put();
+        //respons_hit++;
         return true;
     }
 
@@ -411,7 +427,5 @@ public class FileComponentReferences extends FileComponent implements Persistent
         public String toString() {
             return "ReferenceImpl{" + "file=" + file + "refKind=" + refKind + "refObj=" + refObj + "start=" + start + "end=" + end + "identifier=" + identifier + "ownerUID=" + ownerUID + '}'; // NOI18N
         }
-
-        
     }
 }

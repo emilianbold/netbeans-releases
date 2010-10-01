@@ -313,7 +313,7 @@ public class TaskProcessor {
                 if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
                     continue;
             }
-            _requests.add (new Request (task, cache, true, bridge, schedulerType));
+            _requests.add (new Request (task, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, schedulerType));
         }
         if (!_requests.isEmpty ()) {
             handleAddRequests (source, _requests);
@@ -322,7 +322,7 @@ public class TaskProcessor {
     
     
     /**
-     * Removes a aask from scheduled requests.
+     * Removes a task from scheduled requests.
      * @param task The task to be removed.
      */
     public static void removePhaseCompletionTasks(final Collection<? extends SchedulerTask> tasks, final Source source) {
@@ -344,9 +344,7 @@ public class TaskProcessor {
                         if (rq.task == task) {
                             it.remove();
                             found = true;
-//todo: Some tasks are duplicated (racecondition?), remove even them.
-//todo: Prevent duplication of tasks
-//                      break;
+//                      break; todo: Some tasks are duplicated (racecondition?), remove even them, Prevent duplication of tasks
                         }
                     }
                 }
@@ -381,8 +379,10 @@ public class TaskProcessor {
                                 Request fr = it.next();                                
                                 if (task == fr.task) {
                                     it.remove();
-                                    fr.schedulerType = schedulerType;
-                                    aRequests.add(fr);
+                                    if (fr.reschedule == ReschedulePolicy.ON_CHANGE) {
+                                        fr.schedulerType = schedulerType;
+                                        aRequests.add(fr);
+                                    }
                                     if (cr.isEmpty()) {
                                         finishedRequests.remove(source);
                                     }
@@ -449,11 +449,19 @@ public class TaskProcessor {
                 Collection<Request> cr;
                 if (reschedule) {
                     if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
-                        requests.addAll(cr);
+                        for (Request toAdd : cr) {
+                            if (toAdd.reschedule == ReschedulePolicy.ON_CHANGE) {
+                                requests.add(toAdd);
+                            }
+                        }
                     }
                 }
                 if ((cr=waitingRequests.remove(source)) != null && cr.size()>0)  {
-                    requests.addAll(cr);
+                    for (Request toAdd : cr) {
+                        if (toAdd.reschedule == ReschedulePolicy.ON_CHANGE) {
+                            requests.add(toAdd);
+                        }
+                    }
                 }
             }
         }
@@ -474,7 +482,7 @@ public class TaskProcessor {
     
     static void scheduleSpecialTask (final SchedulerTask task) {
         assert task != null;
-        final Request rq = new Request(task, null, false, true, null);
+        final Request rq = new Request(task, null, ReschedulePolicy.NEVER, null);
         handleAddRequests (null,Collections.<Request>singletonList (rq));
     }
     
@@ -701,7 +709,7 @@ public class TaskProcessor {
                                         parserLock.unlock();
                                     }
                                     //Maybe should be in finally to prevent task lost when parser crashes
-                                    if (r.reschedule) {
+                                    if (r.reschedule != ReschedulePolicy.NEVER) {
                                         reschedule|= currentRequest.setCurrentTask(null);
 
                                         synchronized (INTERNAL_LOCK) {
@@ -709,7 +717,7 @@ public class TaskProcessor {
                                                 //The JavaSource was changed or canceled rechedule it now
                                                 requests.add(r);
                                             }
-                                            else if (r.bridge) {
+                                            else {
                                                 //Up to date JavaSource add it to the finishedRequests
                                                 Collection<Request> rc = finishedRequests.get (r.cache.getSnapshot ().getSource ());
                                                 if (rc == null) {
@@ -746,6 +754,12 @@ public class TaskProcessor {
             }
         }                        
     }
+     
+     private enum ReschedulePolicy {
+         NEVER,
+         CANCELED,
+         ON_CHANGE
+     }
     
     /**
      * Request for performing a task on given Source
@@ -754,13 +768,11 @@ public class TaskProcessor {
     public static class Request {
         
         static final Request DUMMY = new Request ();
-
         static final Request NONE = new Request();
         
         private final SchedulerTask task;
         private final SourceCache cache;
-        private final boolean reschedule;
-        private final boolean bridge;
+        private final ReschedulePolicy reschedule;
         private Class<? extends Scheduler> schedulerType;
         
         /**
@@ -769,13 +781,13 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, boolean bridge,
+        public Request (final SchedulerTask task, final SourceCache cache, final ReschedulePolicy reschedule,
             Class<? extends Scheduler> schedulerType) {
             assert task != null;
+            assert reschedule != null;
             this.task = task;
             this.cache = cache;
             this.reschedule = reschedule;
-            this.bridge = bridge;
             this.schedulerType = schedulerType;
         }
 
@@ -795,11 +807,11 @@ public class TaskProcessor {
                 @Override
                 public void run(Result result, SchedulerEvent event) {
                 }
-            },null,false,false,null);
+            },null,ReschedulePolicy.NEVER,null);
         }
         
         public @Override String toString () {            
-            if (reschedule) {
+            if (reschedule != ReschedulePolicy.NEVER) {
                 return String.format("Periodic request to perform: %s on: %s",  //NOI18N
                         task == null ? null : task.toString(),
                         cache == null ? null : cache.toString());
