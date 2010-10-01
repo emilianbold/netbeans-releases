@@ -52,6 +52,9 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-maven-apisupport-NBMReload.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadAction"/>
                 </file>
+                <file name="org-netbeans-modules-maven-apisupport-NBMReloadTarget.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.apisupport.NbmActionGoalProvider.createReloadTargetAction"/>
+                </file>
                 <file name="org-netbeans-modules-maven-apisupport-OpenBrandingEditorAction.instance"/>
         </folder>
     </folder>
@@ -67,6 +70,10 @@ made subject to such option by the copyright holder.
                 </file>
             </folder>
             <folder name="Actions">
+                <file name="org-netbeans-modules-maven-apisupport-NBMReloadTarget.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-NBMReloadTarget.instance"/>
+                    <attr name="position" intvalue="1225"/>
+                </file>
                 <file name="org-netbeans-modules-maven-apisupport-NBMReload.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-apisupport-NBMReload.instance"/>
                     <attr name="position" intvalue="1250"/>
