@@ -49,6 +49,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -127,11 +129,13 @@ public class AbstractGitTestCase extends NbTestCase {
         try {
             r = new BufferedReader(new FileReader(file));
             String s = r.readLine();
-            while( true ) {
-                sb.append(s);
-                s = r.readLine();
-                if (s == null) break;
-                sb.append('\n');
+            if (s != null) {
+                while( true ) {
+                    sb.append(s);
+                    s = r.readLine();
+                    if (s == null) break;
+                    sb.append('\n');
+                }
             }
         } finally {
             if (r != null) {
@@ -193,6 +197,7 @@ public class AbstractGitTestCase extends NbTestCase {
 
     protected static class Monitor extends FileProgressMonitor {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
+        public final List<String> notifiedWarnings = new LinkedList<String>();
 
         public Monitor () {
 
@@ -206,6 +211,11 @@ public class AbstractGitTestCase extends NbTestCase {
         @Override
         public void notifyError(String message) {
             fail(message);
+        }
+
+        @Override
+        public void notifyWarning (String message) {
+            notifiedWarnings.add(message);
         }
     }
 }

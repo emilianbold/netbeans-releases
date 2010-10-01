@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
 import java.io.IOException;
@@ -95,6 +96,20 @@ public class JGitClient extends GitClient {
         CommitCommand cmd = new CommitCommand(repository, roots, commitMessage, monitor);
         cmd.execute();
         return cmd.revision;
+    }
+
+    /**
+     * Modifies the index. The entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
+     * @param source
+     * @param target
+     * @param monitor
+     * @throws GitException
+     */
+    @Override
+    public void copyAfter (File source, File target, FileProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        CopyCommand cmd = new CopyCommand(repository, source, target, monitor);
+        cmd.execute();
     }
 
     @Override

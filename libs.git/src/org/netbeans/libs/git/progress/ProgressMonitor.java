@@ -69,4 +69,7 @@ public class ProgressMonitor {
 
     public void notifyError (String message) {
     }
+    
+    public void notifyWarning (String message) {
+    }
 }
