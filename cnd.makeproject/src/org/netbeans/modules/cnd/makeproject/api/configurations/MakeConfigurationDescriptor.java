@@ -104,7 +104,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
+public final class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
@@ -443,21 +443,29 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public Item findItemByFile(File file) {
+        return findItemByPathImpl(file.getPath());
+    }
+
+    private Item findItemByPathImpl(String path) {
         Collection<Item> coll = projectItems.values();
         Iterator<Item> it = coll.iterator();
         Item canonicalItem = null;
         while (it.hasNext()) {
             Item item = it.next();
-            if (item.getNormalizedPath().equals(file.getPath())) {
+            if (item.getNormalizedPath().equals(path)) {
                 return item;
             }
             if (canonicalItem == null) {
-                if (item.getCanonicalPath().equals(file.getPath())) {
+                if (item.getCanonicalPath().equals(path)) {
                     canonicalItem = item;
                 }
             }
         }
         return canonicalItem;
+    }
+
+    public Item findItemByFileObject(FileObject fileObject) {
+        return findItemByPathImpl(fileObject.getPath());
     }
 
     public Item findProjectItemByPath(String path) {

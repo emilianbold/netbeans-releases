@@ -293,6 +293,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CsmObject getReferencedObject() {
             CsmMacro refObj = ref;
+            if (refObj == null) {
+                CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
+                if (candidate != null) {
+                    refObj = (CsmMacro) candidate.getReferencedObject();
+                }
+            }
             if (refObj == null && macro != null) {
                 synchronized (this) {
                     refObj = ref;
