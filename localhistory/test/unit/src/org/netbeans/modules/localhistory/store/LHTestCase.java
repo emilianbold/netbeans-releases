@@ -209,9 +209,12 @@ public class LHTestCase extends NbTestCase {
         }
         store.fileCreate(file, ts);        
     }
-    
-    static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {        
-        write(file, data.getBytes());        
+
+    static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
+        // this isn't like a real-life change on a file where the file gets stored before a change.
+        // what we do here is that we write something into the file and then invoke store.filechange(file)
+        // to get the files contents stored...
+        write(file, data.getBytes());
         store.fileChange(file, ts);        
     }
     
