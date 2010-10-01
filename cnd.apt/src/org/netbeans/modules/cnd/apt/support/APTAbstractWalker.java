@@ -90,6 +90,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
 
+    @Override
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
@@ -109,6 +110,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
+    @Override
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
@@ -156,6 +158,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState);
     abstract protected boolean hasIncludeActionSideEffects();
 
+    @Override
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
@@ -173,31 +176,38 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
+    @Override
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
         getMacroMap().undef(getRootFile(), undef.getName());
     }
     
+    @Override
     protected boolean onIf(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onIfdef(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onIfndef(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch && eval(apt);
     }
     
+    @Override
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch;
     }
     
+    @Override
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 
