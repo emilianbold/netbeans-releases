@@ -63,13 +63,13 @@ import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
-import org.netbeans.modules.db.explorer.dlg.PredefinedWizard.Type;
+import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor.ValidatingPanel<PredefinedWizard>, WizardDescriptor.FinishablePanel<PredefinedWizard> {
+public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescriptor.ValidatingPanel<AddConnectionWizard>, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
 
     private DatabaseConnection databaseConnection;
 
@@ -84,7 +84,7 @@ public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor
     public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
     public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
     private Type type;
-    private PredefinedWizard pw;
+    private AddConnectionWizard pw;
     // Oracle
     public static final String ORACLE_THIN_DRIVER_NAME = "Oracle Thin";
     public static final String ORACLE_THIN_DRIVER_DISPLAY_NAME = "Oracle Thin";
@@ -201,12 +201,12 @@ public class ConnectionPanel implements PredefinedWizard.Panel, WizardDescriptor
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(PredefinedWizard settings) {
+    public void readSettings(AddConnectionWizard settings) {
         this.pw = settings;
     }
 
     @Override
-    public void storeSettings(PredefinedWizard settings) {
+    public void storeSettings(AddConnectionWizard settings) {
         // store values from from into connection
         component.setConnectionInfo();
         pw.setDatabaseConnection(databaseConnection);

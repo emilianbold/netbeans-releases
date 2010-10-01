@@ -47,14 +47,14 @@ import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
-public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
+public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
 
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
     private SchemaPanel component;
-    private PredefinedWizard pw;
+    private AddConnectionWizard pw;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -134,12 +134,12 @@ public class ChoosingSchemaPanel implements PredefinedWizard.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     @Override
-    public void readSettings(PredefinedWizard settings) {
+    public void readSettings(AddConnectionWizard settings) {
         this.pw = settings;
     }
 
     @Override
-    public void storeSettings(PredefinedWizard settings) {
+    public void storeSettings(AddConnectionWizard settings) {
         pw.setCurrentSchema(component.getSchema());
     }
 }

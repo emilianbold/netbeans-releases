@@ -63,7 +63,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.db.explorer.dlg.PredefinedWizard.Type;
+import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -71,7 +71,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class LookingForDriverPanel implements PredefinedWizard.Panel {
+public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
 
     private static final String DRIVERS_DIR = "drivers"; // NOI18N
     private final Type type;
@@ -79,21 +79,21 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     private static final String MYSQL_DRIVER_NAME = "mysql.driver.name"; // NOI18N
     private static final String ORACLE_DOWNLOAD_FROM = "oracle.from"; // NOI18N
     private static final String MYSQL_DOWNLOAD_FROM = "mysql.from"; // NOI18N
-    private PredefinedWizard pw;
+    private AddConnectionWizard pw;
 
-    public LookingForDriverPanel(PredefinedWizard.Type type) {
+    public ChoosingDriverPanel(AddConnectionWizard.Type type) {
         this.type = type;
     }
 
     private void init() {
         switch (type) {
             case ORACLE:
-                driverName = NbBundle.getMessage(LookingForDriverPanel.class, ORACLE_DRIVER_NAME);
-                downloadFrom = NbBundle.getMessage(LookingForDriverPanel.class, ORACLE_DOWNLOAD_FROM);
+                driverName = NbBundle.getMessage(ChoosingDriverPanel.class, ORACLE_DRIVER_NAME);
+                downloadFrom = NbBundle.getMessage(ChoosingDriverPanel.class, ORACLE_DOWNLOAD_FROM);
                 break;
             case MYSQL:
-                driverName = NbBundle.getMessage(LookingForDriverPanel.class, MYSQL_DRIVER_NAME);
-                downloadFrom = NbBundle.getMessage(LookingForDriverPanel.class, MYSQL_DOWNLOAD_FROM);
+                driverName = NbBundle.getMessage(ChoosingDriverPanel.class, MYSQL_DRIVER_NAME);
+                downloadFrom = NbBundle.getMessage(ChoosingDriverPanel.class, MYSQL_DOWNLOAD_FROM);
                 break;
             default:
                 assert false;
@@ -116,14 +116,14 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     private static FileObject getLibraryFO(String name) {
         Library lib = LibraryManager.getDefault().getLibrary(name);
         if (lib == null) {
-            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Library not found for driver {0}.", new Object[]{name});
+            Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.FINE, "Library not found for driver {0}.", new Object[]{name});
             return null;
         }
-        Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Library found for driver {0}.", new Object[]{name});
+        Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.FINE, "Library found for driver {0}.", new Object[]{name});
         List<FileObject> libs = new ArrayList<FileObject>();
         for (URL url : lib.getContent("classpath")) { //NOI18N
             FileObject fo = URLMapper.findFileObject(url);
-            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINE, "Libray {0} for driver {1} has jar: {2}", new Object[]{lib.getName(), name, fo});
+            Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.FINE, "Libray {0} for driver {1} has jar: {2}", new Object[]{lib.getName(), name, fo});
             FileObject jarFO = null;
             if ("jar".equals(url.getProtocol())) {  //NOI18N
                 jarFO = FileUtil.getArchiveFile(fo);
@@ -141,7 +141,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         URL foundURL = null;
         for (JDBCDriver d : drivers) {
-            Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.FINEST, "JDBC Driver: {0}.", new Object[]{d});
+            Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.FINEST, "JDBC Driver: {0}.", new Object[]{d});
             for (URL url : d.getURLs()) {
                 if (url.toExternalForm().endsWith(name)) {
                     foundURL = url;
@@ -172,7 +172,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
                             return FileUtil.toFileObject(f);
                         }
                     } catch (URISyntaxException ex) {
-                        Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO,
+                        Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO,
                                 "Handling URL " + url + " caused: " + ex.getLocalizedMessage(), ex);
                     }
                 }
@@ -190,7 +190,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
      */
-    private LookingForDriverUI component;
+    private ChoosingDriverUI component;
     private String driverName;
     private String driverPath;
     private String downloadFrom;
@@ -207,7 +207,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
                 return null;
             }
             init();
-            component = new LookingForDriverUI(this, driverName, driverPath, downloadFrom, driverFound);
+            component = new ChoosingDriverUI(this, driverName, driverPath, downloadFrom, driverFound);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
@@ -259,12 +259,12 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
     }
 
     @Override
-    public void readSettings(PredefinedWizard settings) {
+    public void readSettings(AddConnectionWizard settings) {
         this.pw = settings;
     }
 
     @Override
-    public void storeSettings(PredefinedWizard settings) {
+    public void storeSettings(AddConnectionWizard settings) {
         settings.setDriverLocation(component.getDriverLocation());
         // add new driver is still not present
         if (getDriverFO(driverName) == null) {
@@ -272,7 +272,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
             try {
                 url = new File(component.getDriverLocation()).toURI().toURL();
             } catch (MalformedURLException ex) {
-                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
             JDBCDriver drv = JDBCDriver.create(pw.getDriverName(),
                                         pw.getDriverDisplayName(),
@@ -280,7 +280,7 @@ public class LookingForDriverPanel implements PredefinedWizard.Panel {
             try {
                 JDBCDriverManager.getDefault().addDriver(drv);
             } catch (DatabaseException ex) {
-                Logger.getLogger(LookingForDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
         }
     }

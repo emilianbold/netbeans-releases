@@ -143,7 +143,7 @@ public class ConnectUsingDriverAction extends BaseAction {
             return showDialog(driverName, driverClass, databaseUrl, user, password);
         }
         
-        public DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
+        private DatabaseConnection showDialog(String driverName, String driverClass, String databaseUrl, String user, String password) {
             String finalDriverClass = null;
             
             JDBCDriver[] drivers;
@@ -363,11 +363,6 @@ public class ConnectUsingDriverAction extends BaseAction {
             
             return ConnectionList.getDefault().getConnection(cinfo);
         }
-
-//    private void removeListeners() {
-//        cinfo.removePropertyChangeListener(connectionListener);
-//        cinfo.removeExceptionListener(excListener);
-//    }
 
         /**
          * Cancels the current active task.

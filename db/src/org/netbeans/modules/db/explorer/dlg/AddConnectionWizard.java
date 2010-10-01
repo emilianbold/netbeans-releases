@@ -55,8 +55,6 @@ import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
-import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
-import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -66,15 +64,15 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek
  */
-public class PredefinedWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<PredefinedWizard> {
+public class AddConnectionWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<AddConnectionWizard> {
     
     private String driverLocation;
     private String driverName;
     private String[] steps;
-    private WizardDescriptor.Panel<PredefinedWizard>[] panels;
+    private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
     private Type type;
     private int index;
-    private LookingForDriverPanel driverPanel;
+    private ChoosingDriverPanel driverPanel;
     private boolean found = false;
     private String pwd;
     private String driverDN;
@@ -86,26 +84,26 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     private List<String> schemas = null;
     private String currentSchema;
 
-    private PredefinedWizard(Type type) {
+    private AddConnectionWizard(Type type) {
         this.type = type;
         switch (type) {
             case ORACLE:
-                driverName = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverName");
-                driverDN = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverDisplayName");
-                driverClass = NbBundle.getMessage(PredefinedWizard.class, "OracleThinDriverClass");
-                databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleDatabaseUrl");
-                user = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleUser");
-                pwd = NbBundle.getMessage(PredefinedWizard.class, "OracleSamplePassword");
-                defaultSchema = NbBundle.getMessage(PredefinedWizard.class, "OracleSampleSchema");
+                driverName = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverName");
+                driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
+                driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
+                databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleDatabaseUrl");
+                user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser");
+                pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword");
+                defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema");
                 break;
             case MYSQL:
-                driverName = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverName");
-                driverDN = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverDisplayName");
-                driverClass = NbBundle.getMessage(PredefinedWizard.class, "MySQLDriverClass");
-                databaseUrl = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleDatabaseUrl");
-                user = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleUser");
-                pwd = NbBundle.getMessage(PredefinedWizard.class, "MySQLSamplePassword");
-                defaultSchema = NbBundle.getMessage(PredefinedWizard.class, "MySQLSampleSchema");
+                driverName = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverName");
+                driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName");
+                driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass");
+                databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl");
+                user = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser");
+                pwd = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword");
+                defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema");
                 break;
             default:
                 assert false;
@@ -124,10 +122,10 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
     
     public static void showWizard(boolean isOracle, boolean isMySQL) {
         if (isOracle) {
-            PredefinedWizard wiz = new PredefinedWizard(Type.ORACLE);
+            AddConnectionWizard wiz = new AddConnectionWizard(Type.ORACLE);
             wiz.openWizard();
         } else if (isMySQL) {
-            PredefinedWizard wiz = new PredefinedWizard(Type.MYSQL);
+            AddConnectionWizard wiz = new AddConnectionWizard(Type.MYSQL);
             wiz.openWizard();
         } else {
             assert false : "No PredefinedConnection found in lookup.";
@@ -138,7 +136,7 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         WizardDescriptor wizardDescriptor = new WizardDescriptor(this, this);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(NbBundle.getMessage(PredefinedWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
+        wizardDescriptor.setTitle(NbBundle.getMessage(AddConnectionWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
@@ -152,22 +150,22 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
             try {
                 ConnectionList.getDefault().add(getDatabaseConnection());
             } catch (DatabaseException ex) {
-                Logger.getLogger(PredefinedWizard.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                Logger.getLogger(AddConnectionWizard.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
                 DbUtilities.reportError(NbBundle.getMessage (ConnectUsingDriverAction.class, "ERR_UnableToAddConnection"), ex.getMessage()); // NOI18N
                 closeConnection();
             }
         }
     }
     
-    public static interface Panel extends WizardDescriptor.Panel<PredefinedWizard>{}
+    public static interface Panel extends WizardDescriptor.Panel<AddConnectionWizard>{}
     
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private WizardDescriptor.Panel<PredefinedWizard>[] getPanels() {
+    private WizardDescriptor.Panel<AddConnectionWizard>[] getPanels() {
         if (panels == null) {
-            driverPanel = new LookingForDriverPanel(type);
+            driverPanel = new ChoosingDriverPanel(type);
             panels = new Panel[] {
                 driverPanel,
                 new ConnectionPanel(),
@@ -175,16 +173,16 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
             };
             steps = new String[panels.length];
             steps = new String[] {
-                NbBundle.getMessage(PredefinedWizard.class, "LookingForDriverUI.Name"), // NOI18N
-                NbBundle.getMessage(PredefinedWizard.class, "ConnectionPanel.Name"), // NOI18N
-                NbBundle.getMessage(PredefinedWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "LookingForDriverUI.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "ConnectionPanel.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
             };
         }
         return panels;
     }
     
     @Override
-    public WizardDescriptor.Panel<PredefinedWizard> current() {
+    public WizardDescriptor.Panel<AddConnectionWizard> current() {
         // init panels first
         getPanels();
         if (driverPanel.getDriverLocation() != null && ! found) {

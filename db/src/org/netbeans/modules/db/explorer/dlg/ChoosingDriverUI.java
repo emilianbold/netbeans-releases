@@ -56,16 +56,16 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class LookingForDriverUI extends JPanel implements DocumentListener {
+public final class ChoosingDriverUI extends JPanel implements DocumentListener {
     
     private String driverName;
     private String driverPath;
     private String downloadFrom;
-    private final LookingForDriverPanel panel;
+    private final ChoosingDriverPanel panel;
 
-    /** Creates new form LookingForDriverUI */
+    /** Creates new form ChoosingDriverUI */
     @SuppressWarnings("LeakingThisInConstructor")
-    public LookingForDriverUI(LookingForDriverPanel panel, String driverName, String driverPath, String downloadFrom, boolean found) {
+    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverName, String driverPath, String downloadFrom, boolean found) {
         this.panel = panel;
         this.driverName = driverName;
         this.driverPath = driverPath;
@@ -78,12 +78,12 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         }
         updateComponents(false);
         if (found) {
-            lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
+            lFound1.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lFound1.text", driverName)); // NOI18N
         } else {
-            lFound1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
+            lFound1.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lFound1.text.not.found", driverName)); // NOI18N
         }
         lFound2.setVisible(found);
-        lFound2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound2.text", tfLocation.getText())); // NOI18N
+        lFound2.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lFound2.text", tfLocation.getText())); // NOI18N
         lDownloadInfo1.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
         lDownloadInfo2.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
         bDownload.setVisible(downloadFrom != null && ! downloadFrom.isEmpty());
@@ -93,14 +93,14 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
     
     private void updateComponents(boolean notifyNow) {
         if (driverFound()) {
-            this.putClientProperty(NotifyDescriptor.PROP_WARNING_NOTIFICATION, NbBundle.getMessage(LookingForDriverUI.class,
+            this.putClientProperty(NotifyDescriptor.PROP_WARNING_NOTIFICATION, NbBundle.getMessage(ChoosingDriverUI.class,
                     "LookingForDriverUI.errorMessage.DriverNotFound", driverName)); // NOI18N
-            lDownloadInfo1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text.found", driverName)); // NOI18N
+            lDownloadInfo1.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text.found", driverName)); // NOI18N
         } else {
-            lDownloadInfo1.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text", driverName)); // NOI18N
+            lDownloadInfo1.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text", driverName)); // NOI18N
         }
         if (lDownloadInfo2.isVisible()) {
-            lDownloadInfo2.setText(NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", tfLocation.getText())); // NOI18N
+            lDownloadInfo2.setText(NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", tfLocation.getText())); // NOI18N
         }
         if (notifyNow) {
             panel.fireChangeEvent();
@@ -116,7 +116,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
     
     @Override
     public String getName() {
-        return NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.Name"); // NOI18N
+        return NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.Name"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -137,39 +137,39 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         lDownloadInfo2 = new javax.swing.JLabel();
         lFound2 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(lFound1, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound1.text", new Object[] {driverName})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lFound1, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lFound1.text", new Object[] {driverName})); // NOI18N
 
         lLocation.setLabelFor(tfLocation);
-        org.openide.awt.Mnemonics.setLocalizedText(lLocation, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lLocation.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lLocation, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lLocation.text")); // NOI18N
 
-        tfLocation.setText(org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.tfLocation.text")); // NOI18N
+        tfLocation.setText(org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.tfLocation.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.bBrowse.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bBrowse, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.bBrowse.text")); // NOI18N
         bBrowse.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bBrowseActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo1, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo1.text", new Object[] {driverName})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo1, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lDownloadInfo1.text", new Object[] {driverName})); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bDownload, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.bDownload.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bDownload, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.bDownload.text")); // NOI18N
         bDownload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 bDownloadActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lUrl, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lUrl.text", new Object[] {downloadFrom})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lUrl, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lUrl.text", new Object[] {downloadFrom})); // NOI18N
         lUrl.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lUrlMouseClicked(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo2, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lDownloadInfo2.text", new Object[] {driverPath})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lDownloadInfo2, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lDownloadInfo2.text", new Object[] {driverPath})); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(lFound2, org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.lFound2.text", new Object[] {driverPath})); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lFound2, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lFound2.text", new Object[] {driverPath})); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -213,7 +213,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bDownload)
-                    .addComponent(lUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lUrl))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -226,7 +226,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
     private void bBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
         JFileChooser chooser = new JFileChooser();
         chooser.setCurrentDirectory(new File(tfLocation.getText()));
-        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(LookingForDriverUI.class, "LookingForDriverUI.locateDriver", driverName)); // NOI18N
+        chooser.setDialogTitle(org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "LookingForDriverUI.locateDriver", driverName)); // NOI18N
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         String path = this.tfLocation.getText();
         if (path.length() > 0) {
@@ -248,7 +248,7 @@ public final class LookingForDriverUI extends JPanel implements DocumentListener
         try {
             Desktop.getDesktop().browse(uri);
         } catch (IOException ex) {
-            Logger.getLogger(LookingForDriverUI.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+            Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
         }
     }//GEN-LAST:event_lUrlMouseClicked
 
