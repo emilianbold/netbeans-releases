@@ -56,7 +56,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author ak119685
  */
-@ServiceProvider(service = FileSystemProvider.class)
+@ServiceProvider(service = FileSystemProvider.class, position=100)
 public final class LocalFileSystemProvider extends FileSystemProvider {
 
     private LocalFileSystem fs = null;

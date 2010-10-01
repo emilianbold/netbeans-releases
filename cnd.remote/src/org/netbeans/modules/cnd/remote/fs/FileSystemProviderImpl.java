@@ -37,40 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.core.stack.ui;
+package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.List;
-import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author mt154047
+ * @author Vladimir Kvashin
  */
-final class FunctionCallChildren extends Children.Keys<FunctionCall> {
-    private final CallStackTreeModel stackModel;
-    private final List<FunctionCall> calls;
-
-    FunctionCallChildren(CallStackTreeModel stackModel, List<FunctionCall> call) {
-        this.stackModel = stackModel;
-        this.calls = call;
-    }
+@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProvider.class, position=50)
+public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.FileSystemProvider {
 
     @Override
-    protected void addNotify() {
-        super.addNotify();
-        setKeys(calls);
-    }
-
-
-
-    @Override
-    protected Node[] createNodes(FunctionCall key) {
-        return new FunctionCallNode[]{new FunctionCallNode(stackModel, key)};
+    protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {
+        return RemoteFileSystemManager.getInstance().get(env);
     }
 
 }

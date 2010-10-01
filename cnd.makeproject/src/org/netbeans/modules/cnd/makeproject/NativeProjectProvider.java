@@ -94,6 +94,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -359,6 +360,15 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         synchronized (listeners) {
             return (listeners.isEmpty()) ? Collections.EMPTY_LIST : new ArrayList<NativeProjectItemsListener>(listeners);
         }
+    }
+
+    @Override
+    public NativeFileItem findFileItem(FileObject fileObject) {
+        MakeConfigurationDescriptor descr = getMakeConfigurationDescriptor();
+        if (descr != null) {
+            return (NativeFileItem) descr.findItemByFileObject(fileObject);
+        }
+        return null;
     }
 
     @Override

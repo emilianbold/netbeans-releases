@@ -59,7 +59,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author ak119685
  */
-@ServiceProvider(service = FileSystemProvider.class)
+@ServiceProvider(service = FileSystemProvider.class, position=100)
 public class RemoteFileSystemProvider extends FileSystemProvider {
 
     WeakHashMap<ExecutionEnvironment, RemoteFileSystem> cache =

@@ -366,6 +366,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
+    @Override
     public FileObject getFileObject() {
         synchronized (this) {
             if (fileObject == null) {
