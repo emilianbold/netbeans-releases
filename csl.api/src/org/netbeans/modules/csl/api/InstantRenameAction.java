@@ -89,6 +89,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author Jan Lahoda
  * @author Tor Norbye
+ * @deprecated use {@link CslActions#createInstantRenameAction() } instead.
  */
 public class InstantRenameAction extends BaseAction {
     /** Creates a new instance of InstantRenameAction */

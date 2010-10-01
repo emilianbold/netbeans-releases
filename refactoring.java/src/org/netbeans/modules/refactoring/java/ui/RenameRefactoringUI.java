@@ -312,7 +312,9 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
         } else {
             ElementKind k = RetoucheUtils.getElementKind(handle);
             
-            if (k.isClass() || k.isInterface())
+            if (k==null) {
+                postfix = "";
+            } else if (k.isClass() || k.isInterface())
                 postfix = ".JavaClass";//NOI18N
             else if (k == ElementKind.METHOD)
                 postfix = ".Method";//NOI18N
