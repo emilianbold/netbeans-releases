@@ -42,14 +42,15 @@
 
 package org.netbeans.modules.remote.impl;
 
-import java.util.concurrent.CancellationException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.WeakHashMap;
+import java.util.concurrent.CancellationException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -75,14 +76,18 @@ public class RemoteFileSystemProvider extends FileSystemProvider {
         // }
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
             if (SwingUtilities.isEventDispatchThread()) {
-                return null;
+                ConnectionManager.getInstance().getConnectToAction(env, null).actionPerformed(null);
+            } else {
+                try {
+                    ConnectionManager.getInstance().connectTo(env);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            try {
-                ConnectionManager.getInstance().connectTo(env);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (CancellationException ex) {
-                Exceptions.printStackTrace(ex);
+            if (!ConnectionManager.getInstance().isConnectedTo(env) || !HostInfoUtils.isHostInfoAvailable(env)) {
+                return null;
             }
         }
 
