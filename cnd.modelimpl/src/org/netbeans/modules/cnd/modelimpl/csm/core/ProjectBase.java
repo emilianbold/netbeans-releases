@@ -124,6 +124,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.windows.OutputWriter;
 
@@ -1877,6 +1878,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFile(file, treatSymlinkAsSeparateFile);
     }
 
+    public final FileImpl getFile(FileObject file, boolean treatSymlinkAsSeparateFile) {
+        return getFileContainer().getFile(FileUtil.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
+    }
+
     public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
         return getFileContainer().getFileUID(file, treatSymlinkAsSeparateFile);
     }
@@ -2475,17 +2480,17 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private final static class DefaultFileItem implements NativeFileItem {
 
-        private NativeProject project;
-        private String absolutePath;
+        private final NativeProject project;
+        private final Object fileObjectOrAbsPath;
 
         public DefaultFileItem(NativeProject project, String absolutePath) {
             this.project = project;
-            this.absolutePath = absolutePath;
+            this.fileObjectOrAbsPath = absolutePath;
         }
 
         public DefaultFileItem(NativeFileItem nativeFile) {
             this.project = nativeFile.getNativeProject();
-            this.absolutePath = nativeFile.getFile().getAbsolutePath();
+            this.fileObjectOrAbsPath = nativeFile.getFileObject();
         }
 
         public static NativeFileItem toDefault(NativeFileItem nativeFile) {
@@ -2535,7 +2540,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public File getFile() {
-            return new File(absolutePath);
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return FileUtil.toFile((FileObject)fileObjectOrAbsPath);
+            } else {
+                return new File((String) fileObjectOrAbsPath);
+            }
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return (FileObject) fileObjectOrAbsPath;
+            } else {
+                return FileUtil.toFileObject(new File((String) fileObjectOrAbsPath));
+            }
         }
 
         @Override
@@ -2555,7 +2573,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public String toString() {
-            return absolutePath;
+            return (fileObjectOrAbsPath instanceof FileObject) ? ((FileObject)fileObjectOrAbsPath).getPath() : (String) fileObjectOrAbsPath;
         }
     }
 
