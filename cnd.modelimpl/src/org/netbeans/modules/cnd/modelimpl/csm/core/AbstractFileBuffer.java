@@ -94,7 +94,12 @@ public abstract class AbstractFileBuffer implements FileBuffer {
     public File getFile() {
         return new File(absPath.toString());
     }
-    
+
+    @Override
+    public FileObject getFileObject() {
+        return FileUtil.toFileObject(new File(absPath.toString())); // XXX:FileObject conversion
+    }
+
     @Override
     public final Reader getReader() throws IOException {
         if (encoding == null) {
