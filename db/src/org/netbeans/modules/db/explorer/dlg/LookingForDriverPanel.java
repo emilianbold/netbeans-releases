@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.oracle;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
 import java.io.File;
@@ -63,7 +63,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
+import org.netbeans.modules.db.explorer.dlg.PredefinedWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

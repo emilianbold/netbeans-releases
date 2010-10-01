@@ -71,7 +71,7 @@
     <Component class="javax.swing.JLabel" name="lFound1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lFound1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lFound1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverName"/>
           </ResourceString>
         </Property>
@@ -83,21 +83,21 @@
           <ComponentRef name="tfLocation"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lLocation.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lLocation.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="tfLocation">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.tfLocation.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.tfLocation.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="bBrowse">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.bBrowse.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.bBrowse.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -107,7 +107,7 @@
     <Component class="javax.swing.JLabel" name="lDownloadInfo1">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lDownloadInfo1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lDownloadInfo1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverName"/>
           </ResourceString>
         </Property>
@@ -116,7 +116,7 @@
     <Component class="javax.swing.JButton" name="bDownload">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.bDownload.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.bDownload.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -126,7 +126,7 @@
     <Component class="javax.swing.JLabel" name="lUrl">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lUrl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lUrl.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="downloadFrom"/>
           </ResourceString>
         </Property>
@@ -138,7 +138,7 @@
     <Component class="javax.swing.JLabel" name="lDownloadInfo2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lDownloadInfo2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lDownloadInfo2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverPath"/>
           </ResourceString>
         </Property>
@@ -147,7 +147,7 @@
     <Component class="javax.swing.JLabel" name="lFound2">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/db/explorer/oracle/Bundle.properties" key="LookingForDriverUI.lFound2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
+          <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="LookingForDriverUI.lFound2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
             <Argument index="0" javacode="driverPath"/>
           </ResourceString>
         </Property>

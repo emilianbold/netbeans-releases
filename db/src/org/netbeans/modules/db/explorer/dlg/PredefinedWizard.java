@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.oracle;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
 import java.sql.Connection;
@@ -122,11 +122,11 @@ public class PredefinedWizard extends ConnectionDialogMediator implements Wizard
         MYSQL
     }
     
-    public static void showWizard(PredefinedConnectionProvider.PredefinedConnection conn) {
-        if (conn instanceof PredefinedConnectionProvider.OracleConnection) {
+    public static void showWizard(boolean isOracle, boolean isMySQL) {
+        if (isOracle) {
             PredefinedWizard wiz = new PredefinedWizard(Type.ORACLE);
             wiz.openWizard();
-        } else if (conn instanceof PredefinedConnectionProvider.MySQLConnection) {
+        } else if (isMySQL) {
             PredefinedWizard wiz = new PredefinedWizard(Type.MYSQL);
             wiz.openWizard();
         } else {

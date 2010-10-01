@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.oracle;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
@@ -63,7 +63,7 @@ import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
-import org.netbeans.modules.db.explorer.oracle.PredefinedWizard.Type;
+import org.netbeans.modules.db.explorer.dlg.PredefinedWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;

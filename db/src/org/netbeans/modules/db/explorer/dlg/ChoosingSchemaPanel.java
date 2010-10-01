@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.db.explorer.oracle;
+package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
