@@ -46,6 +46,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.quicksearch.CommandEvaluator;
 import org.netbeans.modules.quicksearch.ResultsModel;
@@ -139,10 +141,15 @@ public class RecentSearches {
             for (int i = 0; i < items.length; i++) {
                 int semicolonPos = items[i].lastIndexOf(":"); // NOI18N
                 if (semicolonPos >= 0) {
-                    final String name = items[i].substring(0, semicolonPos);
-                    final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
-                    ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
-                    recent.add(incomplete);
+                    try {
+                        final String name = items[i].substring(0, semicolonPos);
+                        final long time = Long.parseLong(items[i].substring(semicolonPos + 1));
+                        ItemResult incomplete = new ItemResult(null, new FakeAction(name), name, new Date(time));
+                        recent.add(incomplete);
+                    } catch (NumberFormatException nfe) {
+                        Logger l = Logger.getLogger(RecentSearches.class.getName());
+                        l.log(Level.INFO, "Failed to read recent searches", items);
+                    }
                 }
             }
         }
