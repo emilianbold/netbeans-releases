@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
+import org.openide.filesystems.FileObject;
 
 /**
  * Represents the input stream provider for APTDriver
@@ -54,6 +55,7 @@ import java.io.Reader;
  */
 public interface APTFileBuffer {
     public File getFile();
+    public FileObject getFileObject();
     public CharSequence getAbsolutePath();
     public Reader getReader() throws IOException;    
     public char[] getCharBuffer() throws IOException;

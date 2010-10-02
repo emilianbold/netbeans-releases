@@ -126,6 +126,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -2484,13 +2485,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         private final Object fileObjectOrAbsPath;
 
         public DefaultFileItem(NativeProject project, String absolutePath) {
+            Parameters.notNull("project", project);
+            Parameters.notNull("absolutePath", absolutePath);
             this.project = project;
             this.fileObjectOrAbsPath = absolutePath;
         }
 
         public DefaultFileItem(NativeFileItem nativeFile) {
+            Parameters.notNull("nativeFile", nativeFile);
             this.project = nativeFile.getNativeProject();
             this.fileObjectOrAbsPath = nativeFile.getFileObject();
+            if (fileObjectOrAbsPath == null) {
+                nativeFile.getFileObject();
+            }
+            Parameters.notNull("nativeFile.getFileObject()", fileObjectOrAbsPath);
         }
 
         public static NativeFileItem toDefault(NativeFileItem nativeFile) {
