@@ -107,11 +107,7 @@ public final class CndFileUtils {
      * @return
      */
     public static File normalizeFile(File file) {
-        if (CndUtils.isDebugMode()) {
-            if (!file.isAbsolute()) {
-                CndUtils.assertTrueInConsole(false, "Is it OK to normalize not absolute file? [" + file + "] during this session it is [" + file.getAbsolutePath() + "] but will be different if start IDE from another folder");
-            }
-        }
+        CndUtils.assertAbsoluteFileInConsole(file, "Is it OK to normalize not absolute file? [" + file + "] during this session it is [" + file.getAbsolutePath() + "] but will be different if start IDE from another folder"); //NOI18N
         String path = file.getPath();
         String normPath = normalizeAbsolutePath(file.getAbsolutePath());
         return path.equals(normPath) ? file : new File(normPath);
@@ -123,11 +119,7 @@ public final class CndFileUtils {
      * @return
      */
     public static String normalizeAbsolutePath(String path) {
-        if (CndUtils.isDebugMode()) {
-            if (!new File(path).isAbsolute()) {
-                CndUtils.assertTrueInConsole(false, "path for normalization must be absolute " + path);
-            }
-        }
+        CndUtils.assertAbsolutePathInConsole(path, "path for normalization must be absolute"); //NOI18N
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
             // with case sensitive "path"s returned by remote compilers
