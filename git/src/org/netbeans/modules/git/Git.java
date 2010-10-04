@@ -205,6 +205,14 @@ public final class Git {
         gitVCS.refreshStatus(files);
     }
 
+    /**
+     * Refreshes cached modification timestamp of the repository's metadata
+     * @param repository owner of the metadata to refresh
+     */
+    public void refreshWorkingCopyTimestamp (File repository) {
+        getVCSInterceptor().refreshMetadataTimestamp(repository);
+    }
+
     private static class RootsToFile {
         private static final Logger LOG = Logger.getLogger("org.netbeans.modules.git.RootsToFile"); // NOI18N
         private LinkedList<File> order = new LinkedList<File>();

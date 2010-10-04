@@ -61,7 +61,6 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     FileObject workdirFO;
     FileObject modifiedFO;
     File modifiedFile;
-//    FileObject dirstateFile;
 
     public ExternalChangesTest (String arg0) {
         super(arg0);
@@ -70,6 +69,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        System.setProperty("versioning.git.handleExternalEvents", "true");
         // create
         workdirFO = FileUtil.toFileObject(repositoryLocation);
         File folder = new File(new File(repositoryLocation, "folder1"), "folder2");
@@ -93,14 +93,29 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
     }
 
-    // testing if dirstate events can be disabled with the commandline switch
-    public void testNoExternalEvents () throws Exception {
+    // testing if .git events can be disabled with the commandline switch
+    public void testDisableExternalEventsHandler () throws Exception {
         waitForInitialScan();
         // dirstate events disabled
         System.setProperty("versioning.git.handleExternalEvents", "false");
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
 
         getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+        failIfRefreshed();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+        getCache().refreshAllRoots(Collections.singleton(modifiedFile));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+    }
+
+    // testing if internal repository commands disable the handler
+    // test: refreshTimestamp called manually
+    public void testNoExternalEventsManualTimestampRefresh () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        Git.getInstance().refreshWorkingCopyTimestamp(repositoryLocation);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));

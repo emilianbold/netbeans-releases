@@ -50,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
@@ -76,6 +77,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     private final GitFolderEventsHandler gitFolderEventsHandler;
     private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index";
+    private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
 
     public FilesystemInterceptor () {
         cache = Git.getInstance().getFileStatusCache();
@@ -112,6 +114,19 @@ class FilesystemInterceptor extends VCSInterceptor {
      */
     Set<File> getSeenRoots (File repositoryRoot) {
         return gitFolderEventsHandler.getSeenRoots(repositoryRoot);
+    }
+
+    /**
+     * Refreshes cached modification timestamp of the metadata for the given repository
+     * @param repository
+     */
+    void refreshMetadataTimestamp (File repository) {
+        assert repository != null;
+        if (repository == null) {
+            return;
+        }
+        File indexFile = new File(GitUtils.getGitFolderForRoot(repository), INDEX_FILE_NAME);
+        gitFolderEventsHandler.refreshIndexFileTimestamp(indexFile, indexFile.lastModified());
     }
 
     private class RefreshTask implements Runnable {
