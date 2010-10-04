@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.api.project;
 
 import java.util.List;
 import java.io.File;
+import org.openide.filesystems.FileObject;
 
 public interface NativeFileItem {
     public enum Language {
@@ -69,7 +70,14 @@ public interface NativeFileItem {
      * Returns the file associated with this file item.
      * @return the file associated with this file item. There is no guarantee that the file actually exists.
      */
+    // XXX:FileObject conversion: remove
     public File getFile();
+
+    /**
+     * Returns the file object associated with this file item.
+     * @return the file associated with this file item. There is no guarantee that the file actually exists.
+     */
+    public FileObject getFileObject();
 
     /**
      * Returns a list <String> of compiler defined include paths used when compiling this file item.

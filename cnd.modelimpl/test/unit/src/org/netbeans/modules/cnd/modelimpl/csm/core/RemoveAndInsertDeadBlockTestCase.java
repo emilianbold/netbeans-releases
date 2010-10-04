@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,33 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.api;
 
-import javax.swing.Action;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-/** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
- * @deprecated use {@link CslActions#createCamelCasePositionAction(javax.swing.Action, boolean) } instead.
+import java.io.File;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+
+/**
+ *
+ * @author Vladimir Voskresensky
  */
-public class PreviousCamelCasePosition extends AbstractCamelCasePosition {
-    public static final String previousCamelCasePosition = "previous-camel-case-position"; //NOI18N
-
-    public PreviousCamelCasePosition(Action originalAction) {
-        this(previousCamelCasePosition, originalAction);
+public class RemoveAndInsertDeadBlockTestCase extends ModifyDocumentTestCaseBase {
+    public RemoveAndInsertDeadBlockTestCase(String testName) {
+        super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
+        super.setUp();
     }
 
-    protected PreviousCamelCasePosition(String name, Action originalAction) {
-        super(name, originalAction);
+    @Override
+    protected Class<?> getTestCaseDataClass() {
+        return ModifyDocumentTestCaseBase.class;
     }
 
-    protected int newOffset(JTextComponent textComponent) throws BadLocationException {
-        return CamelCaseOperations.previousCamelCasePosition(textComponent);
-    }
-
-    protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
-        textComponent.setCaretPosition(offset);
+    public void testRemoveDeadBlock() throws Exception {
+        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_182342_BUG = true;
+        }
+        if (TraceFlags.TRACE_182342_BUG) {
+            System.err.printf("TEST REMOVE DEAD BLOCK\n");
+        }
+        final File sourceFile = getDataFile("fileWithDeadCode.cc");
+        super.removeDeadBlock(sourceFile, 1, 0);
     }
 }
-

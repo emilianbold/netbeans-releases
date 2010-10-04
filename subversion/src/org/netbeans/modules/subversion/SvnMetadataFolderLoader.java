@@ -53,7 +53,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
+import org.openide.util.Exceptions;
 
 /**
  * Prevents refactoring from creating DataObjects for .svn folders and
@@ -79,7 +79,9 @@ public class SvnMetadataFolderLoader extends DataLoader {
         }
         
         if(SvnUtils.isPartOfSubversionMetadata(f)) {
-            throw new SvnMetadataIOEXception(f);
+            IOException e = new SvnMetadataIOEXception(f);
+            Exceptions.attachSeverity(e, Level.FINE);
+            throw e;
         }
         return null;
     }

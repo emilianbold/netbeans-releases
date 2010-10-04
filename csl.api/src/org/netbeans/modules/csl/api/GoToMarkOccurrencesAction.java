@@ -78,6 +78,7 @@ import org.openide.util.NbBundle;
  *  consistent?
  *
  * @author Vladimir Voskresensky
+ * @deprecated use {@link CslActions#createGoToMarkOccurrencesAction(boolean) } instead.
  */
 public final class GoToMarkOccurrencesAction extends BaseAction {
 

@@ -75,4 +75,16 @@ made subject to such option by the copyright holder.
             <goal>package</goal>
         </goals>
     </action>
+    <action>
+        <actionName>reload-target</actionName>
+        <packagings>
+            <packaging>nbm-application</packaging>
+        </packagings>
+        <goals>
+            <goal>nbm:run-platform</goal>
+        </goals>
+        <properties>
+            <netbeans.run.params>--reload ${module}</netbeans.run.params>
+        </properties>
+    </action>
 </actions>

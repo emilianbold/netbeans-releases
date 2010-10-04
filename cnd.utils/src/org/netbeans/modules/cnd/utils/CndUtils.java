@@ -179,6 +179,30 @@ public class CndUtils {
         return lastAssertion;
     }
 
+    public static void assertAbsolutePathInConsole(String path) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
+            }
+        }
+    }
+
+    public static void assertAbsolutePathInConsole(String path, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + path);
+            }
+        }
+    }
+
+    public static void assertAbsoluteFileInConsole(File file, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! file.isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + file.getPath());
+            }
+        }
+    }
+
     public static void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
     }
