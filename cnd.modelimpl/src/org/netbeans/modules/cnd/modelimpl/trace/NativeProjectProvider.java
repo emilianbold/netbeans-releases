@@ -100,17 +100,29 @@ public final class NativeProjectProvider {
 	}
     }
 
+    // XXX:FileObject conversion: remove
     public static NativeFileItem.Language getLanguage(File file, DataObject dobj) {
+        CndUtils.assertNotNull(file, "null file"); //NOI18N
         FileObject fo = null;
-        String mimeType = "";
         if (dobj != null) {
             fo = dobj.getPrimaryFile();
         }
+        String mimeType = "";
         if (fo != null) {
             mimeType = MIMESupport.getFileMIMEType(fo);
         } else {
             mimeType = MIMESupport.getFileMIMEType(file);
         }
+        return getLanguage(mimeType);
+    }
+
+    public static NativeFileItem.Language getLanguage(FileObject fo, DataObject dobj) {
+        CndUtils.assertNotNull(fo, "null file object"); //NOI18N
+        String mimeType = MIMESupport.getFileMIMEType(fo);
+        return getLanguage(mimeType);
+    }
+
+    private static NativeFileItem.Language getLanguage(String mimeType) {
         if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
             return NativeFileItem.Language.CPP;
         } else if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
@@ -123,10 +135,8 @@ public final class NativeProjectProvider {
         return NativeFileItem.Language.OTHER;
     }
 
-    public static DataObject getDataObject(File file) {
-        CndUtils.assertNormalized(file);
+    public static DataObject getDataObject(FileObject fo) {
         DataObject dobj = null;
-        FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             try {
                 dobj = DataObject.find(fo);
@@ -134,8 +144,13 @@ public final class NativeProjectProvider {
                 // skip;
             }
         }
-
         return dobj;
+    }
+
+    // XXX:FileObject conversion: remove
+    public static DataObject getDataObject(File file) {
+        CndUtils.assertNormalized(file);
+        return getDataObject(FileUtil.toFileObject(file));
     }
     
     public static final class NativeProjectImpl implements NativeProject {
@@ -282,8 +297,16 @@ public final class NativeProjectProvider {
 	}
 
         @Override
+        public NativeFileItem findFileItem(FileObject fileObject) {
+            return findFileItem(fileObject.getPath());
+        }
+
+        @Override
         public NativeFileItem findFileItem(File file) {
-            String path = file.getAbsolutePath();
+            return findFileItem(file.getAbsolutePath());
+        }
+
+        private NativeFileItem findFileItem(String path) {
             for (NativeFileItem item : files) {
                 if (item.getFile().getAbsolutePath().equalsIgnoreCase(path)) {
                     return item;
@@ -374,6 +397,11 @@ public final class NativeProjectProvider {
         @Override
         public File getFile() {
             return file;
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return FileUtil.toFileObject(file); // XXX:FileObject conversion
         }
 
         @Override

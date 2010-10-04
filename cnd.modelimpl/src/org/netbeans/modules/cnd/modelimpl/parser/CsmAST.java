@@ -73,12 +73,14 @@ public class CsmAST extends BaseAST implements Serializable {
 //    }
 
 
+    @Override
     public void initialize(int t, String txt) {
         token = new APTBaseToken();
         token.setType(t);
         token.setText(txt);
     }
 
+    @Override
     public void initialize(AST t) {
 
         if (t instanceof CsmAST) {
@@ -91,24 +93,36 @@ public class CsmAST extends BaseAST implements Serializable {
         }
     }
 
+    @Override
     public void initialize(Token tok) {
         token = tok;
     }
 
     /** Get the token text for this node */
+    @Override
     public String getText() {
         return token.getText();
     }
 
+    public CharSequence getTextID() {
+        if (token instanceof APTToken) {
+            return ((APTToken)token).getTextID();
+        }
+        return token.getText();
+    }
+
     /** Get the token type for this node */
+    @Override
     public int getType() {
         return token.getType();
     }
 
+    @Override
     public int getLine() {
         return token.getLine();
     }
     
+    @Override
     public int getColumn() {
         return token.getColumn();
     }
@@ -153,6 +167,7 @@ public class CsmAST extends BaseAST implements Serializable {
         }
     }
     
+    @Override
     public String toString() {
         return token.toString();
     }

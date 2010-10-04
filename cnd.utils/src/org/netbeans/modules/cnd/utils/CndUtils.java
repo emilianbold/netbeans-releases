@@ -60,6 +60,7 @@ public class CndUtils {
     private static final Logger LOG = Logger.getLogger("cnd.logger"); // NOI18N
 
     private static boolean releaseMode;
+    private static volatile Exception lastAssertion;
 
     static {
         String text = System.getProperty("cnd.release.mode");
@@ -123,6 +124,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertNull(Object object, String message) {
+        if (isDebugMode()) {
+            assertTrue(object == null, message); //NOI18N
+        }
+    }
+
     public static int getNumberCndWorkerThreads() {
         int threadCount = Integer.getInteger("cnd.modelimpl.parser.threads", // NOI18N
                 Runtime.getRuntime().availableProcessors()).intValue(); // NOI18N
@@ -135,7 +142,7 @@ public class CndUtils {
 
     private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
@@ -158,13 +165,41 @@ public class CndUtils {
 
     public static void assertTrue(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.SEVERE, message, new Exception(message));
+            LOG.log(Level.SEVERE, message, lastAssertion = new Exception(message));
         }
     }
 
     public static void assertTrueInConsole(boolean value, String message) {
         if (isDebugMode() && !value) {
-            LOG.log(Level.INFO, message, new Exception(message));
+            LOG.log(Level.INFO, message, lastAssertion = new Exception(message));
+        }
+    }
+
+    public static Exception getLastAssertion() {
+        return lastAssertion;
+    }
+
+    public static void assertAbsolutePathInConsole(String path) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
+            }
+        }
+    }
+
+    public static void assertAbsolutePathInConsole(String path, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + path);
+            }
+        }
+    }
+
+    public static void assertAbsoluteFileInConsole(File file, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! file.isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + file.getPath());
+            }
         }
     }
 

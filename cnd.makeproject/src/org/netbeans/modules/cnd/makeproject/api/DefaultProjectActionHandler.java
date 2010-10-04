@@ -66,6 +66,8 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -239,7 +241,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-        String workingDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+        String workingDirectory = convertWorkingDirToRemoteIfNeeded(execEnv, runDirectory);
 
         if (workingDirectory == null) {
             // TODO: fix me
@@ -310,12 +312,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         executorTask = es.run();
     }
 
-    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+    private String convertWorkingDirToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
         if (!checkConnection(execEnv)) {
             return null;
         }
         if (execEnv.isRemote()) {
-            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
+                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            } else {
+                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
+            }
         }
         return localDir;
     }

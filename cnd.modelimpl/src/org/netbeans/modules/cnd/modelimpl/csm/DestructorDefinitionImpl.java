@@ -48,39 +48,27 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
-import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
  * @author Vladimir Kvashin
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFunctionDefinition> {
 
-    public DestructorDefinitionImpl(AST ast, CsmFile file, boolean register) throws AstRendererException {
-        super(ast, file, null, register, register);
+    private DestructorDefinitionImpl(AST ast, CsmFile file, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, null, nameHolder, global);
+    }
+    
+    public static DestructorDefinitionImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException{
+        NameHolder nameHolder = NameHolder.createDestructorDefinitionName(ast);
+        DestructorDefinitionImpl res = new DestructorDefinitionImpl(ast, file, nameHolder, register);
+        postObjectCreateRegistration(register, res);
+        nameHolder.addReference(file, res);
+        return res;
     }
 
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
-    }
-
-    @Override
-    protected String initName(AST node) {
-        AST token = node.getFirstChild();
-        if (token != null) {
-            token = AstUtil.findSiblingOfType(token, CPPTokenTypes.CSM_QUALIFIED_ID);
-        }
-        if (token != null) {
-            token = AstUtil.findChildOfType(token, CPPTokenTypes.TILDE);
-            if (token != null) {
-                token = token.getNextSibling();
-                if (token != null && token.getType() == CPPTokenTypes.ID) {
-                    return "~" + token.getText(); // NOI18N
-                }
-            }
-        }
-        return "~"; // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////

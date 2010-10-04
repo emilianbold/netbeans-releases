@@ -265,13 +265,16 @@ public class Templates {
      * The user is prompted to choose a location for the new file and a name.
      * Instantiation is handled by {@link DataObject#createFromTemplate}.
      * @param project The project to work on.
-     * @param folders a list of possible roots to create the new file in
+     * @param folders a nonempty list of possible roots to create the new file in
      * @return a builder which can be used to customize and then create the target chooser
      * @since org.netbeans.modules.projectuiapi/1 1.45
      */
     public static SimpleTargetChooserBuilder buildSimpleTargetChooser(Project project, SourceGroup[] folders) {
         Parameters.notNull("project", project);
         Parameters.notNull("folders", folders);
+        if (folders.length == 0) {
+            throw new IllegalArgumentException("Attempting to create panel with an empty folders list");
+        }
         return new SimpleTargetChooserBuilder(project, folders);
     }
 

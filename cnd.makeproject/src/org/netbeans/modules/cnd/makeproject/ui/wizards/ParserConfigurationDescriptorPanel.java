@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -56,7 +55,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private ParserConfigurationPanel component;
@@ -67,7 +66,8 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
         name = NbBundle.getMessage(ParserConfigurationDescriptorPanel.class, "ParserConfigurationName"); // NOI18N
     }
 
-    public Component getComponent() {
+    @Override
+    public ParserConfigurationPanel getComponent() {
         if (component == null) {
             component = new ParserConfigurationPanel(this);
             component.setName(name);
@@ -75,6 +75,7 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
         return component;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -83,12 +84,14 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
         return wizardDescriptor;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP4"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        boolean valid = ((ParserConfigurationPanel) getComponent()).valid(wizardDescriptor);
+        boolean valid = getComponent().valid(wizardDescriptor);
         if (valid) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
@@ -96,12 +99,14 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -119,17 +124,19 @@ final class ParserConfigurationDescriptorPanel implements WizardDescriptor.Panel
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 }

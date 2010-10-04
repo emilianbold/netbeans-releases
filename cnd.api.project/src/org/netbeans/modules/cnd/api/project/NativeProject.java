@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.openide.filesystems.FileObject;
 
 public interface NativeProject {
     /**
@@ -112,7 +113,15 @@ public interface NativeProject {
       * @param file the file item to find
       * @return the file item if found. Otherwise it returns null.
       */
+     // XXX:FileObject conversion: remove
      public NativeFileItem findFileItem(File file);
+
+     /**
+      * Finds a file item in the project.
+      * @param fileObject  a file object to find item for
+      * @return the file item if found. Otherwise it returns null.
+      */
+     public NativeFileItem findFileItem(FileObject fileObject);
 
      /***
       * Searcher for find project file by name

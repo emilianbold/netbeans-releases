@@ -224,7 +224,7 @@ public class VersioningAnnotationProviderTest extends NbTestCase {
                                 annotationsIcons.put(fo, image);
                             }
                             time = System.currentTimeMillis() - time;
-                            if (time > 200) {
+                            if (time > 500) {
                                 ex = new Exception("Annotation takes more than 200ms");
                             }
                         }

@@ -59,7 +59,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.util.DLightLogger;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.util.DLightExecutorService;

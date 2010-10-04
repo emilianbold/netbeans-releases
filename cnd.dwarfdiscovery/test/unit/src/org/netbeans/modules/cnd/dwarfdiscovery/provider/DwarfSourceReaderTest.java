@@ -129,7 +129,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         assertTrue(compareMap(map, golden));
         assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
-        assertTrue(list.size()==1);
+        assertTrue(list.size()==2);
     }
 
     public void testLeopard(){

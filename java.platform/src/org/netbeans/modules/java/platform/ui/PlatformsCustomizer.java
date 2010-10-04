@@ -64,6 +64,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -73,7 +74,9 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.platform.wizard.PlatformInstallIterator;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.cookies.InstanceCookie;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -81,11 +84,13 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.BeanNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author  tom
@@ -110,6 +115,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }
 
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
             Node[] nodes = (Node[]) evt.getNewValue();
@@ -125,6 +131,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         }
     }
     
+    @Override
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
         if (ExplorerManager.PROP_SELECTED_NODES.equals (evt.getPropertyName())) {
             Node[] nodes = (Node[]) evt.getNewValue();
@@ -135,6 +142,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }
         
 
+    @Override
     public synchronized ExplorerManager getExplorerManager() {
         if (this.manager == null) {
             this.manager = new ExplorerManager ();
@@ -346,7 +354,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
                     this.getChildren().refreshPlatforms();
                     Set result = wiz.getInstantiatedObjects();
-                    this.expandPlatforms (result.size() == 0 ? null : (JavaPlatform)result.iterator().next());
+                    this.expandPlatforms (result.isEmpty() ? null : (JavaPlatform)result.iterator().next());
                 }
             } finally {
                 dlg.dispose();
@@ -379,7 +387,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
             this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
-            if (platform.getInstallFolders().size() != 0) {
+            if (!platform.getInstallFolders().isEmpty()) {
                 this.platformName.setText(pNode.getDisplayName());
                 for (FileObject installFolder : platform.getInstallFolders()) {
                     File file = FileUtil.toFile(installFolder);
@@ -389,13 +397,17 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 }
                 target = clientArea;
             }
-        }            
+        }
+        Component component = null;
         if (pNode.hasCustomizer()) {
-            Component component = pNode.getCustomizer();
-            if (component != null) {
-                addComponent(target, component);
-            }
-        }        
+            component = pNode.getCustomizer();
+        }
+        if (component == null) {
+            final PropertySheet sp = new PropertySheet();
+            sp.setNodes(new Node[] {pNode});
+            component = sp;
+        }
+        addComponent(target, component);                   
         target.revalidate();
         CardLayout cl = (CardLayout) cards.getLayout();
         if (target == clientArea) {
@@ -539,6 +551,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             return false;
         }
         
+        @Override
         public int compareTo(PlatformCategoriesDescriptor desc) {
             return this.categoryName.compareTo (desc.categoryName);
         }
@@ -563,6 +576,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             this.setKeys(new Node[0]);
         }
 
+        @Override
         protected Node[] createNodes(Node key) {
             return new Node[] {new FilterNode(key, Children.LEAF)};
         }
@@ -608,6 +622,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             super.removeNotify ();
         }
         
+        @Override
         protected Node[] createNodes(PlatformCategoriesDescriptor key) {
             return new Node[] {new PlatformCategoryNode(key)};
         }       
@@ -618,9 +633,30 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                 java.util.Map<String,PlatformCategoriesDescriptor> categories = new HashMap<String,PlatformCategoriesDescriptor>();
                 for (FileObject child : storage.getChildren()) {
                     try {
-                        DataObject dobj = DataObject.find(child);
+                        final DataObject dobj = DataObject.find(child);
                         Node node = dobj.getNodeDelegate();
                         JavaPlatform platform = node.getLookup().lookup(JavaPlatform.class);
+                        if (platform == null) {
+                            //Create a node platfrom like from bean.
+                            final InstanceCookie ic = dobj.getLookup().lookup(InstanceCookie.class);
+                            if (ic != null) {
+                                try {
+                                    final Object instance = ic.instanceCreate();
+                                    if (instance instanceof JavaPlatform) {
+                                        node = new FilterNode (new BeanNode(instance), Children.LEAF, Lookups.singleton(instance));
+                                        platform = (JavaPlatform) instance;
+                                    }
+                                } catch (Exception e) {
+                                    //report and continue with next platform
+                                    Exceptions.printStackTrace(Exceptions.attachMessage(
+                                            e,
+                                            "Exception while loading platform:" +   //NOI18N
+                                            FileUtil.getFileDisplayName(dobj.getPrimaryFile())));
+                                }
+                            } else {
+                                LOG.log(Level.FINE, "No platform provided for file: {0}", FileUtil.getFileDisplayName(dobj.getPrimaryFile())); //NOI18N
+                            }
+                        }
                         if (platform != null) {
                             String platformType = platform.getSpecification().getName();
                             if (platformType != null) {
@@ -633,25 +669,19 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                                 platforms.add (node);
                             }
                             else {
-                                LOG.warning("Platform: "+ platform.getDisplayName() +" has invalid specification.");  //NOI18N
+                                LOG.log(Level.WARNING, "Platform: {0} has invalid specification.", platform.getDisplayName());  //NOI18N
                             }
                         }
                         else {                        
-                            LOG.warning("Platform node for : "+node.getDisplayName()+" has no platform in its lookup.");   //NOI18N
+                            LOG.log(Level.WARNING, "Platform node for : {0} has no platform in its lookup.", node.getDisplayName());   //NOI18N
                         }                    
                     }catch (DataObjectNotFoundException e) {
                         Exceptions.printStackTrace(e);
                     }
                  }                                    
                 List<PlatformCategoriesDescriptor> keys = new ArrayList<PlatformsCustomizer.PlatformCategoriesDescriptor>(categories.values());
-//                if (keys.size() == 1) {
-//                    PlatformCategoriesDescriptor desc = (PlatformCategoriesDescriptor) keys.get(0);
-//                    this.setKeys (desc.getPlatform());
-//                }
-//                else {
                     Collections.sort (keys);
                     setKeys(keys);
-//                }
             }
         }
         
@@ -660,6 +690,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     
     private static class PlatformNodeComparator implements Comparator<Node> {
         
+        @Override
         public int compare(Node n1, Node n2) {
             return n1.getDisplayName().compareTo(n2.getDisplayName());
         }

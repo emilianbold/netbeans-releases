@@ -185,7 +185,6 @@ public class HostPropertiesDialog extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblName.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbX11, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbX11.text")); // NOI18N
-        cbX11.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         lblSync.setLabelFor(cbSync);
         org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
@@ -203,8 +202,8 @@ public class HostPropertiesDialog extends JPanel {
                             .addComponent(lblSync, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSync, 0, 319, Short.MAX_VALUE)
-                            .addComponent(tfName, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE))
+                            .addComponent(cbSync, 0, 323, Short.MAX_VALUE)
+                            .addComponent(tfName, javax.swing.GroupLayout.DEFAULT_SIZE, 323, Short.MAX_VALUE))
                         .addGap(12, 12, 12))
                     .addGroup(serverRecordPanelLayout.createSequentialGroup()
                         .addComponent(cbX11)
@@ -235,11 +234,11 @@ public class HostPropertiesDialog extends JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+                    .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
                     .addComponent(serverRecordPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
-                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 447, Short.MAX_VALUE)))
+                        .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 465, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

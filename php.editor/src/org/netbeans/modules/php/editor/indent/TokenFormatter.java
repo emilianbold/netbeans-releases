@@ -962,7 +962,7 @@ public class TokenFormatter {
                                                     htmlIndent = suggestedIndent.intValue();
                                                     // the indentation is composed from html inden + php indent
                                                     indent = suggestedIndent.intValue() + docOptions.initialIndent + lastPHPIndent;
-                                                    countSpaces = htmlIndent == 0 ? 0 : htmlIndent + lastPHPIndent;
+                                                    countSpaces = /*htmlIndent == 0 ? 0 :*/ htmlIndent + lastPHPIndent;
                                                     
                                                     // try to find, whether there is no indend tag after open tag
                                                     int indentIndex = index;
@@ -991,6 +991,14 @@ public class TokenFormatter {
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
                                                     : docOptions.blankLinesAfterOpenPHPTag + 1;
                                             countSpaces = indent;
+                                            helpIndex = index + 1;
+                                            while (helpIndex < formatTokens.size()
+                                                    &&  formatTokens.get(helpIndex).isWhitespace()) {
+                                                helpIndex ++;
+                                            }
+                                            if (formatTokens.get(helpIndex).getId() == FormatToken.Kind.INDENT) {
+                                                countSpaces = countSpaces + ((FormatToken.IndentToken)formatTokens.get(helpIndex)).getDelta();
+                                            }
                                         }
                                         else {
                                             newLines = 0;

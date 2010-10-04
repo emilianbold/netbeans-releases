@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -77,17 +78,23 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 
     private final CsmCompoundStatement body;
 
-    public FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        super(ast, file, scope, false, global);
+    protected FunctionDDImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, file, null, scope, nameHolder, global);
         body = AstRenderer.findCompoundStatement(ast, getContainingFile(), this);
         if (body == null) {
             throw new AstRendererException((FileImpl)file, getStartOffset(),
                     "Null body in function definition."); // NOI18N
         }
-        if (global) {
-            registerInProject();
-        }
     }
+
+    public static<T> FunctionDDImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FunctionDDImpl<T> functionDDImpl = new FunctionDDImpl<T>(ast, file, scope, nameHolder, register);
+        postObjectCreateRegistration(register, functionDDImpl);
+        nameHolder.addReference(file, functionDDImpl);
+        return functionDDImpl;
+    }
+
 
     @Override
     public void dispose() {
@@ -159,21 +166,17 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     private CsmFunction findDeclaration(CsmProject prj, String uname){
-        CsmDeclaration decl = null;
+        Collection<CsmDeclaration> decls = new ArrayList<CsmDeclaration>(1);
         for(CsmOffsetableDeclaration candidate : prj.findDeclarations(uname)) {
             if ((candidate.getKind() == CsmDeclaration.Kind.FUNCTION ||
                 candidate.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
                 if (FunctionImpl.isObjectVisibleInFile(getContainingFile(), candidate)) {
-                    decl = candidate;
-                    break;
-                }
-                if (decl == null) {
-                    decl = candidate;
+                    decls.add(candidate);
                 }
             }
         }
-        if( decl != null && (decl.getKind() == CsmDeclaration.Kind.FUNCTION ||
-                decl.getKind() == CsmDeclaration.Kind.FUNCTION_FRIEND)) {
+        CsmDeclaration decl = chooseDeclaration(decls);
+        if( decl != null) {
             return (CsmFunction) decl;
         }
         FunctionParameterListImpl parameterList = getParameterList();

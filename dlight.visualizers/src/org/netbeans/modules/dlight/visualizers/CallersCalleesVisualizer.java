@@ -65,7 +65,7 @@ import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.spi.AnnotatedSourceSupport;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.TreeTableDataProvider;
 import org.netbeans.modules.dlight.util.DLightExecutorService;
 import org.netbeans.modules.dlight.util.UIThread;
 import org.netbeans.modules.dlight.visualizers.api.CallersCalleesVisualizerConfiguration;
@@ -304,7 +304,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         update(flist);
     }
 
-    private final List<FunctionCallWithMetric> getAllChildren(TreeNode n){
+    private List<FunctionCallWithMetric> getAllChildren(TreeNode n){
         if (!(n instanceof DefaultMutableTreeNode)){
             return Collections.emptyList();
         }
@@ -321,7 +321,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         
     }
 
-    private final List<FunctionCallWithMetric> getAllFunctions(){
+    private List<FunctionCallWithMetric> getAllFunctions(){
         List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         for (int i = 0, count = TREE_ROOT.getChildCount(); i < count; i++){
             result.addAll(getAllChildren(TREE_ROOT.getChildAt(i)));

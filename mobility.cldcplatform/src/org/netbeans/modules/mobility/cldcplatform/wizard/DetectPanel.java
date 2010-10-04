@@ -457,10 +457,13 @@ public class DetectPanel extends javax.swing.JPanel {
         final Object selectedValue = javadocList.getSelectedValue();
         if (selectedValue == null)
             return;
+        int i = javadocList.getSelectedIndex();
         final ArrayList<URL> list = new ArrayList<URL>(platform.getJavadocFolders());
         list.remove(selectedValue);
         platform.setJavadocFolders(list);
         descriptorUpdated();
+        if (i >= javadocList.getModel().getSize()) i--;
+        if (i >= 0) javadocList.setSelectedIndex(i);
     }//GEN-LAST:event_removeJavadocButtonActionPerformed
     
     private void addSourceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addSourceButtonActionPerformed
@@ -486,10 +489,13 @@ public class DetectPanel extends javax.swing.JPanel {
         final Object selectedValue = sourceList.getSelectedValue();
         if (selectedValue == null)
             return;
+        int i = sourceList.getSelectedIndex();
         final ArrayList<FileObject> list = new ArrayList<FileObject>(Arrays.asList(platform.getSourceFolders().getRoots()));
         list.remove(selectedValue);
         platform.setSourceFolders(list);
         descriptorUpdated();
+        if (i >= sourceList.getModel().getSize()) i--;
+        if (i >= 0) sourceList.setSelectedIndex(i);
     }//GEN-LAST:event_removeSourceButtonActionPerformed
     
     

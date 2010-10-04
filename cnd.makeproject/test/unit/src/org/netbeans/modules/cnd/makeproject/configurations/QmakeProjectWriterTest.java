@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -66,6 +70,14 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         super(name);
     }
 
+    @Override
+    protected List<Class<?>> getServices() {
+        List<Class<?>> list = new ArrayList<Class<?>>();
+        list.add(MakeProjectType.class);
+        list.addAll(super.getServices());
+        return list;
+    }
+
     private static void instantiateSample(String name, File destdir) throws IOException {
         FileObject templateFO = FileUtil.getConfigFile("Templates/Project/Samples/Native/" + name);
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
@@ -75,8 +87,8 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         TemplateWizard wiz = new TemplateWizard();
         wiz.setTemplate(templateDO);
         projectCreator.initialize(wiz);
-        wiz.putProperty("name", destdir.getName());
-        wiz.putProperty("projdir", destdir);
+        wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+        wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
         projectCreator.instantiate();
     }
 

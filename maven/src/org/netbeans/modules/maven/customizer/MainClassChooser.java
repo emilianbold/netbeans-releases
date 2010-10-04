@@ -174,10 +174,6 @@ public class MainClassChooser extends JPanel {
         changeListener = null;
     }
     
-    // Used only from unit tests to suppress check of main method. If value
-    // is different from null it will be returned instead.
-    public static Boolean unitTestingSupport_hasMainMethodResult = null;
-    
     /** Checks if given file object contains the main method.
      *
      * @param classFO file object represents java 
@@ -185,10 +181,6 @@ public class MainClassChooser extends JPanel {
      * or SourceCookie doesn't contain the main method
      */    
     public static boolean hasMainMethod (FileObject fo) {
-      // support for unit testing
-        if (MainClassChooser.unitTestingSupport_hasMainMethodResult != null) {
-            return MainClassChooser.unitTestingSupport_hasMainMethodResult.booleanValue ();
-        }
         if (fo == null) {
             // ??? maybe better should be thrown IAE
             return false;

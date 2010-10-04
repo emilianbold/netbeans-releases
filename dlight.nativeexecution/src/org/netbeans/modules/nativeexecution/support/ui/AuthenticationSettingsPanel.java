@@ -47,7 +47,9 @@
  */
 package org.netbeans.modules.nativeexecution.support.ui;
 
+import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
@@ -55,10 +57,11 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.support.Authentication;
-import org.netbeans.modules.nativeexecution.support.SSHKeyFileChooser;
+import org.netbeans.modules.nativeexecution.support.ui.api.FileSelectorField;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -94,7 +97,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             pwdRadioButton.setSelected(true);
         }
 
-        keyFld.setText(auth.getKey());
+        keyFileFld.setText(auth.getSSHKeyFile());
 
         if (env != null) {
             boolean stored = PasswordManager.getInstance().isRememberPassword(env);
@@ -104,7 +107,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
         validationTask = new RequestProcessor("", 1).create(new ValidationTask(), true);
 
-        keyFld.getDocument().addDocumentListener(new DocumentListener() {
+        keyFileFld.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -131,7 +134,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         pwdRadioButton.setEnabled(enabled);
         keyRadioButton.setEnabled(enabled);
         if (keyRadioButton.isSelected()) {
-            keyFld.setEnabled(enabled);
+            keyFileFld.setEnabled(enabled);
             keyBrowseButton.setEnabled(enabled);
         }
     }
@@ -153,7 +156,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         pwdStoredLbl = new javax.swing.JLabel();
         pwdClearButton = new javax.swing.JButton();
         keyRadioButton = new javax.swing.JRadioButton();
-        keyFld = new javax.swing.JTextField();
+        keyFileFld = Utilities.isWindows() ? new JTextField() : new FileSelectorField(new SSHKeyFileCompletionProvider());
         keyBrowseButton = new javax.swing.JButton();
 
         loginPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.loginPanel.border.title"))); // NOI18N
@@ -215,15 +218,15 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
         authPanel.setLayout(authPanelLayout);
         authPanelLayout.setHorizontalGroup(
             authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(authPanelLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, authPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(pwdRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(keyRadioButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pwdStoredLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
-                    .addComponent(keyFld, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE))
+                    .addComponent(keyFileFld, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
+                    .addComponent(pwdStoredLbl, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(pwdClearButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -240,8 +243,8 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(authPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(keyRadioButton)
-                    .addComponent(keyFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(keyBrowseButton))
+                    .addComponent(keyBrowseButton)
+                    .addComponent(keyFileFld, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -263,7 +266,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
     private void keyRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyRadioButtonActionPerformed
         enableControls();
-        keyFld.requestFocus();
+        keyFileFld.requestFocus();
     }//GEN-LAST:event_keyRadioButtonActionPerformed
 
     private void pwdClearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pwdClearButtonActionPerformed
@@ -273,11 +276,11 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
     }//GEN-LAST:event_pwdClearButtonActionPerformed
 
     private void keyBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_keyBrowseButtonActionPerformed
-        JFileChooser chooser = new SSHKeyFileChooser(keyFld.getText());
+        JFileChooser chooser = new SSHKeyFileChooser(keyFileFld.getText());
         int result = chooser.showOpenDialog(this);
 
         if (JFileChooser.APPROVE_OPTION == result) {
-            keyFld.setText(chooser.getSelectedFile().getAbsolutePath());
+            keyFileFld.setText(chooser.getSelectedFile().getAbsolutePath());
         }
     }//GEN-LAST:event_keyBrowseButtonActionPerformed
 
@@ -288,7 +291,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
     private javax.swing.JPanel authPanel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton keyBrowseButton;
-    private javax.swing.JTextField keyFld;
+    private javax.swing.JTextField keyFileFld;
     private javax.swing.JRadioButton keyRadioButton;
     private javax.swing.JLabel loginLabel;
     private javax.swing.JPanel loginPanel;
@@ -299,7 +302,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
 
     private void enableControls() {
         keyBrowseButton.setEnabled(keyRadioButton.isSelected());
-        keyFld.setEnabled(keyRadioButton.isSelected());
+        keyFileFld.setEnabled(keyRadioButton.isSelected());
         validationTask.schedule(0);
     }
 
@@ -321,7 +324,7 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
             ExecutionEnvironment e = (ExecutionEnvironment) customData;
             Authentication a = Authentication.getFor(e);
             if (auth.getType() == Authentication.Type.SSH_KEY) {
-                a.setSSHKey(auth.getKey());
+                a.setSSHKeyFile(auth.getSSHKeyFile());
             } else {
                 a.setPassword();
             }
@@ -348,18 +351,40 @@ public class AuthenticationSettingsPanel extends ValidateablePanel {
                 return true;
             }
 
-            String key = keyFld.getText();
-            if (key.length() == 0) {
-                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.validationError.emptyKey.text");
+            String keyFile = keyFileFld.getText();
+            if (keyFile.length() == 0) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.emptyKey.text");//NOI18N
                 return false;
             }
 
-            if (!Authentication.isValidKey(key)) {
-                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class, "AuthenticationSettingsPanel.validationError.invalidKey.text", key);
+            final File file = new File(keyFile);
+
+            if (file.isDirectory()) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.isDirectory.text", keyFile);//NOI18N
                 return false;
             }
 
-            auth.setSSHKey(key);
+            if (!file.exists()) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.fileNotFound.text", keyFile);//NOI18N
+                return false;
+            }
+
+            if (!file.canRead()) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.fileNotReadable.text", keyFile);//NOI18N
+                return false;
+            }
+
+            if (!Authentication.isValidSSHKeyFile(file.getAbsolutePath())) {
+                problem = NbBundle.getMessage(AuthenticationSettingsPanel.class,
+                        "AuthenticationSettingsPanel.validationError.invalidKey.text", keyFile);//NOI18N
+                return false;
+            }
+
+            auth.setSSHKeyFile(file.getAbsolutePath());
             problem = null;
             return true;
         }

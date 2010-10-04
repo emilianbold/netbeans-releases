@@ -51,24 +51,26 @@ import org.openide.filesystems.FileObject;
  * Defines an API for registering custom Java platform installer. The Installer
  * is responsible for recognizing the platform, through its {@link #accept} method,
  * and for instantiation itself, through the provided wizard iterator.
+ * Consult the {@link GeneralPlatformInstall} javadoc about the {@link PlatformInstall} registration.
  *
  * @author Svata Dedic, Tomas Zezula
  */
 public abstract class PlatformInstall extends GeneralPlatformInstall {
     /**
-     * XXX Javadoc for this method is completely inadequate. What does it do?
-     * Determines whether the Recognizer recognizes a Java Platform in 
-     * the passed folder. The check done by this method should be quick
-     * and should not involve launching the virtual machine. The framework will
-     * call a more detailed check later.
+     * Creates a {@link WizardDescriptor.InstantiatingIterator} for an accepted
+     * folder. The platform definition file returned by the instantiate method
+     * should be created in the Services/Platforms/org-netbeans-api-java-Platform
+     * folder on the system filesystem.
      * @return TemplateWizard.Iterator instance responsible for instantiating
      * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the created JavaPlatform.
+     * return the Set containing the platform definition file.
      */
     public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder);
 
     /**
      * Checks whether a given folder contains a platform of the supported type.
+     * The check done by this method should be quick and should not involve launching the virtual machine,
+     * the expensive check, if needed, should be done in the wizard panel.
      * @param baseFolder folder which may be an installation root of a platform
      * @return true if the folder is recognized
      */

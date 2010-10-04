@@ -175,6 +175,27 @@ public final class ResourceBundles {
         return result;
     }
 
+    public String findResourceBundleIdentifier(AstPath astPath) {
+        List<Node> path = astPath.leafToRoot();
+        for (int i = 0; i < path.size(); i++) {
+            Node node = path.get(i);
+            if (node instanceof AstString) {
+                // check for i18n["my.key"] => AST for that is: identifier, brackets and string - since 
+                // we're searching from the leaf to root here, so the order 
+                // is string, brackets and identifier
+                if (i + 2 < path.size()) {
+                    Node brackets = path.get(i + 1);
+                    Node identifier = path.get(i + 2);
+                    if (brackets instanceof AstBracketSuffix
+                            && identifier instanceof AstIdentifier
+                            && isResourceBundleIdentifier(identifier.getImage())) {
+                        return identifier.getImage();
+                    }
+                }
+            }
+        }
+        return null;
+    }
     /**
      * Gets the value of the given {@code key} in the given {@code bundle}.
      * @param bundle the base name of the bundle.
@@ -193,8 +214,26 @@ public final class ResourceBundles {
             return null;
         }
     }
+
+    /**
+     * Gets the entries in the bundle identified by {@code bundleName}.
+     * @param bundleName
+     * @return
+     */
+    public Map<String,String> getEntries(String bundleName) {
+        java.util.ResourceBundle resourceBundle = getBundlesMap().get(bundleName);
+        if (resourceBundle == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> result = new HashMap<String, String>();
+        for (String key : resourceBundle.keySet()) {
+            String value = resourceBundle.getString(key);
+            result.put(key, value);
+        }
+        return result;
+    }
     
-    private List<String> getBundles() {
+    public List<String> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
         }

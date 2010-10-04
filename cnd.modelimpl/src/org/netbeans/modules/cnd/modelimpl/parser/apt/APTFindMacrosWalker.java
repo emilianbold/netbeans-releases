@@ -49,6 +49,8 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -57,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -78,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 
 /**
@@ -253,14 +257,17 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
             ref = MacroImpl.createSystemMacro(token.getTextID(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
         }
 
+        @Override
         public CsmObject getReferencedObject() {
             return ref;
         }
 
+        @Override
         public CsmObject getOwner() {
             return getContainingFile();
         }
 
+        @Override
         public CsmReferenceKind getKind() {
             return CsmReferenceKind.DIRECT_USAGE;
         }
@@ -285,8 +292,20 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
             this.kind = kind;
         }
 
+        @Override
         public CsmObject getReferencedObject() {
             CsmMacro refObj = ref;
+            if (refObj == null) {
+                CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
+                if (candidate != null) {
+                    CsmObject referencedObject = candidate.getReferencedObject();
+                    if (referencedObject instanceof CsmMacro) {
+                        refObj = (CsmMacro) referencedObject;
+                    } else if (referencedObject != null){
+                        Logger.getLogger("xRef").log(Level.INFO, "Reference storage returns {0} where is expected macro\n", referencedObject); //NOI18N
+                    }
+                }
+            }
             if (refObj == null && macro != null) {
                 synchronized (this) {
                     refObj = ref;
@@ -308,12 +327,13 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                                 if (target instanceof Unresolved.UnresolvedFile) {
                                     refObj = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
                                 } else {
-                                    refObj = new MacroImpl(macroName, null, "", target, new OffsetableBase(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
-                                    org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(refObj);
+                                    refObj = MacroImpl.create(macroName, null, "", target, OffsetableBase.create(target, macroStartOffset, macroStartOffset + macroName.length()), CsmMacro.Kind.DEFINED);
+                                    Utils.setSelfUID(refObj);
                                 }
                             }
                         }
                         ref = refObj;
+                        CsmReferenceStorage.getDefault().put(this, refObj);
                     }
                 }
             }
@@ -351,10 +371,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
             return target;
         }
 
+        @Override
         public CsmObject getOwner() {
             return (kind == CsmReferenceKind.DECLARATION) ? getContainingFile() : getReferencedObject();
         }
         
+        @Override
         public CsmReferenceKind getKind() {
             return kind;
         }
