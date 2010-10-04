@@ -133,7 +133,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 if (j > 0) {
                     final String executable = pkg.substring(0, j);
                     s = s.substring(i+executable.length()+2);
-                    if (executable.startsWith("pkg-config ")) {
+                    if (executable.startsWith("pkg-config ")) { //NOI18N
                         PackageConfiguration config = getPkgConfigOutput(conf, executable);
                         if (config != null){
                             res.add(config);
