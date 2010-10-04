@@ -445,6 +445,10 @@ public class PkgConfigImpl implements PkgConfig {
                 if (line.startsWith("#")) { // NOI18N
                     continue;
                 }
+                int sharp = line.indexOf("#");
+                if (sharp > 0) {
+                    line = line.substring(0,sharp).trim();
+                }
                 if (line.startsWith("Requires:")){ // NOI18N
                     String value = line.substring(9).trim();
                     value = expandMacros(value,vars);
