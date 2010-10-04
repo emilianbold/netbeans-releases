@@ -44,7 +44,6 @@
 package org.netbeans.modules.csl.navigation;
 
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
@@ -86,10 +85,7 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
 
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
-//        System.out.println("~~~ ClassMemberNavigatorSourceFactory: file=" + snapshot.getSource().getFileObject().getPath() + ", ui=" + ui);
-        return Arrays.asList(new ProxyElementScanningTask(CSLNavigatorScheduler.class)
-                , new ProxyElementScanningTask(Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER)
-                );
+        return Collections.singleton(new ProxyElementScanningTask(CSLNavigatorScheduler.class));
     }
 
     public synchronized void setLookup(Lookup l, ClassMemberPanelUI ui) {
