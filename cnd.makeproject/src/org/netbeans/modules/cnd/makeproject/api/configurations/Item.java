@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
@@ -66,7 +68,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -74,6 +75,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
+
+    private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
     //private final String sortName;
@@ -392,8 +395,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
-                // should not happen
-                ErrorManager.getDefault().notify(e);
+                // that's normal, for example, "myfile.xyz" won't have data object
+                // ErrorManager.getDefault().notify(e);
+                logger.log(Level.FINE, "Can not find data object", e); //NOI18N
             }
         }
         synchronized (this) {
