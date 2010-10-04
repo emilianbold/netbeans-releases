@@ -47,11 +47,14 @@ package org.netbeans.modules.localhistory.store;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.openide.util.Exceptions;
 
 /**
 */
@@ -59,7 +62,12 @@ public class StoreTest extends LHTestCase {
     private File dataDir;
         
     public StoreTest(String testName) {
-        super(testName);      
+        super(testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
     }
 
     @Override
@@ -131,7 +139,8 @@ public class StoreTest extends LHTestCase {
 
     public void testFileChange() throws Exception {
         LocalHistoryTestStore store = createStore();
-        
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
         long ts = System.currentTimeMillis();
 
         // create file in store
@@ -150,6 +159,8 @@ public class StoreTest extends LHTestCase {
         // change file with new ts
         ts = System.currentTimeMillis();
         changeFile(store, file, ts, "data2");
+        lh.waitUntilDone();
+
         // check the change
         assertFile(file, store, ts, -1, 3, 1, "data2", TOUCHED);
     }
@@ -180,6 +191,7 @@ public class StoreTest extends LHTestCase {
     public void testGetDeletedFiles() throws Exception {
         cleanUpDataFolder();
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
 
         cleanUpDataFolder();
         File folder = dataDir;
@@ -197,10 +209,10 @@ public class StoreTest extends LHTestCase {
         createFile(store, file4, System.currentTimeMillis(), "data4");
 
         // touch the files
-        changeFile(store, file1, System.currentTimeMillis(), "data1.1");
-        changeFile(store, file2, System.currentTimeMillis(), "data2.1");
-        changeFile(store, file3, System.currentTimeMillis(), "data3.1");
-        changeFile(store, file4, System.currentTimeMillis(), "data4.1");
+        changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
+        changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
+        changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
+        changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
 
         // delete one of them
         store.fileDelete(file2, System.currentTimeMillis());
@@ -222,6 +234,7 @@ public class StoreTest extends LHTestCase {
     public void testGetStoreEntry() throws Exception {
         cleanUpDataFolder();
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
 
         File folder = dataDir;
         folder.mkdirs();
@@ -233,6 +246,9 @@ public class StoreTest extends LHTestCase {
 
         // change the file
         changeFile(store, file1, System.currentTimeMillis(), "data1.1");
+        lh.waitUntilDone();
+
+
         // rewrite the file
         write(file1, "data1.2".getBytes());
         assertDataInFile(file1, "data1.2".getBytes());
@@ -327,12 +343,14 @@ public class StoreTest extends LHTestCase {
         assertNull(entriesMap.get("folderCreatedAfterRevert").getStoreFile());
 
         String strStore = read(entriesMap.get("fileChangedAfterRevert").getStoreFileInputStream(), 1024);
-        String strFile = read(new FileInputStream(entriesMap.get("fileChangedAfterRevert").getFile()), 1024);
-        assertNotSame(strFile, strStore);
+//        String strFile = read(new FileInputStream(entriesMap.get("fileChangedAfterRevert").getFile()), 1024);
+        assertNotSame("BEFORE change", strStore);
     }
 
     public void testGetStoreEntries() throws Exception {
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
         File folder = new File(dataDir, "datafolder");
         folder.mkdirs();
 
@@ -343,10 +361,10 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1");
-        changeFile(store, file1, ts + 3000, "data1.2");
-        changeFile(store, file1, ts + 4000, "data1.3");
-        changeFile(store, file1, ts + 5000, "data1.4");
+        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
+        changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -368,6 +386,8 @@ public class StoreTest extends LHTestCase {
 
     public void testDeleteEntry() throws Exception {
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
         File folder = new File(dataDir, "datafolder");
         folder.mkdirs();
 
@@ -377,8 +397,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1");
-        changeFile(store, file1, ts + 3000, "data1.2");
+        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -412,6 +432,8 @@ public class StoreTest extends LHTestCase {
 
     public void testSetLabel() throws Exception {
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
         File folder = new File(dataDir, "datafolder");
         folder.mkdirs();
 
@@ -421,8 +443,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1");
-        changeFile(store, file1, ts + 3000, "data1.2");
+        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         assertFile(file1, store, ts + 3000, -1, 4, 1, "data1.2", TOUCHED);
 
@@ -468,28 +490,44 @@ public class StoreTest extends LHTestCase {
         dos.close();
     }
 
-    public void testFileDeleteFromMove() throws Exception {
+    public void testManyManyChangesSync() throws Exception {
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
 
+        long ts = System.currentTimeMillis();
 
-    }
-    
-    public void testFileCreateFromMove() throws Exception {
-        LocalHistoryTestStore store = createStore();
+        // create file in store
+        File file = new File(dataDir, "file1");
+        createFile(store, file, ts, "data");
 
-        // XXX
+        File storefile = store.getStoreFile(file, ts, false);
 
-    }
+        // check that nothing changed
+        assertFile(file, store, ts, storefile.lastModified(), 2, 1, "data", TOUCHED);
 
-    public void testMove() throws Exception {
-        LocalHistoryTestStore store = createStore();
+        // change file with new ts
+        int many = 300;
+        long[] tss = new long[many + 1];
+        String[] datas = new String[many + 1];
+        tss[0] = ts;
+        datas[0] = "data";
+        for (int i = 1; i <= many; i++) {
+            tss[i] = System.currentTimeMillis();
+            datas[i] = "data" + i;
+            changeFile(store, file, tss[i], datas[i]);
+            System.out.println("testManyManyChangesSync change " + i);
+            lh.waitUntilDone();
+            System.out.println("testManyManyChangesSync change wait done " + i);
+        }
 
-        // XXX
-
-    }
+        // check the change
+        StoreEntry[] se = store.getStoreEntries(file);
+        assertEntries(se, file, tss, datas);
+    }    
 
     private long setupFirstFolderToRevert(LocalHistoryStore store, File folder) throws Exception {
-        
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
+
         File fileNotInStorage = new File(folder, "fileNotInStorage");
         File fileUnchanged = new File(folder, "fileUnchanged");        
         File fileChangedAfterRevert = new File(folder, "fileChangedAfterRevert");        
@@ -525,9 +563,10 @@ public class StoreTest extends LHTestCase {
         long revertToTS = System.currentTimeMillis();
         Thread.sleep(1000); // give me some time
         // REVERT
-        
+
         changeFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChanged AFTER change");
-                
+        lh.waitUntilDone();
+
         fileDeletedAfterRevert.delete();
         store.fileDelete(fileDeletedAfterRevert, System.currentTimeMillis());        
         
