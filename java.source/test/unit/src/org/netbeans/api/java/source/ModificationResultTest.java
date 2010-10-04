@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -44,7 +44,6 @@
 
 package org.netbeans.api.java.source;
 
-import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +53,6 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.StyledDocument;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -74,18 +72,6 @@ public class ModificationResultTest extends NbTestCase {
         super(name);
     }
     
-    private void writeIntoFile(FileObject file, String what) throws Exception {
-        FileLock lock = file.lock();
-        OutputStream out = file.getOutputStream(lock);
-        
-        try {
-            out.write(what.getBytes());
-        } finally {
-            out.close();
-            lock.releaseLock();
-        }
-    }
-    
     private FileObject testFile;
     private CloneableEditorSupport ces;
     
@@ -94,7 +80,7 @@ public class ModificationResultTest extends NbTestCase {
         FileObject root = fs.getRoot();
         testFile = FileUtil.createData(root, "test/test.java");
         
-        writeIntoFile(testFile, "test\ntest\ntest\n");
+        TestUtilities.copyStringToFile(testFile, "test\ntest\ntest\n");
         
         DataObject od = DataObject.find(testFile);
         
@@ -118,9 +104,9 @@ public class ModificationResultTest extends NbTestCase {
     private void performTestToFile(String creator) throws Exception {
         prepareTest();
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         result.commit();
         
@@ -136,9 +122,9 @@ public class ModificationResultTest extends NbTestCase {
         
         Document doc = ces.openDocument();
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         result.commit();
         
@@ -154,9 +140,9 @@ public class ModificationResultTest extends NbTestCase {
         
         NbDocument.markGuarded(doc, 4, 6);
         
-        Method m = ModificationResultTest.class.getDeclaredMethod(creator, new Class[0]);
+        Method m = ModificationResultTest.class.getDeclaredMethod(creator);
         
-        ModificationResult result = (ModificationResult) m.invoke(this, new Object[0]);
+        ModificationResult result = (ModificationResult) m.invoke(this);
         
         for (FileObject fo : result.getModifiedFileObjects()) {
             for (ModificationResult.Difference diff : result.getDifferences(fo)) {
