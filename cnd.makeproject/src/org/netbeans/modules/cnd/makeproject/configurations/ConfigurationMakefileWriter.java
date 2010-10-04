@@ -800,6 +800,8 @@ public class ConfigurationMakefileWriter {
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
+                    } else {
+                        continue;
                     }
                 } else {
                     assert false;
@@ -908,6 +910,8 @@ public class ConfigurationMakefileWriter {
                                 command = customToolConfiguration.getCommandLine().getValue();
                                 comment = customToolConfiguration.getDescription().getValue();
                                 additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
+                            } else {
+                                continue;
                             }
                         } else {
                             assert false;
@@ -1024,6 +1028,8 @@ public class ConfigurationMakefileWriter {
                         command = customToolConfiguration.getCommandLine().getValue();
                         comment = customToolConfiguration.getDescription().getValue();
                         additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
+                    } else {
+                        continue;
                     }
                 } else {
                     assert false;
