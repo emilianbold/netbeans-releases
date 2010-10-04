@@ -72,6 +72,17 @@ import org.openide.util.Parameters;
  */
 public class TomcatWebModule implements TomcatWebModuleCookie {
 
+    /** RequestProcessor processor that serializes management tasks. */
+    private static RequestProcessor rp;
+
+    /** Returns shared RequestProcessor. */
+    private static synchronized RequestProcessor rp () {
+        if (rp == null) {
+            rp = new RequestProcessor ("Tomcat web module", 1); // NOI18N
+        }
+        return rp;
+    }
+
     /** Simple comparator for sorting nodes by name. */
     public static final Comparator<TomcatWebModule> TOMCAT_WEB_MODULE_COMPARATOR = new Comparator<TomcatWebModule>() {
 
@@ -122,7 +133,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie {
      *             (failed or completed).
      */
     public Task undeploy() {
-        return RequestProcessor.getDefault().post(new Runnable() {
+        return rp().post(new Runnable() {
             public void run () {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_UNDEPLOY",  // NOI18N
                     new Object [] { getTomcatModule().getPath() }));
@@ -140,7 +151,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie {
     }
 
     public void start() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp().post(new Runnable() {
             public void run () {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STARTING",  // NOI18N
                     new Object [] { getTomcatModule().getPath() }));
@@ -153,7 +164,7 @@ public class TomcatWebModule implements TomcatWebModuleCookie {
     }
 
     public void stop() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        rp().post(new Runnable() {
             public void run () {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(TomcatWebModule.class, "MSG_START_STOPPING",  // NOI18N
                     new Object [] { getTomcatModule ().getPath() }));
