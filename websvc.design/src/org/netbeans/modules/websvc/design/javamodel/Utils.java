@@ -124,6 +124,7 @@ public class Utils {
                     //CompilationUnitTree cut = controller.getCompilationUnit();
 
                     TypeElement classEl = SourceUtils.getPublicTopLevelElement(controller);
+                    TypeElement webServiceElement = classEl;
                     if (classEl !=null) {
                         //ClassTree javaClass = srcUtils.getClassTree();
                         // find if class is Injection Target
@@ -186,15 +187,24 @@ public class Utils {
                         TypeElement seiClassEl = null;
                         if (serviceModel.endpointInterface!=null) {
                             seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
-                            if (seiClassEl != null) classEl = seiClassEl;
+                            if (seiClassEl != null) {
+                                webServiceElement = classEl;
+                                classEl = seiClassEl;
+                            }
                         }
 
                         boolean foundWebMethodAnnotation=false;
                         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                         for (Element member : classEl.getEnclosedElements()) {
-                            if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
+                            if (member.getKind() == ElementKind.METHOD) {
                                 ExecutableElement methodEl = (ExecutableElement) member;
+                                Element webServiceMethod = controller.
+                                    getElementUtilities().getImplementationOf(
+                                            methodEl, webServiceElement);
+                                if ( webServiceMethod instanceof ExecutableElement ){
+                                    methodEl = (ExecutableElement)webServiceMethod;
+                                }
                                 if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
                                     List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();
                                     if (foundWebMethodAnnotation) {
