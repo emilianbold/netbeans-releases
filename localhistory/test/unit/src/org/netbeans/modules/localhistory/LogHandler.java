@@ -99,6 +99,10 @@ public class LogHandler extends Handler {
         }
     }
 
+    public void reset() {
+        done = false;
+    }
+
     public boolean isDone() {
         return done;
     }
@@ -112,8 +116,7 @@ public class LogHandler extends Handler {
     @Override
     public void close() throws SecurityException { }
 
-    public void waitUntilDone() throws InterruptedException, TimeoutException {
-        done = false;
+    public void waitUntilDone() throws InterruptedException, TimeoutException {        
         long t = System.currentTimeMillis();
         while(!done) {
             Thread.sleep(100);
