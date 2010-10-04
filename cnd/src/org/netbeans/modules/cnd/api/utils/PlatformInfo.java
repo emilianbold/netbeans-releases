@@ -84,7 +84,7 @@ public final class PlatformInfo {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
-            Exceptions.printStackTrace(ex);
+            // doesn't make sense to log - user cancelled operation (most likely, login) explicitely
         }
         if (hostinfo != null) {
             switch (hostinfo.getOSFamily()){

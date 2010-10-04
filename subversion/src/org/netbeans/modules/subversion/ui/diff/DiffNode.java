@@ -159,10 +159,10 @@ public class DiffNode extends AbstractNode {
         return Lookups.fixed(allLookupObjects);
     }
 
-    private abstract class DiffNodeProperty extends PropertySupport.ReadOnly {
+    private abstract class DiffNodeProperty extends PropertySupport.ReadOnly<String> {
 
-        protected DiffNodeProperty(String name, Class type, String displayName, String shortDescription) {
-            super(name, type, displayName, shortDescription);
+        protected DiffNodeProperty(String name, String displayName, String shortDescription) {
+            super(name, String.class, displayName, shortDescription);
         }
 
         @Override
@@ -179,10 +179,10 @@ public class DiffNode extends AbstractNode {
     private class NameProperty extends DiffNodeProperty {
 
         public NameProperty() {
-            super(COLUMN_NAME_NAME, String.class, COLUMN_NAME_NAME, COLUMN_NAME_NAME);
+            super(COLUMN_NAME_NAME, COLUMN_NAME_NAME, COLUMN_NAME_NAME);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return DiffNode.this.getName();
         }
     }
@@ -190,10 +190,10 @@ public class DiffNode extends AbstractNode {
     private class PropertyNameProperty extends DiffNodeProperty {
 
         public PropertyNameProperty() {
-            super(COLUMN_NAME_PROPERTY, String.class, COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY);
+            super(COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY, COLUMN_NAME_PROPERTY);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return setup.getPropertyName();
         }
     }
@@ -203,7 +203,7 @@ public class DiffNode extends AbstractNode {
         private String location;
 
         public LocationProperty() {
-            super(COLUMN_NAME_LOCATION, String.class, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
+            super(COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION, COLUMN_NAME_LOCATION);
             try {
                 location = SvnModuleConfig.getDefault().isRepositoryPathPrefixed() ? SvnUtils.getRepositoryUrl(setup.getBaseFile()).toString() : SvnUtils.getRelativePath(setup.getBaseFile());
             } catch (SVNClientException e) {
@@ -212,7 +212,7 @@ public class DiffNode extends AbstractNode {
             setValue("sortkey", location + "\t" + DiffNode.this.getName()); // NOI18N
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             return location;
         }
     }
@@ -222,7 +222,7 @@ public class DiffNode extends AbstractNode {
     private class StatusProperty extends DiffNodeProperty {
         
         public StatusProperty() {
-            super(COLUMN_NAME_STATUS, String.class, COLUMN_NAME_STATUS, COLUMN_NAME_STATUS);
+            super(COLUMN_NAME_STATUS, COLUMN_NAME_STATUS, COLUMN_NAME_STATUS);
             String shortPath = null;
             try {
                 shortPath = SvnUtils.getRelativePath(setup.getBaseFile());
@@ -233,7 +233,7 @@ public class DiffNode extends AbstractNode {
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase()); // NOI18N
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             FileInformation finfo =  setup.getInfo();
             finfo.getEntry(setup.getBaseFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
             return finfo.getStatusText(displayStatuses);            

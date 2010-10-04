@@ -60,6 +60,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -251,6 +253,7 @@ public final class ModificationResult {
         ByteArrayOutputStream baos = null;           
         Reader in = null;
         Writer out2 = out;
+        JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
         try {
             Charset encoding = FileEncodingQuery.getEncoding(fo);
             ins = fo.getInputStream();
@@ -264,11 +267,19 @@ public final class ModificationResult {
             baos.close();
             baos = null;
             in = new InputStreamReader(new ByteArrayInputStream(arr, 0, arrLength), encoding);
+            if (filter != null) {
+                in = filter.filterReader(in);
+            }
             // initialize standard commit output stream, if user
             // does not provide his own writer
             boolean ownOutput = out != null;
             if (out2 == null) {
                 out2 = new OutputStreamWriter(fo.getOutputStream(), encoding);
+                //going through filter only when writing to disk. When creating source for getResultingSource,
+                //it is not passed through the write-filter (as that is what refactoring preview expects).
+                if (filter != null) {
+                    out2 = filter.filterWriter(out2);
+                }
             }
             int offset = 0;                
             for (Difference diff : differences) {
