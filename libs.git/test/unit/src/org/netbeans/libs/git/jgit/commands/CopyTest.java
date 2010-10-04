@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
-import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -60,7 +59,6 @@ import org.netbeans.libs.git.progress.StatusProgressMonitor;
  * @author ondra
  */
 public class CopyTest extends AbstractGitTestCase {
-    private Repository repository;
     private File workDir;
 
     public CopyTest (String testName) throws IOException {
@@ -71,7 +69,6 @@ public class CopyTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         workDir = getWorkingDirectory();
-        repository = getRepository(getLocalGitRepository());
     }
 
     public void testCopyUnderItself () throws Exception {
@@ -171,13 +168,14 @@ public class CopyTest extends AbstractGitTestCase {
         File target2 = target;
         assertTrue(target2.exists());
         m = new Monitor();
+        copyFile(file, target2);
         client = getClient(workDir);
         client.copyAfter(file, target2, m);
         assertTrue(m.notifiedWarnings.contains("Index already contains an entry for folder/file"));
-        assertEquals(Collections.<File>emptySet(), m.notifiedFiles);
+        assertEquals(Collections.singleton(target2), m.notifiedFiles);
         statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
     }
 
@@ -224,21 +222,5 @@ public class CopyTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, copy2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, copy11, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, copy21, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-    }
-
-    private void copyFile (File source, File target) throws IOException {
-        target.getParentFile().mkdirs();
-        if (source.isDirectory()) {
-            File[] children = source.listFiles();
-            for (File child : children) {
-                copyFile(child, new File(target, child.getName()));
-            }
-        } else if (source.isFile()) {
-            target.createNewFile();
-            String s = read(source);
-            if (s != null) {
-                write(target, s);
-            }
-        }
     }
 }

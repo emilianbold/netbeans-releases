@@ -44,15 +44,44 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.FileProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public class CopyCommand extends MoveTreeCommand {
+public class RenameCommand extends MoveTreeCommand {
 
-    public CopyCommand (Repository repository, File source, File target, FileProgressMonitor monitor) {
-        super(repository, source, target, true, true, monitor);
+    final File source;
+    final File target;
+    final boolean after;
+
+    public RenameCommand (Repository repository, File source, File target, boolean after, FileProgressMonitor monitor) {
+        super(repository, source, target, after, false, monitor);
+        this.source = source;
+        this.target = target;
+        this.after = after;
+    }
+
+    @Override
+    protected boolean prepareCommand() throws GitException {
+        boolean retval = super.prepareCommand();
+        if (retval) {
+            if (source.equals(getRepository().getWorkTree())) {
+                throw new GitException("Cannot move working copy root " + source.getAbsolutePath()); //NOI18N
+            }
+            if (!source.exists() && !after) {
+                throw new GitException("Source does not exist: " + source.getAbsolutePath());
+            }
+            if (target.exists()) {
+                if (!after) {
+                    throw new GitException("Target already exists: " + target.getAbsolutePath());
+                }
+            } else if (after) {
+                throw new GitException("Target does not exist: " + target.getAbsolutePath());
+            }
+        }
+        return retval;
     }
 }

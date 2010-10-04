@@ -64,4 +64,5 @@ public abstract class GitClient {
     public abstract Map<File, GitStatus> getStatus (File[] roots, StatusProgressMonitor monitor) throws GitException;
     public abstract void init () throws GitException;
     public abstract void remove (File[] roots, boolean cached, FileProgressMonitor monitor) throws GitException;
+    public abstract void rename (File source, File target, boolean after, FileProgressMonitor monitor) throws GitException;
 }

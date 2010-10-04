@@ -49,6 +49,7 @@ import org.netbeans.libs.git.jgit.commands.AddTest;
 import org.netbeans.libs.git.jgit.commands.CommitTest;
 import org.netbeans.libs.git.jgit.commands.CopyTest;
 import org.netbeans.libs.git.jgit.commands.RemoveTest;
+import org.netbeans.libs.git.jgit.commands.RenameTest;
 import org.netbeans.libs.git.jgit.commands.StatusTest;
 
 /**
@@ -66,8 +67,9 @@ public class CommandsTestSuite extends NbTestSuite {
         suite.addTestSuite(AddTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(StatusTest.class);
         suite.addTestSuite(RemoveTest.class);
+        suite.addTestSuite(RenameTest.class);
+        suite.addTestSuite(StatusTest.class);
         return suite;
     }
 

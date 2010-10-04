@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
@@ -158,6 +159,20 @@ public class JGitClient extends GitClient {
     public void remove(File[] roots, boolean cached, FileProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         RemoveCommand cmd = new RemoveCommand(repository, roots, cached, monitor);
+        cmd.execute();
+    }
+
+    /**
+     * Renames source file or folder to target
+     * @param source file or folder to be renamed
+     * @param target target file or folder. Must not yet exist.
+     * @param after set to true if you don't only want to correct the index
+     * @throws GitException
+     */
+    @Override
+    public void rename (File source, File target, boolean after, FileProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        RenameCommand cmd = new RenameCommand(repository, source, target, after, monitor);
         cmd.execute();
     }
 }

@@ -195,6 +195,22 @@ public class AbstractGitTestCase extends NbTestCase {
         getClient(wc).remove(files, cached, FileProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
+    protected void copyFile(File source, File target) throws IOException {
+        target.getParentFile().mkdirs();
+        if (source.isDirectory()) {
+            File[] children = source.listFiles();
+            for (File child : children) {
+                copyFile(child, new File(target, child.getName()));
+            }
+        } else if (source.isFile()) {
+            target.createNewFile();
+            String s = read(source);
+            if (s != null) {
+                write(target, s);
+            }
+        }
+    }
+
     protected static class Monitor extends FileProgressMonitor {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
         public final List<String> notifiedWarnings = new LinkedList<String>();
