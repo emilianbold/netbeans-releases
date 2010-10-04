@@ -119,8 +119,14 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
 //        xes.element(ITEM_TOOL_ELEMENT, "" + item.getTool()); // NOI18N
         if (item.getTool() == PredefinedToolKind.CCompiler) {
             CommonConfigurationXMLCodec.writeCCompilerConfiguration(xes, item.getCCompilerConfiguration());
+            if(item.isProCFile()) {
+                CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
+            }
         } else if (item.getTool() == PredefinedToolKind.CCCompiler) {
             CommonConfigurationXMLCodec.writeCCCompilerConfiguration(xes, item.getCCCompilerConfiguration());
+            if(item.isProCFile()) {
+                CommonConfigurationXMLCodec.writeCustomToolConfiguration(xes, item.getCustomToolConfiguration());
+            }
         } else if (item.getTool() == PredefinedToolKind.FortranCompiler) {
             CommonConfigurationXMLCodec.writeFortranCompilerConfiguration(xes, item.getFortranCompilerConfiguration());
         } else if (item.getTool() == PredefinedToolKind.CustomTool) {
