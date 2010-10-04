@@ -1111,20 +1111,26 @@ public class ImportProject implements PropertyChangeListener {
     private Map<String,Item> normalizedItems;
     private Item findByNormalizedName(File file){
         if (normalizedItems == null) {
-            normalizedItems = new HashMap<String,Item>();
-            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (pdp != null) {
-                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                if (makeConfigurationDescriptor != null) {
-                    for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                        normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
-                    }
-                }
-            }
+            normalizedItems = initNormalizedNames(makeProject);
         }
         String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         return normalizedItems.get(path);
     }
+
+    static HashMap<String,Item> initNormalizedNames(Project makeProject) {
+        HashMap<String,Item> normalizedItems = new HashMap<String,Item>();
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp != null) {
+            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+            if (makeConfigurationDescriptor != null) {
+                for(Item item : makeConfigurationDescriptor.getProjectItems()){
+                    normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
+                }
+            }
+        }
+        return normalizedItems;
+    }
+
 
     private void modelDiscovery() {
         if (!isProjectOpened()) {
