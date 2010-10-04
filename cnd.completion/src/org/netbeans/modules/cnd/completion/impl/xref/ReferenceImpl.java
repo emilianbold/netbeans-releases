@@ -50,7 +50,6 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -123,7 +122,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             if (candidate != null) {
                 target = candidate.getReferencedObject();
                 if (target == null) {
-                    Logger.getLogger("xRef").log(Level.INFO, "{0} \n doesn't have target in candidate {1}\n", new Object[]{this, candidate});
+                    Logger.getLogger("xRef").log(Level.INFO, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
                 }
                 CsmReferenceKind aKind = candidate.getKind();
                 assert this.kind == null || this.kind == aKind : this.kind + " vs. " + aKind;
