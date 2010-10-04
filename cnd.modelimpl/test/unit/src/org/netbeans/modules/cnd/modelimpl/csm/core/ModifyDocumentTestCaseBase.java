@@ -76,17 +76,14 @@ import org.openide.loaders.DataObjectNotFoundException;
  * Test for reaction on editor modifications
  * @author Vladimir Voskresensky
  */
-public class ModifyDocumentTest extends ProjectBasedTestCase {
+public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     private final ObjectsChangeListener doListener = new ObjectsChangeListener();
-    public ModifyDocumentTest(String testName) {
+    public ModifyDocumentTestCaseBase(String testName) {
         super(testName);
     }
 
     @Override
     protected void setUp() throws Exception {
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
         System.err.printf("setUp %s %d\n", getName(), System.currentTimeMillis());
         super.setUp();
         doListener.clear();
@@ -105,14 +102,14 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         System.err.printf("tearDown end %s %d\n", getName(), System.currentTimeMillis());
     }
 
-    public void testInsertDeadBlock() throws Exception {
+    protected final void insertDeadBlockText(final File sourceFile, final String ifdefTxt, final int pos,
+                                    int deadBlocksBeforeModifcation, int deadBlocksAfterModifications) throws Exception {
         if (TraceFlags.TRACE_182342_BUG) {
             System.err.printf("TEST INSERT DEAD BLOCK\n");
         }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
-        final File sourceFile = getDataFile("fileWithoutDeadCode.cc");
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
         final BaseDocument doc = getBaseDocument(sourceFile);
@@ -123,7 +120,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
-            checkDeadBlocks(project, fileImpl, "1. text before inserting dead block:", doc, "File must have no dead code blocks ", 0);
+            checkDeadBlocks(project, fileImpl, "1. text before inserting dead block:", doc, "File must have " + deadBlocksBeforeModifcation + " dead code blocks ", deadBlocksBeforeModifcation);
 
             // insert dead code block
             // create barier
@@ -132,18 +129,15 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
             // modify document
             UndoManager urm = new UndoManager();
             doc.addUndoableEditListener(urm);
-            final String ifdefTxt = "#ifdef AAA\n"
-                                  + "    dead code text\n"
-                                  + "#endif\n";
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
                 public void run() {
                     try {
                         if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("Inserting dead block in position %d: %s\n", 0, ifdefTxt);
+                            System.err.printf("Inserting dead block in position %d: %s\n", pos, ifdefTxt);
                         }
-                        doc.insertString(0,
+                        doc.insertString(pos,
                                         ifdefTxt,
                                         null);
                     } catch (BadLocationException ex) {
@@ -160,7 +154,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
-                    checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have one dead code block ", 1);
+                    checkDeadBlocks(project, fileImpl, "2. text after inserting dead block:", doc, "File must have " + deadBlocksAfterModifications + " dead code block ", deadBlocksAfterModifications);
                     assertEquals("must be exactly one parse event", 1, parseCounter.get());
                 }
             } catch (InterruptedException ex) {
@@ -177,17 +171,10 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         }
     }
 
-    public void testRemoveDeadBlock() throws Exception {
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
-        if (TraceFlags.TRACE_182342_BUG) {
-            System.err.printf("TEST REMOVE DEAD BLOCK\n");
-        }
+    protected final void removeDeadBlock(final File sourceFile, int deadBlocksBeforeRemove, int deadBlocksAfterRemove) throws Exception {
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
         final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
         final CsmProject project = super.getProject();
-        final File sourceFile = getDataFile("fileWithDeadCode.cc");
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
         final BaseDocument doc = getBaseDocument(sourceFile);
@@ -199,8 +186,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
-            List<CsmOffsetable> unusedCodeBlocks = checkDeadBlocks(project, fileImpl, "1. text before deleting dead block:", doc, "File must have one dead code block ", 1);
-            final CsmOffsetable block = unusedCodeBlocks.iterator().next();
+            final List<CsmOffsetable> unusedCodeBlocks = checkDeadBlocks(project, fileImpl, "1. text before deleting dead block:", doc, "File must have " + deadBlocksBeforeRemove + " dead code block ", deadBlocksBeforeRemove);
             // insert dead code block
             // create barier
             CountDownLatch parse1 = new CountDownLatch(1);
@@ -213,10 +199,12 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                 @Override
                 public void run() {
                     try {
-                        if (TraceFlags.TRACE_182342_BUG) {
-                            System.err.printf("Removing dead block [%d-%d]\n", block.getStartOffset(), block.getEndOffset());
+                        for (CsmOffsetable block : unusedCodeBlocks) {
+                            if (TraceFlags.TRACE_182342_BUG) {
+                                System.err.printf("Removing dead block [%d-%d]\n", block.getStartOffset(), block.getEndOffset());
+                            }
+                            doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                         }
-                        doc.remove(block.getStartOffset(), block.getEndOffset() - block.getStartOffset());
                     } catch (BadLocationException ex) {
                         exRef.compareAndSet(null, ex);
                     }
@@ -230,7 +218,7 @@ public class ModifyDocumentTest extends ProjectBasedTestCase {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
-                    checkDeadBlocks(project, fileImpl, "2. text after deleting dead block:", doc, "File must have no dead code blocks ", 0);
+                    checkDeadBlocks(project, fileImpl, "2. text after deleting dead block:", doc, "File must have " + deadBlocksAfterRemove + " dead code blocks ", deadBlocksAfterRemove);
                     assertEquals("must be exactly one parse event", 1, parseCounter.get());
                 }
             } catch (InterruptedException ex) {
