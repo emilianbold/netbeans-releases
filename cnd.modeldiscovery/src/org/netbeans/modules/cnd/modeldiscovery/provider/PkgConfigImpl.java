@@ -445,7 +445,7 @@ public class PkgConfigImpl implements PkgConfig {
                 if (line.startsWith("#")) { // NOI18N
                     continue;
                 }
-                int sharp = line.indexOf("#");
+                int sharp = line.indexOf('#'); // NOI18N
                 if (sharp > 0) {
                     line = line.substring(0,sharp).trim();
                 }
