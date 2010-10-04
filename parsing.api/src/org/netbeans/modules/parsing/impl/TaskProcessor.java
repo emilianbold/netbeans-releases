@@ -781,7 +781,7 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final SourceCache cache, final ReschedulePolicy reschedule,
+        private Request (final SchedulerTask task, final SourceCache cache, final ReschedulePolicy reschedule,
             Class<? extends Scheduler> schedulerType) {
             assert task != null;
             assert reschedule != null;

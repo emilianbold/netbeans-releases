@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;

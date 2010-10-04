@@ -143,6 +143,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         initTableData(info);
                         setModifier(e.getModifiers());
                         previewChange.setText(genDeclarationString());
+                        previewChange.setToolTipText(genDeclarationString());
                     }
                     catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -372,6 +373,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
     private void modifiersComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_modifiersComboActionPerformed
         previewChange.setText(genDeclarationString());
+        previewChange.setToolTipText(genDeclarationString());
     }//GEN-LAST:event_modifiersComboActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
@@ -482,6 +484,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 
                 // update preview
                 previewChange.setText(genDeclarationString());
+                previewChange.setToolTipText(genDeclarationString());
                 
                 parent.stateChanged(null);
             }
