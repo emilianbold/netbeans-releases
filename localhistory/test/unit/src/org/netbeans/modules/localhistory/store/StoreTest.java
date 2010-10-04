@@ -47,14 +47,12 @@ package org.netbeans.modules.localhistory.store;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
-import org.openide.util.Exceptions;
 
 /**
 */
