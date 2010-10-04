@@ -42,7 +42,6 @@
 
 package org.netbeans.libs.svnclientadapter;
 
-import apple.awt.CList;
 import java.util.Collection;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
