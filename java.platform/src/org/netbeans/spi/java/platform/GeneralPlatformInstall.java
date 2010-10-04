@@ -55,34 +55,41 @@ import org.netbeans.api.java.platform.JavaPlatform;
  * <div class="nonnormative">
  * <p>Registration example:</p>
  * <pre>
- * &#64;ServiceProvider(
-      service=GeneralPlatformInstall.class,
-      path="org-netbeans-api-java/platform/installers"
-   )
-   public final class MyPlatformInstall extends PlatformInstall {
+ * <a href="@org-openide-util-lookup@/org/openide/util/lookup/ServiceProvider.html">&#64;ServiceProvider</a>(
+ *    service=GeneralPlatformInstall.class,
+ *    path="org-netbeans-api-java/platform/installers"
+ * )
+ * public final class MyPlatformInstall extends {@link PlatformInstall} {
  * ...
  * }
  * </pre>
  * 
- * <p>The platform definition file has to provide the {@link JavaPlatform} instance in its {@link DataObject}'s lookup.</p>
- * <p>The platform persistence can be solved using the ConvertAsJavaBean annotation as shown on the example.</p>
+ * <p>After the {@link PlatformInstall#createIterator createIterator} is finished,
+ * a platform definition file shall be created at "Services/Platforms/org-netbeans-api-java-Platform" folder:
+ * </p>
  * <pre>
- *     public java.util.Set instantiate() throws IOException {
- *          MyPlatform p = new MyPlatform();
- *          p.setDisplayName(theName);
- *          p.setVendor(theVendor);
- *          return Collections.singleton(InstanceDataObject.create(
- *              DataFolder.findFolder(FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform")),
- *              theName,
- *              p,
- *              null,
- *              true));
- *     }
- * 
- *     &#64;ConvertAsJavaBean
- *     public static class MyPlatform extends JavaPlatform {
+ * public java.util.Set instantiate() throws IOException {
+ *     MyPlatform p = new MyPlatform();
+ *     p.setDisplayName(theName);
+ *     p.setVendor(theVendor);
+ *     return Collections.singleton(<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html">InstanceDataObject.create</a>(
+ *         <a href="@org-openide-loaders@/org/openide/loaders/DataFolder.html">DataFolder.findFolder</a>(FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform")),
+ *         theName,
+ *         p,
+ *         null,
+ *         true));
+ * }
+ * </pre>
+ * <p>
+ * The platform definition file has to represent the {@link JavaPlatform} instance.
+ * This can be done in many ways. For example using the
+ * <a href="@org-netbeans-modules-settings@/org/netbeans/api/settings/ConvertAsJavaBean.html">
+ * ConvertAsJavaBean</a> annotation:</p>
+ * <pre>
+ * &#64;ConvertAsJavaBean
+ * public static class MyPlatform extends JavaPlatform {
  *     ...
- *     }
+ * }
  * </pre>
  * </div>
  * @author Tomas Zezula

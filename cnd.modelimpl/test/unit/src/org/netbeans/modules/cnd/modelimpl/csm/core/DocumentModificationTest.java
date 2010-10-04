@@ -37,45 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.refactoring.java.plugins;
+package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RetoucheUtils;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
- * Utility class for java plugins.
+ *
+ * @author Vladimir Voskresensky
  */
-final class JavaPluginUtils {
-
-    public static final Problem isSourceElement(Element el, CompilationInfo info) {
-        Problem preCheckProblem = null;
-        if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
-            preCheckProblem = new Problem(true, NbBundle.getMessage(
-                    JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
-                    el.getKind()==ElementKind.PACKAGE?el:el.getEnclosingElement()
-                    ));
-            return preCheckProblem;
-        }
-        FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
-        // RetoucheUtils.isFromLibrary already checked file for null
-        if (!RetoucheUtils.isElementInOpenProject(file)) {
-            preCheckProblem =new Problem(true, NbBundle.getMessage(
-                    JavaPluginUtils.class,
-                    "ERR_ProjectNotOpened",
-                    FileUtil.getFileDisplayName(file)));
-            return preCheckProblem;
-        }
-        return null;
+public class DocumentModificationTest extends CndBaseTestSuite {
+    public DocumentModificationTest() {
+        super("C/C++ Document modifications test");
+        this.addTestSuite(InsertDeadBlockTestCase.class);
+        this.addTestSuite(RemoveDeadBlockTestCase.class);
+        this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
     }
 
+    public static Test suite() {
+        TestSuite suite = new DocumentModificationTest();
+        return suite;
+    }
 }
