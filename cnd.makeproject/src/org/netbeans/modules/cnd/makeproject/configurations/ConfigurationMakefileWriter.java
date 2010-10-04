@@ -744,16 +744,15 @@ public class ConfigurationMakefileWriter {
                 boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                 FileObject fileObject = items[i].getFileObject();
-                if(fileObject == null) {
-                    continue;
-                }
-                if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                    if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                        MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
-                        file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                    } else {
-                        MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                        file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                if(fileObject != null) {
+                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                        } else {
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        }
                     }
                 }
                 command = ""; // NOI18N
@@ -861,16 +860,15 @@ public class ConfigurationMakefileWriter {
                         boolean dMake = isDMake(compilerSet);
                         file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                         FileObject fileObject = items[i].getFileObject();
-                        if(fileObject == null) {
-                            continue;
-                        }
-                        if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                                MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
-                                file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                            } else {
-                                MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                                file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        if(fileObject != null) {
+                            if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                                    MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                    file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                                } else {
+                                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                    file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                                }
                             }
                         }
                         command = ""; // NOI18N
@@ -968,16 +966,15 @@ public class ConfigurationMakefileWriter {
                 boolean dMake = isDMake(compilerSet);
                 file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
                 FileObject fileObject = items[i].getFileObject();
-                if(fileObject == null) {
-                    continue;
-                }
-                if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
-                    if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                        MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
-                        file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
-                    } else {
-                        MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                        file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                if(fileObject != null) {
+                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                        } else {
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        }
                     }
                 }
                 command = ""; // NOI18N
