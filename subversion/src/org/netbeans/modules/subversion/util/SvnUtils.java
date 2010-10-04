@@ -207,7 +207,7 @@ public class SvnUtils {
             if (ctx != null) return ctx;
         }
         VCSContext vcsCtx = VCSContext.forNodes(nodes);
-        Context ctx = new Context(new ArrayList(vcsCtx.computeFiles(svnFileFilter)), new ArrayList(vcsCtx.getRootFiles()), new ArrayList(vcsCtx.getExclusions()));
+        Context ctx = new Context(new ArrayList<File>(vcsCtx.computeFiles(svnFileFilter)), new ArrayList<File>(vcsCtx.getRootFiles()), new ArrayList<File>(vcsCtx.getExclusions()));
         contextCached = new WeakReference<Context>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
         return ctx;

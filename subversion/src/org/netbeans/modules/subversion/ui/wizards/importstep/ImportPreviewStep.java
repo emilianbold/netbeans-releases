@@ -185,7 +185,7 @@ public class ImportPreviewStep extends AbstractStep {
         }
     }
 
-    public Map getCommitFiles() {
+    public Map<SvnFileNode, CommitOptions> getCommitFiles() {
         return table.getCommitFiles();
     }
     

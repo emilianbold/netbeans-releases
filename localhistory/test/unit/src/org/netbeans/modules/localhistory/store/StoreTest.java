@@ -158,6 +158,7 @@ public class StoreTest extends LHTestCase {
 
         // change file with new ts
         ts = System.currentTimeMillis();
+        lh.reset();
         changeFile(store, file, ts, "data2");
         lh.waitUntilDone();
 
@@ -209,10 +210,10 @@ public class StoreTest extends LHTestCase {
         createFile(store, file4, System.currentTimeMillis(), "data4");
 
         // touch the files
-        changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
-        changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
-        changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
-        changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
 
         // delete one of them
         store.fileDelete(file2, System.currentTimeMillis());
@@ -245,6 +246,7 @@ public class StoreTest extends LHTestCase {
         createFile(store, file2, System.currentTimeMillis(), "data2");
 
         // change the file
+        lh.reset();
         changeFile(store, file1, System.currentTimeMillis(), "data1.1");
         lh.waitUntilDone();
 
@@ -361,10 +363,10 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -397,8 +399,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -443,8 +445,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         assertFile(file1, store, ts + 3000, -1, 4, 1, "data1.2", TOUCHED);
 
@@ -514,6 +516,7 @@ public class StoreTest extends LHTestCase {
         for (int i = 1; i <= many; i++) {
             tss[i] = System.currentTimeMillis();
             datas[i] = "data" + i;
+            lh.reset();
             changeFile(store, file, tss[i], datas[i]);
             System.out.println("testManyManyChangesSync change " + i);
             lh.waitUntilDone();
@@ -564,6 +567,7 @@ public class StoreTest extends LHTestCase {
         Thread.sleep(1000); // give me some time
         // REVERT
 
+        lh.reset();
         changeFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChanged AFTER change");
         lh.waitUntilDone();
 

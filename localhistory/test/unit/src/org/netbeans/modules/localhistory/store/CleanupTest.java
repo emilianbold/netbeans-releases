@@ -189,8 +189,8 @@ public class CleanupTest extends LHTestCase {
 
         // 2 days ago
         ts = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
-        changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
         
         // check the files created in storage
         assertFile(file1, store, ts, -1, 3, 1, "data1.1", TOUCHED);
