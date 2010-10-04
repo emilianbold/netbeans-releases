@@ -573,6 +573,27 @@ public class OutlineView extends JScrollPane {
     }
 
     /**
+     * Enable/disable double click to invoke default action.
+     * If the default action is not enabled, double click expand/collapse node.
+     * @param defaultActionAllowed Provide <code>true</code> to enable
+     * @see {@link #isDefaultActionAllowed()}
+     * @since 6.32
+     */
+    public void setDefaultActionAllowed(boolean defaultActionAllowed) {
+        outline.setDefaultActionAllowed(defaultActionAllowed);
+    }
+
+    /**
+     * Tells if double click invokes default action.
+     * @return <code>true</code> if the default action is invoked, or <code>false</code> when it's not.
+     * @see {@link #setDefaultActionAllowed(boolean)}
+     * @since 6.32
+     */
+    public boolean isDefaultActionAllowed() {
+        return outline.isDefaultActionAllowed();
+    }
+
+    /**
      * Set the tree column as sortable
      * @param treeSortable <code>true</code> to make the tree column sortable,
      *        <code>false</code> otherwise. The tree column is sortable by default.
@@ -771,9 +792,11 @@ public class OutlineView extends JScrollPane {
         super.removeNotify ();
         outline.getSelectionModel().clearSelection();
         outline.getSelectionModel().removeListSelectionListener(managerListener);
-        manager.removePropertyChangeListener (wlpc);
-        manager.removeVetoableChangeListener (wlvc);
-        manager = null;
+        if (manager != null) {
+            manager.removePropertyChangeListener (wlpc);
+            manager.removeVetoableChangeListener (wlvc);
+            manager = null;
+        }
     }
 
     /**
@@ -1187,6 +1210,7 @@ public class OutlineView extends JScrollPane {
         private int treePositionX = 0;
         private int[] rowWidths;
         private RequestProcessor.Task changeTask;
+        private boolean defaultActionAllowed = true;
         //private int maxRowWidth;
 
         public OutlineViewOutline(final OutlineModel mdl, PropertiesRowModel rowModel) {
@@ -1296,6 +1320,14 @@ public class OutlineView extends JScrollPane {
             return width;
         }
 
+        void setDefaultActionAllowed(boolean defaultActionAllowed) {
+            this.defaultActionAllowed = defaultActionAllowed;
+        }
+        
+        boolean isDefaultActionAllowed() {
+            return defaultActionAllowed;
+        }
+        
         /** Translate the tree column renderer */
         @Override
         public TableCellRenderer getCellRenderer(int row, int column) {
@@ -1331,7 +1363,7 @@ public class OutlineView extends JScrollPane {
                     // Default action.
                     Node node = Visualizer.findNode (o);
                     if (node != null) {
-                        if (node.isLeaf () && !node.canRename()) {
+                        if (defaultActionAllowed) {
                             Action a = TreeView.takeAction (node.getPreferredAction (), node);
 
                             if (a != null) {
