@@ -152,7 +152,7 @@ public class ResolveConflictsAction extends ContextAction {
      * @param treeConflicts set of files that will not be included in the returned list
      * @return
      */
-    private static List removeFolders (File[] files, Set<File> treeConflicts) {
+    private static List<File> removeFolders (File[] files, Set<File> treeConflicts) {
         LinkedList<File> filteredFiles = new LinkedList<File>();
         for (File file : files) {
             if (!treeConflicts.contains(file) && file.isFile()) {

@@ -50,10 +50,10 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.discovery.api.QtInfoProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
@@ -66,7 +66,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.util.CharSequences;
 
 /**
@@ -75,7 +78,8 @@ import org.openide.util.CharSequences;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider.class)
 public class UserOptionsProviderImpl implements UserOptionsProvider {
-    private static final Map<String,PkgConfig> pkgConfigs = new HashMap<String,PkgConfig>();
+    private final Map<String,PkgConfig> pkgConfigs = new HashMap<String,PkgConfig>();
+    private final Map<ExecutionEnvironment, Map<String,PackageConfiguration>> commandCache = new WeakHashMap<ExecutionEnvironment, Map<String,PackageConfiguration>>();
 
     public UserOptionsProviderImpl(){
     }
@@ -122,43 +126,31 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     private List<PackageConfiguration> getPackages(String s, MakeConfiguration conf){
         List<PackageConfiguration> res = new ArrayList<PackageConfiguration>();
         while(true){
-            int i = s.indexOf("`pkg-config "); // NOI18N
+            int i = s.indexOf('`'); // NOI18N
             if (i >= 0) {
-                String pkg = s.substring(i+12);
+                String pkg = s.substring(i+1);
                 int j = pkg.indexOf('`'); // NOI18N
                 if (j > 0) {
-                    pkg = pkg.substring(0,j).trim();
-                    s = s.substring(i+12+j+1);
-                    StringTokenizer st = new StringTokenizer(pkg);
-                    boolean readFlags = false;
-                    String findPkg = null;
-                    while(st.hasMoreTokens()) {
-                        String aPkg = st.nextToken();
-                        if (aPkg.equals("--cflags")) { //NOI18N
-                            readFlags = true;
-                            continue;
-                        }
-                        if (aPkg.startsWith("-")) { //NOI18N
-                            readFlags = false;
-                            continue;
-                        }
-                        findPkg = aPkg;
-                    }
-                    if (readFlags && findPkg != null) {
-                        PkgConfig configs = UserOptionsProviderImpl.getPkgConfig(conf);
-                        PackageConfiguration config = configs.getPkgConfig(findPkg);
+                    final String executable = pkg.substring(0, j);
+                    s = s.substring(i+executable.length()+2);
+                    if (executable.startsWith("pkg-config ")) { //NOI18N
+                        PackageConfiguration config = getPkgConfigOutput(conf, executable);
                         if (config != null){
                             res.add(config);
                         }
+                    } else {
+                        PackageConfiguration config = getCommandOutput(conf, executable);
+                        if (config != null) {
+                            res.add(config);
+                        }
                     }
-                    continue;
                 }
             }
             return res;
         }
     }
 
-    private static PkgConfig getPkgConfig(MakeConfiguration conf){
+    private PkgConfig getPkgConfig(MakeConfiguration conf){
         String hostKey = conf.getDevelopmentHost().getHostKey();
         PkgConfig pkg = null;
         synchronized(pkgConfigs){
@@ -211,5 +203,96 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             prefix = ""; // NOI18N
         }
         return prefix;
+    }
+
+    private PackageConfiguration getPkgConfigOutput(MakeConfiguration conf, String executable){
+        String pkg = executable.substring(11).trim();
+        StringTokenizer st = new StringTokenizer(pkg);
+        boolean readFlags = false;
+        String findPkg = null;
+        while(st.hasMoreTokens()) {
+            String aPkg = st.nextToken();
+            if (aPkg.equals("--cflags")) { //NOI18N
+                readFlags = true;
+                continue;
+            }
+            if (aPkg.startsWith("-")) { //NOI18N
+                readFlags = false;
+                continue;
+            }
+            findPkg = aPkg;
+        }
+        if (readFlags && findPkg != null) {
+            PkgConfig configs = getPkgConfig(conf);
+            PackageConfiguration config = configs.getPkgConfig(findPkg);
+            if (config != null){
+                return config;
+            }
+        }
+        return null;
+    }
+
+    private synchronized PackageConfiguration getCommandOutput(MakeConfiguration conf, String command) {
+        ExecutionEnvironment env = conf.getDevelopmentHost().getExecutionEnvironment();
+        Map<String, PackageConfiguration> map = commandCache.get(env);
+        if (map == null) {
+            map = new HashMap<String, PackageConfiguration>();
+            commandCache.put(env, map);
+        }
+        if (map.containsKey(command)) {
+            return map.get(command);
+        }
+        ArrayList<String> args = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(command," "); // NOI18N
+        String executable = null;
+        while(st.hasMoreTokens()) {
+            if (executable == null) {
+                executable = st.nextToken();
+            } else {
+                args.add(st.nextToken());
+            }
+        }
+        ExitStatus status = ProcessUtils.executeInDir(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(), env, executable, args.toArray(new String[args.size()]));
+        final String flags = status.output;
+        PackageConfiguration config = null;
+        if (flags != null) {
+            config = new MyPackageConfiguration(executable, flags);
+        }
+        map.put(command, config);
+        return config;
+    }
+
+    private static final class MyPackageConfiguration implements PackageConfiguration {
+        private final String executable;
+        private final List<String> macros = new ArrayList<String>();
+        private final List<String> paths = new ArrayList<String>();
+
+        private MyPackageConfiguration(String executable, String flags) {
+            this.executable = executable;
+            StringTokenizer st = new StringTokenizer(flags, " "); //NOI18N
+            while(st.hasMoreElements()) {
+                String t = st.nextToken();
+                if (t.startsWith("-I")) { //NOI18N
+                    paths.add(t.substring(2));
+                } else if (t.startsWith("-D")) { //NOI18N
+                    macros.add(t.substring(2));
+                }
+            }
+        }
+
+        @Override
+        public String getName() {
+            return executable;
+        }
+
+        @Override
+        public Collection<String> getIncludePaths() {
+            return paths;
+        }
+
+        @Override
+        public Collection<String> getMacros() {
+            return macros;
+        }
     }
 }

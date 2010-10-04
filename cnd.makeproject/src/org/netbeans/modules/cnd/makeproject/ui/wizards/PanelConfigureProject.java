@@ -66,6 +66,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     private String wizardACSD;
     private boolean initialized = false;
     private boolean showMakefileTextField;
+    private boolean finishPanel = true;
 
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
@@ -161,12 +162,16 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = false;
     }
 
+    public void setFinishPanel(boolean finishPanel) {
+        this.finishPanel = finishPanel;
+    }
+
     WizardDescriptor getWizardDescriptor(){
         return wizardDescriptor;
     }
 
     @Override
     public boolean isFinishPanel() {
-        return true;
+        return finishPanel;
     }
 }
