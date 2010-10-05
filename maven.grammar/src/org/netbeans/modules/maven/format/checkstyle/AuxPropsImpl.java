@@ -107,7 +107,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
         assert Thread.holdsLock(this);
-        return FileUtil.copyFile(fo, cacheDir(), "checkstyle-checker.xml");
+        return FileUtil.copyFile(fo, cacheDir(), "checkstyle-checker", "xml");
     }
 
     private FileObject copyToCacheDir(InputStream in) throws IOException {
