@@ -138,6 +138,13 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         getClient(repositoryLocation).remove(files == null ? new File[0] : files, cached, FileProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
+    protected File initSecondRepository () throws GitException {
+        File secondRepositoryFolder = new File(repositoryLocation.getParentFile(), "work_2"); //NOI18N
+        getClient(secondRepositoryFolder).init();
+        assertTrue(secondRepositoryFolder.isDirectory());
+        return secondRepositoryFolder;
+    }
+
     protected class StatusRefreshLogHandler extends Handler {
         private Set<File> filesToRefresh;
         private boolean filesRefreshed;

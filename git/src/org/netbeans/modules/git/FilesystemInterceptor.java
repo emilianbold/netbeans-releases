@@ -43,6 +43,7 @@
 package org.netbeans.modules.git;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,13 +52,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,7 +93,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public long refreshRecursively(File dir, long lastTimeStamp, List<? super File> children) {
+    public long refreshRecursively (File dir, long lastTimeStamp, List<? super File> children) {
         long retval = -1;
         if (GitUtils.DOT_GIT.equals(dir.getName())) {
             Git.STATUS_LOG.log(Level.FINER, "Interceptor.refreshRecursively: {0}", dir.getAbsolutePath()); //NOI18N
@@ -94,6 +101,174 @@ class FilesystemInterceptor extends VCSInterceptor {
             retval = gitFolderEventsHandler.refreshAdminFolder(dir);
         }
         return retval;
+    }
+
+    @Override
+    public boolean beforeCreate (final File file, boolean isDirectory) {
+        LOG.log(Level.FINE, "beforeCreate {0} - {1}", new Object[] { file, isDirectory }); //NOI18N
+        if (GitUtils.isPartOfGitMetadata(file)) return false;
+        if (!isDirectory && !file.exists()) {
+            FileInformation info = cache.getStatus(file);
+            if (info.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_INDEX)) {
+                LOG.log(Level.FINE, "beforeCreate(): Deleted in index: {0}", file); // NOI18N
+                Git git = Git.getInstance();
+                final File root = git.getRepositoryRoot(file);
+                if (root == null) return false;
+                // TODO reset in API needed
+//                try {
+//                    git.getClient(root).reset(repository, file, MIXED);
+//                } catch (GitException ex) {
+//                    LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
+//                }
+                LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void afterCreate (final File file) {
+        LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
+        // There is no point in refreshing the cache for ignored files.
+        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(file));
+        }
+    }
+
+    @Override
+    public boolean beforeDelete (File file) {
+        LOG.log(Level.FINE, "beforeDelete {0}", file); //NOI18N
+        if (file == null) return false;
+        if (GitUtils.isPartOfGitMetadata(file)) return false;
+
+        // do not handle delete for ignored files
+        return !cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED);
+    }
+
+    @Override
+    public void doDelete (File file) throws IOException {
+        LOG.log(Level.FINE, "doDelete {0}", file); //NOI18N
+        if (file == null) return;
+        Git git = Git.getInstance();
+        File root = git.getRepositoryRoot(file);
+        try {
+            git.getClient(root).remove(new File[] { file }, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+            if (root.equals(file) && file.exists()) {
+                root.delete();
+            }
+        } catch (GitException e) {
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_DeleteFailed", new Object[] { file, e.getLocalizedMessage() })); //NOI18N
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void afterDelete(final File file) {
+        LOG.log(Level.FINE, "afterDelete {0}", file); //NOI18N
+        if (file == null) return;
+        // we don't care about ignored files
+        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(file));
+        }
+    }
+
+    @Override
+    public boolean beforeMove(File from, File to) {
+        LOG.log(Level.FINE, "beforeMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (from == null || to == null || to.exists()) return true;
+        Git hg = Git.getInstance();
+        return hg.isManaged(from) && hg.isManaged(to);
+    }
+
+    @Override
+    public void doMove(final File from, final File to) throws IOException {
+        LOG.log(Level.FINE, "doMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (from == null || to == null || to.exists()) return;
+        
+        Git git = Git.getInstance();
+        File root = git.getRepositoryRoot(from);
+        File dstRoot = git.getRepositoryRoot(to);
+        if (root == null) return;
+        try {
+            if (root.equals(dstRoot)) {
+                git.getClient(root).rename(from, to, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+            } else {
+                boolean result = from.renameTo(to);
+                if (!result) {
+                    throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
+                }
+                git.getClient(root).remove(new File[] { from }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+            }
+        } catch (GitException e) {
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void afterMove(final File from, final File to) {
+        LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[] { from, to }); //NOI18N
+        if (from == null || to == null || !to.exists()) return;
+
+        // There is no point in refreshing the cache for ignored files.
+        if (!cache.getStatus(from).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(from));
+        }
+        // There is no point in refreshing the cache for ignored files.
+        if (!cache.getStatus(to).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(to));
+        }
+    }
+
+    @Override
+    public boolean beforeCopy (File from, File to) {
+        LOG.log(Level.FINE, "beforeCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (from == null || to == null || to.exists()) return true;
+        Git git = Git.getInstance();
+        return git.isManaged(from) && git.isManaged(to);
+    }
+
+    @Override
+    public void doCopy (final File from, final File to) throws IOException {
+        LOG.log(Level.FINE, "doCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (from == null || to == null || to.exists()) return;
+
+        Git git = Git.getInstance();
+        File root = git.getRepositoryRoot(from);
+        File dstRoot = git.getRepositoryRoot(to);
+
+        if (from.isDirectory()) {
+            FileUtils.copyDirFiles(from, to);
+        } else {
+            FileUtils.copyFile(from, to);
+        }
+
+        if (root == null) return;
+        try {
+            if (root.equals(dstRoot)) {
+                git.getClient(root).copyAfter(from, to, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+            }
+        } catch (GitException e) {
+            IOException ex = new IOException();
+            Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_CopyFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
+            ex.initCause(e);
+            throw ex;
+        }
+    }
+
+    @Override
+    public void afterCopy (final File from, final File to) {
+        LOG.log(Level.FINE, "afterCopy {0}->{1}", new Object[] { from, to }); //NOI18N
+        if (to == null) return;
+
+        // There is no point in refreshing the cache for ignored files.
+        if (!cache.getStatus(to).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(to));
+        }
     }
 
     /**
