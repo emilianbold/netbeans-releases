@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
@@ -110,6 +111,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
     protected void setUp() throws Exception {
         super.setUp();
         //MockServices.setServices(MakeProjectType.class);
+        MakeOptions.getInstance().setFixUnresolvedInclude(false);
         startupModel();
     }
 

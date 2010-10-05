@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
@@ -295,6 +296,53 @@ public class ProjectBridge {
             }
         }
         return folder;
+    }
+
+    public Map<String,Folder> prefferedFolders(){
+        Map<String,Folder> folders = new HashMap<String,Folder>();
+        for(Item item : getAllSources()){
+            String path = item.getAbsPath();
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
+                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+            }
+            int i = path.lastIndexOf('/');
+            if (i >= 0){
+                String folder = path.substring(0,i);
+                folders.put(folder,item.getFolder());
+            }
+        }
+        Folder root = makeConfigurationDescriptor.getLogicalFolders();
+        Set<Folder> roots = new HashSet<Folder>(root.getFolders());
+        roots.add(root);
+        while(true) {
+            Map<String,Folder> delta = new HashMap<String,Folder>();
+            for(Map.Entry<String,Folder> entry : folders.entrySet()) {
+                String path = entry.getKey();
+                Folder folder = entry.getValue();
+                Folder parent = folder.getParent();
+                if (parent != null && !roots.contains(parent)) {
+                    String name = folder.getName();
+                    int i = path.lastIndexOf('/');
+                    if (i >= 0){
+                        String pathName = path.substring(i+1);
+                        if (name.equals(pathName)) {
+                            String needCheck = path.substring(0,i);
+                            if (!folders.containsKey(needCheck)) {
+                                delta.put(needCheck, parent);
+                            }
+                        }
+                    }
+                }
+            }
+            if (delta.isEmpty()) {
+                break;
+            }
+            folders.putAll(delta);
+        }
+        return folders;
     }
     
     public void save(){
