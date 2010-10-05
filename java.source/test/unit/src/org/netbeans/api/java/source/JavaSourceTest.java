@@ -1954,17 +1954,29 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void query(
+                Collection<? super T> result,
+                ResultConvertor<? super org.apache.lucene.document.Document, T> convertor,
+                FieldSelector selector,
+                Query... queries) throws IOException, InterruptedException {
             await();
         }
         
         @Override
-        public <T> void queryTerms(Term start, ResultConvertor<Term, T> filter, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void queryTerms(
+                Collection<? super T> result,
+                Term start,
+                ResultConvertor<Term, T> filter) throws IOException, InterruptedException {
             await ();
         }
         
         @Override
-        public <S, T> void queryDocTerms(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, ResultConvertor<? super Term, S> termConvertor, Map<? super T, Set<S>> result) throws IOException, InterruptedException {
+        public <S, T> void queryDocTerms(
+                Map<? super T, Set<S>> result,
+                ResultConvertor<? super org.apache.lucene.document.Document, T> convertor,
+                ResultConvertor<? super Term, S> termConvertor,
+                FieldSelector selector,
+                Query... queries) throws IOException, InterruptedException {
             await();
         }
 
