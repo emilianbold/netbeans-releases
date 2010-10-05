@@ -272,6 +272,7 @@ public class DoxygenDocumentation {
                     break OUTER;
                 case SEMICOLON:
                 case RBRACE:
+                case PREPROCESSOR_DIRECTIVE:
                     break OUTER;
                 default:
                     continue;
