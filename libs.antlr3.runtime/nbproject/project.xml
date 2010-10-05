@@ -46,49 +46,17 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.cnd.antlr3</code-name-base>
+            <code-name-base>org.netbeans.modules.libs.antlr3.runtime</code-name-base>
             <module-dependencies/>
             <public-packages>
-                <package>antlr</package>
-                <package>antlr.ASdebug</package>
-                <package>antlr.actions.cpp</package>
-                <package>antlr.actions.csharp</package>
-                <package>antlr.actions.java</package>
-                <package>antlr.actions.python</package>
-                <package>antlr.build</package>
-                <package>antlr.collections</package>
-                <package>antlr.collections.impl</package>
-                <package>antlr.debug</package>
-                <package>antlr.debug.misc</package>
-                <package>antlr.preprocessor</package>
-                <package>org.antlr</package>
-                <package>org.antlr.analysis</package>
-                <package>org.antlr.codegen</package>
-                <package>org.antlr.grammar.v2</package>
-                <package>org.antlr.grammar.v3</package>
-                <package>org.antlr.gunit</package>
-                <package>org.antlr.misc</package>
                 <package>org.antlr.runtime</package>
                 <package>org.antlr.runtime.debug</package>
                 <package>org.antlr.runtime.misc</package>
                 <package>org.antlr.runtime.tree</package>
-                <package>org.antlr.stringtemplate</package>
-                <package>org.antlr.stringtemplate.language</package>
-                <package>org.antlr.stringtemplate.misc</package>
-                <package>org.antlr.stringtemplate.test</package>
-                <package>org.antlr.tool</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/antlr-runtime-3.1.3.jar</runtime-relative-path>
                 <binary-origin>external/antlr-runtime-3.1.3.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/antlr-3.1.3.jar</runtime-relative-path>
-                <binary-origin>external/antlr-3.1.3.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/stringtemplate-3.2.jar</runtime-relative-path>
-                <binary-origin>external/stringtemplate-3.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
 
          <!-- Expression evaluator -->
         <property name="antlr3.evaluator.output.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser/generated"/>
-        <property name="antlr3.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr3.jar"/>
+        <property name="antlr3.jar" location="${cluster}/../ide/modules/org-netbeans-modules-libs-antlr3.jar"/>
         <property name="antlr3.evaluator.grammar.dir" location="src/org/netbeans/modules/cnd/modelimpl/impl/services/evaluator/parser"/>
 
          <!-- Open Fortran Parser -->
