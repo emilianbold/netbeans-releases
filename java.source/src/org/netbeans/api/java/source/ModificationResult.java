@@ -367,16 +367,19 @@ public final class ModificationResult {
                     l = new DocumentListener() {
                         @Override
                         public void insertUpdate(DocumentEvent e) {
+                            DocumentUtilities.addEventPropertyStorage(e);
                             DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
                         }
 
                         @Override
                         public void removeUpdate(DocumentEvent e) {
+                            DocumentUtilities.addEventPropertyStorage(e);
                             DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
                         }
 
                         @Override
                         public void changedUpdate(DocumentEvent e) {
+                            DocumentUtilities.addEventPropertyStorage(e);
                             DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
                         }
                     };
