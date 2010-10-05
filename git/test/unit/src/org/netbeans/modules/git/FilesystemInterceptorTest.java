@@ -553,7 +553,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fromFile.exists());
         assertTrue(toFile.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(fromFile, info.getOldFile());
     }
 
     public void testMoveVersionedFile_DO() throws Exception {
@@ -575,7 +578,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(toFile.exists());
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(fromFile, info.getOldFile());
     }
 
     public void testMoveVersionedFile2Repos_DO() throws Exception {
@@ -910,7 +916,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(toFile.exists());
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        // sadly does not work in jgit
+        assertFalse(info.isCopied());
     }
 
     public void testCopyUnversionedFile_DO() throws Exception {
@@ -965,7 +974,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         // init
         File fromFile = new File(repositoryLocation, "file");
         fromFile.createNewFile();
-        File toFolder = new File(repositoryLocation, "toFolder");
+        File toFolder = new File(repositoryLocation.getParentFile(), "toFolder");
         toFolder.mkdirs();
 
         File toFile = new File(toFolder, fromFile.getName());
@@ -974,17 +983,16 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         add(fromFile);
 
         // copy
-        h.setFilesToRefresh(Collections.singleton(toFile));
         copyDO(fromFile, toFile);
-        assertTrue(h.waitForFilesToRefresh());
         getCache().refreshAllRoots(Collections.singleton(fromFile));
+        getCache().refreshAllRoots(Collections.singleton(toFile));
 
         // test
         assertTrue(fromFile.exists());
         assertTrue(toFile.exists());
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), getCache().getStatus(toFile).getStatus());
     }
 
     public void testCopyVersionedFile2UnversionedFolder_DO() throws Exception {
@@ -1871,7 +1879,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fileA).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileB).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileC).getStatus());
+        FileInformation info = getCache().getStatus(fileC);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(fileA, info.getOldFile());
     }
 
     public void testRenameA2B2C2A_DO() throws Exception {
@@ -2088,7 +2099,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         // reset needed, should be uptodate
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileB).getStatus());
+        FileInformation info = getCache().getStatus(fileB);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(fileA, info.getOldFile());
     }
 
     public void testMoveA2B_CreateA_DO() throws Exception {
@@ -2116,7 +2130,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         // reset needed, should be uptodate
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileB).getStatus());
+        FileInformation info = getCache().getStatus(fileB);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(fileA, info.getOldFile());
     }
 
     public void testDeleteA_RenameB2A_DO_129805() throws Exception {
@@ -2164,7 +2181,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(file).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(file, info.getOldFile());
     }
 
     public void testMoveVersionedFolder_DO() throws Exception {
@@ -2190,7 +2210,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(file).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertTrue(info.isRenamed());
+        assertEquals(file, info.getOldFile());
     }
 
     public void testRenameFileTree_DO() throws Exception {
@@ -2234,10 +2257,22 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         File toFile22 = new File(toFolder2, "file22");
         assertTrue(toFile22.exists());
 
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile11).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile12).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile21).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile22).getStatus());
+        FileInformation info11 = getCache().getStatus(toFile11);
+        FileInformation info12 = getCache().getStatus(toFile12);
+        FileInformation info21 = getCache().getStatus(toFile21);
+        FileInformation info22 = getCache().getStatus(toFile22);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info11.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info12.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info21.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info22.getStatus());
+        assertEquals(fromFile11, info11.getOldFile());
+        assertEquals(fromFile12, info12.getOldFile());
+        assertEquals(fromFile21, info21.getOldFile());
+        assertEquals(fromFile22, info22.getOldFile());
+        assertTrue(info11.isRenamed());
+        assertTrue(info12.isRenamed());
+        assertTrue(info21.isRenamed());
+        assertTrue(info22.isRenamed());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile11).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile12).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile21).getStatus());
@@ -2290,10 +2325,22 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         File toFile22 = new File(toFolder2, "file22");
         assertTrue(toFile22.exists());
 
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile11).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile12).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile21).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile22).getStatus());
+        FileInformation info11 = getCache().getStatus(toFile11);
+        FileInformation info12 = getCache().getStatus(toFile12);
+        FileInformation info21 = getCache().getStatus(toFile21);
+        FileInformation info22 = getCache().getStatus(toFile22);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info11.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info12.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info21.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info22.getStatus());
+        assertEquals(fromFile11, info11.getOldFile());
+        assertEquals(fromFile12, info12.getOldFile());
+        assertEquals(fromFile21, info21.getOldFile());
+        assertEquals(fromFile22, info22.getOldFile());
+        assertTrue(info11.isRenamed());
+        assertTrue(info12.isRenamed());
+        assertTrue(info21.isRenamed());
+        assertTrue(info22.isRenamed());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile11).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile12).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile21).getStatus());
@@ -2318,7 +2365,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(toFile.exists());
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fromFile, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testMoveVersionedFile_FO() throws Exception {
@@ -2341,7 +2391,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(toFile.exists());
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fromFile, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testRenameUnversionedFile_FO() throws Exception {
@@ -2577,7 +2630,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fileA).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileB).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileC).getStatus());
+        FileInformation info = getCache().getStatus(fileC);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fileA, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testMoveA2B2C_FO() throws Exception {
@@ -2607,7 +2663,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fileA).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileB).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileC).getStatus());
+        FileInformation info = getCache().getStatus(fileC);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fileA, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testRenameA2B2C2A_FO() throws Exception {
@@ -2692,7 +2751,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         //should be uptodate
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileB).getStatus());
+        FileInformation info = getCache().getStatus(fileB);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fileA, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testMoveA2B_CreateA_FO() throws Exception {
@@ -2722,7 +2784,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         //should be uptodate
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fileB).getStatus());
+        FileInformation info = getCache().getStatus(fileB);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fileA, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testRenameVersionedFolder_FO() throws Exception {
@@ -2746,7 +2811,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fromFile, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testMoveVersionedFolder_FO() throws Exception {
@@ -2772,7 +2840,10 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fromFolder.exists());
         assertTrue(toFolder.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
+        FileInformation info = getCache().getStatus(toFile);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
+        assertEquals(fromFile, info.getOldFile());
+        assertTrue(info.isRenamed());
     }
 
     public void testRenameFileTree_FO() throws Exception {
@@ -2816,10 +2887,22 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         File toFile22 = new File(toFolder2, "file22");
         assertTrue(toFile22.exists());
 
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile11).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile12).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile21).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile22).getStatus());
+        FileInformation info11 = getCache().getStatus(toFile11);
+        FileInformation info12 = getCache().getStatus(toFile12);
+        FileInformation info21 = getCache().getStatus(toFile21);
+        FileInformation info22 = getCache().getStatus(toFile22);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info11.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info12.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info21.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info22.getStatus());
+        assertEquals(fromFile11, info11.getOldFile());
+        assertEquals(fromFile12, info12.getOldFile());
+        assertEquals(fromFile21, info21.getOldFile());
+        assertEquals(fromFile22, info22.getOldFile());
+        assertTrue(info11.isRenamed());
+        assertTrue(info12.isRenamed());
+        assertTrue(info21.isRenamed());
+        assertTrue(info22.isRenamed());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile11).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile12).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile21).getStatus());
@@ -2872,10 +2955,22 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         File toFile22 = new File(toFolder2, "file22");
         assertTrue(toFile22.exists());
 
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile11).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile12).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile21).getStatus());
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fromFile22).getStatus());
+        FileInformation info11 = getCache().getStatus(toFile11);
+        FileInformation info12 = getCache().getStatus(toFile12);
+        FileInformation info21 = getCache().getStatus(toFile21);
+        FileInformation info22 = getCache().getStatus(toFile22);
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info11.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info12.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info21.getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info22.getStatus());
+        assertEquals(fromFile11, info11.getOldFile());
+        assertEquals(fromFile12, info12.getOldFile());
+        assertEquals(fromFile21, info21.getOldFile());
+        assertEquals(fromFile22, info22.getOldFile());
+        assertTrue(info11.isRenamed());
+        assertTrue(info12.isRenamed());
+        assertTrue(info21.isRenamed());
+        assertTrue(info22.isRenamed());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile11).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile12).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile21).getStatus());

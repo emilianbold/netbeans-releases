@@ -48,60 +48,30 @@ import java.io.File;
  *
  * @author ondra
  */
-public class GitStatus {
-    private final Status statusHeadWC;
+public interface GitStatus {
     public enum Status {
         STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
     }
 
-    private final boolean tracked;
-    private final String relativePath;
-    private final File correspondingFile;
-    private final Status statusHeadIndex;
-    private final Status statusIndexWC;
-    private final boolean conflict;
-    private final boolean isFolder;
+    File getFile();
 
-    public GitStatus (boolean tracked, String relativePath, File correspondingFile, Status statusHeadIndex, Status statusIndexWC, Status statusHeadWC, boolean conflict, boolean isFolder) {
-        this.tracked = tracked;
-        this.relativePath = relativePath;
-        this.correspondingFile = correspondingFile;
-        this.statusHeadIndex = statusHeadIndex;
-        this.statusIndexWC = statusIndexWC;
-        this.statusHeadWC = statusHeadWC;
-        this.conflict = conflict;
-        this.isFolder = isFolder;
-    }
+    String getRelativePath();
 
-    public File getFile() {
-        return correspondingFile;
-    }
+    Status getStatusHeadIndex();
 
-    public String getRelativePath() {
-        return relativePath;
-    }
+    Status getStatusIndexWC();
 
-    public Status getStatusHeadIndex() {
-        return statusHeadIndex;
-    }
+    Status getStatusHeadWC();
 
-    public Status getStatusIndexWC() {
-        return statusIndexWC;
-    }
+    boolean isTracked();
 
-    public Status getStatusHeadWC() {
-        return statusHeadWC;
-    }
+    boolean isConflict();
 
-    public boolean isTracked() {
-        return tracked;
-    }
+    boolean isFolder ();
 
-    public boolean isConflict() {
-        return conflict;
-    }
+    boolean isCopied ();
 
-    public boolean isFolder () {
-        return isFolder;
-    }
+    boolean isRenamed ();
+
+    File getOldPath ();
 }

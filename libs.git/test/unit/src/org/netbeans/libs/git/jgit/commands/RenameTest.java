@@ -86,7 +86,7 @@ public class RenameTest extends AbstractGitTestCase {
             assertEquals("folder/subFolder lies under folder", ex.getMessage());
         }
         try {
-            client.copyAfter(target, folder, m);
+            client.rename(target, folder, false, m);
             fail();
         } catch (GitException ex) {
             assertEquals("folder/subFolder lies under folder", ex.getMessage());
@@ -173,6 +173,7 @@ public class RenameTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed());
     }
 
     public void testRenameFileAfter () throws Exception {
@@ -193,6 +194,7 @@ public class RenameTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed());
     }
 
     public void testMoveFileToFolder () throws Exception {
@@ -212,6 +214,7 @@ public class RenameTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed());
 
         write(file, "aaa");
         add(file);
@@ -228,6 +231,8 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed() && statuses.get(target2).isCopied()
+                || statuses.get(target2).isRenamed() && statuses.get(target).isCopied());
     }
 
     public void testMoveFileToFolderAfter () throws Exception {
@@ -249,6 +254,7 @@ public class RenameTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed());
 
         write(file, "aaa");
         add(file);
@@ -266,6 +272,8 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed() && statuses.get(target2).isCopied()
+                || statuses.get(target2).isRenamed() && statuses.get(target).isCopied());
     }
 
     public void testMoveFileToExisting () throws Exception {
@@ -285,6 +293,7 @@ public class RenameTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(target).isRenamed());
 
         write(file, "aaa");
         write(target, "bbb");
@@ -302,6 +311,9 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, target2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        // aaa -> bbb is a 0% match
+        assertFalse(statuses.get(target).isRenamed());
+        assertFalse(statuses.get(target).isCopied());
     }
 
     public void testMoveTree () throws Exception {
@@ -346,6 +358,10 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, moved2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, moved11, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, moved21, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(moved1).isRenamed());
+        assertTrue(statuses.get(moved11).isRenamed());
+        // file21 was not committed
+        assertFalse(statuses.get(moved21).isRenamed());
     }
 
     public void testMoveTreeAfter () throws Exception {
@@ -391,5 +407,9 @@ public class RenameTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, moved2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, moved11, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, moved21, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(statuses.get(moved1).isRenamed());
+        assertTrue(statuses.get(moved11).isRenamed());
+        // file21 was not committed
+        assertFalse(statuses.get(moved21).isRenamed());
     }
 }

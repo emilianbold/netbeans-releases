@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.git;
 
+import java.io.File;
 import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.libs.git.GitStatus;
@@ -53,15 +54,22 @@ public class FileInformation {
     private final EnumSet<Status> status;
     private boolean seenInUI;
     private final boolean directory;
+    private final boolean renamed, copied;
+    private final File oldFile;
 
     FileInformation (EnumSet<Status> status, boolean isDirectory) {
         this.status = status;
         this.directory = isDirectory;
+        renamed = copied = false;
+        oldFile = null;
     }
 
     FileInformation (GitStatus status) {
         directory = status.isFolder();
         seenInUI = true;
+        renamed = status.isRenamed();
+        copied = status.isCopied();
+        oldFile = status.getOldPath();
         if (!status.isTracked()) {
             this.status = GitStatus.Status.STATUS_IGNORED.equals(status.getStatusIndexWC()) ? EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)
                     : EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
@@ -162,6 +170,18 @@ public class FileInformation {
     public String getStatusText () {
         // TODO implement
         return "Tady ale fakt netusim";
+    }
+
+    public boolean isRenamed () {
+        return renamed;
+    }
+
+    public boolean isCopied () {
+        return copied;
+    }
+
+    public File getOldFile () {
+        return oldFile;
     }
 
     public static enum Status {

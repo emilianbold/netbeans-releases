@@ -61,6 +61,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;

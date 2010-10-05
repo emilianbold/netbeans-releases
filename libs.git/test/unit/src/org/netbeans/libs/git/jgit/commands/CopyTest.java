@@ -109,6 +109,8 @@ public class CopyTest extends AbstractGitTestCase {
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, target, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        // sadly, rename detection works only when the source is deleted
+        assertFalse(statuses.get(target).isCopied());
     }
 
     public void testCopyFileToFolder () throws Exception {

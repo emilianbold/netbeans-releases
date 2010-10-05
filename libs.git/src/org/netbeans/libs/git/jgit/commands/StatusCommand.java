@@ -45,8 +45,14 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
@@ -63,6 +69,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.jgit.JGitStatus;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
@@ -88,8 +95,10 @@ public class StatusCommand extends GitCommand {
         try {
             DirCache cache = repository.readDirCache();
             try {
-                TreeWalk treeWalk = new TreeWalk(repository);
+                String workTreePath = repository.getWorkTree().getAbsolutePath();
                 Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
+                Map<String, DiffEntry> renames = detectRenames(repository, cache, pathFilters);
+                TreeWalk treeWalk = new TreeWalk(repository);
                 if (!pathFilters.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.create(pathFilters));
                 }
@@ -110,7 +119,7 @@ public class StatusCommand extends GitCommand {
                 final int T_WORKSPACE = 2;
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
-                    File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);
+                    File file = new File(workTreePath + File.separator + path);
                     int mHead = treeWalk.getRawMode(T_HEAD);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
                     int mWorking = treeWalk.getRawMode(T_WORKSPACE);
@@ -165,7 +174,7 @@ public class StatusCommand extends GitCommand {
                     if (indexEntry != null) {
                         inConflict = indexEntry.getStage() > 0;
                     }
-                    GitStatus status = new GitStatus(tracked, path, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict, isFolder);
+                    GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict, isFolder, renames.get(path));
                     statuses.put(file, status);
                     monitor.notifyStatus(status);
                 }
@@ -181,6 +190,56 @@ public class StatusCommand extends GitCommand {
 
     public Map<File, GitStatus> getStatuses() {
         return statuses;
+    }
+
+    private Map<String, DiffEntry> detectRenames (Repository repository, DirCache cache, Collection<PathFilter> filters) {
+        List<DiffEntry> entries;
+        TreeWalk treeWalk = new TreeWalk(repository);
+        try {
+            treeWalk.setRecursive(true);
+            treeWalk.reset();
+            ObjectId headId = repository.resolve(Constants.HEAD);
+            if (headId != null) {
+                treeWalk.addTree(new RevWalk(repository).parseTree(headId));
+            } else {
+                treeWalk.addTree(new EmptyTreeIterator());
+            }
+            // Index
+            treeWalk.addTree(new DirCacheIterator(cache));
+            entries = DiffEntry.scan(treeWalk);
+            // remove adds from outside of the scanned subtree
+            if (!filters.isEmpty()) {
+                for (ListIterator<DiffEntry> it = entries.listIterator(); it.hasNext();) {
+                    DiffEntry e = it.next();
+                    if (e.getChangeType().equals(DiffEntry.ChangeType.ADD)) {
+                        boolean contained = false;
+                        for (PathFilter f : filters) {
+                            if (e.getNewPath().startsWith(f.getPath())) {
+                                contained = true;
+                                break;
+                            }
+                        }
+                        if (!contained) {
+                            it.remove();
+                        }
+                    }
+                }
+            }
+            RenameDetector d = new RenameDetector(repository);
+            d.addAll(entries);
+            entries = d.compute();
+        } catch (IOException ex) {
+            entries = Collections.<DiffEntry>emptyList();
+        } finally {
+            treeWalk.release();
+        }
+        Map<String, DiffEntry> renames = new HashMap<String, DiffEntry>();
+        for (DiffEntry e : entries) {
+            if (e.getChangeType().equals(DiffEntry.ChangeType.COPY) || e.getChangeType().equals(DiffEntry.ChangeType.RENAME)) {
+                renames.put(e.getNewPath(), e);
+            }
+        }
+        return renames;
     }
 
 }
