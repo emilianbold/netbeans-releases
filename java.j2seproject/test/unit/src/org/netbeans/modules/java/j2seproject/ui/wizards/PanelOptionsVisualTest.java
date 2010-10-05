@@ -68,6 +68,7 @@ public class PanelOptionsVisualTest extends NbTestCase {
         assertEquals("testproject.TestProject", PanelOptionsVisual.createMainClassName("TestProject"));   //NOI18N
         assertEquals("pkg001.app.App", PanelOptionsVisual.createMainClassName("001 App"));   //NOI18N
         assertEquals("Main", PanelOptionsVisual.createMainClassName(""));   //NOI18N
+        assertEquals("project.Project",PanelOptionsVisual.createMainClassName(" Project")); //NOI18N
     }
 
 }

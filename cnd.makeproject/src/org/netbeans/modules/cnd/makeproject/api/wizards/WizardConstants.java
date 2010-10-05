@@ -51,7 +51,8 @@ public class WizardConstants {
     private WizardConstants() {
     }
 
-    public static final String PROPERTY_MAKEFILE_NAME = "makefileName"; // String // NOI18N
+    public static final String PROPERTY_USER_MAKEFILE_PATH = "makefileName"; // String // NOI18N
+    public static final String PROPERTY_GENERATED_MAKEFILE_NAME = "generatedMakefileName"; // String // NOI18N
     public static final String PROPERTY_NAME = "name"; // String // NOI18N
     public static final String PROPERTY_PROJECT_FOLDER = "projdir"; // File // NOI18N
     public static final String PROPERTY_SET_AS_MAIN = "setAsMain"; // Boolean // NOI18N
@@ -63,7 +64,24 @@ public class WizardConstants {
     public static final String PROPERTY_SOURCE_FOLDERS = "sourceFolders"; // Iterator<FolderEntry> // NOI18N
     public static final String PROPERTY_SOURCE_FOLDERS_LIST = "sourceFoldersList"; // ArrayList<FolderEntry> // NOI18N
     public static final String PROPERTY_SOURCE_FOLDERS_FILTER = "sourceFoldersFilter"; // String // NOI18N
-    
 
-
+    public static final String PROPERTY_TOOLS_CACHE_MANAGER = "ToolsCacheManager"; // String // NOI18N
+    public static final String PROPERTY_DISPLAY_NAME = "displayName"; // String // NOI18N
+    public static final String PROPERTY_NATIVE_PROJ_DIR = "nativeProjDir"; // String // NOI18N
+    public static final String PROPERTY_NATIVE_PROJ_FO = "nativeProjFO"; // String // NOI18N
+    public static final String PROPERTY_BUILD_COMMAND = "buildCommandTextField"; // String // NOI18N
+    public static final String PROPERTY_CLEAN_COMMAND = "cleanCommandTextField"; // String // NOI18N
+    public static final String PROPERTY_BUILD_RESULT = "outputTextField"; // String // NOI18N
+    public static final String PROPERTY_INCLUDES = "includeTextField"; // String // NOI18N
+    public static final String PROPERTY_MACROS = "macroTextField"; // String // NOI18N
+    public static final String PROPERTY_CONFIGURE_SCRIPT_PATH = "configureName"; // String // NOI18N
+    public static final String PROPERTY_CONFIGURE_SCRIPT_ARGS = "configureArguments"; // String // NOI18N
+    public static final String PROPERTY_RUN_CONFIGURE = "runConfigure"; // String // NOI18N
+    public static final String PROPERTY_CONSOLIDATION_LEVEL = "consolidationLevel"; // String // NOI18N
+    public static final String PROPERTY_TEST_FOLDERS = "testFolders"; // String // NOI18N
+    public static final String PROPERTY_RUN_REBUILD = "makeProject"; // String // NOI18N
+    public static final String PROPERTY_MANUAL_CODE_ASSISTANCE = "manualCA"; // String // NOI18N
+    public static final String PROPERTY_WORKING_DIR = "buildCommandWorkingDirTextField"; // String // NOI18N
+    public static final String PROPERTY_SOURCE_FOLDER_PATH = "sourceFolderPath"; // String // NOI18N
+    public static final String PROPERTY_SIMPLE_MODE_FOLDER = "simpleModeFolder"; // String // NOI18N
 }

@@ -53,11 +53,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -65,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -75,6 +78,7 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applic
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryExtension;
 import org.netbeans.modules.cnd.discovery.wizard.DiscoveryWizardDescriptor;
+import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
@@ -87,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -149,8 +154,8 @@ public class ImportExecutable implements PropertyChangeListener {
 
 
     private void createProject() {
-        String binaryPath = (String) map.get("outputTextField"); // NOI18N
-        sourcesPath = (String) map.get("sourceFolderPath"); // NOI18N
+        String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
+        sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
         File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
         String baseDir;
@@ -168,7 +173,7 @@ public class ImportExecutable implements PropertyChangeListener {
             baseDir = projectParentFolder + File.separator + projectName;
             projectFolder = new File(baseDir);
         }
-        String hostUID = (String) map.get("hostUID"); // NOI18N
+        String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         MakeConfiguration conf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalize(baseDir),  sourcesPath, 
@@ -295,6 +300,9 @@ public class ImportExecutable implements PropertyChangeListener {
 
                     }
                     switchModel(true, lastSelectedProject);
+                    if (createProjectMode) {
+                        postModelDiscovery(lastSelectedProject);
+                    }
                     if (open || cd != null) {
                         if (open) {
                             onProjectParsingFinished("main", lastSelectedProject); // NOI18N
@@ -530,6 +538,71 @@ public class ImportExecutable implements PropertyChangeListener {
                 ((ModelImpl) model).enableProject(np);
             } else {
                 ((ModelImpl) model).disableProject(np);
+            }
+        }
+    }
+
+    private static void postModelDiscovery(final Project makeProject) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final CsmProject p = model.getProject(np);
+            if (p == null) {
+                return;
+            }
+            CsmProgressListener listener = new CsmProgressAdapter() {
+
+                @Override
+                public void projectParsingFinished(CsmProject project) {
+                    if (project.equals(p)) {
+                        try {
+                            listeners.remove(this);
+                            CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
+                            fixExcludedHeaderFiles(makeProject);
+                        } catch (Throwable ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            };
+            CsmListeners.getDefault().addProgressListener(listener);
+            listeners.add(listener);
+        }
+    }
+
+    private static void fixExcludedHeaderFiles(Project makeProject) {
+        CsmModel model = CsmModelAccessor.getModel();
+        if (model instanceof ModelImpl && makeProject != null) {
+            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
+            final CsmProject p = model.getProject(np);
+            if (p != null && np != null) {
+                Set<String> needCheck = new HashSet<String>();
+                Map<String,Item> normalizedItems = ImportProject.initNormalizedNames(makeProject);
+                for (CsmFile file : p.getAllFiles()) {
+                    if (file instanceof FileImpl) {
+                        FileImpl impl = (FileImpl) file;
+                        NativeFileItem item = impl.getNativeFileItem();
+                        if (item == null) {
+                            String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                            item = normalizedItems.get(path);
+                        }
+                        if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
+                            if (item instanceof Item) {
+                                ProjectBridge.setExclude((Item) item, false);
+                                if (file.isHeaderFile()) {
+                                    needCheck.add(item.getFile().getAbsolutePath());
+                                }
+                            }
+                        }
+                    }
+                }
+                if (needCheck.size() > 0) {
+                    ProjectBridge bridge = new ProjectBridge(makeProject);
+                    if (bridge.isValid()) {
+                        bridge.checkForNewExtensions(needCheck);
+                    }
+                }
+                saveMakeConfigurationDescriptor(makeProject);
             }
         }
     }

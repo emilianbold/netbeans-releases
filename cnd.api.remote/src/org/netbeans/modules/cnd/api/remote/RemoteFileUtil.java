@@ -44,12 +44,16 @@ package org.netbeans.modules.cnd.api.remote;
 
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -58,6 +62,16 @@ import org.openide.filesystems.FileUtil;
  * @author Vladimir Kvashin
  */
 public class RemoteFileUtil {
+
+    public static boolean fileExists(String absolutePath, ExecutionEnvironment executionEnvironment) {
+        FileObject fo = getFileObject(absolutePath, executionEnvironment);
+        return (fo != null && fo.isValid());
+    }
+
+    public static boolean isDirectory(String absolutePath, ExecutionEnvironment executionEnvironment) {
+        FileObject fo = getFileObject(absolutePath, executionEnvironment);
+        return (fo != null && fo.isFolder());
+    }
 
     private RemoteFileUtil() {}
     
@@ -78,7 +92,7 @@ public class RemoteFileUtil {
             CndUtils.assertTrueInConsole(false, "Warning: path is not normalized: " + absolutePath);
         }
         if (execEnv.isRemote()) {
-            return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
+            return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
         } else {
             return FileUtil.toFileObject(new File(normalizedPath));
         }
@@ -94,7 +108,7 @@ public class RemoteFileUtil {
             if (remoteProject != null) {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
                     ExecutionEnvironment execEnv = remoteProject.getRemoteFileSystemHost();
-                    return FileSystemProvider.getFileSystem(execEnv, normalizedPath).findResource(normalizedPath);
+                    return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
                 }
             }
         }
@@ -109,5 +123,36 @@ public class RemoteFileUtil {
         //XXX:fullRemote
         File file = FileUtil.toFile(fo);
         return (file == null) ? fo.getPath() : file.getCanonicalPath();
+    }
+
+    public static JFileChooser createFileChooser(RemoteProject.Mode remoteMode, ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
+        return createFileChooser(
+                (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) ? execEnv : ExecutionEnvironmentFactory.getLocal(),
+                titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+    public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
+        JFileChooser fileChooser;
+        if (execEnv.isLocal()) {
+            fileChooser = new FileChooser(
+                    titleText,
+                    buttonText,
+                    mode,
+                    null,
+                    initialPath,
+                    false);
+        } else {            
+            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
+            fileChooser.setApproveButtonText(buttonText);
+            fileChooser.setDialogTitle(titleText);
+            fileChooser.setFileSelectionMode(mode);
+        }
+        return fileChooser;
     }
 }

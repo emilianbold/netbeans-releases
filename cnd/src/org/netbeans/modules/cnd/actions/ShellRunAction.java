@@ -142,6 +142,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
     private static NativeExecutionService prepare(Node node, final ExecutionListener listener, final Writer outputListener, Project project, InputOutput inputOutput) {
         ShellExecSupport bes = node.getCookie(ShellExecSupport.class);
         if (bes == null) {
+            trace("Node "+node+" does not have ShellExecSupport"); //NOI18N
             return null;
         }
         //Save file
@@ -165,6 +166,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {
+            trace("Run folder folder is null"); //NOI18N
             return null;
         }
         shellFilePath = convertToRemoveSeparatorsIfNeeded(execEnv, shellFilePath);
@@ -193,7 +195,6 @@ public class ShellRunAction extends AbstractExecutorRunAction {
             argsFlat.append(args[i]);
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
-        traceExecutable(shellCommand, buildDir, argsFlat, envMap);
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("RUN_LABEL", node.getName()) : getString("RUN_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
@@ -209,9 +210,11 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
+                trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
             }
         }
+        traceExecutable(shellCommand, buildDir, argsFlat, envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
 

@@ -360,7 +360,7 @@ public class DiscoveryProjectGenerator {
                 i++;
             }
         }
-        if (root.size() > 1) {
+        if (root != null && root.size() > 1) {
             StringBuilder buf = new StringBuilder();
             for(String s : root) {
                 buf.append(s);

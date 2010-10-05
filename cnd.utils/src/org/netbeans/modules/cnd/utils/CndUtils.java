@@ -142,7 +142,7 @@ public class CndUtils {
 
     private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
@@ -177,6 +177,30 @@ public class CndUtils {
 
     public static Exception getLastAssertion() {
         return lastAssertion;
+    }
+
+    public static void assertAbsolutePathInConsole(String path) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
+            }
+        }
+    }
+
+    public static void assertAbsolutePathInConsole(String path, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + path);
+            }
+        }
+    }
+
+    public static void assertAbsoluteFileInConsole(File file, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! file.isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + file.getPath());
+            }
+        }
     }
 
     public static void assertNonUiThread() {

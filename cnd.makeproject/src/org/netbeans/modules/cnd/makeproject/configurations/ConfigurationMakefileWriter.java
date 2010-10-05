@@ -789,7 +789,7 @@ public class ConfigurationMakefileWriter {
                     } else {
                         if(file.endsWith(".pc")) {  // NOI18N
                             // Prototype
-                            command = "Pro*C Preprocessor";
+                            command = "Pro*C Preprocessor"; // NOI18N
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                             command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                             target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
@@ -892,7 +892,7 @@ public class ConfigurationMakefileWriter {
                             } else {
                                 if(file.endsWith(".pc")) {  // NOI18N
                                     // Prototype
-                                    command = "Pro*C Preprocessor";
+                                    command = "Pro*C Preprocessor"; // NOI18N
                                     MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                                     command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                                     target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
@@ -1003,7 +1003,7 @@ public class ConfigurationMakefileWriter {
                     } else {
                         if(file.endsWith(".pc")) {  // NOI18N
                             // Prototype
-                            command = "Pro*C Preprocessor";
+                            command = "Pro*C Preprocessor"; // NOI18N
                             MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
                             command = "${PROC} lines=yes iname=main sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
                             target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();

@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -120,6 +121,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private SelectHostWizardProvider selectHostWizardProvider;
     private WizardDescriptor.Panel<WizardDescriptor> selectHostPanel;
     private WizardDescriptor.Panel<WizardDescriptor> selectBinaryPanel;
+    private int lastNewHostPanel = -1;
     
     private final SelectModeDescriptorPanel importPanel;
     private final PanelConfigureProject panelConfigureProjectTrue;
@@ -254,7 +256,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return selectHostWizardProvider;
     }
 
-    private synchronized void setupPanelsAndStepsIfNeed() {
+    private synchronized void setupPanelsAndStepsIfNeed() {        
         if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
@@ -281,6 +283,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             lastHostUid = hostUID;
             lastSimpleMode = Boolean.valueOf(isSimple());
             lastSetupHost = setupHost;
+            lastNewHostPanel = -1;
 
             LOGGER.log(Level.FINE, "refreshing panels and steps");
 
@@ -292,6 +295,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 panelsList.add(selectHostPanel);
                 if (getSelectHostWizardProvider().isNewHost()) {
                     panelsList.addAll(getSelectHostWizardProvider().getAdditionalPanels());
+                    lastNewHostPanel = panelsList.size() - 1;
                     panelsList.add(importPanel);
                     if (!isSimple()) {
                         panelsList.addAll(advancedPanels);
@@ -395,6 +399,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         try {
             handle.start();
             return instantiate();
+        } catch (IOException ex) {
+            ex.printStackTrace(); // since caller doesn't report this
+            throw ex;
         } finally {
             handle.finish();
         }
@@ -412,7 +419,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             dirF = CndFileUtils.normalizeFile(dirF);
         }
         String projectName = (String) wiz.getProperty(WizardConstants.PROPERTY_NAME);
-        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_MAKEFILE_NAME);
+        String makefileName = (String) wiz.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME);
         if (fullRemote) {
             getSelectHostWizardProvider().apply();
         }
@@ -464,8 +471,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (wizardtype == TYPE_DB_APPLICATION) {
                 LinkerConfiguration linkerConfiguration = debug.getLinkerConfiguration();
                 LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh"));
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11"));
+                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
+                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 debug.setLinkerConfiguration(linkerConfiguration);
             }
@@ -478,8 +485,8 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             if (wizardtype == TYPE_DB_APPLICATION) {
                 LinkerConfiguration linkerConfiguration = release.getLinkerConfiguration();
                 LibrariesConfiguration librariesConfiguration = linkerConfiguration.getLibrariesConfiguration();
-                librariesConfiguration.add(new LibraryItem.LibItem("clntsh"));
-                librariesConfiguration.add(new LibraryItem.LibItem("nnz11"));
+                librariesConfiguration.add(new LibraryItem.LibItem("clntsh")); // NOI18N
+                librariesConfiguration.add(new LibraryItem.LibItem("nnz11")); // NOI18N
                 linkerConfiguration.setLibrariesConfiguration(librariesConfiguration);
                 release.setLinkerConfiguration(linkerConfiguration);
             }
@@ -558,6 +565,9 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     public void nextPanel() {
         if (!hasNext()) { // will call setupPanelsAndStepsIfNeed();
             throw new NoSuchElementException();
+        }
+        if (index == lastNewHostPanel && fullRemote) {
+            getSelectHostWizardProvider().apply();
         }
         index++;
     }

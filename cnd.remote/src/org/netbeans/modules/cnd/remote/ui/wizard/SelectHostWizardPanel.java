@@ -51,6 +51,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -191,8 +192,8 @@ public class SelectHostWizardPanel implements
     public void storeSettings(WizardDescriptor settings) {
         delegate.storeSettings(settings);
         ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
-        settings.putProperty("hostUID", (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
-        settings.putProperty("ToolsCacheManager", createHostData.getCacheManager()); // NOI18N
+        settings.putProperty(WizardConstants.PROPERTY_HOST_UID, (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
+        settings.putProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER, createHostData.getCacheManager()); // NOI18N
         getComponent().onStoreSettings();
         needsValidation = true;
     }

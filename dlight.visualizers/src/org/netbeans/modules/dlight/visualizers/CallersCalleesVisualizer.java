@@ -304,7 +304,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         update(flist);
     }
 
-    private final List<FunctionCallWithMetric> getAllChildren(TreeNode n){
+    private List<FunctionCallWithMetric> getAllChildren(TreeNode n){
         if (!(n instanceof DefaultMutableTreeNode)){
             return Collections.emptyList();
         }
@@ -321,7 +321,7 @@ final class CallersCalleesVisualizer extends TreeTableVisualizer<FunctionCallTre
         
     }
 
-    private final List<FunctionCallWithMetric> getAllFunctions(){
+    private List<FunctionCallWithMetric> getAllFunctions(){
         List<FunctionCallWithMetric> result = new ArrayList<FunctionCallWithMetric>();
         for (int i = 0, count = TREE_ROOT.getChildCount(); i < count; i++){
             result.addAll(getAllChildren(TREE_ROOT.getChildAt(i)));

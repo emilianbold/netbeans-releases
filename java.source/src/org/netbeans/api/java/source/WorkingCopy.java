@@ -130,7 +130,9 @@ public class WorkingCopy extends CompilationController {
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        getContext().put(ElementOverlay.class, overlay);
+        if (getContext().get(ElementOverlay.class) == null) {
+            getContext().put(ElementOverlay.class, overlay);
+        }
     }
     
     private Context getContext() {

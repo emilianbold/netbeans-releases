@@ -387,7 +387,8 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             };
         }
 
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
                 getString("SelectBinaryPanelVisual.Browse.Title"), // NOI18N
                 getString("SelectBinaryPanelVisual.Browse.Select"), // NOI18N
                 JFileChooser.FILES_ONLY,
@@ -428,11 +429,11 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("outputTextField",  binaryField.getText().trim()); // NOI18N
-        wizardDescriptor.putProperty("sourceFolderPath",  sourcesField.getText().trim()); // NOI18N
-        //wizardDescriptor.putProperty("displayName",   new File(binaryField.getText().trim()).getName()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT,  binaryField.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH,  sourcesField.getText().trim()); // NOI18N
+        //wizardDescriptor.putProperty(WizardConstants.PROPERTY_DISPLAY_NAME,   new File(binaryField.getText().trim()).getName()); // NOI18N
         // TODO should be inited
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_MAKEFILE_NAME,  ""); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH,  ""); // NOI18N
     }
 
     boolean valid() {
