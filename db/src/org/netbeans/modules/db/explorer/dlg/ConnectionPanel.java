@@ -62,8 +62,6 @@ import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
-import org.netbeans.modules.db.explorer.dlg.NewConnectionPanel;
-import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -83,7 +81,6 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     public static final String ORACLE_THIN_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
     public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
     public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
-    private Type type;
     private AddConnectionWizard pw;
     // Oracle
     public static final String ORACLE_THIN_DRIVER_NAME = "Oracle Thin";
@@ -111,31 +108,27 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 return null;
             }
             assert pw != null : "ConnectionPanel must be initialized.";
-            type = pw.getType();
+            String driverName = pw.getDriverName();
             String driverClass = null;
             databaseConnection = new DatabaseConnection();
-            switch (type) {
-                case ORACLE:
-                    driverClass = ORACLE_THIN_DRIVER_CLASS;
-                    databaseConnection.setDriver(driverClass);
-                    databaseConnection.setDriverName(ORACLE_THIN_DRIVER_NAME);
-                    databaseConnection.setUser(ORACLE_SAMPLE_DB_USER);
-                    databaseConnection.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
-                    databaseConnection.setDatabase(ORACLE_SAMPLE_DB_URL);
-                    //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
-                    break;
-                case MYSQL:
-                    driverClass = MYSQL_DRIVER_CLASS;
-                    databaseConnection.setDriver(driverClass);
-                    databaseConnection.setDriverName(MYSQL_DRIVER_NAME);
-                    databaseConnection.setUser(MYSQL_SAMPLE_DB_USER);
-                    databaseConnection.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
-                    databaseConnection.setDatabase(MYSQL_SAMPLE_DB_URL);
-                    //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
-                    break;
-                default:
-                    assert false;
-                    return null;
+            if (true /* oracle */) {
+                driverClass = ORACLE_THIN_DRIVER_CLASS;
+                databaseConnection.setDriver(driverClass);
+                databaseConnection.setDriverName(ORACLE_THIN_DRIVER_NAME);
+                databaseConnection.setUser(ORACLE_SAMPLE_DB_USER);
+                databaseConnection.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
+                databaseConnection.setDatabase(ORACLE_SAMPLE_DB_URL);
+                //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
+            } else if (true /* mysql */) {
+                driverClass = MYSQL_DRIVER_CLASS;
+                databaseConnection.setDriver(driverClass);
+                databaseConnection.setDriverName(MYSQL_DRIVER_NAME);
+                databaseConnection.setUser(MYSQL_SAMPLE_DB_USER);
+                databaseConnection.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
+                databaseConnection.setDatabase(MYSQL_SAMPLE_DB_URL);
+                //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
+            } else {
+                // others
             }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
             component = new NewConnectionPanel(pw, driverClass, databaseConnection);

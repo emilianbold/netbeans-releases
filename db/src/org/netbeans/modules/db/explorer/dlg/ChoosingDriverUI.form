@@ -72,7 +72,7 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ChoosingDriverUI.lFound1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
-            <Argument index="0" javacode="driverName"/>
+            <Argument index="0" javacode="driverFileName"/>
           </ResourceString>
         </Property>
       </Properties>
@@ -108,7 +108,7 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/explorer/dlg/Bundle.properties" key="ChoosingDriverUI.lDownloadInfo1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments})">
-            <Argument index="0" javacode="driverName"/>
+            <Argument index="0" javacode="driverFileName"/>
           </ResourceString>
         </Property>
       </Properties>

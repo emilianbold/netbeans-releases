@@ -67,16 +67,17 @@ import org.openide.util.NbBundle;
 public class AddConnectionWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<AddConnectionWizard> {
     
     private String driverLocation;
-    private String driverName;
+    private final String driverName;
+    private final String downloadFrom;
+    private final String driverFileName;
     private String[] steps;
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
-    private Type type;
     private int index;
     private ChoosingDriverPanel driverPanel;
     private boolean found = false;
     private String pwd;
     private String driverDN;
-    private String driverClass;
+    private final String driverClass;
     private String databaseUrl;
     private String user;
     private String defaultSchema;
@@ -84,29 +85,29 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private List<String> schemas = null;
     private String currentSchema;
 
-    private AddConnectionWizard(Type type) {
-        this.type = type;
-        switch (type) {
-            case ORACLE:
-                driverName = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverName");
-                driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
-                driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
-                databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleDatabaseUrl");
-                user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser");
-                pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword");
-                defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema");
-                break;
-            case MYSQL:
-                driverName = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverName");
-                driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName");
-                driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass");
-                databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl");
-                user = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser");
-                pwd = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword");
-                defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema");
-                break;
-            default:
-                assert false;
+    private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
+        if (true /* oracle */) {
+            this.driverName = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverName");
+            this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
+            this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
+            this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleDatabaseUrl");
+            this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser");
+            this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword");
+            this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema");
+            this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from");
+            this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name");
+        } else if (true /* mysql */) {
+            this.driverName = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverName");
+            this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName");
+            this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass");
+            this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl");
+            this.user = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser");
+            this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword");
+            this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema");
+            this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from");
+            this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name");
+        } else {
+            // others
         }
     }
 
@@ -115,21 +116,9 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public enum Type {
-        ORACLE,
-        MYSQL
-    }
-    
-    public static void showWizard(boolean isOracle, boolean isMySQL) {
-        if (isOracle) {
-            AddConnectionWizard wiz = new AddConnectionWizard(Type.ORACLE);
-            wiz.openWizard();
-        } else if (isMySQL) {
-            AddConnectionWizard wiz = new AddConnectionWizard(Type.MYSQL);
-            wiz.openWizard();
-        } else {
-            assert false : "No PredefinedConnection found in lookup.";
-        }
+    public static void showWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
+        AddConnectionWizard wiz = new AddConnectionWizard(driverName, driverClass, databaseUrl, user, password);
+        wiz.openWizard();
     }
     
     private void openWizard() {
@@ -165,7 +154,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
      */
     private WizardDescriptor.Panel<AddConnectionWizard>[] getPanels() {
         if (panels == null) {
-            driverPanel = new ChoosingDriverPanel(type);
+            driverPanel = new ChoosingDriverPanel(driverFileName, downloadFrom);
             panels = new Panel[] {
                 driverPanel,
                 new ConnectionPanel(),
@@ -173,7 +162,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             };
             steps = new String[panels.length];
             steps = new String[] {
-                NbBundle.getMessage(AddConnectionWizard.class, "LookingForDriverUI.Name"), // NOI18N
+                NbBundle.getMessage(AddConnectionWizard.class, "ChoosingDriverUI.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ConnectionPanel.Name"), // NOI18N
                 NbBundle.getMessage(AddConnectionWizard.class, "ChoosingSchemaPanel.Name"), // NOI18N
             };
@@ -263,10 +252,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     
     String getPassword() {
         return pwd;
-    }
-    
-    Type getType() {
-        return type;
     }
     
     String[] getSteps() {

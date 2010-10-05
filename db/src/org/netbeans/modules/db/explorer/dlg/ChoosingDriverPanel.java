@@ -63,44 +63,26 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard.Type;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
 
     private static final String DRIVERS_DIR = "drivers"; // NOI18N
-    private final Type type;
-    private static final String ORACLE_DRIVER_NAME = "oracle.driver.name"; // NOI18N
-    private static final String MYSQL_DRIVER_NAME = "mysql.driver.name"; // NOI18N
-    private static final String ORACLE_DOWNLOAD_FROM = "oracle.from"; // NOI18N
-    private static final String MYSQL_DOWNLOAD_FROM = "mysql.from"; // NOI18N
     private AddConnectionWizard pw;
 
-    public ChoosingDriverPanel(AddConnectionWizard.Type type) {
-        this.type = type;
+    public ChoosingDriverPanel(String driverFileName, String downloadFrom) {
+        this.driverFileName = driverFileName;
+        this.downloadFrom = downloadFrom;
     }
 
     private void init() {
-        switch (type) {
-            case ORACLE:
-                driverName = NbBundle.getMessage(ChoosingDriverPanel.class, ORACLE_DRIVER_NAME);
-                downloadFrom = NbBundle.getMessage(ChoosingDriverPanel.class, ORACLE_DOWNLOAD_FROM);
-                break;
-            case MYSQL:
-                driverName = NbBundle.getMessage(ChoosingDriverPanel.class, MYSQL_DRIVER_NAME);
-                downloadFrom = NbBundle.getMessage(ChoosingDriverPanel.class, MYSQL_DOWNLOAD_FROM);
-                break;
-            default:
-                assert false;
-        }
-        FileObject fo = getLibraryFO(driverName);
+        FileObject fo = getLibraryFO(driverFileName);
         if (fo == null) {
-            fo = getDriverFO(driverName);
+            fo = getDriverFO(driverFileName);
         }
         if (fo == null) {
             fo = findInDriverDir(new File(getDefaultDriverPath()));
@@ -191,7 +173,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
      * component from this class, just use getComponent().
      */
     private ChoosingDriverUI component;
-    private String driverName;
+    private String driverFileName;
     private String driverPath;
     private String downloadFrom;
     private boolean driverFound;
@@ -207,7 +189,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
                 return null;
             }
             init();
-            component = new ChoosingDriverUI(this, driverName, driverPath, downloadFrom, driverFound);
+            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driverFound);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
@@ -267,7 +249,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
     public void storeSettings(AddConnectionWizard settings) {
         settings.setDriverLocation(component.getDriverLocation());
         // add new driver is still not present
-        if (getDriverFO(driverName) == null) {
+        if (getDriverFO(driverFileName) == null) {
             URL url = null;
             try {
                 url = new File(component.getDriverLocation()).toURI().toURL();
@@ -287,7 +269,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
 
     String getDriverLocation() {
         if (driverFound) {
-            return driverPath + File.separator + driverName;
+            return driverPath + File.separator + driverFileName;
         } else {
             return null;
         }
@@ -321,6 +303,6 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
     }
 
     String getDriverName() {
-        return driverName;
+        return driverFileName;
     }
 }
