@@ -299,15 +299,20 @@ private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         Set<EntityClassInfo> closure = new HashSet<EntityClassInfo>();
         for (Object o : listAvailable.getSelectedValues()) {
             Entity entity = (Entity) o;
-            EntityClassInfo info = builder.getEntityClassInfo(entity.getClass2());
+            sourceModel.removeElement( entity );
+            if (!destModel.contains(entity)) {
+                destModel.addElement(entity);
+            }
+        /*    EntityClassInfo info = builder.getEntityClassInfo(entity.getClass2());
             closure.addAll(info.getEntityClosure(closure));
+            closure.add( info );*/
         }
-        for (EntityClassInfo e : closure) {
+        /*for (EntityClassInfo e : closure) {
             sourceModel.removeElement(e.getEntity());
             if (!destModel.contains(e.getEntity())) {
                 destModel.addElement(e.getEntity());
             }
-        }
+        }*/
         refreshModel();
         updateButtons();
         fireChange();
@@ -617,12 +622,20 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
 
     private void refreshModel() {
         if (builder != null) {
-            List<Entity> entities = new ArrayList<Entity>();
+            Set<Entity> entities = new HashSet<Entity>();
+            Set<EntityClassInfo> closure = new HashSet<EntityClassInfo>();
             for (int i = 0; i < listSelected.getModel().getSize(); i++) {
                 Object o = listSelected.getModel().getElementAt(i);
                 if (o instanceof Entity) {
-                    entities.add((Entity) o);
+                    Entity entity = (Entity) o;
+                    entities.add( entity );
+                    EntityClassInfo info = builder.getEntityClassInfo(
+                            entity.getClass2());
+                    info.getEntityClosure( closure );
                 }
+            }
+            for (EntityClassInfo classInfo : closure) {
+                entities.add( classInfo.getEntity());
             }
             resourceModel = builder.build(entities);
         }
