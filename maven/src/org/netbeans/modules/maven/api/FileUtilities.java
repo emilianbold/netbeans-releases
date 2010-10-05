@@ -188,18 +188,6 @@ public final class FileUtilities {
         }                        
         return retval.toString();
     }
-    
-    /**
-     * force refreshes of Filesystem to make the conversion to FileObject work.
-     * 
-     * @param file
-     * @return
-     * @deprecated Use FileUtil.refreshFor() + FileUtil.toFileObject()
-     */
-    public @Deprecated static FileObject toFileObject(File fl) {
-        FileUtil.refreshFor(fl);
-        return FileUtil.toFileObject(fl);
-    }
 
     /**
      *
