@@ -144,10 +144,14 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                             res.add(config);
                         }
                     }
+                } else {
+                    break;
                 }
+            } else {
+                break;
             }
-            return res;
         }
+        return res;
     }
 
     private PkgConfig getPkgConfig(MakeConfiguration conf){

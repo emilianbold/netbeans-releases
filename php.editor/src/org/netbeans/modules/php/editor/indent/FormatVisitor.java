@@ -635,6 +635,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getBody());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_FOR_STATEMENT);
@@ -791,6 +795,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(body);
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    isCurly = false;
@@ -987,6 +995,10 @@ public class FormatVisitor extends DefaultVisitor {
 	    addAllUntilOffset(body.getStartOffset());
 	    formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), options.indentSize));
 	    scan(node.getBody());
+            if (ts.token().id() == PHPTokenId.T_INLINE_HTML
+                    && ts.moveNext() && ts.token().id() == PHPTokenId.PHP_OPENTAG) {
+                addFormatToken(formatTokens);
+            }
 	    formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), -1 * options.indentSize));
 	} else if (body != null && !(body instanceof Block)) {
 	    addNoCurlyBody(body, FormatToken.Kind.WHITESPACE_BEFORE_WHILE_STATEMENT);
