@@ -108,6 +108,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -300,9 +301,9 @@ public class ImportExecutable implements PropertyChangeListener {
 
                     }
                     switchModel(true, lastSelectedProject);
-                    if (createProjectMode) {
+                    //if (createProjectMode) {
                         postModelDiscovery(lastSelectedProject);
-                    }
+                    //}
                     if (open || cd != null) {
                         if (open) {
                             onProjectParsingFinished("main", lastSelectedProject); // NOI18N
@@ -577,6 +578,7 @@ public class ImportExecutable implements PropertyChangeListener {
             final CsmProject p = model.getProject(np);
             if (p != null && np != null) {
                 Set<String> needCheck = new HashSet<String>();
+                Set<String> needAdd = new HashSet<String>();
                 Map<String,Item> normalizedItems = ImportProject.initNormalizedNames(makeProject);
                 for (CsmFile file : p.getAllFiles()) {
                     if (file instanceof FileImpl) {
@@ -593,13 +595,43 @@ public class ImportExecutable implements PropertyChangeListener {
                                     needCheck.add(item.getFile().getAbsolutePath());
                                 }
                             }
+                        } else if (item == null) {
+                            // It should be in project?
+                            if (file.isHeaderFile()) {
+                                String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
+                                needAdd.add(path);
+                            }
                         }
                     }
                 }
-                if (needCheck.size() > 0) {
+                if (needCheck.size() > 0 || needAdd.size() > 0) {
                     ProjectBridge bridge = new ProjectBridge(makeProject);
                     if (bridge.isValid()) {
-                        bridge.checkForNewExtensions(needCheck);
+                        if (needAdd.size() > 0) {
+                            Map<String, Folder> prefferedFolders = bridge.prefferedFolders();
+                            for(String path : needAdd) {
+                                String name = path;
+                                if (Utilities.isWindows()) {
+                                    path = path.replace('\\', '/');
+                                }
+                                int i = path.lastIndexOf('/');
+                                if (i >= 0){
+                                    String folderPath = path.substring(0,i);
+                                    Folder prefferedFolder = prefferedFolders.get(folderPath);
+                                    if (prefferedFolder != null) {
+                                        Item item = bridge.createItem(name);
+                                        item = prefferedFolder.addItem(item);
+                                        bridge.setHeaderTool(item);
+                                        if(!MIMENames.isCppOrCOrFortran(item.getMIMEType())){
+                                            needCheck.add(path);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (needCheck.size() > 0) {
+                            bridge.checkForNewExtensions(needCheck);
+                        }
                     }
                 }
                 saveMakeConfigurationDescriptor(makeProject);
