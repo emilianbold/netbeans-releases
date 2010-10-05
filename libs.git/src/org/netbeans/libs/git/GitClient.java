@@ -52,11 +52,7 @@ import org.netbeans.libs.git.progress.StatusProgressMonitor;
  *
  * @author ondra
  */
-public abstract class GitClient {
-
-    protected GitClient () {
-        
-    }
+public interface GitClient {
 
     public abstract void add (File[] roots, FileProgressMonitor monitor) throws GitException;
     public abstract GitRevisionInfo commit (File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException;

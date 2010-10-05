@@ -47,7 +47,9 @@ import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
@@ -121,6 +123,58 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
         getCache().refreshAllRoots(Collections.singleton(modifiedFile));
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+    }
+
+    // test: check that the index timestamp is refreshed after WT modifying commands
+    public void testChangesInsideIDE () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+
+        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        logger.setLevel(Level.ALL);
+        final boolean[] refreshed = new boolean[1];
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().contains("Refreshing index timestamp after")) {
+                    refreshed[0] = true;
+                }
+            }
+            @Override
+            public void flush() { }
+            @Override
+            public void close() throws SecurityException {}
+        });
+        Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(refreshed[0]);
+        failIfRefreshed();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+    }
+
+    // test: check that the index timestamp is NOT refreshed after WT read-only commands
+    public void testNoRefreshAfterStatus () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
+
+        Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
+        logger.setLevel(Level.ALL);
+        final boolean[] refreshed = new boolean[1];
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().contains("Refreshing index timestamp after")) {
+                    refreshed[0] = true;
+                }
+            }
+            @Override
+            public void flush() { }
+            @Override
+            public void close() throws SecurityException {}
+        });
+        Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(refreshed[0]);
+        failIfRefreshed();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
     }
 
     private void waitForRefresh () throws Exception {

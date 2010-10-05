@@ -64,7 +64,7 @@ import org.netbeans.libs.git.progress.StatusProgressMonitor;
  *
  * @author ondra
  */
-public class JGitClient extends GitClient {
+public class JGitClient implements GitClient {
     private final JGitRepository gitRepository;
 
     public JGitClient (JGitRepository gitRepository) {

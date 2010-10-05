@@ -45,6 +45,7 @@ package org.netbeans.modules.git;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -165,7 +166,13 @@ public final class Git {
     }
 
     public GitClient getClient (File repository) throws GitException {
-        return GitClientFactory.getInstance(null).getClient(repository);
+        // get the only instance for the repository folder, so we can synchronize on it
+        File repositoryFolder = getRepositoryRoot(repository);
+        if (repositoryFolder != null) {
+            repository = repositoryFolder;
+        }
+        GitClient client = GitClientFactory.getInstance(null).getClient(repository);
+        return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, new GitClientInvocationHandler(client, repository));
     }
 
     public RequestProcessor getRequestProcessor() {
