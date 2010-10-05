@@ -269,7 +269,8 @@ public class SvnClientFactory {
                return false;
             }
         } catch (SVNClientException e) {
-            LOG.log(Level.WARNING, null, e); // should not happen
+            LOG.log(Level.FINE, null, e);
+            LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
             return false;
         } finally {
             writeJavahlInitFlag(initFile, JAVAHL_INIT_SUCCESS);
