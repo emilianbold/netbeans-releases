@@ -5,14 +5,12 @@ else:
     if ($this->cover != null):
         ?>
         Hlavny obrazek:
-        <img src="images/property_pictures/<?= $this->id ?>thumbs/<?=
-$this->cover ?>"/>
+        <img src="images/property_pictures/<?= $this->id ?>thumbs/<?=$this->cover ?>"/>
         <?
     endif;
     foreach ($this->pictures as $picture):
         ?>
-        <img src="images/property_pictures/<?= $this->id ?>thumbs/<?=
-$picture->getImage_path() ?>"/>
+        <img src="images/property_pictures/<?= $this->id ?>thumbs/<?=$picture->getImage_path() ?>"/>
         <?
     endforeach;
 endif;
