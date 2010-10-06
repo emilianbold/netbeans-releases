@@ -121,6 +121,9 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                     res.add("_OPENMP"); // NOI18N
                 }
             }
+            if (options.indexOf("-xc99") >= 0) { // NOI18N
+                res.add("__STDC_VERSION__=199901L");
+            }
         }
         return res;
     }
@@ -130,7 +133,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                if (options.indexOf("-x99") >= 0) { // NOI18N
+                if (options.indexOf("-xc99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
                 } else if (options.indexOf("-std=c89") >= 0) { // NOI18N
                     return LanguageFlavor.C89;
