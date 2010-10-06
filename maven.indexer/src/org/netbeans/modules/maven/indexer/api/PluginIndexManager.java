@@ -78,7 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Provides information about available plugins, including their goals and parameters.
  * @author mkleint
  */
 public class PluginIndexManager {
@@ -132,6 +132,11 @@ public class PluginIndexManager {
         return new IndexSearcher(indexReader);
     }
 
+    /**
+     * Gets available goals from known plugins.
+     * @param groups e.g. {@code Collections.singleton("org.apache.maven.plugins")}
+     * @return e.g. {@code [..., dependency:copy, ..., release:perform, ...]}
+     */
     public static Set<String> getPluginGoalNames(Set<String> groups) throws Exception {
         IndexSearcher searcher = getIndexSearcher();
         BooleanQuery bq = new BooleanQuery();
@@ -156,6 +161,13 @@ public class PluginIndexManager {
         return toRet;
     }
 
+    /**
+     * Gets available goals from a particular plugin.
+     * @param groupId e.g. {@code "org.apache.maven.plugins"}
+     * @param artifactId e.g. {@code "maven-compiler-plugin"}
+     * @param version e.g. {@code "2.0"}
+     * @return e.g. {@code [compile, testCompile]}
+     */
     public static Set<String> getPluginGoals(String groupId, String artifactId, String version) throws Exception {
         assert groupId != null && artifactId != null && version != null;
         IndexSearcher searcher = getIndexSearcher();
@@ -179,49 +191,13 @@ public class PluginIndexManager {
         return toRet;
     }
 
-    public static Set<String> getPluginParameterNames(String groupId, String artifactId, String version, String mojo) throws Exception {
-        assert groupId != null && artifactId != null && version != null;
-        IndexSearcher searcher = getIndexSearcher();
-        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
-        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        Hits hits = searcher.search(tq);
-        if (hits.length() == 0) {
-            return null;
-        }
-        Iterator it = hits.iterator();
-        TreeSet<String> toRet = new TreeSet<String>();
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
-            String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " "); //NOI18N
-            for (String goal : gls) {
-                if (mojo == null || mojo.equals(goal)) {
-                    String params = doc.getField(PREFIX_FIELD_GOAL + goal).stringValue();
-                    String[] lines = StringUtils.split(params, "\n"); //NOI18N
-                    for (String line : lines) {
-                        String[] paramDet = StringUtils.split(line, "|"); //NOI18N
-                        String name = paramDet[0];
-                        String editable = paramDet[1];
-                        if ("true".equals(editable)) { //NOI18N
-                            toRet.add(name);
-                        }
-                    }
-                }
-            }
-        }
-        return toRet;
-
-    }
-
     /**
-     * 
-     * @param groupId
-     * @param artifactId
-     * @param version
-     * @param mojo
-     * @return null if not found, else a set of parameter information objects
-     * @throws java.lang.Exception
+     * Gets a list of parameters expected by a plugin goal.
+     * @param groupId e.g. {@code "org.apache.maven.plugins"}
+     * @param artifactId e.g. {@code "maven-compiler-plugin"}
+     * @param version e.g. {@code "2.0"}
+     * @param mojo e.g. {@code "compile"}
+     * @return null if not found, else e.g. {@code [..., <verbose>${maven.compiler.verbose}=false</>, ...]}
      */
     public static Set<ParameterDetail> getPluginParameters(String groupId, String artifactId, String version, String mojo) throws Exception {
         assert groupId != null && artifactId != null && version != null;
@@ -279,8 +255,8 @@ public class PluginIndexManager {
 
     /**
      * find the plugins which are behind the given goal prefix.
-     * @param prefix
-     * @return A string composed of groupId and artifactId and version separated by "|"
+     * @param prefix e.g. {@code "versions"}
+     * @return groupId and artifactId and version separated by "|", e.g. {@code [..., org.codehaus.mojo|versions-maven-plugin|1.1, ...]}
      * @throws java.lang.Exception
      */
     public static Set<String> getPluginsForGoalPrefix(String prefix) throws Exception {
@@ -304,11 +280,10 @@ public class PluginIndexManager {
 
     /**
      * find the phase associations for the given packaging
-     * @param packaging
-     * @param mvnVersion
-     * @param extensionPlugins
-     * @return key= phase name, value - Set of Strings, where Strings are in format groupId:artifactId:mojo
-     * @throws java.lang.Exception
+     * @param packaging e.g. {@code "nbm"}
+     * @param mvnVersion e.g. {@code "2.2.1"}
+     * @param extensionPlugins ignored??
+     * @return key= phase name, value - Set of Strings, where Strings are in format groupId:artifactId:mojo; e.g. {@code ..., package=[org.apache.maven.plugins:maven-jar-plugin:jar, org.codehaus.mojo:nbm-maven-plugin:nbm], ...}
      */
     public static Map<String, List<String>> getLifecyclePlugins(String packaging, String mvnVersion, String[] extensionPlugins) throws Exception {
         assert packaging != null;
@@ -481,7 +456,7 @@ public class PluginIndexManager {
         private boolean required;
         private String description;
 
-        public ParameterDetail(String name, String expression, String defaultValue, boolean required, String description) {
+        private ParameterDetail(String name, String expression, String defaultValue, boolean required, String description) {
             this.name = name;
             this.expression = expression;
             this.defaultValue = defaultValue;
@@ -489,6 +464,9 @@ public class PluginIndexManager {
             this.description = description;
         }
 
+        /**
+         * @return null, or e.g. {@code false}
+         */
         public String getDefaultValue() {
             return defaultValue;
         }
@@ -497,10 +475,16 @@ public class PluginIndexManager {
             return description;
         }
 
+        /**
+         * @return null, or e.g. {@code maven.compiler.verbose}
+         */
         public String getExpression() {
             return expression;
         }
 
+        /**
+         * @return null, or e.g. {@code verbose}
+         */
         public String getName() {
             return name;
         }
@@ -516,6 +500,9 @@ public class PluginIndexManager {
             "<br><b>" + NbBundle.getMessage(PluginIndexManager.class, "LBL_Description") + "</b><br>"+ getDescription() + "</body></html>";
         }
 
+        public @Override String toString() {
+            return "<" + name + ">" + (expression != null ? "${" + expression + "}" : "") + (defaultValue != null ? "=" + defaultValue : "") + "</>"; // NOI18N
+        }
 
     }
 
