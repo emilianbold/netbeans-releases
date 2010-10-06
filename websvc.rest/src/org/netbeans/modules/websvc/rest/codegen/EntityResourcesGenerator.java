@@ -831,6 +831,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator {
 
             if (subBean.isContainer()) {
                 classes.add(resource.getFieldInfo().getType());
+                String typeArg = resource.getFieldInfo().getTypeArg();
+                if ( typeArg  != null ){
+                    classes.add( typeArg );
+                }
             } else {
                 //Only add non java.lang types.
                 String type = getIdFieldType(subBean);
