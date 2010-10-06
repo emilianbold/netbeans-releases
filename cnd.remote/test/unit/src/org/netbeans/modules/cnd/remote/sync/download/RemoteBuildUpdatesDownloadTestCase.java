@@ -107,8 +107,8 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
 
-    @ForAllEnvironments
-    public void test_LexYacc_BuildLocalAndRemote() throws Exception {
+    //@ForAllEnvironments
+    public void DISABLED_test_LexYacc_BuildLocalAndRemote() throws Exception {
         MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Build");
         int timeout = getSampleBuildTimeout();
         changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
