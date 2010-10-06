@@ -107,7 +107,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         }
     }
 
-    private void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
+    private static void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {
         if (destFile != null && !srcFile.isFolder()) {
             InputStream is = null;
             OutputStream os = null;
@@ -291,13 +291,16 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
             //TODO what to do with filtering? for now ignore..
             String path = FileUtil.getRelativePath(tuple.root, fo);
             path = addTargetPath(path, tuple.resource);
-            FileObject destFile = ensureDestinationFileExists(tuple.destinationRoot, path, fo.isFolder());
-            copySrcToDest(fo, destFile);
+            createAndCopy(fo, tuple.destinationRoot, path);
             AdditionalDestination add = project.getLookup().lookup(AdditionalDestination.class);
             if (add != null) {
                 add.copy(fo, path);
             }
         }
+    }
+
+    private static /* #172620 */synchronized void createAndCopy(FileObject fo, FileObject root, String path) throws IOException {
+        copySrcToDest(fo, ensureDestinationFileExists(root, path, fo.isFolder()));
     }
 
     private String addTargetPath(String path, Resource resource) {
@@ -353,7 +356,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 String path = FileUtil.getRelativePath(fo, child);
                 //now check includes and excludes
                 List<String> incls = res.getIncludes();
-                if (incls.size() == 0) {
+                if (incls.isEmpty()) {
                     incls = Arrays.asList(CosChecker.DEFAULT_INCLUDES);
                 }
                 boolean included = false;
@@ -382,7 +385,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     /** Returns the destination file or folder
      */
-    private FileObject ensureDestinationFileExists(FileObject root, String path, boolean isFolder) throws IOException {
+    private static FileObject ensureDestinationFileExists(FileObject root, String path, boolean isFolder) throws IOException {
         if (isFolder) {
             return FileUtil.createFolder(root, path);
         } else {
