@@ -50,6 +50,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -59,14 +61,12 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -75,7 +75,8 @@ import org.openide.util.RequestProcessor;
 public class CopyResourcesOnSave extends FileChangeAdapter {
 
     private static CopyResourcesOnSave instance = new CopyResourcesOnSave();
-    private static final RequestProcessor RP = new RequestProcessor("CopyResourcesOnSave"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(CopyResourcesOnSave.class);
+    private static final Logger LOG = Logger.getLogger(CopyResourcesOnSave.class.getName());
 
     private boolean isAdded = false;
     /** Creates a new instance of CopyOnSaveSupport */
@@ -171,7 +172,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         try {
             handleCopyFileToDestDir(fe.getFile(), owning);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
@@ -193,7 +194,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         try {
             handleCopyFileToDestDir(fe.getFile(), owning);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
@@ -228,7 +229,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
                 handleDeleteFileInDestDir(fo, path, base, owning);
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -250,7 +251,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         try {
             handleDeleteFileInDestDir(fe.getFile(), null, owning);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.INFO, null, ex);
         }
     }
 
