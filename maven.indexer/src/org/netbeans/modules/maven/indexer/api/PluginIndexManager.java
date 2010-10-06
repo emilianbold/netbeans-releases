@@ -179,41 +179,6 @@ public class PluginIndexManager {
         return toRet;
     }
 
-    public static Set<String> getPluginParameterNames(String groupId, String artifactId, String version, String mojo) throws Exception {
-        assert groupId != null && artifactId != null && version != null;
-        IndexSearcher searcher = getIndexSearcher();
-        String id = groupId + "|" + artifactId + "|" + version; //NOI18N
-        TermQuery tq = new TermQuery(new Term(FIELD_ID, id));
-        Hits hits = searcher.search(tq);
-        if (hits.length() == 0) {
-            return null;
-        }
-        Iterator it = hits.iterator();
-        TreeSet<String> toRet = new TreeSet<String>();
-        while (it.hasNext()) { //well should be just one anyway..
-            Hit hit = (Hit) it.next();
-            Document doc = hit.getDocument();
-            String goals = doc.getField(FIELD_GOALS).stringValue();
-            String[] gls = StringUtils.split(goals, " "); //NOI18N
-            for (String goal : gls) {
-                if (mojo == null || mojo.equals(goal)) {
-                    String params = doc.getField(PREFIX_FIELD_GOAL + goal).stringValue();
-                    String[] lines = StringUtils.split(params, "\n"); //NOI18N
-                    for (String line : lines) {
-                        String[] paramDet = StringUtils.split(line, "|"); //NOI18N
-                        String name = paramDet[0];
-                        String editable = paramDet[1];
-                        if ("true".equals(editable)) { //NOI18N
-                            toRet.add(name);
-                        }
-                    }
-                }
-            }
-        }
-        return toRet;
-
-    }
-
     /**
      * 
      * @param groupId
