@@ -79,6 +79,11 @@ public interface ItemProperties {
     LanguageKind getLanguageKind();
 
     /**
+     * Language kind
+     */
+    LanguageStandard getLanguageStandard();
+
+    /**
      * Compiler name (producer)
      */
     String getCompilerName();
@@ -88,5 +93,12 @@ public interface ItemProperties {
         C,
         CPP,
         Fortran
+    }
+
+    public enum LanguageStandard {
+        Unknown,
+        C, C89, C99,
+        CPP,
+        F77, F90, F95
     }
 }

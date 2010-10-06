@@ -59,6 +59,7 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
     public final static String PATH_ATTR = "path"; // NOI18N
     public final static String EXCLUDED_ATTR = "ex"; // NOI18N
     public final static String TOOL_ATTR = "tool"; // NOI18N
+    public final static String FLAVOR_ATTR = "flavor"; // NOI18N
     public final static String EXCLUDED_ELEMENT = "excluded"; // FIXUP: < 7 // NOI18N
     public final static String TOOL_ELEMENT = "tool"; // FIXUP: < 7 // NOI18N
     public final static String ITEM_EXCLUDED_ELEMENT = "itemExcluded"; // NOI18N
@@ -112,6 +113,7 @@ public class ItemXMLCodec extends XMLDecoder implements XMLEncoder {
             new AttrValuePair(PATH_ATTR, item.getItem().getPath()),
             new AttrValuePair(EXCLUDED_ATTR, "" + item.getExcluded().getValue()),
             new AttrValuePair(TOOL_ATTR, "" + item.getTool().ordinal()),
+            new AttrValuePair(FLAVOR_ATTR, "" + item.getLanguageFlavor().ordinal()),
         });
 //        if (item.getExcluded().getModified()) {
 //            xes.element(ITEM_EXCLUDED_ELEMENT, "" + item.getExcluded().getValue()); // NOI18N

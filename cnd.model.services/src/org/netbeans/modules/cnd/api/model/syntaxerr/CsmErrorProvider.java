@@ -103,6 +103,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
         return NamedEntityOptions.instance().isEnabled(this) && !request.isCancelled();
     }
 
+    @Override
     public boolean isEnabledByDefault() {
         return true;
     }
@@ -141,13 +142,12 @@ public abstract class CsmErrorProvider implements NamedEntity {
         @Override
         public void doGetErrors(Request request, Response response) {
             if (! isPartial(request.getFile(), new HashSet<CsmFile>())) {
+                Thread currentThread = Thread.currentThread();
+                currentThread.setName("Provider "+getName()+" prosess "+request.getFile().getAbsolutePath()); // NOI18N
                 getErrorsImpl(request, response);
             }
         }
 
-        public String getName() {
-            throw new UnsupportedOperationException("Not supported."); //NOI18N
-        }
    }
 
     private static class SynchronousMerger extends BaseMerger {
@@ -161,6 +161,11 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 provider.getErrors(request, response);
             }
         }
+
+        @Override
+        public String getName() {
+            return "synchronous-merger"; // NOI18N
+        }
     }
 
     private static class AsynchronousMerger extends BaseMerger {
@@ -173,6 +178,7 @@ public abstract class CsmErrorProvider implements NamedEntity {
                     break;
                 }
                 RequestProcessor.Task task = RP.post(new Runnable() {
+                    @Override
                     public void run() {
                         if (!request.isCancelled()){
                             try {
@@ -191,12 +197,17 @@ public abstract class CsmErrorProvider implements NamedEntity {
                 task.waitFinished();
             }
         }
+
+        @Override
+        public String getName() {
+            return "asynchronous-merger"; // NOI18N
+        }
     }
     
     /** default instance */
     private static CsmErrorProvider DEFAULT = ASYNC ? new AsynchronousMerger() : new SynchronousMerger();
     
-    public static final synchronized  CsmErrorProvider getDefault() {
+    public static synchronized  CsmErrorProvider getDefault() {
         return DEFAULT;
     }
 
