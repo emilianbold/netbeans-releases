@@ -82,6 +82,7 @@ public final class OutputUtils {
                 FileObject resource = classPath.findResource(resourceName);
                 if (resource != null) {
                     FileObject root = classPath.findOwnerRoot(resource);
+                    if (root != null) {
                     URL url = URLMapper.findURL(root, URLMapper.INTERNAL);
                     SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
                     FileObject[] rootz = res.getRoots();
@@ -99,6 +100,7 @@ public final class OutputUtils {
                                 Exceptions.printStackTrace(ex);
                             }
                         }
+                    }
                     }
                 }
             }
