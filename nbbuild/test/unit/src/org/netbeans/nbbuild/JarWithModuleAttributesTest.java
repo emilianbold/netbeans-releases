@@ -46,25 +46,19 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.util.jar.JarFile;
 import junit.framework.AssertionFailedError;
-import org.netbeans.junit.NbTestCase;
 
 /** Checks that javac.target gets reflected in the manifest.
  *
  * @author Jaroslav Tulach
  */
-public class JarWithModuleAttributesTest extends NbTestCase {
+public class JarWithModuleAttributesTest extends TestBase {
     public JarWithModuleAttributesTest (String name) {
         super (name);
     }
     
-    @Override
-    protected void setUp() throws Exception {
-        clearWorkDir();
-    }
-    
     public void testAddThereVersionFromJavacTarget() throws Exception {
         File output = new File(getWorkDir(), "output");
-        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File manifest = extractString (
 "OpenIDE-Module: org.netbeans.modules.sendopts\n" +
 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
 "OpenIDE-Module-Specification-Version: 1.9\n" +
@@ -72,7 +66,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
         File jar = new File(getWorkDir(), "x.jar");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -90,7 +84,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
 
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("JAR created", jar.isFile());
 
@@ -99,7 +93,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
         JarFile file = new JarFile(jar);
         String value = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Java-Dependencies");
-        assertNotNull("Attribute created:\n" + PublicPackagesInProjectizedXMLTest.readFile(extracted), value);
+        assertNotNull("Attribute created:\n" + readFile(extracted), value);
 
         String[] arr = value.split(">");
         assertEquals("Two parts", 2, arr.length);
@@ -110,7 +104,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
     public void testKeepOldVersion() throws Exception {
         File output = new File(getWorkDir(), "output");
-        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File manifest = extractString (
 "OpenIDE-Module: org.netbeans.modules.sendopts\n" +
 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
 "OpenIDE-Module-Specification-Version: 1.9\n" +
@@ -119,7 +113,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
         File jar = new File(getWorkDir(), "x.jar");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -137,7 +131,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
 
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("JAR created", jar.isFile());
 
@@ -146,7 +140,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
         JarFile file = new JarFile(jar);
         String value = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Java-Dependencies");
-        assertNotNull("Attribute created:\n" + PublicPackagesInProjectizedXMLTest.readFile(extracted), value);
+        assertNotNull("Attribute created:\n" + readFile(extracted), value);
 
         String[] arr = value.split(">");
         assertEquals("Two parts", 2, arr.length);
@@ -167,7 +161,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
     public void testKeepOldVersionForNetigso() throws Exception {
         File output = new File(getWorkDir(), "output");
-        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File manifest = extractString (
 "Bundle-SymbolicName: org.netbeans.modules.sendopts\n" +
 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
 "Bundle-Version: 1.9\n" +
@@ -176,7 +170,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
         File jar = new File(getWorkDir(), "x.jar");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -194,7 +188,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
 
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertTrue ("JAR created", jar.isFile());
 
@@ -205,7 +199,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         String value = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Java-Dependencies");
         assertNull("We are in Netigso mode", value);
         value = file.getManifest().getMainAttributes().getValue("Bundle-RequireExecutionEnvironment");
-        assertNotNull("Attribute created:\n" + PublicPackagesInProjectizedXMLTest.readFile(extracted), value);
+        assertNotNull("Attribute created:\n" + readFile(extracted), value);
 
         String[] arr = value.split("-");
         assertEquals("Two parts", 2, arr.length);
@@ -242,7 +236,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
     public void testIgnoreWeirdJavacTarget() throws Exception {
         File output = new File(getWorkDir(), "output");
-        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File manifest = extractString (
 "OpenIDE-Module: org.netbeans.modules.sendopts\n" +
 "OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
 "OpenIDE-Module-Specification-Version: 1.9\n" +
@@ -250,7 +244,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
         File jar = new File(getWorkDir(), "x.jar");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -268,7 +262,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
 
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("JAR created", jar.isFile());
 
@@ -277,19 +271,19 @@ public class JarWithModuleAttributesTest extends NbTestCase {
 
         JarFile file = new JarFile(jar);
         String value = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Java-Dependencies");
-        assertNull("Attribute not created:\n" + PublicPackagesInProjectizedXMLTest.readFile(extracted), value);
+        assertNull("Attribute not created:\n" + readFile(extracted), value);
     }
 
     public void testExportPackage() throws Exception {
         File output = new File(getWorkDir(), "output");
-        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File manifest = extractString (
 "Bundle-SymbolicName: org.netbeans.modules.sendopts\n" +
 "  \n" +
 "  \n\n\n"
         );
         File jar = new File(getWorkDir(), "x.jar");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -308,7 +302,7 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         );
 
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertTrue ("JAR created", jar.isFile());
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,35 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.editor.fold;
-
-
-import org.netbeans.spi.editor.fold.FoldManagerFactory;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
-
-/**
- * Mapping the FoldManager folder to FoldManagerFactory class.
  *
- * @author Martin Roskanin
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public class FoldManagerClass2LayerFolder implements Class2LayerFolder {
 
-    public FoldManagerClass2LayerFolder() {
-    }
+package org.netbeans.spi.editor.mimelookup;
 
-    public Class getClazz() {
-        return FoldManagerFactory.class;
-    }
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public String getLayerFolderName() {
-        return "FoldManager"; // NOI18N
-    }
+/**Should be used for services that are to be registered to the MimeLookup and that
+ * need a specific subfolder to be used for the registration (optional, mime-type root
+ * will be searched if this annotation is missing)
+ *
+ * @author Jan Lahoda
+ * @since 1.19
+ */
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface MimeLocation {
 
-    public InstanceProvider getInstanceProvider() {
-        return null;
-    }
+    /**
+     * Folder under which the services should be registered in the system filesystem.
+     * The full path for registering the services will then be <code>Editors/&lt;mime-type&gt;/&lt;subfolderName&gt;</code>
+     */
+    public String subfolderName();
+
+    @SuppressWarnings("rawtypes")
+    public Class<? extends InstanceProvider> instanceProviderClass() default InstanceProvider.class;
     
 }

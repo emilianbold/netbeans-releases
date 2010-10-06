@@ -42,37 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-
 package org.netbeans.modules.editor.mimelookup.impl;
 
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  *
- * @author Martin Roskanin
+ * @author vita
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public class TestClass2LayerFolderInitializer implements Class2LayerFolder{
+@MimeLocation(subfolderName="DummyFolder")
+public interface DummySettingWithPath {
 
-    /** Creates a new instance of TestClass2LayerFolderInitializer */
-    public TestClass2LayerFolderInitializer() {
-    }
-
-    public Class getClazz(){
-        return TestLookupObject.class;
-    }
-
-    /** Gets layer folder name, where the class should be found.
-     *  Folder should be located in the appropriate mime type path, i.e.
-     *  Editors/text/x-java/@lt;desired-layer-folder-name@gt;
-     *  
-     *  @return layer folder name
-     */
-    public String getLayerFolderName(){
-        return "testLookup";
-    }
-
-    public org.netbeans.spi.editor.mimelookup.InstanceProvider getInstanceProvider() {
-        return null;
-    }
-    
 }

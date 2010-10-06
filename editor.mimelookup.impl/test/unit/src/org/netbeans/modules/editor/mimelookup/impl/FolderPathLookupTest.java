@@ -83,19 +83,19 @@ public class FolderPathLookupTest extends NbTestCase {
     }
     
     public void testSimple() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+
         // Create lookup over an existing folder
         Lookup lookup = new FolderPathLookup(new String [] { "Tmp/A/B/C/D" });
-        Collection instances = lookup.lookupAll(Class2LayerFolder.class);
-        
+        Collection instances = lookup.lookupAll(DummySetting.class);
+
         assertEquals("Wrong number of instances", 1, instances.size());
-        assertEquals("Wrong instance", DummyClass2LayerFolder.class, instances.iterator().next().getClass());
-        
+        assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
+
         // Now create lookup over a non-existing folder
         lookup = new FolderPathLookup(new String [] { "Tmp/X/Y/Z" });
         instances = lookup.lookupAll(Object.class);
-        
+
         assertEquals("Wrong number of instances", 0, instances.size());
     }
 
@@ -103,36 +103,36 @@ public class FolderPathLookupTest extends NbTestCase {
         // Create lookup over a non-existing folder
         Lookup lookup = new FolderPathLookup(new String [] { "Tmp/A/B/C/D" });
         Collection instances = lookup.lookupAll(Class2LayerFolder.class);
-        
+
         assertEquals("Wrong number of instances", 0, instances.size());
 
         // Create the folder and the instance
-        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        
-        instances = lookup.lookupAll(Class2LayerFolder.class);
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+
+        instances = lookup.lookupAll(DummySetting.class);
         assertEquals("Wrong number of instances", 1, instances.size());
-        assertEquals("Wrong instance", DummyClass2LayerFolder.class, instances.iterator().next().getClass());
+        assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
     }
 
     public void testRemovingFolders() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
+
         // Create lookup over an existing folder
         Lookup lookup = new FolderPathLookup(new String [] { "Tmp/A/B/C/D" });
-        Collection instances = lookup.lookupAll(Class2LayerFolder.class);
-        
+        Collection instances = lookup.lookupAll(DummySetting.class);
+
         assertEquals("Wrong number of instances", 1, instances.size());
-        assertEquals("Wrong instance", DummyClass2LayerFolder.class, instances.iterator().next().getClass());
+        assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
 
         // Delete the folders
         TestUtilities.deleteFile(getWorkDir(), "Tmp");
-        
+
         instances = lookup.lookupAll(Class2LayerFolder.class);
         assertEquals("Wrong number of instances", 0, instances.size());
     }
 
     public void testChangeEvents() throws Exception {
-        Lookup.Result lr = new FolderPathLookup(new String [] { "Tmp/A/B/C/D" }).lookupResult(Class2LayerFolder.class);
+        Lookup.Result lr = new FolderPathLookup(new String [] { "Tmp/A/B/C/D" }).lookupResult(DummySetting.class);
         L listener = new L();
         lr.addLookupListener(listener);
 
@@ -140,13 +140,13 @@ public class FolderPathLookupTest extends NbTestCase {
         assertEquals("Wrong number of instances", 0, instances.size());
 
         // Create the folder and the instance
-        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
+        TestUtilities.createFile(getWorkDir(), "Tmp/A/B/C/D/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
 
         assertEquals("Wrong number of events", 1, listener.resultChangedCnt);
-        
+
         instances = lr.allInstances();
         assertEquals("Wrong number of instances", 1, instances.size());
-        assertEquals("Wrong instance", DummyClass2LayerFolder.class, instances.iterator().next().getClass());
+        assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
 
         // Reset the listener
         listener.resultChangedCnt = 0;
@@ -155,7 +155,7 @@ public class FolderPathLookupTest extends NbTestCase {
         TestUtilities.deleteFile(getWorkDir(), "Tmp");
 
         assertEquals("Wrong number of events", 1, listener.resultChangedCnt);
-        
+
         instances = lr.allInstances();
         assertEquals("Wrong number of instances", 0, instances.size());
     }

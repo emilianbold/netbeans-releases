@@ -79,7 +79,9 @@ package org.netbeans.spi.editor.mimelookup;
  * @param T type of instance which will be created
  *
  * @author Miloslav Metelka, Martin Roskanin, Vita Stejskal
+ * @deprecated Use {@link MimeLocation} instead
  */
+@Deprecated
 public interface Class2LayerFolder<T> {
     
     /**

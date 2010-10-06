@@ -45,6 +45,7 @@
 package org.netbeans.spi.editor.codegen;
 
 import java.util.List;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.Lookup;
 
 /**
@@ -78,6 +79,7 @@ public interface CodeGenerator {
      * <i>Editors/&lt;mime-type&gt;/CodeGenerators</i> directory.
      * @since 1.8
      */
+    @MimeLocation(subfolderName="CodeGenerators")
     public interface Factory {
         
         /**

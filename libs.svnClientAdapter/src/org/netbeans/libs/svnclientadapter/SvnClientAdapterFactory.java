@@ -65,18 +65,19 @@ public abstract class SvnClientAdapterFactory {
         SVNKIT
     }
 
-    public static SvnClientAdapterFactory getInstance(Client client) throws SVNClientException {
+    public static SvnClientAdapterFactory getInstance(Client client) {
         assert SvnClientAdapterFactory.client == null || client == SvnClientAdapterFactory.client;
 
         if(instance == null) {
             Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
             for (SvnClientAdapterFactory f : cl) {
                 if(f.provides() == client) {
-                    f.setup();
-                    instance = f;
-                    SvnClientAdapterFactory.client = client;
-                    break;
-            }
+                    if(f.isAvailable()) {
+                        instance = f;
+                        SvnClientAdapterFactory.client = client;
+                        break;
+                    }
+                }
             }
         }
         return instance;
@@ -96,9 +97,9 @@ public abstract class SvnClientAdapterFactory {
 
     /**
      * Setups the {@link SvnClientAdapterFactory}
-     * @throws SVNClientException
+     * @return true if the client is available, otherwise false
      */
-    protected abstract void setup() throws SVNClientException;
+    protected abstract boolean isAvailable();
 
     
 }
