@@ -130,11 +130,11 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
-                if (options.indexOf("-x99") >= 0) {
+                if (options.indexOf("-x99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
-                } else if (options.indexOf("-std=c89") >= 0) {
+                } else if (options.indexOf("-std=c89") >= 0) { // NOI18N
                     return LanguageFlavor.C89;
-                } else if (options.indexOf("-std=c99") >= 0) {
+                } else if (options.indexOf("-std=c99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
                 }
             } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
