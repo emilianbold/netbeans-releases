@@ -50,6 +50,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -176,23 +177,27 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 // the actual trigger for this call should be fileobject.getOutputStream() which also
                 // results in the file being emptied.
                 final File backup = fastCopy(file);
-                if(backup != null) {
+                if(backup != null && backup.exists()) {
                     Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(new Runnable() {
                         @Override
                         public void run() {
                             File storeFile = getStoreFile(file, Long.toString(ts), true);
                             try {
+                                LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile});
                                 FileUtils.copy(backup, StoreEntry.createStoreFileOutputStream(storeFile));
                                 LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile});
 
                                 LocalHistory.logChange(file, storeFile, ts);
                                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
+                            } catch (FileNotFoundException ioe) {                                
+                                LocalHistory.LOG.log(Level.INFO, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
                             } catch (IOException ioe) {
-                                LocalHistory.LOG.log(Level.WARNING, null, ioe);
+                                LocalHistory.LOG.log(Level.WARNING, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
                             } finally {
                                 // release
                                 lockedFolders.remove(storeFile.getParentFile());
                                 backup.delete();
+                                LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile});
                             }
                         }
                     });
@@ -1139,9 +1144,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      * @return the newly created copy
      */
     private File fastCopy(final File source) {
-        int i = 0;
-        File target = new File(source.getParentFile(), source.getName() + "~");
+        LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
+        int i = 0;        
         while(true) {
+            File target = new File(source.getParentFile(), source.getName() + "." + i++ + ".nblh~");
             if(!target.exists()) {
                 long ts = source.lastModified();
                 if(source.renameTo(target)) {                                
@@ -1151,15 +1157,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         LocalHistory.LOG.log(Level.WARNING, null, ex);
                     }
                     source.setLastModified(ts);
+                    LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} to {1} - end", new Object[]{source, target});
                     return target;
                 } else {
                     // something went wrong, we don't know what 
-                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});                    
+                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});
+                    return null;
                 }
-            }
-
-            i = i + 1;
-            target = new File(source.getParentFile(), source.getName() + i + "~");
+            }            
         }
     }
 
