@@ -122,7 +122,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 }
             }
             if (options.indexOf("-xc99") >= 0) { // NOI18N
-                res.add("__STDC_VERSION__=199901L");
+                res.add("__STDC_VERSION__=199901L"); // NOI18N
             }
         }
         return res;
