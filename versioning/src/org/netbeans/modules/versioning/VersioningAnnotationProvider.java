@@ -432,9 +432,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             }
             set.add(fo);
             if (removeFromCache) {
-                if (LOG.isLoggable(Level.FINEST)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     // TODO: remove after fix
-                    LOG.log(Level.FINEST, "addToMap(): removing from cache {0}", new Object[] {fo}); //NOI18N
+                    LOG.log(Level.FINER, "addToMap(): removing from cache {0}", new Object[] {fo}); //NOI18N
                 }
                 labelCache.removeAllFor(fo);
                 iconCache.removeAllFor(fo);
@@ -471,9 +471,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             @Override
             protected boolean removeEldestEntry(Entry<ItemKey<T, KEY>, Item<T>> eldest) {
                 if (size() >= CACHE_SIZE) {
-                    if (LOG.isLoggable(Level.FINEST)) {
+                    if (LOG.isLoggable(Level.FINER)) {
                         // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.removeEldestEntry(): {1}", new Object[]{type, eldest.getKey().getFiles()}); //NOI18N
+                        LOG.log(Level.FINER, "{0}.removeEldestEntry(): {1}", new Object[]{type, eldest.getKey().getFiles()}); //NOI18N
                     }
                     removeFromIndex(eldest.getKey());
                     return true;
@@ -515,8 +515,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     itemCached = true;
                 }
             }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "{0}.getValue() cached: {1} for {2}", //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "{0}.getValue() cached: {1} for {2}", //NOI18N
                         new Object[] {type, cachedValue, key.getFiles()});
             }
             if (!itemCached) {
@@ -558,20 +558,12 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                         sets = new HashSet<ItemKey<T, KEY>>();
                         index.put(fo, sets);
                     }
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.setValue(): before add to index: {1}", new Object[]{type, sets}); //NOI18N
-                    }
                     sets.add(key);
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.setValue(): after add to index {1}", new Object[]{type, sets}); //NOI18N
-                    }
                 }
                 removeOldValues();
             }
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "{0}.setValue(): {1} for {2}", new Object[] {type, value, key}); //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "{0}.setValue(): {1} for {2}", new Object[] {type, value, key}); //NOI18N
             }
             return true;
         }
@@ -581,9 +573,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             for (Iterator<Map.Entry<ItemKey<T, KEY>, Item<T>>> it = cachedValues.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry<ItemKey<T, KEY>, Item<T>> e = it.next();
                 if (!e.getValue().isValid()) {
-                    if (LOG.isLoggable(Level.FINEST)) {
+                    if (LOG.isLoggable(Level.FINER)) {
                         // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.removeOldValues(): {1}", new Object[]{type, e.getKey().getFiles()}); //NOI18N
+                        LOG.log(Level.FINER, "{0}.removeOldValues(): {1}", new Object[]{type, e.getKey().getFiles()}); //NOI18N
                     }
                     removeFromIndex(e.getKey());
                     synchronized (cachedValues) {
@@ -637,8 +629,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         
         private T annotate (T initialValue, Set<? extends FileObject> files) {
             long ft = System.currentTimeMillis();
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "{0}.annotate for {1}", new Object[] {type, files}); //NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "{0}.annotate for {1}", new Object[] {type, files}); //NOI18N
             }
             VCSAnnotator an = null;
 
@@ -660,16 +652,14 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 VCSContext context = Utils.contextForFileObjects(files);
                 return annotate(an, initialValue, context);
             } finally {
-                if (LOG.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINEST)) {
                     long t = System.currentTimeMillis();
-                    if (LOG.isLoggable(Level.FINE)) {
-                        if (an != null) {
-                            LOG.log(Level.FINE, "{0}.annotate in {1} returns in " + (t - ft) + " millis", //NOI18N
-                                    new Object[] {type, an.getClass().getName()});
-                        } else {
-                            LOG.log(Level.FINE, "{0}.annotate returns in " + (t - ft) + " millis", //NOI18N
-                                    new Object[] {type});
-                        }
+                    if (an != null) {
+                        LOG.log(Level.FINEST, "{0}.annotate in {1} returns in " + (t - ft) + " millis", //NOI18N
+                                new Object[] {type, an.getClass().getName()});
+                    } else {
+                        LOG.log(Level.FINEST, "{0}.annotate returns in " + (t - ft) + " millis", //NOI18N
+                                new Object[] {type});
                     }
                 }
             }
@@ -682,9 +672,9 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                 Set<ItemKey<T, KEY>> keys = index.get(fo);
                 if (keys != null) {
                     for (ItemKey<T, KEY> key : keys) {
-                        if (LOG.isLoggable(Level.FINEST)) {
+                        if (LOG.isLoggable(Level.FINER)) {
                             // TODO: remove after fix
-                            LOG.log(Level.FINEST, "{0}.removeAllFor(): remove from cache: {1}", new Object[]{type, key.getFiles()}); //NOI18N
+                            LOG.log(Level.FINER, "{0}.removeAllFor(): remove from cache: {1}", new Object[]{type, key.getFiles()}); //NOI18N
                         }
                         synchronized (cachedValues) {
                             cachedValues.remove(key);
@@ -709,18 +699,10 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             for (FileObject fo : files) {
                 Set<ItemKey<T, KEY>> sets = index.get(fo);
                 if (sets != null) {
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.removeFromIndex(): before remove {1}", new Object[]{type, sets}); //NOI18N
-                    }
                     sets.remove(key);
                     if (sets.isEmpty()) {
                         // remove the whole entry
                         index.remove(fo);
-                    }
-                    if (LOG.isLoggable(Level.FINEST)) {
-                        // TODO: remove after fix
-                        LOG.log(Level.FINEST, "{0}.removeAllFor(): after remove {1}", new Object[]{type, sets}); //NOI18N
                     }
                 }
             }
@@ -756,8 +738,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                                 filesToRefresh.add(file);
                             }
                         }
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "{0}.AnnotationRefreshTask.run(): firing refresh event for {1}", //NOI18N
+                        if (LOG.isLoggable(Level.FINEST)) {
+                            LOG.log(Level.FINEST, "{0}.AnnotationRefreshTask.run(): firing refresh event for {1}", //NOI18N
                                     new Object[] {type, filesToRefresh});
                         }
                         refreshAnnotations(filesToRefresh, false);

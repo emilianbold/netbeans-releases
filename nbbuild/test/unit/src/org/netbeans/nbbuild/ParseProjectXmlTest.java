@@ -47,9 +47,6 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Hashtable;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -57,13 +54,12 @@ import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * Test {@link ParseProjectXml}.
  * @author Jaroslav Tulach
  */
-public class ParseProjectXmlTest extends NbTestCase {
+public class ParseProjectXmlTest extends TestBase {
     public ParseProjectXmlTest(String name) {
         super(name);
     }
@@ -79,7 +75,7 @@ public class ParseProjectXmlTest extends NbTestCase {
     }
 
     protected @Override void setUp() throws Exception {
-        clearWorkDir();
+        super.setUp();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
@@ -113,7 +109,7 @@ public class ParseProjectXmlTest extends NbTestCase {
 
         File osgiRepo = new File(getWorkDir(), whereTo);
         osgiRepo.mkdirs();
-        Manifest man = ModuleDependenciesTest.createManifest();
+        Manifest man = createManifest();
         man.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
         man.getMainAttributes().putValue("Bundle-Version", "7.0.1.Prelude");
         String dashCnb = cnb.replace('.', '-');

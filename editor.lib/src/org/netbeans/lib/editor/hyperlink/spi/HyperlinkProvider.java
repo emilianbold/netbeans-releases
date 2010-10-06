@@ -45,6 +45,7 @@
 package org.netbeans.lib.editor.hyperlink.spi;
 
 import javax.swing.text.Document;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  * This interface should be implemented by anyone who whats to provide hyperlinking
@@ -80,6 +81,7 @@ import javax.swing.text.Document;
  * @author Jan Lahoda
  * @since 1.0
  */
+@MimeLocation(subfolderName="HyperlinkProviders")
 public interface HyperlinkProvider {
     
     /**
