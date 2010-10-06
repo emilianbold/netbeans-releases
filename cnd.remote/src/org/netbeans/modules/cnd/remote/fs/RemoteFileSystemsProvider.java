@@ -63,7 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=CndFileSystemProvider.class)
 public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
-    private static final String PROTOCOL_PREFIX = "rfs:";
+    private static final String PROTOCOL_PREFIX = "rfs:"; // NOI18N
 
     @Override
     protected boolean isMine(CharSequence path) {
