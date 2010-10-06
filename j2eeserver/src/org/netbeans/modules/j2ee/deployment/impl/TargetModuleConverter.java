@@ -87,6 +87,8 @@ public class TargetModuleConverter extends DOMConvertor {
 
     private static final Logger LOGGER = Logger.getLogger(TargetModuleConverter.class.getName());
 
+    // Better solution would be to make a limitation of usage of one thread per
+    // server instance for deployment/undeployment/redeployment
     private static final Set<FileObject> FILE_OBJECTS_IN_USE = new HashSet<FileObject>();
 
     public static DOMConvertor create() {
