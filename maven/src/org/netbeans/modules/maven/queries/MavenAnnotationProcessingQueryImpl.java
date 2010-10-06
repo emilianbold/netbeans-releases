@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,63 +34,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-package org.netbeans.modules.maven.model.pom.impl;
-
-import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMQName;
-import org.netbeans.modules.maven.model.pom.POMQNames;
-import org.netbeans.modules.maven.model.pom.VersionablePOMComponent;
-import org.w3c.dom.Element;
-
-/**
  *
- * @author mkleint
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-public abstract class VersionablePOMComponentImpl extends POMComponentImpl implements VersionablePOMComponent {
 
-    public VersionablePOMComponentImpl(POMModel model, Element element) {
-        super(model, element);
+package org.netbeans.modules.maven.queries;
+
+import java.io.File;
+import java.net.URL;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery.Trigger;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+public class MavenAnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplementation {
+
+    private final NbMavenProjectImpl prj;
+
+    public MavenAnnotationProcessingQueryImpl(NbMavenProjectImpl prj) {
+        this.prj = prj;
     }
 
-    // attributes
-
-
-    public String getGroupId() {
-        POMModel model = getModel();
-        assert model != null;
-        POMQNames qnames = model.getPOMQNames();
-        assert qnames != null;
-        POMQName groupid = qnames.GROUPID;
-        assert groupid != null;
-        return getChildElementText(groupid.getQName());
-    }
-
-    public void setGroupId(String groupId) {
-        setChildElementText(getModel().getPOMQNames().GROUPID.getName(), groupId,
-                getModel().getPOMQNames().GROUPID.getQName());
-    }
-
-    public String getArtifactId() {
-        return getChildElementText(getModel().getPOMQNames().ARTIFACTID.getQName());
-    }
-
-    public void setArtifactId(String artifactId) {
-        setChildElementText(getModel().getPOMQNames().ARTIFACTID.getName(), artifactId,
-                getModel().getPOMQNames().ARTIFACTID.getQName());
-    }
-
-    public String getVersion() {
-        return getChildElementText(getModel().getPOMQNames().VERSION.getQName());
-    }
-
-    public void setVersion(String version) {
-        setChildElementText(getModel().getPOMQNames().VERSION.getName(), version,
-                getModel().getPOMQNames().VERSION.getQName());
+    public @Override Result getAnnotationProcessingOptions(FileObject file) {
+        return new Result() {
+            public @Override Set<? extends Trigger> annotationProcessingEnabled() {
+                // XXX should perhaps only be on for maven-compiler-plugin 2.2+
+                return EnumSet.allOf(Trigger.class);
+            }
+            public @Override Iterable<? extends String> annotationProcessorsToRun() {
+                // XXX read from maven-compiler-plugin config
+                return null;
+            }
+            public @Override URL sourceOutputDirectory() {
+                return FileUtil.urlForArchiveOrDir(new File(FileUtil.toFile(prj.getProjectDirectory()), "target/generated-sources/annotations")); // NOI18N
+            }
+            public @Override Map<? extends String, ? extends String> processorOptions() {
+                // XXX read from maven-compiler-plugin config
+                return Collections.emptyMap();
+            }
+            public @Override void addChangeListener(ChangeListener l) {}
+            public @Override void removeChangeListener(ChangeListener l) {}
+        };
     }
 
 }
