@@ -342,4 +342,10 @@ public class FileModel2Test extends TraceModelTestBase {
         // Also test offsets of BAR definition.
         performTest("iz182510.cc");
     }
+
+    public void testIZ190710() throws Exception {
+        //  Bug 190710 - UI freeze due to function body parsing in EDT
+        performTest("iz190710.cc");
+    }
+
 }
