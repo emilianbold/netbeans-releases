@@ -46,6 +46,7 @@ package org.netbeans.lib.editor.codetemplates.spi;
 
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  * Filter accepting code templates being displayed in a code completion popup.
@@ -68,6 +69,7 @@ public interface CodeTemplateFilter {
      * <br/>
      * It should be registered in the MimeLookup for a given mime-type.
      */
+    @MimeLocation(subfolderName="CodeTemplateFilterFactories")
     public interface Factory {
         
         /**

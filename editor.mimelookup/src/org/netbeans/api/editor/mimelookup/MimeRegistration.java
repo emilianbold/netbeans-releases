@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-
-package org.netbeans.modules.editor.mimelookup.impl;
-
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
-import org.openide.actions.DeleteAction;
-import org.openide.util.actions.CallbackSystemAction;
-/**
  *
- * @author Martin Roskanin
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public class PopupInitializer implements Class2LayerFolder{
+package org.netbeans.api.editor.mimelookup;
 
-    /** Creates a new instance of TestClass2LayerFolderInitializer */
-    public PopupInitializer() {
-    }
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public Class getClazz(){
-        return PopupActions.class;
-    }
-    
-    /** Gets layer folder name, where the class should be found.
-     *  Folder should be located in the appropriate mime type path, i.e.
-     *  Editors/text/x-java/@lt;desired-layer-folder-name@gt;
-     *  
-     *  @return layer folder name
+/**Register an implementation of a service to the mime lookup under given mime-type.
+ * This annotation can be used either to annotate implementation class, in which case
+ * it must have a public non-arg constructor, or a public static factory method returning
+ * the service.
+ *
+ * @author Jan Lahoda
+ * @since 1.19
+ */
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.SOURCE)
+public @interface MimeRegistration {
+
+    /**
+     * The API service.
      */
-    public String getLayerFolderName(){
-        return "Popup"; //NOI18N
-    }
-
-    public InstanceProvider getInstanceProvider() {
-        return new PopupActions();
-    }
+    public Class<?> service();
     
+    /**
+     * Mime type to which should be the given provider registered.
+     */
+    public String mimeType();
+
+    /**
+     * Position of the provider in the list of providers.
+     */
+    public int position() default Integer.MAX_VALUE;
+
 }
