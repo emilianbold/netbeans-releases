@@ -66,6 +66,7 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -185,6 +186,22 @@ public class FileStatusCache {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
                     for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)))) {
                         FileInformation fi = getInfo(file);
+                        if (fi == null || fi.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+                            // XXX debug section
+                            LOG.log(Level.WARNING, "refreshAllRoots(): possibly concurrent refresh: {0}:{1}", new Object[] { file, fi });
+                            boolean ea = false;
+                            assert ea = true;
+                            if (ea) {
+                                try {
+                                    Thread.sleep(100);
+                                } catch (InterruptedException ex) { }
+                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE))))).contains(file)) {
+                                    LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
+                                    assert false : "index seems to be broken " + file.getAbsolutePath();
+                                }
+                            }
+                            continue;
+                        }
                         boolean exists = file.exists();
                         File filesOwner = null;
                         boolean correctRepository = true;
