@@ -1,3 +1,5 @@
+package org.netbeans.libs.svnclientadapter.javahl;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -37,69 +39,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.svnclientadapter;
-
 import java.util.Collection;
-import java.util.logging.Logger;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  *
- * @author Tomas Stupka
+ * @author tomas
  */
-public abstract class SvnClientAdapterFactory {
-    
-    protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
-    private static SvnClientAdapterFactory instance;
-    private static Client client;
+public class JavaHlClientAdapterFactoryTest extends NbTestCase {
 
-    public SvnClientAdapterFactory() { }
-
-    public enum Client {
-        JAVAHL,
-        SVNKIT
+    public JavaHlClientAdapterFactoryTest(String name) {
+        super(name);
     }
 
-    public static SvnClientAdapterFactory getInstance(Client client) {
-        assert SvnClientAdapterFactory.client == null || client == SvnClientAdapterFactory.client;
+    public void setUp() {
+    }
 
-        if(instance == null) {
-            Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
-            for (SvnClientAdapterFactory f : cl) {
-                if(f.provides() == client) {
-                    if(f.isAvailable()) {
-                        instance = f;
-                        SvnClientAdapterFactory.client = client;
-                        break;
-                    }
-                }
+    public void tearDown() {
+    }
+
+    public void testIsAvailable() {
+        JavaHlClientAdapterFactory f = getFactory();
+        assertNotNull(f);
+        assertTrue(f.isAvailable());
+        ISVNClientAdapter c = f.createClient();
+        assertNotNull(c);
+    }
+
+    public void testNotAvailable() {
+        System.setProperty("subversion.native.library", "/this/shouldnot/work" + System.currentTimeMillis());
+        JavaHlClientAdapterFactory f = getFactory();
+        assertNotNull(f);
+        assertFalse(f.isAvailable());
+    }
+
+    public void testProvides() {
+        JavaHlClientAdapterFactory f = getFactory();
+        assertNotNull(f);
+        assertEquals(SvnClientAdapterFactory.Client.JAVAHL, f.provides());
+    }
+    
+    public void testGetFactory() {
+        boolean found = false;
+        Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
+        for (SvnClientAdapterFactory f : cl) {
+            if(f.getClass() == JavaHlClientAdapterFactory.class) {
+                found = true;
+                break;
             }
         }
-        return instance;
+        if(!found) {
+            fail("couldn't lookup JavHlClientAdapterFactory");
+        }
     }
 
-    /**
-     * Creates a new {@link ISVNClientAdapter} instance
-     * @return
-     */
-    public abstract ISVNClientAdapter createClient();
+    private JavaHlClientAdapterFactory getFactory() {
+        return new TestFactory();
+    }
 
-    /**
-     * Returns the client type provided by this factory
-     * @return
-     */
-    protected abstract Client provides();
-
-    /**
-     * Setups the {@link SvnClientAdapterFactory}
-     * @return true if the client is available, otherwise false
-     */
-    protected abstract boolean isAvailable();
-
-    
+    private class TestFactory extends JavaHlClientAdapterFactory {
+        @Override
+        public Client provides() {
+            return super.provides();
+        }
+        @Override
+        public boolean isAvailable() {
+            return super.isAvailable();
+        }
+    }
 }
