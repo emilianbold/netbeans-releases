@@ -111,8 +111,7 @@ public abstract class CndFileSystemProvider {
 
         private synchronized FileSystem getFileFileSystem() {
             if (fileFileSystem == null) {
-                File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-                FileObject tmpDirFo = FileUtil.toFileObject(tmpDir);
+                FileObject tmpDirFo = FileUtil.toFileObject(new File(System.getProperty("java.io.tmpdir"))); // File SIC!  //NOI18N
                 if (tmpDirFo != null) {
                     try {
                         fileFileSystem = tmpDirFo.getFileSystem();

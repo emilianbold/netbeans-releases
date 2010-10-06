@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -113,7 +113,7 @@ public class ModelBasedTestCase extends CndBaseTestCase {
     }
 
     protected BaseDocument getBaseDocument(File testSourceFile) throws Exception {
-        FileObject testFileObject = FileUtil.toFileObject(testSourceFile);
+        FileObject testFileObject = CndFileUtils.toFileObject(testSourceFile);
         assertNotNull("Unresolved test file " + testSourceFile, testFileObject);//NOI18N
         DataObject testDataObject = DataObject.find(testFileObject);
         assertNotNull("Unresolved data object for file " + testFileObject, testDataObject);//NOI18N

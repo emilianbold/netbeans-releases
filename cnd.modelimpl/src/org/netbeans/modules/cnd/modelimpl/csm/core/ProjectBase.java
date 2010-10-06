@@ -2488,16 +2488,16 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             Parameters.notNull("project", project);
             Parameters.notNull("absolutePath", absolutePath);
             this.project = project;
-            this.fileObjectOrAbsPath = absolutePath;
+            this.fileObjectOrAbsPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
         }
 
         public DefaultFileItem(NativeFileItem nativeFile) {
             Parameters.notNull("nativeFile", nativeFile);
             this.project = nativeFile.getNativeProject();
             this.fileObjectOrAbsPath = nativeFile.getFileObject();
-            if (fileObjectOrAbsPath == null) {
-                nativeFile.getFileObject();
-            }
+//            if (fileObjectOrAbsPath == null || !((FileObject) fileObjectOrAbsPath).isValid()) {
+//                nativeFile.getFileObject();
+//            }
             Parameters.notNull("nativeFile.getFileObject()", fileObjectOrAbsPath);
         }
 
@@ -2560,7 +2560,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             if (fileObjectOrAbsPath instanceof FileObject) {
                 return (FileObject) fileObjectOrAbsPath;
             } else {
-                return FileUtil.toFileObject(new File((String) fileObjectOrAbsPath));
+                return CndFileUtils.toFileObject((String) fileObjectOrAbsPath);
             }
         }
 

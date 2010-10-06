@@ -112,6 +112,27 @@ public final class CndFileUtils {
         return path.equals(normPath) ? file : new File(normPath);
     }
 
+    public static FileObject toFileObject(File file) {
+        return CndFileSystemProvider.toFileObject(file);
+    }
+
+    public static FileObject toFileObject(CharSequence path) {
+        return CndFileSystemProvider.toFileObject(path);
+    }
+
+    public static String getCanonicalPath(CharSequence path) throws IOException {
+        return new File(path.toString()).getCanonicalPath(); // XXX:FileObject conversion - delegate to provider!
+    }
+
+    public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            return FileUtil.toFileObject(file.getCanonicalFile()); // XXX:FileObject conversion - delegate to provider!
+        } else {
+            return fo;
+        }
+    }
+
     /**
      * normalize absolute paths
      * @param path

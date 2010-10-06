@@ -83,7 +83,7 @@ public final class MIMESupport {
      * @return one of mime types or "content/unknown"
      */
     public static String getFileMIMEType(File file) {
-        FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(file));
         String mime;
         if (fo != null) {
             // try fast check

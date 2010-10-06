@@ -75,11 +75,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor.Task;
@@ -240,7 +240,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
                     } else if (WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) {
                         return path;
                     } else if (WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) {
-                        return FileUtil.toFileObject(new File(path));
+                        return CndFileUtils.toFileObject(path);
                     } else if (WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) {
                         return new File(path);
                     } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) {

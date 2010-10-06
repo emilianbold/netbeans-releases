@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.modelutil.ui;
 
 import java.awt.Image;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,14 +60,13 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
 
@@ -106,7 +104,7 @@ public class ElementNode extends AbstractNode {
         if (CsmKindUtilities.isFile(description.iconElementHandle)) {
             CsmFile file = (CsmFile) description.iconElementHandle;
             CharSequence absolutePath = file.getAbsolutePath();
-            FileObject fo = FileUtil.toFileObject(new File(absolutePath.toString()));
+            FileObject fo = CndFileUtils.toFileObject(absolutePath);
             if (fo != null) {
                 try {
                     DataObject dob = DataObject.find(fo);

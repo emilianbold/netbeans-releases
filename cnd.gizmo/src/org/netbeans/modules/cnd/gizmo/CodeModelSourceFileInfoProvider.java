@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.gizmo;
 
 import org.netbeans.modules.cnd.gizmo.support.GizmoServiceInfo;
-import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -62,7 +61,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -83,7 +82,7 @@ public final class CodeModelSourceFileInfoProvider implements SourceFileInfoProv
             if (projectFolderName == null) {
                 return null;
             }
-            Project prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(new File(projectFolderName)));
+            Project prj = ProjectManager.getDefault().findProject(CndFileUtils.toFileObject(projectFolderName));
             if (prj.getLookup().lookup(NativeProject.class) == null) {
                 return null;
             }

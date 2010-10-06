@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -110,8 +111,8 @@ public class SelectModePanel extends javax.swing.JPanel {
                 controller.getWizardStorage().setProjectPath(path);
                 if (!controller.isFullRemote()) {
                     if (!path.isEmpty()) {
-                        File file = FileUtil.normalizeFile(new File(path));
-                        controller.getWizardStorage().setSourcesFileObject(FileUtil.toFileObject(file));
+                        String normalizedPath = CndFileUtils.normalizeAbsolutePath(path);
+                        controller.getWizardStorage().setSourcesFileObject(CndFileUtils.toFileObject(normalizedPath));
                     }
                 }
                 updateInstruction();
@@ -168,9 +169,9 @@ public class SelectModePanel extends javax.swing.JPanel {
                 if (configure != null) {
                     toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
                     tool = configure;
-                    File confFile = FileUtil.normalizeFile(new File(configure));
-                    FileObject fo = FileUtil.toFileObject(confFile);
-                    if (fo != null) {
+                    String normalizedPath = CndFileUtils.normalizeAbsolutePath(configure);
+                    FileObject fo = CndFileUtils.toFileObject(normalizedPath);
+                    if (fo != null && fo.isValid()) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
@@ -541,7 +542,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                     return false;
                 }
                 if (projectDirFile.isDirectory()) {
-                    FileObject fo = FileUtil.toFileObject(projectDirFile);
+                    FileObject fo = CndFileUtils.toFileObject(projectDirFile);
                     if (fo != null) {
                         try {
                             if (ProjectManager.getDefault().findProject(fo) != null) {

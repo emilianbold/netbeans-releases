@@ -60,7 +60,7 @@ public class InvalidFileObjectSupportTest {
     @Test
     public void testInvalidFileObject() throws Exception {
         File file = File.createTempFile("qwe", "asd");
-        FileObject origFo = FileUtil.toFileObject(file);
+        FileObject origFo = FileUtil.toFileObject(file); // FileUtil SIC!
         String path = origFo.getPath();
         FileSystem fs = origFo.getFileSystem();
         assertNotNull(origFo);
