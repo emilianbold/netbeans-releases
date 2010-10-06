@@ -1552,7 +1552,7 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther])
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther, 0])
         ;
 
 declaration[int kind]
@@ -1859,7 +1859,7 @@ init_declarator_list[int kind]
 	;
 
 init_declarator[int kind]
-	:	declarator[kind]
+	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
                         ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
@@ -1979,7 +1979,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator[declOther]
+		declarator[declOther, 0]
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -2003,52 +2003,52 @@ cv_qualifier_seq
 	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
 	;
 
-declarator[int kind]
+declarator[int kind, int level]
     :
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // void (__attribute__((noreturn)) ****f) (void);
-        (attribute_specification)=> attribute_specification!
-        declarator[kind]
+        {level < 5}? (attribute_specification)=> attribute_specification!
+        declarator[kind, level + 1]
     |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
-        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
+        {level < 5}? (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        restrict_declarator[kind, level + 1]
     |
         // type (var) = {...}
-        (LPAREN declarator[kind] RPAREN ASSIGNEQUAL LCURLY) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5}? (LPAREN declarator[kind, level + 1] RPAREN ASSIGNEQUAL LCURLY) =>
+        LPAREN declarator[kind, level + 1] RPAREN
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level + 1] RPAREN
     |
-        direct_declarator[kind]
+        {level < 5}? direct_declarator[kind, level + 1]
     ;
 
-restrict_declarator[int kind]
+restrict_declarator[int kind, int level]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        (LPAREN declarator[kind, level] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // char *__attribute__((aligned(8))) *f;
         (attribute_specification)=> attribute_specification!
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |   
-        (literal_restrict!)? direct_declarator[kind]
+        (literal_restrict!)? direct_declarator[kind, level]
     ;
 
-direct_declarator[int kind]
+direct_declarator[int kind, int level]
 {String id; TypeQualifier tq;}
     :
         // Must be function declaration
@@ -2114,7 +2114,7 @@ direct_declarator[int kind]
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind] RPAREN
+		LPAREN declarator[kind, level+1] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         declarator_suffixes
         (options {greedy=true;} :variable_attribute_specification)?
@@ -2475,12 +2475,12 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator[declFunctionParam])=> declarator[declFunctionParam]        // if arg name given
+				(declarator[declFunctionParam, 0])=> declarator[declFunctionParam, 0]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)
 		|
-			(declarator[declOther])=> declarator[declOther]	// DW 24/3/98 Mods for K & R
+			(declarator[declOther, 0])=> declarator[declOther, 0]	// DW 24/3/98 Mods for K & R
 		|
 			ELLIPSIS
 		)
@@ -2996,7 +2996,7 @@ condition_declaration {int ts = tsInvalid;}
         cv_qualifier_seq (LITERAL_typename)?
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
-        declarator[declStatement]
+        declarator[declStatement, 0]
         ASSIGNEQUAL assignment_expression
     ;
 
