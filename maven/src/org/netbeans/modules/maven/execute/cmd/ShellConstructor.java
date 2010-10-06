@@ -58,21 +58,25 @@ public class ShellConstructor implements Constructor {
         this.mavenHome = mavenHome;
     }
 
-    public @Override List<String> construct(File pom) {
+    public List<String> construct() {
+        //#164234
+        //if maven.bat file is in space containing path, we need to quote with simple quotes.
+        String quote = "\"";
+        // the command line parameters with space in them need to be quoted and escaped to arrive
+        // correctly to the java runtime on windows
+        String escaped = "\\" + quote;
         List<String> toRet = new ArrayList<String>();
         String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
         if (mavenHome != null) {
             File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
             if (bin.exists()) {
-                toRet.add(quoteSpaces(bin.getAbsolutePath()));
+                toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
             } else {
                 toRet.add(ex);
             }
         } else {
             toRet.add(ex);
         }
-        toRet.add("-f"); // NOI18N
-        toRet.add(quoteSpaces(pom.getAbsolutePath()));
 
         if (Utilities.isWindows() && Boolean.getBoolean("maven.run.cmd")) { //#153101
             toRet.add(0, "/c"); //NOI18N
@@ -84,8 +88,7 @@ public class ShellConstructor implements Constructor {
     // we run the shell/bat script in the process, on windows we need to quote any spaces
     //once/if we get rid of shell/bat execution, we might need to remove this
     //#164234
-    private static String quoteSpaces(String val) {
-        String quote = "\""; // NOI18N
+    private static String quoteSpaces(String val, String quote) {
         if (val.indexOf(' ') != -1) { //NOI18N
             if (Utilities.isWindows()) {
                 return quote + val + quote; //NOI18N
