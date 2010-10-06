@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.execute.cmd;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -49,5 +50,5 @@ import java.util.List;
  * @author mkleint
  */
 public interface Constructor {
-    List<String> construct();
+    List<String> construct(File pom);
 }
