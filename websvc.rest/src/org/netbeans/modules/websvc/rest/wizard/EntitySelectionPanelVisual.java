@@ -435,13 +435,14 @@ private void listSelectedValueChanged(javax.swing.event.ListSelectionEvent evt) 
          *  Fix for BZ#151256 -  [65cat] ClassCastException: java.lang.String 
          *  cannot be cast to org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity
          */
-        boolean enableAvailable = listAvailable.getSelectedValues().length > 0;
+        boolean smthSelected = listAvailable.getSelectedValues().length > 0;
+        boolean noEntities = false;
         if ( listAvailable.getSelectedValues().length == 1 ){
-            enableAvailable = !MSG_RETRIEVING.equals(listAvailable.
+            noEntities = MSG_RETRIEVING.equals(listAvailable.
                     getSelectedValue());
         }
-        buttonAdd.setEnabled(enableAvailable);
-        buttonAddAll.setEnabled(enableAvailable);
+        buttonAdd.setEnabled(smthSelected && !noEntities);
+        buttonAddAll.setEnabled(!noEntities);
         buttonRemove.setEnabled(listSelected.getSelectedValues().length > 0);
         buttonRemoveAll.setEnabled(listSelected.getModel().getSize() > 0);
     }
