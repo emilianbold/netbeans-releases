@@ -84,7 +84,7 @@ public class SvnClientFactory {
 
     /** indicates that something went terribly wrong with javahl init during the previous nb session */
     private static boolean javahlCrash = false;
-    private final static int JAVAHL_INIT_SUCCESS = 1;
+    private final static int JAVAHL_INIT_NOCRASH = 1;
     private final static int JAVAHL_INIT_STOP_REPORTING = 2;
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
@@ -273,7 +273,10 @@ public class SvnClientFactory {
             LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
             return false;
         } finally {
-            writeJavahlInitFlag(initFile, JAVAHL_INIT_SUCCESS);
+            // write the flag even if javahl ot available -
+            // we just want to now on the next run that javahl didn't crash the jvm,
+            // so we will try to init javahl again
+            writeJavahlInitFlag(initFile, JAVAHL_INIT_NOCRASH);
         }
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
@@ -423,7 +426,7 @@ public class SvnClientFactory {
                 case JAVAHL_INIT_STOP_REPORTING:
                     LOG.fine("won't init javahl due to problem in a previous try.");
                     return true;
-                case JAVAHL_INIT_SUCCESS:
+                case JAVAHL_INIT_NOCRASH:
                     LOG.fine("will try init javahl.");
                     return false;
             }
