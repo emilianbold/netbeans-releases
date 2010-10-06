@@ -42,9 +42,19 @@
 
 package org.netbeans.modules.cnd.modelui.actions;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.spi.model.services.CsmDiagnosticProvider;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -54,6 +64,7 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Voskresensky
  */
 public class CodeModelDiagnosticAction extends ProjectActionBase {
+    private final static Logger LOG = Logger.getLogger("CodeModelDiagnosticAction");
     public CodeModelDiagnosticAction() {
         super(true);
     }
@@ -64,11 +75,42 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
     }
 
     @Override
+    protected boolean isEnabledEx(Node[] activatedNodes, Collection<CsmProject> projects) {
+        if (super.isEnabledEx(activatedNodes, projects)) {
+            return true;
+        }
+        for (Node node : activatedNodes) {
+            if (node.getLookup().lookup(NativeFileItemSet.class) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
     protected void performAction(Collection<CsmProject> csmProjects) {
-        Collection<? extends CsmDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CsmDiagnosticProvider.class);
-        Lookup context = Lookups.fixed(csmProjects.toArray());
-        for (CsmDiagnosticProvider provider : providers) {
-            provider.dumpInfo(context, null, null);
+        Node[] activatedNodes = getActivatedNodes();
+        List<Object> lookupObjects = new ArrayList<Object>();
+        JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+        Document doc = null;
+        if (lastFocusedComponent != null) {
+            lookupObjects.add(lastFocusedComponent);
+            doc = lastFocusedComponent.getDocument();
+        }
+        if (doc != null) {
+            lookupObjects.add(doc);
+        }
+        if (activatedNodes != null) {
+            lookupObjects.addAll(Arrays.asList(activatedNodes));
+        }
+        lookupObjects.addAll(csmProjects);
+        LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
+        if (!lookupObjects.isEmpty()) {
+            Collection<? extends CsmDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CsmDiagnosticProvider.class);
+            Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
+            for (CsmDiagnosticProvider provider : providers) {
+                provider.dumpInfo(context, null, null);
+            }
         }
     }    
 }
