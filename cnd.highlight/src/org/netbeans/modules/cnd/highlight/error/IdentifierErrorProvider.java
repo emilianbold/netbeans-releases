@@ -148,9 +148,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                         severity = Severity.WARNING;
                     }
                     foundError++;
-                    response.addError(new IdentifierErrorInfo(
+                    response.addError(new ErrorInfoImpl(
                             ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity));
+                            ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed"));// NOI18N
                 } else if (referencedObject instanceof CsmTemplateBasedReferencedObject) {
                     if (CsmFileReferences.isAfterUnresolved(context)) {
                         return;
@@ -160,9 +160,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     }
                     Severity severity = Severity.WARNING;
                     foundError++;
-                    response.addError(new IdentifierErrorInfo(
+                    response.addError(new ErrorInfoImpl(
                             ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity));
+                            ref.getText().toString(), severity, "HighlightProvider_IdentifierMissed")); //NOI18N
                 } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
                     // check function definition without declaration
                     if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
@@ -170,9 +170,9 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                             Severity severity = Severity.ERROR;
                             foundError++;
                             //TODO: we can be more clever here and provide user with hint to create declaration
-                            response.addError(new IdentifierErrorInfo(
+                            response.addError(new ErrorInfoImpl(
                                     ref.getStartOffset(), ref.getEndOffset(),
-                                    ref.getText().toString(), severity));
+                                    ref.getText().toString(), severity, "HighlightProvider_FunDeclarationMissed")); //NOI18N
                         }
                     }
                 } else if (false && referencedObject instanceof CsmFunction) {
@@ -205,26 +205,26 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     }
                     Severity severity = Severity.WARNING;
                     foundError++;
-                    response.addError(new IdentifierDeclarationAfterUsageInfo(
+                    response.addError(new ErrorInfoImpl(
                             ref.getStartOffset(), ref.getEndOffset(),
-                            ref.getText().toString(), severity));
+                            ref.getText().toString(), severity, 
+                            "HighlightProvider_DeclarationAfterUsage")); //NOI18N
                 }
             }
         }
     }
 
-    private static class IdentifierErrorInfo implements CsmErrorInfo {
+    private final static class ErrorInfoImpl implements CsmErrorInfo {
 
         private final int startOffset;
         private final int endOffset;
         private final String message;
         private final Severity severity;
 
-        public IdentifierErrorInfo(int startOffset, int endOffset, String name, Severity severity) {
+        public ErrorInfoImpl(int startOffset, int endOffset, String name, Severity severity, String bundleKey) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
-            this.message = NbBundle.getMessage(IdentifierErrorProvider.class,
-                    "HighlightProvider_IdentifierMissed", name); //NOI18N
+            this.message = NbBundle.getMessage(IdentifierErrorProvider.class, bundleKey, name);
             this.severity = severity;
         }
 
@@ -247,43 +247,5 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public int getEndOffset() {
             return endOffset;
         }
-
-    }
-
-    private static class IdentifierDeclarationAfterUsageInfo implements CsmErrorInfo {
-
-        private final int startOffset;
-        private final int endOffset;
-        private final String message;
-        private final Severity severity;
-
-        public IdentifierDeclarationAfterUsageInfo(int startOffset, int endOffset, String name, Severity severity) {
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-            this.message = NbBundle.getMessage(IdentifierDeclarationAfterUsageInfo.class,
-                    "HighlightProvider_DeclarationAfterUsage", name); //NOI18N
-            this.severity = severity;
-        }
-
-        @Override
-        public String getMessage() {
-            return message;
-        }
-
-        @Override
-        public Severity getSeverity() {
-            return severity;
-        }
-
-        @Override
-        public int getStartOffset() {
-            return startOffset;
-        }
-
-        @Override
-        public int getEndOffset() {
-            return endOffset;
-        }
-
     }
 }
