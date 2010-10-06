@@ -116,8 +116,8 @@ public interface NativeFileItem {
     public Language getLanguage();
     
     /**
-     * Returns the language flavor of the file or GENERIC if unknown.
-     * @return the language flavor (or GENERIC) of the file
+     * Returns the language flavor of the file or UNKNOWN if unknown.
+     * @return the language flavor (or UNKNOWN) of the file
      */
     public LanguageFlavor getLanguageFlavor();
     
