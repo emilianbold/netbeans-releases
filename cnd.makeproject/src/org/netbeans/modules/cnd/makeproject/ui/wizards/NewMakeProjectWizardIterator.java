@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -503,7 +502,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
-            FileObject dir = FileUtil.toFileObject(dirF);
+            FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);
         }
         return resultSet;

@@ -507,14 +507,14 @@ public class CsmUtilities {
         FileObject fo = null;
         if (csmFile != null) {
             try {
-                try {
-                    File file = new File(csmFile.getAbsolutePath().toString());
-                    fo = FileUtil.toFileObject(file);
-                    if (fo == null) {
-                        fo = FileUtil.toFileObject(file.getCanonicalFile());
+                try {                    
+                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
+                    if (fo == null /*paranoia*/ || !fo.isValid()) {
+                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
+                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
                     }
                 } catch (IOException e) {
-                    fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
+                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
                 }
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();

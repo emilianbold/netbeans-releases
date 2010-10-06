@@ -78,6 +78,7 @@ import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.loaders.CreateFromTemplateHandler;
@@ -342,8 +343,9 @@ public class MakeProjectGenerator {
             }
             // refreshFileSystem (dir); // See 136445
         }
-        dirFO = FileUtil.toFileObject(dir);
+        dirFO = CndFileUtils.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }

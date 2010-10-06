@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -445,7 +446,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return false;
         }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
         if (fo == null) {
             return false;
         }
@@ -457,7 +458,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return false;
         }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
         if (fo == null) {
             return false;
         }

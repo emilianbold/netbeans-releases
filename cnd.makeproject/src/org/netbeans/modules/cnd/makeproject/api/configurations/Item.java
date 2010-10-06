@@ -375,9 +375,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         synchronized (this) {
             if (fileObject == null) {
                 File curFile = getNormalizedFile();
-                fileObject = FileUtil.toFileObject(curFile);
-                if (fileObject == null) {
-                    fileObject = FileUtil.toFileObject(getCanonicalFile());
+                fileObject = CndFileUtils.toFileObject(curFile);
+                if (fileObject == null || !fileObject.isValid()) {
+                    fileObject = CndFileUtils.toFileObject(getCanonicalFile());
                 }
             }
         }

@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -132,7 +133,7 @@ public final class ConfigureUtils {
 
     public static boolean isRunnable(File file) {
         if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
-            FileObject configureFileObject = FileUtil.toFileObject(file);
+            FileObject configureFileObject = CndFileUtils.toFileObject(file);
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
             }
