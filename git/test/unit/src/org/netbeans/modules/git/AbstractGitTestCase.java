@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
@@ -151,6 +153,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         private final HashSet<File> refreshedFiles = new HashSet<File>();
         private final File topFolder;
         private final Set<String> interestingFiles = new HashSet<String>();
+        boolean active;
 
         public StatusRefreshLogHandler (File topFolder) {
             this.topFolder = topFolder;
@@ -158,9 +161,12 @@ public abstract class AbstractGitTestCase extends NbTestCase {
 
         @Override
         public void publish(LogRecord record) {
+            if (!active) {
+                return;
+            }
             if (record.getMessage().contains("refreshAllRoots() roots: finished")) {
                 synchronized (this) {
-                    if (refreshedFiles.equals(filesToRefresh)) {
+                    if (refreshedFiles.containsAll(filesToRefresh)) {
                         filesRefreshed = true;
                         notifyAll();
                     }
@@ -187,9 +193,12 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         }
 
         public void setFilesToRefresh (Set<File> files) {
-            filesToRefresh = files;
-            refreshedFiles.clear();
+            active = false;
             filesRefreshed = false;
+            refreshedFiles.clear();
+            filesToRefresh = files;
+            interestingFiles.clear();
+            active = true;
         }
 
         public boolean waitForFilesToRefresh () throws InterruptedException {
@@ -201,6 +210,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
                     wait(500);
                 }
             }
+            Logger.getLogger(AbstractGitTestCase.class.getName()).log(Level.WARNING, "Refreshed files only: {0}", refreshedFiles);
             return false;
         }
 

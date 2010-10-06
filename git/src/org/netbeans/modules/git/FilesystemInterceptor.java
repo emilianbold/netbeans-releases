@@ -320,15 +320,20 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
-    // TODO: call from VCSInterceptor methods
     private void reScheduleRefresh (int delayMillis, Set<File> filesToRefresh) {
         // refresh all at once
-        Git.STATUS_LOG.fine("reScheduleRefresh: adding " + filesToRefresh);
+        Set<File> filteredFiles = new HashSet<File>(filesToRefresh);
+        for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
+            if (GitUtils.isPartOfGitMetadata(it.next())) {
+                it.remove();
+            }
+        }
         boolean changed;
         synchronized (this.filesToRefresh) {
-            changed = this.filesToRefresh.addAll(filesToRefresh);
+            changed = this.filesToRefresh.addAll(filteredFiles);
         }
         if (changed) {
+            Git.STATUS_LOG.log(Level.FINE, "reScheduleRefresh: adding {0}", filteredFiles);
             refreshTask.schedule(delayMillis);
         }
     }

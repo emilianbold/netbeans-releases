@@ -85,6 +85,12 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(h);
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        Git.STATUS_LOG.removeHandler(h);
+        super.tearDown();
+    }
+
     public void testSeenRootsLogin () throws Exception {
         File folderA = new File(repositoryLocation, "folderA");
         File fileA1 = new File(folderA, "file1");
