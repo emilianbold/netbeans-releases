@@ -812,11 +812,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private ActionToGoalMapping getActionMappings() {
         assert handle != null || actionmappings != null;
         if (handle != null) {
-            if (handle.isConfigurationsEnabled()) {
-                return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
-            } else {
-                return handle.getActionMappings();
-            }
+            return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
         }
         return actionmappings;
     }
@@ -1064,7 +1060,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private void setupConfigurations() {
-        if (handle != null && handle.isConfigurationsEnabled()) {
+        if (handle != null) {
             lblConfiguration.setVisible(true);
             comConfiguration.setVisible(true);
             DefaultComboBoxModel comModel = new DefaultComboBoxModel();
