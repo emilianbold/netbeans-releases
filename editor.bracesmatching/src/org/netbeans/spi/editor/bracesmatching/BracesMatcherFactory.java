@@ -43,6 +43,9 @@
  */
 package org.netbeans.spi.editor.bracesmatching;
 
+import org.netbeans.modules.editor.bracesmatching.BMFClass2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  * The factory for creating {@link BracesMatcher}s. Instances of this class
  * are supposed to be registered in MIME lookup under the mime type of documents
@@ -50,6 +53,7 @@ package org.netbeans.spi.editor.bracesmatching;
  * 
  * @author Vita Stejskal
  */
+@MimeLocation(subfolderName=BMFClass2LayerFolder.FOLDER)
 public interface BracesMatcherFactory {
 
     /**

@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.openide.filesystems.FileObject;
 

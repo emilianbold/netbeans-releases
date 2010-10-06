@@ -51,6 +51,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -59,9 +60,10 @@ import org.openide.filesystems.FileObject;
  * @since 1.39
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
+@MimeLocation(subfolderName=EditorActionsProvider.EDITOR_ACTIONS_FOLDER_NAME)
 public final class EditorActionsProvider extends ActionsList implements  Class2LayerFolder<EditorActionsProvider>, InstanceProvider<EditorActionsProvider> {
 
-    private static final String EDITOR_ACTIONS_FOLDER_NAME = "Actions"; //NOI18N
+    static final String EDITOR_ACTIONS_FOLDER_NAME = "Actions"; //NOI18N
     
     public static List<Action> getEditorActions(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);

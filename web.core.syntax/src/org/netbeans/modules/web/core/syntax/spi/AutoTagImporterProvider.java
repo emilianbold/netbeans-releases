@@ -45,6 +45,8 @@
 package org.netbeans.modules.web.core.syntax.spi;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.web.core.syntax.AutoTagImporterProviderClass2Layer;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  *
@@ -64,6 +66,7 @@ import javax.swing.text.Document;
  * filesystem (in layer file) in the folder
  * Editors/${mime-types}/AutoTagImportProviders
  */
+@MimeLocation(subfolderName=AutoTagImporterProviderClass2Layer.FOLDER_NAME)
 public interface AutoTagImporterProvider {
 
     /** The method is called, when user select a tag in

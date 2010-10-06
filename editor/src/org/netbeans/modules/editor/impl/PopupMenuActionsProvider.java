@@ -50,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,9 +58,10 @@ import org.openide.filesystems.FileObject;
  * @author Vita Stejskal
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
+@MimeLocation(subfolderName=PopupMenuActionsProvider.POPUP_MENU_ACTIONS_FOLDER_NAME)
 public final class PopupMenuActionsProvider extends ActionsList implements Class2LayerFolder<PopupMenuActionsProvider>, InstanceProvider<PopupMenuActionsProvider> {
 
-    private static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
+    static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
     
     public static List getPopupMenuItems(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);

@@ -55,6 +55,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -73,6 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Pokorsky
  */
 @ServiceProvider(service=Class2LayerFolder.class)
+@MimeLocation(subfolderName="RefactoringActions")
 public final class RefactoringContextActionsProvider
         implements Class2LayerFolder<RefactoringContextActionsProvider>, InstanceProvider<RefactoringContextActionsProvider> {
 

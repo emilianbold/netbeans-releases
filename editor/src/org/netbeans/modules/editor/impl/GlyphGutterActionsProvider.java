@@ -50,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,6 +58,7 @@ import org.openide.filesystems.FileObject;
  * @author Vita Stejskal
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
+@MimeLocation(subfolderName=GlyphGutterActionsProvider.GLYPH_GUTTER_ACTIONS_FOLDER_NAME)
 public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder<GlyphGutterActionsProvider>, InstanceProvider<GlyphGutterActionsProvider> {
 
     public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N

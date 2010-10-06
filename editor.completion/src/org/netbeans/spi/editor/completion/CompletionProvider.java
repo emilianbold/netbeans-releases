@@ -45,6 +45,7 @@
 package org.netbeans.spi.editor.completion;
 
 import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  * The basic interface for providing code completion items. You should implement this interface
@@ -60,7 +61,7 @@ import javax.swing.text.JTextComponent;
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.01
  */
-
+@MimeLocation(subfolderName="CompletionProviders")
 public interface CompletionProvider {
 
     /**

@@ -53,6 +53,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 
@@ -61,11 +62,12 @@ import org.openide.loaders.DataObject;
  * @author Vita Stejskal
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
+@MimeLocation(subfolderName=ToolbarActionsProvider.TOOLBAR_ACTIONS_FOLDER_NAME)
 public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder<ToolbarActionsProvider>, InstanceProvider<ToolbarActionsProvider> {
 
     private static final Logger LOG = Logger.getLogger(ToolbarActionsProvider.class.getName());
     
-    private static final String TOOLBAR_ACTIONS_FOLDER_NAME = "Toolbars/Default"; //NOI18N
+    static final String TOOLBAR_ACTIONS_FOLDER_NAME = "Toolbars/Default"; //NOI18N
     private static final String TEXT_BASE_PATH = "Editors/text/base/"; //NOI18N
     
     public static List getToolbarItems(String mimeType) {

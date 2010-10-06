@@ -56,6 +56,7 @@ import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -65,6 +66,7 @@ import org.openide.loaders.DataObject;
  * @author Martin Roskanin
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
+@MimeLocation(subfolderName=SideBarFactoriesProvider.SIDEBAR_COMPONENTS_FOLDER_NAME)
 public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBarFactoriesProvider>, InstanceProvider<SideBarFactoriesProvider> {
 
     private static final Logger LOG = Logger.getLogger(SideBarFactoriesProvider.class.getName());

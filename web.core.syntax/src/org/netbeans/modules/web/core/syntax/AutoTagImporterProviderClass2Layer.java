@@ -55,7 +55,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class AutoTagImporterProviderClass2Layer implements Class2LayerFolder {
 
-    private static final String FOLDER_NAME = "AutoTagImportProviders";
+    public static final String FOLDER_NAME = "AutoTagImportProviders";
     
     public AutoTagImporterProviderClass2Layer() {
     }
