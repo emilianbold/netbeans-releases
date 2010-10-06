@@ -268,10 +268,6 @@ public class SvnClientFactory {
                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                return false;
             }
-        } catch (SVNClientException e) {
-            LOG.log(Level.FINE, null, e);
-            LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
-            return false;
         } finally {
             // write the flag even if javahl ot available -
             // we just want to now on the next run that javahl didn't crash the jvm,
@@ -452,17 +448,9 @@ public class SvnClientFactory {
     }
 
     private boolean  setupSvnKit () {
-        final SvnClientAdapterFactory f;
-        try {
-            f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.SVNKIT);
-            if(f == null) {
-                LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
-                return false;
-            }
-        } catch (SVNClientException ex) {
-            LOG.log(Level.INFO, null, ex);
-            LOG.log(Level.INFO, null, ex.getCause());
-            LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
+        final SvnClientAdapterFactory f = SvnClientAdapterFactory.getInstance(SvnClientAdapterFactory.Client.SVNKIT);
+        if(f == null) {
+            LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
             return false;
         }
         factory = new ClientAdapterFactory() {
