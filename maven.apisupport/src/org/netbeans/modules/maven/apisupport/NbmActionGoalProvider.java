@@ -116,7 +116,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     }
 
     public static Action createReloadTargetAction() {
-        return ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
+        Action a = ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        return a;
     }
 
     public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {

@@ -1811,7 +1811,8 @@ public class AstRenderer {
                         type == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         type == CPPTokenTypes.LITERAL_struct ||
                         type == CPPTokenTypes.LITERAL_class ||
-                        type == CPPTokenTypes.LITERAL_union) {
+                        type == CPPTokenTypes.LITERAL_union ||
+                        type == CPPTokenTypes.LITERAL_enum) {
                     return ConditionDeclarationImpl.create(ast, file, scope);
                 }
             }
