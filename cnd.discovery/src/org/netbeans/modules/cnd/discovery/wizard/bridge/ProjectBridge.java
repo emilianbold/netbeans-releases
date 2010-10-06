@@ -445,8 +445,8 @@ public class ProjectBridge {
         }
         switch (lang) {
             case C:
-                if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
-                    itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
+                if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
+                    itemConfiguration.setTool(PredefinedToolKind.CCompiler);
                 }
                 if (languageStandard == ItemProperties.LanguageStandard.C) {
                     itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
@@ -457,8 +457,8 @@ public class ProjectBridge {
                 }
                 break;
             case CPP:
-                if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
-                    itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+                if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
+                    itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
                 }
                 if (languageStandard == ItemProperties.LanguageStandard.CPP) {
                     itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
