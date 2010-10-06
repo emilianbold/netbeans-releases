@@ -73,7 +73,12 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
-    public void test190413() throws Exception {
+    public void testIZ190782() throws Exception {
+        // #190413:  enum based variables are not resolved (top issue in driver)
+        performTest("iz190782.c");
+    }
+    
+    public void testIZ190413() throws Exception {
         // #190413:  preprocessor incorrectly evaluate char-based expression
         performTest("iz190413.c");
     }
