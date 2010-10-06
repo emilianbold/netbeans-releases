@@ -58,6 +58,8 @@ import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 @ServiceProviders({@ServiceProvider(service=SvnClientAdapterFactory.class)})
 public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
 
+    private boolean available = false;
+
     public JavaHlClientAdapterFactory() {
         super();
     }
@@ -68,24 +70,24 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }
 
     @Override
-    public void setup() throws SVNClientException {
-        try {
-            JhlClientAdapterFactory.setup();
-        } catch (Throwable t) {
-            String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
-            LOG.log(Level.INFO, t.getMessage());
-            LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
-            if(t instanceof SVNClientException) {
-                throw (SVNClientException) t;
-            } else {
-                throw new SVNClientException("Javahl client adapter is not available");             // NOI18N
+    public boolean isAvailable() {
+        if(!available) {
+            try {
+                JhlClientAdapterFactory.setup();
+            } catch (Throwable t) {
+                String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
+                LOG.log(Level.INFO, t.getMessage());
+                LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
+                return false;
             }
+            String version = getVersion();
+            if(!isSupportedJavahlVersion(version)) {
+                LOG.log(Level.INFO, "Unsupported version {0} of subversion javahl bindings.", version); // NOI18N
+                return false;
+            }
+            available = JhlClientAdapterFactory.isAvailable();
         }
-        String version = getVersion();
-        if(!isSupportedJavahlVersion(version)) {
-            LOG.log(Level.INFO, "Unsupported version {0} of subversion javahl bindings.", version); // NOI18N
-            throw new SVNClientException("Javahl client adapter is not available");                 // NOI18N
-        }
+        return available;
     }
 
     @Override

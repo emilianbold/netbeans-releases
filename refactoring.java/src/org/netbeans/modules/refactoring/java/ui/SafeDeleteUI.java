@@ -145,7 +145,7 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass{
 //        }
         NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
         if (folder != null) {
-            return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDelPkg", folder); // NOI18N
+            return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDelPkg", folder.getFolder().getNameExt().replace('/', '.')); // NOI18N
         }
         
         return NbBundle.getMessage(SafeDeleteUI.class, "DSC_SafeDel", elementsToDelete); // NOI18N

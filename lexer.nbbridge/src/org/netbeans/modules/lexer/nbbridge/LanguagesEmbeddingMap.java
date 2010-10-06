@@ -45,12 +45,14 @@
 package org.netbeans.modules.lexer.nbbridge;
 
 import java.util.Map;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 
 /**
  *
  * @author vita
  */
+@MimeLocation(subfolderName="languagesEmbeddingMap")
 public final class LanguagesEmbeddingMap {
     
     private Map<String, LanguageEmbedding<?>> map;
