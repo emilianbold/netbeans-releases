@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Dialog;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
@@ -51,6 +52,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
+import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
@@ -58,6 +61,8 @@ import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 /**
@@ -68,8 +73,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     
     private String driverLocation;
     private final String driverName;
-    private final String downloadFrom;
-    private final String driverFileName;
+    private String downloadFrom;
+    private String driverFileName;
     private String[] steps;
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
     private int index;
@@ -86,28 +91,40 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private String currentSchema;
 
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
-        if (true /* oracle */) {
-            this.driverName = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverName");
-            this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
-            this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
-            this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleDatabaseUrl");
+        if (driverName == null) {
+            throw new IllegalArgumentException("driverName cannot be null."); // NOI18N
+        }
+        this.driverName = driverName;
+        if (driverName.contains("Oracle")) { // NOI18N
+            if (driverName.contains("OCI")) {
+                this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName");
+                this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass");
+                this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl");
+            } else {
+                this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
+                this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
+                this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl");
+            }
             this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser");
             this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword");
             this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema");
             this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from");
             this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name");
-        } else if (true /* mysql */) {
-            this.driverName = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverName");
+        } else if (driverName.contains("MySQL")) {
             this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName");
             this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass");
             this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl");
-            this.user = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser");
-            this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword");
+            this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user;
+            this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password;
             this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema");
             this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from");
             this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name");
         } else {
             // others
+            this.driverClass = driverClass;
+            this.databaseUrl = databaseUrl;
+            this.user = user;
+            this.pwd = password;
         }
     }
 
@@ -154,6 +171,16 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
      */
     private WizardDescriptor.Panel<AddConnectionWizard>[] getPanels() {
         if (panels == null) {
+            JDBCDriver drv = getDriver(driverName, driverClass);
+            if (drv != null) {
+                URL[] jars = drv.getURLs();
+                if (jars != null && jars.length > 0) {
+                        FileObject jarFO = URLMapper.findFileObject(jars[0]);
+                        if (jarFO != null && jarFO.isValid()) {
+                            this.driverFileName = jarFO.getNameExt();
+                        }
+                }
+            }
             driverPanel = new ChoosingDriverPanel(driverFileName, downloadFrom);
             panels = new Panel[] {
                 driverPanel,
@@ -168,6 +195,18 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             };
         }
         return panels;
+    }
+
+    private static JDBCDriver getDriver(String driverName, String driverClass) {
+        JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers(driverClass);
+        if (drivers != null && drivers.length > 0) {
+            for (JDBCDriver drv : drivers) {
+                if (driverName.equals(drv.getName())) {
+                    return drv;
+                }
+            }
+        }
+        return null;
     }
     
     @Override

@@ -78,24 +78,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
      * component from this class, just use getComponent().
      */
     private NewConnectionPanel component;
-    public static final String ORACLE_THIN_DRIVER_CLASS = "oracle.jdbc.OracleDriver";
-    public static final String ORACLE_OCI_DRIVER_CLASS = "oracle.jdbc.driver.OracleDriver";
-    public static final String MYSQL_DRIVER_CLASS = "com.mysql.jdbc.Driver";
     private AddConnectionWizard pw;
-    // Oracle
-    public static final String ORACLE_THIN_DRIVER_NAME = "Oracle Thin";
-    public static final String ORACLE_THIN_DRIVER_DISPLAY_NAME = "Oracle Thin";
-    public static final String ORACLE_SAMPLE_DB_USER = "hr";
-    public static final String ORACLE_SAMPLE_DB_PASSWORD = "hr";
-    public static final String ORACLE_SAMPLE_DB_URL = "jdbc:oracle:thin:@localhost:1521:XE";
-    public static final String ORACLE_DEFAULT_SCHEMA = "hr";
-    // MySQL
-    public static final String MYSQL_DRIVER_NAME = "MySQL";
-    public static final String MYSQL_DRIVER_DISPLAY_NAME = "MySQL (Connector/J driver)";
-    public static final String MYSQL_SAMPLE_DB_USER = "root";
-    public static final String MYSQL_SAMPLE_DB_PASSWORD = "vsds";
-    public static final String MYSQL_SAMPLE_DB_URL = "jdbc:mysql://localhost:3306/mysql";
-    public static final String MYSQL_DEFAULT_SCHEMA = "hr";
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -108,30 +91,19 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 return null;
             }
             assert pw != null : "ConnectionPanel must be initialized.";
-            String driverName = pw.getDriverName();
-            String driverClass = null;
             databaseConnection = new DatabaseConnection();
-            if (true /* oracle */) {
-                driverClass = ORACLE_THIN_DRIVER_CLASS;
-                databaseConnection.setDriver(driverClass);
-                databaseConnection.setDriverName(ORACLE_THIN_DRIVER_NAME);
-                databaseConnection.setUser(ORACLE_SAMPLE_DB_USER);
-                databaseConnection.setPassword(ORACLE_SAMPLE_DB_PASSWORD);
-                databaseConnection.setDatabase(ORACLE_SAMPLE_DB_URL);
-                //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
-            } else if (true /* mysql */) {
-                driverClass = MYSQL_DRIVER_CLASS;
-                databaseConnection.setDriver(driverClass);
-                databaseConnection.setDriverName(MYSQL_DRIVER_NAME);
-                databaseConnection.setUser(MYSQL_SAMPLE_DB_USER);
-                databaseConnection.setPassword(MYSQL_SAMPLE_DB_PASSWORD);
-                databaseConnection.setDatabase(MYSQL_SAMPLE_DB_URL);
-                //cinfo.setDefaultSchema(ORACLE_DEFAULT_SCHEMA);
-            } else {
-                // others
+            databaseConnection.setDriver(pw.getDriverClass());
+            databaseConnection.setDriverName(pw.getDriverName());
+            databaseConnection.setUser(pw.getUser());
+            databaseConnection.setPassword(pw.getPassword());
+            databaseConnection.setDatabase(pw.getDatabaseUrl());
+            try {
+                databaseConnection.setDefaultSchema(pw.getDefaultSchema());
+            } catch (Exception x) {
+                Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, x.getLocalizedMessage(), x.getCause());
             }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
-            component = new NewConnectionPanel(pw, driverClass, databaseConnection);
+            component = new NewConnectionPanel(pw, pw.getDriverClass(), databaseConnection);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
