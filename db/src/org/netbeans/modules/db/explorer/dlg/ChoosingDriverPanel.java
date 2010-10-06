@@ -80,6 +80,9 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
     }
 
     private void init() {
+        if (this.driverFileName == null) {
+            return ;
+        }
         FileObject fo = getLibraryFO(driverFileName);
         if (fo == null) {
             fo = getDriverFO(driverFileName);
