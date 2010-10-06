@@ -181,10 +181,10 @@ public class BinaryAnalyserTest extends NbTestCase {
     private void assertReference(Index index, String refered, String... in) throws IOException, InterruptedException {
         final Set<String> result = new HashSet<String>();
         index.query(
-                new Query[] {QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD)},
-                DocumentUtil.declaredTypesFieldSelector(),
+                result,
                 DocumentUtil.binaryNameConvertor(),
-                result);
+                DocumentUtil.declaredTypesFieldSelector(),
+                QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         assertTrue(result.containsAll(Arrays.asList(in)));
     }
 
