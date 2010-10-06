@@ -108,8 +108,8 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
             jc.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
-            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.FALSE);
+            jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.FALSE);
             component.setName(pw.getSteps()[1]);
             fireChangeEvent();
         }

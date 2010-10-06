@@ -43,7 +43,6 @@ package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.Component;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -72,8 +71,8 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
             component.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE);
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.FALSE);
+            component.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.FALSE);
             component.setName(pw.getSteps()[2]);
         }
         return component;
