@@ -52,6 +52,8 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -60,6 +62,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -356,10 +360,37 @@ public final class ModificationResult {
         Runnable task = new Runnable() {
 
             public void run() {
+                DocumentListener l = null;
                 try {
+                    // The listener was added while trying to fix #63323
+                    // IMPORTANT: it has to be removed immediatelly after the change to stop marking the events
+                    // as ignoring caret changes
+                    if (doc instanceof BaseDocument) {
+                        l = new DocumentListener() {
+                            @Override
+                            public void insertUpdate(DocumentEvent e) {
+                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                            }
+
+                            @Override
+                            public void removeUpdate(DocumentEvent e) {
+                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                            }
+
+                            @Override
+                            public void changedUpdate(DocumentEvent e) {
+                                DocumentUtilities.putEventProperty(e, "caretIgnore", Boolean.TRUE); // NOI18N
+                            }
+                        };
+                        doc.addDocumentListener(l);
+                    }
                     processDocumentLocked(doc, diff);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;
+                } finally {
+                    if (l != null) {
+                        doc.removeDocumentListener(l);
+                    }
                 }
             }
         };
