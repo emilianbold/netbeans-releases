@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.discovery.wizard.bridge;
 
 import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
@@ -121,6 +123,27 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             }
         }
         return res;
+    }
+
+    @Override
+    public LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+        if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
+            String options = compilerOptions.getAllOptions(compiler);
+            if (compiler.getKind() == PredefinedToolKind.CCompiler) {
+                if (options.indexOf("-x99") >= 0) {
+                    return LanguageFlavor.C99;
+                } else if (options.indexOf("-std=c89") >= 0) {
+                    return LanguageFlavor.C89;
+                } else if (options.indexOf("-std=c99") >= 0) {
+                    return LanguageFlavor.C99;
+                }
+            } else if (compiler.getKind() == PredefinedToolKind.CCCompiler) {
+                return LanguageFlavor.CPP;
+            } else if (compiler.getKind() == PredefinedToolKind.FortranCompiler) {
+                // TODO
+            }
+        }
+        return LanguageFlavor.UNKNOWN;
     }
     
     private List<PackageConfiguration> getPackages(String s, MakeConfiguration conf){

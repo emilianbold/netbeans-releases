@@ -54,10 +54,10 @@ public interface NativeFileItem {
     }
     
     public enum LanguageFlavor {
-    	GENERIC,
-        SUN_C, GNU_C,
-        SUN_CPP, GNU_CPP,
-        SUN_FORTRAN_77, SUN_FORTRAN_90, SUN_FORTRAN_95, GNU_FORTRAN
+    	UNKNOWN,
+        C, C89, C99,
+        CPP,
+        F77, F90, F95
     }
     
     /**
