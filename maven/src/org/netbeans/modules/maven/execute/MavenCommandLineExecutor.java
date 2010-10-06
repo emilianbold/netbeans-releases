@@ -254,8 +254,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         // correctly to the java runtime on windows
         String escaped = "\\" + quote;
         List<String> toRet = new ArrayList<String>();
-        toRet.addAll(base.construct(new File(config.getExecutionDirectory(), "pom.xml"))); // NOI18N
-
+        toRet.addAll(base.construct());
+        
         for (Object key : config.getProperties().keySet()) {
             String val = config.getProperties().getProperty((String)key);
             String keyStr = (String)key;
@@ -411,7 +411,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
 
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
-        StringBuilder display = new StringBuilder();
+        builder.directory(clonedConfig.getExecutionDirectory());
+        StringBuilder display = new StringBuilder("cd ").append(clonedConfig.getExecutionDirectory()).append("; "); // NOI18N
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
