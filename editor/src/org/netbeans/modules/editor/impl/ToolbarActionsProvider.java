@@ -61,9 +61,8 @@ import org.openide.loaders.DataObject;
  *
  * @author Vita Stejskal
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-@MimeLocation(subfolderName=ToolbarActionsProvider.TOOLBAR_ACTIONS_FOLDER_NAME)
-public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder<ToolbarActionsProvider>, InstanceProvider<ToolbarActionsProvider> {
+@MimeLocation(subfolderName=ToolbarActionsProvider.TOOLBAR_ACTIONS_FOLDER_NAME, instanceProviderClass=ToolbarActionsProvider.class)
+public final class ToolbarActionsProvider extends ActionsList implements InstanceProvider<ToolbarActionsProvider> {
 
     private static final Logger LOG = Logger.getLogger(ToolbarActionsProvider.class.getName());
     
@@ -89,18 +88,6 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
         super(keys, true, false);
     }
     
-    public Class<ToolbarActionsProvider> getClazz(){
-        return ToolbarActionsProvider.class;
-    }
-
-    public String getLayerFolderName(){
-        return TOOLBAR_ACTIONS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<ToolbarActionsProvider> getInstanceProvider() {
-        return new ToolbarActionsProvider();
-    }
-    
     public ToolbarActionsProvider createInstance(List<FileObject> fileObjectList) {
         return new ToolbarActionsProvider(fileObjectList);
     }
@@ -108,8 +95,8 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
     // XXX: This is here to help NbEditorToolbar to deal with legacy code
     // that registered toolbar actions in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class LegacyToolbarActionsProvider extends ActionsList implements Class2LayerFolder<LegacyToolbarActionsProvider>, InstanceProvider<LegacyToolbarActionsProvider> {
+    @MimeLocation(subfolderName=TOOLBAR_ACTIONS_FOLDER_NAME, instanceProviderClass=LegacyToolbarActionsProvider.class)
+    public static final class LegacyToolbarActionsProvider extends ActionsList implements InstanceProvider<LegacyToolbarActionsProvider> {
 
         public LegacyToolbarActionsProvider() {
             this(null);
@@ -117,18 +104,6 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
 
         private LegacyToolbarActionsProvider(List<FileObject> keys) {
             super(keys, false, false);
-        }
-
-        public Class<LegacyToolbarActionsProvider> getClazz(){
-            return LegacyToolbarActionsProvider.class;
-        }
-
-        public String getLayerFolderName(){
-            return TOOLBAR_ACTIONS_FOLDER_NAME;
-        }
-
-        public InstanceProvider<LegacyToolbarActionsProvider> getInstanceProvider() {
-            return new LegacyToolbarActionsProvider();
         }
 
         public LegacyToolbarActionsProvider createInstance(List<FileObject> fileObjectList) {

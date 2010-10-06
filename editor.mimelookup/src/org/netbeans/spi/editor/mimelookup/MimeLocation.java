@@ -66,4 +66,7 @@ public @interface MimeLocation {
      */
     public String subfolderName();
 
+    @SuppressWarnings("rawtypes")
+    public Class<? extends InstanceProvider> instanceProviderClass() default InstanceProvider.class;
+    
 }

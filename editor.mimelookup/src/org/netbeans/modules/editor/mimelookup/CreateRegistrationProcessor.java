@@ -50,9 +50,13 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Types;
+import javax.tools.Diagnostic.Kind;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.lookup.ServiceProvider;
@@ -61,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Lahoda
  */
-@SupportedAnnotationTypes({"org.netbeans.api.editor.mimelookup.MimeRegistration", "org.netbeans.api.editor.mimelookup.MimeRegistrations"})
+@SupportedAnnotationTypes({"org.netbeans.api.editor.mimelookup.MimeRegistration", "org.netbeans.api.editor.mimelookup.MimeRegistrations", "org.netbeans.spi.editor.mimelookup.MimeLocation"})
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 @ServiceProvider(service=Processor.class)
 public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
@@ -95,6 +99,18 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
                         process(el, r);
                     }
                 }
+            }
+        }
+
+        TypeElement mimeLocation = processingEnv.getElementUtils().getTypeElement("org.netbeans.spi.editor.mimelookup.MimeLocation");
+
+        for (TypeElement el : ElementFilter.typesIn(roundEnv.getElementsAnnotatedWith(mimeLocation))) {
+            for (AnnotationMirror am : el.getAnnotationMirrors()) {
+                if (!mimeLocation.equals(am.getAnnotationType().asElement())) {
+                    continue;
+                }
+
+                checkMimeLocation(el, am);
             }
         }
 
@@ -242,6 +258,63 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
         }
 
         return result;
+    }
+
+    private void checkMimeLocation(TypeElement clazz, AnnotationMirror am) {
+        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> e : am.getElementValues().entrySet()) {
+            if (!e.getKey().getSimpleName().contentEquals("instanceProviderClass")) continue;
+
+            TypeMirror ipc = (TypeMirror) e.getValue().getValue();
+
+            if (ipc == null || ipc.getKind() != TypeKind.DECLARED) continue; //the compiler should have given the error
+
+            TypeElement instanceProvider = processingEnv.getElementUtils().getTypeElement("org.netbeans.spi.editor.mimelookup.InstanceProvider");
+
+            if (instanceProvider == null) {
+                return ;
+            }
+            
+            ExecutableElement createInstance = null;
+
+            for (ExecutableElement ee : ElementFilter.methodsIn(instanceProvider.getEnclosedElements())) {
+                if (ee.getSimpleName().contentEquals("createInstance")) { //TODO: check parameters
+                    createInstance = ee;
+                    break;
+                }
+            }
+
+            if (createInstance == null) {
+                throw new IllegalStateException("No instanceCreate in InstanceProvider!");
+            }
+
+            DeclaredType dipc = (DeclaredType) ipc;
+
+            Types tu = processingEnv.getTypeUtils();
+            ExecutableType member = (ExecutableType) tu.asMemberOf(dipc, createInstance);
+            TypeMirror result = member.getReturnType();
+            TypeMirror jlObject = processingEnv.getElementUtils().getTypeElement("java.lang.Object").asType();
+
+            if (!tu.isSameType(tu.erasure(result), jlObject)) {
+                if (!tu.isSubtype(tu.erasure(result), tu.erasure(clazz.asType()))) {
+                    processingEnv.getMessager().printMessage(Kind.ERROR, "The InstanceProvider does not create instances of type " + clazz.getQualifiedName(), clazz, am, e.getValue());
+                }
+            }
+
+            TypeElement tipc = (TypeElement) dipc.asElement();
+
+            if (!tipc.getModifiers().contains(Modifier.PUBLIC)) {
+                processingEnv.getMessager().printMessage(Kind.ERROR, "The InstanceProvider implementation is not public.", clazz, am, e.getValue());
+            }
+
+            for (ExecutableElement c : ElementFilter.constructorsIn(tipc.getEnclosedElements())) {
+                if (c.getParameters().isEmpty() && c.getModifiers().contains(Modifier.PUBLIC)) {
+                    //OK
+                    return;
+                }
+            }
+
+            processingEnv.getMessager().printMessage(Kind.ERROR, "The InstanceProvider implementation does not provide a public no-arg constructor.", clazz, am, e.getValue());
+        }
     }
 
     private static final class TypeCompletion implements Completion {

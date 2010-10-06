@@ -108,6 +108,18 @@ is the proper place.
 
     <changes>
 
+        <change id="Class2LayerFolder.deprecated">
+            <summary>Class2LayerFolder Deprecated and not used</summary>
+            <version major="1" minor="20"/>
+            <date day="4" month="10" year="2010"/>
+            <author login="jlahoda"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible" addition="no" deletion="no" modification="no" deprecation="yes"/>
+            <description>
+                <code>Class2LayerFolder</code> has been deprecated and is ignored.
+            </description>
+            <issue number="190606"/>
+        </change>
+
         <change id="MimeLookupRegistration">
             <summary>@MimeLocation, @MimeRegistration and @MimeRegistrations added</summary>
             <version major="1" minor="19"/>

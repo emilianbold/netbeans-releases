@@ -43,7 +43,6 @@
  */
 package org.netbeans.spi.editor.bracesmatching;
 
-import org.netbeans.modules.editor.bracesmatching.BMFClass2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
@@ -53,7 +52,7 @@ import org.netbeans.spi.editor.mimelookup.MimeLocation;
  * 
  * @author Vita Stejskal
  */
-@MimeLocation(subfolderName=BMFClass2LayerFolder.FOLDER)
+@MimeLocation(subfolderName="BracesMatchers")
 public interface BracesMatcherFactory {
 
     /**

@@ -42,48 +42,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.editor.hyperlink;
+package org.netbeans.modules.editor.mimelookup.impl;
 
-import java.util.Collection;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
-import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
- * This class provides a list of HyperlinkProvider(s) for a given mime type.
  *
- * @author Jan Lahoda
+ * @author vita
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class HyperlinkProviderManager implements Class2LayerFolder {
-    
-    /**
-     * Gets the list of <code>HyperlinkProvider</code>s for a given mime type.
-     * 
-     * @param mimeType mime type to get the <code>HyperlinkProvider</code>s for
-     * 
-     * @return The list of <code>HyperlinkProvider<code>s available for the given mime type.
-     */
-    public static Collection<? extends HyperlinkProvider> getHyperlinkProviders(String mimeType) {
-        MimePath mimePath = MimePath.parse(mimeType);
-        return MimeLookup.getLookup(mimePath).lookupAll(HyperlinkProvider.class);
-    }
+@MimeLocation(subfolderName="DummyFolder")
+public interface DummySettingWithPath {
 
-    public HyperlinkProviderManager() {
-        
-    }
-    
-    public Class getClazz() {
-        return HyperlinkProvider.class;
-    }
-
-    public String getLayerFolderName() {
-        return "HyperlinkProviders"; // NOI18N
-    }
-
-    public InstanceProvider getInstanceProvider() {
-        return null;
-    }
 }
