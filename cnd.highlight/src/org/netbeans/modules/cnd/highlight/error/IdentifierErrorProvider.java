@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.highlight.error;
 
 import java.util.EnumSet;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -101,7 +102,10 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         if (SemanticHighlighter.isVeryBigDocument(request.getDocument())) {
             return;
         }
-        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + request.getFile().getAbsolutePath());
+        Thread currentThread = Thread.currentThread();
+        CsmFile file = request.getFile();
+        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() have started for file " + file.getAbsolutePath());
         CsmFileReferences.getDefault().accept(
                 request.getFile(), new ReferenceVisitor(request, response),
                 CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
