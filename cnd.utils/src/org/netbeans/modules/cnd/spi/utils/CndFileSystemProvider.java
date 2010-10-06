@@ -42,9 +42,15 @@
 
 package org.netbeans.modules.cnd.spi.utils;
 
+import java.io.File;
 import java.util.Collection;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -67,18 +73,35 @@ public abstract class CndFileSystemProvider {
         return getDefault().lowerPathCaseIfNeededImpl(path);
     }
 
-    /** It can return null */
-    public static FileObject get(CharSequence path) {
-        return getDefault().getImpl(path);
+    public static FileObject toFileObject(CharSequence path) {
+        FileObject result = getDefault().toFileObjectImpl(path);
+        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
+        return result;
     }
 
-    protected abstract FileObject getImpl(CharSequence path);
+    public static FileObject toFileObject(File file) {
+        FileObject result = getDefault().toFileObjectImpl(file);
+        CndUtils.assertNotNull(result, "Null file object"); //NOI18N
+        return result;
+    }
+
+    public static CharSequence toPath(FileObject fileObject) {
+        CharSequence result = getDefault().toPathImpl(fileObject);
+        CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
+        return result;
+    }
+
+    protected abstract FileObject toFileObjectImpl(CharSequence path);
+    protected abstract FileObject toFileObjectImpl(File file);
+    protected abstract CharSequence toPathImpl(FileObject fileObject);
+
     protected abstract String getCaseInsensitivePathImpl(CharSequence path);
     protected abstract boolean isMine(CharSequence path);
 
     private static class DefaultProvider extends CndFileSystemProvider {
 
         private CndFileSystemProvider[] cache;
+        private FileSystem fileFileSystem;
 
         DefaultProvider() {
             Collection<? extends CndFileSystemProvider> instances =
@@ -86,15 +109,66 @@ public abstract class CndFileSystemProvider {
             cache = instances.toArray(new CndFileSystemProvider[instances.size()]);
         }
 
-        @Override
-        public FileObject getImpl(CharSequence path) {
-            for (CndFileSystemProvider provider : cache) {
-                FileObject data = provider.getImpl(path);
-                if (data != null) {
-                    return data;
+        private synchronized FileSystem getFileFileSystem() {
+            if (fileFileSystem == null) {
+                File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+                FileObject tmpDirFo = FileUtil.toFileObject(tmpDir);
+                if (tmpDirFo != null) {
+                    try {
+                        fileFileSystem = tmpDirFo.getFileSystem();
+                    } catch (FileStateInvalidException ex) {
+                        // it's no use to log it here
+                    }
+                }
+                if (fileFileSystem == null) {
+                    fileFileSystem = InvalidFileObjectSupport.getDummyFileSystem();
                 }
             }
-            return null;
+            return fileFileSystem;
+        }
+
+        @Override
+        public FileObject toFileObjectImpl(CharSequence path) {
+            FileObject  fo;
+            for (CndFileSystemProvider provider : cache) {
+                fo = provider.toFileObjectImpl(path);
+                if (fo != null) {
+                    return fo;
+                }
+            }
+            File file = new File(path.toString());
+            fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
+            }
+            return fo;
+        }
+
+        @Override
+        public FileObject toFileObjectImpl(File file) {
+            FileObject fo;
+            for (CndFileSystemProvider provider : cache) {
+                fo = provider.toFileObjectImpl(file);
+                if (fo != null) {
+                    return fo;
+                }
+            }
+            fo = FileUtil.toFileObject(file);
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
+            }
+            return fo;
+        }
+
+        @Override
+        protected CharSequence toPathImpl(FileObject fileObject) {
+            for (CndFileSystemProvider provider : cache) {
+                CharSequence path = provider.toPathImpl(fileObject);
+                if (path != null) {
+                    return path;
+                }
+            }
+            return fileObject.getPath();
         }
 
         @Override

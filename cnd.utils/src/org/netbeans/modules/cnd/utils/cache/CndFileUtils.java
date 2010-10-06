@@ -196,7 +196,7 @@ public final class CndFileUtils {
     * @throws java.io.IOException
     */
    public static InputStream getInputStream(CharSequence filePath) throws IOException {
-       FileObject fo = CndFileSystemProvider.get(filePath);
+       FileObject fo = CndFileSystemProvider.toFileObject(filePath);
        if (fo == null) {
            File file = new File(filePath.toString());
            fo = FileUtil.toFileObject(file);
@@ -307,16 +307,16 @@ public final class CndFileUtils {
     }
 
     private static boolean existsImpl(File file) {
-       FileObject fo = CndFileSystemProvider.get(file.getAbsolutePath());
+       FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
        if (fo == null) {
             return file.exists();
        } else {
-            return ! fo.isValid();
+            return fo.isValid();
        }
     }
 
     private static File[] listFilesImpl(File file) {
-       FileObject fo = CndFileSystemProvider.get(file.getAbsolutePath());
+       FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
        if (fo == null) {
             return file.listFiles();
        } else {
