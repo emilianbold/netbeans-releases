@@ -499,14 +499,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setFullRemote(fullRemote);
             prjParams.setHostUID(hostUID);
 
-            if (wizardtype == TYPE_DB_APPLICATION) {
-//                String connection = (String)wiz.getProperty("connection"); // NOI18N
-//                String table = (String)wiz.getProperty("master"); // NOI18N
-//                List<String> columns = (List<String>)wiz.getProperty("masterColumns"); // NOI18N
-
-                Map<String, Object> params = new HashMap<String, Object>();
-                prjParams.setTemplateParams(params);
-            }
+            prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
