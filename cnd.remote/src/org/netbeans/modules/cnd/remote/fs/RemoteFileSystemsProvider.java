@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.cnd.remote.fs;
 
+import java.io.File;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -61,42 +63,102 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=CndFileSystemProvider.class)
 public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
-    public static final boolean USE_REMOTE_FS = CndUtils.getBoolean("cnd.remote.fs", true);
+    private static final String PROTOCOL_PREFIX = "rfs:";
 
     @Override
     protected boolean isMine(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
-            }
-            if (pathStartsWith(path, prefix)) {
-                return true;
-            }
+        String prefix = CndUtils.getIncludeFileBase();
+        if (Utilities.isWindows()) {
+            path = path.toString().replace('\\', '/');
+        }
+        if (pathStartsWith(path, prefix)) {
+            return true;
         }
         return false;
     }
 
     @Override
-    protected FileObject getImpl(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (prefix != null) {
-                if (Utilities.isWindows()) {
-                    path = path.toString().replace('\\', '/');
-                }
-                if (pathStartsWith(path, prefix)) {
-                    CharSequence rest = path.subSequence(prefix.length(), path.length());
-                    int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
-                    if (slashPos >= 0) {
-                        String hostName = rest.subSequence(0, slashPos).toString();
-                        CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                        ExecutionEnvironment env = getExecutionEnvironment(hostName);
-                        if (env != null) {
-                            final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
-                            return fs.findResource(remotePath.toString());
-                        }
+    protected FileObject toFileObjectImpl(File file) {
+        return filePathToFileObject(file.getAbsolutePath());
+    }
+
+    @Override
+    protected FileObject toFileObjectImpl(CharSequence path) {
+        if (CharSequenceUtils.startsWith(path, PROTOCOL_PREFIX)) {
+            // path is like "rfs:,hostname:22/tmp/filename.ext"
+            int port = 0;
+            StringBuilder hostName = new StringBuilder();
+            CharSequence remotePath = null;
+            boolean insideHost = true;
+            for (int i = PROTOCOL_PREFIX.length(); i < path.length(); i++) {
+                char c = path.charAt(i);
+                if (insideHost) {
+                    if (c == ':') {
+                        insideHost = false;
+                    } else {
+                        hostName.append(c);
                     }
+                } else {
+                    if (Character.isDigit(c)) {
+                        int digit = (int) c - (int) '0';
+                        port = port * 10 + digit;
+                    } else {
+                        remotePath = path.subSequence(i, path.length());
+                        break;
+                    }
+                }
+            }
+            if (remotePath == null || hostName.length() == 0) {
+                throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+            }
+            FileObject fo = null;
+            RemoteFileSystem fs = null;
+            ExecutionEnvironment env = getExecutionEnvironment(hostName.toString(), 0);
+            if (env != null) {
+                fs = RemoteFileSystemManager.getInstance().get(env);
+                fo = fs.findResource(remotePath.toString());
+            }
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+            }
+            return fo;
+        } else {
+            return filePathToFileObject(path);
+        }
+    }
+
+    @Override
+    protected CharSequence toPathImpl(FileObject fileObject) {
+        if (fileObject instanceof RemoteFileObjectBase) {
+            ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
+            return PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
+        }
+        return null;
+    }
+
+    private FileObject filePathToFileObject(CharSequence path) {
+        String prefix = CndUtils.getIncludeFileBase();
+        if (prefix != null) {
+            if (Utilities.isWindows()) {
+                path = path.toString().replace('\\', '/');
+            }
+            if (pathStartsWith(path, prefix)) {
+                CharSequence rest = path.subSequence(prefix.length(), path.length());
+                int slashPos = CharSequenceUtils.indexOf(rest, "/"); // NOI18N
+                if (slashPos >= 0) {
+                    String hostName = rest.subSequence(0, slashPos).toString();
+                    CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
+                    ExecutionEnvironment env = getExecutionEnvironment(hostName, 0);
+                    RemoteFileSystem fs = null;
+                    FileObject fo = null;
+                    if (env != null) {
+                        fs = RemoteFileSystemManager.getInstance().get(env);
+                        fo = fs.findResource(remotePath.toString());
+                    }
+                    if (fo == null) {
+                        fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+                    }
+                    return fo;
                 }
             }
         }
@@ -113,29 +175,28 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
     @Override
     protected String getCaseInsensitivePathImpl(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
-            }
-            if (pathStartsWith(path, prefix)) {
-                CharSequence start = path.subSequence(0, prefix.length());
-                CharSequence rest = path.subSequence(prefix.length(), path.length());
-                return start + 
-                        (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
-            }
+        String prefix = CndUtils.getIncludeFileBase();
+        if (Utilities.isWindows()) {
+            path = path.toString().replace('\\', '/');
+        }
+        if (pathStartsWith(path, prefix)) {
+            CharSequence start = path.subSequence(0, prefix.length());
+            CharSequence rest = path.subSequence(prefix.length(), path.length());
+            return start +
+                    (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
         }
         return null;
     }
 
-
-    private ExecutionEnvironment getExecutionEnvironment(String hostName) {
+    private ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
             if (hostName.equals(EnvUtils.toHostID(env))) {
-                result = env;
-                if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                    break;
+                if (port == 0 || port == env.getSSHPort()) {
+                    result = env;
+                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                        break;
+                    }
                 }
             }
         }
