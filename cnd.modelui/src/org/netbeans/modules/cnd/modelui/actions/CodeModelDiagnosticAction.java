@@ -64,7 +64,7 @@ import org.openide.util.lookup.Lookups;
  * @author Vladimir Voskresensky
  */
 public class CodeModelDiagnosticAction extends ProjectActionBase {
-    private final static Logger LOG = Logger.getLogger("CodeModelDiagnosticAction");
+    private final static Logger LOG = Logger.getLogger("CodeModelDiagnosticAction"); // NOI18N
     public CodeModelDiagnosticAction() {
         super(true);
     }

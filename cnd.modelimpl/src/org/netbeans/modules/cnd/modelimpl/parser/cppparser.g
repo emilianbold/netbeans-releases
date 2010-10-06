@@ -1870,7 +1870,9 @@ init_declarator[int kind]
 	;
 
 initializer
-    :  
+    : 
+        (balanceParensInExpression LCURLY) => balanceParensInExpression initializer
+    | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
