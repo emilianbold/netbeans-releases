@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.utils.cache;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
@@ -53,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -123,7 +122,7 @@ public final class CndFileUtils {
         boolean caseSensitive = isSystemCaseSensitive();
         if (!caseSensitive) {
             // with case sensitive "path"s returned by remote compilers
-            path = FileSystemsProvider.getCaseInsensitivePath(path);
+            path = CndFileSystemProvider.getCaseInsensitivePath(path);
         }
         String normalized;
         // small optimization for true case sensitive OSs
@@ -197,10 +196,10 @@ public final class CndFileUtils {
     * @throws java.io.IOException
     */
    public static InputStream getInputStream(CharSequence filePath) throws IOException {
-       FileSystemsProvider.Data data = FileSystemsProvider.get(filePath);
-       if (data == null) {
+       FileObject fo = CndFileSystemProvider.get(filePath);
+       if (fo == null) {
            File file = new File(filePath.toString());
-           FileObject fo = FileUtil.toFileObject(file);
+           fo = FileUtil.toFileObject(file);
            InputStream is;
            if (fo != null) {
                is = fo.getInputStream();
@@ -209,10 +208,6 @@ public final class CndFileUtils {
            }
            return is;
        } else {
-           FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
-           if (fo == null) {
-               throw new FileNotFoundException(filePath.toString());
-           }
            return fo.getInputStream();
        }
    }
@@ -285,7 +280,7 @@ public final class CndFileUtils {
     }
 
     private static String changeStringCaseIfNeeded(String path) {
-        return FileSystemsProvider.lowerPathCaseIfNeeded(path).toString();
+        return CndFileSystemProvider.lowerPathCaseIfNeeded(path).toString();
     }
     
 //    public static String getHitRate() {
@@ -312,25 +307,19 @@ public final class CndFileUtils {
     }
 
     private static boolean existsImpl(File file) {
-       FileSystemsProvider.Data data = FileSystemsProvider.get(file);
-       if (data == null) {
+       FileObject fo = CndFileSystemProvider.get(file.getAbsolutePath());
+       if (fo == null) {
             return file.exists();
        } else {
-            FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
-            if (fo == null) {
-                return false;
-            } else {
-                return ! fo.isVirtual();
-            }
+            return ! fo.isValid();
        }
     }
 
     private static File[] listFilesImpl(File file) {
-       FileSystemsProvider.Data data = FileSystemsProvider.get(file);
-       if (data == null) {
+       FileObject fo = CndFileSystemProvider.get(file.getAbsolutePath());
+       if (fo == null) {
             return file.listFiles();
        } else {
-           FileObject fo = data.fileSystem.getRoot().getFileObject(data.path);
            //FileObject[] children = fo.getChildren();
            // FIXUP: a very very dirty hack, just to make sure it will fly
            fo.getFileObject("dummy"); // NOI18N
