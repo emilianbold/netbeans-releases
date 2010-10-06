@@ -51,6 +51,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Collector;
@@ -82,7 +83,7 @@ class QueryUtil {
         return new BitSetCollector(bits);
     }
     
-    static Query[] createQueries (
+    static Query createQuery (
             final @NonNull Pair<String,String> termNames,
             final @NonNull String value,
             final @NonNull ClassIndex.NameKind kind) {
@@ -91,10 +92,10 @@ class QueryUtil {
         Parameters.notNull("termNames.second", termNames.second);   //NOI18N
         Parameters.notNull("value", value); //NOI18N
         Parameters.notNull("kind", kind);   //NOI18N
-        return createQueriesImpl(termNames, value, kind, new StandardQueryFactory());
+        return createQueryImpl(termNames, value, kind, new StandardQueryFactory());
     }  
     
-    static Query[] createTermCollectingQueries(
+    static Query createTermCollectingQuery(
             final @NonNull Pair<String,String> termNames,
             final @NonNull String value,
             final @NonNull ClassIndex.NameKind kind) {
@@ -103,58 +104,61 @@ class QueryUtil {
         Parameters.notNull("termNames.second", termNames.second); //NOI18N
         Parameters.notNull("value", value); //NOI18N
         Parameters.notNull("kind", kind);   //NOI18N
-        return createQueriesImpl(termNames, value, kind, new TCQueryFactory());
+        return createQueryImpl(termNames, value, kind, new TCQueryFactory());
     }
     
-    private static Query[] createQueriesImpl(
+    private static Query createQueryImpl(
             final @NonNull Pair<String,String> termNames,
             final @NonNull String value,
             final @NonNull ClassIndex.NameKind kind,
             final @NonNull QueryFactory f) {
         switch (kind) {
             case SIMPLE_NAME:
-                    return new Query[] {f.createTermQuery(termNames.first, value)};
+                    return f.createTermQuery(termNames.first, value);
             case PREFIX:
                 if (value.length() == 0) {
-                    return new Query[] {f.createAllDocsQuery()};
+                    return f.createAllDocsQuery();
                 }
                 else {
-                    return new Query[] {f.createPrefixQuery(termNames.first, value)};
+                    return f.createPrefixQuery(termNames.first, value);
                 }
             case CASE_INSENSITIVE_PREFIX:
                 if (value.length() == 0) {
-                    return new Query[] {f.createAllDocsQuery()};
+                    return f.createAllDocsQuery();
                 }
                 else {
-                    return new Query[] {f.createPrefixQuery(termNames.second, value.toLowerCase())};
+                    return f.createPrefixQuery(termNames.second, value.toLowerCase());
                 }
             case CAMEL_CASE:
                 if (value.length() == 0) {
                     throw new IllegalArgumentException ();
                 } else {
-                    return new Query[] {f.createRegExpQuery(termNames.first,createCamelCaseRegExp(value, true), true)};
+                    return f.createRegExpQuery(termNames.first,createCamelCaseRegExp(value, true), true);
                 }
             case CASE_INSENSITIVE_REGEXP:
                 if (value.length() == 0) {
                     throw new IllegalArgumentException ();
                 } else {
-                    return new Query[] {f.createRegExpQuery(termNames.second, value.toLowerCase(), false)};
+                    return f.createRegExpQuery(termNames.second, value.toLowerCase(), false);
                 }
             case REGEXP:
                 if (value.length() == 0) {
                     throw new IllegalArgumentException ();
                 } else {
-                    return new Query[] {f.createRegExpQuery(termNames.first, value, true)};
+                    return f.createRegExpQuery(termNames.first, value, true);
                 }
             case CAMEL_CASE_INSENSITIVE:
                 if (value.length() == 0) {
                     //Special case (all) handle in different way
-                    return new Query[] {f.createAllDocsQuery()};
+                    return f.createAllDocsQuery();
                 }
                 else {
                     final Query pq = f.createPrefixQuery(termNames.second, value.toLowerCase());
                     final Query fq = f.createRegExpQuery(termNames.second, createCamelCaseRegExp(value, false), false);
-                    return new Query[]{pq,fq};
+                    final BooleanQuery result = f.createBooleanQuery();
+                    result.add(pq, Occur.SHOULD);
+                    result.add(fq, Occur.SHOULD);
+                    return result;
                 }
             default:
                 throw new UnsupportedOperationException (kind.toString());
@@ -506,11 +510,44 @@ class QueryUtil {
         }
     }
     
+    private static class TCBooleanQuery extends BooleanQuery implements TermCollector.TermCollecting {
+        
+        private TermCollector collector;
+        
+        @Override
+        public void attach(TermCollector collector) {
+            this.collector = collector;
+            if (this.collector != null) {
+                attach(this, this.collector);
+            }
+        }
+
+        @Override
+        public Query rewrite(IndexReader reader) throws IOException {
+            final Query result =  super.rewrite(reader);
+            if (this.collector != null) {
+                attach(this,this.collector);
+            }
+            return result;
+        }
+        
+        private static void attach (final BooleanQuery query, final TermCollector collector) {
+            for (BooleanClause clause : query.getClauses()) {
+                if (!(clause instanceof TermCollector.TermCollecting)) {
+                    throw new IllegalArgumentException();
+                }
+                ((TermCollector.TermCollecting)clause.getQuery()).attach(collector);
+            }
+        }
+        
+    }
+    
     private static interface QueryFactory {
         Query createTermQuery(@NonNull String name, @NonNull String value);
         Query createPrefixQuery(@NonNull String name, @NonNull String value);
         Query createRegExpQuery(@NonNull String name, @NonNull String value, boolean caseSensitive);
         Query createAllDocsQuery();
+        BooleanQuery createBooleanQuery();
     }
     
     private static class StandardQueryFactory implements QueryFactory {
@@ -536,6 +573,11 @@ class QueryUtil {
         public Query createAllDocsQuery() {
             return new MatchAllDocsQuery();
         }
+        
+        @Override
+        public BooleanQuery createBooleanQuery() {
+            return new BooleanQuery();
+        }
     }
     
     private static class TCQueryFactory implements QueryFactory {
@@ -558,6 +600,11 @@ class QueryUtil {
         @Override
         public Query createAllDocsQuery() {
             throw new IllegalArgumentException ();
+        }
+        
+        @Override
+        public BooleanQuery createBooleanQuery() {
+            return new TCBooleanQuery();
         }
     }
     //</editor-fold>
