@@ -538,7 +538,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public File getFile() {
-            return FileUtil.toFile(file);
+            File result = FileUtil.toFile(file);
+            if (result == null) { // XXX:fullRemote
+                return new File(file.getPath());
+            }
+            return result;
         }
 
         @Override
