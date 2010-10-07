@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.support;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +52,9 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
@@ -88,6 +91,9 @@ public class InvalidFileObjectSupport {
 
     private FileObject getInvalidFileObject(CharSequence path) {
         synchronized (this) {
+            if (CndUtils.isDebugMode() && new File(path.toString()).exists()) {
+                CndUtils.getLogger().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
+            }
             FileObject fo = fileObjects.get(path);
             if (fo == null) {
                 fo = new InvalidFileObject(fileSystem, path);
