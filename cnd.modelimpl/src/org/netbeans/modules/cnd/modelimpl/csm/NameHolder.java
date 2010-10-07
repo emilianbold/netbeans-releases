@@ -200,6 +200,11 @@ public class NameHolder {
                     public CharSequence getText() {
                         return name;
                     }
+
+                    @Override
+                    public CsmObject getClosestTopLevelObject() {
+                        return decl;
+                    }
                 };
                 fileImpl.addReference(ref, decl);
             }

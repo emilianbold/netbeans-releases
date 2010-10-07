@@ -47,8 +47,8 @@ package org.netbeans.modules.cnd.source;
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -69,8 +69,9 @@ public class CndFileObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.c"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c mime type", MIMENames.C_MIME_TYPE, fo.getMIMEType());
     }
     
@@ -78,8 +79,9 @@ public class CndFileObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.cc"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c++ mime type", MIMENames.CPLUSPLUS_MIME_TYPE, fo.getMIMEType());
     }
 
@@ -87,8 +89,9 @@ public class CndFileObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c++ mime type", MIMENames.HEADER_MIME_TYPE, fo.getMIMEType());
     }
     

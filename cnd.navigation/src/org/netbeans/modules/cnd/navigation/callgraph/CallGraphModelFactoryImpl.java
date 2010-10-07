@@ -82,13 +82,18 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (project == null){
             return null;
         }
-        CsmObject obj = ref.getOwner();
+        CsmObject obj = ref.getOwner(); // not needed
         if (CsmKindUtilities.isFunction(obj)) {
             function = (CsmFunction) obj;
         } else {
-            obj = ref.getReferencedObject();
+            obj = ref.getClosestTopLevelObject();
             if (CsmKindUtilities.isFunction(obj)) {
                 function = (CsmFunction) obj;
+            } else {
+                obj = ref.getReferencedObject();
+                if (CsmKindUtilities.isFunction(obj)) {
+                    function = (CsmFunction) obj;
+                }
             }
         }
         if (function != null) {
@@ -101,6 +106,7 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
     public CallGraphUI getUI(CallModel model) {
         if (model instanceof CallModelImpl) {
             return new CallGraphUI(){
+                @Override
                 public boolean showGraph() {
                     return CndUtils.getBoolean("cnd.callgraph.showgraph", true); // NOI18N
                 }

@@ -1,0 +1,57 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 9):
+<U>#define '["RELEASE",<89>,line=1,col=9],offset=8,file=null'='["Sun",<89>,line=1,col=17],offset=16,file=null'
+<U>#define '["VERSION",<89>,line=2,col=9],offset=28,file=null'='["10",<65>,line=2,col=17],offset=36,file=null'
+<U>#define '["VER_BUILD_DATE",<89>,line=4,col=9],offset=75,file=null'='["11",<65>,line=4,col=24],offset=90,file=null ["/",<24>,line=4,col=26],offset=92,file=null ["11",<65>,line=4,col=27],offset=93,file=null ["/",<24>,line=4,col=29],offset=95,file=null ["2011",<65>,line=4,col=30],offset=96,file=null'
+<U>#define '["VER_BUILD_NAME",<89>,line=3,col=9],offset=47,file=null'='["Aten",<89>,line=3,col=24],offset=62,file=null'
+<U>#define '["VER_MAGIC_PREFIX",<89>,line=5,col=9],offset=109,file=null'='["@",<53>,line=5,col=26],offset=126,file=null ["(",<12>,line=5,col=27],offset=127,file=null ["#",<58>,line=5,col=28],offset=128,file=null [")",<13>,line=5,col=29],offset=129,file=null ["RELEASE",<89>,line=5,col=30],offset=130,file=null ["VERSION",<89>,line=5,col=38],offset=138,file=null'
+<U>#define '["VER_STRING_WITH_MAGIC",<89>,line=9,col=9],offset=279,file=null'='["_version_xstr",<89>,line=9,col=31],offset=301,file=null ["(",<12>,line=9,col=44],offset=314,file=null ["VER_MAGIC_PREFIX",<89>,line=9,col=45],offset=315,file=null ["_VERSION_ALL_TOKS",<89>,line=9,col=62],offset=332,file=null [")",<13>,line=9,col=79],offset=349,file=null'
+<U>#define '["_VERSION_ALL_TOKS",<89>,line=6,col=9],offset=154,file=null'='["VER_BUILD_NAME",<89>,line=6,col=27],offset=172,file=null ["VER_BUILD_DATE",<89>,line=6,col=42],offset=187,file=null'
+<U>#define '["_version_str",<89>,line=7,col=9],offset=210,file=null[["a",<89>,line=7,col=22],offset=223,file=null]'='["#",<58>,line=7,col=25],offset=226,file=null ["a",<89>,line=7,col=27],offset=228,file=null'
+<U>#define '["_version_xstr",<89>,line=8,col=9],offset=238,file=null[["a",<89>,line=8,col=23],offset=252,file=null]'='["_version_str",<89>,line=8,col=26],offset=255,file=null ["(",<12>,line=8,col=38],offset=267,file=null ["a",<89>,line=8,col=39],offset=268,file=null [")",<13>,line=8,col=40],offset=269,file=null'
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE iz190821.cc
+Includes:
+    <no includes>
+Macros:
+#define 'RELEASE' [1:1/0-1:20/19]
+#define 'VERSION' [2:1/20-2:19/38]
+#define 'VER_BUILD_DATE' [4:1/67-4:34/100]
+#define 'VER_BUILD_NAME' [3:1/39-3:28/66]
+#define 'VER_MAGIC_PREFIX' [5:1/101-5:45/145]
+#define 'VER_STRING_WITH_MAGIC' [9:1/271-9:80/350]
+#define '_VERSION_ALL_TOKS' [6:1/146-6:56/201]
+#define '_version_str[a]' [7:1/202-7:28/229]
+#define '_version_xstr[a]' [8:1/230-8:41/270]
+FUNCTION DEFINITION main  [11:1/352-15:2/441] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [11:1/352-15:2/441]
+    PARAMETERS:
+        argc [11:10/361-11:18/369]  TYPE: int TEXT=int  [11:10/361-11:13/364]  INIT: null  SCOPE: main 
+        argv [11:20/371-11:31/382]  TYPE: **char TEXT=char**  [11:20/371-11:26/377]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [11:1/352-11:4/355]
+    STATEMENT COMPOUND  [11:33/384-15:2/441] SCOPE: main 
+        STATEMENT DECLARATION  [13:5/391-13:39/425] SCOPE: Stmt  [11:33/384-15:2/441]
+            VARIABLE str [13:5/391-13:39/425]  TYPE: *char TEXT=char*  [13:5/391-13:10/396]  INIT: text='VER_STRING_WITH_MAGIC'  SCOPE: Stmt  [11:33/384-15:2/441]
+        STATEMENT RETURN  [14:5/430-14:14/439] SCOPE: Stmt  [11:33/384-15:2/441] text: 'return 0;'
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION DEFINITION main  [11:1/352-15:2/441] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [11:1/352-15:2/441]
+    PARAMETERS:
+        argc [11:10/361-11:18/369]  TYPE: int TEXT=int  [11:10/361-11:13/364]  INIT: null  SCOPE: main 
+        argv [11:20/371-11:31/382]  TYPE: **char TEXT=char**  [11:20/371-11:26/377]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [11:1/352-11:4/355]
+    STATEMENT COMPOUND  [11:33/384-15:2/441] SCOPE: main 
+        STATEMENT DECLARATION  [13:5/391-13:39/425] SCOPE: Stmt  [11:33/384-15:2/441]
+            VARIABLE str [13:5/391-13:39/425]  TYPE: *char TEXT=char*  [13:5/391-13:10/396]  INIT: text='VER_STRING_WITH_MAGIC'  SCOPE: Stmt  [11:33/384-15:2/441]
+        STATEMENT RETURN  [14:5/430-14:14/439] SCOPE: Stmt  [11:33/384-15:2/441] text: 'return 0;'
+

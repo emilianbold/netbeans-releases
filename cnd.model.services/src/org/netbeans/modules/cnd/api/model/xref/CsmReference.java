@@ -84,5 +84,11 @@ public interface CsmReference extends CsmOffsetable {
      */
     CsmObject getReferencedObject();
     
-    CsmObject getOwner();    
+    CsmObject getOwner();
+    
+    /**
+     * return the closest top level container of this reference
+     * @return object which is the closest top level container of this reference
+     */
+    CsmObject getClosestTopLevelObject();
 }

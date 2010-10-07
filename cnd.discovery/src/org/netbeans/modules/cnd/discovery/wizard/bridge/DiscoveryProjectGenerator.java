@@ -547,7 +547,7 @@ public class DiscoveryProjectGenerator {
     }
 
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
-        projectBridge.setSourceTool(item,lang);
+        projectBridge.setSourceTool(item,lang, config.getLanguageStandard());
         if ("file".equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();

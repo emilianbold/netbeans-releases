@@ -81,10 +81,10 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -254,11 +254,11 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
 
         try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
+            fo = CndFileUtils.toFileObject(file.getCanonicalFile());
         } catch (IOException e) {
             return false;
         }
-        if (fo == null) { // 149058
+        if (fo == null || !fo.isValid()) { // 149058
             return false;
         }
         DataObject dataObject = null;

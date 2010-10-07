@@ -101,7 +101,7 @@ public class RemoteFileSystem extends FileSystem {
     }
     
     @Override
-    public FileObject getRoot() {
+    public RemoteFileObjectBase getRoot() {
         return root;
     }
 

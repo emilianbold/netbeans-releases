@@ -197,7 +197,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         // at fist there should be find a bracket  '{' or column ':'
         Token <?extends PHPTokenId> bracketColumnToken = LexUtilities.findPrevious(ts,
                 Arrays.asList(PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
-                PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE));
+                PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CLOSETAG));
         if (bracketColumnToken != null
                 && (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN
                 || (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())))) {
@@ -425,7 +425,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // We've either encountered a further indented line, or a line that doesn't
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
-            if (offset > afterLastNonWhite) {
+            if (offset > afterLastNonWhite || id == PHPTokenId.PHP_CLOSETAG) {
+                // don't put php close tag iside. see #167816
                 sb.append("\n"); //NOI18N
                 sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 
@@ -453,6 +454,10 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 sb.append("endswitch;"); // NOI18N
             }
 
+            if (id == PHPTokenId.PHP_CLOSETAG) {
+                // place the close tag on the new line.
+                sb.append("\n"); //NOI18N
+            }
             int insertOffset = offset;
             doc.insertString(insertOffset, sb.toString(), null);
             caret.setDot(insertOffset);

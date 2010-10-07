@@ -50,10 +50,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 /**
  *  org.netbeans.modules.refactoring.java.plugins.RetoucheCommit
@@ -107,7 +107,7 @@ public class RefactoringCommit implements Transaction {
         if (newFiles!=null) {
             for (File f:newFiles) {
                 try {
-                    FileObject fo = FileUtil.toFileObject(f);
+                    FileObject fo = CndFileUtils.toFileObject(f);
                     if (!newFilesStored) {
                         ids.add(BackupFacility.getDefault().backup(fo));
                         newFilesStored = true;
