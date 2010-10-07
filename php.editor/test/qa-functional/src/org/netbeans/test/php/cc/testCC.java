@@ -87,7 +87,8 @@ public class testCC extends cc {
                 "Verify_that_require_directive_is_automatically_added",
                 "Verify_code_completion_in_slash_slash_comments",
                 "Verify_code_completion_in_slash_star_comments",
-                "Verify_code_completion_in_slash_star_star_comments").enableModules(".*").clusters(".*") //.gui( true )
+                "Verify_code_completion_in_slash_star_star_comments"
+                ).enableModules(".*").clusters(".*") //.gui( true )
                 );
 
 
@@ -205,7 +206,7 @@ public class testCC extends cc {
         CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
 
         // Include first file
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP_1.php");
+        EditorOperator eoPHP = new EditorOperator("EmptyPHP1.php");
         eoPHP.setCaretPosition("*/\n", false);
         TypeCode(eoPHP, "include 'EmptyPHP.php';\n\n$va");
 
@@ -226,13 +227,13 @@ public class testCC extends cc {
         // Add required third into first file
         EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
-        TypeCode(eoPHP, "require 'EmptyPHP_2.php';\n");
+        TypeCode(eoPHP, "require 'EmptyPHP2.php';\n");
 
         // Add third file
         CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
 
         // Add variable into third file
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP2.php");
         eoPHP_2.setCaretPosition("*/\n", false);
         TypeCode(eoPHP_2, "$variable_0003 = 3;\n");
 
