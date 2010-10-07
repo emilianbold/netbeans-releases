@@ -173,6 +173,7 @@ public class TraceModel extends TraceModelBase {
     private boolean deep = true;
     private boolean showMemoryUsage = false;
     private boolean testUniqueName = false;
+    private int     testAPTIterations = APT_REPEAT_TEST;
     private boolean testAPT = false;
     private boolean testAPTLexer = false;
     private boolean testAPTDriver = false;
@@ -242,6 +243,11 @@ public class TraceModel extends TraceModelBase {
         switch (flag) {
             case 'n':
                 deep = false;
+                break;
+            case 'E':
+                testAPTIterations = 0;
+                testAPTWalkerGetFilteredStream = true;
+                printTokens = true;
                 break;
             case 'e':
                 System.setErr(System.out);
@@ -325,7 +331,7 @@ public class TraceModel extends TraceModelBase {
                             result = ProcessFlagResult.ALL_PROCESSED;
                         }
                     } catch (IOException ex) {
-                        ex.printStackTrace();
+                        ex.printStackTrace(System.err);
                     }
                 }
                 break;
@@ -971,7 +977,7 @@ public class TraceModel extends TraceModelBase {
         long minAPTLexer = Long.MAX_VALUE;
         long maxAPTLexer = Long.MIN_VALUE;
         if (testAPTLexer) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTLexer(file, i == -1 ? printTokens : false);
                 minAPTLexer = Math.min(minAPTLexer, val);
                 maxAPTLexer = Math.max(maxAPTLexer, val);
@@ -981,7 +987,7 @@ public class TraceModel extends TraceModelBase {
         minDriver = Long.MAX_VALUE;
         maxDriver = Long.MIN_VALUE;
         if (testAPTDriver) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 invalidateAPT(buffer);
                 apt = testAPTDriver(buffer, i == -1 ? true : false);
             }
@@ -991,7 +997,7 @@ public class TraceModel extends TraceModelBase {
         long minVisit = Long.MAX_VALUE;
         long maxVisit = Long.MIN_VALUE;
         if (testAPTWalkerVisit) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTWalkerVisit(apt, buffer);
                 minVisit = Math.min(minVisit, val);
                 maxVisit = Math.max(maxVisit, val);
@@ -1000,7 +1006,7 @@ public class TraceModel extends TraceModelBase {
         long minGetTS = Long.MAX_VALUE;
         long maxGetTS = Long.MIN_VALUE;
         if (testAPTWalkerGetStream) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTWalkerGetStream(apt, buffer, false, false, i == -1 ? printTokens : false);
                 minGetTS = Math.min(minGetTS, val);
                 maxGetTS = Math.max(maxGetTS, val);
@@ -1009,7 +1015,7 @@ public class TraceModel extends TraceModelBase {
         long minGetExpandedTS = Long.MAX_VALUE;
         long maxGetExpandedTS = Long.MIN_VALUE;
         if (testAPTWalkerGetExpandedStream) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTWalkerGetStream(apt, buffer, true, false, i == -1 ? printTokens : false);
                 minGetExpandedTS = Math.min(minGetExpandedTS, val);
                 maxGetExpandedTS = Math.max(maxGetExpandedTS, val);
@@ -1018,7 +1024,7 @@ public class TraceModel extends TraceModelBase {
         long minGetFilteredTS = Long.MAX_VALUE;
         long maxGetFilteredTS = Long.MIN_VALUE;
         if (testAPTWalkerGetFilteredStream) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTWalkerGetStream(apt, buffer, true, true, i == -1 ? printTokens : false);
                 minGetFilteredTS = Math.min(minGetFilteredTS, val);
                 maxGetFilteredTS = Math.max(maxGetFilteredTS, val);
@@ -1029,7 +1035,7 @@ public class TraceModel extends TraceModelBase {
         long minAPTParsing = Long.MAX_VALUE;
         long maxAPTParsing = Long.MIN_VALUE;
         if (testAPTParser) {
-            for (int i = -1; i < APT_REPEAT_TEST; i++) {
+            for (int i = -1; i < testAPTIterations; i++) {
                 long val = testAPTParser(item, cleanAPT);
                 minAPTParsing = Math.min(minAPTParsing, val);
                 maxAPTParsing = Math.max(maxAPTParsing, val);
