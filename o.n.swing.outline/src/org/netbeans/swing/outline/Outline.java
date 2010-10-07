@@ -464,7 +464,8 @@ public class Outline extends ETable {
                     Comparable c1 = (Comparable) obj1;
                     return ascending ? c1.compareTo(obj2) : - c1.compareTo(obj2);
                 }
-                return 0;
+                return ascending ? obj1.toString().compareTo(obj2.toString()) :
+                                   obj2.toString().compareTo(obj1.toString());
             }
         }
     }
