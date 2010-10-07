@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ190821() throws Exception {
+        // #190413:  wrong message SEVERE [org.netbeans.modules.cnd.apt]: # is not followed by a macro parameter
+        performTest("iz190821.cc");
+    }
+    
     public void testIZ190782() throws Exception {
         // #190413:  enum based variables are not resolved (top issue in driver)
         performTest("iz190782.c");
