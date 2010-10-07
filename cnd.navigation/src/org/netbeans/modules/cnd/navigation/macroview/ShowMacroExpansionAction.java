@@ -72,7 +72,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
     private Document getDocument(Node[] activatedNodes) {
         EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
         if (c != null) {
-            return c.getDocument();
+            return CsmUtilities.openDocument(c);
         }
         return null;
     }
