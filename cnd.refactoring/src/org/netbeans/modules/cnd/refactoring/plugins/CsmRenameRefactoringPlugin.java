@@ -140,7 +140,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return preCheckProblem;
     }   
 
-    private static final String getString(String key) {
+    private static String getString(String key) {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
@@ -171,9 +171,10 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         }
     }
 
+    @Override
     protected Collection<CsmFile> getRefactoredFiles() {
         Collection<? extends CsmObject> objs = getRefactoredObjects();
-        if (objs == null || objs.size() == 0) {
+        if (objs == null || objs.isEmpty()) {
             return Collections.emptySet();
         }
         Collection<CsmFile> files = new HashSet<CsmFile>();
@@ -216,6 +217,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return out;
     }
 
+    @Override
     protected final void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
@@ -229,6 +231,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         if (refs.size() > 0) {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                @Override
                 public int compare(CsmReference o1, CsmReference o2) {
                     return o1.getStartOffset() - o2.getStartOffset();
                 }
