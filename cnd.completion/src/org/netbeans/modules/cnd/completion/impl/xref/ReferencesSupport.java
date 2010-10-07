@@ -463,10 +463,7 @@ public final class ReferencesSupport {
         } else {
             CsmFile file = ref.getContainingFile();
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
-            Document doc = null;
-            if (ces != null) {
-                doc = ces.getDocument();
-            }
+            Document doc = CsmUtilities.openDocument(ces);
             return doc instanceof BaseDocument ? (BaseDocument) doc : null;
         }
     }
