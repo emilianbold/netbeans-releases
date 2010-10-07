@@ -54,10 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -846,7 +843,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 // a fallback if no template sample found
                 template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
             } else {
-                setTemplateAttributes (template.getPrimaryFile (), getAttributes (templateSample.getPrimaryFile ()));
+                setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
             }
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -917,7 +914,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             DataObject target = source.copy(source.getFolder());
             FileObject srcFo = source.getPrimaryFile();
             FileObject targetFo = target.getPrimaryFile();
-            setTemplateAttributes(targetFo, getAttributes(srcFo));
+            setTemplateAttributes(targetFo, srcFo);
             if (parent != null) {
                 Node duplicateNode = null;
                 for (Node k : parent.getChildren ().getNodes (true)) {
@@ -947,32 +944,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return null;
     }
     
-    /** Returns map of attributes for given FileObject. */
-    private static HashMap<String, Object> getAttributes(FileObject fo) {
-        HashMap<String, Object> attributes = new HashMap<String, Object>();
-        Enumeration<String> attributeNames = fo.getAttributes();
-        while(attributeNames.hasMoreElements()) {
-            String attrName = attributeNames.nextElement();
-            if (attrName == null) {
-                continue;
-            }
-            Object attrValue = fo.getAttribute(attrName);
-            if (attrValue != null) {
-                attributes.put(attrName, attrValue);
-            }
-        }
-        return attributes;
-    }
-
-    /** Sets attributes for given FileObject. */
-    private static void setTemplateAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
-        for (Entry<String, Object> entry : attributes.entrySet()) {
-            // skip localizing bundle for custom templates
-            if (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE.equals (entry.getKey ())) {
-                continue;
-            }
-            fo.setAttribute(entry.getKey(), entry.getValue());
-        }
+    private static void setTemplateAttributes(FileObject fo, FileObject from) throws IOException {
+        FileUtil.copyAttributes(from, fo);
+        fo.setAttribute(TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE, null);
     }
 
     static FileObject getTemplatesRoot () {
