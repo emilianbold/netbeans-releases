@@ -462,10 +462,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         LOGGER.finer("Indexing Context :" + repo);//NOI18N
         try {
             RemoteIndexTransferListener.addToActive(Thread.currentThread());
-            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                @Override
-                public Object run() throws Exception {
+            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                public @Override Void run() throws Exception {
                     initIndexer();
                     //need to delete the index and recreate? the scan(update) parameter doesn't work?
                     IndexingContext cntx = indexer.getIndexingContexts().get(repo.getId());
@@ -504,11 +502,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     public void updateIndexWithArtifacts(final RepositoryInfo repo, final Collection<Artifact> artifacts) {
 
         try {
-            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                @Override
-                public Object run() throws Exception {
-
+            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                public @Override Void run() throws Exception {
                     loadIndexingContext(repo);
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -550,10 +545,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     @Override
     public void deleteArtifactFromIndex(final RepositoryInfo repo, final Artifact artifact) {
         try {
-            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                @Override
-                public Object run() throws Exception {
+            getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                public @Override Void run() throws Exception {
                     loadIndexingContext(repo);
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
@@ -627,11 +620,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             final Set<String> groups = new TreeSet<String>();
             final List<RepositoryInfo> slowCheck = new ArrayList<RepositoryInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         if (repo.isLocal() || repo.isRemoteDownloadable()) {
                             IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
@@ -659,10 +649,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
 
             for (final RepositoryInfo slowrepo : slowCheck) {
-                getRepoMutex(slowrepo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
+                getRepoMutex(slowrepo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, prefix)), BooleanClause.Occur.MUST));
                         GroupedSearchRequest gsr = new GroupedSearchRequest(bq, new GGrouping(),
@@ -695,11 +683,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS + version + ArtifactInfo.FS;
@@ -724,10 +709,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final Set<String> artifacts = new TreeSet<String>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         BooleanQuery bq = new BooleanQuery();
                         loadIndexingContext(repo);
                         String id = groupId + ArtifactInfo.FS;
@@ -755,11 +738,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + artifactId + ArtifactInfo.FS;
@@ -785,11 +765,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         String clsname = className.replace(".", "/");
                         FlatSearchRequest fsr = new FlatSearchRequest(setBooleanRewrite(indexer.constructQuery(ArtifactInfo.NAMES, clsname.toLowerCase())),
@@ -817,11 +794,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new TermQuery(new Term(NB_DEPENDENCY_GROUP, groupId)), BooleanClause.Occur.MUST));
@@ -849,11 +823,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause((setBooleanRewrite(indexer.constructQuery(ArtifactInfo.SHA1, sha1))), BooleanClause.Occur.SHOULD));
@@ -879,11 +850,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         // XXX also consider using NexusArchetypeDataSource
@@ -915,11 +883,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final Set<String> artifacts = new TreeSet<String>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + prefix;
@@ -949,11 +914,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final Set<String> artifacts = new TreeSet<String>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         bq.add(new BooleanClause(new TermQuery(new Term(ArtifactInfo.PACKAGING, "maven-plugin")), BooleanClause.Occur.MUST));
@@ -984,11 +946,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final Set<String> artifacts = new TreeSet<String>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         String id = groupId + ArtifactInfo.FS + prefix;
@@ -1017,11 +976,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
-
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         loadIndexingContext(repo);
                         BooleanQuery bq = new BooleanQuery();
                         for (QueryField field : fields) {
@@ -1069,10 +1025,8 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         try {
             final List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
             for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Object>() {
-
-                    @Override
-                    public Object run() throws Exception {
+                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                    public @Override Void run() throws Exception {
                         if (!inited) {
                             toRet.clear();
                             return null;
