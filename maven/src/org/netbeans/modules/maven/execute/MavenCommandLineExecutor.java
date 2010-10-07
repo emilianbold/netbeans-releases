@@ -302,7 +302,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
-            // XXX might be better to supply relative path from executionDirectory, e.g. 'war'
             toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
         }
 
@@ -413,7 +412,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        StringBuilder display = new StringBuilder();
+        StringBuilder display = new StringBuilder("cd ").append(clonedConfig.getExecutionDirectory()).append("; "); // NOI18N
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();

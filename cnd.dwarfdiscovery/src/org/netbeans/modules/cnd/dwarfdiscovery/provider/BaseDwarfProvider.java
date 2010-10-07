@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -212,6 +211,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
+                    String path = cu.getSourceFileAbsolutePath();
+                    File normalizeFile = CndFileUtils.normalizeFile(new File(path));
+                    if (!normalizeFile.exists()) {
+                        continue;
+                    }
                     ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
@@ -229,9 +233,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    String path = cu.getSourceFileAbsolutePath();
-                    path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
-                    path = path.replace('\\', '/');
+                    path = normalizeFile.getAbsolutePath().replace('\\', '/');
                     if (commonRoot == null) {
                         int i = path.lastIndexOf('/');
                         if (i >= 0) {

@@ -204,7 +204,7 @@ public final class SettingsConversions {
                     return value;
                 }
             } catch (Exception e) {
-                LOG.log(Level.WARNING, null, e);
+                LOG.log(Level.INFO, null, e);
             }
         }
 

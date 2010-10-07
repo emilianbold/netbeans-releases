@@ -53,7 +53,7 @@ import org.netbeans.modules.dlight.api.indicator.IndicatorMetadata;
 import org.netbeans.modules.dlight.api.storage.DataRow;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata.Column;
 import org.netbeans.modules.dlight.db.h2.H2DataStorageFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.indicators.DataRowToTimeSeries;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;

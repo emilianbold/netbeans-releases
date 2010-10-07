@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
@@ -125,6 +129,8 @@ public abstract class CsmReferenceResolver {
 
     public abstract boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds);
 
+    public abstract Collection<CsmReference> getReferences(CsmFile file);
+
     public static enum Scope {
         LOCAL,
         FILE_LOCAL,
@@ -140,6 +146,7 @@ public abstract class CsmReferenceResolver {
             res = Lookup.getDefault().lookupResult(CsmReferenceResolver.class);
         }
 
+        @Override
         public CsmReference findReference(CsmFile file, int offset) {
             for (CsmReferenceResolver resolver : res.allInstances()) {
                 CsmReference out = resolver.findReference(file, offset);
@@ -191,6 +198,15 @@ public abstract class CsmReferenceResolver {
                 }
             }
             return false;
+        }
+
+        @Override
+        public Collection<CsmReference> getReferences(CsmFile file) {
+            List<CsmReference> list = new ArrayList<CsmReference>();
+            for (CsmReferenceResolver resolver : res.allInstances()) {
+                list.addAll(resolver.getReferences(file));
+            }
+            return list;
         }
     }    
 }

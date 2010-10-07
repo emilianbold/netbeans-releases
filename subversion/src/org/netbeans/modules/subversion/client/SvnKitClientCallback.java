@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
@@ -63,8 +65,10 @@ public class SvnKitClientCallback extends SvnClientCallback {
 
     @Override
     public boolean askYesNo(String realm, String question, boolean yesIsDefault) {
-        // TODO implement me
-        return false;
+        Subversion.LOG.log(Level.FINE,
+                "SvnKitClientCallback.askYesNo(): realm [{0}] question [{1}] yesIsDefault[{2}]",
+                new Object[]{realm, question, yesIsDefault});
+        return true; 
     }
 
     @Override
@@ -74,7 +78,9 @@ public class SvnKitClientCallback extends SvnClientCallback {
 
     @Override
     public String askQuestion(String realm, String question, boolean showAnswer, boolean maySave) {
-        // TODO implement me
+        Subversion.LOG.log(Level.FINE,
+                "SvnKitClientCallback.askQuestion(): realm [{0}] question [{1}] showAnswer[{2}] maySave[{3}]",
+                new Object[]{realm, question, showAnswer, maySave});
         return null;
     }
 

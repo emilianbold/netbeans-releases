@@ -354,8 +354,7 @@ public final class FolderPathLookup extends AbstractLookup {
         }
 
         private static void exception(Exception e, FileObject fo) {
-            Exceptions.attachMessage(e, "Bad file: " + fo); // NOI18N
-            LOG.log(Level.WARNING, null, e);
+            LOG.log(Level.INFO, "Bad file: " + fo, e); // NOI18N
         }
     } // End of ICItem class.
     

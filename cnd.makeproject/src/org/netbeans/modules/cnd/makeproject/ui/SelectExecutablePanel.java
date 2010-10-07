@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -325,13 +326,16 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         } else {
             filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter()};
         }
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                conf.getRemoteMode(),
+                conf.getRemoteFileSystemHost(),
                 getString("CHOOSER_TITLE_TXT"),
                 getString("CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
                 filters,
                 seed,
                 false);
+        
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;

@@ -92,6 +92,7 @@ import javax.swing.text.BadLocationException;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -1953,21 +1954,36 @@ public class JavaSourceTest extends NbTestCase {
         }
 
         @Override
-        public <T> void query(Query[] queries, FieldSelector selector, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void query(
+                Collection<? super T> result,
+                ResultConvertor<? super org.apache.lucene.document.Document, T> convertor,
+                FieldSelector selector,
+                Query... queries) throws IOException, InterruptedException {
             await();
         }
         
         @Override
-        public <T> void queryTerms(Term start, ResultConvertor<Term, T> filter, Collection<? super T> result) throws IOException, InterruptedException {
+        public <T> void queryTerms(
+                Collection<? super T> result,
+                Term start,
+                ResultConvertor<Term, T> filter) throws IOException, InterruptedException {
             await ();
         }
-       
-        public void store(Map<Pair<String,String>, Object[]> refs, Set<Pair<String,String>> toDelete) throws IOException {            
+        
+        @Override
+        public <S, T> void queryDocTerms(
+                Map<? super T, Set<S>> result,
+                ResultConvertor<? super org.apache.lucene.document.Document, T> convertor,
+                ResultConvertor<? super Term, S> termConvertor,
+                FieldSelector selector,
+                Query... queries) throws IOException, InterruptedException {
+            await();
         }
 
-        public void store(Map<Pair<String,String>, Object[]> refs, List<Pair<String,String>> topLevels) throws IOException {            
+        @Override
+        public <S, T> void store(Collection<T> toAdd, Collection<S> toDelete, ResultConvertor<? super T, ? extends org.apache.lucene.document.Document> docConvertor, ResultConvertor<? super S, ? extends Query> queryConvertor, boolean optimize) throws IOException {
         }
-
+        
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {
             return true;
         }
@@ -1990,11 +2006,6 @@ public class JavaSourceTest extends NbTestCase {
                 Thread.sleep(100);
             }
         }
-
-        @Override
-        public <T> void getDeclaredElements(String ident, NameKind kind, ResultConvertor<? super org.apache.lucene.document.Document, T> convertor, Map<T, Set<String>> result) throws IOException, InterruptedException {
-            await();
-        }              
     }
 
     private FileObject createTestFile (String className) {

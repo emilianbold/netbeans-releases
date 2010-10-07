@@ -356,6 +356,22 @@ public final class TreeUtilities {
             jcMaker.pos = oldPos;
         }
     }
+
+    /**Parses given type in given context.
+     *
+     * @param expr type specification
+     * @param scope in which simple names should be resolved
+     * @return parsed {@link TypeMirror} or null if the given specification cannot be parsed
+     */
+    Tree parseType(String expr) {
+        com.sun.tools.javac.tree.TreeMaker jcMaker = com.sun.tools.javac.tree.TreeMaker.instance(info.impl.getJavacTask().getContext());
+        int oldPos = jcMaker.pos;
+        try {
+            return info.impl.getJavacTask().parseType(expr);
+        } finally {
+            jcMaker.pos = oldPos;
+        }
+    }
     
     /**Parses given statement.
      * 

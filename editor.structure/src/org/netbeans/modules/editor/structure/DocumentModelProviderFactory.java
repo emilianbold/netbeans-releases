@@ -65,7 +65,7 @@ import org.openide.util.Lookup;
  */
 public class DocumentModelProviderFactory {
     
-    static final String FOLDER_NAME = "DocumentModel"; //NOI18N
+    public static final String FOLDER_NAME = "DocumentModel"; //NOI18N
     
     private Map<String, DocumentModelProvider> mime2provider;
     

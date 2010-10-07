@@ -103,7 +103,8 @@ public class SvnWcUtils {
     public static Date parseSvnDate(String inputValue) throws ParseException {
         Date returnValue = null;
         if (inputValue != null) {              
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");                        
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
             int idx = inputValue.lastIndexOf(".");            
             if(idx > 0) {
                 idx = (idx + 4 > inputValue.length()) ? inputValue.length() : idx + 4; // parse as mili-, not microseconds

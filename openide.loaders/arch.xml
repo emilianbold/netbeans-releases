@@ -459,7 +459,7 @@ for more information about this.
      
     <api type="export" group="property" name="isRemoteAndSlow" category="friend">
         If the file attribute <code>isRemoteAndSlow</code> is <code>true</code> on a folder,
-        the New File wizard and folder children will avoid asking for its children.
+        the New File wizard will avoid asking for its children.
     </api>
   
   

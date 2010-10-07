@@ -360,7 +360,8 @@ public class TopLoggingTest extends NbTestCase {
             fail("Expecting exception: " + disk);
         }
     }
-    
+
+    @RandomlyFails // NB-Core-Build #5167: m.find()
     public void testSystemErrIsSentToLogWithoutFlush() throws Exception {
         System.err.println("Ahoj");
         System.err.println("Jardo");

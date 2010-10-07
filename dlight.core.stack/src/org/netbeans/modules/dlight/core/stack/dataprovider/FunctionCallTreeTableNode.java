@@ -43,7 +43,7 @@ package org.netbeans.modules.dlight.core.stack.dataprovider;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.dlight.api.impl.TreeTableNode;
+import org.netbeans.modules.dlight.api.dataprovider.TreeTableNode;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 
 /**

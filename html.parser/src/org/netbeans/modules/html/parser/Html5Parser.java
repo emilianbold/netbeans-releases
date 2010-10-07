@@ -47,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ElementName;
@@ -64,17 +62,20 @@ import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHtmlParseResult;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
 import org.netbeans.html.api.validation.Validator;
 import org.netbeans.html.api.validation.ValidatorService;
+import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -91,9 +92,8 @@ import org.xml.sax.SAXParseException;
 public class Html5Parser implements HtmlParser {
 
     private static final String PARSER_NAME = String.format("validator.nu html5 parser (%s).", Html5Parser.class); //NOI18N
-
     private static final HtmlModel HTML5MODEL = new Html5Model();
-    
+
     public HtmlParseResult parse(HtmlSource source, HtmlVersion preferedVersion, Lookup lookup) throws ParseException {
         try {
             String code = source.getSourceCode().toString();
@@ -211,6 +211,20 @@ public class Html5Parser implements HtmlParser {
                 return Collections.emptyList();
             }
             if (openTags) {
+                //skip empty tags - this is mailny a workaround for bad logical context of empty nodes
+                //however not easily fixable since the HtmlCompletionQuery uses the XmlSyntaxTreeBuilder
+                //when the parse tree is broken and the builder has no notion of such metadata.
+                while (tag != null && tag.isEmpty()) {
+                    afterNode = afterNode.parent();
+                    if (afterNode == null) {
+                        return Collections.emptyList();
+                    }
+                    tag = model().getTag(afterNode.getNameWithoutPrefix());
+                }
+                if (tag == null) {
+                    return Collections.emptyList();
+                }
+
                 Collection<HtmlTag> possibleChildren = new LinkedHashSet<HtmlTag>();
                 addPossibleTags(tag, possibleChildren);
                 return possibleChildren;
@@ -225,8 +239,8 @@ public class Html5Parser implements HtmlParser {
             //3.if a child is transparent, add its possible children
             Collection<HtmlTag> children = tag.getChildren();
             possible.addAll(children);
-            for(HtmlTag child : children) {
-                if(child.hasOptionalOpenTag()) {
+            for (HtmlTag child : children) {
+                if (child.hasOptionalOpenTag()) {
                     addPossibleTags(child, possible);
                 }
                 //TODO add the transparent check
@@ -237,18 +251,14 @@ public class Html5Parser implements HtmlParser {
             Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
             //end tags
             do {
-                ElementName element = (ElementName) node.elementName;
-                if (element != null) {
-                    //TODO if(element is not empty tag (end tag forbidden) {
-                    possible.add(HtmlTagProvider.getTagForElement(element.name));
-                    //}
+                HtmlTag tag = HtmlTagProvider.getTagForElement(node.getNameWithoutPrefix());
+                if (!tag.isEmpty()) {
+                    possible.add(tag);
                 }
             } while ((node = node.parent()) != null && !node.isRootNode());
 
             return possible;
         }
-
-
 //        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
 //            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
 //            if (type) {
@@ -290,7 +300,6 @@ public class Html5Parser implements HtmlParser {
 //
 //            return possible;
 //        }
-        
     }
 
     private static final class Html5Model implements HtmlModel {
@@ -300,8 +309,8 @@ public class Html5Parser implements HtmlParser {
         public synchronized Collection<HtmlTag> getAllTags() {
             if (ALL_TAGS == null) {
                 ALL_TAGS = new ArrayList<HtmlTag>();
-                for (ElementName element : ElementName.ELEMENT_NAMES) {
-                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.name));
+                for (ElementDescriptor element : ElementDescriptor.values()) {
+                    ALL_TAGS.add(HtmlTagProvider.getTagForElement(element.getName()));
                 }
             }
             return ALL_TAGS;
@@ -315,6 +324,8 @@ public class Html5Parser implements HtmlParser {
             return EnumSet.allOf(NamedCharacterReference.class);
         }
 
+        public HelpResolver getHelpResolver() {
+            return Documentation.getDefault();
+        }
     }
-    
 }

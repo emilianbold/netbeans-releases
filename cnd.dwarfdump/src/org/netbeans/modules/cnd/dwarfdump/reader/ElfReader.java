@@ -392,6 +392,35 @@ public class ElfReader extends ByteStreamReader {
     public List<String> readPubNames() throws IOException{
         List<String> res = new ArrayList<String>();
         long save = getFilePointer();
+        if (false) {
+            // another way to find shared libraries
+            Integer dynamic = sectionsMap.get(SECTIONS.DYNAMIC);
+            if (dynamic != null) {
+                long start = sectionHeadersTable[dynamic].sh_offset;
+                long size = sectionHeadersTable[dynamic].sh_size;
+                seek(start);
+                List<Integer> libs = new ArrayList<Integer>();
+                while( getFilePointer() < start+size) {
+                    int tag = readInt();
+                    if (tag == 0) {
+                        //break;
+                    }
+                    int ptr = readInt();
+                    //System.err.println("tag "+tag+" "+ptr);
+                    if (tag == 1) { //DT_NEEDED
+                        libs.add(ptr);
+                    }
+                }
+                Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
+                if (idx != null) {
+                    long s = sectionHeadersTable[idx].sh_offset;
+                    for(int l : libs){
+                        seek(s+l);
+                        res.add(readString());
+                    }
+                }
+            }
+        }
         seek(elfHeader.e_phoff);
         for(int i = 0; i < elfHeader.e_phnum; i++) {
             long p = getFilePointer();

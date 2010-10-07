@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.File;
 import java.util.List;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
@@ -54,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 
 /**
@@ -118,8 +118,7 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
         if (result == null && fileSearch != null) {
             String path = fileSearch.searchInclude(includedFile, baseFile);
             if (path != null) {
-                File file = new File(path);
-                result = APTIncludeUtils.resolveFilePath(file.getName(), path);
+                result = APTIncludeUtils.resolveFilePath(CndPathUtilitities.getBaseName(path), path);
             }
         }
         return result;
