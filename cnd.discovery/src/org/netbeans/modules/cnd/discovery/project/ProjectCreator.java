@@ -386,8 +386,8 @@ public class ProjectCreator {
     //create project directory
     //return FileObject created with specified File dir
     /*package-local*/ static FileObject createProjectDir(File dir) throws IOException {
-        FileObject dirFO = FileUtil.toFileObject(dir);
-        if (dirFO == null && !dir.exists()) {
+        FileObject dirFO = CndFileUtils.toFileObject(dir);
+        if ((dirFO == null || !dirFO.isValid()) && !dir.exists()) { // File SIC! - always local
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem(dir);
             if (!dir.mkdirs()) {
@@ -395,8 +395,9 @@ public class ProjectCreator {
             }
             refreshFileSystem(dir);
         }
-        dirFO = FileUtil.toFileObject(dir);
+        dirFO = CndFileUtils.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }
@@ -407,8 +408,9 @@ public class ProjectCreator {
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
-        FileObject dirFO = FileUtil.toFileObject(rootF);
+        FileObject dirFO = CndFileUtils.toFileObject(rootF);
         assert dirFO != null : "At least disk roots must be mounted! " + rootF; // NOI18N
+        assert dirFO.isValid() : "At least disk roots must be mounted! " + rootF; // NOI18N
         dirFO.getFileSystem().refresh(false);
     }
 

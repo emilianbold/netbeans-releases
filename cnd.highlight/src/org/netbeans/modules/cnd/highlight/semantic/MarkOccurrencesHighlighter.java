@@ -586,5 +586,10 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         public String toString() {
             return "tokenRef[" + start + "-" + end + "]";//NOI18N
         }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Must not be called."); //NOI18N
+        }
     }
 }

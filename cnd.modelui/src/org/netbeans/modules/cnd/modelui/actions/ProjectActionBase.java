@@ -63,9 +63,9 @@ import org.openide.util.actions.NodeAction;
  */
 public abstract class ProjectActionBase extends NodeAction {
 
-    private final boolean enabledAction;
+    private final boolean enabledAction;    
     protected enum State {
-        Enabled, Disabled, Indeterminate
+        NoProjects, Enabled, Disabled, Indeterminate
     }
     
     private boolean running;
@@ -106,7 +106,7 @@ public abstract class ProjectActionBase extends NodeAction {
                 } catch (Throwable thr) {
                     // we are in awt thread;
                     // if exception occurs here, it doesn't allow even to close the project!
-                    thr.printStackTrace();
+                    thr.printStackTrace(System.err);
                     this.setEnabled(false);
                 }
             }
@@ -117,10 +117,12 @@ public abstract class ProjectActionBase extends NodeAction {
         return presenter;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (!enabledAction) {
             return false;
@@ -129,15 +131,20 @@ public abstract class ProjectActionBase extends NodeAction {
             return false;
         }
         Collection<CsmProject> projects = getCsmProjects(activatedNodes);
-        if (projects == null) {
-            return false;
-        }
-        return getState(projects) != State.Indeterminate;
+        return isEnabledEx(activatedNodes, projects);
     }
+    
+    protected boolean isEnabledEx(Node[] activatedNodes, Collection<CsmProject> projects) {
+         State state = getState(projects);
+         return state != State.Indeterminate;        
+    }
+    
+    @Override
     public void performAction(final Node[] activatedNodes) {
         running = true;
         CsmModelAccessor.getModel().enqueue(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     performAction(getCsmProjects(activatedNodes));
@@ -186,10 +193,10 @@ public abstract class ProjectActionBase extends NodeAction {
         if (model == null || model.getState() != CsmModelState.ON) {
             return State.Indeterminate;
         }
-        State state = State.Indeterminate;
+        State state = State.NoProjects;
         for (CsmProject p : projects) {
             State curr = getState(p);
-            if (state == State.Indeterminate) {
+            if (state == State.NoProjects) {
                 state = curr;
             } else {
                 if (state != curr) {

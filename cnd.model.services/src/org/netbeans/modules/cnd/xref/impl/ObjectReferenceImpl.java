@@ -190,4 +190,9 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
     public String toString() {
         return "Object Reference: " + (this.targetDelegate != null ? targetDelegate.toString() : getOffsetString()); // NOI18N
     }
+
+    @Override
+    public CsmObject getClosestTopLevelObject() {
+        return null;
+    }
 }

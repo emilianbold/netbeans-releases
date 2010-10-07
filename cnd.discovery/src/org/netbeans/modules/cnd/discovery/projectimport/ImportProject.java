@@ -348,7 +348,7 @@ public class ImportProject implements PropertyChangeListener {
         prjParams.setHostUID(hostUID);
 
         makeProject = ProjectGenerator.createProject(prjParams);
-        FileObject dir = FileUtil.toFileObject(projectFolder);
+        FileObject dir = CndFileUtils.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
         resultSet.add(dir);
@@ -460,7 +460,7 @@ public class ImportProject implements PropertyChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+            FileObject configureFileObject = CndFileUtils.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
             String mime = FileUtil.getMIMEType(configureFileObject);
@@ -633,7 +633,7 @@ public class ImportProject implements PropertyChangeListener {
         downloadRemoteFile(makefileFile);
         scanConfigureLog(logFile);
         if (makefileFile != null && makefileFile.exists()) {
-            FileObject makeFileObject = FileUtil.toFileObject(makefileFile); //XXX:fullRemote
+            FileObject makeFileObject = CndFileUtils.toFileObject(makefileFile); //XXX:fullRemote
             DataObject dObj;
             try {
                 dObj = DataObject.find(makeFileObject);

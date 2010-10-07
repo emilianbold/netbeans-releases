@@ -79,8 +79,8 @@ public class ContextUtils {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
                 CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
-                    CsmInclude incl = (CsmInclude) ref.getOwner();
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) { // not needed
+                    CsmInclude incl = (CsmInclude) ref.getOwner(); // not needed
                     CsmFile file = incl.getIncludeFile();
                     if (file != null) {
                         return file;
@@ -129,8 +129,8 @@ public class ContextUtils {
 
     public static boolean isSupportedReference(CsmReference ref) {
         return ref != null && 
-                !CsmKindUtilities.isMacro(ref.getOwner()) &&
-                !CsmKindUtilities.isInclude(ref.getOwner());        
+                !CsmKindUtilities.isMacro(ref.getOwner()) && // not needed
+                !CsmKindUtilities.isInclude(ref.getOwner());     // not needed   
     }
     
     public static CsmReference findReference(Node activatedNode) {

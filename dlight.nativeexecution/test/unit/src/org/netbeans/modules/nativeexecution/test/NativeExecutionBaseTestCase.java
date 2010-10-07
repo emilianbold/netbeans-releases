@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -202,6 +203,30 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         } else {
             return String.format("%s [%s]", name, env);
         }
+    }
+    
+    private static boolean ignoreRandomFailures() {
+        return Boolean.getBoolean("ignore.random.failures");
+    }
+
+    @Override
+    public boolean canRun() {
+        boolean res = super.canRun();
+        if (!res) {
+            return false;
+        }
+        // Our own check for random failures
+        if (ignoreRandomFailures() && getTestExecutionEnvironment() != null) {
+            try {
+                if (getClass().getMethod(super.getName()).isAnnotationPresent(RandomlyFails.class)) {
+                    System.err.println("Skipping " + getClass().getName() + "." + getName());
+                    return false;
+                }
+            } catch (NoSuchMethodException x) {
+                // Specially named methods; let it pass.
+            }
+        }
+        return res;
     }
 
     public static void writeFile(File file, CharSequence content) throws IOException {
