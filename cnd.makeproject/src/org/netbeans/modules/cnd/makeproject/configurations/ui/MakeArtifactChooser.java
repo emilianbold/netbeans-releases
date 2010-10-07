@@ -179,7 +179,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         
         try {            
             FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(projectAbsPath));
-            if (fo != null) {
+            if (fo != null && fo.isValid()) {
                 return ProjectManager.getDefault().findProject(fo);
             }
         } catch (IOException e) {

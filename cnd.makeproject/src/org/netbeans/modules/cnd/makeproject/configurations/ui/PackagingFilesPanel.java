@@ -258,7 +258,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         } catch (IOException e) {
             return false;
         }
-        if (fo == null) { // 149058
+        if (fo == null || !fo.isValid()) { // 149058
             return false;
         }
         DataObject dataObject = null;

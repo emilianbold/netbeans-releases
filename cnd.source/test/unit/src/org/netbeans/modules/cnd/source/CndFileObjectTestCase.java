@@ -71,6 +71,7 @@ public class CndFileObjectTestCase extends NbTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c mime type", MIMENames.C_MIME_TYPE, fo.getMIMEType());
     }
     
@@ -80,6 +81,7 @@ public class CndFileObjectTestCase extends NbTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c++ mime type", MIMENames.CPLUSPLUS_MIME_TYPE, fo.getMIMEType());
     }
 
@@ -89,6 +91,7 @@ public class CndFileObjectTestCase extends NbTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertEquals("Not text/x-c++ mime type", MIMENames.HEADER_MIME_TYPE, fo.getMIMEType());
     }
     

@@ -111,6 +111,6 @@ public class BooleanConfiguration {
 
     @Override
     public String toString() {
-        return "{value=" + value + " modified=" + modified + " dirty=" + dirty +  '}';
+        return "{value=" + value + " modified=" + modified + " dirty=" + dirty +  '}'; // NOI18N
     }
 }

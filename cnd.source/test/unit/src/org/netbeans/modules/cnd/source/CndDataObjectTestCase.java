@@ -75,6 +75,7 @@ public class CndDataObjectTestCase extends NbTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof CDataObject);
     }
@@ -84,6 +85,7 @@ public class CndDataObjectTestCase extends NbTestCase {
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertNotNull("Not found file object for file" + newFile, fo);
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof CCDataObject);
@@ -95,6 +97,7 @@ public class CndDataObjectTestCase extends NbTestCase {
         assertTrue("Not created file " + newFile, newFile.exists());
         FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);
     }
@@ -119,6 +122,7 @@ public class CndDataObjectTestCase extends NbTestCase {
             writer.close();
         }
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         String mime = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE);
         assertEquals("header with content " + content + " is not recognized ", MIMENames.HEADER_MIME_TYPE, mime);
         DataObject dob = DataObject.find(fo);

@@ -204,6 +204,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File makefile = new File(projectDir, "Makefile");
         FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);
         assertTrue("makefileFileObject == null", makefileFileObject != null);
+        assertTrue("makefileFileObject is invalid", makefileFileObject.isValid());
         DataObject dObj = null;
         try {
             dObj = DataObject.find(makefileFileObject);

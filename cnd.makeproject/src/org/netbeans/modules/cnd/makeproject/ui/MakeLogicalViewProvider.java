@@ -1086,7 +1086,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     String rootPath = folder.getRootPath();
                     String absRootPath = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), rootPath);
                     FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
-                    if (fo != null && fo.isFolder()) {
+                    if (fo != null /*paranoia*/ && fo.isValid() && fo.isFolder()) {
                         DataFolder dataFolder = DataFolder.findFolder(fo);
                         if (dataFolder != null) {
                             elems.add(dataFolder);

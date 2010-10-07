@@ -262,7 +262,7 @@ public class CompletionTestPerformer {
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
         FileObject test = CndFileUtils.toFileObject(testFile);
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(testFile.getAbsolutePath(), false);
-        if (test == null || csmFile == null) {
+        if (test == null || !test.isValid() || csmFile == null) {
             throw new IllegalStateException("Given test file does not exist.");
         }
         log.println("File found: " + csmFile);

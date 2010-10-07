@@ -207,7 +207,7 @@ public class ConfigurationMakefileWriterTest extends CndBaseTestCase {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         // Setup project
         File folderBase = getBaseFolder();
-         MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(CndFileUtils.toFileObject(folderBase));
+        MakeConfigurationDescriptor makeConfigurationDescriptor = new MakeConfigurationDescriptor(CndFileUtils.toFileObject(folderBase));
         MakeConfiguration conf = new MakeConfiguration("/tmp/Xxx", "Default", MakeConfiguration.TYPE_DYNAMIC_LIB);  // NOI18N
         makeConfigurationDescriptor.init(conf);
         makeConfigurationDescriptor.getLogicalFolders().addItem(new Item("test.cc"));

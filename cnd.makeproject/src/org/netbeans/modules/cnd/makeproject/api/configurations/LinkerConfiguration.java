@@ -501,11 +501,11 @@ public class LinkerConfiguration implements AllOptionsProvider {
 
     @Override
     public String toString() {
-        return "{output=" + output + " additionalLibs=" + additionalLibs + " dynamicSearch=" + dynamicSearch +
-                " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption +
-                " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration +
-                " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration +
-                " tool=" + tool + '}';
+        return "{output=" + output + " additionalLibs=" + additionalLibs + " dynamicSearch=" + dynamicSearch + // NOI18N
+                " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption + // NOI18N
+                " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration + // NOI18N
+                " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration + // NOI18N
+                " tool=" + tool + '}'; // NOI18N
     }
 
     public static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {

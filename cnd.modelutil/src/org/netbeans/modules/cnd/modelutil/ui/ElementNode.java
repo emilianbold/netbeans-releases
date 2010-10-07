@@ -105,7 +105,7 @@ public class ElementNode extends AbstractNode {
             CsmFile file = (CsmFile) description.iconElementHandle;
             CharSequence absolutePath = file.getAbsolutePath();
             FileObject fo = CndFileUtils.toFileObject(absolutePath);
-            if (fo != null) {
+            if (fo != null && fo.isValid()) {
                 try {
                     DataObject dob = DataObject.find(fo);
                     Node node = dob.getNodeDelegate();

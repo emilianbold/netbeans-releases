@@ -292,7 +292,7 @@ public class ImportExecutable implements PropertyChangeListener {
                     boolean open = true;
                     if (mainFunction != null) {
                         FileObject toFileObject = CndFileUtils.toFileObject(mainFunction.getFilePath()); // should it be normalized?
-                        if (toFileObject != null) {
+                        if (toFileObject != null && toFileObject.isValid()) {
                             if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
                                 open = false;
                             }

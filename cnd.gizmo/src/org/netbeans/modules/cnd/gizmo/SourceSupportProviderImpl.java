@@ -139,7 +139,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         String fileName = lineInfo.getFileName();
         try {
             FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
-            if (fo == null) {
+            if (fo == null || ! fo.isValid()) {
                 InputStream inputStream = null;
                 try {
                     URI uri = new URI(lineInfo.getFileName());
@@ -184,7 +184,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 }
             }
 
-            if (fo == null) {
+            if (fo == null || !fo.isValid()) {
                 StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
                 return;
             }

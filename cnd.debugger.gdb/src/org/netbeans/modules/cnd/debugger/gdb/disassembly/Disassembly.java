@@ -220,7 +220,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
                         if (resolvedFileName != null && CndPathUtilitities.getBaseName(resolvedFileName).equals(fileStr)) {
                             FileObject src_fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(resolvedFileName));
-                            if (src_fo != null) {
+                            if (src_fo != null && src_fo.isValid()) {
                                 try {
                                     String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();
                                     if (lineText != null && lineText.length() > 0) {

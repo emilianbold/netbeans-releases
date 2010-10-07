@@ -144,6 +144,6 @@ public class StringConfiguration {
 
     @Override
     public String toString() {
-        return "{value=" + value + " modified=" + modified + '}';
+        return "{value=" + value + " modified=" + modified + '}'; // NOI18N
     }
 }
