@@ -148,7 +148,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
                     if (CsmFileReferences.isTemplateBased(context)) {
                         severity = Severity.WARNING;
-                    } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) {
+                    } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) { // owner is needed
                         severity = Severity.WARNING;
                     }
                     foundError++;

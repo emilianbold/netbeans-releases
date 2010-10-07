@@ -248,6 +248,8 @@ public class TraceModel extends TraceModelBase {
                 testAPTIterations = 0;
                 testAPTWalkerGetFilteredStream = true;
                 printTokens = true;
+                testAPT = true;
+                breakAfterAPT = true;                
                 break;
             case 'e':
                 System.setErr(System.out);
@@ -935,7 +937,7 @@ public class TraceModel extends TraceModelBase {
             }
             lastLine = t.getLine();
         }
-        if (printTokens && lastLine > 0) {
+        if (printTokens && lastLine >= 0) {
             print("", true);
         }
         time = System.currentTimeMillis() - time;
