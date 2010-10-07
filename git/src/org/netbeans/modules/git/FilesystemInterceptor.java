@@ -82,7 +82,7 @@ class FilesystemInterceptor extends VCSInterceptor {
 
     private static final RequestProcessor rp = new RequestProcessor("GitRefresh", 1, true);
     private final GitFolderEventsHandler gitFolderEventsHandler;
-    private static final boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
+    private static boolean AUTOMATIC_REFRESH_ENABLED = !"true".equals(System.getProperty("versioning.git.autoRefreshDisabled", "false")); //NOI18N
     private static final String INDEX_FILE_NAME = "index";
     private static final Logger LOG = Logger.getLogger(FilesystemInterceptor.class.getName());
 
@@ -337,9 +337,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             refreshTask.schedule(delayMillis);
         }
     }
-
-
-
     
     private class GitFolderEventsHandler {
         private final HashMap<File, Set<File>> seenRoots = new HashMap<File, Set<File>>();

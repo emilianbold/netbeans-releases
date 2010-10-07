@@ -66,7 +66,6 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**

@@ -48,9 +48,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
@@ -102,9 +100,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     }
 
     protected File createFile(String name) throws IOException {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
-        FileObject fo = wd.createData(name);
-        return FileUtil.toFile(fo);
+        return createFile(getWorkDir(), name);
     }
 
     protected void write(File file, String str) throws IOException {
@@ -202,7 +198,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
         }
 
         public boolean waitForFilesToRefresh () throws InterruptedException {
-            for (int i = 0; i < 20; ++i) {
+            for (int i = 0; i < 50; ++i) {
                 synchronized (this) {
                     if (filesRefreshed) {
                         return true;
@@ -210,7 +206,6 @@ public abstract class AbstractGitTestCase extends NbTestCase {
                     wait(500);
                 }
             }
-            Logger.getLogger(AbstractGitTestCase.class.getName()).log(Level.WARNING, "Refreshed files only: {0}", refreshedFiles);
             return false;
         }
 

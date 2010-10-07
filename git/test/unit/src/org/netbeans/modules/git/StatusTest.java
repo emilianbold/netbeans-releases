@@ -45,6 +45,7 @@ package org.netbeans.modules.git;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -80,6 +81,7 @@ public class StatusTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Git.STATUS_LOG.setLevel(Level.ALL);
+        setAutomaticRefreshEnabled(true);
     }
 
     public void testStatusOnNoRepository () throws Exception {
@@ -100,13 +102,18 @@ public class StatusTest extends AbstractGitTestCase {
     }
 
     public void testCacheRefresh () throws Exception {
+        setAutomaticRefreshEnabled(false);
         FileStatusCache cache = getCache();
-        File unversionedFile = createFile("file");
+        File unversionedFile = new File(getWorkDir(), "file");
+        unversionedFile.createNewFile();
         // create new files
         Set<File> newFiles = new HashSet<File>();
         File newFile;
-        newFiles.add(newFile = createFile(repositoryLocation, "file"));
+        newFiles.add(newFile = new File(repositoryLocation, "file"));
+        newFile.createNewFile();
+        Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
 
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
@@ -114,8 +121,11 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(1, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
-        newFiles.add(newFile = createFile(repositoryLocation, "file2"));
+        newFiles.add(newFile = new File(repositoryLocation, "file2"));
+        newFile.createNewFile();
+        Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
@@ -123,8 +133,11 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
         // try refresh on a single file, other statuses should not change
-        newFiles.add(newFile = createFile(repositoryLocation, "file3"));
+        newFiles.add(newFile = new File(repositoryLocation, "file3"));
+        newFile.createNewFile();
+        Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(newFile)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
@@ -132,7 +145,9 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
         // try refresh on a subfolder file, other statuses should not change
-        File folder = createFolder(repositoryLocation, "folder");
+        File folder = new File(repositoryLocation, "folder");
+        folder.mkdirs();
+        Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folder)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
@@ -140,8 +155,11 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
         // try refresh on a subfolder file, other statuses should not change
-        newFiles.add(newFile = createFile(folder, "file4"));
+        newFiles.add(newFile = new File(folder, "file4"));
+        newFile.createNewFile();
+        Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(newFile)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
@@ -637,6 +655,13 @@ public class StatusTest extends AbstractGitTestCase {
         for (File f : files) {
             assertTrue(getCache().getStatus(f).getStatus().equals(EnumSet.of(status)));
         }
+    }
+
+    private void setAutomaticRefreshEnabled (boolean flag) throws Exception {
+        Field f = FilesystemInterceptor.class.getDeclaredField("AUTOMATIC_REFRESH_ENABLED");
+        f.setAccessible(true);
+        f.setBoolean(FilesystemInterceptor.class, flag);
+        assert ((Boolean) f.get(FilesystemInterceptor.class)).equals(flag);
     }
 
     @ServiceProvider(service=SharabilityQueryImplementation.class)
