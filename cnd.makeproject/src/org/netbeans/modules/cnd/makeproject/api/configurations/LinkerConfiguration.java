@@ -499,6 +499,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
         return NbBundle.getMessage(LinkerConfiguration.class, s);
     }
 
+    @Override
+    public String toString() {
+        return "{output=" + output + " additionalLibs=" + additionalLibs + " dynamicSearch=" + dynamicSearch +
+                " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption +
+                " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration +
+                " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration +
+                " tool=" + tool + '}';
+    }
+
     public static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
 
         private final MakeConfiguration conf;
