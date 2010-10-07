@@ -54,10 +54,10 @@ public interface NativeFileItem {
     }
     
     public enum LanguageFlavor {
-    	GENERIC,
-        SUN_C, GNU_C,
-        SUN_CPP, GNU_CPP,
-        SUN_FORTRAN_77, SUN_FORTRAN_90, SUN_FORTRAN_95, GNU_FORTRAN
+    	UNKNOWN,
+        C, C89, C99,
+        CPP,
+        F77, F90, F95
     }
     
     /**
@@ -116,8 +116,8 @@ public interface NativeFileItem {
     public Language getLanguage();
     
     /**
-     * Returns the language flavor of the file or GENERIC if unknown.
-     * @return the language flavor (or GENERIC) of the file
+     * Returns the language flavor of the file or UNKNOWN if unknown.
+     * @return the language flavor (or UNKNOWN) of the file
      */
     public LanguageFlavor getLanguageFlavor();
     

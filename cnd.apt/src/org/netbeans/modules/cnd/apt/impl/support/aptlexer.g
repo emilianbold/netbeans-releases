@@ -1041,7 +1041,29 @@ protected  Space : (options {combineChars=true;}:' ' | '\t' | '\f');
 
 CHAR_LITERAL
         :   
-            '\'' (Escape | ~( '\'' | '\\' ))* '\''
+            '\'' CHAR_LITERAL_BODY
+        ;
+
+protected CHAR_LITERAL_BODY
+        :   
+		(       
+                        '\\'                        
+                        (   options{greedy=true;}:
+                            (	"\r\n" {offset--;} // MS 
+                            |	"\r"     // MAC
+                            |	"\n"     // Unix
+                            ) {deferredNewline();}
+                        | 
+                            '\''
+                        |   
+                            '\\'    
+                        )?
+		|	
+                         ~('\'' | '\r' | '\n' | '\\')
+		)*
+            ('\'' // correct ending of char literal
+                |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
+            )
         ;
 
 protected STRING_LITERAL

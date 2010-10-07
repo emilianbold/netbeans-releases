@@ -1016,7 +1016,7 @@ public class TokenFormatter {
                                                     &&  formatTokens.get(helpIndex).isWhitespace()) {
                                                 helpIndex ++;
                                             }
-                                            if (formatTokens.get(helpIndex).getId() == FormatToken.Kind.INDENT) {
+                                            if (helpIndex < formatTokens.size() && formatTokens.get(helpIndex).getId() == FormatToken.Kind.INDENT) {
                                                 countSpaces = countSpaces + ((FormatToken.IndentToken)formatTokens.get(helpIndex)).getDelta();
                                             }
                                         }

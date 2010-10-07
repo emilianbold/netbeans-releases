@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard.api;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 
 /**
  *
@@ -58,6 +59,11 @@ public interface FileConfiguration extends NodeConfiguration {
      * Can be defined for source files
      */
     String getCompilePath();
+
+    /**
+     * Language standard
+     */
+    ItemProperties.LanguageStandard getLanguageStandard();
 
     /**
      * Absolute item path

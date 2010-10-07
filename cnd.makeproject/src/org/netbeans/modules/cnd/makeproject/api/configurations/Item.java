@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -374,9 +375,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         synchronized (this) {
             if (fileObject == null) {
                 File curFile = getNormalizedFile();
-                fileObject = FileUtil.toFileObject(curFile);
-                if (fileObject == null) {
-                    fileObject = FileUtil.toFileObject(getCanonicalFile());
+                fileObject = CndFileUtils.toFileObject(curFile);
+                if (fileObject == null || !fileObject.isValid()) {
+                    fileObject = CndFileUtils.toFileObject(getCanonicalFile());
                 }
             }
         }
@@ -603,6 +604,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
             vec = SPI_ACCESSOR.getItemUserMacros(vec, cccCompilerConfiguration, compiler, makeConfiguration);
+            if (cccCompilerConfiguration instanceof CCompilerConfiguration) {
+                switch (this.getLanguageFlavor()) {
+                    case C99:
+                        vec.add("__STDC_VERSION__=199901L"); // NOI18N
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
         return vec;
     }
@@ -653,7 +663,32 @@ public class Item implements NativeFileItem, PropertyChangeListener {
      **/
     @Override
     public LanguageFlavor getLanguageFlavor() {
-        return NativeFileItem.LanguageFlavor.GENERIC;
+        LanguageFlavor flavor = LanguageFlavor.UNKNOWN;
+        ItemConfiguration itemConfiguration = null;
+        MakeConfiguration makeConfiguration = getMakeConfiguration();
+        if (makeConfiguration != null) {
+            itemConfiguration = getItemConfiguration(makeConfiguration);
+        }
+        if (itemConfiguration != null && itemConfiguration.isCompilerToolConfiguration()) {
+            flavor = itemConfiguration.getLanguageFlavor();
+            if (flavor == LanguageFlavor.UNKNOWN) {
+                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+                if (compilerSet != null) {
+                    Tool tool = compilerSet.getTool(itemConfiguration.getTool());
+                    if (tool instanceof AbstractCompiler) {
+                        AbstractCompiler compiler = (AbstractCompiler) tool;
+                        if (itemConfiguration.isCompilerToolConfiguration()) {
+                            BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
+                            if (compilerConfiguration != null) {
+                                flavor = SPI_ACCESSOR.getLanguageFlavor(compilerConfiguration, compiler, makeConfiguration);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return flavor;
     }
 
     /**
@@ -701,6 +736,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 return getProvider().getItemUserMacros(macros, compilerOptions, compiler, makeConfiguration);
             } else {
                 return macros;
+            }
+        }
+
+        private LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
+            if (getProvider() != null) {
+                return getProvider().getLanguageFlavor(compilerOptions, compiler, makeConfiguration);
+            } else {
+                return LanguageFlavor.UNKNOWN;
             }
         }
     }

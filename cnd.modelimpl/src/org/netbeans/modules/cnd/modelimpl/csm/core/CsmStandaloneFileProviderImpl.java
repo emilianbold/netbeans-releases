@@ -538,7 +538,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public File getFile() {
-            return FileUtil.toFile(file);
+            File result = FileUtil.toFile(file);
+            if (result == null) { // XXX:fullRemote
+                return new File(file.getPath());
+            }
+            return result;
         }
 
         @Override
@@ -589,7 +593,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.GENERIC;
+            return NativeFileItem.LanguageFlavor.UNKNOWN;
         }
 
         @Override

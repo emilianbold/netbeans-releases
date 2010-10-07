@@ -73,7 +73,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -816,6 +815,11 @@ public class LogReader {
         @Override
         public String getCompilerName() {
             return compiler;
+        }
+
+        @Override
+        public LanguageStandard getLanguageStandard() {
+            return LanguageStandard.Unknown;
         }
     }
 

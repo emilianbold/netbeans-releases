@@ -72,7 +72,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
     private Document getDocument(Node[] activatedNodes) {
         EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
         if (c != null) {
-            return c.getDocument();
+            return CsmUtilities.openDocument(c);
         }
         return null;
     }
@@ -93,7 +93,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
                 CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {// not needed
                     return true;
                 }
             }

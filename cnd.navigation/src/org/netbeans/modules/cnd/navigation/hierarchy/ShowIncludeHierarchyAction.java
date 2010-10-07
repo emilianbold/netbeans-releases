@@ -72,7 +72,7 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
                 CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
+                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) { // not needed
                     return true;
                 }
             }

@@ -120,4 +120,10 @@ public final class FolderImpl implements FolderProperties {
     public String getCompilerName() {
         return "";
     }
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        // now folder do not divided by language standards
+        return LanguageStandard.Unknown;
+    }
 }

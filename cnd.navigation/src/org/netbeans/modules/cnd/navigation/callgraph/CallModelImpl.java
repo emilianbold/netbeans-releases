@@ -155,7 +155,7 @@ public class CallModelImpl implements CallModel {
                         continue;
                     }
                     if (CsmReferenceResolver.getDefault().isKindOf(r,kinds)) {
-                        CsmFunction o = getFunctionDeclaration(getOwner(r));
+                        CsmFunction o = getFunctionDeclaration(getEnclosingFunction(r));
                         if (o != null) {
                             if (!set.containsKey(o)) {
                                 set.put(o, r);
@@ -208,17 +208,17 @@ public class CallModelImpl implements CallModel {
                         }
                         try {
                             CsmObject o = r.getReferencedObject();
-                            if (CsmKindUtilities.isFunction(o) &&
-                                !CsmKindUtilities.isFunction(r.getOwner())){
+                            if (CsmKindUtilities.isFunction(o) && 
+                                    !CsmReferenceResolver.getDefault().isKindOf(r, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                                 o = getFunctionDeclaration((CsmFunction)o);
                                 if (!set.containsKey((CsmFunction)o)) {
                                     set.put((CsmFunction)o, r);
                                 }
                             }
                         } catch (AssertionError e){
-                            e.printStackTrace();
+                            e.printStackTrace(System.err);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            e.printStackTrace(System.err);
                         }
                     }
                 }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
@@ -239,32 +239,38 @@ public class CallModelImpl implements CallModel {
         return definition;
     }
 
-    private CsmFunction getOwner(CsmReference ref){
-        CsmObject o = ref.getOwner();
-        if (CsmKindUtilities.isExpression(o)){
-            o = ((CsmExpression)o).getScope();
-        } else if (o instanceof CsmCondition){
-            o = ((CsmCondition)o).getScope();
-        } else if (CsmKindUtilities.isFunction(o)){
-            return (CsmFunction) o;
-        } else if (CsmKindUtilities.isVariable(o)) {
-            CsmVariable var = (CsmVariable) o;
-            o = var.getScope();
-            if (CsmKindUtilities.isFunction(o)){
-                return (CsmFunction)o;
-            }
-        }
-        if (CsmKindUtilities.isStatement(o)){
-            CsmScope scope = ((CsmStatement)o).getScope();
-            while(scope != null){
-                if (CsmKindUtilities.isFunction(scope)){
-                    return (CsmFunction) scope;
-                } else if (CsmKindUtilities.isStatement(scope)){
-                    scope = ((CsmStatement)scope).getScope();
-                } else {
-                    return null;
+    private CsmFunction getEnclosingFunction(CsmReference ref){
+        CsmObject o = ref.getOwner(); // not needed
+        if (o != null) {
+            if (CsmKindUtilities.isExpression(o)){
+                o = ((CsmExpression)o).getScope();
+            } else if (o instanceof CsmCondition){
+                o = ((CsmCondition)o).getScope();
+            } else if (CsmKindUtilities.isFunction(o)){
+                return (CsmFunction) o;
+            } else if (CsmKindUtilities.isVariable(o)) {
+                CsmVariable var = (CsmVariable) o;
+                o = var.getScope();
+                if (CsmKindUtilities.isFunction(o)){
+                    return (CsmFunction)o;
                 }
             }
+            if (CsmKindUtilities.isStatement(o)){
+                CsmScope scope = ((CsmStatement)o).getScope();
+                while(scope != null){
+                    if (CsmKindUtilities.isFunction(scope)){
+                        return (CsmFunction) scope;
+                    } else if (CsmKindUtilities.isStatement(scope)){
+                        scope = ((CsmStatement)scope).getScope();
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+        o = ref.getClosestTopLevelObject();
+        if (CsmKindUtilities.isFunction(o)) {
+            return (CsmFunction) o;
         }
         return null;
     }

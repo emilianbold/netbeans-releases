@@ -231,9 +231,8 @@ public class GdbCallStackFrame extends CallStackFrame {
     public StyledDocument getDocument() {
         if (document == null) {
             if (resolvedName != null && resolvedName.length() > 0) {
-                File docFile = new File(resolvedName);
-                if (docFile.exists()) {
-                    FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(docFile));
+                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(resolvedName));
+                if (fo != null /*paranoia*/ && fo.isValid()) {
                     document = (StyledDocument) CsmUtilities.getDocument(fo);
                 }
             }

@@ -63,9 +63,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -439,7 +439,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             return;
         }
         lastSelectedPath = fileChooser.getSelectedFile().getAbsolutePath();
-        FileObject fo = /*XXX:fullRemote*/ FileUtil.toFileObject(fileChooser.getSelectedFile());
+        FileObject fo = /*XXX:fullRemote*/ CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(lastSelectedPath));
         data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }

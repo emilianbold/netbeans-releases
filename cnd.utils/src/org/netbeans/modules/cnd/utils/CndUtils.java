@@ -223,4 +223,8 @@ public class CndUtils {
             }
         }
     }
+
+    public static Logger getLogger() {
+        return LOG;
+    }
 }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -97,7 +98,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         File projectDir = new File(getWorkDir(), "HelloQtWorld_1");
         instantiateSample("HelloQtWorld", projectDir);
 
-        FileObject projectDirFO = FileUtil.toFileObject(projectDir);
+        FileObject projectDirFO = CndFileUtils.toFileObject(projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
         MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written

@@ -49,6 +49,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -70,6 +71,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // General
     private BooleanConfiguration excluded;
     private PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
+    private LanguageFlavor languageFlavor = LanguageFlavor.UNKNOWN;
     // Tools
     private ConfigurationBase lastConfiguration;
     private CustomToolConfiguration customToolConfiguration;
@@ -95,6 +97,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.excluded = itemConfiguration.excluded;
         this.needSave = itemConfiguration.needSave;
         this.tool = itemConfiguration.tool;
+        this.languageFlavor = itemConfiguration.languageFlavor;
         this.lastConfiguration = itemConfiguration.lastConfiguration;
         this.customToolConfiguration = itemConfiguration.customToolConfiguration;
     }
@@ -107,6 +110,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return false;
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
+            return false;
+        }
+        if (customToolConfiguration != null && customToolConfiguration.getModified()) {
             return false;
         }
         return true;
@@ -180,6 +186,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             tool = item.getDefaultTool();
         }
         return tool;
+    }
+
+    public void setLanguageFlavor(LanguageFlavor flavor) {
+        this.languageFlavor = flavor;
+   }
+
+    public LanguageFlavor getLanguageFlavor() {
+        return languageFlavor;
     }
 
     protected String[] getToolNames() {

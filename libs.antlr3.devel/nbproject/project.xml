@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.libs.antlr3</code-name-base>
+            <code-name-base>org.netbeans.libs.antlr3.devel</code-name-base>
             <module-dependencies/>
             <public-packages>
                 <package>antlr</package>
@@ -68,10 +68,6 @@ made subject to such option by the copyright holder.
                 <package>org.antlr.grammar.v3</package>
                 <package>org.antlr.gunit</package>
                 <package>org.antlr.misc</package>
-                <package>org.antlr.runtime</package>
-                <package>org.antlr.runtime.debug</package>
-                <package>org.antlr.runtime.misc</package>
-                <package>org.antlr.runtime.tree</package>
                 <package>org.antlr.stringtemplate</package>
                 <package>org.antlr.stringtemplate.language</package>
                 <package>org.antlr.stringtemplate.misc</package>
