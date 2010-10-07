@@ -79,11 +79,23 @@ public class ContextUtils {
         if (activatedNodes != null && activatedNodes.length > 0) {
             if (ContextUtils.USE_REFERENCE_RESOLVER) {
                 CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) { // not needed
-                    CsmInclude incl = (CsmInclude) ref.getOwner(); // not needed
-                    CsmFile file = incl.getIncludeFile();
-                    if (file != null) {
-                        return file;
+                if (ref != null){
+                    if (ref.getClosestTopLevelObject() != null) {
+                        if (CsmKindUtilities.isInclude(ref.getClosestTopLevelObject())) {
+                            CsmInclude incl = (CsmInclude) ref.getClosestTopLevelObject();
+                            CsmFile file = incl.getIncludeFile();
+                            if (file != null) {
+                                return file;
+                            }
+                        }
+                    } else {
+                        if (CsmKindUtilities.isInclude(ref.getOwner())) {
+                            CsmInclude incl = (CsmInclude) ref.getOwner(); // not needed
+                            CsmFile file = incl.getIncludeFile();
+                            if (file != null) {
+                                return file;
+                            }
+                        }
                     }
                 }
             }
@@ -128,9 +140,16 @@ public class ContextUtils {
     }
 
     public static boolean isSupportedReference(CsmReference ref) {
-        return ref != null && 
-                !CsmKindUtilities.isMacro(ref.getOwner()) && // not needed
-                !CsmKindUtilities.isInclude(ref.getOwner());     // not needed   
+        if (ref != null) {
+            if (ref.getClosestTopLevelObject() != null) {
+                return !CsmKindUtilities.isMacro(ref.getClosestTopLevelObject()) &&
+                       !CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
+            } else {
+                return !CsmKindUtilities.isMacro(ref.getOwner()) && // not needed
+                       !CsmKindUtilities.isInclude(ref.getOwner()); // not needed
+            }
+        }
+        return false;
     }
     
     public static CsmReference findReference(Node activatedNode) {

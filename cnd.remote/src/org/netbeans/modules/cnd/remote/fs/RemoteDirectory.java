@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -88,7 +89,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             relativePath = relativePath.substring(0,relativePath.length()-1);
         }
         try {
-            File file = new File(cache, relativePath);
+            File file = CndFileUtils.createLocalFile(cache, relativePath);
             if (!file.exists()) {
                 File parentFile;
                 String parentRemotePath;
@@ -110,14 +111,14 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean resultIsDirectory = file.isDirectory();
 
             StringBuilder remoteAbsPath = new StringBuilder(remotePath);
-//            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+//            File cacheFile = remotePath.isEmpty()? cache : CndFileUtils.createLocalFile(cache.getPath() + '/' + remotePath);
             File cacheFile = cache;
             FileObject resultFileObject = this;
             StringTokenizer pathTokenizer = new StringTokenizer(relativePath, "/"); // NOI18N
             while (pathTokenizer.hasMoreTokens()) {
                 String pathComponent = pathTokenizer.nextToken();
                 remoteAbsPath.append('/').append(pathComponent);
-                cacheFile = new File(cacheFile.getPath() + '/' + pathComponent);
+                cacheFile = CndFileUtils.createLocalFile(cacheFile.getPath() + '/' + pathComponent);
                 if (pathTokenizer.hasMoreElements() || resultIsDirectory) {
                     resultFileObject = new RemoteDirectory(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
                 } else {
