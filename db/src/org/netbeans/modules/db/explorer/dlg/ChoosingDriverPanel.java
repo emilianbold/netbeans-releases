@@ -74,9 +74,10 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
     private static final String DRIVERS_DIR = "drivers"; // NOI18N
     private AddConnectionWizard pw;
 
-    public ChoosingDriverPanel(String driverFileName, String downloadFrom) {
+    public ChoosingDriverPanel(String driverFileName, String downloadFrom, JDBCDriver driver) {
         this.driverFileName = driverFileName;
         this.downloadFrom = downloadFrom;
+        this.driver = driver;
     }
 
     private void init() {
@@ -180,6 +181,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
     private String driverPath;
     private String downloadFrom;
     private boolean driverFound;
+    private JDBCDriver driver;
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -192,7 +194,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
                 return null;
             }
             init();
-            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driverFound);
+            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driverFound, driver);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());

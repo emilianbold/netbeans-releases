@@ -42,8 +42,13 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
+import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,13 +57,61 @@ import org.openide.util.NbBundle;
  */
 public class ChoosingDriverUI extends javax.swing.JPanel {
     private final ChoosingDriverInterUI interPanel;
+    private JDBCDriver drv;
+    private ActionListener actionListener;
 
     /** Creates new form ChoosingDriverUI */
-    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, boolean found) {
+    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, boolean found, JDBCDriver driver) {
+        this.drv = driver;
         initComponents();
         interPanel = new ChoosingDriverInterUI(panel, driverFileName, driverPath, downloadFrom, found);
-        pInter.add(interPanel);
+        pInter.add(interPanel, BorderLayout.CENTER);
         DatabaseExplorerInternalUIs.connect(cbDrivers, JDBCDriverManager.getDefault());
+        if (drv == null) {
+            cbDrivers.setSelectedIndex(0);
+        } else {
+            for (int i = 0; i < cbDrivers.getItemCount(); i++) {
+                Object item = cbDrivers.getItemAt(i);
+                if (item instanceof JdbcUrl) {
+                    JdbcUrl url = ((JdbcUrl)item);
+                    assert url.getDriver() != null;
+                    if (url.getClassName().equals(drv.getClassName()) && url.getDriver().getName().equals(drv.getName())) {
+                        cbDrivers.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+        }
+        actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateState();
+            }
+        };
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        cbDrivers.addActionListener(actionListener);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        cbDrivers.removeActionListener(actionListener);
+    }
+
+    private void updateState() {
+        Object drvO = cbDrivers.getSelectedItem();
+        if (drvO instanceof JdbcUrl) {
+            System.out.println("###: GOT JdbcUrl");
+            JDBCDriver curr = ((JdbcUrl) drvO).getDriver();
+            System.out.println("###: DRV: " + curr);
+            interPanel.updateDriver(curr);
+        } else {
+            System.out.println("###: GOT NEW DRIVER...");
+        }
     }
 
     @Override
@@ -81,30 +134,19 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lDrivers, org.openide.util.NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.lDrivers.text")); // NOI18N
 
-        javax.swing.GroupLayout pInterLayout = new javax.swing.GroupLayout(pInter);
-        pInter.setLayout(pInterLayout);
-        pInterLayout.setHorizontalGroup(
-            pInterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 376, Short.MAX_VALUE)
-        );
-        pInterLayout.setVerticalGroup(
-            pInterLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 243, Short.MAX_VALUE)
-        );
+        pInter.setLayout(new java.awt.BorderLayout());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(lDrivers)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbDrivers, 0, 322, Short.MAX_VALUE)))
+                .addComponent(lDrivers)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbDrivers, 0, 322, Short.MAX_VALUE)
                 .addContainerGap())
+            .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -114,7 +156,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                     .addComponent(lDrivers)
                     .addComponent(cbDrivers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(pInter, javax.swing.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents

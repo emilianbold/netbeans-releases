@@ -52,6 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -284,5 +285,8 @@ public final class ChoosingDriverInterUI extends JPanel implements DocumentListe
         } else {
             return null;
         }
+    }
+
+    void updateDriver(JDBCDriver curr) {
     }
 }

@@ -183,7 +183,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                         }
                 }
             }
-            driverPanel = new ChoosingDriverPanel(driverFileName, downloadFrom);
+            driverPanel = new ChoosingDriverPanel(driverFileName, downloadFrom, drv);
             panels = new Panel[] {
                 driverPanel,
                 new ConnectionPanel(),
