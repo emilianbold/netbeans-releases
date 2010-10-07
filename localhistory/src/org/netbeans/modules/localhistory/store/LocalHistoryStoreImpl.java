@@ -50,6 +50,7 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -75,8 +76,6 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -165,55 +164,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(file);
     }
 
-    public synchronized void fileChange(final File file, final long ts) {
+    public synchronized void fileChange(final File file, boolean handleAsync, final long ts) {
         long lastModified = lastModified(file);
         if(lastModified == ts) {
             return;
         }
         if(file.isFile()) {
-            try {
-                // move the file (fast) and create a new fake one so we can then copy the moved file asynchronously.
-                // the actual trigger for this call should be fileobject.getOutputStream() which also
-                // results in the file being emptied.
-                final File backup = fastCopy(file);
-                if(backup != null) {
-                    Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(new Runnable() {
-                        @Override
-                        public void run() {
-                            File storeFile = getStoreFile(file, Long.toString(ts), true);
-                            try {
-                                FileUtils.copy(backup, StoreEntry.createStoreFileOutputStream(storeFile));
-                                LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile});
-
-                                LocalHistory.logChange(file, storeFile, ts);
-                                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
-                            } catch (IOException ioe) {
-                                LocalHistory.LOG.log(Level.WARNING, null, ioe);
-                            } finally {
-                                // release
-                                lockedFolders.remove(storeFile.getParentFile());
-                                backup.delete();
-                            }
-                        }
-                    });
-                    task.schedule(0);
-                } else {
-                    // something went wrong - lets copy the file synchronously
-                    File storeFile = getStoreFile(file, Long.toString(ts), true);
-                    try {
-                        FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
-                        LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile});
-
-                        LocalHistory.logChange(file, storeFile, ts);
-                        touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
-                    } finally {
-                        // release lock
-                        lockedFolders.remove(storeFile.getParentFile());
-                    }
-                }
-
-            } catch (IOException ioe) {
-                LocalHistory.LOG.log(Level.WARNING, null, ioe);
+            if(handleAsync) {
+                storeChangedAsync(file, ts);
+            } else {                
+                storeChangedSync(file, ts);
             }
         } else {
             try {
@@ -225,6 +185,57 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(file);
     }
 
+    private void storeChangedSync(File file, long ts) {
+        try {
+            File storeFile = getStoreFile(file, Long.toString(ts), true);
+            try {
+                FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
+                LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile});
+
+                LocalHistory.logChange(file, storeFile, ts);
+                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
+            } finally {
+                // release lock
+                lockedFolders.remove(storeFile.getParentFile());
+            }
+        } catch (IOException ioe) {
+            LocalHistory.LOG.log(Level.WARNING, null, ioe);
+        }        
+    }
+    
+    private void storeChangedAsync(final File file, final long ts) {
+        final File backup = fastCopy(file);
+        if(backup != null && backup.exists()) {
+            Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(new Runnable() {
+                @Override
+                public void run() {
+                    File storeFile = getStoreFile(file, Long.toString(ts), true);
+                    try {
+                        LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile});
+                        FileUtils.copy(backup, StoreEntry.createStoreFileOutputStream(storeFile));
+                        LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile});
+
+                        LocalHistory.logChange(file, storeFile, ts);
+                        touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
+                    } catch (FileNotFoundException ioe) {                                
+                        LocalHistory.LOG.log(Level.INFO, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
+                    } catch (IOException ioe) {
+                        LocalHistory.LOG.log(Level.WARNING, "exception while copying file " + backup + " to " + storeFile, ioe);                                    
+                    } finally {
+                        // release
+                        lockedFolders.remove(storeFile.getParentFile());
+                        backup.delete();
+                        LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile});
+                    }
+                }
+            });
+            task.schedule(0);
+        } else {
+            // something went wrong - lets copy the file synchronously
+            storeChangedSync(file, ts);
+        }
+    }
+    
     public synchronized void fileDelete(File file, long ts) {
         try {
             fileDeleteImpl(file, null, file.getAbsolutePath(), ts);
@@ -1139,9 +1150,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
      * @return the newly created copy
      */
     private File fastCopy(final File source) {
-        int i = 0;
-        File target = new File(source.getParentFile(), source.getName() + "~");
+        LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source});
+        int i = 0;        
         while(true) {
+            File target = new File(source.getParentFile(), source.getName() + "." + i++ + ".nblh~");
             if(!target.exists()) {
                 long ts = source.lastModified();
                 if(source.renameTo(target)) {                                
@@ -1151,15 +1163,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         LocalHistory.LOG.log(Level.WARNING, null, ex);
                     }
                     source.setLastModified(ts);
+                    LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} to {1} - end", new Object[]{source, target});
                     return target;
                 } else {
                     // something went wrong, we don't know what 
-                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});                    
+                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target});
+                    return null;
                 }
-            }
-
-            i = i + 1;
-            target = new File(source.getParentFile(), source.getName() + i + "~");
+            }            
         }
     }
 

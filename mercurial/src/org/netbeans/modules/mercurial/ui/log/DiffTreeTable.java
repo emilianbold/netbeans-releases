@@ -86,12 +86,13 @@ class DiffTreeTable extends OutlineView {
     
     @SuppressWarnings("unchecked")
     private void setupColumns() {
-        Node.Property [] columns = new Node.Property[3];
         ResourceBundle loc = NbBundle.getBundle(DiffTreeTable.class);
-        columns[0] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_DATE, String.class, loc.getString("LBL_DiffTree_Column_Time"), loc.getString("LBL_DiffTree_Column_Time_Desc"));
-        columns[1] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_USERNAME, String.class, loc.getString("LBL_DiffTree_Column_Username"), loc.getString("LBL_DiffTree_Column_Username_Desc"));
-        columns[2] = new ColumnDescriptor(RevisionNode.COLUMN_NAME_MESSAGE, String.class, loc.getString("LBL_DiffTree_Column_Message"), loc.getString("LBL_DiffTree_Column_Message_Desc"));
-        setProperties(columns);
+        setPropertyColumns(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time"),
+                RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username"),
+                RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message"));
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_DATE, loc.getString("LBL_DiffTree_Column_Time_Desc"));
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_USERNAME, loc.getString("LBL_DiffTree_Column_Username_Desc"));
+        setPropertyColumnDescription(RevisionNode.COLUMN_NAME_MESSAGE, loc.getString("LBL_DiffTree_Column_Message_Desc"));
     }
     
     private void setDefaultColumnSizes() {
