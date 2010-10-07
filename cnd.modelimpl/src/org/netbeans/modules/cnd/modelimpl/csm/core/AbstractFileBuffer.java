@@ -107,7 +107,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
             File file = getFile();
             // file must be normalized
             FileObject fo = CndFileUtils.toFileObject(file);
-            if (fo != null) {
+            if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
             } else { // paranoia
                 encoding = FileEncodingQuery.getDefaultEncoding();

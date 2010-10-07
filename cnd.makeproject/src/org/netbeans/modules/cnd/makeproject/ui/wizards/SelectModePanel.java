@@ -543,7 +543,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 }
                 if (projectDirFile.isDirectory()) {
                     FileObject fo = CndFileUtils.toFileObject(projectDirFile);
-                    if (fo != null) {
+                    if (fo != null && fo.isValid()) {
                         try {
                             if (ProjectManager.getDefault().findProject(fo) != null) {
                                 messageKind = alreadyNbPoject;

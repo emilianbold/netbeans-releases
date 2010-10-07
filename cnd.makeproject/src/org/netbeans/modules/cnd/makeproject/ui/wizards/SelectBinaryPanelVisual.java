@@ -447,7 +447,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             return false;
         }
         FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-        if (fo == null) {
+        if (fo == null || !fo.isValid()) {
             return false;
         }
         return MIMENames.isBinary(fo.getMIMEType());
@@ -459,7 +459,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
             return false;
         }
         FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
-        if (fo == null) {
+        if (fo == null || !fo.isValid()) {
             return false;
         }
         return fo.isFolder();

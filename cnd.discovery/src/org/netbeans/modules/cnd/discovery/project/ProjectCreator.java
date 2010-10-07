@@ -387,7 +387,7 @@ public class ProjectCreator {
     //return FileObject created with specified File dir
     /*package-local*/ static FileObject createProjectDir(File dir) throws IOException {
         FileObject dirFO = CndFileUtils.toFileObject(dir);
-        if (dirFO == null && !dir.exists()) { ///XXX:fullRemote
+        if ((dirFO == null || !dirFO.isValid()) && !dir.exists()) { // File SIC! - always local
             //Refresh before mkdir not to depend on window focus
             refreshFileSystem(dir);
             if (!dir.mkdirs()) {
@@ -397,6 +397,7 @@ public class ProjectCreator {
         }
         dirFO = CndFileUtils.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }
