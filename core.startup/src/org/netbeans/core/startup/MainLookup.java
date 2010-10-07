@@ -44,6 +44,8 @@
 
 package org.netbeans.core.startup;
 
+import java.lang.reflect.Field;
+import org.netbeans.JaveleonModule;
 import org.netbeans.Module;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
@@ -102,8 +104,29 @@ public final class MainLookup extends ProxyLookup {
             MainLookup l = (MainLookup)Lookup.getDefault();
             Lookup[] delegates = l.getLookups();
             Lookup[] newDelegates = delegates.clone();
+            
+            // Javeleon hack for persisting all previously looked up
+            // service instances from META-INF/services
+            // All new lookups will ask the new system class loader
+            if(JaveleonModule.isJaveleonPresent) {
+                for(Lookup look : newDelegates) {
+                    if(look.getClass().getName().contains("MetaInfServicesLookup")) {
+                        try {
+                            Field field = look.getClass().getDeclaredField("loader");
+                            field.setAccessible(true);
+                            field.set(look, classLoader);
+                        } catch (Exception ex) {
+                            // OK the field have been removed from the class
+                            // just replace the MetaInfLookup instance then
+                            // warn user about this though.
+                            System.err.println("[JAVELOEN WARNING]: had to replace the META-INF/services lookup. Any attempt to lookup an already looked up class or interface will give you a completely fresh implementing instance!");
+                        }
+                    }
+                }
+            } else {
+                 newDelegates[0] = Lookups.metaInfServices(classLoader);
+            }
             // Replace classloader.
-            newDelegates[0] = Lookups.metaInfServices(classLoader);
             newDelegates[1] = Lookups.singleton(classLoader);
             l.setLookups(newDelegates);
         } else {
