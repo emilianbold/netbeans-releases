@@ -425,6 +425,9 @@ public class ArchetypeWizardUtils {
             FileObject pom = prjDir.getFileObject("pom.xml");
             if (pom != null) {
                 Project prj = ProjectManager.getDefault().findProject(prjDir);
+                if (prj == null) {
+                    return; // invalid? #184466
+                }
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 ModelOperation<POMModel> op = new AddOSGiParamToNbmPluginConfiguration(true, mav.getMavenProject());
                 Utilities.performPOMModelOperations(pom, Collections.singletonList(op));
