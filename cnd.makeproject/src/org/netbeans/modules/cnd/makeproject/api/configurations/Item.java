@@ -282,6 +282,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (aPath != null) {
             return CndFileUtils.normalizeFile(new File(aPath));
         }
+        ensureFileNotNull();
         return file;
     }
 
@@ -302,6 +303,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             } catch (IOException ioe) {
                 file = CndFileUtils.normalizeFile(new File(getAbsPath()));
             }
+        }
+        if (file == null) {
+            logger.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
         }
     }
 

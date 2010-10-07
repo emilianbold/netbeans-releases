@@ -83,6 +83,11 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
     }
 
     @Override
+    protected File toFileImpl(FileObject fileObject) {
+        return null;
+    }
+
+    @Override
     protected FileObject toFileObjectImpl(CharSequence path) {
         if (CharSequenceUtils.startsWith(path, PROTOCOL_PREFIX)) {
             // path is like "rfs:,hostname:22/tmp/filename.ext"
