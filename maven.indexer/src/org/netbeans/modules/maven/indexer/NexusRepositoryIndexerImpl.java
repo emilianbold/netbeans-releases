@@ -628,7 +628,13 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                             if (context == null) {
                                 return null;
                             }
-                            Set<String> all = context.getAllGroups();
+                            Set<String> all;
+                            try {
+                                all = context.getAllGroups();
+                            } catch (FileNotFoundException x) {
+                                LOGGER.log(Level.INFO, "#179624: corrupt index?", x);
+                                all = Collections.emptySet();
+                            }
                             if (all.size() > 0) {
                                 if (prefix.length() == 0) {
                                     groups.addAll(all);
