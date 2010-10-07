@@ -240,7 +240,11 @@ public class CallModelImpl implements CallModel {
     }
 
     private CsmFunction getEnclosingFunction(CsmReference ref){
-        CsmObject o = ref.getOwner(); // not needed
+        CsmObject o = ref.getClosestTopLevelObject();
+        if (CsmKindUtilities.isFunction(o)) {
+            return (CsmFunction) o;
+        }
+        o = ref.getOwner(); // not needed
         if (o != null) {
             if (CsmKindUtilities.isExpression(o)){
                 o = ((CsmExpression)o).getScope();
@@ -267,10 +271,6 @@ public class CallModelImpl implements CallModel {
                     }
                 }
             }
-        }
-        o = ref.getClosestTopLevelObject();
-        if (CsmKindUtilities.isFunction(o)) {
-            return (CsmFunction) o;
         }
         return null;
     }

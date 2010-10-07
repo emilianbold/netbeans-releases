@@ -217,30 +217,13 @@ public class FileComponentReferences extends FileComponent implements Persistent
             }
             return false;
         }
-        CsmUID<CsmObject> ownerUID = null;
         CsmObject owner = ref.getOwner(); // storing
-        if (owner != null) {
-            if (UIDCsmConverter.isIdentifiable(owner)) {
-                CsmUID<CsmObject> anOwnerUID = UIDs.get(owner);
-                if (UIDProviderIml.isPersistable(anOwnerUID)) {
-                    ownerUID = anOwnerUID;
-                } else {
-                    if (TRACE) {
-                        new Exception("Ignore local owners "+owner).printStackTrace(); // NOI18N
-                    }
-                }
-            } else {
-                if (TRACE) {
-                    new Exception("Ignore local owners "+owner).printStackTrace(); // NOI18N
-                }
-            }
-        }
-        CsmUID<CsmObject> closestTopLevelObjectUID = null;
+        CsmUID<CsmObject> ownerUID = getUID(owner, "Ignore local owners "); // NOI18N
         CsmObject closestTopLevelObject = ref.getClosestTopLevelObject();
-        closestTopLevelObjectUID = getUID(closestTopLevelObject);
+        CsmUID<CsmObject> closestTopLevelObjectUID = getUID(closestTopLevelObject, "Ignore local top level objects "); // NOI18N
         if (closestTopLevelObjectUID == null && owner != null) {
             closestTopLevelObject = getTopLevelObject(owner);
-            closestTopLevelObjectUID = getUID(closestTopLevelObject);
+            closestTopLevelObjectUID = getUID(closestTopLevelObject, "Ignore local top level objects "); // NOI18N
         }
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
@@ -259,25 +242,25 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return true;
     }
 
-    private CsmUID<CsmObject> getUID(CsmObject closestTopLevelObject) {
-        CsmUID<CsmObject> closestTopLevelObjectUID = null;
-        if (closestTopLevelObject != null) {
-            if (UIDCsmConverter.isIdentifiable(closestTopLevelObject)) {
-                CsmUID<CsmObject> aClosestTopLevelObjectUID = UIDs.get(closestTopLevelObject);
+    private CsmUID<CsmObject> getUID(CsmObject csmObject, String warning) {
+        CsmUID<CsmObject> csmObjectUID = null;
+        if (csmObject != null) {
+            if (UIDCsmConverter.isIdentifiable(csmObject)) {
+                CsmUID<CsmObject> aClosestTopLevelObjectUID = UIDs.get(csmObject);
                 if (UIDProviderIml.isPersistable(aClosestTopLevelObjectUID)) {
-                    closestTopLevelObjectUID = aClosestTopLevelObjectUID;
+                    csmObjectUID = aClosestTopLevelObjectUID;
                 } else {
                     if (TRACE) {
-                        new Exception("Ignore local top level objects " + closestTopLevelObject).printStackTrace(); // NOI18N
+                        new Exception(warning + csmObject).printStackTrace();
                     }
                 }
             } else {
                 if (TRACE) {
-                    new Exception("Ignore local top level objects " + closestTopLevelObject).printStackTrace(); // NOI18N
+                    new Exception(warning + csmObject).printStackTrace();
                 }
             }
         }
-        return closestTopLevelObjectUID;
+        return csmObjectUID;
     }
 
     private CsmObject getTopLevelObject(CsmObject owner) {
@@ -286,7 +269,10 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 return null;
             }
             if (UIDCsmConverter.isIdentifiable(owner)) {
-                return owner;
+                CsmUID<CsmObject> ownerUID = UIDs.get(owner);
+                if (UIDProviderIml.isPersistable(ownerUID)) {
+                    return owner;
+                }
             }
             if (CsmKindUtilities.isScopeElement(owner)) {
                 owner = ((CsmScopeElement)owner).getScope();

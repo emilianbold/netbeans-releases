@@ -82,11 +82,11 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (project == null){
             return null;
         }
-        CsmObject obj = ref.getOwner(); // not needed
+        CsmObject obj = ref.getClosestTopLevelObject(); // not needed
         if (CsmKindUtilities.isFunction(obj)) {
             function = (CsmFunction) obj;
         } else {
-            obj = ref.getClosestTopLevelObject();
+            obj = ref.getOwner();
             if (CsmKindUtilities.isFunction(obj)) {
                 function = (CsmFunction) obj;
             } else {
