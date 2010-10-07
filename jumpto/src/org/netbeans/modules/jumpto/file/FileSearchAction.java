@@ -63,7 +63,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -74,7 +73,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -89,13 +87,13 @@ import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -565,7 +563,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         }
                     }
                 }
-                Collections.sort(files, new FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
+                Collections.sort(files, 
+                                 new FileComarator(panel.isPreferedProject(),
+                                                   panel.isCaseSensitive()));
                 return files;
             } catch (PatternSyntaxException pse) {
                 return Collections.<FileDescriptor>emptyList();
@@ -639,60 +639,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     //Inner classes
-    public static class FDComarator implements Comparator<FileDescriptor> {
-
-        private boolean usePrefered;
-        private boolean caseSensitive;
-
-        public FDComarator(boolean usePrefered, boolean caseSensitive ) {
-            this.usePrefered = usePrefered;
-            this.caseSensitive = caseSensitive;
-        }
-
-        public int compare(FileDescriptor o1, FileDescriptor o2) {
-
-            // If prefered prefer prefered
-            if ( usePrefered ) {
-                if (FileProviderAccessor.getInstance().isFromCurrentProject(o1) && !FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
-                    return -1;
-                }
-                if (!FileProviderAccessor.getInstance().isFromCurrentProject(o1) && FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
-                    return 1;
-                }
-            }
-
-            // File name
-            int cmpr = compareStrings( o1.getFileName(), o2.getFileName(), caseSensitive );
-            if ( cmpr != 0 ) {
-                return cmpr;
-            }
-
-            // Project name
-            cmpr = compareStrings( o1.getProjectName(), o2.getProjectName(), caseSensitive );
-            if ( cmpr != 0 ) {
-                return cmpr;
-            }
-
-            // Relative location
-            cmpr = compareStrings( o1.getOwnerPath(), o2.getOwnerPath(), caseSensitive );
-
-            return cmpr;
-
-        }
-
-        private int compareStrings(String s1, String s2, boolean caseSensitive) {
-            if( s1 == null ) {
-                s1 = "";    //NOI18N
-            }
-            if ( s2 == null ) {
-                s2 = "";    //NOI18N
-            }
-
-
-            return caseSensitive ? s1.compareTo( s2 ) : s1.compareToIgnoreCase( s2 );
-        }
-    }
-
     private static class RendererComponent extends JPanel {
 	private FileDescriptor fd;
 
@@ -714,7 +660,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	}
     }
 
-    public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+    public static class Renderer extends EntitiesListCellRenderer {
 
         public  static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
 
@@ -835,7 +781,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
-                jlPrj.setText(fd.getProjectName());
+                setProjectName(jlPrj, fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
                 if ( !isSelected ) {
                     rendererComponent.setBackground( index % 2 == 0 ?
