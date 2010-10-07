@@ -96,6 +96,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
@@ -110,6 +111,7 @@ import org.openide.windows.TopComponent;
 public class TemplatesPanel extends TopComponent implements ExplorerManager.Provider {
     private static ExplorerManager manager;
     private static TemplateTreeView view;
+    private static final RequestProcessor rp = new RequestProcessor("Templates", 1);
     
     static private FileObject templatesRoot;
     private static Node templatesRootNode = null;
@@ -196,11 +198,14 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         addButton.setEnabled (false);
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
-                Node firstNode = templatesRootNode.getChildren ().getNodeAt (0);
-                try {
-                    manager.setSelectedNodes (new Node[]{firstNode});
-                } catch (PropertyVetoException ex) {
-                    Logger.getLogger(TemplatesPanel.class.getName()).log(Level.FINE, ex.getLocalizedMessage (), ex);
+                Node[] nodes = templatesRootNode.getChildren ().getNodes(true);
+                if (nodes.length > 0) {
+                    Node firstNode = nodes[0];
+                    try {
+                        manager.setSelectedNodes (new Node[]{firstNode});
+                    } catch (PropertyVetoException ex) {
+                        Logger.getLogger(TemplatesPanel.class.getName()).log(Level.FINE, ex.getLocalizedMessage (), ex);
+                    }
                 }
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
@@ -418,30 +423,51 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     private void newFolderButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newFolderButtonActionPerformed
 
-        DataFolder df = doNewFolder (manager.getSelectedNodes ());
-        assert df != null : "New DataFolder has been created.";
-        
-        try {
-            // invoke inplace editing
-            Node [] nodes = manager.getSelectedNodes ();
-            Node targerNode = null;
-            if (nodes == null || nodes.length == 0) {
-                targerNode = manager.getRootContext ();
-            } else {
-                targerNode = nodes [0].isLeaf () ? nodes [0].getParentNode () : nodes [0];
+        final Node [] nodes = manager.getSelectedNodes ();
+        rp.post(new Runnable() {
+            public void run() {
+                DataFolder df = doNewFolder (nodes);
+                assert df != null : "New DataFolder can not be created under "+Arrays.toString(nodes);
+
+                // invoke inplace editing
+                Node targerNode;
+                if (nodes == null || nodes.length == 0) {
+                    targerNode = manager.getRootContext ();
+                } else {
+                    targerNode = nodes [0].isLeaf () ? nodes [0].getParentNode () : nodes [0];
+                }
+
+                final Node newSubfolder = findChild (targerNode, df.getName (), 3);
+                assert newSubfolder != null : "Node for subfolder found in nodes: " + Arrays.asList (targerNode.getChildren ().getNodes ());
+                if (newSubfolder != null) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            try {
+                                manager.setSelectedNodes (new Node [] { newSubfolder });
+                            } catch (PropertyVetoException pve) {
+                                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);
+                            }
+                            view.invokeInplaceEditing ();
+                        }
+                    });
+                }
             }
-            
-            targerNode.getChildren ().getNodes (true);
-            Node newSubfolder = targerNode.getChildren ().findChild (df.getName ());
-            assert newSubfolder != null : "Node for subfolder found in nodes: " + Arrays.asList (targerNode.getChildren ().getNodes ());
-            manager.setSelectedNodes (new Node [] { newSubfolder });
-            view.invokeInplaceEditing ();
-        } catch (PropertyVetoException pve) {
-            Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, pve);//GEN-LAST:event_newFolderButtonActionPerformed
-        }
-                                               
-    }                                               
+        });
+    }//GEN-LAST:event_newFolderButtonActionPerformed
     
+    private Node findChild(Node node, String name, int i) {
+        node.getChildren ().getNodes (true);
+        Node newSubfolder = node.getChildren ().findChild (name);
+        if (newSubfolder == null && i > 0) {
+            try {
+                Thread.sleep(333);
+            } catch (InterruptedException ex) {
+            }
+            newSubfolder = findChild(node, name, i--);
+        }
+        return newSubfolder;
+    }
+
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         Node [] nodes = manager.getSelectedNodes (); 
         for (int i = 0; i < nodes.length; i++) {
