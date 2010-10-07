@@ -120,6 +120,7 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -2352,9 +2353,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 // MIME type is checked only localy for now
                 if (execEnv.isLocal()) {
-                    File file = new File(path);
-                    assert file.exists(); // should be always true here
-                    String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
+                    FileObject fileObject = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                    assert fileObject != null && fileObject.isValid(); // should be always true here
+                    String mime_type = FileUtil.getMIMEType(fileObject);
                     if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                         return true;
                     }

@@ -61,7 +61,6 @@ import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -150,7 +149,7 @@ public final class NativeProjectProvider {
     // XXX:FileObject conversion: remove
     public static DataObject getDataObject(File file) {
         CndUtils.assertNormalized(file);
-        return getDataObject(FileUtil.toFileObject(file));
+        return getDataObject(CndFileUtils.toFileObject(file));
     }
     
     public static final class NativeProjectImpl implements NativeProject {
@@ -401,7 +400,7 @@ public final class NativeProjectProvider {
 
         @Override
         public FileObject getFileObject() {
-            return FileUtil.toFileObject(file); // XXX:FileObject conversion
+            return CndFileUtils.toFileObject(file); // XXX:FileObject conversion
         }
 
         @Override
@@ -449,7 +448,7 @@ public final class NativeProjectProvider {
 
         @Override
         public NativeFileItem.LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.GENERIC;
+            return NativeFileItem.LanguageFlavor.UNKNOWN;
         }
 
         @Override

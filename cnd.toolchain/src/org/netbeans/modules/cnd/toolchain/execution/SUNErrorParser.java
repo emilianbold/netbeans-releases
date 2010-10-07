@@ -131,7 +131,7 @@ public final class SUNErrorParser extends ErrorParser {
                 //FileObject fo = relativeTo.getFileObject(file);
                 FileObject fo = resolveRelativePath(relativeTo, file);
                 boolean important = severity.get(i).equals("error"); // NOI18N
-                if (fo != null) {
+                if (fo != null && fo.isValid()) {
                     String description = null;
                     if (m.groupCount()<= 3) {
                         description = m.group(3);

@@ -63,7 +63,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class MakeArtifactChooser extends JPanel implements PropertyChangeListener {
@@ -165,21 +164,22 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
             // We have to update the Accessory
             JFileChooser chooser = (JFileChooser) e.getSource();
             File dir = chooser.getSelectedFile(); // may be null (#46744)
-            Project project = getProject(dir); // may be null
-            populateAccessory(project);
+            if (dir != null) {
+                Project project = getProject(dir.getAbsolutePath()); // may be null
+                populateAccessory(project);
+            }
         }
     }
     
-    private Project getProject( File projectDir ) {
+    private Project getProject( String projectAbsPath ) {
         
-        if (projectDir == null) { // #46744
+        if (projectAbsPath == null) { // #46744
             return null;
         }
         
         try {            
-            File normProjectDir = CndFileUtils.normalizeFile(projectDir);
-            FileObject fo = FileUtil.toFileObject(normProjectDir);
-            if (fo != null) {
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(projectAbsPath));
+            if (fo != null && fo.isValid()) {
                 return ProjectManager.getDefault().findProject(fo);
             }
         } catch (IOException e) {
@@ -263,8 +263,7 @@ public class MakeArtifactChooser extends JPanel implements PropertyChangeListene
         if ( option == JFileChooser.APPROVE_OPTION ) {
 
             File dir = chooser.getSelectedFile();
-            dir = CndFileUtils.normalizeFile (dir);
-            Project selectedProject = accessory.getProject( dir );
+            Project selectedProject = (dir == null) ? null : accessory.getProject(dir.getAbsolutePath());
 
             if ( selectedProject == null ) {
                 return null;

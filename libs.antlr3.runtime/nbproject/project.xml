@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.modules.libs.antlr3.runtime</code-name-base>
+            <code-name-base>org.netbeans.libs.antlr3.runtime</code-name-base>
             <module-dependencies/>
             <public-packages>
                 <package>org.antlr.runtime</package>

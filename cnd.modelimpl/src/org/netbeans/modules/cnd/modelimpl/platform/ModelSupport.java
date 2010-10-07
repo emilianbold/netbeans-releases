@@ -399,8 +399,8 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static FileBuffer getFileBuffer(File file) {
         File normalizeFile = CndFileUtils.normalizeFile(file);
-        FileObject fo = FileUtil.toFileObject(normalizeFile);
-        if (fo != null) {
+        FileObject fo = CndFileUtils.toFileObject(normalizeFile);
+        if (fo != null && fo.isValid()) {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.isModified()) {
@@ -518,16 +518,12 @@ public class ModelSupport implements PropertyChangeListener {
         private NativeFileItemSet findCanonicalSet(DataObject curObj) {
             FileObject fo = curObj.getPrimaryFile();
             if (fo != null && isCndDataObject(fo)) {
-                File file = FileUtil.toFile(fo);
-                // the file can null, for example, when we edit templates
-                if (file != null) {
-                    try {
-                        fo = FileUtil.toFileObject(file.getCanonicalFile());
-                        curObj = DataObject.find(fo);
-                        return curObj.getLookup().lookup(NativeFileItemSet.class);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                try {
+                    fo = CndFileUtils.getCanonicalFileObject(fo);
+                    curObj = DataObject.find(fo);
+                    return curObj.getLookup().lookup(NativeFileItemSet.class);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             return null;

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
@@ -75,7 +76,7 @@ import org.openide.filesystems.FileUtil;
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             return RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
         } else {
-            return FileUtil.toFileObject(new File(path));
+            return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
         }
     }
 

@@ -67,6 +67,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final TokenItem<TokenId> token;
     private CsmObject target = null;
     private CsmObject owner = null;
+    private CsmObject closestTopLevelObject = null;
     private boolean findDone = false;
     private boolean restoreDone = false;
     private final int offset;
@@ -127,11 +128,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 CsmReferenceKind aKind = candidate.getKind();
                 assert this.kind == null || this.kind == aKind : this.kind + " vs. " + aKind;
                 this.kind = aKind;
-                CsmObject anOwner = candidate.getOwner();
+                CsmObject anOwner = candidate.getOwner(); // restore
                 assert this.owner == null || anOwner == null || this.owner.equals(anOwner) : this.owner + " vs. " + anOwner;
                 if (this.owner == null) {
                     this.owner = anOwner;
                 }
+                closestTopLevelObject = candidate.getClosestTopLevelObject();
             }
             restoreDone = true;
         }
@@ -201,9 +203,9 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         if (this.kind == null) {
             CsmReferenceKind outKind = CsmReferenceKind.UNKNOWN;
             CsmObject anOwner = getOwner();
-            if (CsmKindUtilities.isType(anOwner) || CsmKindUtilities.isInheritance(anOwner)) {
+            if (CsmKindUtilities.isType(anOwner) || CsmKindUtilities.isInheritance(anOwner)) { // owner is needed
                 outKind = ReferencesSupport.getReferenceUsageKind(this);
-            } else if (CsmKindUtilities.isInclude(anOwner)) {
+            } else if (CsmKindUtilities.isInclude(anOwner)) { // owner not needed
                 outKind = CsmReferenceKind.DIRECT_USAGE;
             } else {
                 anTarget = anTarget == null ? getReferencedObject() : anTarget;
@@ -232,5 +234,10 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     void setFileReferencesContext(FileReferencesContext fileReferencesContext) {
         this.fileReferencesContext = fileReferencesContext;
+    }
+
+    @Override
+    public CsmObject getClosestTopLevelObject() {
+       return closestTopLevelObject;
     }
 }

@@ -67,8 +67,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.CloseCookie;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -239,7 +239,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException, BadLocationException {
         CsmListeners.getDefault().removeProgressListener(listener);
         urm.undo();
-        DataObject testDataObject = DataObject.find(FileUtil.toFileObject(sourceFile));
+        DataObject testDataObject = DataObject.find(CndFileUtils.toFileObject(sourceFile));
         CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
         if (close != null) {
             close.close();

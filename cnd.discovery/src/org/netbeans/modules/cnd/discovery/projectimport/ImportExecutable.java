@@ -103,7 +103,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -172,7 +171,7 @@ public class ImportExecutable implements PropertyChangeListener {
                 projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(binaryPath).getName());
             }
             baseDir = projectParentFolder + File.separator + projectName;
-            projectFolder = new File(baseDir);
+            projectFolder = CndFileUtils.createLocalFile(baseDir);
         }
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
@@ -200,7 +199,7 @@ public class ImportExecutable implements PropertyChangeListener {
 
             @Override
             public FileObject getFileObject() {
-                return FileUtil.toFileObject(new File(sourcesPath));
+                return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(sourcesPath));
             }
 
             @Override
@@ -292,8 +291,8 @@ public class ImportExecutable implements PropertyChangeListener {
                     Position mainFunction = applicable.getMainFunction();
                     boolean open = true;
                     if (mainFunction != null) {
-                        FileObject toFileObject = FileUtil.toFileObject(new File(mainFunction.getFilePath()));
-                        if (toFileObject != null) {
+                        FileObject toFileObject = CndFileUtils.toFileObject(mainFunction.getFilePath()); // should it be normalized?
+                        if (toFileObject != null && toFileObject.isValid()) {
                             if (CsmUtilities.openSource(toFileObject, mainFunction.getLine(), 0)) {
                                 open = false;
                             }

@@ -139,4 +139,9 @@ Contributor(s):
             </file>            
         </folder>
     </folder>
+    <folder name="Shortcuts">
+        <file name="CSA-M.shadow">
+            <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/CodeModelDiagnosticAction.instance"/>
+        </file>
+    </folder>    
 </filesystem>
