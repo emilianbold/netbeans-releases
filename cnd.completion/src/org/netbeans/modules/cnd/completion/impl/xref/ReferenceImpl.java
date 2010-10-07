@@ -67,6 +67,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final TokenItem<TokenId> token;
     private CsmObject target = null;
     private CsmObject owner = null;
+    private CsmObject closestTopLevelObject = null;
     private boolean findDone = false;
     private boolean restoreDone = false;
     private final int offset;
@@ -132,6 +133,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 if (this.owner == null) {
                     this.owner = anOwner;
                 }
+                closestTopLevelObject = candidate.getClosestTopLevelObject();
             }
             restoreDone = true;
         }
@@ -236,6 +238,6 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public CsmObject getClosestTopLevelObject() {
-        throw new UnsupportedOperationException("Not supported yet.");
+       return closestTopLevelObject;
     }
 }

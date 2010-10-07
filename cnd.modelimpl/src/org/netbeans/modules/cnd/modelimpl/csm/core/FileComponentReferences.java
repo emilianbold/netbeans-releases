@@ -59,7 +59,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -233,7 +235,14 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 }
             }
         }
-        ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID);
+        CsmUID<CsmObject> closestTopLevelObjectUID = null;
+        CsmObject closestTopLevelObject = ref.getClosestTopLevelObject();
+        closestTopLevelObjectUID = getUID(closestTopLevelObject);
+        if (closestTopLevelObjectUID == null && owner != null) {
+            closestTopLevelObject = getTopLevelObject(owner);
+            closestTopLevelObjectUID = getUID(closestTopLevelObject);
+        }
+        ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
         //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {
         //        Logger.getLogger("xRef").log(Level.INFO, "{0} \n with {1} \n and owner {2}\n", new Object[]{ref, referencedObject, ownerUID});
@@ -249,6 +258,44 @@ public class FileComponentReferences extends FileComponent implements Persistent
         //respons_hit++;
         return true;
     }
+
+    private CsmUID<CsmObject> getUID(CsmObject closestTopLevelObject) {
+        CsmUID<CsmObject> closestTopLevelObjectUID = null;
+        if (closestTopLevelObject != null) {
+            if (UIDCsmConverter.isIdentifiable(closestTopLevelObject)) {
+                CsmUID<CsmObject> aClosestTopLevelObjectUID = UIDs.get(closestTopLevelObject);
+                if (UIDProviderIml.isPersistable(aClosestTopLevelObjectUID)) {
+                    closestTopLevelObjectUID = aClosestTopLevelObjectUID;
+                } else {
+                    if (TRACE) {
+                        new Exception("Ignore local top level objects " + closestTopLevelObject).printStackTrace(); // NOI18N
+                    }
+                }
+            } else {
+                if (TRACE) {
+                    new Exception("Ignore local top level objects " + closestTopLevelObject).printStackTrace(); // NOI18N
+                }
+            }
+        }
+        return closestTopLevelObjectUID;
+    }
+
+    private CsmObject getTopLevelObject(CsmObject owner) {
+        while(true) {
+            if (owner == null) {
+                return null;
+            }
+            if (UIDCsmConverter.isIdentifiable(owner)) {
+                return owner;
+            }
+            if (CsmKindUtilities.isScopeElement(owner)) {
+                owner = ((CsmScopeElement)owner).getScope();
+                continue;
+            }
+            return null;
+       }
+    }
+
 
     @Override
     public void write(DataOutput out) throws IOException {
@@ -275,6 +322,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         private final int end;
         private final CharSequence identifier;
         private final CsmUID<CsmObject> ownerUID;
+        private final CsmUID<CsmObject> closestTopLevelObjectUID;
 
         // to search
         private ReferenceImpl(int start) {
@@ -285,21 +333,10 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.refObj = null;
             this.identifier = null;
             this.ownerUID = null;
+            this.closestTopLevelObjectUID = null;
         }
 
-        private ReferenceImpl(CsmUID<CsmFile> file, CsmReferenceKind refKind, CsmUID<CsmObject> refObj,
-                CsmUID<CsmObject> owner, int start, int end, CharSequence identifier) {
-            this.file = file;
-            this.refKind = refKind;
-            this.refObj = refObj;
-            assert refObj != null;
-            this.start = start;
-            this.end = end;
-            this.identifier = identifier;
-            this.ownerUID = owner;
-        }
-
-        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmReference delegate, CsmUID<CsmObject> refObj, CsmUID<CsmObject> ownerUID) {
+        private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmReference delegate, CsmUID<CsmObject> refObj, CsmUID<CsmObject> ownerUID, CsmUID<CsmObject> closestTopLevelObjectUID) {
             this.file = fileUID;
             this.refKind = delegate.getKind();
             this.refObj = refObj;
@@ -308,6 +345,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.end = PositionManager.createPositionID(fileUID, delegate.getEndOffset(), PositionManager.Position.Bias.BACKWARD);
             this.identifier = NameCache.getManager().getString(delegate.getText());
             this.ownerUID = ownerUID;
+            this.closestTopLevelObjectUID = closestTopLevelObjectUID;
         }
 
         private ReferenceImpl(CsmUID<CsmFile> fileUID, CsmUID<CsmObject> refObj, UIDObjectFactory defaultFactory, DataInput input) throws IOException {
@@ -319,6 +357,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             this.identifier = PersistentUtils.readUTF(input, NameCache.getManager());
             this.refKind = CsmReferenceKind.values()[input.readByte()];
             this.ownerUID = defaultFactory.readUID(input);
+            this.closestTopLevelObjectUID = defaultFactory.readUID(input);
         }
 
         private void write(UIDObjectFactory defaultFactory, DataOutput out) throws IOException {
@@ -327,6 +366,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             PersistentUtils.writeUTF(identifier, out);
             out.writeByte(this.refKind.ordinal());
             defaultFactory.writeUID(this.ownerUID, out);
+            defaultFactory.writeUID(this.closestTopLevelObjectUID, out);
         }
 
         @Override
@@ -346,6 +386,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         @Override
         public CsmObject getOwner() {
             return UIDCsmConverter.UIDtoCsmObject(ownerUID);
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return UIDCsmConverter.UIDtoCsmObject(closestTopLevelObjectUID);
         }
         
         @Override
@@ -426,11 +471,6 @@ public class FileComponentReferences extends FileComponent implements Persistent
         @Override
         public String toString() {
             return "ReferenceImpl{" + "file=" + file + "refKind=" + refKind + "refObj=" + refObj + "start=" + start + "end=" + end + "identifier=" + identifier + "ownerUID=" + ownerUID + '}'; // NOI18N
-        }
-
-        @Override
-        public CsmObject getClosestTopLevelObject() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

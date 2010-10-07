@@ -193,6 +193,6 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 
     @Override
     public CsmObject getClosestTopLevelObject() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return null;
     }
 }
