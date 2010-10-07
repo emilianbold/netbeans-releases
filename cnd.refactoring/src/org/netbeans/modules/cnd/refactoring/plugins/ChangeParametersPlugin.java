@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -78,7 +79,9 @@ import org.netbeans.modules.refactoring.api.*;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /**
  * Refactoring used for changing method signature. It changes method declaration
@@ -297,7 +300,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
 //            outProblem.set(problem);
 //            descr = "<html><b>" + descr + "</b></html>";
 //        }
-        final Document document = ces.getDocument();
+        Document document = CsmUtilities.openDocument(ces);
         FunctionInfo funInfo = prepareFunctionInfo(ref, document);
         Difference diff;
         final StringBuilder oldText = new StringBuilder();
