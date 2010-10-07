@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.makeproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
@@ -773,7 +772,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
             for (String loc : subProjectLocations) {
                 String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
                 try {
-                    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(location));
                     Project project = ProjectManager.getDefault().findProject(fo);
                     if (project != null) {
                         subProjects.add(project);

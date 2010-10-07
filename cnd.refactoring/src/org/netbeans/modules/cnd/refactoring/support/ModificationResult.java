@@ -51,6 +51,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -117,11 +118,12 @@ public final class ModificationResult {
         // writer where he wants to see changes, commit the changes to 
         // found document.
         if (ec != null && out == null) {
-            final Document doc = ec.getDocument();
+            final Document doc = CsmUtilities.openDocument(ec);
             if (doc != null) {
                 final IOException ioe[] = new IOException[]{null};
                 Runnable runnable = new Runnable() {
 
+                    @Override
                     public void run() {
                         for (Difference diff : differences) {
                             if (diff.isExcluded()) {

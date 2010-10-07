@@ -133,4 +133,10 @@ public class OptionsConfiguration {
         clone.setPreDefined(getPreDefined());
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "{commandLine=" + commandLine + "] dirty=" + dirty + // NOI18N
+                " commandLineModified=" + commandLineModified + '}'; // NOI18N
+    }
 }

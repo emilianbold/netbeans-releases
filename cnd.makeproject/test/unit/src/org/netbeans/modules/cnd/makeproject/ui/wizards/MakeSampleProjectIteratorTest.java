@@ -328,7 +328,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
         makeActionProvider.invokeAction("build", null);
 
 //        File makefile = new File(mainProjectDir, "Makefile");
-//        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
+//        FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);
 //        assertTrue("makefileFileObject == null", makefileFileObject != null);
 //        DataObject dObj = null;
 //        try {
