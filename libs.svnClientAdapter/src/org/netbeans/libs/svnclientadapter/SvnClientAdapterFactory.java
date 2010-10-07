@@ -54,6 +54,8 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 public abstract class SvnClientAdapterFactory {
     
+    public static final String JAVAHL_WIN32_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
+    
     protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
     private static SvnClientAdapterFactory instance;
     private static Client client;
