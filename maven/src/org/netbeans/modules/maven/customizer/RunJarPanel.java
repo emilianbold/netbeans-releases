@@ -223,10 +223,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
     
 
-    /**
-     * @deprecated 
-     */
-    private @Deprecated void applyDeprecatedExternalChanges() throws MissingResourceException {
+    private void applyDeprecatedExternalChanges() throws MissingResourceException {
         File assDir = new File(new File(new File(project.getOriginalMavenProject().getBasedir(), "src"), "main"), "assemblies"); //NOI18N
         if (!assDir.exists()) {
             assDir.mkdirs();
@@ -695,10 +692,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     }
     
 
-    /**
-     * @deprecated 
-     */
-    private @Deprecated Plugin checkJarPlugin(Plugin jarPlugin, String val) {
+    private Plugin checkJarPlugin(Plugin jarPlugin, String val) {
         if (jarPlugin == null) {
             jarPlugin = handle.getPOMModel().getFactory().createPlugin();
             jarPlugin.setArtifactId(ARTFACTID_JAR); 
@@ -723,10 +717,7 @@ public class RunJarPanel extends javax.swing.JPanel {
         return jarPlugin;
     }
 
-    /**
-     * @deprecated 
-     */
-    private @Deprecated Plugin checkAssemblyPlugin(Plugin assPlugin) {
+    private Plugin checkAssemblyPlugin(Plugin assPlugin) {
         POMModel model = handle.getPOMModel();
         if (assPlugin == null) {
             assPlugin = model.getFactory().createPlugin();
@@ -766,7 +757,7 @@ public class RunJarPanel extends javax.swing.JPanel {
     
     private POMExtensibilityElement getOrCreateChild(POMComponent parent, String name) {
         List<POMExtensibilityElement> childs = parent.getChildren(POMExtensibilityElement.class);
-        if (childs == null) {
+        if (childs != null) {
             for (POMExtensibilityElement el : childs) {
                 if (name.equals(el.getQName().getLocalPart())) {
                     return el;

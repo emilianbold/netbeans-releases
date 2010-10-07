@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -70,30 +69,27 @@ public final class IncludeDirEntry {
     }
     private static final IncludeDirStorage storage = new IncludeDirStorage(MANAGER_DEFAULT_SLICED_NUMBER, MANAGER_DEFAULT_CAPACITY);
 
-    private final File file;
     private final boolean exists;
     private final boolean isFramework;
     private final CharSequence asCharSeq;
 
-    private IncludeDirEntry(File file, boolean exists, boolean framework, CharSequence asCharSeq) {
-        this.file = file;
+    private IncludeDirEntry(boolean exists, boolean framework, CharSequence asCharSeq) {
         this.exists = exists;
         this.isFramework = framework;
         this.asCharSeq = asCharSeq;
     }
 
     public static IncludeDirEntry get(String dir) {
+        CndUtils.assertAbsolutePathInConsole(dir);
         CharSequence key = FilePathCache.getManager().getString(dir);
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
         synchronized (delegate) {
             IncludeDirEntry out = delegate.get(key);
             if (out == null) {
-                File file = new File(dir);
-                String asString = file.getAbsolutePath();
-                boolean framework = asString.endsWith("/Frameworks"); // NOI18N
-                CharSequence asCharSeq = FilePathCache.getManager().getString(asString);
-                boolean exists = CndFileUtils.isExistingDirectory(file, asString);
-                out = new IncludeDirEntry(file, exists, framework, asCharSeq);
+                boolean framework = dir.endsWith("/Frameworks"); // NOI18N
+                CharSequence asCharSeq = FilePathCache.getManager().getString(dir);
+                boolean exists = CndFileUtils.isExistingDirectory(dir);
+                out = new IncludeDirEntry(exists, framework, asCharSeq);
                 delegate.put(key, out);
             }
             return out;
@@ -112,17 +108,13 @@ public final class IncludeDirEntry {
         return exists;
     }
 
-    public File getFile() {
-        return file;
+    public String getPath() {
+        return asCharSeq.toString();
     }
 
     @Override
     public String toString() {
         return (exists ? "" : "NOT EXISTING ") + asCharSeq; // NOI18N
-    }
-
-    public String getAsString() {
-        return file.getPath();
     }
 
     /*package*/static void disposeCache() {

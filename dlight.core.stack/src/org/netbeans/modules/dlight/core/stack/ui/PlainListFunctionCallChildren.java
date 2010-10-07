@@ -61,10 +61,8 @@ public class PlainListFunctionCallChildren extends Children.Keys<FunctionCall> {
     PlainListFunctionCallChildren(SourceFileInfoDataProvider sourceInfoProvider, List<FunctionCall> functionCalls) {
         //create a copy and reverse copied
         this.functionCalls = new ArrayList<FunctionCall>();
-        int size = functionCalls.size();
-        for (int i = size -1; i >= 0; i--){
-            this.functionCalls.add(functionCalls.get(i));
-        }
+        this.functionCalls.addAll(functionCalls);
+        Collections.reverse(this.functionCalls);
         this.sourceInfoProvider = sourceInfoProvider;
     }
 

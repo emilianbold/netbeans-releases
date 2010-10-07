@@ -44,6 +44,8 @@
 package org.netbeans.modules.html.editor.api.completion;
 
 import java.util.Arrays;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.modules.html.editor.completion.*;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -59,10 +61,12 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -75,8 +79,8 @@ public class HtmlCompletionItem implements CompletionItem {
     protected static final int DEFAULT_SORT_PRIORITY = 20;
 
     //----------- Factory methods --------------
-    public static HtmlCompletionItem createTag(String name, int substitutionOffset, String helpId, boolean possible) {
-        return new Tag(name, substitutionOffset, helpId, possible);
+    public static HtmlCompletionItem createTag(HtmlTag tag, String name, int substitutionOffset, String helpId, boolean possible) {
+        return new Tag(tag, name, substitutionOffset, helpId, possible);
     }
  
     public static HtmlCompletionItem createEndTag(String name, int substitutionOffset, String helpId, int order, EndTag.Type type) {
@@ -91,8 +95,8 @@ public class HtmlCompletionItem implements CompletionItem {
         return new BooleanAttribute(name, substitutionOffset, required, helpId);
     }
 
-    public static HtmlCompletionItem createAttribute(String name, int substitutionOffset, boolean required, String helpId) {
-        return new Attribute(name, substitutionOffset, required, helpId);
+    public static HtmlCompletionItem createAttribute(HtmlTagAttribute attribute, String name, int substitutionOffset, boolean required, String helpId) {
+        return new Attribute(attribute, name, substitutionOffset, required, helpId);
     }
 
     public static HtmlCompletionItem createAttributeValue(String name, int substitutionOffset, boolean addQuotation) {
@@ -120,6 +124,12 @@ public class HtmlCompletionItem implements CompletionItem {
     protected int substitutionOffset;
     protected String text, helpId;
     protected boolean shift;
+    protected HelpItem help;
+
+    protected HtmlCompletionItem(HelpItem help, String text, int substitutionOffset, String helpId) {
+        this(text, substitutionOffset, helpId);
+        this.help = help;
+    }
 
     protected HtmlCompletionItem(String text, int substituteOffset) {
         this.substitutionOffset = substituteOffset;
@@ -135,22 +145,27 @@ public class HtmlCompletionItem implements CompletionItem {
         return text;
     }
 
+    @Override
     public int getSortPriority() {
         return DEFAULT_SORT_PRIORITY;
     }
 
+    @Override
     public CharSequence getSortText() {
         return getItemText();
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return getItemText();
     }
 
+    @Override
     public void processKeyEvent(KeyEvent e) {
         shift = (e.getKeyCode() == KeyEvent.VK_ENTER && e.getID() == KeyEvent.KEY_PRESSED && e.isShiftDown());
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             if (!shift) {
@@ -190,6 +205,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         doc.runAtomic(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     //test whether we are trying to insert sg. what is already present in the text
@@ -229,6 +245,7 @@ public class HtmlCompletionItem implements CompletionItem {
         try {
             doc.runAtomic(new Runnable() {
 
+                @Override
                 public void run() {
                     try {
                         int startOffset = Utilities.getRowStart(doc, dotPos);
@@ -245,6 +262,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         if (component != null) {
             try {
@@ -262,10 +280,12 @@ public class HtmlCompletionItem implements CompletionItem {
         return true;
     }
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
@@ -306,18 +326,26 @@ public class HtmlCompletionItem implements CompletionItem {
         return HelpManager.getDefault().getHelp(helpId);
     }
 
-    /** Returns whether the item has a help.
-     */
-    public boolean hasHelp() {
+    private boolean hasLegacyHelp() {
         return (helpId != null && helpId.length() > 0);
     }
 
+    public boolean hasHelp() {
+        return getHelpItem() != null || hasLegacyHelp();
+    }
+
+    @Override
     public CompletionTask createDocumentationTask() {
         return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this));
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
+    }
+
+    public HelpItem getHelpItem() {
+        return help;
     }
 
     //------------------------------------------------------------------------------
@@ -326,8 +354,24 @@ public class HtmlCompletionItem implements CompletionItem {
      */
     public static class Tag extends HtmlCompletionItem {
 
+        private static final ImageIcon HTML_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
+
+        private static final ImageIcon SVG_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
+
+        private static final ImageIcon MATHML_TAG_ICON =
+            ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
+
         private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
         private boolean possible;
+        private HtmlTag tag;
+
+        protected Tag(HtmlTag tag, String name, int substitutionOffset, String helpId, boolean possible) {
+            super(tag.getHelp(), name, substitutionOffset, helpId);
+            this.tag = tag;
+            this.possible = possible;
+        }
 
         protected Tag(String text, int substitutionOffset, String helpId, boolean possible) {
             super(text, substitutionOffset, helpId);
@@ -356,6 +400,36 @@ public class HtmlCompletionItem implements CompletionItem {
                 "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
                 "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
         }
+
+        @Override
+        protected String getRightHtmlText() {
+            return null;
+        }
+
+        @Override
+        protected ImageIcon getIcon() {
+            if (tag != null) {
+                switch (tag.getTagClass()) {
+                    case HTML:
+                        return HTML_TAG_ICON;
+                    case SVG:
+                        return SVG_TAG_ICON;
+                    case MATHML:
+                        return MATHML_TAG_ICON;
+                    default:
+                        return null;
+                }
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+        }
+
+
     }
 
     /**
@@ -384,6 +458,14 @@ public class HtmlCompletionItem implements CompletionItem {
 
         private int orderIndex;
         private Type type;
+        private HtmlTag tag;
+
+        EndTag(HtmlTag tag, String name, int substitutionOffset, String helpId, int order, Type type) {
+            super(tag.getHelp(), name, substitutionOffset, helpId);
+            this.orderIndex = order;
+            this.type = type;
+            this.tag = tag;
+        }
 
         EndTag(String text, int substitutionOffset, String helpId, int order, Type type) {
             super(text, substitutionOffset, helpId);
@@ -421,6 +503,12 @@ public class HtmlCompletionItem implements CompletionItem {
                     "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
                     (type.bold ? "</b>" : ""); //NOI18N
         }
+
+        @Override
+        public boolean hasHelp() {
+            return tag != null && tag.getHelp() != null || tag == null && super.hasHelp();
+        }
+
     }
 
     public static class AutocompleteEndTag extends EndTag {
@@ -499,8 +587,16 @@ public class HtmlCompletionItem implements CompletionItem {
 
         private boolean required;
         private boolean autocompleteQuotes;
+        private HtmlTagAttribute attr;
 
         protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+
+        public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
+            super(attr.getHelp(), value, offset, helpId);
+            this.attr = attr;
+            this.required = required;
+            this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
+        }
 
         public Attribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
@@ -529,6 +625,12 @@ public class HtmlCompletionItem implements CompletionItem {
                     "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
                     (required ? "</b>" : ""); //NOI18N
         }
+        
+        @Override
+        public boolean hasHelp() {
+            return attr != null && attr.getHelp() != null || attr == null && super.hasHelp();
+        }
+
     }
 
     public static class BooleanAttribute extends HtmlCompletionItem {
@@ -585,7 +687,7 @@ public class HtmlCompletionItem implements CompletionItem {
         }
     }
 
-    public static final String hexColorCode(Color c) {
+    public static String hexColorCode(Color c) {
         return Integer.toHexString(c.getRGB()).substring(2);
     }
 

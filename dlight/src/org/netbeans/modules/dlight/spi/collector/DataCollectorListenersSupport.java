@@ -130,7 +130,7 @@ public final class DataCollectorListenersSupport {
      * Serial notification strategy implementation
      * @param state a new state of DataCollector
      */
-    private void notifyListenersSerially(final DataCollector.CollectorState state) {
+    private synchronized  void notifyListenersSerially(final DataCollector.CollectorState state) {
         for (DataCollectorListener l : listeners) {
             l.collectorStateChanged(collector, state);
         }

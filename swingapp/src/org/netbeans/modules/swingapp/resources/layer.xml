@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.swingapp.templates.NewAppWizardIterator"/>
                 </file>
-                </folder>
+            </folder>
         </folder>
     </folder>
 
@@ -96,19 +96,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
 
-    <folder name="Projects">
-        <folder name="org-netbeans-modules-maven">
-            <folder name="Archetypes">
-                <file name="appframework-archetype">
-                    <attr name="position" intvalue="300"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="appframework"/>
-                    <attr name="version" stringvalue="1.0"/>
-                    <!--attr name="repository" stringvalue=""/-->
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.swingapp.resources.Bundle#TIT_Appframework_Archetype"/>
-                    <attr name="description" bundlevalue="org.netbeans.modules.swingapp.resources.Bundle#DESC_Appframework_Archetype"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 </filesystem>

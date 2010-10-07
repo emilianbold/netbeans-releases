@@ -67,8 +67,11 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
     //8 means 4 paralel builds, one for input, one for output.
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", 8); //NOI18N
     private InputOutput inputOutput;
-    private Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); //NOI18N
-    static Pattern startPattern = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); //NOI18N
+    private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
+    static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
+    static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
+    private static final Pattern mavenSomethingPlugin = Pattern.compile("maven-(.+)-plugin"); // NOI18N
+    private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     private OutputWriter stdOut;
     //    private ProgressHandle handle;
     private String currentTag;
@@ -197,9 +200,29 @@ class CommandLineOutputHandler extends AbstractOutputHandler {
                         }
                         currentTag = null;
                     }
-                    Matcher match = startPattern.matcher(line);
+                    String tag = null;
+                    Matcher match = startPatternM3.matcher(line);
                     if (match.matches()) {
-                        String tag = match.group(1) + ":" + match.group(2); //NOI18N
+                        String mojoArtifact = match.group(1);
+                        // XXX M3 reports artifactId of mojo whereas M2 reports goalPrefix; do not want to force every OutputProcessor to handle both
+                        // XXX consider searching index on ArtifactInfo.PLUGIN_PREFIX instead
+                        Matcher match2 = mavenSomethingPlugin.matcher(mojoArtifact);
+                        if (match2.matches()) {
+                            mojoArtifact = match2.group(1);
+                        } else {
+                            match2 = somethingMavenPlugin.matcher(mojoArtifact);
+                            if (match2.matches()) {
+                                mojoArtifact = match2.group(1);
+                            }
+                        }
+                        tag = mojoArtifact + ':' + match.group(2);
+                    } else {
+                        match = startPatternM2.matcher(line);
+                        if (match.matches()) {
+                            tag = match.group(1) + ':' + match.group(2);
+                        }
+                    }
+                    if (tag != null) {
                         if (currentTag != null) {
                             CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, currentTag), stdOut);
                         }

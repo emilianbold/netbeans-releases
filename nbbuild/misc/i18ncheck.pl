@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-# -*- perl -*-
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
 # Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
@@ -41,6 +40,8 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
+
+# XXX rewrite in Java: http://netbeans.org/bugzilla/show_bug.cgi?id=25859
 
 #
 # i18ncheck.pl - checks java source for internationalizable strings

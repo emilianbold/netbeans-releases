@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.web.el;
 
+import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -102,6 +104,11 @@ public class ELLanguage extends DefaultLanguageConfig {
     @Override
     public OccurrencesFinder getOccurrencesFinder() {
         return new ELOccurrencesFinder();
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new ELCodeCompletionHandler();
     }
 
 }

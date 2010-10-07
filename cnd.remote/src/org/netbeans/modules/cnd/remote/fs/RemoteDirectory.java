@@ -84,6 +84,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
+        if (relativePath.endsWith("/")) { // NOI18N
+            relativePath = relativePath.substring(0,relativePath.length()-1);
+        }
         try {
             File file = new File(cache, relativePath);
             if (!file.exists()) {
@@ -107,7 +110,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             boolean resultIsDirectory = file.isDirectory();
 
             StringBuilder remoteAbsPath = new StringBuilder(remotePath);
-            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+//            File cacheFile = remotePath.isEmpty()? cache : new File(cache.getPath() + '/' + remotePath);
+            File cacheFile = cache;
             FileObject resultFileObject = this;
             StringTokenizer pathTokenizer = new StringTokenizer(relativePath, "/"); // NOI18N
             while (pathTokenizer.hasMoreTokens()) {

@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  */
 public final class ForwardClass extends ClassImpl {
 
-    private ForwardClass(String name, CsmFile file, AST ast) {
+    private ForwardClass(NameHolder name, CsmFile file, AST ast) {
         super(name, ast, file);
     }
 
@@ -75,7 +75,7 @@ public final class ForwardClass extends ClassImpl {
     }
 
     public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope, boolean registerInProject) {
-        ForwardClass fwd = new ForwardClass(name, file, ast);
+        ForwardClass fwd = new ForwardClass(NameHolder.createName(name), file, ast);
         fwd.initQualifiedName(scope, ast);
         fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));
         if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
@@ -89,7 +89,7 @@ public final class ForwardClass extends ClassImpl {
         }
         return null;
     }
-    
+
     @Override
     public boolean shouldBeReplaced(CsmClassifier another) {
         if (another == null) {

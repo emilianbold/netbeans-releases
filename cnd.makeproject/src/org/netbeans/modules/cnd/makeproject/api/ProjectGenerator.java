@@ -46,8 +46,11 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
@@ -55,6 +58,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 public class ProjectGenerator {
 
@@ -71,7 +75,12 @@ public class ProjectGenerator {
         private Iterator<SourceFolderInfo> testFolders;
         private String mainFile;
         private String hostUID;
+        private boolean fullRemote;
         private CompilerSet cs;
+        private String postCreationClassName;
+        private String mainProject;
+        private String subProjects;
+        private Map<String, Object> templateParams;
 
         /**
          *
@@ -99,9 +108,13 @@ public class ProjectGenerator {
             this.testFolders = null; 
             this.importantFileItems = null; 
             this.mainFile = "";
+            this.postCreationClassName = null;
+            this.mainProject = null;
+            this.templateParams = Collections.<String, Object>emptyMap();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
+            CndUtils.assertNotNull(makefile, "project makefile name should not be null"); //NOI18N
             this.makefile = makefile;
             return this;
         }
@@ -152,6 +165,23 @@ public class ProjectGenerator {
             return this;
         }
 
+        public void setFullRemote(boolean fullRemote) {
+            this.fullRemote = fullRemote;
+        }
+
+        public boolean getFullRemote() {
+            return fullRemote;
+        }
+
+        public RemoteProject.Mode getRemoteMode() {
+            return fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES;
+        }
+
+        public ProjectParameters setTemplateParams(Map<String, Object> params) {
+            this.templateParams = params;
+            return this;
+        }
+
         public File getProjectFolder() {
             return projectFolder;
         }
@@ -196,8 +226,58 @@ public class ProjectGenerator {
             return hostUID;
         }
 
+        public void setHostUID(String hostUID) {
+            this.hostUID = hostUID;
+        }
+
         public CompilerSet getToolchain() {
             return cs;
+        }
+
+        /**
+         * @return the postCreationClassName
+         */
+        public String getPostCreationClassName() {
+            return postCreationClassName;
+        }
+
+        /**
+         * @param postCreationClassName the postCreationClassName to set
+         */
+        public void setPostCreationClassName(String postCreationClassName) {
+            this.postCreationClassName = postCreationClassName;
+        }
+
+        /**
+         * @return the mainProject
+         */
+        public String getMainProject() {
+            return mainProject;
+        }
+
+        /**
+         * @param mainProject the mainProject to set
+         */
+        public void setMainProject(String mainProject) {
+            this.mainProject = mainProject;
+        }
+
+        /**
+         * @return the subProjects
+         */
+        public String getSubProjects() {
+            return subProjects;
+        }
+
+        /**
+         * @param subProjects the subProjects to set
+         */
+        public void setSubProjects(String subProjects) {
+            this.subProjects = subProjects;
+        }
+
+        public Map<String, Object> getTemplateParams() {
+            return templateParams;
         }
     }
     

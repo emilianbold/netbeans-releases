@@ -151,13 +151,13 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         final ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {
+            trace("Run folder folder is null"); //NOI18N
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, additionalEnvironment);
         if (isSunStudio(node, project)) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
-        traceExecutable(executable, buildDir, args, envMap);
 
         if (inputOutput == null) {
             // Tab Name
@@ -174,9 +174,11 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
+                trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
             }
         }
+        traceExecutable(executable, buildDir, args, envMap);
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
                 new CompilerLineConvertor(getCompilerSet(project), execEnv, fileObject.getParent()), syncWorker); // NOI18N

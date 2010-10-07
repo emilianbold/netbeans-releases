@@ -349,6 +349,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(helper);
     }
 
+    @Override
     protected int getHandler(Object object) {
         int aHandler;
 
@@ -393,6 +394,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
         return aHandler;
     }
 
+    @Override
     protected SelfPersistent createObject(int handler, DataInput aStream) throws IOException {
 
         SelfPersistent anUID;
@@ -454,7 +456,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 break;
 
             case UID_BUILT_IN_UID:
-                anUID = BuiltinTypes.readUID(aStream);
+                anUID = (SelfPersistent) BuiltinTypes.readUID(aStream);
                 share = false;
                 break;
 
@@ -512,6 +514,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     public static final int LAST_INDEX = UID_UNRESOLVED_NAMESPACE;
 
     private static final Comparator<OffsetSortedKey> OSKComparator = new Comparator<OffsetSortedKey>() {
+        @Override
        public int compare(OffsetSortedKey o1, OffsetSortedKey o2) {
             return o1.compareTo(o2);
         }
@@ -529,74 +532,98 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.factory = factory;
             this.manager = manager;
         }
+        @Override
         public Comparator<? super OffsetSortedKey> comparator() {
             return OSKComparator;
         }
+        @Override
         public SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> subMap(OffsetSortedKey fromKey, OffsetSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> headMap(OffsetSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> tailMap(OffsetSortedKey fromKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public OffsetSortedKey firstKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public OffsetSortedKey lastKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public int size() {
             return size;
         }
+        @Override
         public boolean isEmpty() {
             return size == 0;
         }
+        @Override
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public boolean containsValue(Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmOffsetableDeclaration> get(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmOffsetableDeclaration> put(OffsetSortedKey key, CsmUID<CsmOffsetableDeclaration> value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmOffsetableDeclaration> remove(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void putAll(Map<? extends OffsetSortedKey, ? extends CsmUID<CsmOffsetableDeclaration>> t) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void clear() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<OffsetSortedKey> keySet() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Collection<CsmUID<CsmOffsetableDeclaration>> values() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>> entrySet() {
             return new Set<Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>>(){
+                @Override
                 public int size() {
                     return size;
                 }
+                @Override
                 public boolean isEmpty() {
                     return size == 0;
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public Iterator<Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>> iterator() {
                     return new Iterator<Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>>(){
                         private int current = 0;
+                        @Override
                         public boolean hasNext() {
                             return current < size;
                         }
+                        @Override
                         public Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> next() {
                             if (current < size) {
                                 current++;
@@ -606,12 +633,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                                     final CsmUID<CsmOffsetableDeclaration> uid = factory.<CsmOffsetableDeclaration>readUID(aStream);
                                     assert uid != null;
                                     return new Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(){
+                                        @Override
                                         public OffsetSortedKey getKey() {
                                             return key;
                                         }
+                                        @Override
                                         public CsmUID<CsmOffsetableDeclaration> getValue() {
                                             return uid;
                                         }
+                                        @Override
                                         public CsmUID<CsmOffsetableDeclaration> setValue(CsmUID<CsmOffsetableDeclaration> value) {
                                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                                         }
@@ -622,35 +652,45 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
                     };
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean add(Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
@@ -659,6 +699,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     private static final Comparator<NameSortedKey> NSKComparator = new Comparator<NameSortedKey>() {
+        @Override
        public int compare(NameSortedKey o1, NameSortedKey o2) {
             return o1.compareTo(o2);
         }
@@ -676,74 +717,98 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.factory = factory;
             this.manager = manager;
         }
+        @Override
         public Comparator<? super NameSortedKey> comparator() {
             return NSKComparator;
         }
+        @Override
         public SortedMap<NameSortedKey, CsmUID<CsmMacro>> subMap(NameSortedKey fromKey, NameSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<NameSortedKey, CsmUID<CsmMacro>> headMap(NameSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<NameSortedKey, CsmUID<CsmMacro>> tailMap(NameSortedKey fromKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public NameSortedKey firstKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public NameSortedKey lastKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public int size() {
             return size;
         }
+        @Override
         public boolean isEmpty() {
             return size > 0;
         }
+        @Override
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public boolean containsValue(Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmMacro> get(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmMacro> put(NameSortedKey key, CsmUID<CsmMacro> value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmMacro> remove(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void putAll(Map<? extends NameSortedKey, ? extends CsmUID<CsmMacro>> t) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void clear() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<NameSortedKey> keySet() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Collection<CsmUID<CsmMacro>> values() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<Entry<NameSortedKey, CsmUID<CsmMacro>>> entrySet() {
             return new Set<Entry<NameSortedKey, CsmUID<CsmMacro>>>(){
+                @Override
                 public int size() {
                     return size;
                 }
+                @Override
                 public boolean isEmpty() {
                     return size > 0;
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public Iterator<Entry<NameSortedKey, CsmUID<CsmMacro>>> iterator() {
                     return new Iterator<Entry<NameSortedKey, CsmUID<CsmMacro>>>(){
                         private int current = 0;
+                        @Override
                         public boolean hasNext() {
                             return current < size;
                         }
+                        @Override
                         public Entry<NameSortedKey, CsmUID<CsmMacro>> next() {
                             if (current < size) {
                                 current++;
@@ -753,12 +818,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                                     final CsmUID<CsmMacro> uid = factory.<CsmMacro>readUID(aStream);
                                     assert uid != null;
                                     return new Map.Entry<NameSortedKey, CsmUID<CsmMacro>>(){
+                                        @Override
                                         public NameSortedKey getKey() {
                                             return key;
                                         }
+                                        @Override
                                         public CsmUID<CsmMacro> getValue() {
                                             return uid;
                                         }
+                                        @Override
                                         public CsmUID<CsmMacro> setValue(CsmUID<CsmMacro> value) {
                                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                                         }
@@ -769,35 +837,45 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
                     };
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean add(Entry<NameSortedKey, CsmUID<CsmMacro>> o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<NameSortedKey, CsmUID<CsmMacro>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
@@ -817,74 +895,98 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.factory = factory;
             this.manager = manager;
         }
+        @Override
         public Comparator<? super FileNameSortedKey> comparator() {
             return NamespaceImpl.defenitionComparator;
         }
+        @Override
         public SortedMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> subMap(FileNameSortedKey fromKey, FileNameSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> headMap(FileNameSortedKey toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> tailMap(FileNameSortedKey fromKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public FileNameSortedKey firstKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public FileNameSortedKey lastKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public int size() {
             return size;
         }
+        @Override
         public boolean isEmpty() {
             return size == 0;
         }
+        @Override
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public boolean containsValue(Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> get(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> put(FileNameSortedKey key, CsmUID<CsmNamespaceDefinition> value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> remove(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void putAll(Map<? extends FileNameSortedKey, ? extends CsmUID<CsmNamespaceDefinition>> t) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void clear() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<FileNameSortedKey> keySet() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Collection<CsmUID<CsmNamespaceDefinition>> values() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>> entrySet() {
             return new Set<Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>>(){
+                @Override
                 public int size() {
                     return size;
                 }
+                @Override
                 public boolean isEmpty() {
                     return size == 0;
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public Iterator<Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>> iterator() {
                     return new Iterator<Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>>(){
                         int current = 0;
+                        @Override
                         public boolean hasNext() {
                             return current < size;
                         }
+                        @Override
                         public Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> next() {
                             if (current < size) {
                                 current++;
@@ -893,12 +995,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                                     final CsmUID<CsmNamespaceDefinition> value = factory.readUID(aStream);
                                     assert value != null;
                                     return new Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>(){
+                                        @Override
                                         public FileNameSortedKey getKey() {
                                             return key;
                                         }
+                                        @Override
                                         public CsmUID<CsmNamespaceDefinition> getValue() {
                                             return value;
                                         }
+                                        @Override
                                         public CsmUID<CsmNamespaceDefinition> setValue(CsmUID<CsmNamespaceDefinition> value) {
                                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                                         }
@@ -909,35 +1014,45 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
                     };
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean add(Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>> o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<FileNameSortedKey, CsmUID<CsmNamespaceDefinition>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
@@ -957,74 +1072,98 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.factory = factory;
             this.manager = manager;
         }
+        @Override
         public Comparator<? super CharSequence> comparator() {
             return CharSequences.comparator();
         }
+        @Override
         public SortedMap<CharSequence, Object> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<CharSequence, Object> headMap(CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<CharSequence, Object> tailMap(CharSequence fromKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CharSequence firstKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CharSequence lastKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public int size() {
             return size;
         }
+        @Override
         public boolean isEmpty() {
             return size == 0;
         }
+        @Override
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public boolean containsValue(Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Object get(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Object put(CharSequence key, Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Object remove(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void putAll(Map<? extends CharSequence, ? extends Object> t) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void clear() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<CharSequence> keySet() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Collection<Object> values() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<Entry<CharSequence, Object>> entrySet() {
             return new Set<Entry<CharSequence, Object>>(){
+                @Override
                 public int size() {
                     return size;
                 }
+                @Override
                 public boolean isEmpty() {
                     return size == 0;
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public Iterator<Entry<CharSequence, Object>> iterator() {
                     return new Iterator<Entry<CharSequence, Object>>(){
                         private int current = 0;
+                        @Override
                         public boolean hasNext() {
                             return current < size;
                         }
+                        @Override
                         public Entry<CharSequence, Object> next() {
                             if (current < size) {
                                 current++;
@@ -1046,12 +1185,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                                         value = uids;
                                     }
                                     return new Map.Entry<CharSequence, Object>(){
+                                        @Override
                                         public CharSequence getKey() {
                                             return key;
                                         }
+                                        @Override
                                         public Object getValue() {
                                             return value;
                                         }
+                                        @Override
                                         public Object setValue(Object value) {
                                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                                         }
@@ -1062,35 +1204,45 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
                     };
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean add(Entry<CharSequence, Object> o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<CharSequence, Object>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
@@ -1110,74 +1262,98 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             this.factory = factory;
             this.manager = manager;
         }
+        @Override
         public Comparator<? super CharSequence> comparator() {
             return CharSequences.comparator();
         }
+        @Override
         public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> subMap(CharSequence fromKey, CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> headMap(CharSequence toKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public SortedMap<CharSequence, CsmUID<CsmNamespaceDefinition>> tailMap(CharSequence fromKey) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CharSequence firstKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CharSequence lastKey() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public int size() {
             return size;
         }
+        @Override
         public boolean isEmpty() {
             return size == 0;
         }
+        @Override
         public boolean containsKey(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public boolean containsValue(Object value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> get(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> put(CharSequence key, CsmUID<CsmNamespaceDefinition> value) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public CsmUID<CsmNamespaceDefinition> remove(Object key) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void putAll(Map<? extends CharSequence, ? extends CsmUID<CsmNamespaceDefinition>> t) {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public void clear() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<CharSequence> keySet() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Collection<CsmUID<CsmNamespaceDefinition>> values() {
             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
         }
+        @Override
         public Set<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> entrySet() {
             return new Set<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>>(){
+                @Override
                 public int size() {
                     return size;
                 }
+                @Override
                 public boolean isEmpty() {
                     return size == 0;
                 }
+                @Override
                 public boolean contains(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public Iterator<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> iterator() {
                     return new Iterator<Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>>(){
                         private int current = 0;
+                        @Override
                         public boolean hasNext() {
                             return current < size;
                         }
+                        @Override
                         public Entry<CharSequence, CsmUID<CsmNamespaceDefinition>> next() {
                             if (current < size) {
                                 current++;
@@ -1187,12 +1363,15 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                                     final CsmUID<CsmNamespaceDefinition> uid = factory.readUID(aStream);
                                     assert uid != null;
                                     return new Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>(){
+                                        @Override
                                         public CharSequence getKey() {
                                             return key;
                                         }
+                                        @Override
                                         public CsmUID<CsmNamespaceDefinition> getValue() {
                                             return uid;
                                         }
+                                        @Override
                                         public CsmUID<CsmNamespaceDefinition> setValue(CsmUID<CsmNamespaceDefinition> value) {
                                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                                         }
@@ -1203,35 +1382,45 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                             }
                             return null;
                         }
+                        @Override
                         public void remove() {
                             throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                         }
                     };
                 }
+                @Override
                 public Object[] toArray() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public <T> T[] toArray(T[] a) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean add(Entry<CharSequence, CsmUID<CsmNamespaceDefinition>> o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean remove(Object o) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean containsAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean addAll(Collection<? extends Entry<CharSequence, CsmUID<CsmNamespaceDefinition>>> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean retainAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public boolean removeAll(Collection<?> c) {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }
+                @Override
                 public void clear() {
                     throw new UnsupportedOperationException("Not supported yet."); //NOI18N
                 }

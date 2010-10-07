@@ -43,6 +43,7 @@ package org.netbeans.modules.maven.output;
 
 import java.io.File;
 import junit.framework.*;
+import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.openide.filesystems.FileUtil;
 
@@ -60,6 +61,7 @@ public class JavaOutputListenerProviderTest extends TestCase {
         provider = new JavaOutputListenerProvider();
     }
 
+    @SuppressWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     public void testRecognizeLine() {
         OutputVisitor visitor = new OutputVisitor();
         visitor.resetVisitor();

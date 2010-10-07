@@ -129,7 +129,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_USER_TYPE_CAST_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION:
                     try {
-                        FunctionImpl fi = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                        FunctionImpl<?> fi = FunctionImpl.create(token, file, null, currentNamespace, !isRenderingLocalContext());
                         container.addDeclaration(fi);
                         if (NamespaceImpl.isNamespaceScope(fi)) {
                             currentNamespace.addDeclaration(fi);
@@ -141,7 +141,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
                 case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                     try {
-                        container.addDeclaration(new ConstructorDefinitionImpl(token, file, null, !isRenderingLocalContext()));
+                        container.addDeclaration(ConstructorDefinitionImpl.create(token, file, !isRenderingLocalContext()));
                     } catch (AstRendererException e) {
                         DiagnosticExceptoins.register(e);
                     }
@@ -149,7 +149,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_DTOR_DEFINITION:
                 case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                     try {
-                        container.addDeclaration(new DestructorDefinitionImpl(token, file, !isRenderingLocalContext()));
+                        container.addDeclaration(DestructorDefinitionImpl.create(token, file, !isRenderingLocalContext()));
                     } catch (AstRendererException e) {
                         DiagnosticExceptoins.register(e);
                     }
@@ -161,9 +161,9 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION:
                     try {
                         if (isMemberDefinition(token)) {
-                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                            container.addDeclaration(FunctionDefinitionImpl.create(token, file, null, !isRenderingLocalContext()));
                         } else {
-                            FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                            FunctionDDImpl<?> fddi = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             //fddi.setScope(currentNamespace);
                             container.addDeclaration(fddi);
                             if (NamespaceImpl.isNamespaceScope(fddi)) {
@@ -190,12 +190,12 @@ public class AstRenderer {
                         try {
                             if (isMemberDefinition(token)) {
                                 // this is a template method specialization declaration (without a definition)
-                                container.addDeclaration(new FunctionImplEx(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                                container.addDeclaration(FunctionImplEx.create(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
                             } else {
                                 if (renderForwardMemberDeclaration(token, currentNamespace, container, file)) {
                                     break;
                                 }
-                                FunctionImpl funct = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                                FunctionImpl<?> funct = FunctionImpl.create(token, file, null, currentNamespace, !isRenderingLocalContext());
                                 container.addDeclaration(funct);
                                 if (NamespaceImpl.isNamespaceScope(funct)) {
                                     currentNamespace.addDeclaration(funct);
@@ -208,14 +208,14 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_CTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
-                        container.addDeclaration(new ConstructorDefinitionImpl(token, file, null, !isRenderingLocalContext()));
+                        container.addDeclaration(ConstructorDefinitionImpl.create(token, file, !isRenderingLocalContext()));
                     } catch (AstRendererException e) {
                         DiagnosticExceptoins.register(e);
                     }
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_DTOR_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
-                        container.addDeclaration(new DestructorDefinitionImpl(token, file, !isRenderingLocalContext()));
+                        container.addDeclaration(DestructorDefinitionImpl.create(token, file, !isRenderingLocalContext()));
                     } catch (AstRendererException e) {
                         DiagnosticExceptoins.register(e);
                     }
@@ -223,9 +223,9 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                     try {
                         if (isMemberDefinition(token)) {
-                            container.addDeclaration(new FunctionDefinitionImpl(token, file, null, !isRenderingLocalContext(), !isRenderingLocalContext()));
+                            container.addDeclaration(FunctionDefinitionImpl.create(token, file, null, !isRenderingLocalContext()));
                         } else {
-                            FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                            FunctionDDImpl<?> fddit = FunctionDDImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                             container.addDeclaration(fddit);
                             if (NamespaceImpl.isNamespaceScope(fddit)) {
                                 currentNamespace.addDeclaration(fddit);
@@ -236,18 +236,18 @@ public class AstRenderer {
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                    NamespaceAliasImpl alias = new NamespaceAliasImpl(token, file, currentNamespace, !isRenderingLocalContext());
+                    NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                     container.addDeclaration(alias);
                     currentNamespace.addDeclaration(alias);
                     break;
                 case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                    UsingDirectiveImpl using = new UsingDirectiveImpl(token, file, !isRenderingLocalContext());
+                    UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
                     container.addDeclaration(using);
                     currentNamespace.addDeclaration(using);
                     break;
                 }
                 case CPPTokenTypes.CSM_USING_DECLARATION: {
-                    UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                    UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                     container.addDeclaration(using);
                     currentNamespace.addDeclaration(using);
                     break;
@@ -616,14 +616,14 @@ public class AstRenderer {
                     if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                         TypeImpl type;
                         if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                            type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, file);
+                            type = TypeFactory.createBuiltinType(AstUtil.getText(typeToken), null, 0, typeToken, file);
                         } else {
                             type = TypeFactory.createType(typeToken, file, null, 0);
                         }
-                        String name = next.getText();
 
                         if (!fakeRegistration) {
-                            VariableImpl var = createVariable(next, file, type, name, _static, _extern, currentNamespace, container, null);
+                            NameHolder nameHolder = NameHolder.createSimpleName(next);
+                            VariableImpl<?> var = createVariable(next, file, type, nameHolder, _static, _extern, currentNamespace, container, null);
                             if (currentNamespace != null) {
                                 currentNamespace.addDeclaration(var);
                             }
@@ -634,7 +634,7 @@ public class AstRenderer {
                         } else {
                             if (isScopedId(next)) {
                                 try {
-                                    FunctionImplEx fi = new FunctionImplEx(ast, file, currentNamespace, false, !isRenderingLocalContext());
+                                    FunctionImplEx<?> fi = FunctionImplEx.create(ast, file, currentNamespace, false, !isRenderingLocalContext());
                                     file.onFakeRegisration(fi, ast);
                                 } catch (AstRendererException e) {
                                     DiagnosticExceptoins.register(e);
@@ -663,7 +663,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected void renderVariableInClassifier(AST ast, ClassEnumBase classifier,
+    protected void renderVariableInClassifier(AST ast, ClassEnumBase<?> classifier,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
         AST token = ast.getFirstChild();
         boolean unnamedStaticUnion = false;
@@ -693,7 +693,7 @@ public class AstRenderer {
         }
         if (token != null) {
             int rcurlyOffset = AstUtil.getFirstCsmAST(token).getEndOffset();
-            CsmOffsetable typeOffset = new OffsetableBase(file, typeStartOffset, rcurlyOffset);
+            CsmOffsetable typeOffset = OffsetableBase.create(file, typeStartOffset, rcurlyOffset);
             token = token.getNextSibling();
             boolean nothingBeforSemicolon = true;
             AST ptrOperator = null;
@@ -709,21 +709,23 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION: {
                         nothingBeforSemicolon = false;
                         int arrayDepth = 0;
-                        String name = null;
+                        NameHolder nameHolder = null;
                         for (AST varNode = token.getFirstChild(); varNode != null; varNode = varNode.getNextSibling()) {
                             switch (varNode.getType()) {
                                 case CPPTokenTypes.LSQUARE:
                                     arrayDepth++;
                                     break;
                                 case CPPTokenTypes.CSM_QUALIFIED_ID:
+                                    nameHolder = NameHolder.createSimpleName(AstUtil.getLastChild(varNode));
+                                    break;
                                 case CPPTokenTypes.ID:
-                                    name = varNode.getText();
+                                    nameHolder = NameHolder.createSimpleName(varNode);
                                     break;
                             }
                         }
-                        if (name != null) {
+                        if (nameHolder != null) {
                             CsmType type = TypeFactory.createType(classifier, ptrOperator, arrayDepth, token, file, typeOffset);
-                            VariableImpl var = createVariable(token, file, type, name, _static, _extern, container1, container2, null);
+                            VariableImpl<?> var = createVariable(token, file, type, nameHolder, _static, _extern, container1, container2, null);
                             if (container2 != null) {
                                 container2.addDeclaration(var);
                             }
@@ -739,7 +741,7 @@ public class AstRenderer {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
                             CsmType type = TypeFactory.createType(classifier, null, 0, null, file, typeOffset);
-                            VariableImpl var = new VariableImpl(new OffsetableBase(file, rcurlyOffset, rcurlyOffset),
+                            VariableImpl<?> var = VariableImpl.create(OffsetableBase.create(file, rcurlyOffset, rcurlyOffset),
                                     file, type, "", null, true, false, !isRenderingLocalContext()); // NOI18N
                             if (container2 != null) {
                                 container2.addDeclaration(var);
@@ -785,7 +787,7 @@ public class AstRenderer {
                     int arrayDepth = 0;
                     AST nameToken = null;
                     AST ptrOperator = null;
-                    String name = "";
+                    CharSequence name = "";
                     for (curr = curr.getNextSibling(); curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
                             case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -838,13 +840,13 @@ public class AstRenderer {
 
     protected static class Pair {
         protected List<CsmTypedef> typedefs = new ArrayList<CsmTypedef>();
-        protected ClassEnumBase enclosing;
+        protected ClassEnumBase<?> enclosing;
         private Pair(){
         }
         public List<CsmTypedef> getTypesefs(){
             return typedefs;
         }
-        public ClassEnumBase getEnclosingClassifier(){
+        public ClassEnumBase<?> getEnclosingClassifier(){
             return enclosing;
         }
     }
@@ -862,7 +864,7 @@ public class AstRenderer {
                     int arrayDepth = 0;
                     AST nameToken = null;
                     AST ptrOperator = null;
-                    String name = "";
+                    CharSequence name = "";
 
                     CsmClassForwardDeclaration cfdi = null;
 
@@ -953,16 +955,11 @@ public class AstRenderer {
     }
 
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
-        if (container != null) {
-            container.addDeclaration(cfdi);
-        }
-        cfdi.init(ast, scope, !isRenderingLocalContext());
-        return cfdi;
+        return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
 
-    protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, String name) {
-        return new TypedefImpl(ast, file, container, type, name, !isRenderingLocalContext());
+    protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
+        return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
 
     public boolean renderForwardClassDeclaration(
@@ -1036,7 +1033,7 @@ public class AstRenderer {
                     } else {
                         //method forward declaratin
                         try {
-                            FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace, !isRenderingLocalContext(), !isRenderingLocalContext());
+                            FunctionImpl<?> ftdecl = FunctionImpl.create(ast, file, null, currentNamespace, !isRenderingLocalContext());
                             if (container != null) {
                                 container.addDeclaration(ftdecl);
                             }
@@ -1088,7 +1085,7 @@ public class AstRenderer {
                 List<CharSequence> l = new ArrayList<CharSequence>();
                 for (AST namePart = qid.getFirstChild(); namePart != null; namePart = namePart.getNextSibling()) {
                     if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
-                        l.add(NameCache.getManager().getString(namePart.getText()));
+                        l.add(NameCache.getManager().getString(AstUtil.getText(namePart)));
                     } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
                         // the beginning of template parameters
                         templateDepth++;
@@ -1181,7 +1178,7 @@ public class AstRenderer {
     }
 
     /**
-     * Returns first sibling (or just passed ast), skipps cv-qualifiers and storage class specifiers
+     * Returns first sibling (or just passed ast), skips cv-qualifiers and storage class specifiers
      */
     public static AST getFirstSiblingSkipQualifiers(AST ast) {
         while (ast != null && isQualifier(ast.getType())) {
@@ -1191,7 +1188,7 @@ public class AstRenderer {
     }
 
     /**
-     * Returns first child, skipps cv-qualifiers and storage class specifiers
+     * Returns first child, skips cv-qualifiers and storage class specifiers
      */
     public static AST getFirstChildSkipQualifiers(AST ast) {
         return getFirstSiblingSkipQualifiers(ast.getFirstChild());
@@ -1252,11 +1249,11 @@ public class AstRenderer {
 
     /**
      * Checks whether the given AST is a variable declaration(s), 
-     * if yes, creates variable(s), adds to conteiner(s), returns true,
+     * if yes, creates variable(s), adds to container(s), returns true,
      * otherwise returns false;
      *
      * There might be two containers, in which the given variable should be added.
-     * For example, global variables should beadded both to file and to global namespace;
+     * For example, global variables should be added both to file and to global namespace;
      * variables, declared in some namespace definition, should be added to both this definition and correspondent namespace as well.
      *
      * On the other hand, local variables are added only to it's containing scope, so either container1 or container2 might be null.
@@ -1373,7 +1370,7 @@ public class AstRenderer {
                                 if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
                                     AST typeNameToken = tokType.getFirstChild();
                                     if (typeNameToken != null) {
-                                        type = TypeFactory.createBuiltinType(typeNameToken.getText(), ptrOperator, 0, tokType, file);
+                                        type = TypeFactory.createBuiltinType(AstUtil.getText(typeNameToken), ptrOperator, 0, tokType, file);
                                     }
                                 } else {
                                     type = TypeFactory.createType(tokType, file, ptrOperator, 0);
@@ -1410,7 +1407,7 @@ public class AstRenderer {
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,
             FileImpl file, boolean _static, boolean _extern, boolean inFunctionParameters) {
         int arrayDepth = 0;
-        String name = "";
+        NameHolder name = NameHolder.createName(CharSequences.empty());
         AST qn = null;
         int inParamsLevel = 0;
         for (AST token = varAst.getFirstChild(); token != null; token = token.getNextSibling()) {
@@ -1436,11 +1433,12 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                     if (inParamsLevel == 0) {
                         qn = token;
+                        name = NameHolder.createSimpleName(AstUtil.getLastChild(token));
                     }
-                // no break;
+                    break;
                 case CPPTokenTypes.ID:
                     if (inParamsLevel == 0) {
-                        name = token.getText();
+                        name = NameHolder.createSimpleName(token);
                     }
                     break;
             }
@@ -1454,13 +1452,13 @@ public class AstRenderer {
             // TODO What about global variable definitions:
             // extern int i; - declaration
             // int i; - definition
-            VariableDefinitionImpl var = new VariableDefinitionImpl(offsetAst, file, type, name);
-            var.setStatic(_static);
+            // TODO _extern = false?
+            VariableDefinitionImpl var = VariableDefinitionImpl.create(offsetAst, file, type, name, _static, _extern);
             if (container2 != null) {
                 container2.addDeclaration(var);
             }
         } else {
-            VariableImpl var = createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, null);
+            VariableImpl<?> var = createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, null);
             if (container2 != null) {
                 container2.addDeclaration(var);
             }
@@ -1471,19 +1469,17 @@ public class AstRenderer {
         }
     }
 
-    protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static,  boolean _extern,
+    protected VariableImpl<?> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static,  boolean _extern,
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
         type = TemplateUtils.checkTemplateType(type, scope);
-        VariableImpl var = new VariableImpl(offsetAst, file, type, name, scope, !isRenderingLocalContext(), !isRenderingLocalContext());
-        var.setStatic(_static);
-        var.setExtern(_extern);
+        VariableImpl<?> var = VariableImpl.create(offsetAst, file, type, name, scope, _static, _extern, !isRenderingLocalContext());
         return var;
     }
 
     protected void processFunction(AST token, CsmFile file, CsmType type,
              MutableDeclarationsContainer container1,
              MutableDeclarationsContainer container2, CsmScope scope) {
-        FunctionImpl fun = createFunction(token, file, type, scope);
+        FunctionImpl<?> fun = createFunction(token, file, type, scope);
         if (fun != null) {
             if (container2 != null) {
                 container2.addDeclaration(fun);
@@ -1494,10 +1490,10 @@ public class AstRenderer {
         }
     }
 
-    protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-        FunctionImpl fun = null;
+    protected FunctionImpl<?> createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+        FunctionImpl<?> fun = null;
         try {
-            fun = new FunctionImpl(ast, file, type, scope, !isRenderingLocalContext(), !isRenderingLocalContext());
+            fun = FunctionImpl.create(ast, file, type, scope, !isRenderingLocalContext());
         } catch (AstRendererException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -1550,7 +1546,7 @@ public class AstRenderer {
         AST firstChild = ast.getFirstChild();
         if (firstChild != null) {
             if (firstChild.getType() == CPPTokenTypes.ELLIPSIS) {
-                ParameterEllipsisImpl parameter = new ParameterEllipsisImpl(ast.getFirstChild(), file, null, scope1, !isRenderingLocalContext); // NOI18N
+                ParameterEllipsisImpl parameter = ParameterEllipsisImpl.create(ast.getFirstChild(), file, null, scope1, !isRenderingLocalContext); // NOI18N
                 result.add(parameter);
                 return result;
             }
@@ -1568,13 +1564,13 @@ public class AstRenderer {
             }
 
             @Override
-            protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
+            protected VariableImpl<?> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope2) {
                 type = TemplateUtils.checkTemplateType(type, scope1);
                 ParameterImpl parameter;
                 if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {
-                    parameter = new ParameterEllipsisImpl(offsetAst, file, type, scope1, !isRenderingLocalContext);
+                    parameter = ParameterEllipsisImpl.create(offsetAst, file, type, scope1, !isRenderingLocalContext);
                 } else {
-                    parameter = new ParameterImpl(offsetAst, file, type, name, scope1, !isRenderingLocalContext);
+                    parameter = ParameterImpl.create(offsetAst, file, type, name, scope1, !isRenderingLocalContext);
                 }
                 result.add(parameter);
                 return parameter;
@@ -1612,18 +1608,18 @@ public class AstRenderer {
         }
         switch (token.getType()) {
             case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                NamespaceAliasImpl alias = new NamespaceAliasImpl(token, file, currentNamespace, !isRenderingLocalContext()); 
+                NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
                 container.addDeclaration(alias);
                 currentNamespace.addDeclaration(alias);
                 return true;
             case CPPTokenTypes.CSM_USING_DIRECTIVE: {
-                UsingDirectiveImpl using = new UsingDirectiveImpl(token, file, !isRenderingLocalContext());
+                UsingDirectiveImpl using = UsingDirectiveImpl.create(token, file, !isRenderingLocalContext());
                 container.addDeclaration(using);
                 currentNamespace.addDeclaration(using);
                 return true;
             }
             case CPPTokenTypes.CSM_USING_DECLARATION: {
-                UsingDeclarationImpl using = new UsingDeclarationImpl(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
+                UsingDeclarationImpl using = UsingDeclarationImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), CsmVisibility.PUBLIC);
                 container.addDeclaration(using);
                 currentNamespace.addDeclaration(using);
                 return true;
@@ -1685,64 +1681,64 @@ public class AstRenderer {
         for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
             switch (token.getType()) {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
-                    return new CompoundStatementImpl(token, file, owner);
+                    return CompoundStatementImpl.create(token, file, owner);
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
-                    return new LazyCompoundStatementImpl(token, file, owner);
+                    return LazyCompoundStatementImpl.create(token, file, owner);
                 case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
-                    return new LazyTryCatchStatementImpl(token, file, owner);
+                    return LazyTryCatchStatementImpl.create(token, file, owner);
             }
         }
         // prevent null bodies
-        return new EmptyCompoundStatementImpl(ast, file, owner);
+        return EmptyCompoundStatementImpl.create(ast, file, owner);
     }
 
     public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope) {
         switch (ast.getType()) {
             case CPPTokenTypes.CSM_LABELED_STATEMENT:
-                return new LabelImpl(ast, file, scope);
+                return LabelImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CASE_STATEMENT:
-                return new CaseStatementImpl(ast, file, scope);
+                return CaseStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_DEFAULT_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.DEFAULT, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.DEFAULT, scope);
             case CPPTokenTypes.CSM_EXPRESSION_STATEMENT:
-                return new ExpressionStatementImpl(ast, file, scope);
+                return ExpressionStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CLASS_DECLARATION:
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                 if(new AstRenderer((FileImpl) file).isExpressionLikeDeclaration(ast, scope)) {
-                    return new ExpressionStatementImpl(ast, file, scope);
+                    return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
-                    return new DeclarationStatementImpl(ast, file, scope);
+                    return DeclarationStatementImpl.create(ast, file, scope);
                 }
             case CPPTokenTypes.CSM_COMPOUND_STATEMENT:
-                return new CompoundStatementImpl(ast, file, scope);
+                return CompoundStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_IF_STATEMENT:
-                return new IfStatementImpl(ast, file, scope);
+                return IfStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_SWITCH_STATEMENT:
-                return new SwitchStatementImpl(ast, file, scope);
+                return SwitchStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_WHILE_STATEMENT:
-                return new LoopStatementImpl(ast, file, false, scope);
+                return LoopStatementImpl.create(ast, file, false, scope);
             case CPPTokenTypes.CSM_DO_WHILE_STATEMENT:
-                return new LoopStatementImpl(ast, file, true, scope);
+                return LoopStatementImpl.create(ast, file, true, scope);
             case CPPTokenTypes.CSM_FOR_STATEMENT:
-                return new ForStatementImpl(ast, file, scope);
+                return ForStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_GOTO_STATEMENT:
-                return new GotoStatementImpl(ast, file, scope);
+                return GotoStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_CONTINUE_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.CONTINUE, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.CONTINUE, scope);
             case CPPTokenTypes.CSM_BREAK_STATEMENT:
-                return new UniversalStatement(ast, file, CsmStatement.Kind.BREAK, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.BREAK, scope);
             case CPPTokenTypes.CSM_RETURN_STATEMENT:
-                return new ReturnStatementImpl(ast, file, scope);
+                return ReturnStatementImpl.create(ast, file, scope);
             case CPPTokenTypes.CSM_TRY_STATEMENT:
-                return new TryCatchStatementImpl(ast, file, scope, false);
+                return TryCatchStatementImpl.create(ast, file, scope, false);
             case CPPTokenTypes.CSM_CATCH_CLAUSE:
                 // TODO: isn't it in TryCatch ??
-                return new UniversalStatement(ast, file, CsmStatement.Kind.CATCH, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.CATCH, scope);
             case CPPTokenTypes.CSM_THROW_STATEMENT:
                 // TODO: throw
-                return new UniversalStatement(ast, file, CsmStatement.Kind.THROW, scope);
+                return UniversalStatement.create(ast, file, CsmStatement.Kind.THROW, scope);
             case CPPTokenTypes.CSM_ASM_BLOCK:
                 // just ignore
                 break;
@@ -1801,7 +1797,7 @@ public class AstRenderer {
     }
     
     public ExpressionBase renderExpression(AST ast, CsmScope scope) {
-        return isExpression(ast) ? new ExpressionBase(ast, file, null, scope) : null;
+        return isExpression(ast) ? ExpressionBase.create(ast, file,/* null,*/ scope) : null;
     }
 
     public CsmCondition renderCondition(AST ast, CsmScope scope) {
@@ -1810,13 +1806,14 @@ public class AstRenderer {
             if (first != null) {
                 int type = first.getType();
                 if (isExpression(type)) {
-                    return new ConditionExpressionImpl(first, file, scope);
+                    return ConditionExpressionImpl.create(first, file, scope);
                 } else if (type == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                         type == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         type == CPPTokenTypes.LITERAL_struct ||
                         type == CPPTokenTypes.LITERAL_class ||
-                        type == CPPTokenTypes.LITERAL_union) {
-                    return new ConditionDeclarationImpl(ast, file, scope);
+                        type == CPPTokenTypes.LITERAL_union ||
+                        type == CPPTokenTypes.LITERAL_enum) {
+                    return ConditionDeclarationImpl.create(ast, file, scope);
                 }
             }
         }
@@ -1829,7 +1826,7 @@ public class AstRenderer {
             if (token.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER_LIST) {
                 for (AST initializerToken = token.getFirstChild(); initializerToken != null; initializerToken = initializerToken.getNextSibling()) {
                     if (initializerToken.getType() == CPPTokenTypes.CSM_CTOR_INITIALIZER) {
-                        ExpressionBase initializer = new ExpressionBase(initializerToken, file, null, scope);
+                        ExpressionBase initializer = ExpressionBase.create(initializerToken, file,/* null,*/ scope);
                         if (initializers == null) {
                             initializers = new ArrayList<CsmExpression>();
                         }

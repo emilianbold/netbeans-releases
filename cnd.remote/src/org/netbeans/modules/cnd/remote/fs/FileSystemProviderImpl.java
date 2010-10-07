@@ -50,8 +50,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=org.netbeans.modules.remote.impl.spi.FileSystemProvider.class)
-public class FileSystemProviderImpl extends org.netbeans.modules.remote.impl.spi.FileSystemProvider {
+@ServiceProvider(service=org.netbeans.modules.remote.spi.FileSystemProvider.class, position=50)
+public class FileSystemProviderImpl extends org.netbeans.modules.remote.spi.FileSystemProvider {
 
     @Override
     protected FileSystem getFileSystemImpl(ExecutionEnvironment env, String root) {

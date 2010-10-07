@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -56,18 +55,19 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private SourceFoldersPanel component;
-    private String name;
+    private final String name;
 
     /** Create the wizard panel descriptor. */
     public SourceFoldersDescriptorPanel() {
         name = NbBundle.getMessage(SourceFoldersDescriptorPanel.class, "SourceFoldersName"); // NOI18N
     }
 
-    public Component getComponent() {
+    @Override
+    public SourceFoldersPanel getComponent() {
         if (component == null) {
             component = new SourceFoldersPanel(this);
             component.setName(name);
@@ -75,6 +75,7 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
         return component;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -83,12 +84,14 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
         return wizardDescriptor;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP3"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        boolean valid = ((SourceFoldersPanel) getComponent()).valid(wizardDescriptor);
+        boolean valid = getComponent().valid(wizardDescriptor);
         if (valid) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
@@ -96,12 +99,14 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -119,17 +124,19 @@ final class SourceFoldersDescriptorPanel implements WizardDescriptor.Panel, NewM
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 }

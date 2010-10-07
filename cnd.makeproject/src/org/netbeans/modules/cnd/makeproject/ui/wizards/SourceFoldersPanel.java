@@ -43,25 +43,25 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
 /*package*/ final class SourceFoldersPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel;
-    private SourceFilesPanel sourceFilesPanel;
+    private final SourceFoldersDescriptorPanel controller;
+    private final SourceFilesPanel sourceFilesPanel;
     private boolean firstTime = true;
 
-    public SourceFoldersPanel(SourceFoldersDescriptorPanel sourceFoldersDescriptorPanel) {
+    public SourceFoldersPanel(SourceFoldersDescriptorPanel controller) {
         initComponents();
-        this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
-        sourceFilesPanel = new SourceFilesPanel(sourceFoldersDescriptorPanel, true);
+        this.controller = controller;
+        sourceFilesPanel = new SourceFilesPanel(controller);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
@@ -73,34 +73,34 @@ import org.openide.util.NbBundle;
         getAccessibleContext().setAccessibleDescription(getString("SourceFoldersPanel_AD"));
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(SourceFoldersPanel.class);
     }
 
     void read(WizardDescriptor settings) {
         if (firstTime) {
-            String workingdir = (String) settings.getProperty("buildCommandWorkingDirTextField"); // NOI18N
+            String workingdir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
             //sourceFilesPanel.setSeed(workingdir, workingdir);
-            File wd = new File(workingdir);
-            sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
+            sourceFilesPanel.getSourceListData().add(new FolderEntry(NewProjectWizardUtils.getFileObject(workingdir, settings), workingdir));
 //            if (new File(wd.getPath(), "tests").exists()) { // FIXUP:  NOI18N
 //                sourceFilesPanel.getTestListData().add(new FolderEntry(wd, wd.getPath() + "/tests")); // NOI18N // FIXUP: scan for actual 'test' or 'tests' folders...
 //            }
-            sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN);
+            sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
             firstTime = false;
         }
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty("sourceFolders", sourceFilesPanel.getSourceListData().iterator()); // NOI18N
-        wizardDescriptor.putProperty("sourceFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS, sourceFilesPanel.getSourceListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST, new ArrayList<FolderEntry>(sourceFilesPanel.getSourceListData())); // NOI18N
         if (sourceFilesPanel.getFoldersFilter().trim().length() == 0) {
             // change empty pattern on "no ignore folder pattern"
-            wizardDescriptor.putProperty("sourceFoldersFilter", MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, MakeConfigurationDescriptor.DEFAULT_NO_IGNORE_FOLDERS_PATTERN); // NOI18N
         } else {
-            wizardDescriptor.putProperty("sourceFoldersFilter", sourceFilesPanel.getFoldersFilter()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
-        wizardDescriptor.putProperty("testFolders", sourceFilesPanel.getTestListData().iterator()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_TEST_FOLDERS, sourceFilesPanel.getTestListData().iterator()); // NOI18N
         wizardDescriptor.putProperty("testFoldersList", new ArrayList<FolderEntry>(sourceFilesPanel.getTestListData())); // NOI18N
     }
 

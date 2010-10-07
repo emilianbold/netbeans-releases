@@ -55,10 +55,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
 
     // Display binary files
     public static final String VIEW_BINARY_FILES = "viewBinaryFiles"; // NOI18N
-    public static final String[] PathModeNames = new String[]{
-        getString("TXT_Auto"),
-        getString("TXT_AlwaysRelative"),
-        getString("TXT_AlwaysAbsolute"),};
+
     private static MakeOptions instance = null;
     // Default make options
     private static final String MAKE_OPTIONS = "makeOptions"; // NOI18N
@@ -127,15 +124,33 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     }
 
     // Path Mode
-    public int getPathMode() {
-        return getPreferences().getInt(PATH_MODE, MakeProjectOptions.REL);
+    public MakeProjectOptions.PathMode getPathMode() {
+        MakeProjectOptions.PathMode defaultValue = MakeProjectOptions.PathMode.REL;
+        String stringValue = getPreferences().get(PATH_MODE, defaultValue.name());
+        // compatibility with previous int-based version, use ordinals
+        if (Character.isDigit(stringValue.charAt(0))) {
+            int intValue;
+            try {
+                intValue = Integer.parseInt(stringValue);
+            } catch (NumberFormatException e) {
+                return defaultValue;
+            }
+            for (MakeProjectOptions.PathMode pathMode : MakeProjectOptions.PathMode.values()) {
+                if (pathMode.ordinal() == intValue) {
+                    return pathMode;
+                }
+            }
+            return defaultValue;
+        } else {
+            return MakeProjectOptions.PathMode.valueOf(stringValue);
+        }
     }
 
-    public void setPathMode(int pathMode) {
-        int oldValue = getPathMode();
-        getPreferences().putInt(PATH_MODE, pathMode);
+    public void setPathMode(MakeProjectOptions.PathMode pathMode) {
+        MakeProjectOptions.PathMode oldValue = getPathMode();
+        getPreferences().put(PATH_MODE, pathMode.name());
         if (oldValue != pathMode) {
-            firePropertyChange(PATH_MODE, Integer.valueOf(oldValue), Integer.valueOf(pathMode));
+            firePropertyChange(PATH_MODE, oldValue, pathMode);
         }
     }
 

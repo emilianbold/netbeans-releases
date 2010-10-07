@@ -51,6 +51,7 @@ import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 import java.util.*;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
@@ -210,13 +211,17 @@ public class SvnModuleConfig {
     
     public void insertRecentUrl(final RepositoryConnection rc) {
         Preferences prefs = getPreferences();
-        
+
         List<String> urlValues = Utils.getStringList(prefs, KEY_RECENT_URL);
         for (Iterator<String> it = urlValues.iterator(); it.hasNext();) {
             String rcOldString = it.next();
             RepositoryConnection rcOld =  RepositoryConnection.parse(rcOldString);
             if(rcOld.equals(rc)) {
-                Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
+                try {
+                    Utils.removeFromArray(prefs, KEY_RECENT_URL, rcOldString);
+                } finally {
+                    SvnConfigFiles.getInstance().reset();
+                }
             }
         }
         handleCredentials(rc);
@@ -224,7 +229,11 @@ public class SvnModuleConfig {
 
         String url = RepositoryConnection.getString(rc);
         if (!"".equals(url)) {                                          //NOI18N
-            Utils.insert(prefs, KEY_RECENT_URL, url, -1);
+            try {
+                Utils.insert(prefs, KEY_RECENT_URL, url, -1);
+            } finally {
+                SvnConfigFiles.getInstance().reset();
+            }
         }
     }    
 
@@ -243,7 +252,11 @@ public class SvnModuleConfig {
             }
         }
         Preferences prefs = getPreferences();
-        Utils.put(prefs, KEY_RECENT_URL, urls);
+        try {
+            Utils.put(prefs, KEY_RECENT_URL, urls);
+        } finally {
+            SvnConfigFiles.getInstance().reset();
+        }
     }
     
     public List<RepositoryConnection> getRecentUrls() {

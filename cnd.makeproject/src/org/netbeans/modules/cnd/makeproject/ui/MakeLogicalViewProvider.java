@@ -1487,7 +1487,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if ((CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
-                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
+                        FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
                         if (toFolder.isDiskFolder()) {
                             String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
@@ -1519,7 +1519,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     }
                 } else {
                     if (toFolder.isDiskFolder()) {
-                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
+                        FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
                         String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                         FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
@@ -1772,8 +1772,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getNormalizedFile();
-            setShortDescription(file.getPath());
+            setShortDescription(item.getNormalizedPath());
             this.project = project;
         }
 
@@ -2023,10 +2022,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getNormalizedFile();
-            setName(file.getPath());
-            setDisplayName(file.getName());
-            setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", file.getPath())); // NOI18N
+            setName(item.getNormalizedPath());
+            setDisplayName(item.getName());
+            setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", item.getPath())); // NOI18N
             broken = true;
             this.project = project;
         }

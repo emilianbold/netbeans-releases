@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
@@ -91,6 +91,7 @@ import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNConflictResolver;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
+import org.tigris.subversion.svnclientadapter.ISVNDirEntryWithLock;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageCallback;
@@ -117,39 +118,39 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class CommandlineClient extends AbstractClientAdapter implements ISVNClientAdapter {
-   
+
     private String user;
     private String psswd;
     private File configDir;
     private NotificationHandler notificationHandler;
     private SvnWcParser wcParser;
-    private Commandline cli;     
+    private Commandline cli;
 
     public static String ERR_CLI_NOT_AVALABLE = "commandline is not available";
     public static String ERR_JAVAHL_NOT_SUPPORTED = "unsupported javahl version";
-    
+
     public CommandlineClient() {
         this.notificationHandler = new NotificationHandler();
-        wcParser = new SvnWcParser();  
-        cli = new Commandline();     
+        wcParser = new SvnWcParser();
+        cli = new Commandline();
     }
 
     public void checkSupportedVersion() throws SVNClientException {
-        VersionCommand cmd = new VersionCommand();        
-        try {            
+        VersionCommand cmd = new VersionCommand();
+        try {
             config(cmd);
             cli.exec(cmd);
-            checkErrors(cmd);            
+            checkErrors(cmd);
             if(!cmd.checkForErrors()) {
                 if (cmd.isUnsupportedVersion()) {
                     Subversion.LOG.log(Level.WARNING, "Unsupported svn version. You need >= 1.5");
                 }
-                throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());               
-            }                       
+                throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput());
+            }
         } catch (IOException ex) {
             Subversion.LOG.log(Level.FINE, null, ex);
             throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
-        }        
+        }
     }
 
     public void checkSupportedJavaHlVersion() throws SVNClientException {
@@ -167,11 +168,26 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
         }
     }
-    
+
+    public String getVersion() throws SVNClientException {
+        VersionCommand cmd = new VersionCommand();
+        try {
+            config(cmd);
+            cli.exec(cmd);
+            checkErrors(cmd);
+            return cmd.getOutput();
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+            SVNClientException e = new SVNClientException(ex.getMessage());
+            e.wrapException(ex);
+            throw e;
+        }
+    }
+
     public void addNotifyListener(ISVNNotifyListener l) {
         notificationHandler.add(l);
     }
-    
+
     public void removeNotifyListener(ISVNNotifyListener l) {
         notificationHandler.remove(l);
     }
@@ -181,17 +197,17 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public void setPassword(String psswd) {
-        this.psswd = psswd; 
+        this.psswd = psswd;
     }
 
     public void setConfigDirectory(File file) throws SVNClientException {
-        this.configDir = file; 
+        this.configDir = file;
     }
 
     public SVNNotificationHandler getNotificationHandler() {
         return notificationHandler;
     }
-    
+
     public void addFile(File file) throws SVNClientException {
         addFile(new File[] { file }, false);
     }
@@ -229,7 +245,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return commit(files, message, false, recurse);
     }
 
-    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {        
+    public long commit(File[] files, String message, boolean keep, boolean recursive) throws SVNClientException {
         int retry = 0;
         CommitCommand cmd = null;
         while (true) {
@@ -246,22 +262,22 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                             throw e;
                         }
                         Thread.sleep(retry * 50);
-                    } catch (InterruptedException ex) {                        
+                    } catch (InterruptedException ex) {
                         break;
                     }
                 } else {
                     throw e;
                 }
-            }                
-        }               
+            }
+        }
         return cmd != null ? cmd.getRevision() : SVNRevision.SVN_INVALID_REVNUM;
     }
-    
+
     public ISVNDirEntry[] getList(SVNUrl url, SVNRevision revision, boolean recursivelly) throws SVNClientException {
         ListCommand cmd = new ListCommand(url, revision, recursivelly);
         exec(cmd);
         return cmd.getEntries();
-    }    
+    }
 
     @Override
     public ISVNInfo getInfo(SVNUrl url) throws SVNClientException {
@@ -282,7 +298,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
         return infos;
     }
-    
+
     public ISVNInfo getInfo(SVNUrl url, SVNRevision revision, SVNRevision pegging) throws SVNClientException {
         InfoCommand cmd = new InfoCommand(url, revision, pegging);
         exec(cmd);
@@ -292,11 +308,12 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             info = infos[0];
         }
         return info;
-    }  
-    
-    public void copy(File fileForm, File fileTo) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }    
+    }
+
+    public void copy(File fileFrom, File fileTo) throws SVNClientException {
+        CopyCommand cmd = new CopyCommand(fileFrom, fileTo);
+        exec(cmd);
+    }
 
     public void copy(File file, SVNUrl url, String msg) throws SVNClientException {
         CopyCommand cmd = new CopyCommand(file, url, msg);
@@ -332,20 +349,20 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     @Override
-    public void mkdir(SVNUrl url, boolean parents, String msg) throws SVNClientException {        
+    public void mkdir(SVNUrl url, boolean parents, String msg) throws SVNClientException {
         if(parents) {
             List<SVNUrl> parent = getAllNotExistingParents(url);
             for (SVNUrl p : parent) {
                 mkdir(p, msg);
             }
         } else {
-            mkdir(url, msg);   
-        }        
+            mkdir(url, msg);
+        }
     }
-    
+
     public void mkdir(File file) throws SVNClientException {
         MkdirCommand cmd = new MkdirCommand(file);
-        exec(cmd);        
+        exec(cmd);
     }
 
     public void move(File fromFile, File toFile, boolean force) throws SVNClientException {
@@ -361,10 +378,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public long update(File file, SVNRevision rev, boolean recursivelly) throws SVNClientException {
         UpdateCommand cmd = new UpdateCommand(new File[] { file }, rev, recursivelly, false);
         exec(cmd);
-        return cmd.getRevision();        
+        return cmd.getRevision();
     }
 
-    public long[] update(File[] files, SVNRevision rev, boolean recursivelly, boolean ignoreExternals) throws SVNClientException {        
+    public long[] update(File[] files, SVNRevision rev, boolean recursivelly, boolean ignoreExternals) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -381,7 +398,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public ISVNStatus[] getStatus(File[] files) throws SVNClientException {
-        
+
         Map<File, ISVNStatus> unversionedMap = new HashMap<File, ISVNStatus>();
         List<File> filesForStatus = new ArrayList<File>();
         List<File> filesForInfo = new ArrayList<File>();
@@ -409,7 +426,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             ISVNInfo[] infos = getInfo(filesForInfo.toArray(new File[filesForInfo.size()]), null, null);
             for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
         }
-        
+
         Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>();
         for (Status status : statusValues) {
             File file = new File(status.getPath());
@@ -424,9 +441,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                 if (info != null) {
                     statusMap.put(file, new CLIStatus(status, info));
                 }
-            }            
+            }
         }
-        
+
         List<ISVNStatus> ret = new ArrayList<ISVNStatus>();
         for (File f : files) {
             ISVNStatus s = statusMap.get(f);
@@ -455,24 +472,24 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             exec(statusCmd);
             statusValues = statusCmd.getStatusValues();
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("is not a working copy") > -1) { 
+            if(e.getMessage().indexOf("is not a working copy") > -1) {
                 return new ISVNStatus[] {new SVNStatusUnversioned(file)};
             } else {
                 throw e;
-            }                    
-        }        
+            }
+        }
 
-        List<File> filesForInfo = new ArrayList<File>();        
+        List<File> filesForInfo = new ArrayList<File>();
         for (Status status : statusValues) {
             if(isManaged(status.getWcStatus())) {
                 filesForInfo.add(new File(status.getPath()));
-            } 
+            }
         }
-        ISVNInfo[] infos = getInfo(filesForInfo.toArray(new File[filesForInfo.size()]), null, null);        
-       
+        ISVNInfo[] infos = getInfo(filesForInfo.toArray(new File[filesForInfo.size()]), null, null);
+
         Map<File, ISVNInfo> infoMap = new HashMap<File, ISVNInfo>();
         for (ISVNInfo info : infos) infoMap.put(info.getFile(), info);
-        
+
         Map<File, ISVNStatus> statusMap = new HashMap<File, ISVNStatus>();
         for (Status status : statusValues) {
             File f = new File(status.getPath());
@@ -487,10 +504,10 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                 if (info != null) {
                     statusMap.put(f, new CLIStatus(status, info));
                 }
-            }            
+            }
         }
-        
-        List<ISVNStatus> ret = new ArrayList<ISVNStatus>();        
+
+        List<ISVNStatus> ret = new ArrayList<ISVNStatus>();
         for (Status status : statusValues) {
             File f = new File(status.getPath());
             ISVNStatus s = statusMap.get(f);
@@ -499,9 +516,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             }
             ret.add(s);
         }
-        return ret.toArray(new ISVNStatus[ret.size()]);        
+        return ret.toArray(new ISVNStatus[ret.size()]);
     }
-    
+
     @Override
     public ISVNLogMessage[] getLogMessages(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
         return super.getLogMessages(url, revStart, revEnd);
@@ -520,7 +537,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         LogCommand cmd = new LogCommand(url, null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
         return getLog(cmd);
     }
-    
+
     @Override
     public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
         return super.getLogMessages(file, revStart, revEnd);
@@ -537,8 +554,8 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public ISVNLogMessage[] getLogMessages(File file, SVNRevision revStart, SVNRevision revEnd, boolean stopOnCopy, boolean fetchChangePath, long limit) throws SVNClientException {
         LogCommand logCmd;
         ISVNInfo info = getInfoFromWorkingCopy(file);
-        if (info.getSchedule().equals(SVNScheduleKind.ADD) && 
-            info.getCopyUrl() != null) 
+        if (info.getSchedule().equals(SVNScheduleKind.ADD) &&
+            info.getCopyUrl() != null)
         {
             logCmd = new LogCommand(info.getCopyUrl(), null, revStart, revEnd, stopOnCopy, fetchChangePath, limit);
         } else {
@@ -551,7 +568,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         exec(cmd);
         return cmd.getLogMessages();
     }
-    
+
     public InputStream getContent(SVNUrl url, SVNRevision rev) throws SVNClientException {
         return getContent(url, rev, null);
     }
@@ -582,7 +599,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         exec(cmd);
         notifyChangedStatus(file, rec, oldStatus);
     }
-    
+
     public ISVNProperty propertyGet(final File file, final String name) throws SVNClientException {
         return propertyGet(new PropertyGetCommand(file, name), name, null, file);
     }
@@ -598,7 +615,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final File file) throws SVNClientException {
         exec(cmd);
-        final byte[] bytes = cmd.getOutput();            
+        final byte[] bytes = cmd.getOutput();
         if(bytes == null || bytes.length == 0) {
             return null;
         }
@@ -618,9 +635,9 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             public byte[] getData() {
                 return bytes;
             }
-        };        
+        };
     }
-    
+
     @Override
     public List getIgnoredPatterns(File file) throws SVNClientException {
         return super.getIgnoredPatterns(file);
@@ -640,11 +657,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         return annotate(new BlameCommand(url, revStart, revEnd), new CatCommand(url, revEnd, null));
     }
 
-    public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {        
+    public ISVNAnnotations annotate(File file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
         BlameCommand blameCommand;
         ISVNInfo info = getInfoFromWorkingCopy(file);
-        if (info.getSchedule().equals(SVNScheduleKind.ADD) && 
-            info.getCopyUrl() != null) 
+        if (info.getSchedule().equals(SVNScheduleKind.ADD) &&
+            info.getCopyUrl() != null)
         {
             blameCommand = new BlameCommand(info.getCopyUrl(), revStart, revEnd);
         } else {
@@ -652,15 +669,15 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         }
         return annotate(blameCommand, new CatCommand(file, revEnd));
     }
-    
+
     public ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
         exec(blameCmd);
-        Annotation[] annotations = blameCmd.getAnnotation();        
+        Annotation[] annotations = blameCmd.getAnnotation();
         exec(catCmd);
         InputStream is = catCmd.getOutput();
-        
+
         Annotations ret = new Annotations();
-        BufferedReader r = new BufferedReader(new InputStreamReader(is)); 
+        BufferedReader r = new BufferedReader(new InputStreamReader(is));
         try {
             for (Annotation annotation : annotations) {
                 String line = null;
@@ -671,13 +688,13 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                     Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
                 }
                 annotation.setLine(line);
-                ret.addAnnotation(annotation);            
+                ret.addAnnotation(annotation);
             }
         } finally {
-            if (r != null) { 
-                try { r.close(); } catch (IOException e) {} 
+            if (r != null) {
+                try { r.close(); } catch (IOException e) {}
             }
-        }        
+        }
         return ret;
     }
 
@@ -725,7 +742,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     @Override
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, File file, boolean force, boolean recurse, boolean dryRun) throws SVNClientException {
         super.merge(startUrl, startRev, endUrl, endRev, file, force, recurse, dryRun);
-    }       
+    }
 
     public void merge(SVNUrl startUrl, SVNRevision startRev, SVNUrl endUrl, SVNRevision endRev, File file, boolean force, boolean recurse, boolean dryRun, boolean ignoreAncestry) throws SVNClientException {
         MergeCommand cmd = new MergeCommand(startUrl, endUrl, startRev, endRev, file, recurse, force, ignoreAncestry, dryRun);
@@ -736,7 +753,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         RelocateCommand cmd = new RelocateCommand(from, to, path, rec);
         exec(cmd);
     }
-    
+
     // parser start
     public ISVNStatus getSingleStatus(File file) throws SVNClientException {
         try {
@@ -745,7 +762,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             throw new SVNClientException(ex);
         }
     }
-    
+
     public ISVNStatus[] getStatus(File file, boolean descend, boolean getAll) throws SVNClientException {
         try {
             return wcParser.getStatus(file, descend, getAll);
@@ -761,11 +778,11 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
             throw new SVNClientException(ex);
         }
     }
-    
+
     // parser end
-        
+
     private void exec(SvnCommand cmd) throws SVNClientException {
-        try {            
+        try {
             config(cmd);
             cli.exec(cmd);
         } catch (IOException ex) {
@@ -774,19 +791,19 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         }
         checkErrors(cmd);
     }
-    
+
     private void config(SvnCommand cmd) {
         cmd.setNotificationHandler(notificationHandler);
         cmd.setConfigDir(configDir);
         cmd.setUsername(user);
         cmd.setPassword(psswd);
     }
-    
+
     private void checkErrors(SvnCommand cmd) throws SVNClientException {
         List<String> errors = cmd.getCmdError();
         if(errors == null || errors.size() == 0) {
             return;
-        }        
+        }
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < errors.size(); i++) {
             sb.append(errors.get(i));
@@ -797,21 +814,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         throw new SVNClientException(sb.toString());
     }
 
-    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {        
+    private List<SVNUrl> getAllNotExistingParents(SVNUrl url) throws SVNClientException {
         List<SVNUrl> ret = new ArrayList<SVNUrl>();
         if(url == null) {
             return ret;
         }
         try {
-            getInfo(url);            
+            getInfo(url);
         } catch (SVNClientException e) {
-            if(e.getMessage().indexOf("Not a valid URL") > -1) { 
+            if(e.getMessage().indexOf("Not a valid URL") > -1) {
                 ret.addAll(getAllNotExistingParents(url.getParent()));
-                ret.add(url);                        
+                ret.add(url);
             } else {
                 throw e;
-            }                    
-        }        
+            }
+        }
         return ret;
     }
 
@@ -825,13 +842,13 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     private boolean hasMetadata(File file) {
         return new File(file, SvnUtils.SVN_ENTRIES_DIR).canRead();
     }
-    
-    private boolean isManaged(File file) {        
-        return hasMetadata(file.getParentFile()) || hasMetadata(file);        
+
+    private boolean isManaged(File file) {
+        return hasMetadata(file.getParentFile()) || hasMetadata(file);
     }
-    
+
     // unsupported start
-    
+
     @Override
     public long[] commitAcrossWC(File[] arg0, String arg1, boolean arg2, boolean arg3, boolean arg4) throws SVNClientException {
         return super.commitAcrossWC(arg0, arg1, arg2, arg3, arg4);
@@ -896,7 +913,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     public void createRepository(File arg0, String arg1) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     public void lock(SVNUrl[] arg0, String arg1, boolean arg2) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -955,24 +972,72 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
                  oldStatus.getTextStatus() != newStatus.getTextStatus() ||
                  oldStatus.getPropStatus() != newStatus.getPropStatus())
             {
-                notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);   
-            }            
+                notificationHandler.notifyListenersOfChange(newStatus.getPath()); /// onNotify(cmd.getAbsoluteFile(s.getFile().getAbsolutePath()), null);
+            }
        }
     }
 
-    public void getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+    @Override
+    public ISVNDirEntryWithLock[] getListWithLocks(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, boolean bln) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+    @Override
+    public void copy(SVNUrl svnurl, File file, SVNRevision svnr, SVNRevision svnr1, boolean bln, boolean bln1) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ISVNInfo[] getInfo(File arg0, boolean arg1) throws SVNClientException {
+    @Override
+    public long[] update(File[] files, SVNRevision svnr, int i, boolean bln, boolean bln1, boolean bln2) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
     // unsupported start
+    @Override
+    public void getLogMessages(File file, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1, long l, boolean bln2, String[] strings, ISVNLogMessageCallback i) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void getLogMessages(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1, long l, boolean bln2, String[] strings, ISVNLogMessageCallback i) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getRevProperty(SVNUrl svnurl, Number number, String string) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNAnnotations annotate(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNAnnotations annotate(File file, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNProperty[] getProperties(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNProperty[] getRevProperties(SVNUrl svnurl, Number number) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNInfo[] getInfo(File file, boolean bln) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public SVNDiffSummary[] diffSummarize(File file, SVNUrl svnurl, SVNRevision svnr, boolean bln) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 
     class NotificationHandler extends SVNNotificationHandler {   }
 
@@ -1030,10 +1095,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public long update(File arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public long[] update(File[] arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

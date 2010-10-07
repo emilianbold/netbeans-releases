@@ -60,6 +60,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
         this.item = item;
     }
 
+    public Item getItem() {
+        return item;
+    }
+
     public ItemConfiguration getItemConfiguration(Configuration configuration) {
         ItemConfiguration res = itemConfigurations.get(configuration);
         if (res == null) {

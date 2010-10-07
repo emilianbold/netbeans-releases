@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.cnd.apt.utils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  *
@@ -64,12 +64,13 @@ public class APTTraceUtils {
         if (aptFile == null) {
             return "<no file>"; // NOI18N
         } else {
-            File file = new File(aptFile.getPath().toString());
-            File parentFile = file.getParentFile();
+            String file = aptFile.getPath().toString();
+            String parentFile = CndPathUtilitities.getDirName(file);
+            String name = CndPathUtilitities.getBaseName(file);
             if (parentFile == null) {
-                return file.getName();
+                return name;
             }
-            return parentFile.getName() + "/" + file.getName(); // NOI18N
+            return CndPathUtilitities.getBaseName(parentFile) + "/" + name; // NOI18N
         }
     }
     

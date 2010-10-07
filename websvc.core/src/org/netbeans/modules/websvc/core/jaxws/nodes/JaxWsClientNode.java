@@ -222,7 +222,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         try {
             String relativePath = client.getLocalWsdlFile();
             if (relativePath != null) {
-                FileObject wsdlFolder = JAXWSClientSupport.getJaxWsClientSupport(srcRoot).getLocalWsdlFolderForClient(client.getName(),false);
+                JAXWSClientSupport support = JAXWSClientSupport.
+                    getJaxWsClientSupport(srcRoot);
+                if ( support == null ){
+                    return null;
+                }
+                FileObject wsdlFolder = support.getLocalWsdlFolderForClient(
+                        client.getName(),false);
                 if (wsdlFolder != null) {
                     FileObject wsdlFo = wsdlFolder.getFileObject(relativePath);
                     assert wsdlFo!=null: "Cannot find local WSDL file"; //NOI18N

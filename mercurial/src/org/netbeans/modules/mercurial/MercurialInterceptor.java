@@ -339,10 +339,6 @@ public class MercurialInterceptor extends VCSInterceptor {
         return HgUtils.getRemoteRepository(file);
     }
 
-    public Boolean isRefreshScheduled(File file) {
-        return filesToRefresh.contains(file);
-    }
-
     private void reScheduleRefresh(int delayMillis, File fileToRefresh) {
         // refresh all at once
         Mercurial.STATUS_LOG.fine("reScheduleRefresh: adding " + fileToRefresh.getAbsolutePath());

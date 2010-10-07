@@ -378,8 +378,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         f.position(ref.position());
         f.write();
         
-        if (ref.separatorAfter() != -1) {
-            if (ref.position() == -1 || ref.position() >= ref.separatorAfter()) {
+        if (ref.separatorAfter() != Integer.MAX_VALUE) {
+            if (ref.position() == Integer.MAX_VALUE || ref.position() >= ref.separatorAfter()) {
                 throw new LayerGenerationException("separatorAfter() must be greater than position()", e);
             }
             File after = layer(e).file(ref.path() + "/" + name + "-separatorAfter.instance");
@@ -387,8 +387,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             after.position(ref.separatorAfter());
             after.write();
         }
-        if (ref.separatorBefore() != -1) {
-            if (ref.position() == -1 || ref.position() <= ref.separatorBefore()) {
+        if (ref.separatorBefore() != Integer.MAX_VALUE) {
+            if (ref.position() == Integer.MAX_VALUE || ref.position() <= ref.separatorBefore()) {
                 throw new LayerGenerationException("separatorBefore() must be lower than position()", e);
             }
             File before = layer(e).file(ref.path() + "/" + name + "-separatorBefore.instance");

@@ -108,6 +108,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         if (SHOW_TIMES) System.err.println("#@# Error Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + request.getFile().getAbsolutePath());
     }
     
+    @Override
     public String getName() {
         return "unresolved-identifier"; //NOI18N
     }
@@ -124,6 +125,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.response = response;
         }
 
+        @Override
         public void visit(CsmReferenceContext context) {
             if (MAX_ERROR_LIMIT >= 0 && foundError >= MAX_ERROR_LIMIT){
                 return;
@@ -161,6 +163,18 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                     response.addError(new IdentifierErrorInfo(
                             ref.getStartOffset(), ref.getEndOffset(),
                             ref.getText().toString(), severity));
+                } else if (CsmKindUtilities.isFunctionDefinition(referencedObject)) {
+                    // check function definition without declaration
+                    if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION))) {
+                        if (((CsmFunction)referencedObject).getDeclaration() == null) {
+                            Severity severity = Severity.ERROR;
+                            foundError++;
+                            //TODO: we can be more clever here and provide user with hint to create declaration
+                            response.addError(new IdentifierErrorInfo(
+                                    ref.getStartOffset(), ref.getEndOffset(),
+                                    ref.getText().toString(), severity));
+                        }
+                    }
                 } else if (false && referencedObject instanceof CsmFunction) {
                     // Check for function usages befor it's declaration
                     if (CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DEFINITION,
@@ -214,18 +228,22 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.severity = severity;
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
 
+        @Override
         public int getStartOffset() {
             return startOffset;
         }
 
+        @Override
         public int getEndOffset() {
             return endOffset;
         }
@@ -247,18 +265,22 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             this.severity = severity;
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
 
+        @Override
         public Severity getSeverity() {
             return severity;
         }
 
+        @Override
         public int getStartOffset() {
             return startOffset;
         }
 
+        @Override
         public int getEndOffset() {
             return endOffset;
         }

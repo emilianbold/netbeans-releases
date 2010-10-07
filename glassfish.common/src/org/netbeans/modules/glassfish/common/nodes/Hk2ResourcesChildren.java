@@ -44,9 +44,10 @@
 
 package org.netbeans.modules.glassfish.common.nodes;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.glassfish.common.CommandRunner;
@@ -84,32 +85,34 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
     }
 
     @Override
-    public void updateKeys(){
-        Vector<AbstractNode> keys = new Vector<AbstractNode>();
+    public void updateKeys() {
+        List<AbstractNode> keys = Collections.synchronizedList(new ArrayList<AbstractNode>());
         String[] childTypes = NodeTypes.getChildTypes(type);
-        if((childTypes != null) && (childTypes.length > 1)) {
-            for(int i = 0; i < childTypes.length; i++) {
-                String childtype = childTypes[i];
-                Class customizer = getCustomizer(childtype);
-                keys.add(new Hk2ItemNode(lookup,
-                    new Hk2Resources(lookup, childtype, customizer),
-                    NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_"+childtype), //TODO
-                    Hk2ItemNode.REFRESHABLE_FOLDER));
-            }
-        } else {
-            String childtype = childTypes[0];
-            GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
-            if (commonSupport != null) {
-                try {
-                    java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
-                    CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
-                    Decorator decorator = DecoratorManager.findDecorator(childtype, null,true);
-                    List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
-                    for (ResourceDesc resource : reslourcesList) {
-                        keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
+        if ((childTypes != null)) {
+            if (childTypes.length > 1) {
+                for (int i = 0; i < childTypes.length; i++) {
+                    String childtype = childTypes[i];
+                    Class customizer = getCustomizer(childtype);
+                    keys.add(new Hk2ItemNode(lookup,
+                            new Hk2Resources(lookup, childtype, customizer),
+                            NbBundle.getMessage(Hk2ResourceContainers.class, "LBL_" + childtype), //TODO
+                            Hk2ItemNode.REFRESHABLE_FOLDER));
+                }
+            } else {
+                String childtype = childTypes[0];
+                GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
+                if (commonSupport != null) {
+                    try {
+                        java.util.Map<String, String> ip = commonSupport.getInstanceProperties();
+                        CommandRunner mgr = new CommandRunner(true, commonSupport.getCommandFactory(), ip);
+                        Decorator decorator = DecoratorManager.findDecorator(childtype, null, true);
+                        List<ResourceDesc> reslourcesList = mgr.getResources(childtype);
+                        for (ResourceDesc resource : reslourcesList) {
+                            keys.add(new Hk2ResourceNode(lookup, resource, (ResourceDecorator) decorator, getCustomizer(childtype)));
+                        }
+                    } catch (Exception ex) {
+                        Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                     }
-                } catch (Exception ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, ex.getLocalizedMessage(), ex);
                 }
             }
         }
@@ -155,10 +158,12 @@ public class Hk2ResourcesChildren extends Children.Keys<Object> implements Refre
 
         @Override
         public void updateKeys() {
-            RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor t = new RequestProcessor("resource-child-updater");
+        t.post(new Runnable() {
 
-                Vector<Object> keys = new Vector<Object>();
+                List<AbstractNode> keys = Collections.synchronizedList(new ArrayList<AbstractNode>());
 
+                @Override
                 public void run() {
                     GlassfishModule commonSupport = lookup.lookup(GlassfishModule.class);
                     if (commonSupport != null) {

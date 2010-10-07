@@ -86,6 +86,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);
         if( projects == null || projects.size() != 1) {
@@ -94,6 +95,7 @@ public final class DiscoveryWizardAction extends NodeAction {
         invokeWizard(projects.iterator().next());
     }
     
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         Collection<Project> projects = getMakeProjects(activatedNodes);
         if( projects == null || projects.size() != 1) {
@@ -249,14 +251,16 @@ public final class DiscoveryWizardAction extends NodeAction {
      * various properties for them influencing wizard appearance.
      */
     private InstantiatingIterator getPanels() {
-        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[] {
+        @SuppressWarnings("unchecked")
+        WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
             new SelectModeWizard()
             ,new SelectProviderWizard()
             ,new SelectObjectFilesWizard()
             ,new ConsolidationStrategyWizard()
             ,new SelectConfigurationWizard()
         };
-        WizardDescriptor.Panel[] simplepanels = new WizardDescriptor.Panel[] {
+        @SuppressWarnings("unchecked")
+        WizardDescriptor.Panel<WizardDescriptor>[] simplepanels = new WizardDescriptor.Panel[] {
             panels[0]
             ,new SimpleConfigurationWizard()
         };
