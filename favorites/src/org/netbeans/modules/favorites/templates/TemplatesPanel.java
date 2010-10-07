@@ -1040,7 +1040,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
         
         supp.moveUp (origPos);
-        assert origPos - 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
+        // getNodePosition() is not really reliable here.
+        // assert origPos - 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
     }
     
     private void moveDown (Node[] nodes) {
@@ -1058,7 +1059,8 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
         
         supp.moveDown (origPos);
-        assert origPos + 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
+        // getNodePosition() is not really reliable here.
+        // assert origPos + 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
     }
     
     // action
