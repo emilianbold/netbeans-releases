@@ -216,7 +216,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
             return false;
         }
         CsmUID<CsmObject> ownerUID = null;
-        CsmObject owner = ref.getOwner();
+        CsmObject owner = ref.getOwner(); // storing
         if (owner != null) {
             if (UIDCsmConverter.isIdentifiable(owner)) {
                 CsmUID<CsmObject> anOwnerUID = UIDs.get(owner);
@@ -426,6 +426,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         @Override
         public String toString() {
             return "ReferenceImpl{" + "file=" + file + "refKind=" + refKind + "refObj=" + refObj + "start=" + start + "end=" + end + "identifier=" + identifier + "ownerUID=" + ownerUID + '}'; // NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
 }

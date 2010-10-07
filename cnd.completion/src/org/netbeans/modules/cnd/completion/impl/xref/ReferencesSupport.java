@@ -678,22 +678,22 @@ public final class ReferencesSupport {
 
         @Override
         public CsmReferenceKind getKind() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmObject getReferencedObject() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmObject getOwner() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
@@ -708,17 +708,22 @@ public final class ReferencesSupport {
 
         @Override
         public Position getStartPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public Position getEndPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CharSequence getText() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported.");// NOI18N 
         }
     }
 }
