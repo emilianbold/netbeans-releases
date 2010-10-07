@@ -91,7 +91,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -109,6 +108,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -149,8 +149,8 @@ public final class ReferencesSupport {
     public static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
         File file = new File(absPath);
         // convert file into file object
-        FileObject fileObject = FileUtil.toFileObject(file);
-        if (fileObject == null) {
+        FileObject fileObject = CndFileUtils.toFileObject(file);
+        if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
         DataObject dataObject = DataObject.find(fileObject);

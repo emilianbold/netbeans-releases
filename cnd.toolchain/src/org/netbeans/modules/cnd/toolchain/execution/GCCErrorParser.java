@@ -221,7 +221,7 @@ public final class GCCErrorParser extends ErrorParser {
                 FileObject relativeDir = relativesTo.peek();
                 if (relativeDir != null) {
                     FileObject fo = resolveRelativePath(relativeDir, file);
-                    if (fo != null) {
+                    if (fo != null && fo.isValid()) {
                         errorInludes.add(new StackIncludeItem(fo, line, lineNumber.intValue() - 1));
                         return res;
                     }
@@ -238,7 +238,7 @@ public final class GCCErrorParser extends ErrorParser {
                 FileObject relativeDir = relativesTo.peek();
                 if (relativeDir != null) {
                     FileObject fo = resolveRelativePath(relativeDir, file);
-                    if (fo != null) {
+                    if (fo != null && fo.isValid()) {
                         errorInludes.add(new StackIncludeItem(fo, line, lineNumber.intValue() - 1));
                         return new Results();
                     }
@@ -258,7 +258,7 @@ public final class GCCErrorParser extends ErrorParser {
                     //FileObject fo = relativeDir.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeDir, file);
                     boolean important = m.group(3).indexOf("error") != (-1); // NOI18N
-                    if (fo != null) {
+                    if (fo != null && fo.isValid()) {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {

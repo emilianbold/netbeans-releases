@@ -232,7 +232,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String path = "/dev/qwe/asd/zxc";
         FileObject fo = rootFO.getFileObject(path);
         assertTrue("File " + getFileName(execEnv, path) + " does not exist, but is reported as existent",
-                fo == null || fo.isVirtual());
+                fo == null || !fo.isValid());
     }
 
     

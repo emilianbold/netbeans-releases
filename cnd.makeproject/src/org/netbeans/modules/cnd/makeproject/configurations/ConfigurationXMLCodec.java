@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.List;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
@@ -264,6 +265,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR)).intValue();
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
+                    String flavor = atts.getValue(ItemXMLCodec.FLAVOR_ATTR);
+                    if (flavor != null) {
+                        itemConfiguration.setLanguageFlavor(LanguageFlavor.values()[Integer.parseInt(flavor)]);
+                    }
                 }
             } else {
                 System.err.println("Not found item: " + path);
