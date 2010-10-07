@@ -51,6 +51,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -70,9 +71,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
-    //@ForAllEnvironments
+    @ForAllEnvironments
     // Disabled, see IZ 190453
-    public void DISABLEDtestSyncDirStruct() throws Exception {
+    @RandomlyFails
+    public void testSyncDirStruct() throws Exception {
         sleep(200); // FIXUP: a workaround for a very instable test failure
         String dirName = "/usr/include";
         // set up local test directory
@@ -112,9 +114,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         removeDirectory(localDir);
     }
 
-    //@ForAllEnvironments
+    @ForAllEnvironments
     // Disabled, see IZ 190453
-    public void DISABLEDtestRemoteStdioH() throws Exception {
+    @RandomlyFails
+    public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
@@ -125,9 +128,10 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 CharSequenceUtils.indexOf(content, text2search) >= 0);
     }
 
-    //@ForAllEnvironments
+    @ForAllEnvironments
     // Disabled, see IZ 190453
-    public void DISABLEDtestMultipleRead() throws Exception {
+    @RandomlyFails
+    public void testMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
         long firstTime = -1;
