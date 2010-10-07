@@ -173,8 +173,7 @@ public class Hk2PluginProperties {
         try {
             File javaEEJar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), 
                     "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
-            Logger.getLogger("glassfish-javaee").log(Level.FINER,
-                    "JavaEE jar is " + (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "JavaEE jar is {0}", (javaEEJar != null ? javaEEJar.getAbsolutePath() : "null"));
             if(javaEEJar != null && javaEEJar.exists()) {
                 jars.add("web/jsf-connector-10.0"); // NOI18N -- watchout for builds older than b25
                 JarFile jarFile = new JarFile(javaEEJar);
@@ -182,8 +181,7 @@ public class Hk2PluginProperties {
                 if(manifest != null) {
                     Attributes attrs = manifest.getMainAttributes();
                     String cp = attrs.getValue("Class-Path");
-                    Logger.getLogger("glassfish-javaee").log(Level.FINER,
-                            "JavaEE jar classpath is \"" + cp + "\"");
+                    Logger.getLogger("glassfish-javaee").log(Level.FINER, "JavaEE jar classpath is \"{0}\"", cp);
                     if(cp != null && cp.length() > 0) {
                         File parent = javaEEJar.getParentFile();
                         for(String jarName: cp.split(" ")) {
@@ -193,9 +191,8 @@ public class Hk2PluginProperties {
                 }
 
                 // Older V3 install that doesn't use Class-Path, so assume it's all in javax.javaee
-                if(urlSet.size() == 0) {
-                    Logger.getLogger("glassfish-javaee").log(Level.FINER,
-                            javaEEJar.getAbsolutePath() + " contains null classpath or subjars not found.  Using directly.");
+                if(urlSet.isEmpty()) {
+                    Logger.getLogger("glassfish-javaee").log(Level.FINER, "{0} contains null classpath or subjars not found.  Using directly.", javaEEJar.getAbsolutePath());
                     urlSet.add(fileToUrl(javaEEJar).toURI());
                 }
             } else {
@@ -223,6 +220,26 @@ public class Hk2PluginProperties {
             jars.add("bean-validator"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
             jars.add("webbeans-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N -- pre b69
             jars.add("weld-osgi-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N -- post b68
+
+            // jaxrs in 3.0
+            //              {"jackson-asl", "jackson-core-asl", "jersey-bundle", "jersey-gf-bundle", "jersey-multipart", "jettison", "mimepull", "jsr311-api"}; //NOI18N
+            jars.add("jackson-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jackson-core-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-gf-bundle"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-multipart"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jettison"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("mimepull"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jsr311-api"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+
+            // jaxrxs in 3.1
+            //              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
+            jars.add("jackson-jaxrs"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jackson-mapper-asl"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-client"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-core"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-gf-server"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
+            jars.add("jersey-json"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);

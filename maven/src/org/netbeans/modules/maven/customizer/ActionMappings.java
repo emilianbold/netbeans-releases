@@ -51,7 +51,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -68,7 +67,6 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
@@ -89,7 +87,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.ActionProviderImpl;
 import org.netbeans.modules.maven.TestSkippingChecker;
-import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
@@ -100,8 +97,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -118,7 +113,6 @@ public class ActionMappings extends javax.swing.JPanel {
     
     private final GoalsListener goalsListener;
     private final TextValueCompleter goalcompleter;
-    private final DirectoryListener directoryListener;
     private final TextValueCompleter profilecompleter;
     private final ProfilesListener profilesListener;
     private final PropertiesListener propertiesListener;
@@ -136,7 +130,6 @@ public class ActionMappings extends javax.swing.JPanel {
         propertiesListener = new PropertiesListener();
         recursiveListener = new RecursiveListener();
         depsListener = new DepsListener();
-        directoryListener = new DirectoryListener();
         FocusListener focus = new FocusListener() {
             public void focusGained(FocusEvent e) {
                 if (e.getComponent() == txtGoals) {
@@ -307,9 +300,6 @@ public class ActionMappings extends javax.swing.JPanel {
         lblHint = new javax.swing.JLabel();
         btnAddProps = new javax.swing.JButton();
         cbBuildWithDeps = new javax.swing.JCheckBox();
-        lblDirectory = new javax.swing.JLabel();
-        txtDirectory = new javax.swing.JTextField();
-        btnDirectory = new javax.swing.JButton();
 
         lblConfiguration.setLabelFor(comConfiguration);
         org.openide.awt.Mnemonics.setLocalizedText(lblConfiguration, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblConfiguration.text")); // NOI18N
@@ -371,57 +361,44 @@ public class ActionMappings extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbBuildWithDeps, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.text")); // NOI18N
 
-        lblDirectory.setLabelFor(txtDirectory);
-        org.openide.awt.Mnemonics.setLocalizedText(lblDirectory, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.lblDirectory.text")); // NOI18N
-
-        txtDirectory.setEditable(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnDirectory, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnDirectory.text")); // NOI18N
-        btnDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDirectoryActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 609, Short.MAX_VALUE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 668, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblProfiles)
-                            .addComponent(lblProperties)
-                            .addComponent(btnAddProps)
                             .addComponent(lblConfiguration)
                             .addComponent(lblGoals)
-                            .addComponent(lblMappings)
-                            .addComponent(lblDirectory))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(lblMappings))
+                        .addGap(28, 28, 28)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                            .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
+                            .addComponent(txtGoals, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(btnRemove)
                                     .addComponent(btnAdd)))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(comConfiguration, 0, 389, Short.MAX_VALUE)
+                                .addGap(143, 143, 143))))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblProfiles)
+                            .addComponent(lblProperties)
+                            .addComponent(btnAddProps))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtProfiles, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(cbRecursively)
                                 .addGap(18, 18, 18)
                                 .addComponent(cbBuildWithDeps))
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(comConfiguration, 0, 330, Short.MAX_VALUE)
-                                .addGap(143, 143, 143))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(txtDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 229, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnDirectory)))))
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 532, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -445,11 +422,6 @@ public class ActionMappings extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblGoals)
                     .addComponent(txtGoals, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(8, 8, 8)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblDirectory)
-                    .addComponent(txtDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDirectory))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblProfiles)
@@ -460,12 +432,12 @@ public class ActionMappings extends javax.swing.JPanel {
                         .addComponent(lblProperties)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnAddProps))
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 53, Short.MAX_VALUE))
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 46, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRecursively)
                     .addComponent(cbBuildWithDeps))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(41, 41, 41)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -477,8 +449,6 @@ public class ActionMappings extends javax.swing.JPanel {
         txtProfiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtProfiles.AccessibleContext.accessibleDescription")); // NOI18N
         btnAddProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnAddProps.AccessibleContext.accessibleDescription")); // NOI18N
         cbBuildWithDeps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbBuildWithDeps.AccessibleContext.accessibleDescription")); // NOI18N
-        txtDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.txtDirectory.AccessibleContext.accessibleDescription")); // NOI18N
-        btnDirectory.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnDirectory.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
 //GEN-FIRST:event_btnAddActionPerformed
@@ -549,7 +519,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             taProperties.setEnabled(true);
             txtProfiles.setEnabled(true);
             
-            txtDirectory.getDocument().removeDocumentListener(directoryListener);
             txtGoals.getDocument().removeDocumentListener(goalsListener);
             txtProfiles.getDocument().removeDocumentListener(profilesListener);
             taProperties.getDocument().removeDocumentListener(propertiesListener);
@@ -569,20 +538,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
             } else {
                 cbBuildWithDeps.setEnabled(true);
             }
-            if (handle != null && 
-                    (txtGoals.getText().contains("reactor") || //NOI18N
-                    (mapp != null && mapp.getReactor() != null))) {
-                lblDirectory.setVisible(true);
-                txtDirectory.setVisible(true);
-                btnDirectory.setVisible(true);
-                txtDirectory.setText(mapp.getBasedir());
-            } else {
-                lblDirectory.setVisible(false);
-                txtDirectory.setVisible(false);
-                btnDirectory.setVisible(false);
-            }
             txtGoals.getDocument().addDocumentListener(goalsListener);
-            txtDirectory.getDocument().addDocumentListener(directoryListener);
             txtProfiles.getDocument().addDocumentListener(profilesListener);
             taProperties.getDocument().addDocumentListener(propertiesListener);
             cbRecursively.addActionListener(recursiveListener);
@@ -602,30 +558,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         menu.show(btnAddProps, btnAddProps.getSize().width, 0);
 
     }//GEN-LAST:event_btnAddPropsActionPerformed
-
-    private void btnDirectoryActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDirectoryActionPerformed
-        assert handle != null;
-        assert project != null;
-        JFileChooser chooser = new JFileChooser();
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setMultiSelectionEnabled(false);
-        chooser.setDialogTitle(NbBundle.getMessage(ActionMappings.class, "TIT_ReactorDir"));
-        FileObject current = project.getProjectDirectory();
-        String rel = txtDirectory.getText().trim();
-        if (rel.length() == 0) {
-            rel = "../";
-        }
-        File selected = FileUtilities.resolveFilePath(FileUtil.toFile(current), rel);
-        chooser.setSelectedFile(selected);
-        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), NbBundle.getMessage(ActionMappings.class, "BTN_ReactorDir"));
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            selected = chooser.getSelectedFile();
-            String relative = FileUtilities.relativizeFile(FileUtil.toFile(current), selected);
-            txtDirectory.setText(relative);
-            
-        }
-
-    }//GEN-LAST:event_btnDirectoryActionPerformed
     
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
@@ -712,7 +644,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         txtGoals.getDocument().removeDocumentListener(goalsListener);
         txtProfiles.getDocument().removeDocumentListener(profilesListener);
         taProperties.getDocument().removeDocumentListener(propertiesListener);
-        txtDirectory.getDocument().removeDocumentListener(directoryListener);
         
         txtGoals.setText(""); //NOI18N
         txtProfiles.setText(""); //NOI18N
@@ -721,7 +652,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         txtGoals.getDocument().addDocumentListener(goalsListener);
         txtProfiles.getDocument().addDocumentListener(profilesListener);
         taProperties.getDocument().addDocumentListener(propertiesListener);
-        txtDirectory.getDocument().addDocumentListener(directoryListener);
         
         txtGoals.setEnabled(false);
         taProperties.setEnabled(false);
@@ -729,9 +659,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         updateColor(null);
         cbRecursively.setEnabled(false);
         btnAddProps.setEnabled(false);
-        lblDirectory.setVisible(false);
-        txtDirectory.setVisible(false);
-        btnDirectory.setVisible(false);
     }
     
     private void updateColor(MappingWrapper wr) {
@@ -740,7 +667,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         lblGoals.setFont(fnt);
         lblProperties.setFont(fnt);
         lblProfiles.setFont(fnt);
-        lblDirectory.setFont(fnt);
     }
     
     private String createPropertiesList(Properties properties) {
@@ -761,7 +687,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
     private javax.swing.JButton btnAddProps;
-    private javax.swing.JButton btnDirectory;
     private javax.swing.JButton btnRemove;
     private javax.swing.JCheckBox cbBuildWithDeps;
     private javax.swing.JCheckBox cbRecursively;
@@ -770,7 +695,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblConfiguration;
-    private javax.swing.JLabel lblDirectory;
     private javax.swing.JLabel lblGoals;
     private javax.swing.JLabel lblHint;
     private javax.swing.JLabel lblMappings;
@@ -778,7 +702,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private javax.swing.JLabel lblProperties;
     private javax.swing.JList lstMappings;
     private javax.swing.JTextArea taProperties;
-    private javax.swing.JTextField txtDirectory;
     private javax.swing.JTextField txtGoals;
     private javax.swing.JTextField txtProfiles;
     // End of variables declaration//GEN-END:variables
@@ -812,11 +735,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     private ActionToGoalMapping getActionMappings() {
         assert handle != null || actionmappings != null;
         if (handle != null) {
-            if (handle.isConfigurationsEnabled()) {
-                return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
-            } else {
-                return handle.getActionMappings();
-            }
+            return handle.getActionMappings((ModelHandle.Configuration) comConfiguration.getSelectedItem());
         }
         return actionmappings;
     }
@@ -949,23 +868,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }
 
-    private class DirectoryListener extends TextFieldListener {
-        @Override
-        protected MappingWrapper doUpdate() {
-            MappingWrapper wr = super.doUpdate();
-            if (wr != null) {
-                String text = txtDirectory.getText();
-                NetbeansActionMapping mapp = wr.getMapping();
-                mapp.setBasedir(text);
-                if (handle != null) {
-                    handle.markAsModified(getActionMappings());
-                }
-            }
-            return wr;
-        }
-    }
-
-    
     private class ProfilesListener extends TextFieldListener {
         @Override
         protected MappingWrapper doUpdate() {
@@ -1064,7 +966,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }
     
     private void setupConfigurations() {
-        if (handle != null && handle.isConfigurationsEnabled()) {
+        if (handle != null) {
             lblConfiguration.setVisible(true);
             comConfiguration.setVisible(true);
             DefaultComboBoxModel comModel = new DefaultComboBoxModel();

@@ -716,7 +716,7 @@ public final class WebProject implements Project {
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                     String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
-                            Util.getJ2eePlatformClasspathEntries(WebProject.this), root);
+                            Util.getJ2eePlatformClasspathEntries(WebProject.this, null), root);
                     ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                 }
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -1584,6 +1584,18 @@ public final class WebProject implements Project {
                 FileObject fo = fe.getFile();
                 handleCopyFileToDestDir(fo);
 
+                FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+                if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                        && "persistence.xml".equals(fe.getName() + "." + fe.getExt())) { // NOI18N
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo.getParent())
+                            + "/" + fe.getName() + "." + fe.getExt(); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                    return;
+                }
+
                 FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
@@ -1635,6 +1647,17 @@ public final class WebProject implements Project {
 
                 FileObject fo = fe.getFile();
 
+                FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+                if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                        && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
+                    String path = "WEB-INF/classes/META-INF/" + FileUtil.getRelativePath(persistenceXmlDir, fo); // NOI18N
+                    if (!isSynchronizationAppropriate(path)) {
+                        return;
+                    }
+                    handleDeleteFileInDestDir(path);
+                    return;
+                }
+
                 FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
                 FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
@@ -1661,7 +1684,7 @@ public final class WebProject implements Project {
         }
 
         private boolean isSynchronizationAppropriate(String filePath) {
-            if (filePath.startsWith("WEB-INF/classes")) { // NOI18N
+            if (filePath.startsWith("WEB-INF/classes") && !filePath.startsWith("WEB-INF/classes/META-INF")) { // NOI18N
                 return false;
             }
             if (filePath.startsWith("WEB-INF/src")) { // NOI18N
@@ -1715,15 +1738,24 @@ public final class WebProject implements Project {
                 return;
             }
 
+            FileObject persistenceXmlDir = getWebModule().getPersistenceXmlDir();
+            if (persistenceXmlDir != null && FileUtil.isParentOf(persistenceXmlDir, fo)
+                    && "persistence.xml".equals(fo.getNameExt())) { // NOI18N
+                handleCopyFileToDestDir("WEB-INF/classes/META-INF", persistenceXmlDir, fo); // NOI18N
+                return;
+            }
+
             FileObject webInf = getWebModule().resolveWebInf(docBaseValue, webInfValue, true, true);
             FileObject docBase = getWebModule().resolveDocumentBase(docBaseValue, false);
 
             if (webInf != null && FileUtil.isParentOf(webInf, fo)
                     && !(webInf.getParent() != null && webInf.getParent().equals(docBase))) {
                 handleCopyFileToDestDir("WEB-INF", webInf, fo); // NOI18N
+                return;
             }
             if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                 handleCopyFileToDestDir(null, docBase, fo);
+                return;
             }
         }
 

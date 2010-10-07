@@ -64,9 +64,13 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public final class LazyCompoundStatementImpl extends LazyStatementImpl implements CsmCompoundStatement {
 
-    public LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+    private LazyCompoundStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
         assert (ast.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY);
+    }
+
+    public static LazyCompoundStatementImpl create(AST ast, CsmFile file, CsmFunction scope) {
+        return new LazyCompoundStatementImpl(ast, file, scope);
     }
 
     @Override

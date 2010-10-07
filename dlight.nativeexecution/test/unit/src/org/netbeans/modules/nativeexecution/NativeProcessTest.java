@@ -332,7 +332,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         ShortTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
             this.counters = counters;
             this.pqueue = pqueue;
-            npb = NativeProcessBuilder.newLocalProcessBuilder();
+            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("echo").setArguments(expectedOutput); // NOI18N
         }
 
@@ -362,15 +362,13 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     private class LongTask implements Runnable {
 
         private final Counters counters;
-        private final ExecutionEnvironment execEnv;
         private final BlockingQueue<NativeProcess> pqueue;
         private final NativeProcessBuilder npb;
 
         LongTask(ExecutionEnvironment execEnv, Counters counters, BlockingQueue<NativeProcess> pqueue) {
-            this.execEnv = execEnv;
             this.counters = counters;
             this.pqueue = pqueue;
-            npb = NativeProcessBuilder.newLocalProcessBuilder();
+            npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable("sleep").setArguments("3"); // NOI18N
         }
 

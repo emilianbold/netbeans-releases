@@ -43,25 +43,24 @@
  */
 
 package org.netbeans.nbbuild;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.parsers.*;
-
-import org.netbeans.junit.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-
 /** Check the behaviour Arch task.
  *
  * @author Jaroslav Tulach
  */
-public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
+public class ArchQuestionsTest extends TestBase implements EntityResolver {
     /** debug messages to show if necessary */
     private List<String> msg = new ArrayList<String>();
     
@@ -70,13 +69,13 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
     
     public void testGeneratePreferencesArch() throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractResource("arch-preferences.xml");
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File answers = extractResource("arch-preferences.xml");
+        java.io.File output = extractString("");
         output.delete();
         
         
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File f = extractString(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
                 "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -86,11 +85,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
                 "</project>"
                 
                 );
-        PublicPackagesInProjectizedXMLTest.execute(f, new String[] { });
+        execute(f, new String[] { });
         
         assertTrue("File is generated", output.exists());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        String content = readFile(output);
         if (content.indexOf("resources-preferences") == -1) {
             fail("resources-preferences shall be in output:\n" + content);
         }
@@ -101,11 +100,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 
     
     public void testGenerateArchFileWhenEmpty () throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File answers = extractString ("");
         answers.delete ();
         assertFalse ("Really deleted", answers.exists ());
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -116,11 +115,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
         assertTrue ("File is generated", answers.exists ());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(answers);
+        String content = readFile(answers);
         
         if (content.indexOf("module=") >= 0) {
             fail("No mention of a module should be there anymore:\n" + content);
@@ -128,11 +127,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
 
     public void testGenerateArchFileWhenEmptyWithDefaultAnswerForNbDepsQuestion() throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File answers = extractString ("");
         answers.delete ();
         assertFalse ("Really deleted", answers.exists ());
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -143,11 +142,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
         assertTrue ("File is generated", answers.exists ());
         
-        String res = PublicPackagesInProjectizedXMLTest.readFile(answers);
+        String res = readFile(answers);
         DocumentBuilderFactory fack = DocumentBuilderFactory.newInstance();
         fack.setValidating(false);
         DocumentBuilder build = fack.newDocumentBuilder();
@@ -156,7 +155,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         try {
             dom = build.parse(answers);
         } catch (IOException ex) {
-            throw (IOException)new IOException(ex.getMessage() + "\n" + msg.toString()).initCause(ex);
+            throw new IOException(ex.getMessage() + "\n" + msg.toString(), ex);
         }
 
         org.w3c.dom.NodeList list = dom.getElementsByTagName("defaultanswer");
@@ -182,7 +181,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
     
     public void testDoNotCorruptTheFileWhenItExists() throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File answers = extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -238,9 +237,9 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</api-answers>    \n"
         );
         
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File output = extractString("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -251,7 +250,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] {  
+        execute (f, new String[] {  
             "-Darch.generate=true",
             "-Darch.private.disable.validation.for.test.purposes=true",
                 
@@ -260,11 +259,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         assertTrue ("Answers still exists", answers.exists ());
         assertTrue ("Output file generated", output.exists ());
         
-        String s1 = PublicPackagesInProjectizedXMLTest.readFile(answers);
+        String s1 = readFile(answers);
         if (s1.indexOf("answer id=\"arch-overall\"") == -1) {
             fail ("There should be a answer template for arch-overall in answers: " + s1);
         }
-        String s2 = PublicPackagesInProjectizedXMLTest.readFile(output);
+        String s2 = readFile(output);
         if (s2.indexOf("question id=\"arch-overall\"") == -1) {
             fail ("There should be a answer template for arch-overall in html output: " + s2);
         }
@@ -279,7 +278,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     
     
     public void testIncludeAPIChangesDocumentIntoSetOfAnswersIfSpecified() throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File answers = extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -335,7 +334,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</api-answers>    \n"
         );
         
-        java.io.File apichanges = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File apichanges = extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -401,7 +400,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</apichanges>\n" +
 "");        
 
-        java.io.File xsl = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File xsl = extractString(
 "<?xml version='1.0' encoding='UTF-8' ?>\n" +
 "<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>\n" +
     "<xsl:output method='xml'/>\n" +
@@ -415,9 +414,9 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         );
         
         
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File output = extractString("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -430,7 +429,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] {  
+        execute (f, new String[] {  
             "-Darch.generate=true",
             "-Darch.private.disable.validation.for.test.purposes=true",
                 
@@ -439,7 +438,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         assertTrue ("Answers still exists", answers.exists ());
         assertTrue ("Output file generated", output.exists ());
 
-        String txt = PublicPackagesInProjectizedXMLTest.readFile(output);
+        String txt = readFile(output);
 
         org.w3c.dom.Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(output);
         
@@ -529,7 +528,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
     
     private Document doReadNbDepsFromProjectXML(String inlinedCode, String[] txt) throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File answers = extractString (
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -573,7 +572,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</api-answers>    \n"
         );
         
-        java.io.File project = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File project = extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -677,10 +676,10 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "");        
         
         
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File output = extractString("");
         assertTrue("File can be deleted: " + output, output.delete());
 
-        java.io.File xsl = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File xsl = extractString(
 "<?xml version='1.0' encoding='UTF-8' ?>\n" +
 "<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>\n" +
     "<xsl:output method='xml'/>\n" +
@@ -693,7 +692,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</xsl:stylesheet> \n"
         );
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -709,13 +708,13 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         );
         // happy hacking first of the txt argument is used to pass args to the execution script
         txt[0] = "-Darch.private.disable.validation.for.test.purposes=true";
-        PublicPackagesInProjectizedXMLTest.execute (f, txt);
+        execute (f, txt);
 
         assertTrue ("Answers still exists", answers.exists ());
         assertTrue ("Output file generated", output.exists ());
 
         // happy hacking2: and now it is used to return back the result of the execution ;-)
-        txt[0] = PublicPackagesInProjectizedXMLTest.readFile(output);
+        txt[0] = readFile(output);
 
         org.w3c.dom.Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(output);
         return dom;
@@ -727,7 +726,7 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         answers.delete();
 		assertFalse("Does not exists", answers.exists());
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -737,19 +736,19 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-		PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Darch.generate=true" });
+		execute (f, new String[] { "-Darch.generate=true" });
 
 		answers.deleteOnExit();
         assertTrue ("File is generated", answers.exists ());
     }
 
     public void testGenerateArchWithLogging () throws Exception {
-        File dtd = PublicPackagesInProjectizedXMLTest.extractResource("Arch.dtd");
-        File quest = PublicPackagesInProjectizedXMLTest.extractResource("Arch-api-questions.xml");
+        File dtd = extractResource("Arch.dtd");
+        File quest = extractResource("Arch-api-questions.xml");
         
         
         
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File answers = extractString(
 "<?xml version='1.0' encoding='UTF-8'?>\n" +
 "<!--\n" +
                 "CDDL Notice\n" +
@@ -773,12 +772,12 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "\n" +
 "</api-answers>    \n"
         );
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File output = extractString("");
         output.delete();
 
 
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -791,11 +790,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
         String[] txt = new String[1];
 //        txt[0] = "-Darch.private.disable.validation.for.test.purposes=true";
         txt[0] = "-verbose";
-        PublicPackagesInProjectizedXMLTest.execute (f, txt);
+        execute (f, txt);
 
         assertTrue ("File is generated", output.exists ());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        String content = readFile(output);
         
         if (content.indexOf("MyLogger") == -1) {
             fail(content);
@@ -806,13 +805,13 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
     
     public void testGenerateProfilerArch () throws Exception {
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractResource("arch-profiler.xml");
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File answers = extractResource("arch-profiler.xml");
+        java.io.File output = extractString("");
         output.delete();
 
 
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "<taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -823,11 +822,11 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
         assertTrue ("File is generated", output.exists ());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(output);
+        String content = readFile(output);
 
         if (content.indexOf("My Lovely Profiler - NetBeans Architecture Questions") == -1) {
             fail(content);

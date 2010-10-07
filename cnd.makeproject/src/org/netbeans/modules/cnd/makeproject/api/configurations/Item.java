@@ -51,6 +51,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
@@ -59,11 +61,13 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -72,14 +76,31 @@ import org.openide.util.Lookup;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
 
+    private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
+
     private final String path;
     //private final String sortName;
     private Folder folder;
     private File file = null;
+    private FileObject fileObject;
     private DataObject lastDataObject = null;
 
+    public Item(FileObject fileObject, FileObject baseDirFO, MakeProjectOptions.PathMode pathMode) {
+
+        this.fileObject = fileObject;
+
+        String p = ProjectSupport.toProperPath(baseDirFO, fileObject, pathMode);
+        p = CndPathUtilitities.normalize(p);
+
+        path = p;
+    }
+
+
     public Item(String path) {
+        CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
         this.path = path;
+//        this.fileObject = FileUtil.toFileObject(new File(path));
+//        CndUtils.assertNotNull(fileObject, "Can't find file object for item " + path); //NOI18N
         //this.sortName = CndPathUtilitities.getBaseName(path);
 //        int i = sortName.lastIndexOf("."); // NOI18N
 //        if (i > 0) {
@@ -148,6 +169,15 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getPath() {
         return path;
+    }
+
+    public String getAbsolutePath() {
+        synchronized (this) {
+            if (fileObject != null) {
+                return fileObject.getPath();
+            }
+        }
+        return getNormalizedFile().getAbsolutePath();
     }
 
     public String getSortName() {
@@ -242,6 +272,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return folder;
     }
 
+    public String getNormalizedPath() {
+        return getNormalizedFile().getPath();
+    }
+    
     public File getNormalizedFile() {
         String aPath = getAbsPath();
         if (aPath != null) {
@@ -254,6 +288,10 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public File getFile() {
         // let's try to use normalized, not canonical paths
         return getNormalizedFile();
+    }
+
+    public String getCanonicalPath() {
+        return getCanonicalFile().getAbsolutePath();
     }
 
     public File getCanonicalFile() {
@@ -331,13 +369,18 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
 
+    @Override
     public FileObject getFileObject() {
-        File curFile = getNormalizedFile();
-        FileObject fo = FileUtil.toFileObject(curFile);
-        if (fo == null) {
-            fo = FileUtil.toFileObject(getCanonicalFile());
+        synchronized (this) {
+            if (fileObject == null) {
+                File curFile = getNormalizedFile();
+                fileObject = FileUtil.toFileObject(curFile);
+                if (fileObject == null) {
+                    fileObject = FileUtil.toFileObject(getCanonicalFile());
+                }
+            }
         }
-        return fo;
+        return fileObject;
     }
 
     public DataObject getDataObject() {
@@ -352,8 +395,9 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             try {
                 dataObject = DataObject.find(fo);
             } catch (DataObjectNotFoundException e) {
-                // should not happen
-                ErrorManager.getDefault().notify(e);
+                // that's normal, for example, "myfile.xyz" won't have data object
+                // ErrorManager.getDefault().notify(e);
+                logger.log(Level.FINE, "Can not find data object", e); //NOI18N
             }
         }
         synchronized (this) {
@@ -388,14 +432,14 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         PredefinedToolKind tool;
         String mimeType = getMIMEType();
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            DataObject dataObject = getDataObject();
-            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-            // Do not use C for .pc files
-            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
-                tool = PredefinedToolKind.CustomTool;
-            } else {
+//            DataObject dataObject = getDataObject();
+//            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+//            // Do not use C for .pc files
+//            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
+//                tool = PredefinedToolKind.CustomTool;
+//            } else {
                 tool = PredefinedToolKind.CCompiler;
-            }
+//            }
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.CustomTool;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {

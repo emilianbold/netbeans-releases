@@ -45,13 +45,12 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
-import org.netbeans.junit.NbTestCase;
 
 /** Check the behaviour of CheckLinks.
  *
  * @author Jaroslav Tulach
  */
-public class CheckLinksTest extends NbTestCase {
+public class CheckLinksTest extends TestBase {
     public CheckLinksTest (String name) {
         super (name);
     }
@@ -63,7 +62,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -75,7 +74,7 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         // success
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     }
 
     
@@ -86,7 +85,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -99,9 +98,9 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
             fail ("This should fail as the URL is forbidden");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             // ok, this should fail on exit code
         }
     }
@@ -114,7 +113,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -127,9 +126,9 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
             fail ("This should fail as the URL is forbidden");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             // ok, this should fail on exit code
         }
     }
@@ -141,7 +140,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -155,7 +154,7 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         // passes as .*sex.* is acceptable
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     }
     
     
@@ -168,7 +167,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -181,7 +180,7 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         // passes as the forbidden URL is commented out
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     }
     
     
@@ -193,7 +192,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -205,7 +204,7 @@ public class CheckLinksTest extends NbTestCase {
             "</project>"
         );
         // success
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     }
     
     
@@ -216,7 +215,7 @@ public class CheckLinksTest extends NbTestCase {
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -229,9 +228,9 @@ public class CheckLinksTest extends NbTestCase {
         );
         // failure
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
             fail ("This should fail as the link is broken");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             // ok, this should fail on exit code
         }
     }
@@ -245,7 +244,7 @@ public class CheckLinksTest extends NbTestCase {
             "<a href=\"" + html1.toURI() + "?is-external=true\">ought to be OK</a>\n" +
             "</body>"
         );
-        File f = PublicPackagesInProjectizedXMLTest.extractString(
+        File f = extractString(
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checklinks\" classname=\"org.netbeans.nbbuild.CheckLinks\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -257,12 +256,12 @@ public class CheckLinksTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute(f, new String[] {});
+        execute(f, new String[] {});
     }
     
     
-    private static File extractHTMLFile (String s) throws Exception {
-        File f = PublicPackagesInProjectizedXMLTest.extractString (s);
+    private File extractHTMLFile (String s) throws Exception {
+        File f = extractString (s);
         File n = new File (f.getParentFile (), f.getName () + ".html");
         assertTrue ("Rename succeeded", f.renameTo (n));
         return n;

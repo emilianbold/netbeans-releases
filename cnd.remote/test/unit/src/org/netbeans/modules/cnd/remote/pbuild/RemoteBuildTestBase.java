@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
@@ -123,8 +124,8 @@ public class RemoteBuildTestBase extends RemoteTestBase {
                 TemplateWizard wiz = new TemplateWizard();
                 wiz.setTemplate(templateDO);
                 projectCreator.initialize(wiz);
-                wiz.putProperty("name", destdir.getName());
-                wiz.putProperty("projdir", destdir);
+                wiz.putProperty(WizardConstants.PROPERTY_NAME, destdir.getName());
+                wiz.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, destdir);
                 try {
                     projectCreator.instantiate();
                 } catch (IOException ex) {

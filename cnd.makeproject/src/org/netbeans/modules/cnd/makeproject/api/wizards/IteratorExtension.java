@@ -56,6 +56,14 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public interface IteratorExtension {
+
+    /**
+     * Method discover additional project artifacts by folder or binary file
+     * 
+     * @param map
+     */
+    void discoverArtifacts(Map<String,Object> map);
+
     /**
      * Method delegates a project creating to discovery.
      * Instantiate make project in simple mode.
@@ -72,7 +80,7 @@ public interface IteratorExtension {
      * @param project
      * @param functionToOpen
      */
-    public abstract void discoverProject(Map<String,Object> map, Project project, ProjectKind projectKind);
+    void discoverProject(Map<String,Object> map, Project project, ProjectKind projectKind);
 
     public enum ProjectKind {
         Minimal,

@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -67,6 +68,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,8 +77,6 @@ import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -93,15 +93,26 @@ public class ChooseArchetypePanel extends javax.swing.JPanel implements Explorer
     private static final RequestProcessor RP = new RequestProcessor(ChooseArchetypePanel.class.getName(),5);
 
     private static File getLocalCatalogFile() {
-        return new File(new File(System.getProperty("user.home"), ".m2"), "archetype-catalog.xml"); //NOI18N
+        return new File(MavenEmbedder.userMavenConfigurationHome, "archetype-catalog.xml"); // NOI18N
     }
 
-    private static FileObject getDefaultCatalogFileObject() {
-        URL url = ChooseArchetypePanel.class.getClassLoader().getResource("org/netbeans/modules/maven/archetype-catalog.xml");
-        if (url != null) {
-            return URLMapper.findFileObject(url);
+    private static URL getDefaultCatalogFile() throws IOException {
+        RepositoryInfo local = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
+        if (local == null) {
+            return null;
         }
-        return null;
+        List<NBVersionInfo> versions = RepositoryQueries.getVersions("org.apache.maven.archetype", "archetype-common", local); // NOI18N
+        if (versions.isEmpty()) {
+            return null;
+        }
+        // any need to sort?
+        NBVersionInfo newest = versions.get(0);
+        Artifact art = RepositoryUtil.createArtifact(newest);
+        File jar = art.getFile();
+        if (!jar.isFile()) {
+            return null;
+        }
+        return new URL("jar:" + jar.toURI() + "!/archetype-catalog.xml"); // NOI18N
     }
 
     private ExplorerManager manager;
@@ -331,10 +342,10 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return manager;
     }
     
-    public void run() {
-        Lookup.Result<ArchetypeProvider> res = Lookup.getDefault().lookup(new Lookup.Template<ArchetypeProvider>(ArchetypeProvider.class));
+    public @Override void run() {
         List<Archetype> archetypes = new ArrayList<Archetype>();
-        for (ArchetypeProvider provider : res.allInstances()) {
+        // XXX currently there will be none here; should reconsider UI of this panel
+        for (ArchetypeProvider provider : Lookup.getDefault().lookupAll(ArchetypeProvider.class)) {
             for (Archetype ar : provider.getArchetypes()) {
                 if (!archetypes.contains(ar)) {
                     archetypes.add(ar);
@@ -458,16 +469,7 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 return new Node[] { createLocalRepoNode() };
             }
             if (arch == CATALOGS_PLACEHOLDER) {
-                List<Node> nds = new ArrayList<Node>();
-                Node nd = createLocalCatalogNode();
-                if (nd != null) {
-                    nds.add(nd);
-                }
-                Node def = createDefaultCatalogNode();
-                if (def != null) {
-                    nds.add(def);
-                }
-                return nds.toArray(new Node[0]);
+                return new Node[] {createLocalCatalogNode(), createDefaultCatalogNode()};
             }
             return ChooseArchetypePanel.createNodes(arch, Children.LEAF);
         }
@@ -502,11 +504,12 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
     
     private static Node createLocalCatalogNode() {
-        File fil = getLocalCatalogFile();
-        if (!fil.exists()) {
-            return null;
-        }
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider(fil)));
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
+            protected @Override URL file() throws IOException {
+                File f = getLocalCatalogFile();
+                return f.isFile() ? f.toURI().toURL() : null;
+            }
+        }));
         nd.setName("local-catalog-content"); //NOI18N
         nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_LocalCatalog"));
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");
@@ -514,11 +517,11 @@ private void btnRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     private static Node createDefaultCatalogNode() {
-        FileObject fil = getDefaultCatalogFileObject();
-        if (fil == null) {
-            return null;
-        }
-        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider(fil)));
+        AbstractNode nd = new AbstractNode(new RepoProviderChildren(new CatalogRepoProvider() {
+            protected @Override URL file() throws IOException {
+                return getDefaultCatalogFile();
+            }
+        }));
         nd.setName("default-catalog-content"); //NOI18N
         nd.setDisplayName(NbBundle.getMessage(ChooseArchetypePanel.class, "LBL_DefaultCatalog"));
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/newproject/remoterepo.png");

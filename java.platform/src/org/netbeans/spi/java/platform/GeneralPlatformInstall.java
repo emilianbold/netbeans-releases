@@ -44,9 +44,54 @@
 
 package org.netbeans.spi.java.platform;
 
+import org.netbeans.api.java.platform.JavaPlatform;
+
 /**
  * An super class of all the platform installers. You never subclass directly
  * this class but either the {@link CustomPlatformInstall} or {@link PlatformInstall}
+ * <p>The {@link PlatformInstall} or {@link CustomPlatformInstall} instances should be
+ * registered in the org-netbeans-api-java/platform/installers folder on the system filesystem.
+ * </p>
+ * <div class="nonnormative">
+ * <p>Registration example:</p>
+ * <pre>
+ * <a href="@org-openide-util-lookup@/org/openide/util/lookup/ServiceProvider.html">&#64;ServiceProvider</a>(
+ *    service=GeneralPlatformInstall.class,
+ *    path="org-netbeans-api-java/platform/installers"
+ * )
+ * public final class MyPlatformInstall extends {@link PlatformInstall} {
+ * ...
+ * }
+ * </pre>
+ * 
+ * <p>After the {@link PlatformInstall#createIterator createIterator} is finished,
+ * a platform definition file shall be created at "Services/Platforms/org-netbeans-api-java-Platform" folder:
+ * </p>
+ * <pre>
+ * public java.util.Set instantiate() throws IOException {
+ *     MyPlatform p = new MyPlatform();
+ *     p.setDisplayName(theName);
+ *     p.setVendor(theVendor);
+ *     return Collections.singleton(<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html">InstanceDataObject.create</a>(
+ *         <a href="@org-openide-loaders@/org/openide/loaders/DataFolder.html">DataFolder.findFolder</a>(FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform")),
+ *         theName,
+ *         p,
+ *         null,
+ *         true));
+ * }
+ * </pre>
+ * <p>
+ * The platform definition file has to represent the {@link JavaPlatform} instance.
+ * This can be done in many ways. For example using the
+ * <a href="@org-netbeans-modules-settings@/org/netbeans/api/settings/ConvertAsJavaBean.html">
+ * ConvertAsJavaBean</a> annotation:</p>
+ * <pre>
+ * &#64;ConvertAsJavaBean
+ * public static class MyPlatform extends JavaPlatform {
+ *     ...
+ * }
+ * </pre>
+ * </div>
  * @author Tomas Zezula
  * @since 1.5
  */

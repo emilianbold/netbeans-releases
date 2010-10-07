@@ -44,20 +44,29 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
 import org.w3c.dom.Element;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.NodeList;
 
 import org.netbeans.spi.settings.DOMConvertor;
 import org.openide.util.NbBundle;
-import org.openide.filesystems.*;
 
 import java.util.List;
 import java.util.Collections;
 import java.util.ArrayList;
-import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author  nn136682
@@ -75,7 +84,13 @@ public class TargetModuleConverter extends DOMConvertor {
     private static final String A_TIMESTAMP = "timestamp";
     private static final String A_CONTENT_DIR = "content-dir";
     private static final String A_CONTEXT_ROOT = "context-root";
-    
+
+    private static final Logger LOGGER = Logger.getLogger(TargetModuleConverter.class.getName());
+
+    // Better solution would be to make a limitation of usage of one thread per
+    // server instance for deployment/undeployment/redeployment
+    private static final Set<FileObject> FILE_OBJECTS_IN_USE = new HashSet<FileObject>();
+
     public static DOMConvertor create() {
         return new TargetModuleConverter();
     }
@@ -153,118 +168,187 @@ public class TargetModuleConverter extends DOMConvertor {
         return targetModulesDir;
     }
 
-    public static boolean writeTargetModule(TargetModule instance, String managerDir, String targetDir, String tmFileName) {
-        FileLock lock = null;
-        Writer writer = null;
+    public static boolean writeTargetModule(final TargetModule instance, String managerDir, String targetDir, String tmFileName) {
         try {
             FileObject managerDirFO = getTargetModulesDir().getFileObject(managerDir);
-            if (managerDirFO == null)
+            if (managerDirFO == null) {
                 managerDirFO = getTargetModulesDir().createFolder(managerDir);
-            FileObject targetDirFO = managerDirFO.getFileObject(targetDir);
-            if (targetDirFO == null)
-                targetDirFO = managerDirFO.createFolder(targetDir);
-            FileObject fo = FileUtil.createData(targetDirFO, tmFileName);
-            lock = fo.lock();
-            writer = new OutputStreamWriter(fo.getOutputStream(lock));
-            create().write(writer, new TargetModule.List(instance));
-            return true;
-            
-        } catch(Exception ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
-            return false;
-        }
-        finally {
-            try {
-            if (lock != null) lock.releaseLock();
-            if (writer != null) writer.close();
-            } catch (Exception e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
             }
+            FileObject targetDirFO = managerDirFO.getFileObject(targetDir);
+            if (targetDirFO == null) {
+                targetDirFO = managerDirFO.createFolder(targetDir);
+            }
+            final FileObject fo = FileUtil.createData(targetDirFO, tmFileName);
+
+            executeExclusively(fo, new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    FileLock lock = fo.lock();
+                    try {
+                        Writer writer = new OutputStreamWriter(fo.getOutputStream(lock));
+                        try {
+                            create().write(writer, new TargetModule.List(instance));
+                            return null;
+                        } finally {
+                            if (writer != null) {
+                                writer.close();
+                            }
+                        }
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                }
+            });
+            return true;
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+            return false;
+        } catch (Exception ioe) {
+            LOGGER.log(Level.WARNING, null, ioe);
+            return false;
         }
     }
 
     public static TargetModule readTargetModule(String managerDir, String targetDir, String tmFileName) {
-        Reader reader = null;
         try {
             FileObject dir = getTargetModulesDir().getFileObject(managerDir);
             if (dir != null) {
-                dir = dir.getFileObject (targetDir);
+                dir = dir.getFileObject(targetDir);
                 if (dir != null) {
-                    FileObject fo = dir.getFileObject(tmFileName);
+                    final FileObject fo = dir.getFileObject(tmFileName);
                     if (fo != null) {
-                        reader = new InputStreamReader(fo.getInputStream());
-                        TargetModule.List tml = (TargetModule.List) create().read(reader);
-                        if (tml == null || tml.getTargetModules().length < 1)
-                            return null;
-                        return tml.getTargetModules()[0];
+                        return executeExclusively(fo, new Callable<TargetModule>() {
+
+                            @Override
+                            public TargetModule call() throws Exception {
+                                Reader reader = new InputStreamReader(fo.getInputStream());
+                                try {
+                                    TargetModule.List tml = (TargetModule.List) create().read(reader);
+                                    if (tml == null || tml.getTargetModules().length < 1) {
+                                        return null;
+                                    }
+                                    return tml.getTargetModules()[0];
+                                } finally {
+                                    if (reader != null) {
+                                        reader.close();
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
             return null;
-        } catch(Exception ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
             return null;
-        } finally {
-            try {  if (reader != null) reader.close(); } catch(Exception e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
-            }
+        } catch (Exception ioe) {
+            LOGGER.log(Level.WARNING, null, ioe);
+            return null;
         }
     }
 
-    public static List getTargetModulesByContextRoot(String managerDir, String targetDir, String contextRoot) {
-        Reader reader = null;
+    public static List<TargetModule> getTargetModulesByContextRoot(String managerDir, String targetDir, final String contextRoot) {
         try {
             FileObject dir = getTargetModulesDir().getFileObject(managerDir);
             if (dir != null) {
-                dir = dir.getFileObject (targetDir);
+                dir = dir.getFileObject(targetDir);
                 if (dir != null) {
                     java.util.Enumeration fos = dir.getChildren(false);
-                    ArrayList result = new ArrayList();
-                    while (fos.hasMoreElements()){
-                        FileObject fo = (FileObject) fos.nextElement();
-                        reader = new InputStreamReader(fo.getInputStream());
-                        TargetModule.List tml = (TargetModule.List) create().read(reader);
-                        if (tml != null && tml.getTargetModules().length > 0) {
-                            TargetModule tm = tml.getTargetModules()[0];
-                            if (contextRoot.equals(tm.getContextRoot()))
-                                result.add(tm);
-                        }
+                    final ArrayList<TargetModule> result = new ArrayList<TargetModule>();
+                    while (fos.hasMoreElements()) {
+                        final FileObject fo = (FileObject) fos.nextElement();
+                        executeExclusively(fo, new Callable<Void>() {
+
+                            @Override
+                            public Void call() throws Exception {
+                                Reader reader = new InputStreamReader(fo.getInputStream());
+                                try {
+                                    TargetModule.List tml = (TargetModule.List) create().read(reader);
+                                    if (tml != null && tml.getTargetModules().length > 0) {
+                                        TargetModule tm = tml.getTargetModules()[0];
+                                        if (contextRoot.equals(tm.getContextRoot())) {
+                                            result.add(tm);
+                                        }
+                                    }
+                                    return null;
+                                } finally {
+                                    if (reader != null) {
+                                        reader.close();
+                                    }
+                                }
+                            }
+                        });
                     }
                     return result;
                 }
             }
-            return Collections.EMPTY_LIST;
-        } catch(Exception ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
-            return Collections.EMPTY_LIST;
-        } finally {
-            try {  if (reader != null) reader.close(); } catch(Exception e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
-            }
+            return Collections.emptyList();
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
+            return Collections.emptyList();
+        } catch (Exception ioe) {
+            LOGGER.log(Level.WARNING, null, ioe);
+            return Collections.emptyList();
         }
     }
 
     public static TargetModule remove(String managerDir, String targetDir, String tmFileName) {
-        FileLock lock = null;
         try {
             FileObject dir = getTargetModulesDir().getFileObject(managerDir);
             if (dir != null) {
-                dir = dir.getFileObject (targetDir);
+                dir = dir.getFileObject(targetDir);
                 if (dir != null) {
-                    FileObject fo = dir.getFileObject(tmFileName);
+                    final FileObject fo = dir.getFileObject(tmFileName);
                     if (fo != null) {
-                        lock = fo.lock();
-                        fo.delete(lock);
+                        executeExclusively(fo, new Callable<Void>() {
+
+                            @Override
+                            public Void call() throws Exception {
+                                FileLock lock = fo.lock();
+                                try {
+                                    fo.delete(lock);
+                                    return null;
+                                } finally {
+                                    if (lock != null) {
+                                        lock.releaseLock();
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
             return null;
-        } catch(Exception ioe) {
-            Logger.getLogger("global").log(Level.WARNING, null, ioe);
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            Thread.currentThread().interrupt();
             return null;
+        } catch (Exception ioe) {
+            LOGGER.log(Level.WARNING, null, ioe);
+            return null;
+        }
+    }
+
+    private static <T> T executeExclusively(FileObject fo, Callable<T> action) throws InterruptedException, Exception {
+        synchronized (FILE_OBJECTS_IN_USE) {
+            while (FILE_OBJECTS_IN_USE.contains(fo)) {
+                FILE_OBJECTS_IN_USE.wait();
+            }
+            FILE_OBJECTS_IN_USE.add(fo);
+        }
+        try {
+            return action.call();
         } finally {
-            try {  if (lock != null) lock.releaseLock(); } catch(Exception e) {
-                Logger.getLogger("global").log(Level.WARNING, null, e);
+            synchronized (FILE_OBJECTS_IN_USE) {
+                FILE_OBJECTS_IN_USE.remove(fo);
+                FILE_OBJECTS_IN_USE.notifyAll();
             }
         }
     }

@@ -44,12 +44,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
-
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -58,27 +55,35 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * Implements condition of kind CsmCondition.Kind.EXPRESSION
  * @author Vladimir Kvashin
  */
-public class ConditionExpressionImpl extends OffsetableBase implements CsmCondition {
+public final class ConditionExpressionImpl extends OffsetableBase implements CsmCondition {
     
-    private CsmExpression expression;
+    private final CsmExpression expression;
     
-    public ConditionExpressionImpl(AST ast, CsmFile file, CsmScope scope) {
-            super(ast, file);
-            expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast, scope);
+    private ConditionExpressionImpl(AST ast, CsmFile file, CsmScope scope) {
+        super(ast, file);
+        expression = new AstRenderer((FileImpl)getContainingFile()).renderExpression(ast, scope);
     }
 
+    public static ConditionExpressionImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ConditionExpressionImpl(ast, file, scope);
+    }
+
+    @Override
     public CsmCondition.Kind getKind() {
         return CsmCondition.Kind.EXPRESSION;
     }
 
+    @Override
     public CsmVariable getDeclaration() {
         return null;
     }
 
+    @Override
     public CsmExpression getExpression() {
         return expression;
     }
 
+    @Override
     public CsmScope getScope() {
         return expression.getScope();
     }

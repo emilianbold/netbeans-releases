@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.Collections;
-import java.util.List;
-import javax.xml.namespace.QName;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMQName;
+import org.netbeans.modules.maven.model.pom.POMQNames;
+import org.netbeans.modules.maven.model.pom.VersionablePOMComponent;
 import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
 
 /**
  *
@@ -61,7 +61,13 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
 
 
     public String getGroupId() {
-        return getChildElementText(getModel().getPOMQNames().GROUPID.getQName());
+        POMModel model = getModel();
+        assert model != null;
+        POMQNames qnames = model.getPOMQNames();
+        assert qnames != null;
+        POMQName groupid = qnames.GROUPID;
+        assert groupid != null;
+        return getChildElementText(groupid.getQName());
     }
 
     public void setGroupId(String groupId) {

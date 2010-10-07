@@ -123,7 +123,7 @@ class RepositoryRevision {
             if(forDiff) {
                 return getFakeRootEvent();
             }
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }       
     }
 
