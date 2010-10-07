@@ -108,9 +108,9 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
 
-    @ForAllEnvironments
-    @RandomlyFails
-    public void test_LexYacc_BuildLocalAndRemote() throws Exception {
+//    @ForAllEnvironments
+//    @RandomlyFails
+    public void DISABLED_test_LexYacc_BuildLocalAndRemote() throws Exception {
         MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Build");
         int timeout = getSampleBuildTimeout();
         changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
@@ -126,9 +126,9 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
     }
 
-    @ForAllEnvironments
-    @RandomlyFails
-    public void test_LexYacc_Updates() throws Exception {
+//    @ForAllEnvironments
+//    @RandomlyFails
+    public void DISABLED_test_LexYacc_Updates() throws Exception {
         MakeProject makeProject = prepareSampleProject(Sync.RFS, Toolchain.GNU, "LexYacc", "LexYacc_Updates");
         int timeout = getSampleBuildTimeout();
         buildProject(makeProject, ActionProvider.COMMAND_CLEAN, timeout, TimeUnit.SECONDS);
