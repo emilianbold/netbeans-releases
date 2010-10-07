@@ -33,6 +33,7 @@ package org.netbeans.modules.editor.mimelookup;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -59,6 +60,8 @@ import javax.lang.model.util.Types;
 import javax.tools.Diagnostic.Kind;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -219,6 +222,9 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
             return Collections.emptyList();
         }
 
+        if ("mimeType".contentEquals(attr.getSimpleName())) { // NOI18N
+            return completeMimePath(annotated, annotation, attr, userText);
+        }
         if (!"service".contentEquals(attr.getSimpleName())) {
             return Collections.emptyList();
         }
@@ -258,6 +264,77 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
         }
 
         return result;
+    }
+    
+    private static final String[] DEFAULT_COMPLETIONS = {"text/plain", "text/xml", "text/x-java"}; // NOI18N
+    private Processor COMPLETIONS;
+    private Iterable<? extends Completion> completeMimePath(
+        Element element, AnnotationMirror annotation,
+        ExecutableElement attr, String userText
+    ) {
+        if (userText == null) {
+            userText = "";
+        }
+        if (userText.startsWith("\"")) {
+            userText = userText.substring(1);
+        }
+
+        Set<Completion> res = new HashSet<Completion>();
+        if (COMPLETIONS == null) {
+            String pathCompletions = System.getProperty("org.openide.awt.ActionReference.completion");
+            if (pathCompletions != null) {
+                ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
+                if (l == null) {
+                    l = Thread.currentThread().getContextClassLoader();
+                }
+                if (l == null) {
+                    l = CreateRegistrationProcessor.class.getClassLoader();
+                }
+                try {
+                    COMPLETIONS = (Processor)Class.forName(pathCompletions, true, l).newInstance();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    // no completions, OK
+                    COMPLETIONS = this;
+                }
+            } else {
+                return res;
+            }
+        }
+        if (COMPLETIONS != null && COMPLETIONS != this) {
+            COMPLETIONS.init(processingEnv);
+            for (Completion completion : COMPLETIONS.getCompletions(element, annotation, attr, "Editors/" + userText)) {
+                String v = completion.getValue();
+                if (v == null) {
+                    continue;
+                }
+                String[] arr = v.split("/");
+                if (arr.length > 3 || arr.length < 2) {
+                    continue;
+                }
+                if (!arr[0].equals("\"Editors")) {
+                    continue;
+                }
+                if (arr[1].length() == 0 || Character.isUpperCase(arr[1].charAt(0))) {
+                    // upper case means folders created by @MimeLocation very likelly
+                    continue;
+                }
+                if (arr.length > 2) {
+                    res.add(new TypeCompletion('"' + arr[1] + '/' + arr[2]));
+                } else {
+                    res.add(new TypeCompletion('"' + arr[1] + '/'));
+                }
+            }
+        }
+        if (res.isEmpty()) {
+            for (String c : DEFAULT_COMPLETIONS) {
+                if (c.startsWith(userText)) {
+                    res.add(new TypeCompletion("\"" + c));
+                }
+            }
+        }
+        
+        return res;
     }
 
     private void checkMimeLocation(TypeElement clazz, AnnotationMirror am) {
