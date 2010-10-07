@@ -195,4 +195,12 @@ public class PHPBracketCompleterFileBasedTest extends PHPTestBase {
     public void testAlternativeSyntaxIf_06()throws Exception {
         testIndentInFile("testfiles/bracketCompleter/alternativeSyntaxIf_06.php");
     }
+
+    public void testIssue167816_01()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue167816_01.php");
+    }
+
+    public void testIssue167816_02()throws Exception {
+        testIndentInFile("testfiles/bracketCompleter/issue167816_02.php");
+    }
 }
