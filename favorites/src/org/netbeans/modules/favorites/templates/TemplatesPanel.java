@@ -995,7 +995,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         if (nodes == null || nodes.length != 1 || ! nodes [0].isLeaf ()) {
             return false;
         }
-        int count = nodes [0].getParentNode ().getChildren ().getNodesCount ();
+        Node parent = nodes [0].getParentNode ();
+        if (parent == null) {
+            return false;
+        }
+        int count = parent.getChildren ().getNodesCount ();
         int pos = getNodePosition (nodes [0]);
         return pos != -1 && pos < (count - 1);
     }
