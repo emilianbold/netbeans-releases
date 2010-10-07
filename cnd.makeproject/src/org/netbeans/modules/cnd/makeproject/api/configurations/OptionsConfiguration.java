@@ -136,7 +136,7 @@ public class OptionsConfiguration {
 
     @Override
     public String toString() {
-        return "{commandLine=" + commandLine + "] dirty=" + dirty +
-                " commandLineModified=" + commandLineModified + '}';
+        return "{commandLine=" + commandLine + "] dirty=" + dirty + // NOI18N
+                " commandLineModified=" + commandLineModified + '}'; // NOI18N
     }
 }

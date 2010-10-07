@@ -185,6 +185,6 @@ public class VectorConfiguration<E> {
             }
             sb.append(e);
         }
-        return "{value=[" + sb + "] dirty=" + dirty +'}';
+        return "{value=[" + sb + "] dirty=" + dirty +'}'; // NOI18N
     }
 }
