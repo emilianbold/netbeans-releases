@@ -207,7 +207,8 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        return valid ? getDataObject().isValid() : false;
+        DataObject data = getDataObject();
+        return valid && data != null ? data.isValid() : false; // #190819
     }
     
     FileObject getFileObject() {
