@@ -112,6 +112,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         if (lastConfiguration != null && lastConfiguration.getModified()) {
             return false;
         }
+        if (customToolConfiguration != null && customToolConfiguration.getModified()) {
+            return false;
+        }
         return true;
     }
 
