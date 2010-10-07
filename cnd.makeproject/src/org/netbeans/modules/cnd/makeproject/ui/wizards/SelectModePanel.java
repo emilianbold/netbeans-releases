@@ -136,7 +136,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 if (projectFolder.getText().isEmpty()) {
                     if (projectName != null && ! projectName.isEmpty() ) {
                         File projectLocation = ProjectChooser.getProjectsFolder();
-                        File projectFile = new File(projectLocation, projectName);
+                        File projectFile = CndFileUtils.createLocalFile(projectLocation, projectName);
                         projectFolder.setText(projectFile.getAbsolutePath());
                     }
                 }
@@ -513,7 +513,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            File projectDirFile = FileUtil.normalizeFile(new File(path));
+            File projectDirFile = FileUtil.normalizeFile(CndFileUtils.createLocalFile(path)); // it's project folder - always local
             File projectDirParent = projectDirFile.getParentFile();
             // in the cse of full remote the directory should not necessarily exist, but its parent should
             File fileToCheck = controller.isFullRemote() ? projectDirParent : projectDirFile;
@@ -536,7 +536,9 @@ public class SelectModePanel extends javax.swing.JPanel {
                     path = fileToCheck.getAbsolutePath();
                     return false;
                 }
-                File nbFile = new File(new File(path, MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.PROJECT_XML); // NOI18N
+                File nbFile = CndFileUtils.createLocalFile(
+                        CndFileUtils.createLocalFile(path, MakeConfiguration.NBPROJECT_FOLDER),
+                        MakeConfiguration.PROJECT_XML);
                 if (nbFile.exists()) {
                     messageKind = alreadyNbPoject;
                     return false;

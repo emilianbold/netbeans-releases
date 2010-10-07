@@ -123,7 +123,7 @@ public final class FileData {
         String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
                 '-' + executionEnvironment.getSSHPort(); //NOI18N
-        dataFile = new File(privProjectStorageDir, dataFileName);
+        dataFile = CndFileUtils.createLocalFile(privProjectStorageDir, dataFileName);
         if (!Boolean.getBoolean("cnd.remote.timestamps.clear")) {
             try {
                 load();

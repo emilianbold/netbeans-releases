@@ -171,7 +171,7 @@ public class ImportExecutable implements PropertyChangeListener {
                 projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(binaryPath).getName());
             }
             baseDir = projectParentFolder + File.separator + projectName;
-            projectFolder = new File(baseDir);
+            projectFolder = CndFileUtils.createLocalFile(baseDir);
         }
         String hostUID = (String) map.get(WizardConstants.PROPERTY_HOST_UID); // NOI18N
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N

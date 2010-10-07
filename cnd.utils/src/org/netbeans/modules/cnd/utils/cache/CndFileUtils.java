@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.net.URI;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
@@ -136,6 +137,32 @@ public final class CndFileUtils {
         } else {
             return fo;
         }
+    }
+
+    public static File createLocalFile(String absolutePath) {
+        Parameters.notNull("null path", absolutePath); //NOI18N
+        CndUtils.assertAbsolutePathInConsole(absolutePath);
+        return new File(absolutePath);
+    }
+
+    public static File createLocalFile(File base,  String absolutePath) {
+        Parameters.notNull("null base file", base); //NOI18N
+        CndUtils.assertAbsoluteFileInConsole(base); //NOI18N
+        Parameters.notNull("null path", absolutePath); //NOI18N
+        return new File(base, absolutePath);
+    }
+
+    public static File createLocalFile(String base,  String absolutePath) {
+        Parameters.notNull("null base file", base); //NOI18N
+        CndUtils.assertAbsolutePathInConsole(base);
+        Parameters.notNull("null path", absolutePath); //NOI18N
+        return new File(base, absolutePath);
+    }
+
+    public static File createLocalFile(URI uri) {
+        File file = new File(uri);
+        CndUtils.assertAbsoluteFileInConsole(file); //NOI18N
+        return file;
     }
 
     /**
