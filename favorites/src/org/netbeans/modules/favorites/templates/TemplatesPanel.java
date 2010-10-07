@@ -961,6 +961,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             return false;
         }
         
+        Node parent = nodes [0].getParentNode ();
+        if (parent == null) {
+            return false;
+        }
         int pos = getNodePosition (nodes [0]);
         return pos != -1 && pos > 0;
     }
