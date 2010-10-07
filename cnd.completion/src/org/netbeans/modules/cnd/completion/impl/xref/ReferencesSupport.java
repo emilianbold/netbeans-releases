@@ -95,7 +95,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -159,13 +158,7 @@ public final class ReferencesSupport {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
 
-        StyledDocument doc = null;
-        try {
-            doc = cookie.openDocument();
-        } catch (UserQuestionException ex) {
-            ex.confirmed();
-            doc = cookie.openDocument();
-        }
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
 
         return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
