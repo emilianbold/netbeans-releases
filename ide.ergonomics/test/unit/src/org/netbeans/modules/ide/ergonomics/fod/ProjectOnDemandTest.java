@@ -199,7 +199,7 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         Node n = lvp.createLogicalView();
         assertNotNull("Node provided", n);
         assertNull("Nothing found", lvp.findPath(n, ""));
-        assertEquals("One child: " + n.getChildren().snapshot(), 1, n.getChildren().getNodesCount());
+        assertEquals("One child: " + n.getChildren().snapshot(), 1, n.getChildren().getNodesCount(true));
 
         assertNull("No test factory in project", p.getLookup().lookup(TestFactory.class));
         assertNull("No test factory in project", p2.getLookup().lookup(TestFactory.class));
@@ -235,8 +235,8 @@ public class ProjectOnDemandTest extends NbTestCase implements PropertyChangeLis
         assertNotNull("Root found", r);
         assertEquals("Same name", n.getName(), r.getName());
         assertEquals("Same display name", n.getDisplayName(), r.getDisplayName());
-        assertEquals("Two children", 2, r.getChildren().getNodesCount());
-        assertEquals("Two children", 2, n.getChildren().getNodesCount());
+        assertEquals("Two children", 2, r.getChildren().getNodesCount(true));
+        assertEquals("Two children", 2, n.getChildren().getNodesCount(true));
 
         OpenProjects.getDefault().close (new Project[] { newP });
         if (OpenProjects.getDefault().getOpenProjects().length != 0) {
