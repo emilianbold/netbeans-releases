@@ -199,6 +199,10 @@ public class CndUtils {
         }
     }
 
+    public static void assertAbsoluteFileInConsole(File file) {
+        assertAbsoluteFileInConsole(file, "Absolute path should be used"); //NOI18N
+    }
+
     public static void assertAbsoluteFileInConsole(File file, String message) {
         if (CndUtils.isDebugMode()) {
             if (! file.isAbsolute()) {

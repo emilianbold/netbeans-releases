@@ -183,7 +183,7 @@ public class ProjectCreator {
      */
     public AntProjectHelper createProject(String name, String displayName, 
             Set<String> folders, Set<String> libs) throws IOException {
-        File dirF = new File(projectFolder);
+        File dirF = CndFileUtils.createLocalFile(projectFolder);
         if (dirF != null) {
             dirF = CndFileUtils.normalizeFile(dirF);
         }
