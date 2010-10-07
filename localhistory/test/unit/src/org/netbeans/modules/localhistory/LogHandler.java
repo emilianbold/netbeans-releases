@@ -57,6 +57,7 @@ public class LogHandler extends Handler {
     private String interceptedMessage;
     private boolean done = false;
     private final Compare compare;
+    private boolean block = false;
 
     public enum Compare {
         STARTS_WITH,
@@ -79,6 +80,9 @@ public class LogHandler extends Handler {
     @Override
     public void publish(LogRecord record) {
         if(!done) {
+            
+
+            
             String message = record.getMessage();
             if(message == null) {
                 return;
@@ -94,6 +98,15 @@ public class LogHandler extends Handler {
                     throw new IllegalStateException("wrong value " + compare);
             }
             if(done) {
+                
+                while(block) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            
                 interceptedMessage = message;
             }
         }
@@ -103,6 +116,14 @@ public class LogHandler extends Handler {
         done = false;
     }
 
+    public void block() {
+        block = true;
+    }
+    
+    public void unblock() {
+        block = false;
+    }
+    
     public boolean isDone() {
         return done;
     }

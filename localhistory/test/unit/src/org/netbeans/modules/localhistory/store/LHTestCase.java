@@ -215,7 +215,7 @@ public class LHTestCase extends NbTestCase {
         // what we do here is that we write something into the file and then invoke store.filechange(file)
         // to get the files contents stored...
         write(file, data.getBytes());
-        store.fileChange(file, ts);        
+        store.fileChange(file, true, ts);        
     }
     
     static String read(InputStream is, int length) throws Exception {        
