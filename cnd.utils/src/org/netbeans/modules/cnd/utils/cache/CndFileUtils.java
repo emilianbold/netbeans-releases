@@ -60,6 +60,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -110,6 +111,10 @@ public final class CndFileUtils {
         String path = file.getPath();
         String normPath = normalizeAbsolutePath(file.getAbsolutePath());
         return path.equals(normPath) ? file : new File(normPath);
+    }
+
+    public static File toFile(FileObject fileObject) {
+        return CndFileSystemProvider.toFile(fileObject);
     }
 
     public static FileObject toFileObject(File file) {
