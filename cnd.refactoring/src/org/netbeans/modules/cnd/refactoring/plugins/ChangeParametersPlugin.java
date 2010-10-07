@@ -114,9 +114,10 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         return startFile;
     }
 
+    @Override
     protected Collection<CsmFile> getRefactoredFiles() {
         Collection<? extends CsmObject> objs = getRefactoredObjects();
-        if (objs == null || objs.size() == 0) {
+        if (objs == null || objs.isEmpty()) {
             return Collections.emptySet();
         }
         Collection<CsmFile> files = new HashSet<CsmFile>();
@@ -256,6 +257,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
 
+                @Override
                 public int compare(CsmReference o1, CsmReference o2) {
                     return o1.getStartOffset() - o2.getStartOffset();
                 }
@@ -376,6 +378,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         final FunParamsTokenProcessor tp = new FunParamsTokenProcessor(doc);
         if (doc != null) {
             doc.render(new Runnable() {
+                @Override
                 public void run() {
                     CndTokenUtilities.processTokens(tp, doc, ref.getStartOffset(), doc.getLength());
                 }
@@ -455,6 +458,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             this.doc = doc;
         }
 
+        @Override
         public boolean isStopped() {
             return state == State.END;
         }
@@ -463,6 +467,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             return funInfo;
         }
 
+        @Override
         public boolean token(Token<TokenId> token, int tokenOffset) {
             if (blockConsumer != null) {
                 if (blockConsumer.isLastToken(token)) {
@@ -493,10 +498,12 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             return false;
         }
 
+        @Override
         public void start(int startOffset, int firstTokenOffset, int lastOffset) {
 
         }
 
+        @Override
         public void end(int offset, int lastTokenOffset) {
             if (funInfo.startOffset != funInfo.endOffset) {
                 try {
