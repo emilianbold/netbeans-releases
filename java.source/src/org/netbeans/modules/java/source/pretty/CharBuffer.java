@@ -280,13 +280,17 @@ public final class CharBuffer {
         lastBlankLines = numBlankLines;
     }
     public boolean isWhitespaceLine() {
-        int toCheck = col;
+        if (col > 0) {
+            int pos = used - 1;
 
-        while (toCheck > 0) {
-            if (!Character.isWhitespace(chars[used - toCheck])) {
-                return false;
+            while (pos >= 0) {
+                if (chars[pos] == '\n') return true;
+
+                if (!Character.isWhitespace(chars[pos])) {
+                    return false;
+                }
+                pos--;
             }
-            toCheck--;
         }
 
         return true;

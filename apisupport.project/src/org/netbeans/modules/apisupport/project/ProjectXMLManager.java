@@ -660,7 +660,7 @@ public final class ProjectXMLManager {
      * Gives a map from test type (e.g. <em>unit</em> or <em>qa-functional</em>)
      * to the set of {@link TestModuleDependency dependencies} belonging to it.
      */
-    public Map<String, Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
+    public @NonNull Map<String, Set<TestModuleDependency>> getTestDependencies(final ModuleList ml) {
         Element testDepsEl = findTestDependenciesElement(getConfData());
 
         Map<String, Set<TestModuleDependency>> testDeps = new HashMap<String, Set<TestModuleDependency>>();

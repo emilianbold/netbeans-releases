@@ -32,14 +32,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.antlr3</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.api.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -115,6 +107,20 @@
                     <run-dependency>
                         <release-version>3</release-version>
                         <specification-version>3.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <!-- only compile time dependency -->
+                    <code-name-base>org.netbeans.libs.antlr3.devel</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.antlr3.runtime</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

@@ -54,7 +54,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -413,7 +412,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
-        TokenSequence origPreprocTS = cppTokenSequence(doc, searchOffset, false);
+        TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
         if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
             return Collections.<CsmReference>emptyList();
         }
@@ -586,6 +585,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         @Override
         public String toString() {
             return "tokenRef[" + start + "-" + end + "]";//NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Must not be called."); //NOI18N
         }
     }
 }

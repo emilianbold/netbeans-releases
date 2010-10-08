@@ -553,13 +553,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
 //  </jdbc-connection-pool>
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = null;
+        Document doc = null;
         try {
             docBuilder = docFactory.newDocumentBuilder();
+            docBuilder.setEntityResolver(DDResolver.getInstance());
+            doc = readResourceFile(docBuilder, sunResourcesXml);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        docBuilder.setEntityResolver(DDResolver.getInstance());
-        Document doc = readResourceFile(docBuilder, sunResourcesXml);
 
 
         if (doc == null) return;
@@ -574,30 +575,30 @@ public class Hk2DatasourceManager implements DatasourceManager {
         Node newPool = null;
         try {
             newPool = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(CP_TAG_1+CP_TAG_2+CP_TAG_3+CP_TAG_4+CP_TAG_5))).getDocumentElement(), true));
+            UrlData urlData = new UrlData(url);
+
+            // Maybe move this logic into UrlData?
+            String dsClassName = computeDataSourceClassName(url, driver);
+
+            appendAttr(doc, newPool, ATTR_DATASOURCE_CLASSNAME, dsClassName, false);
+            appendAttr(doc, newPool, ATTR_POOL_NAME, poolName, true);
+            appendAttr(doc, newPool, ATTR_RES_TYPE, RESTYPE_DATASOURCE, true);
+            appendProperty(doc, newPool, PROP_SERVER_NAME, urlData.getHostName(), true);
+            appendProperty(doc, newPool, PROP_PORT_NUMBER, urlData.getPort(), false);
+            appendProperty(doc, newPool, PROP_DATABASE_NAME, urlData.getDatabaseName(), false);
+            appendProperty(doc, newPool, PROP_USER, username, true);
+            // blank password is ok so check just null here and pass force=true.
+            if(password != null) {
+                appendProperty(doc, newPool, PROP_PASSWORD, password, true);
+            }
+            appendProperty(doc, newPool, PROP_URL, url, true);
+            appendProperty(doc, newPool, PROP_DRIVER_CLASS, driver, true);
+
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + newPool.getTextContent());
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        UrlData urlData = new UrlData(url);
-
-        // Maybe move this logic into UrlData?
-        String dsClassName = computeDataSourceClassName(url, driver);
-        
-        appendAttr(doc, newPool, ATTR_DATASOURCE_CLASSNAME, dsClassName, false);
-        appendAttr(doc, newPool, ATTR_POOL_NAME, poolName, true);
-        appendAttr(doc, newPool, ATTR_RES_TYPE, RESTYPE_DATASOURCE, true);
-        appendProperty(doc, newPool, PROP_SERVER_NAME, urlData.getHostName(), true);
-        appendProperty(doc, newPool, PROP_PORT_NUMBER, urlData.getPort(), false);
-        appendProperty(doc, newPool, PROP_DATABASE_NAME, urlData.getDatabaseName(), false);
-        appendProperty(doc, newPool, PROP_USER, username, true);
-        // blank password is ok so check just null here and pass force=true.
-        if(password != null) {
-            appendProperty(doc, newPool, PROP_PASSWORD, password, true);
-        }
-        appendProperty(doc, newPool, PROP_URL, url, true);
-        appendProperty(doc, newPool, PROP_DRIVER_CLASS, driver, true);
-        
-        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New connection pool resource:\n" + newPool.getTextContent());
 
         writeXmlResourceToFile(sunResourcesXml, doc);
     }
@@ -659,14 +660,16 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = null;
+        Document doc = null;
         try {
             docBuilder = docFactory.newDocumentBuilder();
+            docBuilder.setEntityResolver(DDResolver.getInstance());
+            doc = readResourceFile(docBuilder, sunResourcesXml);
         } catch (ParserConfigurationException ex) {
             Exceptions.printStackTrace(ex);
         }
-        docBuilder.setEntityResolver(DDResolver.getInstance());
-        Document doc = readResourceFile(docBuilder, sunResourcesXml);
 
+        if (null == doc) return;
         NodeList resourcesNodes = doc.getElementsByTagName("resources");//NOI18N
         Node resourcesNode = null;
         if(resourcesNodes.getLength()<1){
@@ -677,14 +680,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
         Node newJdbcRes = null;
         try {
             newJdbcRes = resourcesNode.appendChild(doc.importNode(docBuilder.parse(new InputSource(new StringReader(JDBC_TAG_1+JDBC_TAG_2))).getDocumentElement(), true));
+            appendAttr(doc, newJdbcRes, ATTR_POOLNAME, poolName, true);
+            appendAttr(doc, newJdbcRes, ATTR_JNDINAME, jndiName, true);
+
+            Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + newJdbcRes.getTextContent());
         } catch (SAXException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        appendAttr(doc, newJdbcRes, ATTR_POOLNAME, poolName, true);
-        appendAttr(doc, newJdbcRes, ATTR_JNDINAME, jndiName, true);
-        
-        Logger.getLogger("glassfish-javaee").log(Level.FINER, "New JDBC resource:\n" + newJdbcRes.getTextContent());
         writeXmlResourceToFile(sunResourcesXml, doc);
     }
     

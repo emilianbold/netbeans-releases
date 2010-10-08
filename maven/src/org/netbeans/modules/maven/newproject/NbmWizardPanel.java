@@ -132,6 +132,9 @@ public class NbmWizardPanel implements WizardDescriptor.Panel,
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        if (ArchetypeWizardUtils.NB_SUITE_ARCH.equals(archetype)) {
+            d.putProperty(ArchetypeWizardUtils.DEFINE_NETBEANS_INSTALLATION, true);
+        }
     }
     
     @Override

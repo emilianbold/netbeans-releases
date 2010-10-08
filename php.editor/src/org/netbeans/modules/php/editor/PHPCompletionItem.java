@@ -1240,6 +1240,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     }
 
 
+    static class TagItem extends KeywordItem {
+        private int sortKey;
+
+        public TagItem(String tag, int sortKey, CompletionRequest request) {
+            super(tag, request);
+            this.sortKey = sortKey;
+        }
+
+        @Override
+        public String getSortText() {
+            return "" + sortKey + getName();
+        }
+    }
 
 
     public static class CompletionRequest {

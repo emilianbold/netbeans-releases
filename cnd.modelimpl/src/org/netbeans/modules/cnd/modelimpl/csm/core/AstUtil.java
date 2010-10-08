@@ -57,11 +57,13 @@ import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 
 /**
@@ -95,7 +97,7 @@ public class AstUtil {
         for( ; token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.ID:
-                    l.add(NameCache.getManager().getString(token.getText()));
+                    l.add(NameCache.getManager().getString(AstUtil.getText(token)));
                     break;
                 case CPPTokenTypes.SCOPE:
                     break;
@@ -119,7 +121,7 @@ public class AstUtil {
         return null;
     }
 
-    public static String findId(AST ast) {
+    public static CharSequence findId(AST ast) {
         return findId(ast, -1);
     }
 
@@ -127,14 +129,14 @@ public class AstUtil {
      * Finds ID (either CPPTokenTypes.CSM_QUALIFIED_ID or CPPTokenTypes.ID)
      * in direct children of the given AST tree
      *
-     * @param ast tree to secarch ID in
+     * @param ast tree to search ID in
      *
      * @param limitingTokenType type of token that, if being found, stops search
      *        -1 means that there is no such token.
      *        This parameter allows, for example, searching until "}" is encountered
      * @return found id
      */
-    public static String findId(AST ast, int limitingTokenType) {
+    public static CharSequence findId(AST ast, int limitingTokenType) {
 	return findId(ast, limitingTokenType, false);
     }
 
@@ -142,7 +144,7 @@ public class AstUtil {
      * Finds ID (either CPPTokenTypes.CSM_QUALIFIED_ID or CPPTokenTypes.ID)
      * in direct children of the given AST tree
      *
-     * @param ast tree to secarch ID in
+     * @param ast tree to search ID in
      *
      * @param limitingTokenType type of token that, if being found, stops search
      *        -1 means that there is no such token.
@@ -150,23 +152,23 @@ public class AstUtil {
      * @param qualified flag indicating if full qualified id is needed
      * @return id
      */
-    public static String findId(AST ast, int limitingTokenType, boolean qualified) {
+    public static CharSequence findId(AST ast, int limitingTokenType, boolean qualified) {
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             int type = token.getType();
             if( type == limitingTokenType && limitingTokenType >= 0 ) {
                 return null;
             }
             else if( type == CPPTokenTypes.ID ) {
-                return token.getText();
+                return AstUtil.getText(token);
             }
             else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
 		if( qualified ) {
-		    return token.getText();
+		    return AstUtil.getText(token);
 		}
                 AST last = getLastChild(token);
                 if( last != null) {
                     if( last.getType() == CPPTokenTypes.ID ) {
-                        return last.getText();
+                        return AstUtil.getText(last);
                     }
                     else {
                         AST first = token.getFirstChild();
@@ -179,13 +181,22 @@ public class AstUtil {
                             }
                             return sb.toString();
                         } else if (first.getType() == CPPTokenTypes.ID){
-                            return first.getText();
+                            return AstUtil.getText(first);
                         }
                     }
                 }
             }
         }
         return "";
+    }
+
+    public static CharSequence getText(AST ast) {
+        if (ast instanceof FakeAST) {
+            return ((FakeAST)ast).getTextID();
+        } else if (ast instanceof CsmAST) {
+            return ((CsmAST)ast).getTextID();
+        }
+        return ast.getText();
     }
 
     public static AST findMethodName(AST ast){
@@ -305,6 +316,7 @@ public class AstUtil {
 
     public static void toStream(AST ast, final PrintStream ps) {
         ASTVisitor impl = new ASTVisitor() {
+            @Override
             public void visit(AST node) {
 		print(node, ps);
                 for( AST node2 = node; node2 != null; node2 = node2.getNextSibling() ) {

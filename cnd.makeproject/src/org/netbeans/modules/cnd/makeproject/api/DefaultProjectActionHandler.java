@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -66,6 +65,8 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -76,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -87,7 +89,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -233,13 +234,13 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         if (actionType == ProjectActionEvent.PredefinedType.BUILD) {
             converter = new CompilerLineConvertor(
                     conf.getCompilerSet().getCompilerSet(),
-                    execEnv, FileUtil.toFileObject(new File(runDirectory)));
+                    execEnv, CndFileUtils.toFileObject(runDirectory));
         }
 
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-        String workingDirectory = convertToRemoteIfNeeded(execEnv, runDirectory);
+        String workingDirectory = convertWorkingDirToRemoteIfNeeded(execEnv, runDirectory);
 
         if (workingDirectory == null) {
             // TODO: fix me
@@ -310,12 +311,16 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         executorTask = es.run();
     }
 
-    protected static String convertToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
+    private String convertWorkingDirToRemoteIfNeeded(ExecutionEnvironment execEnv, String localDir) {
         if (!checkConnection(execEnv)) {
             return null;
         }
         if (execEnv.isRemote()) {
-            return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
+                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            } else {
+                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
+            }
         }
         return localDir;
     }

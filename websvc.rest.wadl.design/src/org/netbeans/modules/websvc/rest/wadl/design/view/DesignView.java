@@ -270,7 +270,7 @@ public class DesignView extends JPanel {
                     contentWidget.addChild(listWidget);
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException ex) {
             ex.printStackTrace();
             reportError(ex);
         }

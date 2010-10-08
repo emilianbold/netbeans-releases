@@ -62,6 +62,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 
 
 /**
@@ -236,7 +237,10 @@ public class TestUtil {
 	}
 		
     }
-    
+
+    public static void setJavaFileFilter(JavaFileFilterImplementation impl) {
+        JavaFileFilterQuery.setTestFileFilter(impl);
+    }
     
     // Private methods ---------------------------------------------------------
     

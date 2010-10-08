@@ -555,7 +555,12 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     static final void refreshHints(ResultIterator controller) {
         List<ErrorDescription> allHints = new ArrayList<ErrorDescription>();
         collectHints(controller, allHints);
-        HintsController.setErrors(controller.getSnapshot().getSource().getFileObject(), HintsTask.class.getName(), allHints);
+        FileObject f = controller.getSnapshot().getSource().getFileObject();
+        if (f != null) {
+            HintsController.setErrors(f, HintsTask.class.getName(), allHints);
+        } else {
+            LOG.warning("Source " + controller.getSnapshot().getSource() + " returns null from getFileObject()"); // NOI18N
+        }
     }
 
     private static void collectHints(ResultIterator controller, List<ErrorDescription> allHints) {

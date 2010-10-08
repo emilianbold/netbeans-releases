@@ -47,7 +47,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.netbeans.junit.NbTestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -57,15 +56,13 @@ import org.xml.sax.InputSource;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class AutoUpdateTest extends NbTestCase {
+public class AutoUpdateTest extends TestBase {
 
     public AutoUpdateTest(String name) {
         super(name);
     }
 
     public void testDirectlySpecifiedNBMs() throws Exception {
-        clearWorkDir();
-
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
             "netbeans/modules/org-netbeans-api-annotations-common.jar");
@@ -74,7 +71,7 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Ddir=" + nbm.getParent(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target,
@@ -98,10 +95,8 @@ public class AutoUpdateTest extends NbTestCase {
         assertTrue("NBM file left untouched", nbm.isFile());
     }
     public void testDownloadAndExtractModule() throws Exception {
-        clearWorkDir();
-
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -111,7 +106,7 @@ public class AutoUpdateTest extends NbTestCase {
         File target = new File(getWorkDir(), "target");
         target.mkdirs();
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target
@@ -139,10 +134,8 @@ public class AutoUpdateTest extends NbTestCase {
 
 
     public void testUpdateAlreadyInstalled() throws Exception {
-        clearWorkDir();
-
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -184,7 +177,7 @@ public class AutoUpdateTest extends NbTestCase {
         osx.close();
 
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target + File.separator + "platformXY", "cluster"
@@ -194,7 +187,7 @@ public class AutoUpdateTest extends NbTestCase {
             new File(new File(new File(target, "platformXY"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
-        assertTrue("xml file created:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), xml.exists());
+        assertTrue("xml file created:\n" + getStdOut(), xml.exists());
 
         File jar = new File(
             new File(new File(target, "platformXY"), "modules"),
@@ -202,16 +195,14 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
-            fail("No writes, the module is already installed:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().contains("Writing ")) {
+            fail("No writes, the module is already installed:\n" + getStdOut());
         }
     }
 
     public void testUpdateOldButMissCluster() throws Exception {
-        clearWorkDir();
-
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -253,7 +244,7 @@ public class AutoUpdateTest extends NbTestCase {
         osx.close();
 
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target + File.separator + "platformXY",
@@ -265,7 +256,7 @@ public class AutoUpdateTest extends NbTestCase {
             new File(new File(new File(target, "platformXY"), "config"), "Modules"),
             "org-netbeans-api-annotations-common.xml"
         );
-        assertTrue("xml file created:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), xml.exists());
+        assertTrue("xml file created:\n" + getStdOut(), xml.exists());
 
         File jar = new File(
             new File(new File(target, "platformXY"), "modules"),
@@ -273,16 +264,14 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
-            fail("No writes, the module is already installed:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().contains("Writing ")) {
+            fail("No writes, the module is already installed:\n" + getStdOut());
         }
     }
 
     public void testUpdateAlreadyInstalledAndOld() throws Exception {
-        clearWorkDir();
-
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -330,7 +319,7 @@ public class AutoUpdateTest extends NbTestCase {
         long last = x.lastModified();
         Thread.sleep(500);
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target
@@ -348,8 +337,8 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (!PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
-            fail("Writes should be there:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (!getStdOut().contains("Writing ")) {
+            fail("Writes should be there:\n" + getStdOut());
         }
 
         if (last >= jar.lastModified()) {
@@ -365,10 +354,8 @@ public class AutoUpdateTest extends NbTestCase {
 
 
     public void testUpdateAlreadyOldButForce() throws Exception {
-        clearWorkDir();
-
         File f = new File(getWorkDir(), "org-netbeans-api-annotations-common.xml");
-        PublicPackagesInProjectizedXMLTest.extractResource(f, "org-netbeans-api-annotations-common.xml");
+        extractResource(f, "org-netbeans-api-annotations-common.xml");
 
         File nbm = generateNBM("org-netbeans-api-annotations-common.nbm",
             "netbeans/config/Modules/org-netbeans-api-annotations-common.xml",
@@ -416,7 +403,7 @@ public class AutoUpdateTest extends NbTestCase {
         long last = x.lastModified();
         Thread.sleep(500);
 
-        PublicPackagesInProjectizedXMLTest.execute(
+        execute(
             "autoupdate.xml", "-verbose", "-Durl=" + f.toURI().toURL(),
             "-Dincludes=org.netbeans.api.annotations.common",
             "-Dtarget=" + target,
@@ -435,8 +422,8 @@ public class AutoUpdateTest extends NbTestCase {
         );
         assertTrue("jar file created", jar.exists());
 
-        if (!PublicPackagesInProjectizedXMLTest.getStdOut().contains("Writing ")) {
-            fail("Writes should be there:\n" + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (!getStdOut().contains("Writing ")) {
+            fail("Writes should be there:\n" + getStdOut());
         }
 
         if (last >= jar.lastModified()) {

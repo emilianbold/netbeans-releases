@@ -80,7 +80,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private Rectangle popupBounds = new Rectangle();
 
     private Timer updateTimer;
-    private static final int COALESCE_TIME = 600;
+    private static final int COALESCE_TIME = 300;
 
     /** text to search for */
     private String searchedText;
@@ -101,7 +101,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
             jList1.setBackground(QuickSearchComboBar.getResultBackground());
 
-        updateStatusPanel();
+        updateStatusPanel(evalTask != null);
         setVisible(false);
     }
 
@@ -144,6 +144,8 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     public void maybeEvaluate (String text) {
         this.searchedText = text;
+        if (text.length()>0)
+            updateStatusPanel(true);
 
         if (updateTimer == null) {
             updateTimer = new Timer(COALESCE_TIME, this);
@@ -327,7 +329,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
 
-        boolean statusVisible = updateStatusPanel();
+        boolean statusVisible = updateStatusPanel(evalTask != null);
 
         computePopupBounds(popupBounds, lPane, modelSize);
         setBounds(popupBounds);
@@ -433,10 +435,9 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      * @return true when update panel should be visible (some its part is visible),
      * false otherwise
      */
-    private boolean updateStatusPanel () {
+    private boolean updateStatusPanel (boolean isInProgress) {
         boolean shouldBeVisible = false;
 
-        boolean isInProgress = evalTask != null;
         searchingSep.setVisible(isInProgress);
         searchingLabel.setVisible(isInProgress);
         if (comboBar instanceof QuickSearchComboBar) {

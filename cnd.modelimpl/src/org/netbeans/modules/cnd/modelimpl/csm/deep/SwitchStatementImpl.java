@@ -59,15 +59,20 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * CsmSwitchStatement implementation
  * @author Vladimir Kvashin
  */
-public class SwitchStatementImpl extends StatementBase implements CsmSwitchStatement {
+public final class SwitchStatementImpl extends StatementBase implements CsmSwitchStatement {
     
     private CsmCondition condition;
     private StatementBase body;
     
-    public SwitchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private SwitchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+
+    public static SwitchStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new SwitchStatementImpl(ast, file, scope);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.SWITCH;
     }
@@ -83,6 +88,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         }
     }
 
+    @Override
     public CsmCondition getCondition() {
         if( condition == null ) {
             AST token = AstUtil.findChildOfType(getAst(), CPPTokenTypes.CSM_CONDITION);
@@ -94,6 +100,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         return condition;
     }
     
+    @Override
     public CsmStatement getBody() {
         //renderIfNeed();
         if( body == null ) {
@@ -107,6 +114,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         return body;
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }

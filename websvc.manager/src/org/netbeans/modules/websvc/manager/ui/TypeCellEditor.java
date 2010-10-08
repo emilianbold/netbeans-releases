@@ -47,8 +47,6 @@ package org.netbeans.modules.websvc.manager.ui;
 import java.util.List;
 import javax.swing.DefaultCellEditor;
 import javax.swing.table.TableCellEditor;
-import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
-import org.netbeans.modules.websvc.manager.swing.outline.NodeRowModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.Calendar;
 import java.util.Date;
@@ -121,8 +119,8 @@ public class TypeCellEditor extends DefaultCellEditor implements TableCellEditor
          *  First, we need to get the JavaType for the node of the object to be edited.
          */
 
-        NodeRowModel rowModel = ((OutlineModel)table.getModel()).getRowNodeModel();
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)rowModel.getNodeForRow(row);
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)table.getModel().
+                getValueAt(row, 0);
         /**
          * Now depending on the type, create a component to edit/display the type.
          */

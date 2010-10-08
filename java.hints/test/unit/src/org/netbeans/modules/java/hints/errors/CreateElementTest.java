@@ -270,8 +270,12 @@ public class CreateElementTest extends HintsTestBase {
     }
 
     public void testTypevarsAndEnums() throws Exception {
-        performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 221, Collections.<String>emptySet());
-        performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 243, Collections.<String>emptySet());
+        performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 221, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:c1:org.netbeans.test.java.hints.TypevarsAndErrors:T:[private]"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 243, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:c2:org.netbeans.test.java.hints.TypevarsAndErrors:java.lang.Class<T>:[private]"
+        )));
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 265, Collections.<String>emptySet());
         performTestAnalysisTest("org.netbeans.test.java.hints.TypevarsAndErrors", 287, Collections.<String>emptySet());
     }
@@ -413,6 +417,45 @@ public class CreateElementTest extends HintsTestBase {
     public void test180111() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Bug180111", 163, new HashSet<String>(Arrays.asList(
                 "CreateMethodFix:create()void:org.netbeans.test.java.hints.Bug180111"
+        )));
+    }
+
+    public void test190447a() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug190447", 107, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:t:org.netbeans.test.java.hints.Bug190447:java.lang.Iterable<? extends java.lang.String>:[private]",
+                "AddParameterOrLocalFix:t:java.lang.Iterable<? extends java.lang.String>:false",
+                "AddParameterOrLocalFix:t:java.lang.Iterable<? extends java.lang.String>:true"
+        )));
+    }
+
+    public void test190447b() throws Exception {
+        performTest("org.netbeans.test.java.hints.Bug190447",
+                    "Local Variable",
+                    6, 8);
+    }
+    
+    public void test190447c() throws Exception {
+        performTest("org.netbeans.test.java.hints.Bug190447",
+                    "Local Variable",
+                    7, 8);
+    }
+
+    public void test190447d() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug190447", 157, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:t3:org.netbeans.test.java.hints.Bug190447:java.lang.Iterable<? extends E>:[private]",
+                "AddParameterOrLocalFix:t3:java.lang.Iterable<? extends E>:false",
+                "AddParameterOrLocalFix:t3:java.lang.Iterable<? extends E>:true"
+        )));
+    }
+
+    public void test189687() throws Exception {
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug189687", 83, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:ii:org.netbeans.test.java.hints.Bug189687:int:[private]",
+                "AddParameterOrLocalFix:ii:int:false"
+        )));
+        performTestAnalysisTest("org.netbeans.test.java.hints.Bug189687", 119, new HashSet<String>(Arrays.asList(
+                "CreateFieldFix:ii:org.netbeans.test.java.hints.Bug189687:int:[private, static]",
+                "AddParameterOrLocalFix:ii:int:false"
         )));
     }
 

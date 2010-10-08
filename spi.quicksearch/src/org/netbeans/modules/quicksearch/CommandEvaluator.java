@@ -76,7 +76,7 @@ public class CommandEvaluator {
     /** Temporary narrow evaluation to only specified category **/
     private static boolean isCatTemporary;
 
-    private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator", 10); // NOI18N
     
     /**
      * Runs evaluation.

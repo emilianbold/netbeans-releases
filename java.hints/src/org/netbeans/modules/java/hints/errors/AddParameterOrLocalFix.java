@@ -142,19 +142,15 @@ public class AddParameterOrLocalFix implements Fix {
                 if (tp.getLeaf().getKind() != Kind.IDENTIFIER)
                     return;
 
-                TreePath targetPath = findMethod(tp);
-                
-                if (targetPath == null) {
-                    ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve target method."); // NOI18N
-                    return;
-                }
-                
-                MethodTree targetTree = (MethodTree) targetPath.getLeaf();
-
                 if (parameter) {
-                    if (targetTree == null) {
+                    TreePath targetPath = findMethod(tp);
+
+                    if (targetPath == null) {
                         Logger.getLogger("global").log(Level.WARNING, "Add parameter - cannot find the method."); // NOI18N
+                        return;
                     }
+
+                    MethodTree targetTree = (MethodTree) targetPath.getLeaf();
 
                     Element el = working.getTrees().getElement(targetPath);
                     int index = targetTree.getParameters().size();
@@ -201,20 +197,18 @@ public class AddParameterOrLocalFix implements Fix {
 
     private void resolveLocalVariable55(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
         final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
-        
-        //find first usage of this (undeclared) variable:
-        TreePath method = findMethod(tp);
+        TreePath blockPath = findOutmostBlock(tp);
 
-        if (method == null) {
-            //TODO: probably initializer handle differently
+        if (blockPath == null) {
             return;
         }
         
         int index = 0;
-        MethodTree methodTree = (MethodTree) method.getLeaf();
-        BlockTree block = methodTree.getBody();
+        BlockTree block = ((BlockTree) blockPath.getLeaf());
         
-        if (methodTree.getReturnType() == null && !block.getStatements().isEmpty()) {
+        TreePath method = findMethod(tp);
+
+        if (method != null && ((MethodTree) method.getLeaf()).getReturnType() == null && !block.getStatements().isEmpty()) {
             StatementTree stat = block.getStatements().get(0);
             
             if (stat.getKind() == Kind.EXPRESSION_STATEMENT) {
@@ -239,10 +233,10 @@ public class AddParameterOrLocalFix implements Fix {
         final Element el = wc.getTrees().getElement(tp);
         
         //find first usage of this (undeclared) variable:
-        TreePath method = findMethod(tp);
+        TreePath blockPath = findOutmostBlock(tp);
         
-        if (method == null) {
-            //TODO: probably initializer handle differently
+        if (blockPath == null) {
+            //?
             return;
         }
         
@@ -286,7 +280,7 @@ public class AddParameterOrLocalFix implements Fix {
         }
         
         FirstUsage firstUsage  = new FirstUsage();
-        TreePath firstUse = firstUsage.scan(method, null);
+        TreePath firstUse = firstUsage.scan(blockPath, null);
         
         if (firstUse == null || !isStatement(firstUse.getLeaf())) {
             Logger.getLogger("global").log(Level.WARNING, "Add local variable - cannot find a statement."); // NOI18N
@@ -377,6 +371,20 @@ public class AddParameterOrLocalFix implements Fix {
         }
         
         return null;
+    }
+
+    private TreePath findOutmostBlock(TreePath tp) {
+        TreePath block = null;
+
+        while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+            if (tp.getLeaf().getKind() == Kind.BLOCK) {
+                block = tp;
+            }
+
+            tp = tp.getParentPath();
+        }
+
+        return block;
     }
 
     private boolean isParent(TreePath parent, TreePath son) {

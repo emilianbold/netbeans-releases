@@ -110,7 +110,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             NodeList list = el.getElementsByTagNameNS(NAMESPACE, ACTIVATED);
             if (list.getLength() > 0) {
                 Element enEl = (Element)list.item(0);
-                initialActive = new String(enEl.getTextContent());
+                initialActive = enEl.getTextContent();
             }
         }
         

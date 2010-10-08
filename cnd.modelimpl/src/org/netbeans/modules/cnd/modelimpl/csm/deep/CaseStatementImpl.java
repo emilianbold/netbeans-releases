@@ -55,14 +55,19 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  *
  * @author Vladimir Kvashin
  */
-public class CaseStatementImpl extends StatementBase implements CsmCaseStatement {
+public final class CaseStatementImpl extends StatementBase implements CsmCaseStatement {
     
     private CsmExpression expression;
     
-    public CaseStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private CaseStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
 
+    public static CaseStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new CaseStatementImpl(ast, file, scope);
+    }
+
+    @Override
     public CsmExpression getExpression() {
         if( expression == null ) {
             for( AST token = getAst().getFirstChild(); token != null; token = token.getNextSibling() ) {
@@ -83,6 +88,7 @@ public class CaseStatementImpl extends StatementBase implements CsmCaseStatement
         }
     }
 
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.CASE;
     }

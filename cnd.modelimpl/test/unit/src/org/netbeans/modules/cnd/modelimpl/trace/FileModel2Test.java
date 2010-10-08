@@ -73,6 +73,21 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ190821() throws Exception {
+        // #190413:  wrong message SEVERE [org.netbeans.modules.cnd.apt]: # is not followed by a macro parameter
+        performTest("iz190821.cc");
+    }
+    
+    public void testIZ190782() throws Exception {
+        // #190413:  enum based variables are not resolved (top issue in driver)
+        performTest("iz190782.c");
+    }
+    
+    public void testIZ190413() throws Exception {
+        // #190413:  preprocessor incorrectly evaluate char-based expression
+        performTest("iz190413.c");
+    }
+    
     public void testIZ189777() throws Exception {
         // IZ#189777:  unresolved enum with bits info 
         performTest("iz189777.c");
@@ -332,4 +347,10 @@ public class FileModel2Test extends TraceModelTestBase {
         // Also test offsets of BAR definition.
         performTest("iz182510.cc");
     }
+
+    public void testIZ190710() throws Exception {
+        //  Bug 190710 - UI freeze due to function body parsing in EDT
+        performTest("iz190710.cc");
+    }
+
 }

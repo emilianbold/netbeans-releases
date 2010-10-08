@@ -42,6 +42,7 @@
 
 package org.netbeans.spi.editor.codegen;
 
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.util.Lookup;
 
 /**
@@ -55,6 +56,7 @@ import org.openide.util.Lookup;
  * @author Dusan Balek
  * @since 1.8
  */
+@MimeLocation(subfolderName="CodeGeneratorContextProviders")
 public interface CodeGeneratorContextProvider {
 
     /**

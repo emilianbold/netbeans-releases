@@ -105,17 +105,14 @@ public class EditorContextBridge {
         String fullname = csf.getFullname();
         
         if (fullname != null) {
-            File file = new File(fullname);
-	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
-                if (fo != null) {
-                    try {
-                        return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
-                    } catch (DataObjectNotFoundException dex) {
-                        // do nothing
-                    }
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fullname));
+            if (fo != null && fo.isValid()) {
+                try {
+                    return getContext().showSource(DataObject.find(fo), csf.getLineNumber(), null);
+                } catch (DataObjectNotFoundException dex) {
+                    // do nothing
                 }
-	    }
+            }
         }
 	return false;
     }
@@ -141,7 +138,7 @@ public class EditorContextBridge {
             file = file.getCanonicalFile();
         } catch (IOException ioe) {
         }
-        FileObject fo = FileUtil.toFileObject(file);
+        FileObject fo = CndFileUtils.toFileObject(file);
         String url;
         try {
             url = fo.getURL().toExternalForm();
@@ -182,15 +179,12 @@ public class EditorContextBridge {
     public static Annotation annotate(CallStackFrame csf, String annotationType) {
         String fullname = csf.getFullname();
         if (fullname != null) {
-            File file = new File(fullname);
-	    if (file.exists()) {
-                FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
-                if (fo != null) {
-                    try {
-                        return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
-                    } catch (DataObjectNotFoundException dex) {
-                        // do nothing
-                    }
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fullname));
+            if (fo != null && fo.isValid()) {
+                try {
+                    return getContext().annotate(DataObject.find(fo), csf.getLineNumber(), annotationType, null);
+                } catch (DataObjectNotFoundException dex) {
+                    // do nothing
                 }
 	    }
 	}

@@ -48,7 +48,7 @@ import org.netbeans.modules.dlight.api.collector.DataCollectorConfiguration;
 import org.netbeans.modules.dlight.api.indicator.IndicatorDataProviderConfiguration;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadata;
 import org.netbeans.modules.dlight.collector.stdout.impl.CLIODCConfigurationAccessor;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 
 /**

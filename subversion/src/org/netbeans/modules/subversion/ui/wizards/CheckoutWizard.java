@@ -137,10 +137,11 @@ public final class CheckoutWizard implements ChangeListener {
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private class PanelsIterator extends WizardDescriptor.ArrayIterator {                
+    private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         PanelsIterator() {            
         }
 
+        @Override
         protected WizardDescriptor.Panel[] initializePanels() {
             WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[3];
             repositoryStep = new RepositoryStep(Repository.FLAG_ACCEPT_REVISION, RepositoryStep.CHECKOUT_HELP_ID);

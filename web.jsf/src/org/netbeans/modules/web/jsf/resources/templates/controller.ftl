@@ -18,6 +18,7 @@
     keyBody - body of Controller.Converter.getKey() method
     keyStringBody - body of Controller.Converter.getStringKey() method
     keyGetter - entity getter method returning primaty key instance
+    keySetter - entity setter method to set primary key instance
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -92,6 +93,9 @@ public class ${controllerClassName} implements Serializable {
     public ${entityClassName} getSelected() {
         if (current == null) {
             current = new ${entityClassName}();
+<#if keyEmbedded>
+            current.${keySetter}(new ${keyType}());
+</#if>
             selectedItemIndex = -1;
         }
         return current;
@@ -152,6 +156,9 @@ public class ${controllerClassName} implements Serializable {
 
     public String prepareCreate() {
         current = new ${entityClassName}();
+<#if keyEmbedded>
+        current.${keySetter}(new ${keyType}());
+</#if>
         selectedItemIndex = -1;
         return "Create";
     }

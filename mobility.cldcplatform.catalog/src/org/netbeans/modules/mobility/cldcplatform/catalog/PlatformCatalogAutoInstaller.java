@@ -79,6 +79,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -89,7 +90,7 @@ import org.openide.windows.InputOutput;
  */
 public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListener, LookupListener {
     
-    private boolean running = false;
+    private final Task task = RequestProcessor.getDefault().create(this);
     private final FileObject fo;
     private final Lookup.Result res;
     private static final String TEMPLATE = "Templates/Services/Platforms/org-netbeans-api-java-Platform/javaplatform.xml";  //NOI18N
@@ -111,10 +112,6 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
     
     public void run() {
         boolean onceMore = false;
-        synchronized (this) {
-            if (running) return;
-            running = true;
-        }
         Enumeration en;
         fo.refresh(true);
         boolean success = false;
@@ -167,10 +164,7 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
         }
         if (success) launchAddPlatformWizard();
         if (onceMore) {
-            RequestProcessor.getDefault().post(this, 400);
-        }
-        synchronized (this) {
-            running = false;
+            task.schedule(400);
         }
     }
     
@@ -203,7 +197,7 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
     
     public void fileDataCreated(@SuppressWarnings("unused")
 	final FileEvent fe) {
-        if (!running) RequestProcessor.getDefault().post(this);
+        task.schedule(400);
     }
     
     public void fileChanged(@SuppressWarnings("unused")
@@ -220,7 +214,7 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
     
     public void resultChanged(@SuppressWarnings("unused")
 	final LookupEvent ev) {
-        if (!running) RequestProcessor.getDefault().post(this);
+        task.schedule(400);
     }
     
     private static class StreamPumper implements Runnable {

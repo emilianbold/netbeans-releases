@@ -47,7 +47,6 @@ package org.netbeans.modules.java.source.usages;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
@@ -55,13 +54,13 @@ import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
-import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
@@ -70,6 +69,7 @@ import org.apache.lucene.search.WildcardQuery;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -79,22 +79,22 @@ import org.openide.util.Exceptions;
  */
 public class DocumentUtil {
     
-    private static final String FIELD_RESOURCE_NAME = "resName";        //NOI18N
-    private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
-    private static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
-    private static final String FIELD_REFERENCES = "references";        //NOI18N
-    static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
-    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N
-    private static final String FIELD_SOURCE = "source";                //NOI18N
-    private static final String FIELD_IDENTS = "ids";                           //NOI18N
-    private static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
-    private static final String FIELD_CASE_INSENSItIVE_FEATURE_IDENTS="cifids"; //NOI18N
     
+    static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
+    static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N    
+    static final String FIELD_IDENTS = "ids";                           //NOI18N
+    static final String FIELD_FEATURE_IDENTS = "fids";                  //NOI18N
+    static final String FIELD_CASE_INSENSITIVE_FEATURE_IDENTS = "cifids"; //NOI18N
+    private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
+    private static final String FIELD_SOURCE = "source";                //NOI18N
+    private static final String FIELD_REFERENCES = "references";        //NOI18N
+    
+    private static final char PKG_SEPARATOR = '.';                              //NOI18N
+    private static final char WILDCARD = '?';                                   //NOI18N
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
-    private static final char WILDCARD = '?';                           //NOI18N
-    private static final char PKG_SEPARATOR = '.';                      //NOI18N
-    
+        
     private static final char EK_CLASS = 'C';                           //NOI18N
     private static final char EK_INTERFACE = 'I';                       //NOI18N
     private static final char EK_ENUM = 'E';                            //NOI18N
@@ -126,6 +126,18 @@ public class DocumentUtil {
     
     static ResultConvertor<Document,String> sourceNameConvertor () {
         return new SourceNameConvertor();
+    }
+    
+    static ResultConvertor<Pair<Pair<String,String>,Object[]>,Document> documentConvertor() {
+        return new DocumentConvertor();
+    }
+    
+    static ResultConvertor<Pair<String,String>,Query> queryClassWithEncConvertor() {
+        return new QueryClassesWithEncConvertor();
+    }
+    
+    static ResultConvertor<Pair<String,String>,Query> queryClassConvertor() {
+        return new QueryClassConvertor();
     }
     
     //Document field getters
@@ -192,78 +204,7 @@ public class DocumentUtil {
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;
     }
-    
-    static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
-        assert binaryNameSourceNamePair != null;
-        final String binaryName = binaryNameSourceNamePair.first;
-        final String sourceName = binaryNameSourceNamePair.second;
-        final Query query = binaryNameQuery(binaryName);
-        if (sourceName != null) {
-            assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
-            final BooleanQuery bq = (BooleanQuery) query;
-            bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
-        }
-        return query;
-    }
-    
-    static Query binaryContentNameQuery (final Pair<String,String> binaryNameSourceNamePair) {
-        final String resourceName = binaryNameSourceNamePair.first;
-        final String sourceName = binaryNameSourceNamePair.second;
-        int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
-        String pkgName, sName;
-        if (index < 0) {
-            pkgName = "";   // NOI18N
-            sName = resourceName;
-        }
-        else {
-            pkgName = resourceName.substring(0,index);
-            sName = resourceName.substring(index+1);
-        }
-        BooleanQuery query = new BooleanQuery ();
-        BooleanQuery subQuery = new BooleanQuery();
-        subQuery.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName + WILDCARD)),BooleanClause.Occur.SHOULD);
-        subQuery.add (new PrefixQuery (new Term (FIELD_BINARY_NAME, sName + '$')),BooleanClause.Occur.SHOULD);
-        query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
-        query.add (subQuery,BooleanClause.Occur.MUST);
-        if (sourceName != null) {
-            query.add (new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
-        }
-        return query;
-    }
-    
-    static Term identTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_IDENTS, ident);
-    }
-    
-    static Query identQuery (final String ident) {
-        return new TermQuery(identTerm(ident));
-    }
-    
-    static Term featureIdentTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_FEATURE_IDENTS, ident);
-    }
-    
-    static Query featureIdentQuery (final String ident) {
-        return new TermQuery(featureIdentTerm(ident));
-    }
-    
-    static Term caseInsensitiveFeatureIdentTerm (final String ident) {
-        assert ident != null;
-        return new Term (FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, ident);
-    }
-            
-    static Term simpleBinaryNameTerm (final String resourceFileName) {
-        assert resourceFileName != null;
-        return new Term (FIELD_BINARY_NAME, resourceFileName);
-    }   
-    
-    static Term packageNameTerm (final String packageName) {
-        assert packageName != null;
-        return new Term (FIELD_PACKAGE_NAME, packageName);
-    }
-    
+                                    
     static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
         assert resourceName  != null;
         if (usageType != null) {
@@ -278,7 +219,7 @@ public class DocumentUtil {
     }
         
     //Factories for lucene document
-    static Document createDocument (final String binaryName,
+    private static Document createDocument (final String binaryName,
             List<String> references,
             String featureIdents,
             String idents,
@@ -319,7 +260,7 @@ public class DocumentUtil {
         if (featureIdents != null) {
             field = new Field(FIELD_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
             doc.add(field);
-            field = new Field(FIELD_CASE_INSENSItIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
+            field = new Field(FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, featureIdents, Field.Store.NO, Field.Index.TOKENIZED);
             doc.add(field);
         }
         if (idents != null) {
@@ -333,20 +274,7 @@ public class DocumentUtil {
         return doc;
     }
         
-    // Functions for encoding and decoding of UsageType
-    static StringBuilder createUsage (final String className) {
-        Set<ClassIndexImpl.UsageType> EMPTY = Collections.emptySet();
-        return encodeUsage (className, EMPTY,NO);
-    }
-    
-    static void addUsage (final StringBuilder rawUsage, final ClassIndexImpl.UsageType type) {
-        assert rawUsage != null;
-        assert type != null;
-        final int rawUsageLen = rawUsage.length();
-        final int startIndex = rawUsageLen - SIZE;
-        rawUsage.setCharAt (startIndex + type.getOffset(),YES);
-    }
-    
+    // Functions for encoding and decoding of UsageType    
     static String encodeUsage (final String className, final Set<ClassIndexImpl.UsageType> usageTypes) {
         return encodeUsage (className, usageTypes, NO).toString();
     }
@@ -366,16 +294,7 @@ public class DocumentUtil {
         builder.append(map);
         return builder;
     }
-    
-    static String encodeUsage (final String className, final String usageMap) {
-        assert className != null;
-        assert usageMap != null;
-        StringBuilder sb = new StringBuilder ();
-        sb.append(className);
-        sb.append(usageMap);
-        return sb.toString();
-    }
-    
+            
     static String decodeUsage (final String rawUsage, final Set<ClassIndexImpl.UsageType> usageTypes) {
         assert rawUsage != null;
         assert usageTypes != null;
@@ -431,7 +350,8 @@ public class DocumentUtil {
     static FieldSelector sourceNameFieldSelector () {
         return new FieldSelectorImpl(FIELD_SOURCE);
     }
-            
+         
+    //<editor-fold defaultstate="collapsed" desc="Analyzers & Field Selectors Implementation">
     private static class FieldSelectorImpl implements FieldSelector {
         
         private final Term[] terms;
@@ -471,6 +391,10 @@ public class DocumentUtil {
         }
     }
     
+    //</editor-fold>
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Result Convertors Implementation">
     private static class FileObjectConvertor implements ResultConvertor<Document,FileObject> {                
         
         private FileObject[] roots;
@@ -576,5 +500,74 @@ public class DocumentUtil {
             Field field = doc.getField(FIELD_SOURCE);
             return field == null ? null : field.stringValue();
         }
-    }       
+    }
+    
+    private static class DocumentConvertor implements ResultConvertor<Pair<Pair<String,String>,Object[]>,Document> {
+        @Override
+        public Document convert(Pair<Pair<String, String>, Object[]> entry) throws Stop {
+            final Pair<String,String> pair = entry.first;
+            final String cn = pair.first;
+            final String srcName = pair.second;
+            final Object[] data = entry.second;
+            final List<String> cr = (List<String>) data[0];
+            final String fids = (String) data[1];
+            final String ids = (String) data[2];
+            return DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
+        }
+    }
+    
+    private static class QueryClassesWithEncConvertor implements ResultConvertor<Pair<String,String>,Query> {
+        @Override
+        public Query convert(Pair<String, String> p) throws Stop {
+            return createClassWithEnclosedQuery(p);
+        }
+        
+        private static Query createClassWithEnclosedQuery (final Pair<String,String> binaryNameSourceNamePair) {
+            final String resourceName = binaryNameSourceNamePair.first;
+            final String sourceName = binaryNameSourceNamePair.second;
+            int index = resourceName.lastIndexOf(DocumentUtil.PKG_SEPARATOR);
+            String pkgName, sName;
+            if (index < 0) {
+                pkgName = "";   // NOI18N
+                sName = resourceName;
+            }
+            else {
+                pkgName = resourceName.substring(0,index);
+                sName = resourceName.substring(index+1);
+            }
+            BooleanQuery query = new BooleanQuery ();
+            BooleanQuery subQuery = new BooleanQuery();
+            subQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD)),Occur.SHOULD);
+            subQuery.add (new PrefixQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + '$')),Occur.SHOULD);
+            query.add (new TermQuery (new Term (DocumentUtil.FIELD_PACKAGE_NAME, pkgName)),Occur.MUST);
+            query.add (subQuery,Occur.MUST);
+            if (sourceName != null) {
+                query.add (new TermQuery(new Term (DocumentUtil.FIELD_SOURCE,sourceName)), Occur.MUST);
+            }
+            return query;
+        }
+        
+    }
+    
+    private static class QueryClassConvertor implements ResultConvertor<Pair<String,String>,Query> {
+        @Override
+        public Query convert(Pair<String, String> p) throws Stop {
+            return binaryNameSourceNamePairQuery(p);
+        }
+        
+        private static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
+            assert binaryNameSourceNamePair != null;
+            final String binaryName = binaryNameSourceNamePair.first;
+            final String sourceName = binaryNameSourceNamePair.second;
+            final Query query = binaryNameQuery(binaryName);
+            if (sourceName != null) {
+                assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
+                final BooleanQuery bq = (BooleanQuery) query;
+                bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+            }
+            return query;
+        }
+    }
+    
+    //</editor-fold>
 }

@@ -612,7 +612,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         if (wsdlFilePath.startsWith("www.")) {
             wsdlFilePath = "http://" + wsdlFilePath;
         }
-        if (wsdlFilePath.startsWith("http://") || wsdlFilePath.startsWith("https://")) {
+        if ((wsdlFilePath.startsWith("http://")&& wsdlFilePath.length()>7) || 
+                (wsdlFilePath.startsWith("https://") && wsdlFilePath.length()>8)) {
             try {
                 wsdlURL = new URL(wsdlFilePath);
             } catch (MalformedURLException ex) {

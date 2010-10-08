@@ -90,7 +90,7 @@ public class APTHandlersSupportImpl {
         for (IncludeDirEntry includeDirEntry : userIncludePaths) {
             if (!includeDirEntry.isExistingDirectory()) {
                 // check if this is file
-                if (CndFileUtils.isExistingFile(includeDirEntry.getFile(), includeDirEntry.getAsSharedCharSequence().toString())) {
+                if (CndFileUtils.isExistingFile(includeDirEntry.getAsSharedCharSequence().toString())) {
                     fileEntries.add(includeDirEntry);
                 }
             }

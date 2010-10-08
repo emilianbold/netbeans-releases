@@ -132,21 +132,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
-            String sourceLevel = SourceLevelQuery.getSourceLevel(root);
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel) && !context.isAllFilesIndexing()) {
-                JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
-                return;
-            }
-            if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null) && !context.isAllFilesIndexing()) {
-                JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
-                IndexingManager.getDefault().refreshIndex(context.getRootURI(), null);
-                return;
-            }
             APTUtils.sourceRootRegistered(context.getRoot(), context.getRootURI());
-            APTUtils aptUtils = APTUtils.get(root);
-            if (aptUtils != null && aptUtils.verifyAttributes(root, context.isAllFilesIndexing()))
-                return;
             final ClassPath sourcePath = ClassPath.getClassPath(root, ClassPath.SOURCE);
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
@@ -156,10 +142,6 @@ public class JavaCustomIndexer extends CustomIndexer {
             }
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
                 JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
-                return;
-            }
-            if (!JavaFileFilterListener.getDefault().startListeningOn(root)) {
-                JavaIndex.LOG.fine("Forcing reindex dou to changed JavaFileFilter"); // NOI18N
                 return;
             }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
@@ -773,7 +755,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
                     public Boolean run() throws IOException, InterruptedException {
                         return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
                             public Boolean run() throws IOException, InterruptedException {
@@ -794,7 +776,35 @@ public class JavaCustomIndexer extends CustomIndexer {
                             }
                         });
                     }
-                });                
+                });
+
+                if (!classIndexConsistent) return false;
+
+                FileObject root = context.getRoot();
+
+                if (root == null) {
+                    return true;
+                }
+                
+                APTUtils aptUtils = APTUtils.get(root);
+
+                if (aptUtils != null && aptUtils.verifyAttributes(context.getRoot(), false)) return false;
+
+                String sourceLevel = SourceLevelQuery.getSourceLevel(context.getRoot());
+                if (JavaIndex.ensureAttributeValue(context.getRootURI(), SOURCE_LEVEL_ROOT, sourceLevel)) {
+                    JavaIndex.LOG.fine("forcing reindex due to source level change"); //NOI18N
+                    return false;
+                }
+                if (JavaIndex.ensureAttributeValue(context.getRootURI(), DIRTY_ROOT, null)) {
+                    JavaIndex.LOG.fine("forcing reindex due to dirty root"); //NOI18N
+                    return false;
+                }
+
+                if (!JavaFileFilterListener.getDefault().startListeningOn(context.getRoot())) {
+                    JavaIndex.LOG.fine("Forcing reindex due to changed JavaFileFilter"); // NOI18N
+                    return false;
+                }
+                return true;
             } catch (IOException ioe) {
                 JavaIndex.LOG.log(Level.WARNING, "Exception while checking cache validity for root: "+context.getRootURI(), ioe); //NOI18N
                 return false;
