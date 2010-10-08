@@ -76,7 +76,7 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
                     if (ref.getClosestTopLevelObject() != null) {
                         return CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
                     } else {
-                        return CsmKindUtilities.isInclude(ref.getOwner()); // not needed
+                        return CsmKindUtilities.isInclude(ref.getOwner()); 
                     }
                 }
             }
