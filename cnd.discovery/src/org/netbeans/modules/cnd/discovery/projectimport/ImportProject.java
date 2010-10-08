@@ -324,7 +324,7 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = new File(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
+            makefileFile = CndFileUtils.createLocalFile(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
@@ -607,7 +607,7 @@ public class ImportProject implements PropertyChangeListener {
                     if (i > 0) {
                         String f = line.substring(i+configureCteatePattern.length()).trim();
                         if (f.endsWith(".h")) { // NOI18N
-                            downloadRemoteFile(new File(projectFolder, f)); // NOI18N
+                            downloadRemoteFile(CndFileUtils.createLocalFile(projectFolder, f)); // NOI18N
                         }
                     }
                 }

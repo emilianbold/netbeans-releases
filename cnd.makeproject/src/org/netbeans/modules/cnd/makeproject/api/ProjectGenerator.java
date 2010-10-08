@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 public class ProjectGenerator {
 
@@ -89,7 +90,7 @@ public class ProjectGenerator {
          *          where project folder is to be created
          */
         public ProjectParameters(String projectFolderName, String projectParentFolderPath) {
-            this(projectFolderName, new File(projectParentFolderPath, projectFolderName));
+            this(projectFolderName, CndFileUtils.createLocalFile(projectParentFolderPath, projectFolderName));
         }
 
         /**

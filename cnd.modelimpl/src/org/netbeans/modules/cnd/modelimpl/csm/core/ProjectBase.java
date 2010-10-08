@@ -2549,7 +2549,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         @Override
         public File getFile() {
             if (fileObjectOrAbsPath instanceof FileObject) {
-                return FileUtil.toFile((FileObject)fileObjectOrAbsPath);
+                return CndFileUtils.toFile((FileObject)fileObjectOrAbsPath);
             } else {
                 return new File((String) fileObjectOrAbsPath);
             }

@@ -108,7 +108,7 @@ public class MakeProjectGenerator {
             } else {
                 projectName = name + baseCount;
             }
-            File projectNameFile = new File(projectFolder, projectName);
+            File projectNameFile = CndFileUtils.createLocalFile(projectFolder, projectName);
             if (!projectNameFile.exists()) {
                 break;
             }

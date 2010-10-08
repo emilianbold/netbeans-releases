@@ -212,7 +212,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public void setFolder(Folder folder) {
         if (folder == null && file == null) {
             // store file in field. method getFile() will works after removing item
-            getCanonicalFile();
+            ensureFileNotNull();
         }
         // leave folder if it is remove
         if (folder == null) { // Item is removed, let's clean up.
@@ -282,6 +282,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         if (aPath != null) {
             return CndFileUtils.normalizeFile(new File(aPath));
         }
+        ensureFileNotNull();
         return file;
     }
 
@@ -295,7 +296,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         return getCanonicalFile().getAbsolutePath();
     }
 
-    public File getCanonicalFile() {
+    private void ensureFileNotNull() {
         if (file == null) {
             try {
                 file = new File(getAbsPath()).getCanonicalFile();
@@ -303,6 +304,13 @@ public class Item implements NativeFileItem, PropertyChangeListener {
                 file = CndFileUtils.normalizeFile(new File(getAbsPath()));
             }
         }
+        if (file == null) {
+            logger.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
+        }
+    }
+
+    public File getCanonicalFile() {
+        ensureFileNotNull();
         return file;
     }
 

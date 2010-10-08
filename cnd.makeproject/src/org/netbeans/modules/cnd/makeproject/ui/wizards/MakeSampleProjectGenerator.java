@@ -115,13 +115,13 @@ public class MakeSampleProjectGenerator {
         }
         if (mainProject != null) {
             File parentFolderLocation = prjParams.getProjectFolder();
-            File mainProjectLocation = new File(parentFolderLocation, mainProject);
+            File mainProjectLocation = CndFileUtils.createLocalFile(parentFolderLocation, mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
-                    subProjectsFiles.add(new File(parentFolderLocation, st.nextToken()));
+                    subProjectsFiles.add(CndFileUtils.createLocalFile(parentFolderLocation, st.nextToken()));
                 }
                 subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
@@ -389,7 +389,7 @@ public class MakeSampleProjectGenerator {
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
-                File f = new File(targetFolder, ent.getName());
+                File f = CndFileUtils.createLocalFile(targetFolder, ent.getName());
                 if (ent.isDirectory()) {
                     FileUtil.createFolder(f);//f.mkdirs();
                 } else {

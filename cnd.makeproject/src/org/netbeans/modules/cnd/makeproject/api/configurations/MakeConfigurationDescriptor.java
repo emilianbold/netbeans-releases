@@ -720,7 +720,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = new File(metadataFiles.get(i));
+            File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
             if (!file.exists()) {
                 continue;
             }

@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -123,13 +124,15 @@ public class ConfigurationMakefileWriter {
 
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        long xmlFileTimeStamp = new File(new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.CONFIGURATIONS_XML).lastModified();
+        long xmlFileTimeStamp = CndFileUtils.createLocalFile(
+                CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER),
+                MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
-            File file = new File(getMakefilePath(conf));
+            File file = CndFileUtils.createLocalFile(getMakefilePath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writeMakefileConf(conf);
             }
-            file = new File(getPackageScriptPath(conf));
+            file = CndFileUtils.createLocalFile(getPackageScriptPath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writePackagingScript(conf);
             }
@@ -206,7 +209,7 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        File folder = new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
+        File folder = CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
         File[] children = folder.listFiles();
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
