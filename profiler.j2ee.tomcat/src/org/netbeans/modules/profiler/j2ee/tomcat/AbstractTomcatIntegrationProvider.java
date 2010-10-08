@@ -68,32 +68,30 @@ import org.openide.util.NbBundle;
  */
 public abstract class AbstractTomcatIntegrationProvider extends AbstractScriptIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
-
-    protected static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.tomcat.Bundle"); // NOI18N
-    private static final String PROFILED_TOMCAT_CONSOLE_STRING = messages.getString("TomcatIntegrationProvider_ProfiledTomcatConsoleString"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = messages.getString("TomcatIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MSG = messages.getString("TomcatIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = messages.getString("TomcatIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = messages.getString("TomcatIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String PATH_TO_JVM_DIR_TEXT = messages.getString("TomcatIntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = messages.getString("TomcatIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MSG = messages.getString("TomcatIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = messages.getString("TomcatIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = messages.getString("TomcatIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MSG = messages.getString("TomcatIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP4_MSG = messages.getString("TomcatIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("TomcatIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = messages.getString("TomcatIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = messages.getString("TomcatIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    protected static final String INTEGR_REVIEW_STEP2_MSG = messages.getString("TomcatIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String VALIDATION_DIRNOEXIST_MSG = messages.getString("TomcatIntegrationProvider_PathNotExistsMsg"); // NOI18N
-    private static final String VALIDATION_HOME_INVALID_MSG = messages.getString("TomcatIntegrationProvider_InvalidCatalinaHomeMsg"); // NOI18N
-    private static final String VALIDATION_BASE_INVALID_MSG = messages.getString("TomcatIntegrationProvider_InvalidCatalinaBaseMsg"); // NOI18N
+    private static final String PROFILED_TOMCAT_CONSOLE_STRING = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ProfiledTomcatConsoleString"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
+    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_PathToJvmDirText"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectStep2Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP3_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectDynamicStep3Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDirectStep4Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP4_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_ManualDynamicStep4Msg"); // NOI18N
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
+    protected static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
+    private static final String VALIDATION_DIRNOEXIST_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_PathNotExistsMsg"); // NOI18N
+    private static final String VALIDATION_HOME_INVALID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_InvalidCatalinaHomeMsg"); // NOI18N
+    private static final String VALIDATION_BASE_INVALID_MSG = NbBundle.getMessage(AbstractTomcatIntegrationProvider.class, "TomcatIntegrationProvider_InvalidCatalinaBaseMsg"); // NOI18N
     private static final String INSERTION_POINT_NOWIN_0_STRING = "#!/bin/sh"; // NOI18N
     private static final String INSERTION_POINT_WIN_1_STRING = "rem Guess CATALINA_HOME"; // NOI18N
     private static final String INSERTION_POINT_NOWIN_1_STRING = "# OS specific support."; // NOI18N
