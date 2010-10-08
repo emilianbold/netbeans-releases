@@ -239,6 +239,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                     return cachedInstanceCount;
                 }
             }*/
+            //assert !java.awt.EventQueue.isDispatchThread() : "Instance counts retrieving in AWT Event Queue!";
             try {
                 long[] counts = VirtualMachineWrapper.instanceCounts(MirrorWrapper.virtualMachine(classType), Collections.singletonList(classType));
                 return counts[0];
@@ -253,6 +254,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
     }
     
     public List<ObjectVariable> getInstances(long maxInstances) {
+            //assert !java.awt.EventQueue.isDispatchThread() : "Instances retrieving in AWT Event Queue!";
             final List<ObjectReference> instances;
             try {
                 instances = ReferenceTypeWrapper.instances(classType, maxInstances);

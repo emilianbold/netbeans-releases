@@ -2015,6 +2015,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }*/
 
     public List<JPDAClassType> getAllClasses() {
+        //assert !java.awt.EventQueue.isDispatchThread() : "All classes retrieving in AWT Event Queue!";
         List<ReferenceType> classes;
         synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
@@ -2040,6 +2041,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
+            //assert !java.awt.EventQueue.isDispatchThread() : "Instance counts retrieving in AWT Event Queue!";
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;
