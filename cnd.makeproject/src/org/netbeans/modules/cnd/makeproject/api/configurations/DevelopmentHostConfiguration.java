@@ -55,6 +55,8 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * @author gordonp
@@ -176,7 +178,17 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
-                setBuildPlatform(CompilerSetManager.get(execEnv).getPlatform());
+                CompilerSetManager compilerSetmanager = CompilerSetManager.get(execEnv);
+                int platform = compilerSetmanager.getPlatform();
+
+                if ((platform == -1 || platform == PlatformTypes.PLATFORM_NONE) && compilerSetmanager.isPending()) {
+                    while (compilerSetmanager.isPending()) {
+                        try{Thread.sleep(500);}catch(Exception e){};
+                    }
+                    platform = compilerSetmanager.getPlatform();
+                }
+
+                setBuildPlatform(platform);
                 if (getBuildPlatform() == -1) {
                     // TODO: CompilerSet is not reliable about platform; it must be.
                     setBuildPlatform(PlatformTypes.PLATFORM_NONE);
