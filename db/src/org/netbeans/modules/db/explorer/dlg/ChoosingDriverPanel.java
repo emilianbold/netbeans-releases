@@ -171,7 +171,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
         // TODO
         return null;
     }
-            
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -194,7 +194,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
                 return null;
             }
             init();
-            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driverFound, driver);
+            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driver);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());

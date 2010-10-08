@@ -63,15 +63,17 @@ public final class ChoosingDriverInterUI extends JPanel implements DocumentListe
     private String driverPath;
     private String downloadFrom;
     private final ChoosingDriverPanel panel;
+    private JDBCDriver drv;
 
     /** Creates new form ChoosingDriverInterUI */
     @SuppressWarnings("LeakingThisInConstructor")
-    public ChoosingDriverInterUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, boolean found) {
+    public ChoosingDriverInterUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom) {
         this.panel = panel;
         this.driverFileName = driverFileName;
         this.driverPath = driverPath;
         this.downloadFrom = downloadFrom;
         initComponents();
+        boolean found = false;
         if (found) {
             tfLocation.setText(driverPath + File.separator + driverFileName);
         } else {
@@ -115,6 +117,10 @@ public final class ChoosingDriverInterUI extends JPanel implements DocumentListe
         }
     }
     
+    void updateDriver(JDBCDriver curr) {
+//        curr.
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -287,6 +293,4 @@ public final class ChoosingDriverInterUI extends JPanel implements DocumentListe
         }
     }
 
-    void updateDriver(JDBCDriver curr) {
-    }
 }

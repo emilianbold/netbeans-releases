@@ -56,16 +56,23 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class ChoosingDriverUI extends javax.swing.JPanel {
-    private final ChoosingDriverInterUI interPanel;
+    private ChoosingDriverInterUI choosinIntraPanel;
+    private AddDriverDialog customizeDriverPanel;
     private JDBCDriver drv;
     private ActionListener actionListener;
+    private String driverFileName;
+    private String driverPath;
+    private String downloadFrom;
+    private ChoosingDriverPanel wp;
 
     /** Creates new form ChoosingDriverUI */
-    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, boolean found, JDBCDriver driver) {
+    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, JDBCDriver driver) {
         this.drv = driver;
+        this.driverFileName = driverFileName;
+        this.driverPath = driverPath;
+        this.downloadFrom = downloadFrom;
+        this.wp = panel;
         initComponents();
-        interPanel = new ChoosingDriverInterUI(panel, driverFileName, driverPath, downloadFrom, found);
-        pInter.add(interPanel, BorderLayout.CENTER);
         DatabaseExplorerInternalUIs.connect(cbDrivers, JDBCDriverManager.getDefault());
         if (drv == null) {
             cbDrivers.setSelectedIndex(0);
@@ -82,6 +89,8 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 }
             }
         }
+        customizeDriverPanel = new AddDriverDialog(drv);
+        pInter.add(customizeDriverPanel, BorderLayout.CENTER);
         actionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -94,6 +103,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     public void addNotify() {
         super.addNotify();
         cbDrivers.addActionListener(actionListener);
+        updateState();
     }
 
     @Override
@@ -105,13 +115,12 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     private void updateState() {
         Object drvO = cbDrivers.getSelectedItem();
         if (drvO instanceof JdbcUrl) {
-            System.out.println("###: GOT JdbcUrl");
-            JDBCDriver curr = ((JdbcUrl) drvO).getDriver();
-            System.out.println("###: DRV: " + curr);
-            interPanel.updateDriver(curr);
+            drv = ((JdbcUrl) drvO).getDriver();
+            customizeDriverPanel.setDriver(drv);
         } else {
-            System.out.println("###: GOT NEW DRIVER...");
+            customizeDriverPanel.setDriver(null);
         }
+        wp.fireChangeEvent();
     }
 
     @Override
@@ -169,10 +178,11 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     boolean driverFound() {
-        return interPanel.driverFound();
+        JDBCDriver d = customizeDriverPanel.getDriver();
+        return d != null && d.getURLs() != null && d.getURLs().length > 0;
     }
 
     String getDriverLocation() {
-        return interPanel.getDriverLocation();
+        return choosinIntraPanel.getDriverLocation();
     }
 }

@@ -91,7 +91,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 
-public class AddDriverDialog extends javax.swing.JPanel {
+public final class AddDriverDialog extends javax.swing.JPanel {
     
     private DefaultListModel dlm;
     private List<URL> drvs = new LinkedList<URL>();
@@ -101,11 +101,13 @@ public class AddDriverDialog extends javax.swing.JPanel {
     private DialogDescriptor descriptor;
     
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
+    private JDBCDriver drv;
 
     /** Creates new AddDriverDialog.
      * @param driverNode driver node to be customized or null to create a new one
      */
-    private AddDriverDialog(DriverNode driverNode) {
+    public AddDriverDialog(JDBCDriver driver) {
+        this.drv = driver;
         initComponents();
         // hack to force the progressContainerPanel honor its preferred height
         // without it, the preferred height is sometimes ignored during resize
@@ -113,8 +115,8 @@ public class AddDriverDialog extends javax.swing.JPanel {
         initAccessibility();
         dlm = (DefaultListModel) drvList.getModel();
 
-        if (driverNode != null) {
-            setDriver(driverNode.getDatabaseDriver().getJDBCDriver());
+        if (driver != null) {
+            setDriver(driver);
         }
 
         DocumentListener documentListener = new DocumentListener() {
@@ -159,11 +161,13 @@ public class AddDriverDialog extends javax.swing.JPanel {
     }
     
     /** Fills this dialog by parameters of given driver. */
-    private void setDriver(JDBCDriver drv) {
+    public void setDriver(JDBCDriver drv) {
+        this.drv = drv;
         customizer = true;
         
         String fileName = null;
-        URL[] urls = drv.getURLs();
+        dlm.clear();
+        URL[] urls = drv == null ? new URL[0] : drv.getURLs();
         for (int i = 0; i < urls.length; i++) {
             URL url = urls[i];
             if ("nbinst".equals(url.getProtocol())) { // NOI18N
@@ -198,9 +202,16 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 drvs.add(urls[i]);
             }
         }
-        drvClassComboBox.addItem(drv.getClassName());
-        drvClassComboBox.setSelectedItem(drv.getClassName());
-        nameTextField.setText(drv.getDisplayName());
+        if (urls.length == 0) {
+            dlm.addElement(NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingDriverFiles")); // NOI18N
+        }
+        drvClassComboBox.addItem(drv == null ? "" : drv.getClassName());
+        drvClassComboBox.setSelectedItem(drv == null ? "" : drv.getClassName());
+        nameTextField.setText(drv == null ? "" : drv.getDisplayName());
+    }
+
+    public JDBCDriver getDriver() {
+        return drv;
     }
     
     private void initAccessibility() {
@@ -642,10 +653,15 @@ public class AddDriverDialog extends javax.swing.JPanel {
 
     /** Updates state of UI controls. */
     private void updateState() {
+        boolean enable = drv != null && drv.getURLs() != null && drv.getURLs().length > 0;
+        // update Browse button state
+        browseButton.setEnabled(drv != null);
         // update Remove button state
-        removeButton.setEnabled(drvList.getSelectedIndices().length > 0);
+        removeButton.setEnabled(enable && drvList.getSelectedIndices().length > 0);
         // update Find button state
-        findButton.setEnabled(progressHandle == null && drvList.getModel().getSize() > 0);
+        findButton.setEnabled(enable && progressHandle == null && drvList.getModel().getSize() > 0);
+        // drvList
+        drvList.setEnabled(enable);
         // update status line and OK button
         String message = null;
         if (drvList.getModel().getSize() == 0) {
@@ -663,12 +679,16 @@ public class AddDriverDialog extends javax.swing.JPanel {
                 }
             }
         }
-        if (message != null) {
-            descriptor.getNotificationLineSupport().setInformationMessage(message);
-            descriptor.setValid(false);
+        if (descriptor != null) {
+            if (message != null) {
+                descriptor.getNotificationLineSupport().setInformationMessage(message);
+                descriptor.setValid(false);
+            } else {
+                descriptor.getNotificationLineSupport().clearMessages();
+                descriptor.setValid(true);
+            }
         } else {
-            descriptor.getNotificationLineSupport().clearMessages();
-            descriptor.setValid(true);
+            Logger.getLogger(AddDriverDialog.class.getName()).log(Level.INFO, "DialogDescriptor is not set, message: " + message);
         }
     }
 
@@ -678,7 +698,7 @@ public class AddDriverDialog extends javax.swing.JPanel {
      * @return driver instance if user clicks OK, null otherwise
      */
     public static JDBCDriver showDialog(DriverNode driverNode) {
-        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode);
+        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver());
 
         DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
         descriptor.createNotificationLineSupport();
