@@ -375,9 +375,13 @@ public class CsmBaseUtilities {
                 return (CsmFunction) csmTopLevelObject;
             } else if (CsmKindUtilities.isVariable(csmTopLevelObject)) {
                 CsmVariable var = (CsmVariable) csmTopLevelObject;
-                csmTopLevelObject = var.getScope();
-                if (CsmKindUtilities.isFunction(csmTopLevelObject)){
-                    return (CsmFunction)csmTopLevelObject;
+                CsmObject varScope = var.getScope();
+                CsmObject varContainer = findClosestTopLevelObject(varScope);
+                if (varScope.equals(varContainer)) {
+                    // we have top leve variable declaration
+                    return var;
+                } else {
+                    return varContainer;
                 }
             } else if(CsmKindUtilities.isInclude(csmTopLevelObject)) {
                 return (CsmInclude)csmTopLevelObject;
@@ -386,8 +390,9 @@ public class CsmBaseUtilities {
             } else if (CsmKindUtilities.isScopeElement(csmTopLevelObject)) {
                 csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
                 continue;
+            } else {
+                break;
             }
-            break;
         }
         return csmTopLevelObject;
     }
