@@ -45,12 +45,14 @@
 package org.netbeans.spi.editor.errorstripe;
 
 import javax.swing.text.Document;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**A creator for MarkProviders. Should register an instance under <code>Editors/text/base/UpToDateStatusProvider</code>
  * or <code>Editors/&lt;MIME-Type&gt;/UpToDateStatusProvider</code>.
  *
  * @author Jan Lahoda
  */
+@MimeLocation(subfolderName="UpToDateStatusProvider")
 public interface UpToDateStatusProviderFactory {
 
     /**Create an instance of {@link UpToDateStatusProvider} for a given {@link Document}.

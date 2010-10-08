@@ -72,7 +72,7 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     private long tstart;
     
     private int count;
-   private final ProgressHandle handle;
+    private ProgressHandle handle;
     private final AtomicBoolean canceled = new AtomicBoolean();
     
     private final RepositoryInfo ri;
@@ -86,7 +86,6 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         this.indexingContext = indexingContext;
         this.nexusIndexer = nexusIndexer;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
         Cancellation.register(this);
 
         if (DEBUG) {
@@ -102,6 +101,10 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
             writer.println("--------------------------------------------------------");//NOI18N
             writer.println("Scanning started at " + SimpleDateFormat.getInstance().format(new Date()));//NOI18N
         }
+        if (handle != null) {
+            handle.finish();
+        }
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
         handle.start();
         handle.switchToIndeterminate();
         tstart = System.currentTimeMillis();
@@ -135,10 +138,9 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
             // ArtifactInfo ai = ac.getArtifactInfo();
             writer.printf("  %6d %s\n", count, formatFile(ac.getPom()));//NOI18N
         }
-        handle.progress(ac.getArtifactInfo().groupId + ":" 
-                      + ac.getArtifactInfo().artifactId + ":" 
-                      + ac.getArtifactInfo().version);
-
+        if (handle != null) {
+            handle.progress(ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version);
+        }
     }
 
     public void artifactError(ArtifactContext ac, Exception e) {
@@ -185,6 +187,8 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     }
 
     void close() {
-        handle.finish();
+        if (handle != null) {
+            handle.finish();
+        }
     }
 }

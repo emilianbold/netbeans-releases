@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
-import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.debug.DebugUtils;
@@ -57,6 +56,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  * abstract Tree walker for APT
@@ -90,6 +90,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
 
+    @Override
     protected void onInclude(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
@@ -97,7 +98,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -109,6 +110,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
+    @Override
     protected void onIncludeNext(APT apt) {
         if (getIncludeHandler() != null) {
             APTIncludeResolver resolver = getIncludeHandler().getResolver(startPath);
@@ -116,7 +118,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -156,6 +158,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     abstract protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState);
     abstract protected boolean hasIncludeActionSideEffects();
 
+    @Override
     protected void onDefine(APT apt) {
         APTDefine define = (APTDefine)apt;
         if (define.isValid()) {
@@ -163,41 +166,48 @@ public abstract class APTAbstractWalker extends APTWalker {
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                    System.err.println("INCORRECT #define directive: in " + new File(startPath.toString()).getName() + " for:\n\t" + apt);// NOI18N
+                    System.err.println("INCORRECT #define directive: in " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                 }
             } else {
                 APTUtils.LOG.log(Level.SEVERE,
                         "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
-                        new Object[] { new File(startPath.toString()).getName(), apt });
+                        new Object[] { CndPathUtilitities.getBaseName(startPath.toString()), apt });
             }
         }
     }
     
+    @Override
     protected void onUndef(APT apt) {
         APTUndefine undef = (APTUndefine)apt;
         getMacroMap().undef(getRootFile(), undef.getName());
     }
     
+    @Override
     protected boolean onIf(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onIfdef(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onIfndef(APT apt) {
         return eval(apt);
     }
     
+    @Override
     protected boolean onElif(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch && eval(apt);
     }
     
+    @Override
     protected boolean onElse(APT apt, boolean wasInPrevBranch) {
         return !wasInPrevBranch;
     }
     
+    @Override
     protected void onEndif(APT apt, boolean wasInBranch) {
     }
 

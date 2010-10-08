@@ -68,14 +68,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -84,8 +82,8 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -479,7 +477,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
 	}
     }
     
-    private static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+    private static class Renderer extends EntitiesListCellRenderer {
          
         private MyPanel rendererComponent;
         private JLabel jlName = new JLabel();
@@ -607,7 +605,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
                 jlName.setIcon(td.getIcon());                
                 jlName.setText(td.getSymbolName());
                 jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
-                jlPrj.setText(td.getProjectName());
+                setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
 		rendererComponent.setDescriptor(td);
                 FileObject fo = td.getFileObject();
@@ -652,28 +650,5 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
         }
         
     }
-
-    private class SymbolComparator implements Comparator<SymbolDescriptor> {
-        public int compare(SymbolDescriptor t1, SymbolDescriptor t2) {
-           int cmpr = compareStrings( t1.getSymbolName(), t2.getSymbolName());
-           if ( cmpr != 0 ) {
-               return cmpr;
-           }
-           //todo: more logic
-           return cmpr;
-        }
-        
-    }
-        
-    private int compareStrings(String s1, String s2) {
-        if( s1 == null ) {
-            s1 = ""; // NOI18N
-        }
-        if ( s2 == null ) {
-            s2 = ""; // NOI18N
-        }
-        return s1.compareTo( s2 );
-    }
-    
 
 }

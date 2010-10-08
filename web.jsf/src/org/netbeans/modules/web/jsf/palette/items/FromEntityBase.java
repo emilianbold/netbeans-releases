@@ -240,6 +240,9 @@ public abstract class FromEntityBase {
                                 fields.add(fd);
                             }
                             continue;
+                        } else {
+                            //primitive types
+                            fields.add(fd);
                         }
                     } else if (fd.getDateTimeFormat().length() > 0) {
                         fields.add(fd);
@@ -377,6 +380,7 @@ public abstract class FromEntityBase {
         params.put("keyBody", keyBodyValue!=null ? keyBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
         params.put("keyStringBody", keyStringBodyValue!=null ? keyStringBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
         params.put("keyGetter", keyGetterValue);//NOI18N
+        params.put("keySetter", "s" + keyGetterValue.substring(1));//NOI18N
         params.put("keyType", keyTypeValue);//NOI18N
         params.put("keyEmbedded", keyEmbeddedValue);//NOI18N
         params.put("keyDerived", keyDerivedValue);//NOI18N

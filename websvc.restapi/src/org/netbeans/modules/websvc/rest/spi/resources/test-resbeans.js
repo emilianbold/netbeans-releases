@@ -645,10 +645,17 @@ TestSupport.prototype = {
         var paramLength = 0;
         if(method == 'POST' || method == 'PUT'){
             var blobParam = document.getElementById('blobParam').value;
-            if(blobParam != null && blobParam != undefined)
+            if(blobParam != null && blobParam != undefined){
                 params = blobParam;
-            else if(p != null && p != undefined)
-                params = p;
+            }
+            if(p != null && p != undefined){
+	    		if ( params!=null && params.length >0 ){
+					params = p+"&"+params;
+				}
+				else {
+					params = p;
+				}
+	    	}
             if(params != null)
                 paramLength = params.length;
         } else if(method == 'GET' || method == 'DELETE') {

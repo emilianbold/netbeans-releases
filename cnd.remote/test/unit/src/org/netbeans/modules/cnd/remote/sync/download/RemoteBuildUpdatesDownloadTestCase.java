@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import junit.framework.AssertionFailedError;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
@@ -140,6 +141,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
+    @RandomlyFails
     public void testNonProjectUpdates() throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);

@@ -169,13 +169,13 @@ class RevisionNode extends AbstractNode {
         }
     }
     
-    private class UsernameProperty extends CommitNodeProperty {
+    private class UsernameProperty extends CommitNodeProperty<String> {
 
         public UsernameProperty() {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getAuthor();
             } else {
@@ -184,13 +184,13 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class DateProperty extends CommitNodeProperty {
+    private class DateProperty extends CommitNodeProperty<String> {
 
         public DateProperty() {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
             } else {
@@ -199,13 +199,13 @@ class RevisionNode extends AbstractNode {
         }
     }
 
-    private class MessageProperty extends CommitNodeProperty {
+    private class MessageProperty extends CommitNodeProperty<String> {
 
         public MessageProperty() {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
         }
 
-        public Object getValue() throws IllegalAccessException, InvocationTargetException {
+        public String getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
                 return container.getLog().getMessage();
             } else {

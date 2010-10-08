@@ -49,41 +49,34 @@ import java.io.FileWriter;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import junit.framework.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.jar.JarFile;
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.types.Parameter;
-import org.apache.tools.ant.types.selectors.SelectorUtils;
 
-import org.netbeans.junit.NbTestCase;
 
 /** Check behaviour of ModuleSelector.
  *
  * @author Jaroslav Tulach
  */
-public class ModuleSelectorTest extends NbTestCase {
+public class ModuleSelectorTest extends TestBase {
     private ModuleSelector selector;
     
     public ModuleSelectorTest(String testName) {
         super(testName);
     }
 
-    protected void setUp() throws Exception {
+    protected @Override void setUp() throws Exception {
+        super.setUp();
         selector = new ModuleSelector();
     }
 
     public void testIsSelectedForNotAModule() throws IOException {
-        File noModule = generateJar(new String[0], ModuleDependenciesTest.createManifest ());
+        File noModule = generateJar(new String[0], createManifest ());
         assertFalse("Not acceptable", selector.isSelected(getWorkDir(), noModule.toString(), noModule));
     }
 
     public void testIncludesAllModulesByDefault() throws Exception {
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         assertTrue("Accepted", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
@@ -95,7 +88,7 @@ public class ModuleSelectorTest extends NbTestCase {
         p.setValue("org.my.module");
         selector.setParameters(new Parameter[] { p });
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         assertFalse("Refused", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
@@ -110,7 +103,7 @@ public class ModuleSelectorTest extends NbTestCase {
         p2.setValue("org.my.module");
         selector.setParameters(new Parameter[] { p, p2 });
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         assertTrue("Now we are accepting only excluded modules", selector.isSelected(getWorkDir(), aModule.toString(), aModule));
@@ -126,7 +119,7 @@ public class ModuleSelectorTest extends NbTestCase {
         selector.setParameters(new Parameter[] { p, p2 });
         
         
-        File noModule = generateJar(new String[0], ModuleDependenciesTest.createManifest ());
+        File noModule = generateJar(new String[0], createManifest ());
         assertFalse("Not acceptable", selector.isSelected(getWorkDir(), noModule.toString(), noModule));
     }
     
@@ -136,7 +129,7 @@ public class ModuleSelectorTest extends NbTestCase {
         p.setValue("nonexistent");
         selector.setParameters(new Parameter[] { p });
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         new File(getWorkDir(), "update_tracking").mkdir();
@@ -166,7 +159,7 @@ public class ModuleSelectorTest extends NbTestCase {
         updateTracking.mkdirs();
         assertTrue("Created", updateTracking.isDirectory());
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes().putValue("OpenIDE-Module", "org.my.module");
         File aModule = generateJar(new String[0], m);
         
@@ -187,7 +180,7 @@ public class ModuleSelectorTest extends NbTestCase {
         );
         w.close();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(trackingFile.getPath());
         
         while (--parents > 0) {
@@ -216,11 +209,13 @@ public class ModuleSelectorTest extends NbTestCase {
         assertTrue("also the tracking file is accepted", selector.isSelected(getWorkDir(), "update-tracking/" + trackingFile.getName(), trackingFile));
     }
     
-    private final File createNewJarFile () throws IOException {
+    private File createNewJarFile() throws IOException {
         int i = 0;
         for (;;) {
             File f = new File (this.getWorkDir(), i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists ()) {
+                return f;
+            }
         }
     }
 

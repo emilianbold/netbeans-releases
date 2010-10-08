@@ -81,6 +81,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -110,6 +111,7 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
+import org.openide.util.UserQuestionException;
 import org.openide.windows.WindowManager;
 
 /**
@@ -342,7 +344,7 @@ public class CsmUtilities {
                     }
                 }
             } catch (NullPointerException exc) {
-                exc.printStackTrace();
+                exc.printStackTrace(System.err);
             }
         }
         return csmFile;
@@ -353,7 +355,7 @@ public class CsmUtilities {
         try {
             csmProject = getCsmFile(bDoc, false, false).getProject();
         } catch (NullPointerException exc) {
-            exc.printStackTrace();
+            exc.printStackTrace(System.err);
         }
         return csmProject;
     }
@@ -459,7 +461,7 @@ public class CsmUtilities {
             } catch (BufferUnderflowException ex) {
                 // FIXUP: IZ#148840
             } catch (AssertionError ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } catch (IllegalStateException ex) {
                 // dobj can be invalid
             }
@@ -507,17 +509,17 @@ public class CsmUtilities {
         FileObject fo = null;
         if (csmFile != null) {
             try {
-                try {
-                    File file = new File(csmFile.getAbsolutePath().toString());
-                    fo = FileUtil.toFileObject(file);
-                    if (fo == null) {
-                        fo = FileUtil.toFileObject(file.getCanonicalFile());
+                try {                    
+                    fo = CndFileUtils.toFileObject(csmFile.getAbsolutePath());
+                    if (fo == null /*paranoia*/ || !fo.isValid()) {
+                        File file = new File(csmFile.getAbsolutePath().toString()); // XXX:FileObject conversion
+                        fo = CndFileUtils.toFileObject(file.getCanonicalFile());
                     }
                 } catch (IOException e) {
-                    fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(new File(csmFile.getAbsolutePath().toString())));
+                    fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(csmFile.getAbsolutePath().toString()));
                 }
             } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
         return fo;
@@ -668,6 +670,47 @@ public class CsmUtilities {
         }
     }
 
+    /**
+     * opens document even if it is very big by silently confirming open
+     * @param cookie
+     * @return
+     */
+    public static StyledDocument openDocument(EditorCookie cookie) {
+        if (cookie == null) {
+            return null;
+        }
+        StyledDocument document = null;
+        try {
+            try {
+                document = cookie.openDocument();
+            } catch (UserQuestionException e) {
+                e.confirmed();
+                document = cookie.openDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return document;
+    }
+    
+    public static StyledDocument openDocument(CloneableEditorSupport ces) {
+        if (ces == null) {
+            return null;
+        }
+        StyledDocument document = null;
+        try {
+            try {
+                document = ces.openDocument();
+            } catch (UserQuestionException e) {
+                e.confirmed();
+                document = ces.openDocument();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return document;
+    } 
+    
     /*
      * opens source file correspond to input object and set caret on
      * start offset position

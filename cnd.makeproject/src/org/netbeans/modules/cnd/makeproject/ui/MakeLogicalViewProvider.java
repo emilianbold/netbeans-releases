@@ -604,12 +604,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (makeConfiguration.isMakefileConfiguration()) {
                     MakefileConfiguration makefileConfiguration = makeConfiguration.getMakefileConfiguration();
                     String path = makefileConfiguration.getAbsBuildCommandWorkingDir();
-                    File file = new File(path);
-                    if (file.exists()) {
-                        try {
-                            set.add(FileUtil.toFileObject(file.getCanonicalFile()));
-                        } catch (IOException ioe) {
+                    try {
+                        FileObject fileObject = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(path));
+                        if (fileObject != null /*paranoia*/ && fileObject.isValid()) {
+                            set.add(fileObject);
                         }
+                    } catch (IOException ioe) {
+                        ioe.printStackTrace();
                     }
                 }
             }
@@ -1084,9 +1085,8 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 if (conf != null) {
                     String rootPath = folder.getRootPath();
                     String absRootPath = CndPathUtilitities.toAbsolutePath(conf.getBaseDir(), rootPath);
-                    File folderFile = CndFileUtils.normalizeFile(new File(absRootPath));
-                    FileObject fo = FileUtil.toFileObject(folderFile);
-                    if (fo != null && fo.isFolder()) {
+                    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absRootPath));
+                    if (fo != null /*paranoia*/ && fo.isValid() && fo.isFolder()) {
                         DataFolder dataFolder = DataFolder.findFolder(fo);
                         if (dataFolder != null) {
                             elems.add(dataFolder);
@@ -1210,11 +1210,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (folder.isDiskFolder()) {
                 String rootPath = folder.getRootPath();
                 String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
-                File file = new File(AbsRootPath);
-                if (!file.isDirectory() || !file.exists()) {
+                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
+                if (fo == null /*paranoia*/ || !fo.isValid() || !fo.isFolder()) {
                     return;
                 }
-                FileObject fo = FileUtil.toFileObject(file);
                 try {
                     fo.rename(fo.lock(), newName, null);
                 } catch (IOException ioe) {
@@ -1260,11 +1259,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                 return;
             }
             String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), getFolder().getRootPath());
-            File folderFile = new File(absPath);
-            if (!folderFile.isDirectory() || !folderFile.exists()) {
+            FileObject folderFileObject = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(absPath));
+            if (folderFileObject == null /*paranoia*/ || !folderFileObject.isValid() || !folderFileObject.isFolder()) {
                 return;
             }
-            FileObject folderFileObject = FileUtil.toFileObject(folderFile);
             folderFileObject.delete();
             super.destroy();
         }
@@ -1431,7 +1429,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (toFolder.isDiskFolder()) {
                         FileObject itemFO = item.getFileObject();
                         String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
-                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        FileObject toFolderFO = CndFileUtils.toFileObject(toFolderPath); // should it be normalized?
                         String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
                         FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
 
@@ -1453,7 +1451,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if (toFolder.isDiskFolder()) {
                         FileObject itemFO = item.getFileObject();
                         String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
-                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        FileObject toFolderFO = CndFileUtils.toFileObject(toFolderPath); // should it be normalized?
                         String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, itemFO.getName(), itemFO.getExt());
                         FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
                     } else if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
@@ -1487,11 +1485,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     if ((CndPathUtilitities.isPathAbsolute(item.getPath()) || item.getPath().startsWith("..")) && !toFolder.isDiskFolder()) { // NOI18N
                         Toolkit.getDefaultToolkit().beep();
                     } else {
-                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
+                        FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
                         if (toFolder.isDiskFolder()) {
                             String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
-                            FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                            FileObject toFolderFO = CndFileUtils.toFileObject(toFolderPath); // should it be normalized?
                             String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, fo.getName(), ext);
                             FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
 
@@ -1519,10 +1517,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
                     }
                 } else {
                     if (toFolder.isDiskFolder()) {
-                        FileObject fo = FileUtil.toFileObject(item.getNormalizedFile());
+                        FileObject fo = item.getFileObject();
                         String ext = fo.getExt();
                         String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
-                        FileObject toFolderFO = FileUtil.toFileObject(new File(toFolderPath));
+                        FileObject toFolderFO = CndFileUtils.toFileObject(toFolderPath);
                         String newName = CndPathUtilitities.createUniqueFileName(toFolderPath, fo.getName(), ext);
                         fo.copy(toFolderFO, newName, ext);
                     } else if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
@@ -1772,8 +1770,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getNormalizedFile();
-            setShortDescription(file.getPath());
+            setShortDescription(item.getNormalizedPath());
             this.project = project;
         }
 
@@ -2023,10 +2020,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
-            File file = item.getNormalizedFile();
-            setName(file.getPath());
-            setDisplayName(file.getName());
-            setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", file.getPath())); // NOI18N
+            setName(item.getNormalizedPath());
+            setDisplayName(item.getName());
+            setShortDescription(NbBundle.getMessage(getClass(), "BrokenTxt", item.getPath())); // NOI18N
             broken = true;
             this.project = project;
         }

@@ -362,8 +362,8 @@ class DiskMapTurboProvider implements TurboProvider {
         Set set = map != null ? map.keySet() : null;
 
         // all modified files
-        Set<File> conflictedSet = new HashSet();
-        Set<File> newSet = new HashSet();
+        Set<File> conflictedSet = new HashSet<File>();
+        Set<File> newSet = new HashSet<File>();
         if(set != null) {
             for (Iterator i = set.iterator(); i.hasNext();) {
                 File file = (File) i.next();

@@ -569,9 +569,11 @@ public final class EarProject implements Project, AntProjectListener {
             File projectProperties = helper.resolveFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             if (projectProperties.exists()) {
                 // file exists, log warning
-                Logger.getLogger("global").log(Level.WARNING,
-                        "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
-                        " property for " + this); // NOI18N
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING,
+                            "Cannot resolve {0} property for {1}", // NOI18N
+                            new Object[] {EarProjectProperties.META_INF, this});
+                }
             }
             metaInfProp = "src/conf"; // NOI18N
         }
@@ -581,7 +583,7 @@ public final class EarProject implements Project, AntProjectListener {
             File metaInfF = PropertyUtils.resolveFile(prjDirF, metaInfProp);
             metaInfFO = FileUtil.createFolder(metaInfF);
         } catch (IOException ex) {
-            assert false : ex;
+            LOGGER.log(Level.INFO, null, ex);
         }
         return metaInfFO;
     }

@@ -102,6 +102,8 @@ final class ResultDisplayHandler {
     JComponent getOutputComponent() {
         if (outputComponent == null) {
             outputComponent = new JPanel(new BorderLayout());
+            outputComponent.setBorder(
+                    BorderFactory.createEmptyBorder(0, 10, 0, 0)); // #181873
         }
         return outputComponent;
     }
@@ -143,6 +145,7 @@ final class ResultDisplayHandler {
         splitPane.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_ResultPanelTree"));
         splitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 DividerSettings dividerSettings = new DividerSettings(splitPane.getOrientation(), splitPane.getDividerLocation());
                 TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
@@ -150,6 +153,7 @@ final class ResultDisplayHandler {
         });
         splitPane.addPropertyChangeListener(JSplitPane.ORIENTATION_PROPERTY, new PropertyChangeListener() {
 
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 DividerSettings dividerSettings = new DividerSettings(splitPane.getOrientation(), splitPane.getDividerLocation());
                 TestRunnerSettings.getDefault().setDividerSettings(dividerSettings);
@@ -331,10 +335,12 @@ final class ResultDisplayHandler {
 
         EventQueue.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 try {
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.log(Level.FINE, "Invoking: " + method.getName() + " with param: " + param);
+                        LOGGER.log(Level.FINE, "Invoking: {0} with param: {1}",
+                                new Object[]{method.getName(), param});
                     }
                     finalMethod.invoke(treePanel, new Object[]{param});
                 } catch (InvocationTargetException ex) {

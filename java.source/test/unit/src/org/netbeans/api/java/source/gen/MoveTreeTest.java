@@ -43,17 +43,21 @@
  */
 package org.netbeans.api.java.source.gen;
 
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -391,6 +395,51 @@ public class MoveTreeTest extends GeneratorTest {
                 BlockTree nue = make.Block(Arrays.asList(body.getStatements().get(0), inner), false);
 
                 workingCopy.rewrite(body, nue);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void test187616() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(String str) {\n" +
+            "        //blabla\n" +
+            "\twhile(path.getLeaf().getKind() != Kind.CLASS) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n\n" +
+            "public class Test {\n" +
+            "    public void taragui(String str) {\n" +
+            "        //blabla\n" +
+            "\twhile(!TreeUtilities.SET.contains(path.getLeaf().getKind())) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.PARSED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(0);
+                BlockTree body = method.getBody();
+                WhileLoopTree loop = (WhileLoopTree)body.getStatements().get(0);
+                BinaryTree origCond = (BinaryTree) ((ParenthesizedTree) loop.getCondition()).getExpression();
+                ExpressionTree nueCondition = make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(make.MemberSelect(make.Identifier("TreeUtilities"), "SET"), "contains"), Collections.singletonList(origCond.getLeftOperand())));
+
+                workingCopy.rewrite(origCond, nueCondition);
             }
 
         };

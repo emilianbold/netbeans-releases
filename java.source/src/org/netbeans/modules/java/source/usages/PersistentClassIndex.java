@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
@@ -69,6 +70,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -119,6 +121,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public boolean isEmpty () {
         try {
             return ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                @Override
                 public Boolean run() throws IOException, InterruptedException {
                     return !PersistentClassIndex.this.index.exists();
                 }
@@ -158,7 +161,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
         final Query q = DocumentUtil.binaryNameQuery(binaryName);        
         Set<String> names = new HashSet<String>();
-        index.query(new Query[]{q}, DocumentUtil.sourceNameFieldSelector(), DocumentUtil.sourceNameConvertor(), names);
+        index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), q);
         return names.isEmpty() ? null : names.iterator().next();
     }
     
@@ -180,6 +183,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
         
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            @Override
             public Void run () throws IOException, InterruptedException {
                 usages(binaryName, usageType, convertor, result);
                 return null;
@@ -194,11 +198,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
             @Override
             public Void run () throws IOException, InterruptedException {
-                final Query[] queries =  QueryUtil.createQueries(
+                final Query query =  QueryUtil.createQuery(
                         Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),
                         simpleName,
                         kind);
-                index.query(queries,DocumentUtil.declaredTypesFieldSelector(),convertor, result);
+                index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), query);
                 return null;
             }
         });
@@ -208,8 +212,23 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
         ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            @Override
             public Void run () throws IOException, InterruptedException {
-                index.getDeclaredElements(ident, kind, convertor, result);
+                final Query[] queries = new Query[] {QueryUtil.createTermCollectingQuery(
+                        Pair.of(DocumentUtil.FIELD_FEATURE_IDENTS,DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS),
+                        ident,
+                        kind)};
+                index.queryDocTerms(
+                        result,
+                        convertor,
+                        new ResultConvertor<Term, String>(){
+                            @Override
+                            public String convert(Term p) throws Stop {
+                                return p.text();
+                            }
+                        },
+                        DocumentUtil.declaredTypesFieldSelector(),
+                        queries);
                 return null;
             }
         });                            
@@ -237,7 +256,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     collectInto = result;
                 }
                 final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
-                index.queryTerms(filter.second, filter.first, collectInto);
+                index.queryTerms(collectInto, filter.second, filter.first);
                 if (cacheOp) {
                     synchronized (PersistentClassIndex.this) {
                         if (rootPkgCache == null) {
@@ -286,10 +305,12 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 if (fo != null && fo.isValid()) {                                        
                     try {
                         js.runUserActionTask(new Task<CompilationController>() {
+                            @Override
                             public void run (final CompilationController controller) {
                                 try {                            
                                     ClassIndexManager.getDefault().takeWriteLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
+                                        @Override
                                             public Void run () throws IOException {
                                                 if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
                                                     return null;
@@ -331,14 +352,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 }
                 this.dirty = null;
                 final long endTime = System.currentTimeMillis();
-                LOGGER.fine("PersistentClassIndex.updateDirty took: " + (endTime-startTime)+ " ms");     //NOI18N
+                LOGGER.log(Level.FINE, "PersistentClassIndex.updateDirty took: {0} ms", (endTime-startTime));     //NOI18N
             }
         }
     }
     
     private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<? super Document, T> convertor, Set<? super T> result) throws InterruptedException, IOException {
         final Query usagesQuery = QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD);
-        this.index.query(new Query[]{usagesQuery},DocumentUtil.declaredTypesFieldSelector(),convertor,result);                
+        this.index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), usagesQuery);
     }
     
     private synchronized void resetPkgCache() {        
@@ -352,14 +373,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
             index.clear();
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
+        public void deleteEnclosedAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
             resetPkgCache();
-            index.store(refs, topLevels);
+            index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(), false);
         }
         @Override
-        public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
+        public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
-            index.store(refs, toDelete);
+            index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(), true);
         }
     }
     

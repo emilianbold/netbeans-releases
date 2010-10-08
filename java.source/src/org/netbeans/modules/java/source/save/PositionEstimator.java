@@ -609,6 +609,11 @@ public abstract class PositionEstimator {
             return result;
         }
 
+        @Override
+        public LineInsertionType lineInsertType() {
+            return LineInsertionType.AFTER;
+        }
+
     }
     
     /**

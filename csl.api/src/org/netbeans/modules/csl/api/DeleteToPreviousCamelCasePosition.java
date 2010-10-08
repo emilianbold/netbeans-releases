@@ -47,7 +47,9 @@ import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-/** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+/** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
+ * @deprecated use {@link CslActions#createDeleteCamelCasePositionAction(javax.swing.Action, boolean) } instead.
+ */
 public final class DeleteToPreviousCamelCasePosition extends SelectPreviousCamelCasePosition {
     public static final String deletePreviousCamelCasePosition = "delete-previous-camel-case-position"; //NOI18N
 
