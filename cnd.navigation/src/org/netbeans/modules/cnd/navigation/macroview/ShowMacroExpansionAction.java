@@ -97,7 +97,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
                     if (ref.getClosestTopLevelObject() != null) {
                         return CsmKindUtilities.isInclude(ref.getOwner());
                     }
-                    return CsmKindUtilities.isInclude(ref.getOwner()); // not needed
+                    return CsmKindUtilities.isInclude(ref.getOwner());
                 }
             }
             return ContextUtils.findFile(activatedNodes[0]) != null;
