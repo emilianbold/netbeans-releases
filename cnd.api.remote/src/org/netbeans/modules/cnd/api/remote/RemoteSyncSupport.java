@@ -50,6 +50,7 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
@@ -77,6 +78,16 @@ public final class RemoteSyncSupport {
     public static RemoteProject.Mode getRemoteMode(Project project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
+    }
+
+    public static PathMap getPathMap(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        CndUtils.assertNotNull(remoteProject, "null RemoteProject"); //NOI18N
+        if (remoteProject == null) {
+            return null;
+        } else {
+            return remoteProject.getSyncFactory().getPathMap(remoteProject.getDevelopmentHost());
+        }
     }
 
     public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
