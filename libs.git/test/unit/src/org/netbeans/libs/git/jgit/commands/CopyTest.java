@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
@@ -224,5 +225,44 @@ public class CopyTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, copy2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, copy11, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, copy21, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+    }
+
+    public void testCancel () throws Exception {
+        final File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        File file2 = new File(folder, "file2");
+        file2.createNewFile();
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        client.add(new File[] { }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+
+        // simulate copy
+        final File target = new File(folder.getParentFile(), "folder2");
+        target.mkdirs();
+        new File(target, file.getName()).createNewFile();
+        new File(target, file2.getName()).createNewFile();
+
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.copyAfter(folder, target, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        m.cont = false;
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
     }
 }

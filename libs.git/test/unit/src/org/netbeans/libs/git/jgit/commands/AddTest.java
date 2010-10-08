@@ -55,6 +55,7 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
 
@@ -225,6 +226,36 @@ public class AddTest extends AbstractGitTestCase {
         assertDirCacheSize(1);
         assertDirCacheEntry(Arrays.asList(file1_2));
         assertNullDirCacheEntry(Arrays.asList(file1_1, file2_1, file2_2));
+    }
+
+    public void testCancel () throws Exception {
+        final File file = new File(workDir, "file");
+        file.createNewFile();
+        final File file2 = new File(workDir, "file2");
+        file2.createNewFile();
+
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.add(new File[] { file, file2 },m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        m.cont = false;
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
     }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {

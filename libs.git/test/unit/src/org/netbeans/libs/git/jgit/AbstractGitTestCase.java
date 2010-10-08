@@ -214,14 +214,18 @@ public class AbstractGitTestCase extends NbTestCase {
     protected static class Monitor extends FileProgressMonitor {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
         public final List<String> notifiedWarnings = new LinkedList<String>();
+        private boolean barrierAccessed;
+        public int count;
+        public volatile boolean cont;
 
         public Monitor () {
-
+            cont = true;
         }
 
         @Override
         public void notifyFile (File file) {
             notifiedFiles.add(file);
+            barrierReached();
         }
 
         @Override
@@ -232,6 +236,27 @@ public class AbstractGitTestCase extends NbTestCase {
         @Override
         public void notifyWarning (String message) {
             notifiedWarnings.add(message);
+        }
+
+        private void barrierReached() {
+            barrierAccessed = true;
+            ++count;
+            while (!cont) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
+
+        public void waitAtBarrier() throws InterruptedException {
+            for (int i = 0; i < 100; ++i) {
+                if (barrierAccessed) {
+                    break;
+                }
+                Thread.sleep(100);
+            }
+            assertTrue(barrierAccessed);
         }
     }
 }

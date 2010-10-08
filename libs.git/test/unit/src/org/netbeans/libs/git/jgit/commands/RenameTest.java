@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.FileProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
@@ -411,5 +412,37 @@ public class RenameTest extends AbstractGitTestCase {
         assertTrue(statuses.get(moved11).isRenamed());
         // file21 was not committed
         assertFalse(statuses.get(moved21).isRenamed());
+    }
+
+    public void testCancel () throws Exception {
+        final File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        File file2 = new File(folder, "file2");
+        file2.createNewFile();
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        client.add(new File[] { }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.rename(folder, new File(folder.getParentFile(), "folder2"), false, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        m.cont = false;
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
     }
 }

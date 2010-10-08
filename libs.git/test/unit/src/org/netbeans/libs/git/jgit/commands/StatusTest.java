@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
@@ -292,6 +293,60 @@ public class StatusTest extends AbstractGitTestCase {
         assertFalse(statuses.get(file).isTracked());
         assertFalse(statuses.get(folder).isTracked());
         assertFalse(statuses.get(folder2).isTracked());
+    }
+
+    public void testCancel () throws Exception {
+        final File file = new File(workDir, "file");
+        file.createNewFile();
+        final File file2 = new File(workDir, "file2");
+        file2.createNewFile();
+
+        class Monitor extends StatusProgressMonitor {
+            private boolean barrierAccessed;
+            private int count;
+            private boolean cont;
+            @Override
+            public void notifyStatus(GitStatus status) {
+                barrierAccessed = true;
+                ++count;
+                while (!cont) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+            private void waitAtBarrier() throws InterruptedException {
+                for (int i = 0; i < 100; ++i) {
+                    if (barrierAccessed) {
+                        break;
+                    }
+                    Thread.sleep(100);
+                }
+                assertTrue(barrierAccessed);
+            }
+        }
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.getStatus(new File[] { file, file2 }, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
     }
 
     private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusProgressMonitor monitor) {

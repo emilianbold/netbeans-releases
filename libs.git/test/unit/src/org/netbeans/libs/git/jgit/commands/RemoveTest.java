@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Map;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
@@ -291,5 +292,35 @@ public class RemoveTest extends AbstractGitTestCase {
         assertEquals(new HashSet<File>(Arrays.asList(file1, file2, file3, folder1, folder2)), m.notifiedFiles);
         statuses = client.getStatus(folders, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(0, statuses.size());
+    }
+
+    public void testCancel () throws Exception {
+        final File file = new File(workDir, "file");
+        file.createNewFile();
+        final File file2 = new File(workDir, "file2");
+        file2.createNewFile();
+
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.remove(new File[] { file, file2 }, false, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        m.cont = false;
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
     }
 }
