@@ -133,7 +133,9 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 if (this.owner == null) {
                     this.owner = anOwner;
                 }
-                closestTopLevelObject = candidate.getClosestTopLevelObject();
+                if (this.closestTopLevelObject == null) {
+                    closestTopLevelObject = candidate.getClosestTopLevelObject();
+                }
             }
             restoreDone = true;
         }

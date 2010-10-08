@@ -61,9 +61,9 @@ import org.openide.util.Exceptions;
  *
  * @author Alexamder Simon
  */
-public class CallGraphTest extends ProjectBasedTestCase {
+public class CallGraphTestCase extends ProjectBasedTestCase {
 
-    public CallGraphTest(String testName) {
+    public CallGraphTestCase(String testName) {
         super(testName);
     }
 

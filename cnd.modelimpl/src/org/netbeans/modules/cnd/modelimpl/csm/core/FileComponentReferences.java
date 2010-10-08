@@ -216,9 +216,9 @@ public class FileComponentReferences extends FileComponent implements Persistent
             return false;
         }
         CsmObject owner = ref.getOwner(); // storing
-        CsmUID<CsmObject> ownerUID = getUID(owner, "Ignore local owners "); // NOI18N
+        CsmUID<CsmObject> ownerUID = getUID(owner, "Ignore local owners ", TRACE); // NOI18N
         CsmObject closestTopLevelObject = ref.getClosestTopLevelObject();
-        CsmUID<CsmObject> closestTopLevelObjectUID = getUID(closestTopLevelObject, "Ignore local top level objects "); // NOI18N
+        CsmUID<CsmObject> closestTopLevelObjectUID = getUID(closestTopLevelObject, "Why local top level object? ", true); // NOI18N
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
         //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {
@@ -236,7 +236,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return true;
     }
 
-    private CsmUID<CsmObject> getUID(CsmObject csmObject, String warning) {
+    private CsmUID<CsmObject> getUID(CsmObject csmObject, String warning, boolean trace) {
         CsmUID<CsmObject> csmObjectUID = null;
         if (csmObject != null) {
             if (UIDCsmConverter.isIdentifiable(csmObject)) {
@@ -244,13 +244,13 @@ public class FileComponentReferences extends FileComponent implements Persistent
                 if (UIDProviderIml.isPersistable(aClosestTopLevelObjectUID)) {
                     csmObjectUID = aClosestTopLevelObjectUID;
                 } else {
-                    if (TRACE) {
-                        new Exception(warning + csmObject).printStackTrace();
+                    if (trace) {
+                        Utils.LOG.log(Level.WARNING, "{0} {1}\n {2}", new Object[] {warning, csmObject, new Exception()});
                     }
                 }
             } else {
-                if (TRACE) {
-                    new Exception(warning + csmObject).printStackTrace();
+                if (trace) {
+                    Utils.LOG.log(Level.WARNING, "{0} {1}\n {2}", new Object[] {warning, csmObject, new Exception()});
                 }
             }
         }
@@ -430,7 +430,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
         @Override
         public String toString() {
-            return "ReferenceImpl{" + "file=" + file + "refKind=" + refKind + "refObj=" + refObj + "start=" + start + "end=" + end + "identifier=" + identifier + "ownerUID=" + ownerUID + '}'; // NOI18N
+            return "ReferenceImpl{" + "file=" + file + ";refKind=" + refKind + ";refObj=" + refObj + ";start=" + start + ";end=" + end + ";identifier=" + identifier + ";topUID=" + closestTopLevelObjectUID + ";ownerUID=" + ownerUID + '}'; // NOI18N
         }
     }
 }
