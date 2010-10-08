@@ -72,7 +72,12 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
 		platform = host.getPlatform();
 	    else
 		platform = Platform.local();
-	    dbx = dbx.replaceAll("/PLATFORM/", "/" + platform.variant() + "/"); // NOI18N
+	    String variant;
+	    if (host.isLinux64())
+		variant = platform.variant64();
+	    else
+		variant = platform.variant();
+	    dbx = dbx.replaceAll("/PLATFORM/", "/" + variant + "/"); // NOI18N
 	}
 
         if (dbx == null) {
@@ -90,7 +95,7 @@ public final class DbxPathProviderImpl implements DbxPathProvider {
 			    NbBundle.getMessage(DbxPathProviderImpl.class,
 			    "MSG_MISSING_SPRO_HOME"))); // NOI18N
 		} else {
-                    String dbxPath = spro_home + "/../bin/dbx"; // NOI18N
+                    String dbxPath = spro_home + "/bin/dbx"; // NOI18N
                     File dbxFile = new File(dbxPath);
 
                     if (!dbxFile.exists()) {
