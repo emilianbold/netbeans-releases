@@ -140,6 +140,30 @@ public final class CndFileUtils {
         }
     }
 
+    public static boolean isValidLocalFile(String absolutePath) {
+        if (CndPathUtilitities.isPathAbsolute(absolutePath)) {
+            return new File(absolutePath).exists();
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isValidLocalFile(String base, String name) {
+        if (CndPathUtilitities.isPathAbsolute(base)) {
+            return new File(base, name).exists();
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isValidLocalFile(File base, String name) {
+        if (CndPathUtilitities.isPathAbsolute(base.getPath())) {
+            return new File(base, name).exists();
+        } else {
+            return false;
+        }
+    }
+
     public static File createLocalFile(String absolutePath) {
         Parameters.notNull("null path", absolutePath); //NOI18N
         CndUtils.assertAbsolutePathInConsole(absolutePath);
