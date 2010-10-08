@@ -75,6 +75,18 @@ class GitClientInvocationHandler implements InvocationHandler {
 
     @Override
     public Object invoke (final Object proxy, final Method method, final Object[] args) throws Throwable {
+        if (isExclusiveRepositoryAccess(method)) {
+            LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
+            synchronized (repositoryRoot) {
+                return invokeIntern(proxy, method, args);
+            }
+        } else {
+            LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
+            return invokeIntern(proxy, method, args);
+        }
+    }
+
+    private Object invokeIntern (final Object proxy, final Method method, final Object[] args) throws Throwable {
         try {
             Callable callable = new Callable() {
                 @Override
@@ -86,15 +98,7 @@ class GitClientInvocationHandler implements InvocationHandler {
                         LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
                     }
                     try {
-                        if (isExclusiveRepositoryAccess(method)) {
-                            LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
-                            synchronized (repositoryRoot) {
-                                return invokeClientMethod(method, args);
-                            }
-                        } else {
-                            LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
-                            return invokeClientMethod(method, args);
-                        }
+                        return invokeClientMethod(method, args);
                     } finally {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[]{method.getName(), repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N

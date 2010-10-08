@@ -61,6 +61,8 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
  * @author ondra
  */
 public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
+    private Logger indexingLogger;
+    private Logger invocationHandlerLogger;
 
     public GitClientInvocationHandlerTest(String name) {
         super(name);
@@ -69,16 +71,19 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-    }
-
-    public void testIndexingBridge () throws Exception {
         IndexingBridge bridge = IndexingBridge.getInstance();
         Field f = IndexingBridge.class.getDeclaredField("LOG");
         f.setAccessible(true);
-        Logger LOG = (Logger) f.get(bridge);
-        LOG.setLevel(Level.ALL);
-        IndexingBridgeLogHandler h = new IndexingBridgeLogHandler();
-        LOG.addHandler(h);
+        indexingLogger = (Logger) f.get(bridge);
+        f = GitClientInvocationHandler.class.getDeclaredField("LOG");
+        f.setAccessible(true);
+        invocationHandlerLogger = (Logger) f.get(GitClientInvocationHandler.class);
+    }
+
+    public void testIndexingBridge () throws Exception {
+        indexingLogger.setLevel(Level.ALL);
+        LogHandler h = new LogHandler();
+        indexingLogger.addHandler(h);
 
         GitClient client = Git.getInstance().getClient(repositoryLocation);
 
@@ -160,6 +165,49 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         assertNull(exs[1]);
     }
 
+    public void testDoNotBlockIndexing () throws Exception {
+        final File file = new File(repositoryLocation, "aaa");
+        file.createNewFile();
+        final GitClient client = Git.getInstance().getClient(repositoryLocation);
+        final Exception[] exs = new Exception[2];
+        final InhibitMonitor m = new InhibitMonitor();
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.add(new File[] { file }, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+
+        invocationHandlerLogger.setLevel(Level.ALL);
+        LogHandler handler = new LogHandler();
+        invocationHandlerLogger.addHandler(handler);
+        Thread t2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.remove(new File[] { file }, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                } catch (GitException ex) {
+                    exs[1] = ex;
+                }
+            }
+        });
+        t1.start();
+        m.waitAtBarrier();
+        t2.start();
+        Thread.sleep(5000);
+        assertEquals(Thread.State.BLOCKED, t2.getState());
+        assertFalse(handler.indexingBridgeCalled);
+        m.cont = true;
+        t1.join();
+        t2.join();
+        assertNull(exs[0]);
+        assertNull(exs[1]);
+    }
+
     public void testPallalelizableCommands () throws Exception {
         final File file = new File(repositoryLocation, "aaa");
         file.createNewFile();
@@ -223,18 +271,25 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         }
     }
 
-    private static class IndexingBridgeLogHandler extends Handler {
+    private class LogHandler extends Handler {
 
         boolean bridgeAccessed;
         private HashSet<File> expectedParents;
+        private boolean indexingBridgeCalled;
 
         @Override
         public void publish (LogRecord record) {
-            bridgeAccessed = true;
-            for (File f : expectedParents) {
-                if (record.getMessage().equals("scheduling for fs refresh: [" + f + "]")) {
-                    expectedParents.remove(f);
-                    break;
+            if (record.getLoggerName().equals(indexingLogger.getName())) {
+                bridgeAccessed = true;
+                for (File f : expectedParents) {
+                    if (record.getMessage().equals("scheduling for fs refresh: [" + f + "]")) {
+                        expectedParents.remove(f);
+                        break;
+                    }
+                }
+            } else if (record.getLoggerName().equals(invocationHandlerLogger.getName())) {
+                if (record.getMessage().contains("Running command in indexing bridge")) {
+                    indexingBridgeCalled = true;
                 }
             }
         }
@@ -249,6 +304,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
 
         private void reset() {
             bridgeAccessed = false;
+            indexingBridgeCalled = false;
         }
 
         private void setExpectedParents(File[] files) {
