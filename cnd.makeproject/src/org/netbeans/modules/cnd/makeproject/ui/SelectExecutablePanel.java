@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -60,6 +59,7 @@ import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
@@ -78,7 +78,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         initComponents();
         instructionsTextArea.setBackground(getBackground());
 
-        File root = new File(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir());
+        FileObject root = RemoteFileUtil.getFileObject(
+                conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(),
+                conf.getFileSystemHost());
         String[] executables = findAllExecutables(root);
         exeList = new JList(executables);
         executableList.setViewportView(exeList);
@@ -159,8 +161,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         return executableTextField.getText();
     }
 
-    private String[] findAllExecutables(File root) {
-        if (!root.exists() || !root.isDirectory()) {
+    private String[] findAllExecutables(FileObject root) {
+        if (!root.isValid() || !root.isFolder()) {
             // Something is wrong
             return new String[]{};
         }
@@ -169,13 +171,13 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         return aLlist.toArray(new String[aLlist.size()]);
     }
 
-    private void addExecutables(File dir, List<String> filesAdded) {
-        File[] files = dir.listFiles();
+    private void addExecutables(FileObject dir, List<String> filesAdded) {
+        FileObject[] files = dir.getChildren();
         if (files == null) {
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
+            if (files[i].isFolder()) {
                 // FIXUP: is this the best way to deal with files under SCCS?
                 // Unfortunately the SCCS directory contains data files with the same
                 // suffixes as the the source files, and a simple file filter based on
