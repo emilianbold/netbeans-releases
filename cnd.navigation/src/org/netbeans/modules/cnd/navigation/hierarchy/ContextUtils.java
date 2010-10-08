@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -83,14 +84,6 @@ public class ContextUtils {
                     if (ref.getClosestTopLevelObject() != null) {
                         if (CsmKindUtilities.isInclude(ref.getClosestTopLevelObject())) {
                             CsmInclude incl = (CsmInclude) ref.getClosestTopLevelObject();
-                            CsmFile file = incl.getIncludeFile();
-                            if (file != null) {
-                                return file;
-                            }
-                        }
-                    } else {
-                        if (CsmKindUtilities.isInclude(ref.getOwner())) {
-                            CsmInclude incl = (CsmInclude) ref.getOwner(); // not needed
                             CsmFile file = incl.getIncludeFile();
                             if (file != null) {
                                 return file;
@@ -144,9 +137,6 @@ public class ContextUtils {
             if (ref.getClosestTopLevelObject() != null) {
                 return !CsmKindUtilities.isMacro(ref.getClosestTopLevelObject()) &&
                        !CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
-            } else {
-                return !CsmKindUtilities.isMacro(ref.getOwner()) && // not needed
-                       !CsmKindUtilities.isInclude(ref.getOwner()); // not needed
             }
         }
         return false;
@@ -241,8 +231,8 @@ public class ContextUtils {
 
     public static CsmScope findInnerFileScope(CsmFile file, int offset) {
         CsmScope innerScope = null;
-        for (Iterator it = file.getDeclarations().iterator(); it.hasNext();) {
-            CsmDeclaration decl = (CsmDeclaration) it.next();
+        for (Iterator<CsmOffsetableDeclaration> it = file.getDeclarations().iterator(); it.hasNext();) {
+            CsmOffsetableDeclaration decl = it.next();
             if (CsmKindUtilities.isScope(decl) && isInObject(decl, offset)) {
                 innerScope = findInnerScope((CsmScope)decl, offset);
                 innerScope = innerScope != null ? innerScope : (CsmScope)decl;

@@ -200,10 +200,10 @@ public class RemoteFileSupport extends NamedRunnable {
      */
     public final void ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         // TODO: synchronization
-        if( ! dir.exists() || ! CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME).exists()) {
+        if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
-                if( ! dir.exists() || ! CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME).exists()) {
+                if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
                     syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir));
                     removeLock(dir);
                 }

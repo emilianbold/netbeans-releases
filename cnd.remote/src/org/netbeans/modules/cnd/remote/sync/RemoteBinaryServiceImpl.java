@@ -205,7 +205,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             final String newTimestamp = getTimestamp();
 
             if (timeStamp != null && timeStamp.equals(newTimestamp)) {
-                if (CndFileUtils.createLocalFile(lastResult.localFName).exists()) {
+                if (CndFileUtils.isValidLocalFile(lastResult.localFName)) {
                     return lastResult;
                 }
             }
