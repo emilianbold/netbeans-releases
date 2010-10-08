@@ -543,6 +543,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
         }
+        if (!CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) { // empty field imcluded
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
+        }
         File f = CndFileUtils.createLocalFile(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
