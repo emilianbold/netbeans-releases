@@ -81,7 +81,7 @@ import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
  */
 /**
  * Change History:
- * Without changing version yet - NB 6.10
+ * Without changing version yet - NB 7.0
  *   Added remoteSyncFactory
  *   Added language flavor
  * V69 - NB 6.9
