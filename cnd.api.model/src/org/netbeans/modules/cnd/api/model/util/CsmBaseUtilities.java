@@ -51,7 +51,9 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -361,5 +363,37 @@ public class CsmBaseUtilities {
 
     public static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
         return CsmClassifierResolver.getDefault().getTypeClassifier(type, contextFile, 0, resolveTypeChain);
+    }
+
+    public static CsmObject findClosestTopLevelObject(CsmObject csmTopLevelObject) {
+        while(csmTopLevelObject != null) {
+            if (CsmKindUtilities.isNamespaceDefinition(csmTopLevelObject)) {
+                return (CsmNamespaceDefinition) csmTopLevelObject;
+            } else if (CsmKindUtilities.isClass(csmTopLevelObject)) {
+                return (CsmClass) csmTopLevelObject;
+            } else if (CsmKindUtilities.isFunction(csmTopLevelObject)) {
+                return (CsmFunction) csmTopLevelObject;
+            } else if (CsmKindUtilities.isVariable(csmTopLevelObject)) {
+                CsmVariable var = (CsmVariable) csmTopLevelObject;
+                CsmObject varScope = var.getScope();
+                CsmObject varContainer = findClosestTopLevelObject(varScope);
+                if (varScope.equals(varContainer)) {
+                    // we have top leve variable declaration
+                    return var;
+                } else {
+                    return varContainer;
+                }
+            } else if(CsmKindUtilities.isInclude(csmTopLevelObject)) {
+                return (CsmInclude)csmTopLevelObject;
+            } else if(CsmKindUtilities.isMacro(csmTopLevelObject)) {
+                return (CsmMacro)csmTopLevelObject;
+            } else if (CsmKindUtilities.isScopeElement(csmTopLevelObject)) {
+                csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
+                continue;
+            } else {
+                break;
+            }
+        }
+        return csmTopLevelObject;
     }
 }

@@ -58,7 +58,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.extexecution.destroy</friend>
                 <friend>org.netbeans.modules.keyring.impl</friend>
                 <friend>org.netbeans.modules.masterfs</friend>
-                <friend>org.netbeans.modules.maven.killer</friend>
                 <friend>org.netbeans.modules.python.qshell</friend>
                 <package>com.sun.jna</package>
                 <package>com.sun.jna.ptr</package>

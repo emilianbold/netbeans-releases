@@ -309,15 +309,28 @@ public class GridBagManager implements GridManager {
     public void setFill(Component component, int fill) {
         setProperty(component, "fill", fill); // NOI18N
     }
+    
+    public void setWeightX(Component component, double weight) {
+        setProperty(component, "weightx", weight); // NOI18N
+    }
+
+    public void setWeightY(Component component, double weight) {
+        setProperty(component, "weighty", weight); // NOI18N
+    }
 
     @Override
     public Container encloseInContainer(Set<Component> components) {
+        GridBagLayout layout = (GridBagLayout)container.getLayout();
         RADVisualContainer parent = null;
         FormModel formModel = null;
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int maxx = 0;
         int maxy = 0;
+        boolean horizontalFill = false;
+        boolean verticalFill = false;
+        boolean weightx = false;
+        boolean weighty = false;
         for (Component comp : components) {
             RADVisualComponent metaComp = componentMap.get(comp);
             parent = metaComp.getParentContainer();
@@ -325,12 +338,30 @@ public class GridBagManager implements GridManager {
             int gridx = info.getGridX(comp);
             int gridy = info.getGridY(comp);
             int gridwidth = info.getGridWidth(comp);
-            int gridheight = info.getGridHeight(comp);
+            int gridheight = info.getGridHeight(comp);            
             minx = Math.min(minx, gridx);
             miny = Math.min(miny, gridy);
             maxx = Math.max(maxx, gridx+gridwidth);
             maxy = Math.max(maxy, gridy+gridheight);
+            int fill = info.getFill(comp);
+            if (fill == GridBagConstraints.BOTH) {
+                horizontalFill = true;
+                verticalFill = true;
+            } else if (fill == GridBagConstraints.HORIZONTAL) {
+                horizontalFill = true;
+            } else if (fill == GridBagConstraints.VERTICAL) {
+                verticalFill = true;
+            }
+            double wx = info.getWeightX(comp);
+            if (wx != 0) {
+                weightx = true;
+            }
+            double wy = info.getWeightY(comp);
+            if (wy != 0) {
+                weighty = true;
+            }
         }
+        double[][] weights = layout.getLayoutWeights();
         MetaComponentCreator creator = formModel.getComponentCreator();
         RADVisualContainer panel = (RADVisualContainer)creator.createComponent(
                 new ClassSource("javax.swing.JPanel"), parent, null); // NOI18N
@@ -360,6 +391,24 @@ public class GridBagManager implements GridManager {
         setGridY(clone, miny);
         setGridWidth(clone, maxx-minx);
         setGridHeight(clone, maxy-miny);
+        if (horizontalFill && weightx) {
+            double totalWeightX = 0;
+            for (int i=minx; i<maxx; i++) {
+                totalWeightX += weights[0][i];
+            }
+            setWeightX(clone, totalWeightX);
+        }
+        if (verticalFill && weighty) {
+            double totalWeightY = 0;
+            for (int i=miny; i<maxy; i++) {
+                totalWeightY += weights[1][i];
+            }
+            setWeightY(clone, totalWeightY);
+        }
+        int fill = (horizontalFill
+                ? (verticalFill ? GridBagConstraints.BOTH : GridBagConstraints.HORIZONTAL)
+                : (verticalFill ? GridBagConstraints.VERTICAL : GridBagConstraints.NONE));
+        setFill(clone, fill);
         return clone;
     }
 

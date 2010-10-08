@@ -100,8 +100,8 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.fileCreate(file, ts);
     }
 
-    public void fileChange(File file, long ts) {
-        store.fileChange(file, ts);
+    public void fileChange(File file, boolean handleAsync, long ts) {
+        store.fileChange(file, handleAsync, ts);
     }
 
     public void deleteEntry(File file, long ts) {

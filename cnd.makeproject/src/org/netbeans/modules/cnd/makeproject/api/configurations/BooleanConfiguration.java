@@ -108,4 +108,9 @@ public class BooleanConfiguration {
         clone.setModified(getModified());
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "{value=" + value + " modified=" + modified + " dirty=" + dirty +  '}'; // NOI18N
+    }
 }

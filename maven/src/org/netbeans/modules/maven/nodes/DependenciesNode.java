@@ -390,7 +390,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), project);
+            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), true, project);
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
             pnl.setSelectedScope(typeString);
         

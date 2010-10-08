@@ -80,7 +80,7 @@ public class QuickSearchPopup extends javax.swing.JPanel
     private Rectangle popupBounds = new Rectangle();
 
     private Timer updateTimer;
-    private static final int COALESCE_TIME = 600;
+    private static final int COALESCE_TIME = 300;
 
     /** text to search for */
     private String searchedText;

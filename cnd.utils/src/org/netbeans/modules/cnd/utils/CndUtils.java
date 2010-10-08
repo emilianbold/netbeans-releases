@@ -199,6 +199,10 @@ public class CndUtils {
         }
     }
 
+    public static void assertAbsoluteFileInConsole(File file) {
+        assertAbsoluteFileInConsole(file, "Absolute path should be used"); //NOI18N
+    }
+
     public static void assertAbsoluteFileInConsole(File file, String message) {
         if (CndUtils.isDebugMode()) {
             if (! file.isAbsolute()) {
@@ -222,5 +226,9 @@ public class CndUtils {
                 assertTrueInConsole(false, "Parameter file was not normalized. Was " + file + " instead of " + normFile); // NOI18N
             }
         }
+    }
+
+    public static Logger getLogger() {
+        return LOG;
     }
 }

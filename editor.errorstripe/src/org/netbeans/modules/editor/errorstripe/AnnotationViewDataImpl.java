@@ -76,6 +76,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.ErrorManager;
 import org.netbeans.modules.editor.errorstripe.apimodule.SPIAccessor;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -638,51 +639,11 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         return get(ann.getSeverity());
     }
     
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class UpToDateStatusProviderFactoriesProvider implements Class2LayerFolder {
-
-        public UpToDateStatusProviderFactoriesProvider() {
-            
-        }
-        
-        public Class getClazz() {
-            return UpToDateStatusProviderFactory.class;
-        }
-
-        public String getLayerFolderName() {
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
-
-        public InstanceProvider getInstanceProvider() {
-            return null;
-        }
-    } // End of UpToDateStatusProviderFactoriesProvider class
-
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class MarkProviderCreatorsProvider implements Class2LayerFolder {
-
-        public MarkProviderCreatorsProvider() {
-            
-        }
-        
-        public Class getClazz() {
-            return MarkProviderCreator.class;
-        }
-
-        public String getLayerFolderName() {
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
-
-        public InstanceProvider getInstanceProvider() {
-            return null;
-        }
-    } // End of UpToDateStatusProviderFactoriesProvider class
-    
     // XXX: This is here to help to deal with legacy code
     // that registered stuff in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class LegacyCrapProvider implements Class2LayerFolder, InstanceProvider {
+    @MimeLocation(subfolderName=UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME, instanceProviderClass=LegacyCrapProvider.class)
+    public static final class LegacyCrapProvider implements InstanceProvider {
 
         private final List<FileObject> instanceFiles;
         private List<MarkProviderCreator> creators;
@@ -710,18 +671,6 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             return factories;
         }
         
-        public Class getClazz(){
-            return LegacyCrapProvider.class;
-        }
-
-        public String getLayerFolderName(){
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
-
-        public InstanceProvider getInstanceProvider() {
-            return new LegacyCrapProvider();
-        }
-
         public Object createInstance(List fileObjectList) {
             ArrayList<FileObject> textBaseFilesList = new ArrayList<FileObject>();
 

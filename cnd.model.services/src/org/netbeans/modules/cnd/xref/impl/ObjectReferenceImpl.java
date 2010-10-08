@@ -70,16 +70,18 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 
     private final CsmUID<CsmObject> targetDelegate;
     private final CsmUID<CsmObject> ownerDelegate;
+    private final CsmUID<CsmObject> topDelegate;
     private final CsmUID<CsmFile> fileUID;
     
     private final int startPosition;
     private final int endPosition;   
     private final CsmReferenceKind kind;
     /*package*/ ObjectReferenceImpl(CsmUID<CsmObject> target, 
-            CsmUID<CsmObject> owner, CsmUID<CsmFile> file, 
+            CsmUID<CsmObject> owner, CsmUID<CsmObject> topUID, CsmUID<CsmFile> file,
             CsmReferenceKind kind, int startRef, int endRef) {
         this.targetDelegate = target;
         this.ownerDelegate = owner;
+        topDelegate = topUID;
         this.fileUID = file;
         this.startPosition = startRef;
         this.endPosition = endRef;    
@@ -94,6 +96,11 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
     @Override
     public CsmObject getOwner() {
         return ownerDelegate.getObject();
+    }
+
+    @Override
+    public CsmObject getClosestTopLevelObject() {
+        return topDelegate.getObject();
     }
 
     @Override

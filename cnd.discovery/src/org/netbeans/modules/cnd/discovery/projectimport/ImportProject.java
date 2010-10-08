@@ -324,7 +324,7 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = new File(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
+            makefileFile = CndFileUtils.createLocalFile(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
             makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
@@ -348,7 +348,7 @@ public class ImportProject implements PropertyChangeListener {
         prjParams.setHostUID(hostUID);
 
         makeProject = ProjectGenerator.createProject(prjParams);
-        FileObject dir = FileUtil.toFileObject(projectFolder);
+        FileObject dir = CndFileUtils.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
         resultSet.add(dir);
@@ -460,7 +460,7 @@ public class ImportProject implements PropertyChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+            FileObject configureFileObject = CndFileUtils.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
             String mime = FileUtil.getMIMEType(configureFileObject);
@@ -607,7 +607,7 @@ public class ImportProject implements PropertyChangeListener {
                     if (i > 0) {
                         String f = line.substring(i+configureCteatePattern.length()).trim();
                         if (f.endsWith(".h")) { // NOI18N
-                            downloadRemoteFile(new File(projectFolder, f)); // NOI18N
+                            downloadRemoteFile(CndFileUtils.createLocalFile(projectFolder, f)); // NOI18N
                         }
                     }
                 }
@@ -633,7 +633,7 @@ public class ImportProject implements PropertyChangeListener {
         downloadRemoteFile(makefileFile);
         scanConfigureLog(logFile);
         if (makefileFile != null && makefileFile.exists()) {
-            FileObject makeFileObject = FileUtil.toFileObject(makefileFile); //XXX:fullRemote
+            FileObject makeFileObject = CndFileUtils.toFileObject(makefileFile); //XXX:fullRemote
             DataObject dObj;
             try {
                 dObj = DataObject.find(makeFileObject);

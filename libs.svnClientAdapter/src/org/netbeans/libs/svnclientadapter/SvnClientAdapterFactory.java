@@ -54,6 +54,8 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  */
 public abstract class SvnClientAdapterFactory {
     
+    public static final String JAVAHL_WIN32_MODULE_CODE_NAME = "org.netbeans.libs.svnjavahlwin32";
+    
     protected static final Logger LOG = Logger.getLogger("org.netbeans.libs.svnclientadapter");// NOI18N
     private static SvnClientAdapterFactory instance;
     private static Client client;
@@ -65,18 +67,19 @@ public abstract class SvnClientAdapterFactory {
         SVNKIT
     }
 
-    public static SvnClientAdapterFactory getInstance(Client client) throws SVNClientException {
+    public static SvnClientAdapterFactory getInstance(Client client) {
         assert SvnClientAdapterFactory.client == null || client == SvnClientAdapterFactory.client;
 
         if(instance == null) {
             Collection<SvnClientAdapterFactory> cl = (Collection<SvnClientAdapterFactory>) Lookup.getDefault().lookupAll(SvnClientAdapterFactory.class);
             for (SvnClientAdapterFactory f : cl) {
                 if(f.provides() == client) {
-                    f.setup();
-                    instance = f;
-                    SvnClientAdapterFactory.client = client;
-                    break;
-            }
+                    if(f.isAvailable()) {
+                        instance = f;
+                        SvnClientAdapterFactory.client = client;
+                        break;
+                    }
+                }
             }
         }
         return instance;
@@ -96,9 +99,9 @@ public abstract class SvnClientAdapterFactory {
 
     /**
      * Setups the {@link SvnClientAdapterFactory}
-     * @throws SVNClientException
+     * @return true if the client is available, otherwise false
      */
-    protected abstract void setup() throws SVNClientException;
+    protected abstract boolean isAvailable();
 
     
 }

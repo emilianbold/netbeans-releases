@@ -46,7 +46,6 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
@@ -54,20 +53,19 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
 
 /** Check the behaviour ModuleDependencies task that prints out info about
  * module dependencies, etc.
  *
  * @author Jaroslav Tulach
  */
-public class ModuleDependenciesTest extends NbTestCase {
+public class ModuleDependenciesTest extends TestBase {
     public ModuleDependenciesTest (String name) {
         super (name);
     }
     /*
     public void testJustMakeSureWeAreAbleToParseTheStructure () throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -85,7 +83,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     }*/
     
     public void testPublicPackagesOfAModuleThatDoesNotDefineThem () throws Exception {
@@ -111,10 +109,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -133,7 +131,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -171,12 +169,12 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
-        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File friendPkg = extractString ("");
         friendPkg.delete ();
 	assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -196,14 +194,14 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
         String res = readFile (output);
         
-	if (!res.equals("\n")) {
-	    fail("No public packages:\n" + res);
+	if (!res.isEmpty()) {
+	    fail("No public packages:\n'" + res + "'");
 	}
 	
 	// now friend packages
@@ -251,12 +249,12 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 3", parent, allPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
-        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File friendPkg = extractString ("");
         friendPkg.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -278,7 +276,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
         // this should succeed now, as the limit applies only to intercluster relations - #87076
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
     }
 
     public void testThereCanBeLimitOnNumberOfFriendsAmongGroups() throws Exception {
@@ -306,10 +304,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 3", parent, myVeryPublicModule.getParentFile ());
         
         
-        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File friendPkg = extractString ("");
         friendPkg.delete ();
     	assertFalse ("Is gone", friendPkg.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -334,7 +332,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
+        execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
@@ -374,10 +372,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 3", parent, myVeryPublicModule.getParentFile ());
         
         
-        File friendPkg = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File friendPkg = extractString ("");
         friendPkg.delete ();
     	assertFalse ("Is gone", friendPkg.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -396,7 +394,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose", "-Dlimit=1" });
+        execute (f, new String[] { "-verbose", "-Dlimit=1" });
         
         String res = readFile (friendPkg);
 
@@ -423,10 +421,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -443,7 +441,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -469,10 +467,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -493,7 +491,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -524,10 +522,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 1", parent, withoutPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -549,7 +547,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -568,10 +566,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         File parent = module.getParentFile ();
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -587,7 +585,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -616,10 +614,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -637,7 +635,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -667,10 +665,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -692,7 +690,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -721,10 +719,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -746,7 +744,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -798,10 +796,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -823,7 +821,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -867,10 +865,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -892,7 +890,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -941,10 +939,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -961,7 +959,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1002,10 +1000,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1027,7 +1025,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1067,10 +1065,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1096,7 +1094,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1150,10 +1148,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1181,7 +1179,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1217,10 +1215,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1237,7 +1235,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1273,10 +1271,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1293,7 +1291,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1322,11 +1320,11 @@ public class ModuleDependenciesTest extends NbTestCase {
         File parent = withPkgs.getParentFile ();
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
-        File output2 = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
+        File output2 = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1343,7 +1341,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1380,10 +1378,10 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("All parents are the same 2", parent, withPkgs.getParentFile ());
         
         
-        File output = PublicPackagesInProjectizedXMLTest.extractString ("");
+        File output = extractString ("");
         output.delete ();
         assertFalse ("Is gone", output.exists ());
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"deps\" classname=\"org.netbeans.nbbuild.ModuleDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1401,7 +1399,7 @@ public class ModuleDependenciesTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Result generated", output.exists ());
         
@@ -1415,40 +1413,17 @@ public class ModuleDependenciesTest extends NbTestCase {
         assertEquals ("No META-INF pkg", -1, res.indexOf ("META"));
     }
 
-    
-    static String readFile (File f) throws IOException {
-        java.io.BufferedReader r = new java.io.BufferedReader (new FileReader (f));
-        StringBuffer sb = new StringBuffer ();
-        String prev = "";
-        for (;;) {
-            String line = r.readLine ();
-            if (line == null) {
-                // line ending at the end of file
-                sb.append ('\n');
-                return sb.toString();
-            }
-            sb.append (prev);
-            sb.append (line);
-            prev = "\n";
-        }
-    }
-    
-    static Manifest createManifest () {
-        Manifest m = new Manifest ();
-        m.getMainAttributes ().putValue (java.util.jar.Attributes.Name.MANIFEST_VERSION.toString (), "1.0");
-        return m;
-    }
-    
-    
-    private final File createNewJarFile () throws IOException {
+    private File createNewJarFile() throws IOException {
         int i = 0;
         for (;;) {
             File f = new File (this.getWorkDir(), i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists()) {
+                return f;
+            }
         }
     }
     
-    protected final File generateJar (String[] content, Manifest manifest) throws IOException {
+    private File generateJar(String[] content, Manifest manifest) throws IOException {
         File f = createNewJarFile ();
         
         JarOutputStream os = new JarOutputStream (new FileOutputStream (f), manifest);

@@ -275,7 +275,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CharSequence getText() {
             return text;
-        }        
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return getContainingFile();
+        }
     }
 
     private static final class MacroReference extends OffsetableBase implements CsmReference {
@@ -333,7 +338,6 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                             }
                         }
                         ref = refObj;
-                        CsmReferenceStorage.getDefault().put(this, refObj);
                     }
                 }
             }
@@ -384,6 +388,11 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CharSequence getText() {
             return macroName;
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return (kind == CsmReferenceKind.DECLARATION) ? getContainingFile() : getReferencedObject();
         }
     }
 }

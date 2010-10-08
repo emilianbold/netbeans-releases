@@ -42,20 +42,15 @@
 package org.netbeans.modules.maven.api;
 
 import java.awt.event.ActionEvent;
-import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.netbeans.modules.maven.actions.CreateLibraryAction;
-import org.netbeans.modules.maven.actions.ViewBugTrackerAction;
 import org.netbeans.modules.maven.actions.ViewJavadocAction;
-import org.netbeans.modules.maven.actions.ViewProjectHomeAction;
 import org.netbeans.modules.maven.actions.scm.CheckoutAction;
-import org.netbeans.modules.maven.actions.scm.SCMActions;
 import org.netbeans.modules.maven.actions.usages.FindArtifactUsages;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -65,43 +60,12 @@ import org.openide.util.NbBundle;
  * @author Anuradha G (anuradha@codehaus.org)
  */
 public class CommonArtifactActions {
-    
-    public @Deprecated static Action createViewProjectHomeAction(Artifact artifact, List<ArtifactRepository> repos) {
-        return new ViewProjectHomeAction(artifact, repos);
-    }
 
-    public @Deprecated static Action createViewProjectHomeAction(Artifact artifact) {
-       return createViewProjectHomeAction(artifact,
-               Collections.singletonList(
-               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
-               "http://repo1.maven.org/maven2", "central"))); //NOI18N
-    }
-    
+    private CommonArtifactActions() {}
+
     public static Action createViewJavadocAction(Artifact artifact) {
        return new ViewJavadocAction(artifact);
 
-    }
-    
-    public @Deprecated static Action createViewBugTrackerAction(Artifact artifact, List<ArtifactRepository> repos) {
-        return new ViewBugTrackerAction(artifact, repos);
-    }
-
-    public @Deprecated static Action createViewBugTrackerAction(Artifact artifact) {
-       return createViewBugTrackerAction(artifact,
-               Collections.singletonList(
-               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
-               "http://repo1.maven.org/maven2", "central"))); //NOI18N
-    }
-    
-    public @Deprecated static Action createSCMActions(Artifact artifact, List<ArtifactRepository> repos) {
-        return new SCMActions(artifact, repos);
-    }
-
-    public @Deprecated static Action createSCMActions(Artifact artifact) {
-       return createSCMActions(artifact,
-               Collections.singletonList(
-               EmbedderFactory.createRemoteRepository(EmbedderFactory.getProjectEmbedder(),
-               "http://repo1.maven.org/maven2", "central"))); //NOI18N
     }
 
     public static Action createFindUsages(Artifact artifact) {
@@ -117,12 +81,8 @@ public class CommonArtifactActions {
      * create an action instance that performs scm checkout based on the MavenProject
      * instance provided in the lookup parameter. If no MavenProject is provided
      * up front it will listen on addition later. Without a MavenProject instance, it's disabled.
-     *
+     * Only for use from artifact viewer window.
      * NOT to be used with global Lookup instances.
-     * @param lkp
-     * @return
-     *
-     *
      */
     public static Action createScmCheckoutAction(Lookup lkp) {
         return new CheckoutAction(lkp);

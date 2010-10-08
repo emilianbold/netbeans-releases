@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -334,8 +335,13 @@ public final class CsmRefactoringUtils {
         CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(csmFile);
         BaseDocument doc = null;
         String displayText = null;
-        if (ces != null && (ces.getDocument() instanceof BaseDocument)) {
-            doc = (BaseDocument)ces.getDocument();
+        if (ces != null) {
+            Document d = CsmUtilities.openDocument(ces);
+            if (d instanceof BaseDocument) {
+                doc = (BaseDocument) d;
+            }
+        }
+        if (doc != null) {
             try {            
                 int stOffset = obj.getStartOffset();
                 int endOffset = obj.getEndOffset();

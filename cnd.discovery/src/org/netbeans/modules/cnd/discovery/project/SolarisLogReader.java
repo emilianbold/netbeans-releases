@@ -897,6 +897,11 @@ public class SolarisLogReader {
                 }
             }
         }
+
+        @Override
+        public LanguageStandard getLanguageStandard() {
+            return LanguageStandard.Unknown;
+        }
     }
 
     /*package-local*/ static class InstallLine {

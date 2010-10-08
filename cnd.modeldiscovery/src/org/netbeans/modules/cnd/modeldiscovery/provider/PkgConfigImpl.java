@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
 
@@ -177,7 +178,7 @@ public class PkgConfigImpl implements PkgConfig {
     private void initPackages(List<String> folders, boolean isWindows) {
         Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
-            FileObject file = RemoteFileUtil.getFileObject(folder, pi.getExecutionEnvironment());
+            FileObject file = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(folder), pi.getExecutionEnvironment());
             if (file == null) {
                 continue;
             }
@@ -360,7 +361,7 @@ public class PkgConfigImpl implements PkgConfig {
                     continue;
                 }
             }
-            FileObject dir = RemoteFileUtil.getFileObject(entry.getKey(), pi.getExecutionEnvironment());
+            FileObject dir = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(entry.getKey()), pi.getExecutionEnvironment());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
             if (TRACE) {
                 System.err.println("init search base for "+entry.getKey());

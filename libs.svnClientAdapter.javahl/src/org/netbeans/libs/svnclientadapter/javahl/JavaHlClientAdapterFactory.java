@@ -42,12 +42,15 @@
 
 package org.netbeans.libs.svnclientadapter.javahl;
 
+import java.io.File;
 import java.util.logging.Level;
+import java.util.prefs.Preferences;
 import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapter;
 import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
 
@@ -57,6 +60,15 @@ import org.tigris.subversion.svnclientadapter.javahl.JhlClientAdapterFactory;
  */
 @ServiceProviders({@ServiceProvider(service=SvnClientAdapterFactory.class)})
 public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
+
+    private static final String SUBVERSION_NATIVE_LIBRARY = "subversion.native.library";
+    
+    /** indicates that something went terribly wrong with javahl init during the previous nb session */
+    private static boolean javahlCrash = false;
+    private final static int JAVAHL_INIT_NOCRASH = 1;
+    private final static int JAVAHL_INIT_STOP_REPORTING = 2;
+    
+    private boolean available = false;
 
     public JavaHlClientAdapterFactory() {
         super();
@@ -68,24 +80,25 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
     }
 
     @Override
-    public void setup() throws SVNClientException {
-        try {
-            JhlClientAdapterFactory.setup();
-        } catch (Throwable t) {
-            String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
-            LOG.log(Level.INFO, t.getMessage());
-            LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
-            if(t instanceof SVNClientException) {
-                throw (SVNClientException) t;
-            } else {
-                throw new SVNClientException("Javahl client adapter is not available");             // NOI18N
+    public boolean isAvailable() {
+        if(!available) {                    
+            presetJavahl();
+            try {
+                JhlClientAdapterFactory.setup();
+            } catch (Throwable t) {
+                String jhlErorrs = JhlClientAdapterFactory.getLibraryLoadErrors();
+                LOG.log(Level.INFO, t.getMessage());
+                LOG.log(Level.WARNING, "{0}\n", jhlErorrs);                                             // NOI18N
+                return false;
             }
+            String version = getVersion();
+            if(!isSupportedJavahlVersion(version)) {
+                LOG.log(Level.INFO, "Unsupported version {0} of subversion javahl bindings.", version); // NOI18N
+                return false;
+            }
+            available = JhlClientAdapterFactory.isAvailable();
         }
-        String version = getVersion();
-        if(!isSupportedJavahlVersion(version)) {
-            LOG.log(Level.INFO, "Unsupported version {0} of subversion javahl bindings.", version); // NOI18N
-            throw new SVNClientException("Javahl client adapter is not available");                 // NOI18N
-        }
+        return available;
     }
 
     @Override
@@ -118,4 +131,119 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
         }
         return null;
     }
+
+    private void presetJavahl() {
+        if(Utilities.isUnix() && !Utilities.isMac() ) { // javahl for mac is already bundled
+            presetJavahlUnix();
+        } else if(Utilities.isWindows()) {
+            presetJavahlWindows();
+        }
+    }
+
+    private void presetJavahlUnix() {
+        LOG.log(Level.FINE, "looking for svn native library...");
+        String libPath = System.getProperty(SUBVERSION_NATIVE_LIBRARY);
+        if (libPath != null && !libPath.trim().equals("")) {
+            LOG.log(Level.FINE, "won't preset javahl due to subversion.native.library={0}", new Object[] { libPath });
+            return;
+        }
+        String name = "libsvnjavahl-1.so";
+        String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
+        File location = null;
+        for (String loc : locations) {
+            File file = new File(loc, name);
+            LOG.log(Level.FINE, " checking existence of {0}", new Object[] { file.getAbsolutePath() });
+            if (file.exists()) {
+                location = file;
+                break;
+            }
+        }
+        if(location == null) {
+            location = getJavahlFromExecutablePath(name);
+        }
+        if(location != null) {
+            System.setProperty("subversion.native.library", location.getAbsolutePath());
+            LOG.log(Level.FINE, "   found javahl library. Setting subversion.native.library={0}", new Object[] { location.getAbsolutePath() });
+        }
+    }
+
+    private void presetJavahlWindows() {
+        String libPath = System.getProperty(SUBVERSION_NATIVE_LIBRARY);
+        if (libPath != null && !libPath.trim().equals("")) {
+            // the path is already set -> lets ensure we load all dependencies
+            // from the same folder and let then svnClientAdapter take care for the rest
+            LOG.log(Level.FINE, "preset subversion.native.library={0}", new Object[] { libPath } );
+            int idx = libPath.lastIndexOf(File.separator);
+            if(idx > -1) {
+                libPath = libPath.substring(0, idx);
+                LOG.log(Level.FINE, "loading dependencies from ", new Object[] { libPath } );
+                loadJavahlDependencies(libPath);
+            }
+            return;
+        }
+                
+        File location = InstalledFileLocator.getDefault().locate("modules/lib/libsvnjavahl-1.dll", JAVAHL_WIN32_MODULE_CODE_NAME, false);
+        if(location == null) {
+            LOG.fine("could not find location for bundled javahl library");
+            location = getJavahlFromExecutablePath("libsvnjavahl-1.dll");
+            if(location == null) {
+                return;
+            }
+        }
+        // the library seems to be available in the netbeans install/user dir
+        // => set it up so that it will used by the svnClientAdapter
+        LOG.fine("libsvnjavahl-1.dll located : " + location.getAbsolutePath());
+        String locationPath = location.getParentFile().getAbsolutePath();
+        // svnClientAdapter workaround - we have to explicitly load the
+        // libsvnjavahl-1 dependencies as svnClientAdapter  tryies to get them via loadLibrary.
+        // That won't work i they aren't on java.library.path
+        loadJavahlDependencies(locationPath);
+
+        // libsvnjavahl-1 must be loaded by the svnClientAdapter to get the factory initialized
+        locationPath = location.getAbsolutePath();
+        LOG.log(Level.FINE, "setting subversion.native.library={0}", new Object[] { locationPath });
+        System.setProperty("subversion.native.library", locationPath);
+    }
+
+    private void loadJavahlDependencies(String locationPath) {
+        try { System.load(locationPath + "/libapr-1.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libapriconv-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libeay32.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libdb44.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/ssleay32.dll"); }        catch (Throwable t) { }
+        try { System.load(locationPath + "/libaprutil-1.dll"); }    catch (Throwable t) { }
+        try { System.load(locationPath + "/intl3_svn.dll"); }       catch (Throwable t) { }
+        try { System.load(locationPath + "/dbghelp.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/libsasl.dll"); }         catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_subr-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_delta-1.dll"); }  catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_diff-1.dll"); }   catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_wc-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_fs-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_repos-1.dll"); }  catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_ra-1.dll"); }     catch (Throwable t) { }
+        try { System.load(locationPath + "/libsvn_client-1.dll"); } catch (Throwable t) { }
+    }    
+    
+    private File getJavahlFromExecutablePath(String libName) {
+        Preferences prefs = org.openide.util.NbPreferences.root ().node ("org/netbeans/modules.subversion");
+        
+        String executablePath = prefs.get("svnExecBinary", "");
+        if(executablePath == null || executablePath.trim().equals("")) {
+            return null;
+        }
+        LOG.log(Level.FINE, "looking for svn native library in executable path={0}", new Object[] { executablePath });
+        File location = new File(executablePath);
+        if (location.isFile()) {
+            location = location.getParentFile();
+        }
+        if (location != null) {
+            location = new File(location.getAbsolutePath() + File.separatorChar + libName);
+            if(location.exists()) {
+                LOG.log(Level.FINE, "found svn native library in executable path={0}", new Object[] { location.getAbsolutePath() });
+                return location;
+            }
+        }
+        return null;
+    }    
 }

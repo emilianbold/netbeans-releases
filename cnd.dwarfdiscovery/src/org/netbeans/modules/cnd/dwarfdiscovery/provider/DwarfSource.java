@@ -90,6 +90,7 @@ public class DwarfSource implements SourceFileProperties{
     private String sourceName;
     private String fullName;
     private ItemProperties.LanguageKind language;
+    private ItemProperties.LanguageStandard standard;
     private List<String> userIncludes;
     private List<String> systemIncludes;
     private boolean haveSystemIncludes;
@@ -101,9 +102,11 @@ public class DwarfSource implements SourceFileProperties{
     private Map<String,GrepEntry> grepBase;
     private String compilerName;
     
-    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
-        initCompilerSettings(compilerSettings, lang);
+    DwarfSource(CompilationUnit cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase) throws IOException{
+        language = lang;
         this.grepBase = grepBase;
+        this.standard = standard;
+        initCompilerSettings(compilerSettings, lang);
         initSourceSettings(cu, lang);
     }
 
@@ -211,6 +214,11 @@ public class DwarfSource implements SourceFileProperties{
     @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
+    }
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        return standard;
     }
 
     @Override
@@ -367,7 +375,6 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
         }
-        language = lang;
     }
     
     public void process(CompilationUnit cu) throws IOException{

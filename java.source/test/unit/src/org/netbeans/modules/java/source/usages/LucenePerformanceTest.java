@@ -113,7 +113,7 @@ public class LucenePerformanceTest extends NbTestCase {
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
         final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
-        index.queryTerms(filter.second, filter.first,result);
+        index.queryTerms(result, filter.second, filter.first);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);
@@ -125,10 +125,10 @@ public class LucenePerformanceTest extends NbTestCase {
         Set<ElementHandle<TypeElement>> result2 = new HashSet<ElementHandle<TypeElement>>();
         startTime = System.currentTimeMillis();
         index.query(
-                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX),
-                DocumentUtil.declaredTypesFieldSelector(),
+                result2,
                 DocumentUtil.elementHandleConvertor(),
-                result2);
+                DocumentUtil.declaredTypesFieldSelector(),
+                QueryUtil.createQuery(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX));
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("All classes: " + delta);
@@ -144,10 +144,10 @@ public class LucenePerformanceTest extends NbTestCase {
         });
         startTime = System.currentTimeMillis(); 
         index.query(
-                QueryUtil.createQueries(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX),
-                DocumentUtil.declaredTypesFieldSelector(),
+                result2,
                 DocumentUtil.elementHandleConvertor(),
-                result2);
+                DocumentUtil.declaredTypesFieldSelector(),
+                QueryUtil.createQuery(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX));
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Prefix classes: " + delta + " size: " + result.size());

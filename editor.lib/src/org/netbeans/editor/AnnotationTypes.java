@@ -129,12 +129,8 @@ public class AnnotationTypes {
      * used in case the annotation type does not have its own icon. */
     public static URL getDefaultGlyphURL() {
         if (defaultGlyphIcon == null) {
-            try {
-                // TODO: in standalone this will not work
-                defaultGlyphIcon = new URL("nbresloc:/org/netbeans/editor/resources/defaultglyph.gif"); // NOI18N
-            } catch (MalformedURLException ex) {
-                Utilities.annotateLoggable(ex);
-            }
+            defaultGlyphIcon = AnnotationTypes.class.getClassLoader().
+                getResource("org/netbeans/editor/resources/defaultglyph.gif"); // NOI18N
         }
         
         return defaultGlyphIcon;

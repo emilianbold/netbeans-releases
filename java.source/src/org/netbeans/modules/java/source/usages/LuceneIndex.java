@@ -135,10 +135,11 @@ class LuceneIndex extends Index {
     
     @Override
     public <T> void query (
-            final @NonNull Query[] queries,
+            final @NonNull Collection<? super T> result,
+            final @NonNull ResultConvertor<? super Document, T> convertor,
             final @NonNull FieldSelector selector,
-            final @NonNull ResultConvertor<? super Document, T> convertor, 
-            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+            final @NonNull Query... queries
+            ) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);   //NOI18N
         Parameters.notNull("selector", selector);   //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
@@ -182,9 +183,9 @@ class LuceneIndex extends Index {
     
     @Override
     public <T> void queryTerms(
+            final @NonNull Collection<? super T> result,
             final @NullAllowed Term seekTo,
-            final @NonNull ResultConvertor<Term,T> filter,
-            final @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+            final @NonNull ResultConvertor<Term,T> filter) throws IOException, InterruptedException {
         
         final IndexReader in = dirCache.getReader();
         if (in == null) {
@@ -216,11 +217,11 @@ class LuceneIndex extends Index {
     
     @Override
     public <S, T> void queryDocTerms(
-            final @NonNull Query[] queries,
-            final @NonNull FieldSelector selector,
+            final @NonNull Map<? super T, Set<S>> result,
             final @NonNull ResultConvertor<? super Document, T> convertor,
             final @NonNull ResultConvertor<? super Term, S> termConvertor,
-            final @NonNull Map<? super T, Set<S>> result) throws IOException, InterruptedException {
+            final @NonNull FieldSelector selector,
+            final @NonNull Query... queries) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);             //NOI18N
         Parameters.notNull("slector", selector);            //NOI18N
         Parameters.notNull("convertor", convertor);         //NOI18N

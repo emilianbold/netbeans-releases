@@ -317,22 +317,6 @@ public final class ModelHandle {
     public static NetbeansActionMapping getActiveMapping(String action, Project project) {
         return ActionToGoalUtils.getActiveMapping(action, project, null);
     }
-
-    /**
-     * @deprecated will not set the value, configurations are always enbled now.
-     * @param bool
-     */
-    @Deprecated
-    public void setConfigurationsEnabled(boolean bool) {
-    }
-    
-    /**
-     * @deprecated configurations are always enbled now.
-     */
-    @Deprecated
-    public boolean isConfigurationsEnabled() {
-        return true;
-    }
     
     public List<Configuration> getConfigurations() {
         return configurations;
