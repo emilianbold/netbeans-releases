@@ -141,21 +141,18 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-jee5"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         WEB_APP_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-j2ee14"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         WEB_APP_ARCHS[2] = arch;
 
         EJB_ARCHS = new Archetype[3];
@@ -163,21 +160,18 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-jee5"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EJB_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EJB_ARCHS[2] = arch;
 
         EAR_ARCHS = new Archetype[3];
@@ -185,46 +179,39 @@ public class ArchetypeWizardUtils {
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
-        arch.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
         EAR_ARCHS[2] = arch;
 
         EA_ARCH = new Archetype();
         EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         EA_ARCH.setVersion("1.1"); //NOI18N
         EA_ARCH.setArtifactId("pom-root"); //NOI18N
-        EA_ARCH.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
 
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         NB_MODULE_ARCH.setVersion("1.5"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
-        NB_MODULE_ARCH.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         NB_APP_ARCH.setVersion("1.6"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
-        NB_APP_ARCH.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         NB_SUITE_ARCH.setVersion("1.2"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
-        NB_SUITE_ARCH.setRepository("https://nexus.codehaus.org/content/repositories/public/"); // XXX until propagated to Central
     }
 
 
