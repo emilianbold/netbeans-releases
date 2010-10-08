@@ -338,7 +338,6 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
                             }
                         }
                         ref = refObj;
-                        CsmReferenceStorage.getDefault().put(this, refObj);
                     }
                 }
             }

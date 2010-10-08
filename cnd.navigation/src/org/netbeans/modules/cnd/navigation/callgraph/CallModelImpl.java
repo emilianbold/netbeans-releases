@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -67,10 +66,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.CsmVariable;
-import org.netbeans.modules.cnd.api.model.deep.CsmCondition;
-import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -267,12 +262,6 @@ public class CallModelImpl implements CallModel {
         if (CsmKindUtilities.isMacro(o)) {
             return (CsmMacro) o;
         }
-        o = ref.getOwner();
-        if (o != null) {
-            if (CsmKindUtilities.isMacro(o)) {
-                return (CsmMacro) o;
-            }
-        }
         return null;
     }
 
@@ -280,34 +269,6 @@ public class CallModelImpl implements CallModel {
         CsmObject o = ref.getClosestTopLevelObject();
         if (CsmKindUtilities.isFunction(o)) {
             return (CsmFunction) o;
-        }
-        o = ref.getOwner();
-        if (o != null) {
-            if (CsmKindUtilities.isExpression(o)){
-                o = ((CsmExpression)o).getScope();
-            } else if (o instanceof CsmCondition){
-                o = ((CsmCondition)o).getScope();
-            } else if (CsmKindUtilities.isFunction(o)){
-                return (CsmFunction) o;
-            } else if (CsmKindUtilities.isVariable(o)) {
-                CsmVariable var = (CsmVariable) o;
-                o = var.getScope();
-                if (CsmKindUtilities.isFunction(o)){
-                    return (CsmFunction)o;
-                }
-            }
-            if (CsmKindUtilities.isStatement(o)){
-                CsmScope scope = ((CsmStatement)o).getScope();
-                while(scope != null){
-                    if (CsmKindUtilities.isFunction(scope)){
-                        return (CsmFunction) scope;
-                    } else if (CsmKindUtilities.isStatement(scope)){
-                        scope = ((CsmStatement)scope).getScope();
-                    } else {
-                        return null;
-                    }
-                }
-            }
         }
         return null;
     }

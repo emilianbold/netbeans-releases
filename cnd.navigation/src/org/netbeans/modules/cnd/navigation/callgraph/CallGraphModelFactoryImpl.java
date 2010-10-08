@@ -86,14 +86,9 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (CsmKindUtilities.isFunction(obj)) {
             function = (CsmFunction) obj;
         } else {
-            obj = ref.getOwner();
+            obj = ref.getReferencedObject();
             if (CsmKindUtilities.isFunction(obj)) {
                 function = (CsmFunction) obj;
-            } else {
-                obj = ref.getReferencedObject();
-                if (CsmKindUtilities.isFunction(obj)) {
-                    function = (CsmFunction) obj;
-                }
             }
         }
         if (function != null) {

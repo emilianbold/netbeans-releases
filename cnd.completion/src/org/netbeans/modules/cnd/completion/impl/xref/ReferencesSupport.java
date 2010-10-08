@@ -167,7 +167,7 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
+    static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
