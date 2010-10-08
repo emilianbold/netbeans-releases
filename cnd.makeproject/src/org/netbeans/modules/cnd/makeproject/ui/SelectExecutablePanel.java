@@ -65,9 +65,9 @@ import org.openide.util.NbBundle;
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private JList exeList;
-    private FileFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
-    private FileFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
-    private FileFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -136,12 +136,15 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private void validateExe() {
         String errorText = null;
-        File exe = new File(executableTextField.getText());
+        FileObject exe = RemoteFileUtil.getFileObject(
+                executableTextField.getText(),
+                conf.getFileSystemHost());
+
         if (executableTextField.getText().length() == 0) {
             errorText = getString("NO_EXE_ERROR");
-        } else if (!exe.exists()) {
+        } else if (!exe.isValid()) {
             errorText = getString("EXE_DOESNT_EXISTS");
-        } else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
+        } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
             errorText = getString("FILE_NOT_AN_EXECUTABLE");
         }
         if (errorText != null) {
