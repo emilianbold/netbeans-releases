@@ -71,6 +71,7 @@ import javax.swing.*;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.HelpCtx;
 
@@ -80,7 +81,7 @@ import org.openide.util.HelpCtx;
  * @author Ian Formanek
  */
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
-                        projectType="org-netbeans-modules-ant-freeform")
+                        projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)})
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
     private static final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
