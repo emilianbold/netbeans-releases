@@ -44,21 +44,27 @@ package org.netbeans.modules.git;
 
 import org.netbeans.modules.git.options.AnnotationColorProvider;
 import java.awt.Image;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * TODO: handle annotations
@@ -90,14 +96,22 @@ public class Annotator extends VCSAnnotator {
 
     @Override
     public Action[] getActions (VCSContext context, ActionDestination destination) {
-        return new Action[] {
-            new AbstractAction("Dummy Action") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    
-                }
+        Set<File> roots = GitUtils.getRepositoryRoots(context);
+        boolean noneVersioned = (roots == null || roots.isEmpty());
+
+        List<Action> actions = new LinkedList<Action>();
+        if (destination.equals(ActionDestination.MainMenu)) {
+            actions.add(SystemAction.get(StatusAction.class));
+        } else {
+            Lookup lkp = context.getElements();
+            if (noneVersioned) {
+
+            } else {
+                actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
             }
-        };
+        }
+
+        return actions.toArray(new Action[actions.size()]);
     }
 
     @Override

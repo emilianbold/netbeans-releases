@@ -40,62 +40,17 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.modules.git.client;
+
+import org.netbeans.libs.git.GitException;
 
 /**
  *
  * @author ondra
  */
-public interface ProgressMonitor {
-    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
-    
-    public boolean cancel ();
+public class GitCanceledException extends GitException {
 
-    public boolean isCanceled ();
-
-    public void started();
-
-    public void finished();
-
-    public void preparationsFailed (String message);
-
-    public void notifyError (String message);
-
-    public void notifyWarning (String message);
-
-    public static class DefaultProgressMonitor implements ProgressMonitor {
-        private boolean canceled;
-
-        @Override
-        public final synchronized boolean cancel () {
-            boolean alreadyCanceled = canceled;
-            canceled = true;
-            return !alreadyCanceled;
-        }
-
-        @Override
-        public final synchronized boolean isCanceled () {
-            return canceled;
-        }
-
-        @Override
-        public void started() {
-        }
-
-        @Override
-        public void finished() {
-        }
-
-        @Override
-        public void preparationsFailed (String message) {
-        }
-
-        @Override
-        public void notifyError (String message) {
-        }
-
-        @Override
-        public void notifyWarning (String message) {
-        }
+    public GitCanceledException (Throwable cause) {
+        super(cause);
     }
 }

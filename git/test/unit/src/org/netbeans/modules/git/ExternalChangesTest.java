@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git;
 
+import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.io.File;
 import java.util.Collections;
 import java.util.logging.Handler;

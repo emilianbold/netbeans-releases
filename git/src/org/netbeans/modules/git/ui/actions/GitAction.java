@@ -40,13 +40,61 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.modules.git.ui.actions;
+
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.LifecycleManager;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author ondra
  */
-public abstract class RevisionNotifier extends ProgressMonitor {
+public abstract class GitAction extends NodeAction {
+    
+    // it's singleton
+    // do not declare any instance data
 
-    public abstract void notifyRevision ();
+    protected GitAction () {
+        setIcon(null);
+        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+    }
+
+    @Override
+    protected boolean enable (Node[] activatedNodes) {
+        VCSContext context = getCurrentContext(activatedNodes);
+        return GitUtils.isFromGitRepository(context);
+    }
+
+    @Override
+    protected void performAction(final Node[] nodes) {
+        LifecycleManager.getDefault().saveAll();
+        Utils.logVCSActionEvent("Git"); //NOI18N
+        performContextAction(nodes);
+    }
+
+    protected abstract void performContextAction(Node[] nodes);
+
+    @Override
+    public String getName () {
+        return NbBundle.getMessage(getClass(), "LBL_" + getClass().getSimpleName() + "_Name"); //NOI18N
+    }
+
+    @Override
+    public HelpCtx getHelpCtx () {
+        return new HelpCtx(getClass());
+    }
+
+    protected VCSContext getCurrentContext (Node[] nodes) {
+        if (nodes == null) {
+            nodes = TopComponent.getRegistry().getActivatedNodes();
+        }
+        return VCSContext.forNodes(nodes);
+    }
 }

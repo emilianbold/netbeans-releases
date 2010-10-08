@@ -40,62 +40,49 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.modules.git.ui.actions;
+
+import java.io.File;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author ondra
  */
-public interface ProgressMonitor {
-    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
-    
-    public boolean cancel ();
+public abstract class SingleRepositoryAction extends GitAction {
 
-    public boolean isCanceled ();
+    private static final Logger LOG = Logger.getLogger(StatusAction.class.getName());
 
-    public void started();
-
-    public void finished();
-
-    public void preparationsFailed (String message);
-
-    public void notifyError (String message);
-
-    public void notifyWarning (String message);
-
-    public static class DefaultProgressMonitor implements ProgressMonitor {
-        private boolean canceled;
-
-        @Override
-        public final synchronized boolean cancel () {
-            boolean alreadyCanceled = canceled;
-            canceled = true;
-            return !alreadyCanceled;
-        }
-
-        @Override
-        public final synchronized boolean isCanceled () {
-            return canceled;
-        }
-
-        @Override
-        public void started() {
-        }
-
-        @Override
-        public void finished() {
-        }
-
-        @Override
-        public void preparationsFailed (String message) {
-        }
-
-        @Override
-        public void notifyError (String message) {
-        }
-
-        @Override
-        public void notifyWarning (String message) {
-        }
+    @Override
+    protected final void performContextAction (Node[] nodes) {
+        final VCSContext context = getCurrentContext(nodes);
+        Git.getInstance().getRequestProcessor().post(new Runnable () {
+            @Override
+            public void run() {
+                performAction(context);
+            }
+        });
     }
+
+    public final void performAction (VCSContext context) {
+        Set<File> repositories = GitUtils.getRepositoryRoots(context);
+        if (repositories.isEmpty()) {
+            LOG.log(Level.FINE, "No repository in the current context: {0}", context.getRootFiles()); //NOI18N
+            return;
+        }
+        File repository = repositories.iterator().next();
+        if (repositories.size() > 1) {
+            LOG.log(Level.FINE, "Multiple repositories in the current context: {0}, running only with {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
+        }
+        performAction(repository, GitUtils.filterForRepository(context, repository));
+    }
+
+    protected abstract void performAction (File repository, File[] roots);
 }

@@ -51,6 +51,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
 import org.netbeans.libs.git.progress.StatusProgressMonitor;
 
 /**
@@ -301,7 +302,7 @@ public class StatusTest extends AbstractGitTestCase {
         final File file2 = new File(workDir, "file2");
         file2.createNewFile();
 
-        class Monitor extends StatusProgressMonitor {
+        class Monitor extends DefaultProgressMonitor implements StatusProgressMonitor {
             private boolean barrierAccessed;
             private int count;
             private boolean cont;
@@ -354,7 +355,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
     }
 
-    private static class TestStatusProgressMonitor extends StatusProgressMonitor {
+    private static class TestStatusProgressMonitor extends DefaultProgressMonitor implements StatusProgressMonitor {
         private final Map<File, GitStatus> notifiedStatuses;
 
         public TestStatusProgressMonitor() {

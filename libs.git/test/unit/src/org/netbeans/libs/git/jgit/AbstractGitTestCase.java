@@ -211,7 +211,7 @@ public class AbstractGitTestCase extends NbTestCase {
         }
     }
 
-    protected static class Monitor extends FileProgressMonitor {
+    protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileProgressMonitor {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
         public final List<String> notifiedWarnings = new LinkedList<String>();
         private boolean barrierAccessed;

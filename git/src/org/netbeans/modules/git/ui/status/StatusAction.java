@@ -40,62 +40,56 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.progress;
+package org.netbeans.modules.git.ui.status;
+
+import java.io.File;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 
 /**
  *
  * @author ondra
  */
-public interface ProgressMonitor {
-    public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
+public class StatusAction extends SingleRepositoryAction {
+
+    private static final Logger LOG = Logger.getLogger(StatusAction.class.getName());
     
-    public boolean cancel ();
-
-    public boolean isCanceled ();
-
-    public void started();
-
-    public void finished();
-
-    public void preparationsFailed (String message);
-
-    public void notifyError (String message);
-
-    public void notifyWarning (String message);
-
-    public static class DefaultProgressMonitor implements ProgressMonitor {
-        private boolean canceled;
-
-        @Override
-        public final synchronized boolean cancel () {
-            boolean alreadyCanceled = canceled;
-            canceled = true;
-            return !alreadyCanceled;
-        }
-
-        @Override
-        public final synchronized boolean isCanceled () {
-            return canceled;
-        }
-
-        @Override
-        public void started() {
-        }
-
-        @Override
-        public void finished() {
-        }
-
-        @Override
-        public void preparationsFailed (String message) {
-        }
-
-        @Override
-        public void notifyError (String message) {
-        }
-
-        @Override
-        public void notifyWarning (String message) {
-        }
+    @Override
+    protected void performAction (File repository, final File[] roots) {
+        GitProgressSupport supp = new GitProgressSupport () {
+            @Override
+            protected void perform() {
+                GitClient client;
+                try {
+                    client = getClient();
+                } catch (GitException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                    return;
+                }
+                class StatusMonitor extends DefaultProgressMonitor implements StatusProgressMonitor {
+                    @Override
+                    public void notifyStatus (GitStatus status) {
+                        LOG.log(Level.INFO, "{0} - {1}", new Object[] { status.getFile(), status });
+                        setProgress(status.getRelativePath());
+                    }
+                };
+                StatusMonitor m = new StatusMonitor();
+                try {
+                    Map<File, GitStatus> statuses = client.getStatus(roots, m);
+                } catch (GitException ex) {
+                    // notify in some way
+                }
+            }
+        };
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, "Git Status");
     }
+
 }

@@ -48,15 +48,15 @@ import org.netbeans.libs.git.GitStatus;
  *
  * @author ondra
  */
-public abstract class StatusProgressMonitor extends ProgressMonitor {
+public interface StatusProgressMonitor extends ProgressMonitor {
     
-    public static final StatusProgressMonitor NULL_PROGRESS_MONITOR = new StatusProgressMonitor() {
+    public static final StatusProgressMonitor NULL_PROGRESS_MONITOR = new DefaultStatusProgressMonitor();
+
+    public void notifyStatus (GitStatus status);
+
+    static class DefaultStatusProgressMonitor extends DefaultProgressMonitor implements StatusProgressMonitor {
         @Override
-        public void notifyStatus (GitStatus status) {
-
+        public void notifyStatus(GitStatus status) {
         }
-    };
-
-    public abstract void notifyStatus (GitStatus status);
-
+    }
 }

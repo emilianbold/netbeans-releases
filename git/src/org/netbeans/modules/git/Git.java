@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git;
 
+import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -166,13 +168,19 @@ public final class Git {
     }
 
     public GitClient getClient (File repository) throws GitException {
+        return getClient(repository, null);
+    }
+
+    public GitClient getClient (File repository, GitProgressSupport progressSupport) throws GitException {
         // get the only instance for the repository folder, so we can synchronize on it
         File repositoryFolder = getRepositoryRoot(repository);
         if (repositoryFolder != null) {
             repository = repositoryFolder;
         }
         GitClient client = GitClientFactory.getInstance(null).getClient(repository);
-        return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, new GitClientInvocationHandler(client, repository));
+        GitClientInvocationHandler handler = new GitClientInvocationHandler(client, repository);
+        handler.setProgressSupport(progressSupport);
+        return (GitClient) Proxy.newProxyInstance(GitClient.class.getClassLoader(), new Class[] { GitClient.class }, handler);
     }
 
     public RequestProcessor getRequestProcessor() {
@@ -180,18 +188,18 @@ public final class Git {
     }
 
     /**
-     * @param  url  URL or {@code null}
+     * @param  repositoryRoot  repository root or {@code null}
      */
-    public RequestProcessor getRequestProcessor(File url) {
+    public RequestProcessor getRequestProcessor (File repositoryRoot) {
         if(processorsToUrl == null) {
             processorsToUrl = new HashMap<File, RequestProcessor>();
         }
 
-        RequestProcessor rp = processorsToUrl.get(url);   //'url' can be null
+        RequestProcessor rp = processorsToUrl.get(repositoryRoot);
         if (rp == null) {
-            String rpName = "Git - " + (url != null ? url.toString() : "ANY_KEY");//NOI18N
+            String rpName = "Git - " + (repositoryRoot != null ? repositoryRoot.toString() : "ANY_KEY");//NOI18N
             rp = new RequestProcessor(rpName, 1, true);
-            processorsToUrl.put(url, rp);
+            processorsToUrl.put(repositoryRoot, rp);
         }
         return rp;
     }

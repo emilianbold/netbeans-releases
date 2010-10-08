@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.client;
 
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
@@ -54,35 +54,52 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 
 /**
  *
  * @author ondra
  */
-class GitClientInvocationHandler implements InvocationHandler {
+public class GitClientInvocationHandler implements InvocationHandler {
     private final GitClient client;
     private final File repositoryRoot;
     private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("getStatus")); //NOI18N
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("remove")); //NOI18N
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("getStatus")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
+    private GitProgressSupport progressSupport;
 
-    GitClientInvocationHandler (GitClient client, File repositoryRoot) {
+    public GitClientInvocationHandler (GitClient client, File repositoryRoot) {
         this.client = client;
         this.repositoryRoot = repositoryRoot;
     }
 
     @Override
     public Object invoke (final Object proxy, final Method method, final Object[] args) throws Throwable {
-        if (isExclusiveRepositoryAccess(method)) {
-            LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
-            synchronized (repositoryRoot) {
+        try {
+            if (isExclusiveRepositoryAccess(method)) {
+                LOG.log(Level.FINER, "Running an exclusive command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
+                GitProgressSupport supp = progressSupport;
+                if (supp != null) {
+                    supp.setRepositoryStateBlocked(repositoryRoot, true);
+                }
+                synchronized (repositoryRoot) {
+                    if (Thread.interrupted()) {
+                        throw new InterruptedException();
+                    }
+                    if (supp != null) {
+                        LOG.log(Level.FINEST, "Repository unblocked: {0}", repositoryRoot); //NOI18N
+                        supp.setRepositoryStateBlocked(repositoryRoot, false);
+                    }
+                    return invokeIntern(proxy, method, args);
+                }
+            } else {
+                LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
                 return invokeIntern(proxy, method, args);
             }
-        } else {
-            LOG.log(Level.FINER, "Running a parallelizable command: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
-            return invokeIntern(proxy, method, args);
+        } catch (InterruptedException ex) {
+            throw new GitCanceledException(ex);
         }
     }
 
@@ -155,5 +172,9 @@ class GitClientInvocationHandler implements InvocationHandler {
 
     private boolean modifiesWorkingTree (Method method) {
         return !WORKING_TREE_READ_ONLY_COMMANDS.contains(method.getName());
+    }
+
+    public void setProgressSupport (GitProgressSupport progressSupport) {
+        this.progressSupport = progressSupport;
     }
 }

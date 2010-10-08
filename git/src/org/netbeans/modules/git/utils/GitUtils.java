@@ -47,13 +47,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *s
@@ -233,6 +240,134 @@ public final class GitUtils {
         }
         retval = notSharablePaths.contains(path);
         return retval;
+    }
+
+    /**
+     * Determines if the given context contains at least one root file from a git repository
+     *
+     * @param VCSContext
+     * @return true if the given context contains a root file from a git repository
+     */
+    public static boolean isFromGitRepository (VCSContext context){
+        return getRootFile(context) != null;
+    }
+
+    /**
+     * Returns path to repository root or null if not managed
+     *
+     * @param VCSContext
+     * @return String of repository root path
+     */
+    public static File getRootFile (VCSContext context){
+        if (context == null) return null;
+        Git git = Git.getInstance();
+        File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
+        if (files == null || files.length == 0) return null;
+
+        File root = git.getRepositoryRoot(files[0]);
+        return root;
+    }
+
+    /**
+     * Returns repository roots for all root files from context
+     *
+     * @param VCSContext
+     * @return repository roots
+     */
+    public static Set<File> getRepositoryRoots(VCSContext context) {
+        Set<File> rootsSet = context.getRootFiles();
+        return getRepositoryRoots(rootsSet);
+    }
+
+    /**
+     * Returns repository roots for all root files from context
+     *
+     * @param roots root files
+     * @return repository roots
+     */
+    public static Set<File> getRepositoryRoots (Set<File> roots) {
+        Set<File> ret = new HashSet<File>();
+
+        // filter managed roots
+        for (File file : roots) {
+            if(Git.getInstance().isManaged(file)) {
+                File repoRoot = Git.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    ret.add(repoRoot);
+                }
+            }
+        }
+        return ret;
+    }
+
+    /**
+     *
+     * @param ctx
+     * @return
+     */
+    public static File[] getActionRoots(VCSContext ctx) {
+        Set<File> rootsSet = ctx.getRootFiles();
+        Map<File, List<File>> map = new HashMap<File, List<File>>();
+
+        // filter managed roots
+        for (File file : rootsSet) {
+            if(Git.getInstance().isManaged(file)) {
+                File repoRoot = Git.getInstance().getRepositoryRoot(file);
+                if(repoRoot != null) {
+                    List<File> l = map.get(repoRoot);
+                    if(l == null) {
+                        l = new LinkedList<File>();
+                        map.put(repoRoot, l);
+                    }
+                    l.add(file);
+                }
+            }
+        }
+
+        Set<File> repoRoots = map.keySet();
+        if(map.size() > 1) {
+            // more than one managed root => need a dlg
+            FileSelector fs = new FileSelector(
+                    NbBundle.getMessage(GitUtils.class, "LBL_FileSelector_Title"), //NOI18N
+                    NbBundle.getMessage(GitUtils.class, "FileSelector.jLabel1.text"), //NOI18N
+                    new HelpCtx("org.netbeans.modules.git.FileSelector"), //NOI18N
+                    GitModuleConfig.getDefault().getPreferences());
+            if(fs.show(repoRoots.toArray(new File[repoRoots.size()]))) {
+                File selection = fs.getSelectedFile();
+                List<File> l = map.get(selection);
+                return l.toArray(new File[l.size()]);
+            } else {
+                return null;
+            }
+        } else {
+            List<File> l = map.get(map.keySet().iterator().next());
+            return l.toArray(new File[l.size()]);
+        }
+    }
+
+    /**
+     * Returns only those root files from the given context which belong to repository
+     * @param ctx
+     * @param repository
+     * @return
+     */
+    public static File[] filterForRepository(final VCSContext ctx, final File repository) {
+        File[] files = null;
+        if(ctx != null) {
+            Set<File> s = ctx.getRootFiles();
+            files = s.toArray(new File[s.size()]);
+        }
+        if (files != null) {
+            List<File> l = new LinkedList<File>();
+            for (File file : files) {
+                File r = Git.getInstance().getRepositoryRoot(file);
+                if (r != null && r.equals(repository)) {
+                    l.add(file);
+                }
+            }
+            files = l.toArray(new File[l.size()]);
+        }
+        return files;
     }
 
     public GitUtils() {
