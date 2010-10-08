@@ -238,6 +238,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     @Override
     public CsmObject getClosestTopLevelObject() {
-       return closestTopLevelObject;
+        if (closestTopLevelObject == null && isValid()) {
+            restoreIfPossible();
+            if (closestTopLevelObject == null) {
+                closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(getOwner());
+            }
+        }
+        return closestTopLevelObject;
     }
 }

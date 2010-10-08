@@ -55,6 +55,7 @@ import org.openide.util.actions.CookieAction;
 
 public final class ShowIncludeHierarchyAction extends CookieAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         CsmFile file = ContextUtils.findFile(activatedNodes);
         if (file != null){
@@ -75,8 +76,6 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
                 if (ref != null) {
                     if (ref.getClosestTopLevelObject() != null) {
                         return CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
-                    } else {
-                        return CsmKindUtilities.isInclude(ref.getOwner()); 
                     }
                 }
             }
@@ -85,15 +84,18 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         return false;
     }
     
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ShowIncludeAction"); // NOI18N
     }
     
-    protected Class[] cookieClasses() {
+    @Override
+    protected Class<?>[] cookieClasses() {
         return new Class[] {
             EditorCookie.class
         };
@@ -105,6 +107,7 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

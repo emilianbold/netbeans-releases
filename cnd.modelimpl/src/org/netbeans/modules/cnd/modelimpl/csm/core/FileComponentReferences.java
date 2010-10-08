@@ -59,9 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -221,10 +219,6 @@ public class FileComponentReferences extends FileComponent implements Persistent
         CsmUID<CsmObject> ownerUID = getUID(owner, "Ignore local owners "); // NOI18N
         CsmObject closestTopLevelObject = ref.getClosestTopLevelObject();
         CsmUID<CsmObject> closestTopLevelObjectUID = getUID(closestTopLevelObject, "Ignore local top level objects "); // NOI18N
-        if (closestTopLevelObjectUID == null && owner != null) {
-            closestTopLevelObject = getTopLevelObject(owner);
-            closestTopLevelObjectUID = getUID(closestTopLevelObject, "Ignore local top level objects "); // NOI18N
-        }
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
         //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {
@@ -262,26 +256,6 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         return csmObjectUID;
     }
-
-    private CsmObject getTopLevelObject(CsmObject owner) {
-        while(true) {
-            if (owner == null) {
-                return null;
-            }
-            if (UIDCsmConverter.isIdentifiable(owner)) {
-                CsmUID<CsmObject> ownerUID = UIDs.get(owner);
-                if (UIDProviderIml.isPersistable(ownerUID)) {
-                    return owner;
-                }
-            }
-            if (CsmKindUtilities.isScopeElement(owner)) {
-                owner = ((CsmScopeElement)owner).getScope();
-                continue;
-            }
-            return null;
-       }
-    }
-
 
     @Override
     public void write(DataOutput out) throws IOException {
