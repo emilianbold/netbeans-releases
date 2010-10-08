@@ -328,7 +328,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         }
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
                 conf.getRemoteMode(),
-                conf.getRemoteFileSystemHost(),
+                conf.getFileSystemHost(),
                 getString("CHOOSER_TITLE_TXT"),
                 getString("CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,

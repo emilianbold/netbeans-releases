@@ -1097,8 +1097,12 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
         }
 
         @Override
-        public ExecutionEnvironment getRemoteFileSystemHost() {
-            return remoteFileSystemHost;
+        public ExecutionEnvironment getSourceFileSystemHost() {
+            if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+                return remoteFileSystemHost;
+            } else {
+                return ExecutionEnvironmentFactory.getLocal();
+            }
         }
 
         @Override

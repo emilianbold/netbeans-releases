@@ -81,7 +81,7 @@ public final class RemoteSyncSupport {
 
     public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-        return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getRemoteFileSystemHost();
+        return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getSourceFileSystemHost();
     }
 
 //    /**
