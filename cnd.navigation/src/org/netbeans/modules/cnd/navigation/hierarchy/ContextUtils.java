@@ -90,7 +90,7 @@ public class ContextUtils {
                         }
                     } else {
                         if (CsmKindUtilities.isInclude(ref.getOwner())) {
-                            CsmInclude incl = (CsmInclude) ref.getOwner(); // not needed
+                            CsmInclude incl = (CsmInclude) ref.getOwner();
                             CsmFile file = incl.getIncludeFile();
                             if (file != null) {
                                 return file;
@@ -145,8 +145,8 @@ public class ContextUtils {
                 return !CsmKindUtilities.isMacro(ref.getClosestTopLevelObject()) &&
                        !CsmKindUtilities.isInclude(ref.getClosestTopLevelObject());
             } else {
-                return !CsmKindUtilities.isMacro(ref.getOwner()) && // not needed
-                       !CsmKindUtilities.isInclude(ref.getOwner()); // not needed
+                return !CsmKindUtilities.isMacro(ref.getOwner()) && 
+                       !CsmKindUtilities.isInclude(ref.getOwner()); 
             }
         }
         return false;

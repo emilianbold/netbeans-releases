@@ -267,7 +267,7 @@ public class CallModelImpl implements CallModel {
         if (CsmKindUtilities.isMacro(o)) {
             return (CsmMacro) o;
         }
-        o = ref.getOwner(); // not needed
+        o = ref.getOwner();
         if (o != null) {
             if (CsmKindUtilities.isMacro(o)) {
                 return (CsmMacro) o;
@@ -281,7 +281,7 @@ public class CallModelImpl implements CallModel {
         if (CsmKindUtilities.isFunction(o)) {
             return (CsmFunction) o;
         }
-        o = ref.getOwner(); // not needed
+        o = ref.getOwner();
         if (o != null) {
             if (CsmKindUtilities.isExpression(o)){
                 o = ((CsmExpression)o).getScope();

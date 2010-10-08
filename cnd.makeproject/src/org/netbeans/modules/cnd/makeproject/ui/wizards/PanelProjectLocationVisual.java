@@ -543,6 +543,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // NOI18N
             return false; // Display name not specified
         }
+        if (!CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) { // empty field imcluded
+            String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            return false;
+        }
         File f = CndFileUtils.createLocalFile(projectLocationTextField.getText()).getAbsoluteFile();
         if (getCanonicalFile(f) == null) {
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
@@ -583,14 +588,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_NotAFolder", destFolder.getPath()));  // NOI18N
                 return false;
             }
-            if (CndFileUtils.createLocalFile(destFolder.getPath(), makefileTextField.getText()).exists()) {
+            if (CndFileUtils.isValidLocalFile(destFolder.getPath(), makefileTextField.getText())) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_MakefileExists", makefileTextField.getText()));  // NOI18N
                 return false;
             }
-            if (CndFileUtils.createLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER).exists() ||
-                    CndFileUtils.createLocalFile(destFolder, MakeConfiguration.BUILD_FOLDER).exists() ||
-                    CndFileUtils.createLocalFile(destFolder, MakeConfiguration.DIST_FOLDER).exists()) {
+            if (CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.NBPROJECT_FOLDER) ||
+                    CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.BUILD_FOLDER) ||
+                    CndFileUtils.isValidLocalFile(destFolder, MakeConfiguration.DIST_FOLDER)) {
                 // Folder exists and is not empty
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_ProjectFolderExists")); // NOI18N
                 return false;
@@ -822,9 +827,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
 
                 for (int count = 0;;) {
                     String proposedMakefile = createdFolderTextField.getText() + File.separatorChar + makefileName;
-                    if (!CndFileUtils.createLocalFile(proposedMakefile).exists()
-                            && !CndFileUtils.createLocalFile(proposedMakefile.toLowerCase()).exists()
-                            && !CndFileUtils.createLocalFile(proposedMakefile.toUpperCase()).exists()) {
+                    if (!CndFileUtils.isValidLocalFile(proposedMakefile)
+                            && !CndFileUtils.isValidLocalFile(proposedMakefile.toLowerCase())
+                            && !CndFileUtils.isValidLocalFile(proposedMakefile.toUpperCase())) {
                         break;
                     }
                     makefileName = contructProjectMakefileName(count++);
