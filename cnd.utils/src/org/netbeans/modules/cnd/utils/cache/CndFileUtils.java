@@ -54,6 +54,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -145,18 +146,18 @@ public final class CndFileUtils {
         return new File(absolutePath);
     }
 
-    public static File createLocalFile(File base,  String absolutePath) {
+    public static File createLocalFile(File base,  String path) {
         Parameters.notNull("null base file", base); //NOI18N
         CndUtils.assertAbsoluteFileInConsole(base); //NOI18N
-        Parameters.notNull("null path", absolutePath); //NOI18N
-        return new File(base, absolutePath);
+        Parameters.notNull("null path", path); //NOI18N
+        return new File(base, path);
     }
 
-    public static File createLocalFile(String base,  String absolutePath) {
+    public static File createLocalFile(String base,  String path) {
         Parameters.notNull("null base file", base); //NOI18N
         CndUtils.assertAbsolutePathInConsole(base);
-        Parameters.notNull("null path", absolutePath); //NOI18N
-        return new File(base, absolutePath);
+        Parameters.notNull("null path", path); //NOI18N
+        return new File(base, path);
     }
 
     public static File createLocalFile(URI uri) {
