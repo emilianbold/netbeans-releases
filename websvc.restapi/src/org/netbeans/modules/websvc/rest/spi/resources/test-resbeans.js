@@ -245,9 +245,9 @@ TestSupport.prototype = {
                 var mimeType = mimeTypes[k];
                 var dispName = this.wdr.getMethodNameForDisplay(mName, mimeType);
                 if(mName == 'GET')
-                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
                 else
-                    str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
+                    str += "  <option class=MnuJmpOpt_sun4 value='"+dispName+"["+j+"]'>"+dispName+"</option>";
             }
         }   
         str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>MSG_TEST_RESBEANS_TestButton</a></td></tr></tbody></table>";

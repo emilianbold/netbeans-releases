@@ -52,6 +52,7 @@ import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
 import org.netbeans.modules.profiler.attach.providers.TargetPlatformEnum;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -65,16 +66,15 @@ public class JavaApplicationIntegrationProvider extends AbstractIntegrationProvi
 
     // -----
     // I18N String constants
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2se.Bundle"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
-    private static final String MANUAL_REMOTE_HINT_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualRemoteHintMessage"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP1_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualDirectStep1Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualDirectStep2Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_ManualDynamicStep2Message"); // NOI18N  
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-    private static final String APPLICATION_TITLE = messages.getString("JavaApplicationIntegrationProvider_Title");
+    private static final String MANUAL_REMOTE_STEP3_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
+    private static final String MANUAL_REMOTE_HINT_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualRemoteHintMessage"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP1_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDirectStep1Message"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDirectStep2Message"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_ManualDynamicStep2Message"); // NOI18N  
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String APPLICATION_TITLE = NbBundle.getMessage(JavaApplicationIntegrationProvider.class, "JavaApplicationIntegrationProvider_Title");
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 

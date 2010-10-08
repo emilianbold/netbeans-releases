@@ -71,7 +71,7 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
                     <attr name="groupId" stringvalue="org.apache.maven.archetypes"/>
                     <attr name="artifactId" stringvalue="maven-archetype-quickstart"/>
-                    <attr name="version" stringvalue="1.0"/>
+                    <attr name="version" stringvalue="1.1"/>
                     <attr name="position" intvalue="100"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
                     <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/jaricon.png"/>
@@ -82,7 +82,8 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="pom-root"/>
-                    <attr name="version" stringvalue="1.0"/>
+                    <attr name="version" stringvalue="1.1"/>
+                    <attr name="repository" stringvalue="https://nexus.codehaus.org/content/repositories/public/"/> <!-- XXX until propagated to Central -->
                     <attr name="position" intvalue="980"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
                     <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/Maven2Icon.gif"/>

@@ -500,7 +500,7 @@ public final class ProjectXMLManager {
 
     /**
      * Removes test dependency under type <code>testType</code>, indentified
-     * by <code>cnbToRemove</code>. Does not remove whole 610test type even if
+     * by <code>cnbToRemove</code>. Does not remove whole test type even if
      * removed test dependency was the last one.
      */
     public boolean removeTestDependency(String testType, String cnbToRemove) {
