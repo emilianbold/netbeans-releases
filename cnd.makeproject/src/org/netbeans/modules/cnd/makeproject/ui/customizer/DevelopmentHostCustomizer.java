@@ -50,6 +50,7 @@ import java.beans.VetoableChangeListener;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
@@ -70,6 +71,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
     private final ExecutionEnvironment oldExecEnv;
     private final AtomicReference<ExecutionEnvironment> selectedEnv;
     private final ToolsCacheManager cacheManager;
+    private final JComponent component;
 
     /**
      * Show the customizer dialog. If we're already online, show a meaningless message (I don't think
@@ -88,7 +90,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         this.selectedEnv = new AtomicReference<ExecutionEnvironment>(this.oldExecEnv);
         this.cacheManager = ToolsCacheManager.createInstance(true);
         this.setLayout(new BorderLayout());
-        JComponent component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);
+        component = ServerListUIEx.getServerListComponent(cacheManager, selectedEnv);
         add(component, BorderLayout.CENTER);
         propertyEnv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         propertyEnv.addVetoableChangeListener(this);
@@ -112,6 +114,7 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         if (env.equals(oldExecEnv)) {
             return;
         }
+        ServerListUIEx.save(cacheManager, component);
         cacheManager.applyChanges();
         dhconf.setHost(env, true);
 //        if (!dhconf.isConfigured()) {
