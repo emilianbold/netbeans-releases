@@ -644,8 +644,12 @@ public class MakeConfiguration extends Configuration {
         return remoteMode;
     }
 
-    public ExecutionEnvironment getRemoteFileSystemHost() {
-        return getDevelopmentHost().getExecutionEnvironment();
+    public ExecutionEnvironment getFileSystemHost() {
+        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+            return getDevelopmentHost().getExecutionEnvironment();
+        } else {
+            return ExecutionEnvironmentFactory.getLocal();
+        }
     }
 
     public void setRemoteMode(RemoteProject.Mode mode) {

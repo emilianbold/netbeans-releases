@@ -112,9 +112,7 @@ import org.openide.filesystems.FileUtil;
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
-                if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    execEnv = remoteProject.getRemoteFileSystemHost();
-                }
+                execEnv = remoteProject.getSourceFileSystemHost();
             }
         }
         return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);

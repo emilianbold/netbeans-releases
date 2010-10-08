@@ -107,7 +107,7 @@ public class RemoteFileUtil {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
             if (remoteProject != null) {
                 if (remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                    ExecutionEnvironment execEnv = remoteProject.getRemoteFileSystemHost();
+                    ExecutionEnvironment execEnv = remoteProject.getSourceFileSystemHost();
                     return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
                 }
             }
