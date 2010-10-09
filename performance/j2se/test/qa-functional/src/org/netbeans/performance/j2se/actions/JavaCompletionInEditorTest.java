@@ -72,7 +72,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class JavaCompletionInEditorTest extends PerformanceTestCase {
     
-    private static final int lineNumber = 55;
+    private static final int lineNumber = 61;
     private static final String ccText = "        System";
     private EditorOperator editorOperator;
     private OptionsOperator oo;
