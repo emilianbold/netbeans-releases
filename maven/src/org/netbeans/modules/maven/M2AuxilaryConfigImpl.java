@@ -108,6 +108,9 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
                                 synchronized (M2AuxilaryConfigImpl.this) {
                                     //do saving here..
                                     doc = scheduledDocument;
+                                    if (doc == null) {
+                                        return;
+                                    }
                                     scheduledDocument = null;
 
                                     lck = config.lock();
