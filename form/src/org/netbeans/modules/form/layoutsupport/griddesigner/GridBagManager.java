@@ -365,7 +365,16 @@ public class GridBagManager implements GridManager {
         MetaComponentCreator creator = formModel.getComponentCreator();
         RADVisualContainer panel = (RADVisualContainer)creator.createComponent(
                 new ClassSource("javax.swing.JPanel"), parent, null); // NOI18N
-        creator.createComponent(new ClassSource("java.awt.GridBagLayout"), panel, null); // NOI18N
+        // Set the layout of the panel
+        boolean recording = formModel.isUndoRedoRecording();
+        try {
+            // Issue 190882. No need to undo this layout change.
+            // The panel is newly created. Hence, switching undo off makes no harm.
+            formModel.setUndoRedoRecording(false);
+            creator.createComponent(new ClassSource("java.awt.GridBagLayout"), panel, null); // NOI18N
+        } finally {
+            formModel.setUndoRedoRecording(recording);
+        }
         for (Component comp : components) {
             RADVisualComponent metaComp = componentMap.get(comp);
             creator.moveComponent(metaComp, panel);
