@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 public class AddConnectionWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<AddConnectionWizard> {
     
     private String driverLocation;
-    private final String driverName;
+    private String driverName;
     private String downloadFrom;
     private String driverFileName;
     private String[] steps;
@@ -94,42 +94,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
         assert driverName != null || (driverClass == null && databaseUrl == null && user== null && password == null)
                 : "Inconsistent state when driverName is null but other parameters are not";
-        this.driverName = driverName;
-        this.driverClass = driverClass;
-        if (driverName != null) {
-            if (driverName.contains("Oracle")) { // NOI18N
-                if (driverName.contains("OCI")) {
-                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName");
-                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass");
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl");
-                } else {
-                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName");
-                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass");
-                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl");
-                }
-                this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser");
-                this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword");
-                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema");
-                this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from");
-                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name");
-            } else if (driverName.contains("MySQL")) {
-                this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName");
-                this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass");
-                this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl");
-                this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user;
-                this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password;
-                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema");
-                this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from");
-                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name");
-            } else {
-                // others
-                this.driverClass = driverClass;
-                this.databaseUrl = databaseUrl;
-                this.user = user;
-                this.pwd = password;
-                this.defaultSchema = "";
-            }
-        }
+        updateState(driverName, driverClass, databaseUrl, user, password);
     }
 
     @Override
@@ -271,6 +236,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
 
     void setDriver(JDBCDriver driver) {
         this.jdbcDriver = driver;
+        updateState(driver.getName(), driver.getClassName(), null, null, null);
     }
 
     JDBCDriver getDriver() {
@@ -346,6 +312,45 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                     //unable to close db connection
                     connection.setConnection(null);
                 }
+            }
+        }
+    }
+
+    private void updateState(String driverName, String driverClass, String databaseUrl, String user, String password) {
+        this.driverName = driverName;
+        this.driverClass = driverClass;
+        if (driverName != null) {
+            if (driverName.contains("Oracle")) { // NOI18N
+                if (driverName.contains("OCI")) { // NOI18N
+                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName"); // NOI18N
+                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass"); // NOI18N
+                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
+                } else {
+                    this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverDisplayName"); // NOI18N
+                    this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDriverClass"); // NOI18N
+                    this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleThinDatabaseUrl"); // NOI18N
+                }
+                this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
+                this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
+                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema"); // NOI18N
+                this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
+                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N
+            } else if (driverName.contains("MySQL")) { // NOI18N
+                this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName"); // NOI18N
+                this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass"); // NOI18N
+                this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N
+                this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user; // NOI18N
+                this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password; // NOI18N
+                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema"); // NOI18N
+                this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from"); // NOI18N
+                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name"); // NOI18N
+            } else {
+                // others
+                this.driverClass = driverClass;
+                this.databaseUrl = databaseUrl;
+                this.user = user;
+                this.pwd = password;
+                this.defaultSchema = ""; // NOI18N
             }
         }
     }
