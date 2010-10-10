@@ -79,7 +79,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
     private int index;
     private ChoosingDriverPanel driverPanel;
-    private boolean found = false;
     private String pwd;
     private String driverDN;
     private String driverClass;
@@ -89,6 +88,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private DatabaseConnection connection;
     private List<String> schemas = null;
     private String currentSchema;
+    private JDBCDriver jdbcDriver;
+    private boolean increase = false;
 
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
         assert driverName != null || (driverClass == null && databaseUrl == null && user== null && password == null)
@@ -126,6 +127,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.databaseUrl = databaseUrl;
                 this.user = user;
                 this.pwd = password;
+                this.defaultSchema = "";
             }
         }
     }
@@ -164,7 +166,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             }
         }
     }
-    
+
     public static interface Panel extends WizardDescriptor.Panel<AddConnectionWizard>{}
     
     /**
@@ -180,6 +182,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                         FileObject jarFO = URLMapper.findFileObject(jars[0]);
                         if (jarFO != null && jarFO.isValid()) {
                             this.driverFileName = jarFO.getNameExt();
+                            this.jdbcDriver = drv;
+                            this.increase = true;
                         }
                 }
             }
@@ -218,10 +222,9 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     public WizardDescriptor.Panel<AddConnectionWizard> current() {
         // init panels first
         getPanels();
-        if (driverPanel.getDriverLocation() != null && ! found) {
-            found = true;
+        if (increase) {
             index++;
-            setDriverLocation(driverPanel.getDriverLocation());
+            increase = false;
         }
                 
         return getPanels()[index];
@@ -229,7 +232,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
 
     @Override
     public String name() {
-        return index + 1 + ". from " + getPanels().length;
+        return index + 1 + ". from " + getPanels().length; // NOI18N
     }
 
     @Override
@@ -266,24 +269,16 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     public void removeChangeListener(ChangeListener l) {
     }
 
-    void setDriverLocation(String location) {
-        this.driverLocation = location;
+    void setDriver(JDBCDriver driver) {
+        this.jdbcDriver = driver;
     }
-    
-    String getDriverLocation() {
-        return driverLocation;
+
+    JDBCDriver getDriver() {
+        return this.jdbcDriver;
     }
-    
-    String getDriverName() {
-        return driverName;
-    }
-    
+
     String getDriverDisplayName() {
         return driverDN;
-    }
-    
-    String getDriverClass() {
-        return driverClass;
     }
     
     String getDatabaseUrl() {

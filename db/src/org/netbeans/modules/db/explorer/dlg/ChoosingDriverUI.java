@@ -45,9 +45,14 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
+import org.netbeans.modules.db.util.DriverListUtil;
 import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
@@ -89,7 +94,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 }
             }
         }
-        customizeDriverPanel = new AddDriverDialog(drv);
+        customizeDriverPanel = new AddDriverDialog(drv, this);
         pInter.add(customizeDriverPanel, BorderLayout.CENTER);
         actionListener = new ActionListener() {
             @Override
@@ -115,6 +120,26 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     private void updateState() {
         Object drvO = cbDrivers.getSelectedItem();
         if (drvO instanceof JdbcUrl) {
+            // update current with modified files if any
+            if (customizeDriverPanel.getDriver() != null) {
+                JDBCDriver current = customizeDriverPanel.getDriver();
+                // any change?
+                if (! Arrays.equals(current.getURLs(), customizeDriverPanel.getDriverURLs())) {
+                    JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), customizeDriverPanel.getDriverURLs());
+                    for (JdbcUrl url : DriverListUtil.getJdbcUrls(current)) {
+                        url.setDriver(modified);
+                    }
+                    try {
+                        JDBCDriverManager.getDefault().removeDriver(current);
+                        JDBCDriverManager.getDefault().addDriver(modified);
+                    } catch (DatabaseException ex) {
+                        Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.WARNING,
+                                "Unable to modify driver " + current.getName() + " and add driver jar files " +
+                                Arrays.asList(customizeDriverPanel.getDriverURLs()) +
+                                ": can not convert to URL", ex);
+                    }
+                }
+            }
             drv = ((JdbcUrl) drvO).getDriver();
             customizeDriverPanel.setDriver(drv);
         } else {
@@ -178,11 +203,18 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     boolean driverFound() {
-        JDBCDriver d = customizeDriverPanel.getDriver();
-        return d != null && d.getURLs() != null && d.getURLs().length > 0;
+        return customizeDriverPanel.getDriverURLs().length > 0;
     }
 
     String getDriverLocation() {
         return choosinIntraPanel.getDriverLocation();
+    }
+
+    JDBCDriver getDriver() {
+        return customizeDriverPanel.getDriver();
+    }
+
+    void fireChangeEvent() {
+        updateState();
     }
 }

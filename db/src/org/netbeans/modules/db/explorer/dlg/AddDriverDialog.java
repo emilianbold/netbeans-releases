@@ -99,6 +99,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
     private DialogDescriptor descriptor;
+    private final ChoosingDriverUI wp;
     
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
     private JDBCDriver drv;
@@ -106,8 +107,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
     /** Creates new AddDriverDialog.
      * @param driverNode driver node to be customized or null to create a new one
      */
-    public AddDriverDialog(JDBCDriver driver) {
+    public AddDriverDialog(JDBCDriver driver, ChoosingDriverUI panel) {
         this.drv = driver;
+        this.wp = panel;
         initComponents();
         // hack to force the progressContainerPanel honor its preferred height
         // without it, the preferred height is sometimes ignored during resize
@@ -167,6 +169,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         
         String fileName = null;
         dlm.clear();
+        drvs.clear();
         URL[] urls = drv == null ? new URL[0] : drv.getURLs();
         for (int i = 0; i < urls.length; i++) {
             URL url = urls[i];
@@ -453,6 +456,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                         DialogDisplayer.getDefault().notify(msgDesc);
                         continue;
                     }
+                    if (drvs.isEmpty()) {
+                        dlm.clear();
+                    }
                     dlm.addElement(file.toString());
                     try {
                         drvs.add(file.toURI().toURL());
@@ -465,6 +471,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 }
             }
             findDriverClass();
+            wp.fireChangeEvent();
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -516,8 +523,8 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         return nameTextField.getText();
     }
     
-    public List<URL> getDriverLocation() {
-        return drvs;
+    public URL[] getDriverURLs() {
+        return drvs.toArray(new URL[0]);
     }
     
     public String getDriverClass() {
@@ -653,9 +660,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
 
     /** Updates state of UI controls. */
     private void updateState() {
-        boolean enable = drv != null && drv.getURLs() != null && drv.getURLs().length > 0;
+        boolean enable = getDriverURLs().length > 0;
         // update Browse button state
-        browseButton.setEnabled(drv != null);
+        browseButton.setEnabled(drv != null || ! (wp != null));
         // update Remove button state
         removeButton.setEnabled(enable && drvList.getSelectedIndices().length > 0);
         // update Find button state
@@ -698,7 +705,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
      * @return driver instance if user clicks OK, null otherwise
      */
     public static JDBCDriver showDialog(DriverNode driverNode) {
-        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver());
+        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver(), null);
 
         DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
         descriptor.createNotificationLineSupport();
@@ -708,7 +715,6 @@ public final class AddDriverDialog extends javax.swing.JPanel {
 
         JDBCDriver driver = null;
         if (DialogDescriptor.OK_OPTION == descriptor.getValue()) {
-            List<URL> drvLoc = dlgPanel.getDriverLocation();
             String drvClass = dlgPanel.getDriverClass();
             String displayName = dlgPanel.getDisplayName();
             String name = displayName;
@@ -718,7 +724,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                     name = driverNode.getDatabaseDriver().getJDBCDriver().getName();
                     driverNode.destroy();
                 }
-                driver = JDBCDriver.create(name, displayName, drvClass, drvLoc.toArray(new URL[0]));
+                driver = JDBCDriver.create(name, displayName, drvClass, dlgPanel.getDriverURLs());
                 JDBCDriverManager.getDefault().addDriver(driver);
             } catch (DatabaseException exc) {
                 Exceptions.printStackTrace(exc);

@@ -58,6 +58,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.modules.db.ExceptionListener;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -70,6 +71,8 @@ import org.openide.util.NbBundle;
 public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescriptor.ValidatingPanel<AddConnectionWizard>, WizardDescriptor.FinishablePanel<AddConnectionWizard> {
 
     private DatabaseConnection databaseConnection;
+    private JDBCDriver drv;
+    private JDBCDriver oldDriver;
 
     public ConnectionPanel() {
     }
@@ -86,14 +89,15 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     // create only those which really need to be visible.
     @Override
     public Component getComponent() {
-        if (component == null) {
+        if (component == null || (oldDriver != null && ! oldDriver.equals(drv))) {
             if (pw == null) {
                 return null;
             }
             assert pw != null : "ConnectionPanel must be initialized.";
             databaseConnection = new DatabaseConnection();
-            databaseConnection.setDriver(pw.getDriverClass());
-            databaseConnection.setDriverName(pw.getDriverName());
+            assert drv != null : "JDBCDriver driver cannot be null.";
+            databaseConnection.setDriver(drv.getClassName());
+            databaseConnection.setDriverName(drv.getName());
             databaseConnection.setUser(pw.getUser());
             databaseConnection.setPassword(pw.getPassword());
             databaseConnection.setDatabase(pw.getDatabaseUrl());
@@ -103,7 +107,8 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, x.getLocalizedMessage(), x.getCause());
             }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
-            component = new NewConnectionPanel(pw, pw.getDriverClass(), databaseConnection);
+            component = new NewConnectionPanel(pw, drv.getClassName(), databaseConnection);
+            oldDriver = drv;
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
@@ -168,6 +173,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     @Override
     public void readSettings(AddConnectionWizard settings) {
         this.pw = settings;
+        drv = pw.getDriver();
     }
 
     @Override

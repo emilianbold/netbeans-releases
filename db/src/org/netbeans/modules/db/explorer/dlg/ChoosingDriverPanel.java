@@ -44,7 +44,6 @@ package org.netbeans.modules.db.explorer.dlg;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -58,7 +57,6 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.project.libraries.Library;
@@ -252,32 +250,28 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
 
     @Override
     public void storeSettings(AddConnectionWizard settings) {
-        settings.setDriverLocation(component.getDriverLocation());
-        // add new driver is still not present
-        if (getDriverFO(driverFileName) == null) {
-            URL url = null;
-            try {
-                url = new File(component.getDriverLocation()).toURI().toURL();
-            } catch (MalformedURLException ex) {
-                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-            JDBCDriver drv = JDBCDriver.create(pw.getDriverName(),
-                                        pw.getDriverDisplayName(),
-                                        pw.getDriverClass(), new URL[] {url});
-            try {
-                JDBCDriverManager.getDefault().addDriver(drv);
-            } catch (DatabaseException ex) {
-                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-        }
+        settings.setDriver(component.getDriver());
+//        // add new driver is still not present
+//        if (getDriverFO(driverFileName) == null) {
+//            URL url = null;
+//            try {
+//                url = new File(component.getDriverLocation()).toURI().toURL();
+//            } catch (MalformedURLException ex) {
+//                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+//            }
+//            JDBCDriver drv = JDBCDriver.create(pw.getDriverName(),
+//                                        pw.getDriverDisplayName(),
+//                                        pw.getDriverClass(), new URL[] {url});
+//            try {
+//                JDBCDriverManager.getDefault().addDriver(drv);
+//            } catch (DatabaseException ex) {
+//                Logger.getLogger(ChoosingDriverPanel.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+//            }
+//        }
     }
 
-    String getDriverLocation() {
-        if (driverFound) {
-            return driverPath + File.separator + driverFileName;
-        } else {
-            return null;
-        }
+    JDBCDriver getDriver() {
+        return component.getDriver();
     }
 
     private static File getUserDir() {
