@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -89,6 +90,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -624,8 +626,8 @@ public class ProjectActionSupport {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
                     File file = new File(executable);
-                    if (!file.exists()) {
-                        file = new File(executable + ".exe"); // NOI18N
+                    if (!file.exists() && Utilities.isWindows()) {
+                        file = CndFileUtils.createLocalFile(executable + ".exe"); // NOI18N
                     }
                     if (!file.exists() || file.isDirectory()) {
                         ok = false;

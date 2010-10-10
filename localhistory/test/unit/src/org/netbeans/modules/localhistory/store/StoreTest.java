@@ -47,14 +47,17 @@ package org.netbeans.modules.localhistory.store;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
-import org.openide.util.Exceptions;
 
 /**
 */
@@ -84,7 +87,7 @@ public class StoreTest extends LHTestCase {
     public void testWrite2StoreVsCleanUp() throws Exception {
         LocalHistoryTestStore store = createStore();
         long ts = System.currentTimeMillis();
-
+    
         File file = new File(dataDir, "crapfile");
 
         File storefile = store.getStoreFile(file, ts, true);
@@ -96,7 +99,7 @@ public class StoreTest extends LHTestCase {
 
         OutputStream os1 = StoreEntry.createStoreFileOutputStream(storefile);
     }
-
+          
     public void testFileCreate() throws Exception {
         LocalHistoryTestStore store = createStore();
 
@@ -158,6 +161,7 @@ public class StoreTest extends LHTestCase {
 
         // change file with new ts
         ts = System.currentTimeMillis();
+        lh.reset();
         changeFile(store, file, ts, "data2");
         lh.waitUntilDone();
 
@@ -209,10 +213,10 @@ public class StoreTest extends LHTestCase {
         createFile(store, file4, System.currentTimeMillis(), "data4");
 
         // touch the files
-        changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
-        changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
-        changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
-        changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, System.currentTimeMillis(), "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file2, System.currentTimeMillis(), "data2.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file3, System.currentTimeMillis(), "data3.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
 
         // delete one of them
         store.fileDelete(file2, System.currentTimeMillis());
@@ -245,6 +249,7 @@ public class StoreTest extends LHTestCase {
         createFile(store, file2, System.currentTimeMillis(), "data2");
 
         // change the file
+        lh.reset();
         changeFile(store, file1, System.currentTimeMillis(), "data1.1");
         lh.waitUntilDone();
 
@@ -361,10 +366,10 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -397,8 +402,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         StoreEntry[] se = store.getStoreEntries(file1);
         assertEntries(
@@ -443,8 +448,8 @@ public class StoreTest extends LHTestCase {
         // lets create some history
         long ts = System.currentTimeMillis() - 4 * 24 * 60 * 60 * 1000;
         createFile(store, file1, ts + 1000, "data1");
-        changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
-        changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
         assertFile(file1, store, ts + 3000, -1, 4, 1, "data1.2", TOUCHED);
 
@@ -514,6 +519,7 @@ public class StoreTest extends LHTestCase {
         for (int i = 1; i <= many; i++) {
             tss[i] = System.currentTimeMillis();
             datas[i] = "data" + i;
+            lh.reset();
             changeFile(store, file, tss[i], datas[i]);
             System.out.println("testManyManyChangesSync change " + i);
             lh.waitUntilDone();
@@ -564,6 +570,7 @@ public class StoreTest extends LHTestCase {
         Thread.sleep(1000); // give me some time
         // REVERT
 
+        lh.reset();
         changeFile(store, fileChangedAfterRevert, System.currentTimeMillis(), "fileChanged AFTER change");
         lh.waitUntilDone();
 
@@ -603,5 +610,65 @@ public class StoreTest extends LHTestCase {
         
         return revertToTS;
     }     
+    
+    public void testChangeAndDeleteRightAfter() throws Exception {
+        LocalHistoryTestStore store = createStore();
+        LogHandler lhBlock = new LogHandler("started copy file", LogHandler.Compare.STARTS_WITH);
+        LogHandler lh = new LogHandler("finnished copy file", LogHandler.Compare.STARTS_WITH);
+        ExceptionHandler h = new ExceptionHandler();
+        
+        long ts = System.currentTimeMillis();
+
+        // create file in store
+        File folder = new File(dataDir, "folder");
+        createFile(store, folder, ts, null);
+        File file = new File(folder, "file");
+        createFile(store, file, ts, "data1");
+
+        File storefile = store.getStoreFile(file, ts, false);
+
+        // check that nothing changed
+        assertFile(file, store, ts, storefile.lastModified(), 2, 2, "data1", TOUCHED);
+
+        // change file with new ts
+        ts = System.currentTimeMillis();
+        lhBlock.block();   // start blocking so that we can delete before file is copied                     
+        changeFile(store, file, ts, "data2");
+        FileUtils.deleteRecursively(folder);
+        assertTrue(!folder.exists());
+        
+        lhBlock.unblock();
+        lh.waitUntilDone();
+        h.checkException();        
+    }      
+
+    private class ExceptionHandler extends Handler {
+        private Throwable thrown;
+
+        public ExceptionHandler() {
+            LocalHistory.LOG.addHandler(this);
+        }
+
+        @Override
+        public void publish(LogRecord record) {            
+            if((record.getLevel().intValue() > Level.INFO.intValue()) && thrown == null && record.getThrown() != null) {
+               thrown = record.getThrown();
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+        
+        public void checkException() throws InterruptedException, TimeoutException {                    
+            if(thrown instanceof FileNotFoundException) {
+                fail("exception was thrown while none expected");
+            }
+        }        
+    }
     
 }

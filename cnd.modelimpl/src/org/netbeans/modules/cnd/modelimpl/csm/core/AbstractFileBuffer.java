@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -97,7 +98,7 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
-        return FileUtil.toFileObject(new File(absPath.toString())); // XXX:FileObject conversion
+        return CndFileUtils.toFileObject(absPath); // XXX:FileObject conversion
     }
 
     @Override
@@ -105,10 +106,10 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         if (encoding == null) {
             File file = getFile();
             // file must be normalized
-            FileObject fo = FileUtil.toFileObject(file);
-            if (fo != null) {
+            FileObject fo = CndFileUtils.toFileObject(file);
+            if (fo != null && fo.isValid()) {
                 encoding = FileEncodingQuery.getEncoding(fo);
-            } else {
+            } else { // paranoia
                 encoding = FileEncodingQuery.getDefaultEncoding();
             }
         }

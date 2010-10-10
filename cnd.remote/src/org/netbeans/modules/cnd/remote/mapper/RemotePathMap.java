@@ -120,7 +120,7 @@ public abstract class RemotePathMap extends PathMap {
                 String pmap = System.getProperty("cnd.remote.pmap");
                 if (pmap != null) {
                     String line;
-                    File file = new File(pmap);
+                    File file = CndFileUtils.createLocalFile(pmap);
 
                     if (file.exists() && file.canRead()) {
                         try {
@@ -237,7 +237,7 @@ public abstract class RemotePathMap extends PathMap {
 
         try {
             // check if local path is mirrored by remote path
-            if (validateMapping(execEnv, lpath, new File(lpath))) {
+            if (validateMapping(execEnv, lpath, CndFileUtils.createLocalFile(lpath))) {
                 synchronized (map) {
                     map.put(lpath, lpath);
                 }

@@ -94,7 +94,7 @@ public class RemoteFileUtil {
         if (execEnv.isRemote()) {
             return FileSystemProvider.getFileSystem(execEnv, "/").findResource(normalizedPath); //NOI18N
         } else {
-            return FileUtil.toFileObject(new File(normalizedPath));
+            return CndFileUtils.toFileObject(normalizedPath);
         }
     }
 
@@ -112,7 +112,7 @@ public class RemoteFileUtil {
                 }
             }
         }
-        return FileUtil.toFileObject(new File(normalizedPath));
+        return CndFileUtils.toFileObject(normalizedPath);
     }
 
     public static String getAbsolutePath(FileObject fileObject) {

@@ -47,26 +47,25 @@ package org.netbeans.nbbuild;
 import java.io.File;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * @author Jaroslav Tulach
  */
-public class CheckLicenseTest extends NbTestCase {
+public class CheckLicenseTest extends TestBase {
 
     public CheckLicenseTest(String testName) {
         super(testName);
     }
 
     public void testWeCanSearchForSunPublicLicense() throws Exception {
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<!-- Sun Public License -->\n" +
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -80,24 +79,24 @@ public class CheckLicenseTest extends NbTestCase {
             "</project>"
         );
         // success
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf(license.getPath()) > - 1) {
-            fail("file name shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf(license.getPath()) > - 1) {
+            fail("file name shall not be there: " + getStdErr());
         }
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("no license") > - 1) {
-            fail("warning shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf("no license") > - 1) {
+            fail("warning shall not be there: " + getStdErr());
         }
     }        
 
     public void testTheTaskFailsIfItIsPresent() throws Exception {
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<!-- Sun Public License -->\n" +
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "</body>"
         );
-        java.io.File license2 = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license2 = extractString(
             "<!-- Sun Public License -->\n" +
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
@@ -105,7 +104,7 @@ public class CheckLicenseTest extends NbTestCase {
         );
         assertEquals(license.getParent(), license2.getParent());
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -120,13 +119,13 @@ public class CheckLicenseTest extends NbTestCase {
             "</project>"
         );
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
             fail("Should fail as the license is missing");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             // ok
         }
         
-        String out = PublicPackagesInProjectizedXMLTest.getStdErr();
+        String out = getStdErr();
         if (out.indexOf(license.getName()) == -1) {
             fail(license.getName() + " should be there: " + out);
         }
@@ -136,13 +135,13 @@ public class CheckLicenseTest extends NbTestCase {
     }        
     
     public void testTheTaskReportsIfItIsMissing() throws Exception {
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -156,24 +155,24 @@ public class CheckLicenseTest extends NbTestCase {
             "</project>"
         );
         // success
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf(license.getPath()) == - 1) {
-            fail("file name shall be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf(license.getPath()) == - 1) {
+            fail("file name shall be there: " + getStdErr());
         }
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("no license") == - 1) {
-            fail("warning shall be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf("no license") == - 1) {
+            fail("warning shall be there: " + getStdErr());
         }
     }        
 
     public void testNoReportsWhenInFailMode() throws Exception {
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -187,24 +186,24 @@ public class CheckLicenseTest extends NbTestCase {
             "</project>"
         );
         // success
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf(license.getPath()) != - 1) {
-            fail("file name shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf(license.getPath()) != - 1) {
+            fail("file name shall not be there: " + getStdErr());
         }
-        if (PublicPackagesInProjectizedXMLTest.getStdErr().indexOf("no license") != - 1) {
-            fail("warning shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdErr());
+        if (getStdErr().indexOf("no license") != - 1) {
+            fail("warning shall not be there: " + getStdErr());
         }
     }        
     
     public void testTheTaskFailsIfItIsMissing() throws Exception {
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "</body>"
         );
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"checkl\" classname=\"org.netbeans.nbbuild.CheckLicense\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -218,15 +217,15 @@ public class CheckLicenseTest extends NbTestCase {
             "</project>"
         );
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
             fail("Should fail as the license is missing");
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             // ok
         }
     }        
     
     public void testReplaceJavaLicense() throws Exception {
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File tmp = extractString(
 "/*\n" + 
 " *                 Sun Public License Notice\n" +
 " *\n" +
@@ -250,22 +249,22 @@ public class CheckLicenseTest extends NbTestCase {
         tmp.renameTo(java);
         assertTrue("File exists", java.exists());
       
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-verbose", 
             "-Ddir=" + java.getParent(),  
             "-Dinclude=" + java.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(java.getPath()) == - 1) {
-            fail("file name shall be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(java.getPath()) == - 1) {
+            fail("file name shall be there: " + getStdOut());
         }
         
         
         assertTrue("Still exists", java.exists());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(java);
+        String content = readFile(java);
         {
             Matcher m = Pattern.compile("\\* *Ahoj *\\* *Jardo").matcher(content.replace('\n', ' '));
             if (!m.find()) {
@@ -301,28 +300,28 @@ public class CheckLicenseTest extends NbTestCase {
 
     
     public void testReplaceHTMLLicense() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseHtmlExample.xml");
+        java.io.File tmp = extractResource("CheckLicenseHtmlExample.xml");
         File html = new File(tmp.getParentFile(), "MyTest.html");
         tmp.renameTo(html);
         assertTrue("File exists", html.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-verbose", 
             "-Ddir=" + html.getParent(),  
             "-Dinclude=" + html.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(html.getPath()) == - 1) {
-            fail("file name shall be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(html.getPath()) == - 1) {
+            fail("file name shall be there: " + getStdOut());
         }
         
         
         assertTrue("Still exists", html.exists());
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(html);
+        String content = readFile(html);
         {
             Matcher m = Pattern.compile(" *- *Ahoj *- *Jardo").matcher(content.replace('\n', ' '));
             if (!m.find()) {
@@ -354,9 +353,9 @@ public class CheckLicenseTest extends NbTestCase {
     }        
 
     public void testNoReplaceWhenNoHTMLLicense() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File tmp = extractString(
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "1997-2006" +
@@ -367,13 +366,13 @@ public class CheckLicenseTest extends NbTestCase {
         assertTrue("File exists", html.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-Ddir=" + html.getParent(),  
             "-Dinclude=" + html.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(html.getPath()) != - 1) {
-            fail("file name shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(html.getPath()) != - 1) {
+            fail("file name shall not be there: " + getStdOut());
         }
         
     }        
@@ -383,9 +382,9 @@ public class CheckLicenseTest extends NbTestCase {
             return;
         }
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File tmp = extractString(
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
             "Original Code\n" +
@@ -399,16 +398,16 @@ public class CheckLicenseTest extends NbTestCase {
         assertTrue("File exists", html.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-Ddir=" + html.getParent(),  
             "-Dinclude=" + html.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf("Original Code") != - 1) {
-            fail("Original Code shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf("Original Code") != - 1) {
+            fail("Original Code shall not be there: " + getStdOut());
         }
 
-        String out = PublicPackagesInProjectizedXMLTest.readFile(html);
+        String out = readFile(html);
         int first = out.indexOf("Original Software");
         if (first == - 1) {
             fail("Original Software shall be there: " + out);
@@ -435,19 +434,19 @@ public class CheckLicenseTest extends NbTestCase {
         String script = createScript();
         
     
-        File fileScript = PublicPackagesInProjectizedXMLTest.extractString(script);
-        File fileTxt = PublicPackagesInProjectizedXMLTest.extractString(txt);
+        File fileScript = extractString(script);
+        File fileTxt = extractString(txt);
         
-        PublicPackagesInProjectizedXMLTest.execute (fileScript, new String[] { 
+        execute (fileScript, new String[] { 
             "-Ddir=" + fileTxt.getParent(),  
             "-Dinclude=" + fileTxt.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf("Original Code") != - 1) {
-            fail("Original Code shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf("Original Code") != - 1) {
+            fail("Original Code shall not be there: " + getStdOut());
         }
 
-        String out = PublicPackagesInProjectizedXMLTest.readFile(fileTxt);
+        String out = readFile(fileTxt);
         
         String[] arr = out.split("\n");
         for (int i = 0; i < arr.length; i++) {
@@ -510,9 +509,9 @@ public class CheckLicenseTest extends NbTestCase {
         if (isWindows()) {
             return;
         }
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File tmp = extractString(
             "/*\n" +
             " *                 Sun Public License Notice\n" +
             " * \n" +
@@ -534,16 +533,16 @@ public class CheckLicenseTest extends NbTestCase {
         assertTrue("File exists", java.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-Ddir=" + java.getParent(),  
             "-Dinclude=" + java.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf("Code") != - 1) {
-            fail("Original Code shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf("Code") != - 1) {
+            fail("Original Code shall not be there: " + getStdOut());
         }
 
-        String out = PublicPackagesInProjectizedXMLTest.readFile(java);
+        String out = readFile(java);
         int first = out.indexOf("Original Software");
         if (first == - 1) {
             fail("Original Software shall be there: " + out);
@@ -566,21 +565,21 @@ public class CheckLicenseTest extends NbTestCase {
     
     
     public void testWorksOnEmptyFile() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString("");
+        java.io.File tmp = extractString("");
         File html = new File(tmp.getParentFile(), "MyTest.html");
         tmp.renameTo(html);
         assertTrue("File exists", html.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-Ddir=" + html.getParent(),  
             "-Dinclude=" + html.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(html.getPath()) != - 1) {
-            fail("file name shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(html.getPath()) != - 1) {
+            fail("file name shall not be there: " + getStdOut());
         }
         
     }        
@@ -589,29 +588,29 @@ public class CheckLicenseTest extends NbTestCase {
         if (isWindows()) {
             return;
         }
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicensePropertiesExample.properties");
+        java.io.File tmp = extractResource("CheckLicensePropertiesExample.properties");
         File html = new File(tmp.getParentFile(), "MyTest.html");
         tmp.renameTo(html);
         assertTrue("File exists", html.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-verbose", 
             "-Ddir=" + html.getParent(),  
             "-Dinclude=" + html.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(html.getPath()) == - 1) {
-            fail("file name shall be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(html.getPath()) == - 1) {
+            fail("file name shall be there: " + getStdOut());
         }
         
         
         assertTrue("Still exists", html.exists());
         
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(html);
+        String content = readFile(html);
         
         if (!content.startsWith("#")) {
             fail("Shall start with #:\n" + content);
@@ -665,29 +664,29 @@ public class CheckLicenseTest extends NbTestCase {
     }
     
     public void testReplaceXMLLicense() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseAnt.xml");
+        java.io.File f = extractResource("CheckLicenseAnt.xml");
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractResource("CheckLicenseXmlExample.xml");
+        java.io.File tmp = extractResource("CheckLicenseXmlExample.xml");
         File xml = new File(tmp.getParentFile(), "MyTest.xml");
         tmp.renameTo(xml);
         assertTrue("File exists", xml.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-verbose", 
             "-Ddir=" + xml.getParent(),  
             "-Dinclude=" + xml.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf(xml.getPath()) == - 1) {
-            fail("file name shall be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf(xml.getPath()) == - 1) {
+            fail("file name shall be there: " + getStdOut());
         }
         
         
         assertTrue("Still exists", xml.exists());
         
         
-        String content = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        String content = readFile(xml);
         
         if (!content.startsWith("<")) {
             fail("Shall start with <:\n" + content);
@@ -737,19 +736,19 @@ public class CheckLicenseTest extends NbTestCase {
         String script = createScript();
         
     
-        File fileScript = PublicPackagesInProjectizedXMLTest.extractString(script);
-        File fileTxt = PublicPackagesInProjectizedXMLTest.extractString(txt);
+        File fileScript = extractString(script);
+        File fileTxt = extractString(txt);
         
-        PublicPackagesInProjectizedXMLTest.execute (fileScript, new String[] { 
+        execute (fileScript, new String[] { 
             "-Ddir=" + fileTxt.getParent(),  
             "-Dinclude=" + fileTxt.getName(),
         });
         
-        if (PublicPackagesInProjectizedXMLTest.getStdOut().indexOf("Original Code") != - 1) {
-            fail("Original Code shall not be there: " + PublicPackagesInProjectizedXMLTest.getStdOut());
+        if (getStdOut().indexOf("Original Code") != - 1) {
+            fail("Original Code shall not be there: " + getStdOut());
         }
 
-        String out = PublicPackagesInProjectizedXMLTest.readFile(fileTxt);
+        String out = readFile(fileTxt);
 
 
         if (out.indexOf("Sun Public") >= 0) {
@@ -759,9 +758,9 @@ public class CheckLicenseTest extends NbTestCase {
 
     
     public void testDoubleHtmlComments() throws Exception {
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString(createScript());
+        java.io.File f = extractString(createScript());
 
-        java.io.File tmp = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File tmp = extractString(
 "<!--\n" +
 "  --                 Sun Public License Notice\n" +
 "  --\n" +
@@ -780,12 +779,12 @@ public class CheckLicenseTest extends NbTestCase {
         assertTrue("File exists", file.exists());
       
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        execute (f, new String[] { 
             "-Ddir=" + file.getParent(),  
             "-Dinclude=" + file.getName(),
         });
         
-        String out = PublicPackagesInProjectizedXMLTest.readFile(file);
+        String out = readFile(file);
         int first = out.indexOf("Sun Public");
         if (first != - 1) {
             fail("Sun Public shall not  be there:\n" + out);
@@ -800,7 +799,7 @@ public class CheckLicenseTest extends NbTestCase {
         }
         sb.append('B');
         
-        java.io.File license = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File license = extractString(
             "<!-- Sun Public License Notice -->\n" +
             "<head></head><body>\n" +
             "<a href=\"http://www.netbeans.org/download/dev/javadoc/OpenAPIs/index.hml\">Forbidden link</a>\n" +
@@ -810,14 +809,14 @@ public class CheckLicenseTest extends NbTestCase {
         String script = createScript();
         
     
-        PublicPackagesInProjectizedXMLTest.execute (
-            PublicPackagesInProjectizedXMLTest.extractString(script), 
+        execute (
+            extractString(script), 
             new String[] { 
             "-Ddir=" + license.getParent(),  
             "-Dinclude=" + license.getName(),
         });
         
-        String out = PublicPackagesInProjectizedXMLTest.readFile(license);
+        String out = readFile(license);
 
 
         if (out.indexOf("Sun Public") >= 0) {

@@ -48,7 +48,6 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -329,6 +328,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if(wizardtype == TYPE_DB_APPLICATION) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
+                panelConfigureProjectTrue.setFinishPanel(false);
                 panels.add(panelConfigureProjectTrue);
                 WizardDescriptor.Panel<WizardDescriptor> masterPanel = createDatabaseMasterPanel();
                 if(masterPanel != null) {
@@ -498,18 +498,11 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setFullRemote(fullRemote);
             prjParams.setHostUID(hostUID);
 
-            if (wizardtype == TYPE_DB_APPLICATION) {
-//                String connection = (String)wiz.getProperty("connection"); // NOI18N
-//                String table = (String)wiz.getProperty("master"); // NOI18N
-//                List<String> columns = (List<String>)wiz.getProperty("masterColumns"); // NOI18N
-
-                Map<String, Object> params = new HashMap<String, Object>();
-                prjParams.setTemplateParams(params);
-            }
+            prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
             MakeProjectGenerator.createProject(prjParams);
             ConfigurationDescriptorProvider.recordCreatedProjectMetrics(confs);
-            FileObject dir = FileUtil.toFileObject(dirF);
+            FileObject dir = CndFileUtils.toFileObject(dirF);
             resultSet.add(dir);
         }
         return resultSet;

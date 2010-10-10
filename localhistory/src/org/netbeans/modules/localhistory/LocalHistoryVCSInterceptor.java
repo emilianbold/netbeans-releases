@@ -210,7 +210,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(file)) {
             return;
         }
-        storeFile(file);
+        storeFile(file, true);
     }
 
     public void afterChange(File file) {
@@ -220,7 +220,11 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     private void storeFile(File file) {
-        getStore().fileChange(file, file.lastModified());
+        storeFile(file, false);
+    }
+    
+    private void storeFile(File file, boolean handleAsync) {
+        getStore().fileChange(file, handleAsync, file.lastModified());
     }
 
     private Map<String, StorageMoveHandler> getMoveHandlerMap() {

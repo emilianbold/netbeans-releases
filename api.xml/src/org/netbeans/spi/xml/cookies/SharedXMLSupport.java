@@ -53,12 +53,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import javax.swing.text.Document;
 
-import org.openide.cookies.*;
-import org.openide.util.*;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.ErrorManager;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
@@ -78,6 +74,8 @@ import org.netbeans.api.xml.parsers.*;
  * @see         ValidateXMLSupport
  */
 class SharedXMLSupport {
+
+    private static final Logger LOG = Logger.getLogger(SharedXMLSupport.class.getName());
 
     // it will viasualize our results
     private CookieObserver console;
@@ -498,7 +496,7 @@ class SharedXMLSupport {
                     javax.xml.transform.Source src = ((javax.xml.transform.URIResolver)res).resolve(ns, null);
                     if (src!=null) loc.add(ns+" "+src.getSystemId()); //NOI18N
                 } catch (Exception x) {
-                    Logger.getLogger(SharedXMLSupport.class.getName()).log(Level.INFO, "Could not load schema for " + ns, x);
+                    LOG.log(Level.INFO, "Could not load schema for " + ns, x);
                 }
             }
         }
@@ -526,9 +524,9 @@ class SharedXMLSupport {
             }
             xmlReader.parse(is);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.FINE, null, ex);
         } catch (SAXException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            LOG.log(Level.FINE, null, ex);
         }
         return handler;
     }

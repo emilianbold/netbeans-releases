@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -196,13 +197,14 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File projectDir = File.createTempFile(projectDirShortName + "_", "", getWorkDir());
         projectDir.delete();
         instantiateSample(sampleName, projectDir);
-        FileObject projectDirFO = FileUtil.toFileObject(projectDir);
+        FileObject projectDirFO = CndFileUtils.toFileObject(projectDir);
         ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
         MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         File makefile = new File(projectDir, "Makefile");
-        FileObject makefileFileObject = FileUtil.toFileObject(makefile);
+        FileObject makefileFileObject = CndFileUtils.toFileObject(makefile);
         assertTrue("makefileFileObject == null", makefileFileObject != null);
+        assertTrue("makefileFileObject is invalid", makefileFileObject.isValid());
         DataObject dObj = null;
         try {
             dObj = DataObject.find(makefileFileObject);
@@ -281,7 +283,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         setDefaultCompilerSet(toolchain.ID);
         assertEquals("Wrong tools collection", toolchain.ID, CompilerSetManager.get(execEnv).getDefaultCompilerSet().getName());
         assertTrue(projectDirFile.exists());
-        FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
+        FileObject projectDirFO = CndFileUtils.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         //changeProjectHost(makeProject, execEnv);
         assertNotNull("project is null", makeProject);

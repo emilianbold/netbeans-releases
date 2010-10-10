@@ -187,4 +187,10 @@ public final class ProjectImpl implements ProjectProperties {
     public String getCompilerName() {
         return "";
     }
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        // now projects do not divided by language standards
+        return LanguageStandard.Unknown;
+    }
 }

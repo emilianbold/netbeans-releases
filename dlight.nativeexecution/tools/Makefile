@@ -45,12 +45,13 @@ INSTALLDIR = /dev/null
 testit :sh= uname -s
 
 #CFLAGS-Windows_XP := -mno-cygwin
-CFLAGS-Linux := -fPIC
+CFLAGS-Linux := -fPIC -Wl,--hash-style=sysv
 CFLAGS-SunOS := -fPIC
 CFLAGS-Mac_OS_X := -fPIC
 LDFLAGS-SunOS := -lposix4
 FLAG64:=$(shell (echo ${PLATFORM_DIR} | grep 64 >/dev/null && echo -m64) || echo -m32)
 
+CFLAGS := $(CFLAGS-$(OSFAMILY))
 LDFLAGS := $(LDFLAGS-$(OSFAMILY))
 
 DIST=../release/bin/nativeexecution

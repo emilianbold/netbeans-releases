@@ -94,7 +94,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -163,13 +162,22 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return parent;
     }
 
-    /** Creates a new instance of TreeNode */
     public TreeNode(CompilationInfo info, TreePath tree, List<Node> nodes) {
         super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes), Lookups.singleton(tree.getLeaf()));
         this.tree = tree;
         this.info = info;
         this.synthetic = info.getTreeUtilities().isSynthetic(tree);
-        setDisplayName(tree.getLeaf().getKind().toString() + ":" + tree.getLeaf().toString()); //NOI18N
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(tree.getCompilationUnit(), tree.getLeaf());
+        int end   = (int) info.getTrees().getSourcePositions().getEndPosition(tree.getCompilationUnit(), tree.getLeaf());
+        String text;
+
+        if (start >= 0 && end >= 0 && end > start) {
+            text = info.getText().substring(start, end + 1);
+        } else {
+            text = tree.getLeaf().toString();
+        }
+
+        setDisplayName(tree.getLeaf().getKind().toString() + ":" + text); //NOI18N
         setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/tree.png"); //NOI18N
     }
 
@@ -205,14 +213,14 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return -1;
     }
     
-    private static final class NodeChilren extends Children.Keys {
+    private static final class NodeChilren extends Children.Keys<Node> {
         
         public NodeChilren(List<Node> nodes) {
             setKeys(nodes);
         }
         
-        protected Node[] createNodes(Object key) {
-            return new Node[] {(Node) key};
+        protected Node[] createNodes(Node key) {
+            return new Node[] {key};
         }
         
     }
@@ -845,7 +853,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             Element el = info.getTrees().getElement(getCurrentPath());
             
             if (el != null) {
-                below.add(new ElementNode(info, el, Collections.EMPTY_LIST));
+                below.add(new ElementNode(info, el, Collections.<Node>emptyList()));
             } else {
                 below.add(new NotFoundElementNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Element")));
             }

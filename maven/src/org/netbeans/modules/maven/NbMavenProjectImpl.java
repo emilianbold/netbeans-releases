@@ -127,6 +127,7 @@ import org.netbeans.modules.maven.execute.DefaultReplaceTokenProvider;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.execute.ReactorChecker;
 import org.netbeans.modules.maven.problems.RevalidateAction;
+import org.netbeans.modules.maven.queries.MavenAnnotationProcessingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileEncodingQueryImpl;
 import org.netbeans.modules.maven.queries.MavenFileLocator;
@@ -949,6 +950,7 @@ public final class NbMavenProjectImpl implements Project {
                     new MavenSourcesImpl(this),
                     new RecommendedTemplatesImpl(this),
                     new MavenSourceLevelImpl(this),
+                    new MavenAnnotationProcessingQueryImpl(this),
                     problemReporter,
                     watcher,
                     new MavenFileEncodingQueryImpl(this),

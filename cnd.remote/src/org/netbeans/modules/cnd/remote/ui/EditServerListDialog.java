@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.toolchain.ui.Save;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
@@ -81,7 +82,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author  gordonp
  */
-public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
+public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, Save {
 
     private DefaultListModel model;
     private DialogDescriptor desc;
@@ -373,6 +374,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 this.revalidateRecord(getSelectedRecord(), null, false);
             }
         }
+    }
+
+    @Override
+    public void save(ToolsCacheManager cacheManager) {
+        cacheManager.setHosts(getHosts());
+        cacheManager.setDefaultRecord(getDefaultRecord());
     }
 
     private RemoteServerRecord getSelectedRecord() {

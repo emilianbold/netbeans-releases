@@ -39,6 +39,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven;
 
 import java.io.IOException;
@@ -56,7 +57,6 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.cookies.EditCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataObject;
@@ -88,58 +88,41 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
     private Date timeStamp = new Date(0);
     private Document cachedDoc;
 
-    /** Creates a new instance of M2AuxilaryConfigImpl */
     public M2AuxilaryConfigImpl(NbMavenProjectImpl proj) {
         this.project = proj;
         savingTask = RequestProcessor.getDefault().create(new Runnable() {
-
-            public void run() {
+            public @Override void run() {
                 try {
                     project.getProjectDirectory().getFileSystem().runAtomicAction(new AtomicAction() {
-                        public void run() throws IOException {
-                            FileLock lck = null;
-                            OutputStream out = null;
+                        public @Override void run() throws IOException {
+                            FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
+                            if (config == null) {
+                                config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
+                            }
+                            Document doc;
+                            synchronized (M2AuxilaryConfigImpl.this) {
+                                doc = scheduledDocument;
+                                if (doc == null) {
+                                    return;
+                                }
+                                scheduledDocument = null;
+                            }
+                            OutputStream out = config.getOutputStream();
                             try {
-                                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
-                                if (config == null) {
-                                    config = project.getProjectDirectory().createData(CONFIG_FILE_NAME);
-                                }
-                                Document doc;
-                                synchronized (M2AuxilaryConfigImpl.this) {
-                                    //do saving here..
-                                    doc = scheduledDocument;
-                                    scheduledDocument = null;
-
-                                    lck = config.lock();
-                                }
-                                out = config.getOutputStream(lck);
                                 XMLUtil.write(doc, out, "UTF-8"); //NOI18N
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
                             } finally {
-                                if (out != null) {
-                                    try {
-                                        out.close();
-                                    } catch (IOException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                }
-                                if (lck != null) {
-                                    lck.releaseLock();
-                                }
+                                out.close();
                             }
                         }
                     });
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-
-
             }
         });
     }
 
-    public synchronized Element getConfigurationFragment(final String elementName, final String namespace, boolean shared) {
+    public @Override synchronized Element getConfigurationFragment(final String elementName, final String namespace, boolean shared) {
         if (shared) {
             //first check the document schedule for persistence
             if (scheduledDocument != null) {
@@ -215,7 +198,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         }
     }
 
-    public synchronized void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
+    public @Override synchronized void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
         Document doc = null;
         FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
         if (shared) {
@@ -279,7 +262,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     }
 
-    public synchronized boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
+    public @Override synchronized boolean removeConfigurationFragment(final String elementName, final String namespace, final boolean shared) throws IllegalArgumentException {
         Document doc = null;
         FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
         if (shared) {
@@ -352,7 +335,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
         }
 
 
-        public void actionPerformed(ActionEvent e) {
+        public @Override void actionPerformed(ActionEvent e) {
             if (fo != null) {
                 try {
                     DataObject dobj = DataObject.find(fo);

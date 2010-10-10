@@ -371,32 +371,13 @@ public class DiscoveryProjectGenerator {
         return res;
     }
 
-    private Map<String,Folder> prefferedFolders(){
-        Map<String,Folder> folders = new HashMap<String,Folder>();
-        for(Item item : projectBridge.getAllSources()){
-            String path = item.getAbsPath();
-            if (Utilities.isWindows()) {
-                path = path.replace('\\', '/');
-            }
-            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
-                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
-            }
-            int i = path.lastIndexOf('/');
-            if (i >= 0){
-                String folder = path.substring(0,i);
-                folders.put(folder,item.getFolder());
-            }
-        }
-        return folders;
-    }
-
     private void addAdditional(Folder folder, String base, Set<Item> usedItems){
         Set<String> folders = getSourceFolders();
         Set<String> used = new HashSet<String>();
         Set<String> needAdd = new HashSet<String>();
         Set<String> needCheck = new HashSet<String>();
         List<String> list = wizard.getIncludedFiles();
-        Map<String,Folder> preffered = prefferedFolders();
+        Map<String,Folder> preffered = projectBridge.prefferedFolders();
         for (String name : list){
             used.add(name);
             String path = projectBridge.getRelativepath(name);
@@ -452,7 +433,18 @@ public class DiscoveryProjectGenerator {
         }
         if (needAdd.size()>0) {
             AbstractRoot additional = UnusedFactory.createRoot(needAdd);
-            addAdditionalFolder(folder, additional);
+            Folder rootCandidate = null;
+            String root = additional.getFolder();
+            int i = root.lastIndexOf('/');
+            if (i > 0) {
+                Map<String, Folder> prefferedFolders = projectBridge.prefferedFolders();
+                root = root.substring(0,i);
+                rootCandidate = prefferedFolders.get(root);
+            }
+            if (rootCandidate == null) {
+                rootCandidate = folder;
+            }
+            addAdditionalFolder(rootCandidate, additional);
         }
         // remove unused
         List<ProjectConfiguration> projectConfigurations = wizard.getConfigurations();
@@ -555,7 +547,7 @@ public class DiscoveryProjectGenerator {
     }
 
     private void setupFile(FileConfiguration config, Item item, ItemProperties.LanguageKind lang) {
-        projectBridge.setSourceTool(item,lang);
+        projectBridge.setSourceTool(item,lang, config.getLanguageStandard());
         if ("file".equals(level)){ // NOI18N
             Set<String> set = new HashSet<String>();
             Map<String,String> macros = new HashMap<String,String>();
@@ -722,7 +714,7 @@ public class DiscoveryProjectGenerator {
 
 
     private List<Pair> detectOrphan(final Map<String, Set<Pair>> configurationStructure, ItemProperties.LanguageKind lang) {
-        Map<String,Folder> preffered = prefferedFolders();
+        Map<String,Folder> preffered = projectBridge.prefferedFolders();
         List<Pair> orphan = new ArrayList<Pair>();
         for(Map.Entry<String,Set<Pair>> entry : configurationStructure.entrySet()){
             Set<Pair> files = entry.getValue();

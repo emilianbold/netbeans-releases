@@ -91,12 +91,10 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -109,6 +107,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -149,8 +148,8 @@ public final class ReferencesSupport {
     public static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
         File file = new File(absPath);
         // convert file into file object
-        FileObject fileObject = FileUtil.toFileObject(file);
-        if (fileObject == null) {
+        FileObject fileObject = CndFileUtils.toFileObject(file);
+        if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
         DataObject dataObject = DataObject.find(fileObject);
@@ -159,13 +158,7 @@ public final class ReferencesSupport {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
 
-        StyledDocument doc = null;
-        try {
-            doc = cookie.openDocument();
-        } catch (UserQuestionException ex) {
-            ex.confirmed();
-            doc = cookie.openDocument();
-        }
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
 
         return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
@@ -174,7 +167,7 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
+    static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
         CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
         return csmOwner;
     }
@@ -470,10 +463,7 @@ public final class ReferencesSupport {
         } else {
             CsmFile file = ref.getContainingFile();
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
-            Document doc = null;
-            if (ces != null) {
-                doc = ces.getDocument();
-            }
+            Document doc = CsmUtilities.openDocument(ces);
             return doc instanceof BaseDocument ? (BaseDocument) doc : null;
         }
     }
@@ -688,22 +678,22 @@ public final class ReferencesSupport {
 
         @Override
         public CsmReferenceKind getKind() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmObject getReferencedObject() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmObject getOwner() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
@@ -718,17 +708,22 @@ public final class ReferencesSupport {
 
         @Override
         public Position getStartPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public Position getEndPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
         @Override
         public CharSequence getText() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported.");// NOI18N 
         }
     }
 }

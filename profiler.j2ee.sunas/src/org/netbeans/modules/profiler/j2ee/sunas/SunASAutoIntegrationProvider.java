@@ -93,33 +93,32 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.sunas.Bundle"); // NOI18N
-    private static final String PATH_TO_JVM_DIR_TEXT = messages.getString("SunAS8IntegrationProvider_PathToJvmDirText"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = messages.getString("SunAS8IntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_50_MSG = messages.getString("SunAS8IntegrationProvider_ManualRemoteStep450Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = messages.getString("SunAS8IntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = messages.getString("SunAS8IntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP7_MSG = messages.getString("SunAS8IntegrationProvider_ManualRemoteStep7Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = messages.getString("SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_DYNAMIC_STEP2_50_MSG = messages.getString("SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MSG = messages.getString("SunAS8IntegrationProvider_ManualDirectStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = messages.getString("SunAS8IntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP5_MSG = messages.getString("SunAS8IntegrationProvider_ManualDirectStep5Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP3_MSG = messages.getString("SunAS8IntegrationProvider_ManualDynamicStep3Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP1_MSG = messages.getString("SunAS8IntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP2_MSG = messages.getString("SunAS8IntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP3_DIRECT_MSG = messages.getString("SunAS8IntegrationProvider_IntegrReviewStep3DirectMsg"); // NOI18N
-    private static final String INTEGR_REVIEW_STEP3_DYNAMIC_MSG = messages.getString("SunAS8IntegrationProvider_IntegrReviewStep3DynamicMsg"); // NOI18N
-    private static final String RESTORE_SETTINGS_WARNING_MSG = messages.getString("SunAS8IntegrationProvider_RestoreSettingsWarningMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP2_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
-    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = messages.getString("SunAS8IntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
-    private static final String ENTER_INSTALL_DIR_MSG = messages.getString("SunAS8IntegrationProvider_EnterInstallDirMsg"); // NOI18N
-    private static final String INVALID_INSTALL_DIR_MSG = messages.getString("SunAS8IntegrationProvider_InvalidInstallDirMsg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("SunASIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String PATH_TO_JVM_DIR_TEXT = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_PathToJvmDirText"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_50_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep450Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP7_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualRemoteStep7Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP1_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectDynamicStep1Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_DYNAMIC_STEP2_50_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectDynamicStep250Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep3Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep4Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP5_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDirectStep5Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP3_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_ManualDynamicStep3Msg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP1_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep1Msg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP2_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep2Msg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP3_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep3DirectMsg"); // NOI18N
+    private static final String INTEGR_REVIEW_STEP3_DYNAMIC_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_IntegrReviewStep3DynamicMsg"); // NOI18N
+    private static final String RESTORE_SETTINGS_WARNING_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_RestoreSettingsWarningMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP1_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep1DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP1_DYNAMIC_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep1DynamicMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP2_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep2Msg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DIRECT_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep3DirectMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_STEP3_DYNAMIC_PID_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsStep3DynamicPidMsg"); // NOI18N
+    private static final String ADDITIONAL_STEPS_AUTO_START_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_AdditionalStepsAutoStartMsg"); // NOI18N
+    private static final String ENTER_INSTALL_DIR_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_EnterInstallDirMsg"); // NOI18N
+    private static final String INVALID_INSTALL_DIR_MSG = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunAS8IntegrationProvider_InvalidInstallDirMsg"); // NOI18N
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(SunASAutoIntegrationProvider.class, "SunASIntegrationProvider_DynamicWarningMessage"); // NOI18N  
                                                                                                                                 // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Constants">

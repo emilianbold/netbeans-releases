@@ -238,51 +238,13 @@ public class SwitchLookupTest extends NbTestCase {
     
     public void testReadFromSpecialFolders() throws Exception {
         TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
-        TestUtilities.createFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
         TestUtilities.sleepForWhile();
 
         Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
-        Collection instances = lookup.lookupAll(DummySetting.class);
+        Collection instances = lookup.lookupAll(DummySettingWithPath.class);
         
         assertEquals("Wrong number of instances", 1, instances.size());
         assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
-    }
-
-    // test that adding/removing a Class2LayerFolder provider updates the lookup for its class
-    
-    public void testChangeInMappers() throws Exception {
-        TestUtilities.createFile(getWorkDir(), "Editors/text/x-java/DummyFolder/org-netbeans-modules-editor-mimelookup-impl-DummySettingImpl.instance");
-        TestUtilities.sleepForWhile();
-
-        Lookup lookup = new SwitchLookup(MimePath.parse("text/x-jsp/text/x-java"));
-        Lookup.Result result = lookup.lookupResult(DummySetting.class);
-        L listener = new L();
-        
-        result.addLookupListener(listener);
-        Collection instances = result.allInstances();
-        
-        assertEquals("Wrong number of change events", 0, listener.resultChangedCnt);
-        assertEquals("Wrong number of instances", 0, instances.size());
-
-        // Add the mapper
-        TestUtilities.createFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        TestUtilities.sleepForWhile();
-
-        instances = result.allInstances();
-        assertEquals("Wrong number of change events", 1, listener.resultChangedCnt);
-        assertEquals("Wrong number of instances", 1, instances.size());
-        assertEquals("Wrong instance", DummySettingImpl.class, instances.iterator().next().getClass());
-        
-        // Reset the listener
-        listener.resultChangedCnt = 0;
-        
-        // Remove the mapper
-        TestUtilities.deleteFile(getWorkDir(), "Services/org-netbeans-modules-editor-mimelookup-impl-DummyClass2LayerFolder.instance");
-        TestUtilities.sleepForWhile();
-
-        assertEquals("Wrong number of change events", 1, listener.resultChangedCnt);
-        instances = result.allInstances();
-        assertEquals("Wrong number of instances", 0, instances.size());
     }
 
     private static final class L implements LookupListener {

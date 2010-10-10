@@ -60,6 +60,7 @@ import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyActionsManagerListener;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -244,6 +245,12 @@ implements PropertyChangeListener, DebuggerManagerListener {
         int i, k = bs.length;
         for (i = 0; i < k; i++)
             createBreakpointImpl (bs [i]);
+        Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
+        boolean doCatchExceptions = p.getBoolean("CatchExceptions", false);
+        if (doCatchExceptions) {
+            ExceptionBreakpoint eb = ExceptionBreakpoint.create(java.lang.Throwable.class.getName(), ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED);
+            createBreakpointImpl(eb);
+        }
     }
     
     private void removeBreakpointImpls () {

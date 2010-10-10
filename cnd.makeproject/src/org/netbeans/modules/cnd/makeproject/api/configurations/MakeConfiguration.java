@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,7 +65,6 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
-import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
@@ -74,8 +72,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryN
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -493,7 +491,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     private void fixupMasterLinks(MakeConfiguration makeConf) {
-        FileObject projectDirFO = FileUtil.toFileObject(new File(getBaseDir()));
+        FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
         Project project = null;
         try {
             project = ProjectManager.getDefault().findProject(projectDirFO);

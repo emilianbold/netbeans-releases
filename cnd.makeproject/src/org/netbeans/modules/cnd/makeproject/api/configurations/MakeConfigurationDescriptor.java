@@ -89,6 +89,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -234,7 +235,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 // in fact ProjectManager should solve such problems in more general way
                 // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
-                FileObject fo = FileUtil.toFileObject(new File(location));
+                FileObject fo = CndFileUtils.toFileObject(location);
                 project = ProjectManager.getDefault().findProject(fo);
             } catch (Exception e) {
                 // Should not happen
@@ -283,12 +284,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 srcFolder.addItem(new Item(mainFilePath));
-                if(mainFilePath.endsWith(".pc")) { // NOI18N
-                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
-                    String itemPath = CndPathUtilitities.normalize(mainFilePath.substring(0, mainFilePath.length() - 2) + cExtensions.getDefaultExtension());
-                    Item item = new Item(itemPath);
-                    srcFolder.addItemAction(item);
-                }
             }
         }
         // Handle test folders
@@ -725,7 +720,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = new File(metadataFiles.get(i));
+            File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
             if (!file.exists()) {
                 continue;
             }
@@ -1291,7 +1286,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Folder addFilesFromDir(Folder folder, File dir, boolean attachListeners, boolean setModified) {
         // XXX:fullRemote
-        return addFilesFromDir(folder, FileUtil.toFileObject(dir), attachListeners, setModified, null);
+        return addFilesFromDir(folder, CndFileUtils.toFileObject(dir), attachListeners, setModified, null);
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {

@@ -54,13 +54,12 @@ import java.util.Properties;
 import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
-import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author pzajac
  */
-public class FixTestDependenciesTest extends NbTestCase {
+public class FixTestDependenciesTest extends TestBase {
 
     public FixTestDependenciesTest(String testName) {
         super(testName);
@@ -76,7 +75,7 @@ public class FixTestDependenciesTest extends NbTestCase {
         ftd.cachedEntries = getEntries();
         ftd.execute();
 
-        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        String result = readFile(prjFile);
         int first = result.indexOf("test-dependencies");
         if (first == -1) {
             fail("No test deps found in " + result);
@@ -92,7 +91,7 @@ public class FixTestDependenciesTest extends NbTestCase {
     }
     public void testNoChangeForProjectsWithoutTests() throws IOException, Exception {
         File prjFile = copyFile("FixTestDependencies-o.apache.xml.resolver.xml");
-        String before = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        String before = readFile(prjFile);
         File propertiesFile = new File(getWorkDir(), "some.properties");
         Properties np = new Properties();
         np.put("is.autoload", "true");
@@ -103,7 +102,7 @@ public class FixTestDependenciesTest extends NbTestCase {
         ftd.cachedEntries = getEntries();
         ftd.execute();
 
-        String result = PublicPackagesInProjectizedXMLTest.readFile(prjFile);
+        String result = readFile(prjFile);
         assertEquals("No change expected", before, result);
     }
 

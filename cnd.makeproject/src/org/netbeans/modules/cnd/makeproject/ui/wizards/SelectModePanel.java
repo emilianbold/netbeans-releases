@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -110,8 +111,8 @@ public class SelectModePanel extends javax.swing.JPanel {
                 controller.getWizardStorage().setProjectPath(path);
                 if (!controller.isFullRemote()) {
                     if (!path.isEmpty()) {
-                        File file = FileUtil.normalizeFile(new File(path));
-                        controller.getWizardStorage().setSourcesFileObject(FileUtil.toFileObject(file));
+                        String normalizedPath = CndFileUtils.normalizeAbsolutePath(path);
+                        controller.getWizardStorage().setSourcesFileObject(CndFileUtils.toFileObject(normalizedPath));
                     }
                 }
                 updateInstruction();
@@ -135,7 +136,7 @@ public class SelectModePanel extends javax.swing.JPanel {
                 if (projectFolder.getText().isEmpty()) {
                     if (projectName != null && ! projectName.isEmpty() ) {
                         File projectLocation = ProjectChooser.getProjectsFolder();
-                        File projectFile = new File(projectLocation, projectName);
+                        File projectFile = CndFileUtils.createLocalFile(projectLocation, projectName);
                         projectFolder.setText(projectFile.getAbsolutePath());
                     }
                 }
@@ -168,9 +169,9 @@ public class SelectModePanel extends javax.swing.JPanel {
                 if (configure != null) {
                     toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
                     tool = configure;
-                    File confFile = FileUtil.normalizeFile(new File(configure));
-                    FileObject fo = FileUtil.toFileObject(confFile);
-                    if (fo != null) {
+                    String normalizedPath = CndFileUtils.normalizeAbsolutePath(configure);
+                    FileObject fo = CndFileUtils.toFileObject(normalizedPath);
+                    if (fo != null && fo.isValid()) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
@@ -512,7 +513,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            File projectDirFile = FileUtil.normalizeFile(new File(path));
+            File projectDirFile = FileUtil.normalizeFile(CndFileUtils.createLocalFile(path)); // it's project folder - always local
             File projectDirParent = projectDirFile.getParentFile();
             // in the cse of full remote the directory should not necessarily exist, but its parent should
             File fileToCheck = controller.isFullRemote() ? projectDirParent : projectDirFile;
@@ -535,14 +536,16 @@ public class SelectModePanel extends javax.swing.JPanel {
                     path = fileToCheck.getAbsolutePath();
                     return false;
                 }
-                File nbFile = new File(new File(path, MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.PROJECT_XML); // NOI18N
+                File nbFile = CndFileUtils.createLocalFile(
+                        CndFileUtils.createLocalFile(path, MakeConfiguration.NBPROJECT_FOLDER),
+                        MakeConfiguration.PROJECT_XML);
                 if (nbFile.exists()) {
                     messageKind = alreadyNbPoject;
                     return false;
                 }
                 if (projectDirFile.isDirectory()) {
-                    FileObject fo = FileUtil.toFileObject(projectDirFile);
-                    if (fo != null) {
+                    FileObject fo = CndFileUtils.toFileObject(projectDirFile);
+                    if (fo != null && fo.isValid()) {
                         try {
                             if (ProjectManager.getDefault().findProject(fo) != null) {
                                 messageKind = alreadyNbPoject;

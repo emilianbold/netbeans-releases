@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -199,10 +200,10 @@ public class RemoteFileSupport extends NamedRunnable {
      */
     public final void ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
         // TODO: synchronization
-        if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+        if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
-                if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+                if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
                     syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir));
                     removeLock(dir);
                 }
@@ -243,7 +244,7 @@ public class RemoteFileSupport extends NamedRunnable {
                 if (directory) {
                     fileName = fixCaseSensitivePathIfNeeded(fileName);
                 }
-                File file = new File(dir, fileName);
+                File file = CndFileUtils.createLocalFile(dir, fileName);
                 try {
                     RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
                     if (directory) {
@@ -301,7 +302,7 @@ public class RemoteFileSupport extends NamedRunnable {
         }
 
         if (dirCreated.get()) {
-            File flag = new File(dir, FLAG_FILE_NAME);
+            File flag = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
             RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing

@@ -140,23 +140,25 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 model.sync();
                 // model.refresh();
             } catch (IOException ex) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
             }
 
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
 
             if (!model.getState().equals(Model.State.VALID)) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
                 return err;
             }
             if (model.getProject() == null) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model root element missing");
                 return err;
             }
             
             boolean isInTransaction = model.isIntransaction();
             if (! isInTransaction) {
-                if (! model.startTransaction()) return err;
+                if (! model.startTransaction()) {
+                    return err;
+                }
             }
             try {
                 Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
@@ -197,15 +199,15 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 model.sync();
                 model.refresh();
             } catch (IOException ex) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
             }
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             if (!model.getState().equals(Model.State.VALID)) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
                 return err;
             }
             if (model.getProject() == null) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model root element missing");
                 return err;
             }
 
