@@ -101,7 +101,7 @@ public class GridUtils {
      * @param rowNo requested number of rows.
      */
     public static void addPaddingComponents(GridManager manager, int columnNo, int rowNo) {
-        manager.updateLayout();
+        manager.updateLayout(false);
         boolean shouldPad = FormLoaderSettings.getInstance().getPadEmptyCells();
         if (!shouldPad) {
             return;

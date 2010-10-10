@@ -286,8 +286,16 @@ public class GridBagManager implements GridManager {
     }
 
     @Override
-    public void updateLayout() {
-        replicator.updateContainerLayout((RADVisualContainer)replicator.getTopMetaComponent());
+    public void updateLayout(boolean includingSubcontainers) {
+        RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
+        if (includingSubcontainers) {
+            for (RADVisualComponent metacomp : metacont.getSubComponents()) {
+                if (metacomp instanceof RADVisualContainer) {
+                    replicator.updateContainerLayout((RADVisualContainer)metacomp);
+                }
+            }
+        }
+        replicator.updateContainerLayout(metacont);
     }
 
     @Override

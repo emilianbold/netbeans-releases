@@ -204,7 +204,7 @@ public class UndoRedoSupport {
 
             // Undo/redo itself
             delegate.actionPerformed(null);
-            gridManager.updateLayout();
+            gridManager.updateLayout(true);
             
             // Remove deleted components from selection
             Set<Component> newSelection = new HashSet<Component>();
