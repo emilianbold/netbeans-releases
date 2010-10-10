@@ -103,13 +103,15 @@ public final class AddDriverDialog extends javax.swing.JPanel {
     
     private static final Logger LOGGER = Logger.getLogger(AddDriverDialog.class.getName());
     private JDBCDriver drv;
+    private final AddConnectionWizard wd;
 
     /** Creates new AddDriverDialog.
      * @param driverNode driver node to be customized or null to create a new one
      */
-    public AddDriverDialog(JDBCDriver driver, ChoosingDriverUI panel) {
+    public AddDriverDialog(JDBCDriver driver, ChoosingDriverUI panel, AddConnectionWizard wd) {
         this.drv = driver;
         this.wp = panel;
+        this.wd = wd;
         initComponents();
         // hack to force the progressContainerPanel honor its preferred height
         // without it, the preferred height is sometimes ignored during resize
@@ -671,7 +673,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         drvList.setEnabled(enable);
         // update status line and OK button
         String message = null;
-        if (drvList.getModel().getSize() == 0) {
+        if (drvs.isEmpty()) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
         } else if (drvClassComboBox.getEditor().getItem().toString().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
@@ -694,8 +696,14 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 descriptor.getNotificationLineSupport().clearMessages();
                 descriptor.setValid(true);
             }
+        } else if (wd != null) {
+            if (message != null) {
+                wd.getNotificationLineSupport().setInformationMessage(message);
+            } else {
+                wd.getNotificationLineSupport().clearMessages();
+            }
         } else {
-            Logger.getLogger(AddDriverDialog.class.getName()).log(Level.INFO, "DialogDescriptor is not set, message: " + message);
+            Logger.getLogger(AddDriverDialog.class.getName()).log(Level.INFO, "DialogDescriptor or wizard is not set, message: " + message);
         }
     }
 
@@ -705,9 +713,10 @@ public final class AddDriverDialog extends javax.swing.JPanel {
      * @return driver instance if user clicks OK, null otherwise
      */
     public static JDBCDriver showDialog(DriverNode driverNode) {
-        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver(), null);
+        AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver(), null, null);
 
         DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
+        //NOI18N
         descriptor.createNotificationLineSupport();
         dlgPanel.setDescriptor(descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);

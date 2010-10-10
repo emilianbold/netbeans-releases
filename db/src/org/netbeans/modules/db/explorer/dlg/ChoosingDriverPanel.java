@@ -192,7 +192,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
                 return null;
             }
             init();
-            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driver);
+            component = new ChoosingDriverUI(this, driverFileName, driverPath, downloadFrom, driver, pw);
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0);
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());

@@ -73,11 +73,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.JdbcUrl;
+import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
 
 public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
-    private ConnectionDialogMediator mediator;
+    private AddConnectionWizard wd;
     // private Vector templates;
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
@@ -86,16 +87,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
 
-    // keeps track of the user's last selection of whether or not to
-    // show the jdbc url.  
-    private boolean userSpecifiedShowUrl = false;
-    
     private final LinkedHashMap<String, UrlField> urlFields =
             new LinkedHashMap<String, UrlField>();
 
     private Set<String> knownConnectionNames = new HashSet<String>();
 
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
+    private final ConnectionPanel wp;
 
     private void initFieldMap() {
         // These should be in the order of display on the form, so that we correctly
@@ -112,15 +110,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public NewConnectionPanel(ConnectionDialogMediator mediator, String driverClass, DatabaseConnection connection) {
-        this.mediator = mediator;
+    public NewConnectionPanel(AddConnectionWizard wizard, ConnectionPanel panel, String driverClass, DatabaseConnection connection) {
+        this.wd = wizard;
         this.connection = connection;
+        this.wp = panel;
         initComponents();
         initAccessibility();
         initFieldMap();
-
-        // sets up colors and icons
-        errorInfoPanel.setup();
 
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
 
@@ -145,7 +141,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 stopProgress(false);
             }
         };
-        mediator.addConnectionProgressListener(progressListener);
+        wd.addConnectionProgressListener(progressListener);
 
         userField.setText(connection.getUser());
         
@@ -314,7 +310,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         dsnField = new javax.swing.JTextField();
         urlField = new javax.swing.JTextField();
         passwordCheckBox = new javax.swing.JCheckBox();
-        errorInfoPanel = new org.netbeans.modules.db.util.ErrorInfoPanel();
         directUrlLabel = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         bTestConnection = new javax.swing.JButton();
@@ -413,12 +408,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(errorInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 722, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -465,7 +459,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                                     .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE)
                                     .addComponent(bTestConnection)
                                     .addComponent(passwordCheckBox, javax.swing.GroupLayout.PREFERRED_SIZE, 256, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(directUrlLabel)
                         .addGap(65, 65, 65)
                         .addComponent(urlField, javax.swing.GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE)))
@@ -473,7 +467,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(templateLabel)
@@ -530,10 +524,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(urlField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(directUrlLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(errorInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }
 
@@ -624,8 +617,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }//GEN-LAST:event_templateComboBoxItemStateChanged
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
-        // TODO add your handling code here:
-
+       testConnection();
     }//GEN-LAST:event_bTestConnectionActionPerformed
 
 
@@ -636,7 +628,6 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private javax.swing.JLabel directUrlLabel;
     private javax.swing.JTextField dsnField;
     private javax.swing.JLabel dsnLabel;
-    private org.netbeans.modules.db.util.ErrorInfoPanel errorInfoPanel;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
     private javax.swing.ButtonGroup inputModeButtonGroup;
@@ -869,10 +860,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         // the user has changed some parameter, so if there's a connection it's
         // no longer in sync with the field data
-        mediator.closeConnection();
+        wd.closeConnection();
         
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
+        wp.fireChangeEvent();
     }
 
     private void updateUrlFromFields() {
@@ -963,13 +955,32 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     private void clearError() {
-        errorInfoPanel.clear();
-        mediator.setValid(true);
+        wd.getNotificationLineSupport().clearMessages();
+        wd.setValid(true);
+        wp.fireChangeEvent();
     }
 
     private void displayError(String message, boolean isError) {
-        errorInfoPanel.set(message, isError);
-        mediator.setValid(false);
+        wd.setValid(false);
+        wp.fireChangeEvent();
+        if (isError) {
+            wd.getNotificationLineSupport().setErrorMessage(message);
+        } else {
+            wd.getNotificationLineSupport().setInformationMessage(message);
+        }
+    }
+
+    public void testConnection() {
+        try {
+            wp.validate();
+            displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.ConnectionPassed"), false); // NOI18N
+        } catch (WizardValidationException ex) {
+            displayError(ex.getLocalizedMessage(), true);
+        }
+    }
+
+    boolean valid() {
+        return wd.getValid();
     }
 
     private class UrlField {

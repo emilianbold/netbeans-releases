@@ -71,7 +71,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
     private ChoosingDriverPanel wp;
 
     /** Creates new form ChoosingDriverUI */
-    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, JDBCDriver driver) {
+    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, JDBCDriver driver, AddConnectionWizard pw) {
         this.drv = driver;
         this.driverFileName = driverFileName;
         this.driverPath = driverPath;
@@ -94,7 +94,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 }
             }
         }
-        customizeDriverPanel = new AddDriverDialog(drv, this);
+        customizeDriverPanel = new AddDriverDialog(drv, this, pw);
         pInter.add(customizeDriverPanel, BorderLayout.CENTER);
         actionListener = new ActionListener() {
             @Override

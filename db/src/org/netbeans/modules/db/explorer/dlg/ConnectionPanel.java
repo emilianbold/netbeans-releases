@@ -107,7 +107,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
                 Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, x.getLocalizedMessage(), x.getCause());
             }
             databaseConnection.setRememberPassword(databaseConnection.getPassword() != null && ! databaseConnection.getPassword().isEmpty());
-            component = new NewConnectionPanel(pw, drv.getClassName(), databaseConnection);
+            component = new NewConnectionPanel(pw, this, drv.getClassName(), databaseConnection);
             oldDriver = drv;
             JComponent jc = (JComponent) component;
             jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 1);
@@ -131,13 +131,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
 
     @Override
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-        // If it depends on some condition (form filled out...), then:
-        // return someCondition();
-        // and when this condition changes (last form field filled in...) then:
-        // fireChangeEvent();
-        // and uncomment the complicated stuff below.
+        return component != null && component.valid();
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
@@ -156,6 +150,9 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     }
 
     protected final void fireChangeEvent() {
+        if (component == null) {
+            return ;
+        }
         Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();

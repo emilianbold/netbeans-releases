@@ -59,6 +59,7 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.action.ConnectUsingDriverAction;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -90,6 +91,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private String currentSchema;
     private JDBCDriver jdbcDriver;
     private boolean increase = false;
+    private WizardDescriptor wd;
 
     private AddConnectionWizard(String driverName, String driverClass, String databaseUrl, String user, String password) {
         assert driverName != null || (driverClass == null && databaseUrl == null && user== null && password == null)
@@ -108,14 +110,14 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     }
     
     private void openWizard() {
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(this, this);
+        wd = new WizardDescriptor(this, this);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
-        wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle(NbBundle.getMessage(AddConnectionWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
+        wd.setTitleFormat(new MessageFormat("{0}"));
+        wd.setTitle(NbBundle.getMessage(AddConnectionWizard.class, "PredefinedWizard.WizardTitle")); // NOI18N
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(wd);
         dialog.setVisible(true);
         dialog.toFront();
-        boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
+        boolean cancelled = wd.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
             assert getDatabaseConnection() != null : "DatabaseConnection found.";
             DatabaseConnection conn = getDatabaseConnection();
@@ -353,5 +355,9 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.defaultSchema = ""; // NOI18N
             }
         }
+    }
+
+    public NotificationLineSupport getNotificationLineSupport() {
+        return wd.getNotificationLineSupport();
     }
 }
