@@ -60,8 +60,8 @@ public class MakeProjectUtils {
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         if (project != null) {
             RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-            if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-                env = remoteProject.getRemoteFileSystemHost();
+            if (remoteProject != null) {
+                env = remoteProject.getSourceFileSystemHost();
             }
         }
         return env;

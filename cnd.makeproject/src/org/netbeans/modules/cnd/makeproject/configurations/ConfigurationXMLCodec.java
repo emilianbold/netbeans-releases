@@ -891,7 +891,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             return new Item(path); //XXX:fullRemote
         }
         if (remoteProject != null && remoteProject.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
-            FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getRemoteFileSystemHost());
+            FileObject itemFO = RemoteFileUtil.getFileObject(path, remoteProject.getSourceFileSystemHost());
             if (itemFO == null) {
                 return new Item(path); //XXX:fullRemote
             } else {

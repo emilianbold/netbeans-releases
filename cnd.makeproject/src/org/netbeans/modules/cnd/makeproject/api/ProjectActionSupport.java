@@ -63,8 +63,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
@@ -572,7 +572,8 @@ public class ProjectActionSupport {
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
                     executable = CndPathUtilitities.naturalize(executable);
-                    executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
                     executable = CndPathUtilitities.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
@@ -615,7 +616,7 @@ public class ProjectActionSupport {
                 if (conf != null && !conf.getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
-                        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                        PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
                         executable = mapper.getRemotePath(executable, true);
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);

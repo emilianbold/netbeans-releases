@@ -46,9 +46,11 @@ package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class PeExecutableFileFilter extends javax.swing.filechooser.FileFilter {
+public class PeExecutableFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     private static PeExecutableFileFilter instance = null;
 
@@ -75,6 +77,17 @@ public class PeExecutableFileFilter extends javax.swing.filechooser.FileFilter {
 		return true;
 	    }
 	    return f.getName().endsWith(".exe"); // NOI18N
+	}
+	return false;
+    }
+
+    @Override
+    public boolean accept(FileObject f) {
+	if (f != null) {
+	    if (f.isFolder()) {
+		return true;
+	    }
+	    return f.getExt().equals("exe"); // NOI18N
 	}
 	return false;
     }
