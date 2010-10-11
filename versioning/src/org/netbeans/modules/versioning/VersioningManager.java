@@ -276,7 +276,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
     public VersioningSystem getOwner(File file) {
-        LOG.log(Level.FINE, "looking for owner of " + file);
+        LOG.log(Level.FINE, "looking for owner of {0}", file);
                 
         /**
          * minor speed optimization, file.isFile may last a while, so try to acquire
@@ -417,6 +417,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refreshVersioningSystems();
     }
@@ -424,6 +425,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * Versioning status or other parameter changed. 
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
@@ -444,6 +446,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
     }
