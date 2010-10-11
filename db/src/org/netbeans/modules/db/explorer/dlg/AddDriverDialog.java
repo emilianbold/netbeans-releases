@@ -427,7 +427,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
 
         File[] selectedFiles = fileChooserBuilder.showMultiOpenDialog();
         if (selectedFiles != null) {
-            for (File file : selectedFiles) {
+            for (final File file : selectedFiles) {
                 if (file.isFile()) {
                     if (dlm.contains(file.toString())) {
                         // file already added
@@ -446,6 +446,31 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                                 "Unable to add driver jar file " +
                                 file.getAbsolutePath() +
                                 ": can not convert to URL", exc);
+                    }
+                    if (wd != null) {
+                        boolean privileged = wd.getAllPrivilegedNames().isEmpty();
+                        for (String name : wd.getAllPrivilegedNames()) {
+                            if (file.getName().startsWith(name)) {
+                                privileged = true;
+                                break;
+                            }
+                        }
+                        if (privileged) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyUser(null, false);
+                                }
+                            });
+                        } else {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    notifyUser(NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialog_NotPrivilegedDriver", // NOI18N
+                                            file.getName(), wd.getPrivilegedName()), true);
+                                }
+                            });
+                        }
                     }
                 }
             }
@@ -663,9 +688,17 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 }
             }
         }
+        notifyUser(message, false);
+    }
+
+    private void notifyUser(String message, boolean isWarning) {
         if (descriptor != null) {
             if (message != null) {
-                descriptor.getNotificationLineSupport().setInformationMessage(message);
+                if (isWarning) {
+                    descriptor.getNotificationLineSupport().setWarningMessage(message);
+                } else {
+                    descriptor.getNotificationLineSupport().setInformationMessage(message);
+                }
                 descriptor.setValid(false);
             } else {
                 descriptor.getNotificationLineSupport().clearMessages();
@@ -673,12 +706,16 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             }
         } else if (wd != null) {
             if (message != null) {
-                wd.getNotificationLineSupport().setInformationMessage(message);
+                if (isWarning) {
+                    wd.getNotificationLineSupport().setWarningMessage(message);
+                } else {
+                    wd.getNotificationLineSupport().setInformationMessage(message);
+                }
             } else {
                 wd.getNotificationLineSupport().clearMessages();
             }
         } else {
-            Logger.getLogger(AddDriverDialog.class.getName()).log(Level.INFO, "DialogDescriptor or wizard is not set, message: " + message);
+            Logger.getLogger(AddDriverDialog.class.getName()).log(Level.INFO, "DialogDescriptor or wizard is not set, cannot display message: " + message);
         }
     }
 

@@ -47,9 +47,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -76,7 +78,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     
     private String driverName;
     private String downloadFrom;
-    private String driverFileName;
+    private final Set<String> allPrivilegedFileNames = new HashSet<String>();
+    private String privilegedFileName;
     private String[] steps;
     private WizardDescriptor.Panel<AddConnectionWizard>[] panels;
     private int index;
@@ -149,7 +152,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 if (jars != null && jars.length > 0) {
                         FileObject jarFO = URLMapper.findFileObject(jars[0]);
                         if (jarFO != null && jarFO.isValid()) {
-                            this.driverFileName = jarFO.getNameExt();
+                            this.allPrivilegedFileNames.add(jarFO.getNameExt());
                             this.jdbcDriver = drv;
                             this.increase = true;
                         }
@@ -305,11 +308,12 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         return downloadFrom;
     }
 
-    Collection<String> getSupportedNames() {
-        if (this.driverFileName == null) {
-            return Collections.emptyList();
-        }
-        return Collections.singleton(this.driverFileName);
+    Collection<String> getAllPrivilegedNames() {
+        return this.allPrivilegedFileNames;
+    }
+
+    String getPrivilegedName() {
+        return this.privilegedFileName;
     }
 
     @Override
@@ -352,7 +356,12 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
                 this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
-                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N
+                this.allPrivilegedFileNames.clear();
+                this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N
+                StringTokenizer st = new StringTokenizer(NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name.prefix"), ","); // NOI18N
+                while (st.hasMoreTokens()) {
+                    this.allPrivilegedFileNames.add(st.nextToken().trim());
+                }
             } else if (driverName.contains("MySQL")) { // NOI18N
                 this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName"); // NOI18N
                 this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass"); // NOI18N
@@ -361,7 +370,12 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password; // NOI18N
                 this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from"); // NOI18N
-                this.driverFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name"); // NOI18N
+                this.allPrivilegedFileNames.clear();
+                this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name"); // NOI18N
+                StringTokenizer st = new StringTokenizer(NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name.prefix"), ","); // NOI18N
+                while (st.hasMoreTokens()) {
+                    this.allPrivilegedFileNames.add(st.nextToken().trim());
+                }
             } else {
                 // others
                 this.driverClass = driverClass;
@@ -371,7 +385,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.defaultSchema = ""; // NOI18N
                 this.downloadFrom = null;
                 this.driverDN = null;
-                this.driverFileName = null;
+                this.privilegedFileName = ""; // NOI18N
+                this.allPrivilegedFileNames.clear();
             }
         }
     }
