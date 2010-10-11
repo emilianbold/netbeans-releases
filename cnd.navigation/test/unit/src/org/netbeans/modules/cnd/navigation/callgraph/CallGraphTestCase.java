@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 public class CallGraphTestCase extends ProjectBasedTestCase {
 
     public CallGraphTestCase(String testName) {
-        super(testName);
+        super(testName, true);
     }
 
     @Override
