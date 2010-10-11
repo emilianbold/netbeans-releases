@@ -75,6 +75,7 @@ import java.util.ArrayList;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +87,9 @@ import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
 * ToolTip annotations reading and refreshing
@@ -146,73 +149,14 @@ public class NbToolTip extends FileChangeAdapter {
         }
         
         if (annos == null) {
-
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Searching for tooltip annotations for mimeType = '" + mimeType + "'"); //NOI18N
             }
-
-            // XXX: should use Class2LayerFolder and InstanceProvider
-            FileObject annoFolder = FileUtil.getConfigFile("Editors/" + mimeType + "/ToolTips"); //NOI18N
-        
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("tooltip annotation folder = '" + annoFolder + "'"); //NOI18N
-            }
-
-            if (annoFolder != null) {
-                ArrayList<Annotation> al = new ArrayList<Annotation>();
-                Enumeration en = annoFolder.getChildren(false);
-                while (en.hasMoreElements()) {
-                    FileObject fo = (FileObject)en.nextElement();
-                    
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("tooltip annotation fileobject=" + fo); //NOI18N
-                    }
-
-                    try {
-                        DataObject dob = DataObject.find(fo);
-                        InstanceCookie ic = dob.getCookie(InstanceCookie.class);
-
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("tooltip annotation instanceCookie=" + ic); //NOI18N
-                        }
-
-                        if (ic != null) {
-                            Object a = ic.instanceCreate();
-
-                            if (LOG.isLoggable(Level.FINE)) {
-                                LOG.fine("tooltip annotation instance=" + a); //NOI18N
-                            }
-
-                            if (a instanceof Annotation) {
-                                if (LOG.isLoggable(Level.FINE)) {
-                                    LOG.fine("Found tooltip annotation = " + a //NOI18N
-                                        + ", class = " + a.getClass() // NOI18N
-                                        + " for mimeType = '" + mimeType + "'"// NOI18N
-                                    );
-                                }
-                                
-                                al.add((Annotation)a);
-                            }
-                        }
-                    } catch (DataObjectNotFoundException donfe) {
-                        LOG.log(Level.FINE, null, donfe);
-                    } catch (IOException ioe) {
-                        LOG.log(Level.FINE, null, ioe);
-                    } catch (ClassNotFoundException cnfe) {
-                        LOG.log(Level.FINE, null, cnfe);
-                    }
-                }
-                
-                annos = al.toArray(new Annotation[al.size()]);
-                synchronized (NbToolTip.class) {
-                    tipAnnotations = annos;
-                }
-                
-                annoFolder.addFileChangeListener(this);
-            } else {
-                synchronized (NbToolTip.class) {
-                    tipAnnotations = new Annotation[0];
-                }
+            Lookup l = Lookups.forPath("Editors/" + mimeType + "/ToolTips");  //NOI18N
+            Collection<? extends Annotation> res = l.lookupAll(Annotation.class);
+            annos = res.toArray(new Annotation[res.size()]);
+            synchronized (NbToolTip.class) {
+                tipAnnotations = annos;
             }
         }
         

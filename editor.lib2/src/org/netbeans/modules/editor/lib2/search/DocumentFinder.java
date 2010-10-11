@@ -210,9 +210,15 @@ public class DocumentFinder
         boolean blockSearch = (b != null && b.booleanValue());
         Position blockStartPos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_START);
         int blockSearchStartOffset = (blockStartPos != null) ? blockStartPos.getOffset() : 0;
+        if (blockSearchStartOffset > doc.getLength()) {
+            blockSearchStartOffset = 0;
+        }
         Position pos = (Position) props.get(EditorFindSupport.FIND_BLOCK_SEARCH_END);
         int blockSearchEndOffset = (pos != null) ? pos.getOffset() : doc.getLength();
-
+        if (blockSearchEndOffset > doc.getLength()) {
+            blockSearchEndOffset = doc.getLength();
+        }
+        
         if (blockSearchStartOffset > blockSearchEndOffset) {
             LOG.log(Level.WARNING, "end="+blockSearchEndOffset+" < start="+blockSearchStartOffset);
             //Changing places start and end block position
