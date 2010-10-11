@@ -46,9 +46,11 @@ package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class ConfigureFileFilter extends javax.swing.filechooser.FileFilter {
+public class ConfigureFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     private static ConfigureFileFilter instance = null;
 
@@ -74,11 +76,29 @@ public class ConfigureFileFilter extends javax.swing.filechooser.FileFilter {
             if(f.isDirectory()) {
                 return true;
             }
-            if (f.getName().equals("configure")) { // NOI18N
+            return accept(f.getName());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean accept(FileObject f) {
+        if(f != null) {
+            if(f.isFolder()) {
                 return true;
-            } else if (f.getName().equals("CMakeLists.txt")) { // NOI18N
+            }
+            return accept(f.getNameExt());
+        }
+        return false;
+    }
+
+    private boolean accept(String name) {
+        if(name != null) {
+            if (name.equals("configure")) { // NOI18N
                 return true;
-            } else if (f.getAbsolutePath().endsWith(".pro")) { // NOI18N
+            } else if (name.equals("CMakeLists.txt")) { // NOI18N
+                return true;
+            } else if (name.endsWith(".pro")) { // NOI18N
                 return true;
             }
         }
