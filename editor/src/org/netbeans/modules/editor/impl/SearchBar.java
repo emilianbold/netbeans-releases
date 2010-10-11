@@ -665,6 +665,9 @@ public final class SearchBar extends JPanel {
     }
 
     private void looseFocus() {
+        if (!isVisible()) {
+            return;
+        }
         if (isPopupGoingToShow) {
             isPopupGoingToShow = false;
             return;
@@ -678,6 +681,7 @@ public final class SearchBar extends JPanel {
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
+        component.requestFocusInWindow();
     }
 
     private void incrementalSearch() {
