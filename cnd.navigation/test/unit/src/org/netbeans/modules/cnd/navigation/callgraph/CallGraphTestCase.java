@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -68,8 +67,20 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
     protected File getTestCaseDataDir() {
         return getQuoteDataDir();
+    }
+
+    @Override
+    protected File getUserDir() {
+        File userDir = super.getUserDir();
+        String path =userDir.getAbsolutePath().replace("cnd.modelimpl", "cnd.navigation/build");
+        return new File(path);
     }
 
     @Override
