@@ -642,6 +642,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg value="-ea"/>
                             <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>
