@@ -690,6 +690,7 @@ is divided into following sections:
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
+                            <jvmarg value="-ea"/>
                             <jvmarg line="${{run.jvmargs}}"/>
                         </junit>
                     </sequential>
