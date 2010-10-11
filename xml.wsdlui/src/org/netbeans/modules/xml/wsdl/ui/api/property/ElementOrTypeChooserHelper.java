@@ -250,6 +250,9 @@ public class ElementOrTypeChooserHelper extends ChooserHelper<SchemaComponent> {
             ArrayList<Node> nodeList = new ArrayList<Node>();
             for (CatalogEntry entry : entries) {
                 FileObject fo = helper.getFileObject(entry);
+                if (fo == null) {
+                    continue;
+                }
                 ModelSource modelSource = Utilities.getModelSource(fo, true);
                 if (modelSource != null) {
                     SchemaModel sModel =
