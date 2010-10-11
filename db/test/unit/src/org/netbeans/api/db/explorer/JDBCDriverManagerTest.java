@@ -96,27 +96,6 @@ public class JDBCDriverManagerTest extends DBTestBase {
         assertGC("Should be able to GC driver", driverRef);
     }
 
-    /**
-     * Tests that JDBCDriverManager allows to modify JDBCDriver
-     * using the {@link JDBCDriverManager#addDriver} method.
-     */
-    public void testModifyDriver() throws Exception {
-        Util.deleteDriverFiles();
-        assertEquals(0, JDBCDriverManager.getDefault().getDrivers().length);
-
-        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
-        JDBCDriverManager.getDefault().addDriver(driver);
-        assertSame(driver, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
-        JDBCDriver origDriver = JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0];
-        assertEquals("No URLs", 0, origDriver.getURLs().length);
-
-        JDBCDriver modifiedDriver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[] {new URL("http://www.netbeans.org")});
-        JDBCDriverManager.getDefault().addDriver(modifiedDriver);
-
-        assertSame(modifiedDriver, JDBCDriverManager.getDefault().getDrivers("org.bar.BarDriver")[0]);
-        assertEquals("New URL found in modified driver.", 1, modifiedDriver.getURLs().length);
-    }
-
     public void testGetDriver() throws Exception {
         JDBCDriver jdbcDriver = getJDBCDriver();
         Driver driver = jdbcDriver.getDriver();

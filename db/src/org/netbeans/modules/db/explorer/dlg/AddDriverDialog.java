@@ -55,6 +55,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Driver;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -85,6 +86,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.explorer.node.DriverNode;
 import org.netbeans.modules.db.util.DriverListUtil;
+import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -498,18 +500,10 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         return false;
     }
         
-    public String getDisplayName() {
-        return nameTextField.getText();
-    }
-    
     public URL[] getDriverURLs() {
         return drvs.toArray(new URL[0]);
     }
     
-    public String getDriverClass() {
-        return (String) drvClassComboBox.getSelectedItem();
-    }
-
     private void findDriverClass() {
         JarFile jf;
         String[] drivers = DriverListUtil.getDrivers ().toArray (new String[DriverListUtil.getDrivers ().size ()]);
@@ -697,7 +691,6 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver(), null, null);
 
         DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
-        //NOI18N
         descriptor.createNotificationLineSupport();
         dlgPanel.setDescriptor(descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
@@ -705,19 +698,25 @@ public final class AddDriverDialog extends javax.swing.JPanel {
 
         JDBCDriver driver = null;
         if (DialogDescriptor.OK_OPTION == descriptor.getValue()) {
-            String drvClass = dlgPanel.getDriverClass();
-            String displayName = dlgPanel.getDisplayName();
-            String name = displayName;
-            try {
-                if (driverNode != null) {
-                    // keep old name
-                    name = driverNode.getDatabaseDriver().getJDBCDriver().getName();
-                    driverNode.destroy();
+            JDBCDriver current = dlgPanel.getDriver();
+            if (driverNode != null) {
+                driverNode.destroy();
+            }
+            // any change?
+            if (! Arrays.equals(current.getURLs(), dlgPanel.getDriverURLs())) {
+                JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), dlgPanel.getDriverURLs());
+                for (JdbcUrl url : DriverListUtil.getJdbcUrls(current)) {
+                    url.setDriver(modified);
                 }
-                driver = JDBCDriver.create(name, displayName, drvClass, dlgPanel.getDriverURLs());
-                JDBCDriverManager.getDefault().addDriver(driver);
-            } catch (DatabaseException exc) {
-                Exceptions.printStackTrace(exc);
+                try {
+                    JDBCDriverManager.getDefault().removeDriver(current);
+                    JDBCDriverManager.getDefault().addDriver(modified);
+                } catch (DatabaseException ex) {
+                    Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.WARNING,
+                            "Unable to modify driver " + current.getName() + " and add driver jar files " +
+                            Arrays.asList(dlgPanel.getDriverURLs()) +
+                            ": can not convert to URL", ex);
+                }
             }
         }
         return driver;

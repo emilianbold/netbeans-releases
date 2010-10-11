@@ -157,11 +157,6 @@ public final class JDBCDriverManager {
             throw new NullPointerException();
         }
         try {
-            for (JDBCDriver d : getDrivers()) {
-                if (driver.getName().equals(d.getName())) {
-                    removeDriver(driver);
-                }
-            }
             JDBCDriverConvertor.create(driver);
         } catch (IOException ioe) {
             throw new DatabaseException(ioe);
