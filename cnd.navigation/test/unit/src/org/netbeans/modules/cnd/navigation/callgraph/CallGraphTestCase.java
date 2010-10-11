@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
 public class CallGraphTestCase extends ProjectBasedTestCase {
 
     public CallGraphTestCase(String testName) {
-        super(testName);
+        super(testName, true);
     }
 
     @Override
@@ -78,12 +78,7 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
         String path =dataDir.getAbsolutePath().replace("cnd.navigation/build", "cnd.modelimpl");
         File goldDataDir = new File(path);
         assertTrue(goldDataDir.exists());
-        try {
-            copyDirectory(goldDataDir, dataDir);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return dataDir;
+        return goldDataDir;
     }
 
     protected final File getQuoteDataDir() {
