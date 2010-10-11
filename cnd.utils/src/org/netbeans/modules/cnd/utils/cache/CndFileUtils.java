@@ -290,15 +290,16 @@ public final class CndFileUtils {
        }
    }
 
-   private static boolean isWindows = Utilities.isWindows();
+   /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
+   private static final boolean isWindows = Utilities.isWindows();
 
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;
         absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
-        absolutePath = changeStringCaseIfNeeded(absolutePath);
         if (isWindows) {
             absolutePath = absolutePath.replace('/', '\\');
         }
+        absolutePath = changeStringCaseIfNeeded(absolutePath);
         Flags exists;
         ConcurrentMap<String, Flags> files = getFilesMap();
         exists = files.get(absolutePath);
