@@ -777,12 +777,23 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if (Jira.LOG.isLoggable(Level.FINE)) {
-            Jira.LOG.fine(getClass().getName() + ": adding comment to issue: " + getKey());    //NOI18N
+            Jira.LOG.log(Level.FINE, "{0}: adding comment to issue: {1}", new Object[]{getClass().getName(), getKey()});    //NOI18N
         }        
         if(comment == null && !close) {
+            // nothing to do => so don't even refresh
             return;
         }
         refresh();
+        
+        // check if not already resolved
+        if(close && getResolution() != null) {
+            close = false; // already resolved 
+        }
+        if(comment == null && !close) {
+            // so there is nothing to do 
+            // if already closed and no comment set
+            return;
+        }
         
         // resolved attrs
         if(close) {
