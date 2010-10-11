@@ -866,12 +866,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         boolean requiredFieldMissing = false;
         if (url == null) {
-            displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SelectADriver"), false);
+            displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SelectADriver"), false);
         } else if (url != null && url.isParseUrl()) {
             for (Entry<String,UrlField> entry : urlFields.entrySet()) {
                 if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                     requiredFieldMissing = true;
-                    displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.ERR_FieldRequired",
+                    displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.ERR_FieldRequired",
                             entry.getValue().getLabel().getText()), false);
                 }
             }
@@ -880,7 +880,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 clearError();
             }
         } else if (isEmpty(urlField.getText())) {
-            displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SpecifyURL"), false);
+            displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SpecifyURL"), false);
         } else {
             clearError();
         }
@@ -930,8 +930,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         wp.fireChangeEvent();
     }
 
-    private void displayError(String message, boolean isError) {
-        wd.setValid(false);
+    private void displayMessage(String message, boolean isError) {
+        wd.setValid(! isError);
         wp.fireChangeEvent();
         if (isError) {
             wd.getNotificationLineSupport().setErrorMessage(message);
@@ -942,10 +942,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     public void testConnection() {
         try {
+            setConnectionInfo();
             wp.validate();
-            displayError(NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.ConnectionPassed"), false); // NOI18N
+            displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.ConnectionPassed"), false); // NOI18N
         } catch (WizardValidationException ex) {
-            displayError(ex.getLocalizedMessage(), true);
+            displayMessage(ex.getLocalizedMessage(), true);
         }
     }
 
