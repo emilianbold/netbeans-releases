@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -86,5 +88,10 @@ class FtpSyncFactory extends BaseSyncFactory {
     @Override
     public boolean isApplicable(ExecutionEnvironment execEnv) {
         return ENABLE_FTP && ! RemoteUtil.isForeign(execEnv);
+    }
+
+    @Override
+    public PathMap getPathMap(ExecutionEnvironment executionEnvironment) {
+        return RemotePathMap.getPathMap(executionEnvironment, false);
     }
 }

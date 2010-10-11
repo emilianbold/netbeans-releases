@@ -78,7 +78,7 @@ public class TestsuiteNode extends AbstractNode {
      * The max line length to display in the messages.
      * 
      * By default, the max line length for the messages in the Test Results
-     * window will be set to 320 for the GTK look and feel, and won't be limited
+     * window will be set to 120 for the GTK look and feel, and won't be limited
      * for other look and feels. For any look and feel a user can change the
      * default setting via the system property
      * {@code testrunner.max.msg.line.length=MAX_LINE_LENGTH},
@@ -86,10 +86,11 @@ public class TestsuiteNode extends AbstractNode {
      *
      * See Issue #172772
      * See Issue #175430
+     * See Issue #188632
      */
     static final int MAX_MSG_LINE_LENGTH = 
           Integer.getInteger("testrunner.max.msg.line.length", //NOI18N
-                             isGTK() ? 320 : Integer.MAX_VALUE);
+                             isGTK() ? 120 : Integer.MAX_VALUE);
 
     protected String suiteName;
     protected TestSuite suite;

@@ -37,63 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.sync;
+package org.netbeans.modules.cnd.navigation.callgraph;
 
-import java.io.File;
-import java.io.PrintWriter;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
-import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.util.NbBundle;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Alexander Simon
  */
-public @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory.class, position=900)
-class ZipSyncFactory extends BaseSyncFactory {
+public class CallGraphSuiteTest extends CndBaseTestSuite {
 
-    /*package*/ static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false);
-
-    /** this factory ID -  public for test purposes */
-    public static final String ID = "scp"; //NOI18N
-    
-    @Override
-    public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
-            PrintWriter out, PrintWriter err, File privProjectStorageDir, File... files) {
-        return new ZipSyncWorker(executionEnvironment, out, err, privProjectStorageDir, files);
+    public CallGraphSuiteTest() {
+        super("Call Graph Test"); // NOI18N
+        addTestSuite(CallGraphTestCase.class);
     }
 
-    @Override
-    public String getDisplayName() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Name");
-    }
-
-    @Override
-    public String getDescription() {
-        // That's justa  replacement for ScpSyncFactory/ScpSyncWorker - we don't need no new name
-        return NbBundle.getMessage(getClass(), "SCP_Factory_Description");
-    }
-
-    @Override
-    public String getID() {
-        return ID;
-    }
-
-    @Override
-    public boolean isApplicable(ExecutionEnvironment execEnv) {
-        return ENABLE_SCP && ! RemoteUtil.isForeign(execEnv);
-    }
-
-    @Override
-    public PathMap getPathMap(ExecutionEnvironment executionEnvironment) {
-        return RemotePathMap.getPathMap(executionEnvironment, false);
+    public static Test suite() {
+        TestSuite suite = new CallGraphSuiteTest();
+        return suite;
     }
 }
