@@ -56,8 +56,10 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
@@ -76,6 +78,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -87,6 +90,8 @@ import org.openide.loaders.CreateFromTemplateHandler;
  * Creates a MakeProject from scratch according to some initial configuration.
  */
 public class MakeProjectGenerator {
+
+    private static final String PROP_DBCONN = "dbconn"; // NOI18N
 
     private MakeProjectGenerator() {
     }
@@ -159,6 +164,10 @@ public class MakeProjectGenerator {
         p.setRemoteMode(prjParams.getRemoteMode());
         if (prjParams.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
             p.setRemoteFileSystemHost(ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID()));
+        }
+        if(prjParams.getDatabaseConnection() != null) {
+            Preferences prefs = ProjectUtils.getPreferences(p, ProjectSupport.class, true);
+            prefs.put(PROP_DBCONN, prjParams.getDatabaseConnection());
         }
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
         return p;

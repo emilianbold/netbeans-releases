@@ -81,6 +81,7 @@ public class ProjectGenerator {
         private String mainProject;
         private String subProjects;
         private Map<String, Object> templateParams;
+        private String databaseConnection;
 
         /**
          *
@@ -182,6 +183,11 @@ public class ProjectGenerator {
             return this;
         }
 
+        public ProjectParameters setDatabaseConnection(String connection) {
+            this.databaseConnection = connection;
+            return this;
+        }
+
         public File getProjectFolder() {
             return projectFolder;
         }
@@ -279,6 +285,11 @@ public class ProjectGenerator {
         public Map<String, Object> getTemplateParams() {
             return templateParams;
         }
+
+        public String getDatabaseConnection() {
+            return databaseConnection;
+        }
+
     }
     
     public static String getDefaultProjectFolder() {

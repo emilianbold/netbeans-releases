@@ -498,6 +498,12 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             prjParams.setFullRemote(fullRemote);
             prjParams.setHostUID(hostUID);
 
+            if (wizardtype == TYPE_DB_APPLICATION) {
+                Object connection = wiz.getProperties().get("connectionName"); // NOI18N
+                if(connection instanceof String) {
+                    prjParams.setDatabaseConnection((String)connection);
+                }
+            }
             prjParams.setTemplateParams(new HashMap<String, Object>(wiz.getProperties()));
             
             MakeProjectGenerator.createProject(prjParams);
