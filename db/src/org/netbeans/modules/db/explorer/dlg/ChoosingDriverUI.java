@@ -61,22 +61,17 @@ import org.openide.util.NbBundle;
  * @author Jiri Rechtacek
  */
 public class ChoosingDriverUI extends javax.swing.JPanel {
-    private ChoosingDriverInterUI choosinIntraPanel;
     private AddDriverDialog customizeDriverPanel;
     private JDBCDriver drv;
     private ActionListener actionListener;
-    private String driverFileName;
-    private String driverPath;
-    private String downloadFrom;
     private ChoosingDriverPanel wp;
+    private AddConnectionWizard wizard;
 
     /** Creates new form ChoosingDriverUI */
-    public ChoosingDriverUI(ChoosingDriverPanel panel, String driverFileName, String driverPath, String downloadFrom, JDBCDriver driver, AddConnectionWizard pw) {
+    public ChoosingDriverUI(ChoosingDriverPanel panel, JDBCDriver driver, AddConnectionWizard wizard) {
         this.drv = driver;
-        this.driverFileName = driverFileName;
-        this.driverPath = driverPath;
-        this.downloadFrom = downloadFrom;
         this.wp = panel;
+        this.wizard = wizard;
         initComponents();
         DatabaseExplorerInternalUIs.connect(cbDrivers, JDBCDriverManager.getDefault());
         if (drv == null) {
@@ -94,7 +89,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 }
             }
         }
-        customizeDriverPanel = new AddDriverDialog(drv, this, pw);
+        customizeDriverPanel = new AddDriverDialog(drv, this, wizard);
         pInter.add(customizeDriverPanel, BorderLayout.CENTER);
         actionListener = new ActionListener() {
             @Override
@@ -141,8 +136,10 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                 }
             }
             drv = ((JdbcUrl) drvO).getDriver();
+            wizard.setDriver(drv);
             customizeDriverPanel.setDriver(drv);
         } else {
+            wizard.setDriver(drv);
             customizeDriverPanel.setDriver(null);
         }
         wp.fireChangeEvent();
@@ -150,7 +147,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
 
     @Override
     public String getName() {
-        return NbBundle.getMessage(ChoosingDriverInterUI.class, "ChoosingDriverUI.Name"); // NOI18N
+        return NbBundle.getMessage(ChoosingDriverUI.class, "ChoosingDriverUI.Name"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -204,10 +201,6 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
 
     boolean driverFound() {
         return customizeDriverPanel.getDriverURLs().length > 0;
-    }
-
-    String getDriverLocation() {
-        return choosinIntraPanel.getDriverLocation();
     }
 
     JDBCDriver getDriver() {

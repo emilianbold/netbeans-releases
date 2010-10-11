@@ -649,7 +649,11 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         // update status line and OK button
         String message = null;
         if (drvs.isEmpty()) {
-            message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
+            if (wd.getDownloadFrom() != null) {
+                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom());
+            } else {
+                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
+            }
         } else if (drvClassComboBox.getEditor().getItem().toString().length() == 0) {
             message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingClass");
         } else if (nameTextField.getText().length() == 0) {

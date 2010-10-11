@@ -46,6 +46,8 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
@@ -72,7 +74,6 @@ import org.openide.util.NbBundle;
  */
 public class AddConnectionWizard extends ConnectionDialogMediator implements WizardDescriptor.Iterator<AddConnectionWizard> {
     
-    private String driverLocation;
     private String driverName;
     private String downloadFrom;
     private String driverFileName;
@@ -154,7 +155,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                         }
                 }
             }
-            driverPanel = new ChoosingDriverPanel(driverFileName, downloadFrom, drv);
+            driverPanel = new ChoosingDriverPanel(drv);
             panels = new Panel[] {
                 driverPanel,
                 new ConnectionPanel(),
@@ -238,7 +239,11 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
 
     void setDriver(JDBCDriver driver) {
         this.jdbcDriver = driver;
-        updateState(driver.getName(), driver.getClassName(), null, null, null);
+        if (driver == null) {
+            updateState(null, null, null, null, null);
+        } else {
+            updateState(driver.getName(), driver.getClassName(), null, null, null);
+        }
     }
 
     JDBCDriver getDriver() {
@@ -294,6 +299,17 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
             return defaultSchema;
         }
         return currentSchema;
+    }
+
+    String getDownloadFrom() {
+        return downloadFrom;
+    }
+
+    Collection<String> getSupportedNames() {
+        if (this.driverFileName == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singleton(this.driverFileName);
     }
 
     @Override
@@ -353,6 +369,9 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.user = user;
                 this.pwd = password;
                 this.defaultSchema = ""; // NOI18N
+                this.downloadFrom = null;
+                this.driverDN = null;
+                this.driverFileName = null;
             }
         }
     }
