@@ -68,6 +68,7 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -113,6 +114,11 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         final Logger log = Logger.getLogger("nativeexecution.support"); // NOI18N
         log.setLevel(Level.ALL);
         log.addHandler(new TestLogHandler(log));
+
+        // the 3 lines below contain a workaround for some WinXP tests failure
+        File tmpDir = new File(System.getProperty("java.io.tmpdir"));
+        tmpDir = FileUtil.normalizeFile(tmpDir.getAbsoluteFile());
+        System.setProperty("java.io.tmpdir", tmpDir.getAbsolutePath());
     }
 
     private final ExecutionEnvironment testExecutionEnvironment;

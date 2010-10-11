@@ -44,9 +44,11 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.filesystems.FileObject;
 
-public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilter {
+public abstract class SourceFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     public SourceFileFilter() {
         super();
@@ -70,6 +72,20 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
                 if (amongSuffixes(f.getName(), getSuffixes())) {
                     return true;
                 }
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean accept(FileObject f) {
+        if (f != null) {
+            if (f.isFolder()) {
+                return true;
+            }
+            String suffix = f.getExt();
+            if (amongSuffixes(suffix, getSuffixes())) {
+                return true;
             }
         }
         return false;

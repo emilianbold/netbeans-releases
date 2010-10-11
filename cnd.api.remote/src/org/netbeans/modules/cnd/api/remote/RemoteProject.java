@@ -64,7 +64,7 @@ public interface RemoteProject {
     
     ExecutionEnvironment getDevelopmentHost();
 
-    ExecutionEnvironment getRemoteFileSystemHost();
+    ExecutionEnvironment getSourceFileSystemHost();
 
     Mode getRemoteMode();
 
