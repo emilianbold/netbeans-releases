@@ -69,7 +69,6 @@ import org.netbeans.editor.ext.html.parser.spi.HtmlParser;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
-import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationException;
@@ -259,47 +258,6 @@ public class Html5Parser implements HtmlParser {
 
             return possible;
         }
-//        public Collection<HtmlTag> getPossibleTagsInContext(AstNode node, boolean type) {
-//            Collection<HtmlTag> possible = new LinkedHashSet<HtmlTag>();
-//            if (type) {
-//                //open tags
-//                StateSnapshot snapshot = makeTreeBuilderSnapshot(node);
-//                ReinstatingTreeBuilder builder = ReinstatingTreeBuilder.create(snapshot);
-//
-//                HashMap<Integer, Boolean> enabledGroups = new HashMap<Integer, Boolean>();
-//                for (ElementName element : ElementName.ELEMENT_NAMES) {
-//                    int group = element.group;
-//                    Boolean enabled = enabledGroups.get(group);
-//
-//                    if (enabled == null) {
-//                        //not checked yet
-//
-//                        //XXX is it even correct to assume that the result
-//                        //will be the same for all members of one group????
-//
-////                        System.out.print("element " + element + "...");
-//                        enabled = builder.canFollow(node, element);
-////                        System.out.println(enabled ? "+" : "-");
-//                        enabledGroups.put(group, enabled);
-//
-//                        if (enabled.booleanValue()) {
-//                            //add all element from the group as possible
-//                            for (ElementName member : ElementNames.getElementForTreeBuilderGroup(group)) {
-//                                possible.add(HtmlTagProvider.getTagForElement(member.name));
-//                            }
-//
-//                        }
-//
-//                    }
-//
-//                }
-//
-//            } else {
-//                possible = completeEndTags(node);
-//            }
-//
-//            return possible;
-//        }
     }
 
     private static final class Html5Model implements HtmlModel {
