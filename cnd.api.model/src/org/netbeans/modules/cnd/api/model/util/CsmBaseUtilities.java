@@ -376,10 +376,11 @@ public class CsmBaseUtilities {
             } else if (CsmKindUtilities.isVariable(csmTopLevelObject)) {
                 CsmVariable var = (CsmVariable) csmTopLevelObject;
                 csmTopLevelObject = var.getScope();
-                if (var == null) {
-                    // we have top leve variable declaration
+                if (csmTopLevelObject == null) {
+                    // we have top level variable declaration with unresolved scope
                     return var;
                 }
+                // else let scope to be analyzed
             } else if(CsmKindUtilities.isInclude(csmTopLevelObject)) {
                 return (CsmInclude)csmTopLevelObject;
             } else if(CsmKindUtilities.isMacro(csmTopLevelObject)) {
