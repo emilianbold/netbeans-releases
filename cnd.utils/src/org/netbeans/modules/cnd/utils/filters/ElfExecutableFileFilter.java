@@ -49,9 +49,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class ElfExecutableFileFilter extends javax.swing.filechooser.FileFilter {
+public class ElfExecutableFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     private static ElfExecutableFileFilter instance = null;
 
@@ -82,14 +85,31 @@ public class ElfExecutableFileFilter extends javax.swing.filechooser.FileFilter 
 	return false;
     }
 
+    @Override
+    public boolean accept(FileObject f) {
+	if(f != null) {
+	    if(f.isFolder()) {
+		return true;
+	    }
+	    return checkElfHeader(f);
+	}
+	return false;
+    }
+
+
     /** Check if this file's header represents an elf executable */
-    private boolean checkElfHeader(File f) {
+    private boolean checkElfHeader(Object f) {
+        CndUtils.assertTrue((f instanceof File) || (f instanceof FileObject));
         byte b[] = new byte[18];
 	int left = 18; // bytes left to read
 	int offset = 0; // offset into b array
 	InputStream is = null;
 	try {
-	    is = new FileInputStream(f);
+            if (f instanceof File) {
+                is = new FileInputStream((File) f);
+            } else { // (f instanceof FileObject)
+                is = ((FileObject) f).getInputStream();
+            }
 	    while (left > 0) {
 		int n = is.read(b, offset, left);
 		if (n <= 0) {

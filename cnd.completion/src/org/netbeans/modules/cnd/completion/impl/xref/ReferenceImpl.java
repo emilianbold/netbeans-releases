@@ -100,7 +100,9 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), super.getDocument(),
                         this.offset, token, fileReferencesContext);
                 if (target != null) {
+                    initOwner();
                     initKind(target);
+                    initClosestTopLevelObject();
                     CsmReferenceStorage.getDefault().put(this, target);
                 }
 //            } else {
@@ -109,6 +111,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             findDone = true;
         }
         return target;
+    }
+
+    private void initOwner() {
+        if (owner == null) {
+            owner = ReferencesSupport.findOwnerObject(getContainingFile(), this.offset, token);
+        }
     }
 
     private synchronized void restoreIfPossible() {
@@ -145,9 +153,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     public CsmObject getOwner() {
         if (owner == null && isValid()) {
             restoreIfPossible();
-            if (owner == null) {
-                owner = ReferencesSupport.findOwnerObject(getContainingFile(), this.offset, token);
-            }
+            initOwner();
         }
         return owner;
     }
@@ -242,10 +248,16 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     public CsmObject getClosestTopLevelObject() {
         if (closestTopLevelObject == null && isValid()) {
             restoreIfPossible();
+            initClosestTopLevelObject();
+        }
+        return closestTopLevelObject;
+    }
+
+    private void initClosestTopLevelObject() {
+        if (closestTopLevelObject == null && isValid()) {
             if (closestTopLevelObject == null) {
                 closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(getOwner());
             }
         }
-        return closestTopLevelObject;
     }
 }

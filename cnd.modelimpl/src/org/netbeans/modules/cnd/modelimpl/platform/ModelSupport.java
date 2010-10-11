@@ -495,7 +495,8 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
-                    final FileBufferDoc buffer = new FileBufferDoc(file.getAbsolutePath(), doc);
+                    CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
+                    final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
