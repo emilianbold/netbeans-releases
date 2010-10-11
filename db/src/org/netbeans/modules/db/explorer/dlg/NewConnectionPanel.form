@@ -22,73 +22,49 @@
           <Group type="102" alignment="1" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="hostLabel" min="-2" pref="121" max="-2" attributes="1"/>
-                                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
-                                  </Group>
-                                  <Group type="102" attributes="0">
-                                      <Component id="templateLabel" pref="123" max="32767" attributes="1"/>
-                                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="serverNameLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="sidLabel" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="instanceLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="serverNameLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="dsnLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="tnsLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="serviceLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="sidLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="databaseLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                           </Group>
+                          <Component id="templateLabel" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                               <Component id="passwordLabel" alignment="0" max="32767" attributes="1"/>
                               <Component id="userLabel" alignment="0" max="32767" attributes="1"/>
                           </Group>
                       </Group>
+                      <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="userField" alignment="1" pref="593" max="32767" attributes="2"/>
-                          <Component id="sidField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="serviceField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="tnsField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="dsnField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="serverNameField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="instanceField" alignment="0" pref="593" max="32767" attributes="2"/>
-                          <Component id="templateComboBox" alignment="1" pref="593" max="32767" attributes="2"/>
+                          <Component id="userField" alignment="1" pref="379" max="32767" attributes="2"/>
+                          <Component id="sidField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="serviceField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="tnsField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="dsnField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="serverNameField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="instanceField" alignment="0" pref="379" max="32767" attributes="2"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="hostField" pref="444" max="32767" attributes="2"/>
+                              <Component id="hostField" pref="230" max="32767" attributes="2"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="portLabel" min="-2" max="-2" attributes="1"/>
                               <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
                               <Component id="portField" min="-2" pref="105" max="-2" attributes="2"/>
                           </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="databaseField" pref="593" max="32767" attributes="2"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="passwordField" alignment="0" pref="593" max="32767" attributes="2"/>
-                                  <Component id="bTestConnection" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="passwordCheckBox" alignment="0" min="-2" pref="256" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                          <Component id="databaseField" alignment="1" pref="379" max="32767" attributes="2"/>
+                          <Component id="passwordField" alignment="0" pref="379" max="32767" attributes="2"/>
+                          <Component id="bTestConnection" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="passwordCheckBox" alignment="0" min="-2" pref="256" max="-2" attributes="0"/>
+                          <Component id="urlField" alignment="1" pref="379" max="32767" attributes="2"/>
+                          <Component id="templateComboBox" alignment="1" pref="379" max="32767" attributes="2"/>
                       </Group>
                   </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Component id="directUrlLabel" min="-2" max="-2" attributes="1"/>
-                      <EmptySpace min="-2" pref="65" max="-2" attributes="0"/>
-                      <Component id="urlField" pref="593" max="32767" attributes="2"/>
-                  </Group>
+                  <Component id="directUrlLabel" alignment="0" min="-2" max="-2" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -102,7 +78,7 @@
                   <Component id="templateLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="templateComboBox" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="hostLabel" min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="1" attributes="0">
@@ -167,8 +143,6 @@
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="directUrlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -421,21 +395,6 @@
         </Property>
       </Properties>
     </Component>
-    <Container class="javax.swing.JPanel" name="jPanel1">
-
-      <Layout>
-        <DimensionLayout dim="0">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="722" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-        <DimensionLayout dim="1">
-          <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="19" max="32767" attributes="0"/>
-          </Group>
-        </DimensionLayout>
-      </Layout>
-    </Container>
     <Component class="javax.swing.JButton" name="bTestConnection">
       <Properties>
         <Property name="text" type="java.lang.String" value="&amp;Test Connection"/>
