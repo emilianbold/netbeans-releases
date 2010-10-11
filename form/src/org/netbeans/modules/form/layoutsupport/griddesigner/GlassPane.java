@@ -220,7 +220,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 int oldColumns = info.getColumnCount();
                 int oldRows = info.getRowCount();
                 GridUtils.removePaddingComponents(gridManager);
-                gridManager.updateLayout();
+                gridManager.updateLayout(false);
                 GridUtils.revalidateGrid(gridManager);
                 int newColumns = info.getColumnCount();
                 int newRows = info.getRowCount();
