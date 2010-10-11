@@ -1664,7 +1664,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         });
     }
     
-    private void setCursor(JComponent comp, int type) {
+    private void setCursor (final JComponent comp, final int type) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run () {
+                    setCursor(comp, type);
+                }
+            });
+        }
         Window window = SwingUtilities.getWindowAncestor(comp);
         if (window != null) {
             Cursor cursor = Cursor.getPredefinedCursor(type);
