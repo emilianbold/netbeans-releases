@@ -63,6 +63,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVersionController {
 
     public static final String HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME = "default-public-id"; //NOI18N
+    private static final String HTML_ARTIFICIAL_PUBLIC_ID = "html5";
 
     @Override
     public HtmlVersion getSourceCodeVersion(HtmlSource source, HtmlVersion detectedVersion) {
@@ -88,6 +89,10 @@ public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVers
             return null;
         }
 
+        if(ns.equals(HTML_ARTIFICIAL_PUBLIC_ID)) {
+            ns = null; //html5
+        }
+
         try {
             return HtmlVersion.findByPublicId(ns);
         } catch (IllegalArgumentException e) {
@@ -101,7 +106,7 @@ public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVers
         Preferences prefs = ProjectUtils.getPreferences(project, HtmlSourceVersionController.class, true);
         String publicId = version.getPublicID();
         if(publicId == null) {
-            publicId = ""; //html5 has no public id
+            publicId = HTML_ARTIFICIAL_PUBLIC_ID; //html5 has no public id
         }
         prefs.put(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, publicId);
     }
