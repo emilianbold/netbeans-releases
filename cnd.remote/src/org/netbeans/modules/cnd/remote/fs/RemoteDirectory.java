@@ -50,6 +50,8 @@ import java.io.InputStream;
 import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -80,8 +82,33 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(name + '.' + ext); // NOI18N
     }
 
+    private static enum Mode {
+        EXISTENCE,
+        FILE_OBJECT,
+        CHILDINFO
+    }
+
+    public CndFileSystemProvider.FileInfo[] getChildInfo(String relativePath) {
+        return (CndFileSystemProvider.FileInfo[]) getFileOrCheckExistence(relativePath, Mode.EXISTENCE);
+    }
+
+    public boolean exists(String relativePath) {
+        Boolean result = (Boolean) getFileOrCheckExistence(relativePath, Mode.EXISTENCE);
+        return (result == null) ? false : result.booleanValue();
+    }
+
     @Override
     public FileObject getFileObject(String relativePath) {
+        return (FileObject) getFileOrCheckExistence(relativePath, Mode.FILE_OBJECT);
+    }
+
+    /**
+     *
+     * @param relativePath
+     * @param createFileObject
+     * @return either FileObject or Boolean
+     */
+    private Object getFileOrCheckExistence(String relativePath, Mode mode) {
         if (relativePath != null && relativePath.length()  > 0 && relativePath.charAt(0) == '/') { //NOI18N
             relativePath = relativePath.substring(1);
         }
@@ -106,6 +133,23 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (!file.exists()) {
                     return null;
                 }
+            }
+
+            if (mode == Mode.EXISTENCE) {
+                return Boolean.valueOf(file.exists());
+            } else if (mode == Mode.CHILDINFO) {
+                File[] children = file.listFiles();
+                if (children == null) {
+                    return new CndFileSystemProvider.FileInfo[0];
+                } else {
+                    CndFileSystemProvider.FileInfo[] infos = new CndFileSystemProvider.FileInfo[children.length];
+                    for (int i = 0; i < children.length; i++) {
+                        infos[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
+                    }
+                    return infos;
+                }
+            } else {
+                CndUtils.assertTrue(mode == Mode.FILE_OBJECT);
             }
 
             boolean resultIsDirectory = file.isDirectory();
