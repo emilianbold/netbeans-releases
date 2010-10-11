@@ -216,6 +216,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));
         suite.addTest(new JavaSourceTest("testNested2"));
         suite.addTest(new JavaSourceTest("testIndexCancel"));
+//        suite.addTest(new JavaSourceTest("testIndexCancel2"));
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         suite.addTest(new JavaSourceTest("testIncrementalReparse"));
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
@@ -1362,6 +1363,87 @@ public class JavaSourceTest extends NbTestCase {
                             }
                         }
                 });
+                assertTrue(end[0].await(5, TimeUnit.SECONDS));
+                assertNull(result[0]);
+                JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
+            } finally {
+                regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            }
+        } finally {
+            PersistentClassIndex.setIndexFactory(null);
+        }
+    }
+    
+    public void testIndexCancel2() throws Exception {
+        final TestIndexFactory factory = new TestIndexFactory();
+        PersistentClassIndex.setIndexFactory(factory);
+        try {
+            FileObject test = createTestFile ("Test1");
+            final ClassPath bootPath = createBootPath ();
+            final ClassPath compilePath = createCompilePath ();
+            final ClassPath sourcePath = createSourcePath ();
+            final GlobalPathRegistry regs = GlobalPathRegistry.getDefault();
+            regs.register(ClassPath.SOURCE, new ClassPath[]{sourcePath});
+            try {
+                ClassLoader l = JavaSourceTest.class.getClassLoader();
+                Lkp.DEFAULT.setLookupsWrapper(
+                    Lookups.metaInfServices(l),
+                    Lookups.singleton(l),
+                    Lookups.singleton(new ClassPathProvider() {
+                    public ClassPath findClassPath(FileObject file, String type) {
+                        if (ClassPath.BOOT == type) {
+                            return bootPath;
+                        }
+
+                        if (ClassPath.SOURCE == type) {
+                            return sourcePath;
+                        }
+
+                        if (ClassPath.COMPILE == type) {
+                            return compilePath;
+                        }
+                        return null;
+                    }
+                }));
+
+
+                JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, sourcePath), test);
+                IndexingManager.getDefault().refreshIndexAndWait(sourcePath.getRoots()[0].getURL(), null);
+                DataObject dobj = DataObject.find(test);
+                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
+                final StyledDocument doc = ec.openDocument();
+                doc.putProperty(Language.class, JavaTokenId.language());
+                TokenHierarchy h = TokenHierarchy.get(doc);
+                TokenSequence ts = h.tokenSequence(JavaTokenId.language());
+                Thread.sleep(500);  //It may happen that the js is invalidated before the dispatch of task is done and the test of timers may fail
+
+                final CountDownLatch[] ready = new CountDownLatch[]{new CountDownLatch(1)};
+                final CountDownLatch[] end = new CountDownLatch[]{new CountDownLatch (1)};
+                final Object[] result = new Object[1];
+
+                CancellableTask<CompilationInfo> task = new CancellableTask<CompilationInfo>() {
+
+                    @Override
+                    public void cancel() {
+                    }
+
+                    @Override
+                    public void run(CompilationInfo p) throws Exception {
+                        ready[0].countDown();
+                        ClassIndex index = p.getClasspathInfo().getClassIndex();
+                        result[0] = index.getPackageNames("javax", true, EnumSet.allOf(ClassIndex.SearchScope.class));
+                        end[0].countDown();
+                    }
+
+                };
+                factory.instance.active=true;
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
+                assertTrue(ready[0].await(5, TimeUnit.SECONDS));
+                js.runUserActionTask( new Task<CompilationController>() {
+                        @Override
+                        public void run (final CompilationController info) {                            
+                        }
+                }, true);
                 assertTrue(end[0].await(5, TimeUnit.SECONDS));
                 assertNull(result[0]);
                 JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask (js,task);
