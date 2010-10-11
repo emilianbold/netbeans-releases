@@ -82,12 +82,18 @@ public abstract class AbstractHgTest extends NbTestCase {
     protected Level logLevel() {
         return Level.FINE;
     }
+
+    protected File getWorkTreeDir () throws IOException {
+        return new File(getWorkDir(), "wc");
+    }
     
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        clearWorkDir();
         
-        FileUtil.refreshFor(getWorkDir());
+        FileUtil.refreshFor(getWorkTreeDir());
         Logger.getLogger("").addHandler(versionCheckBlocker);
         
         try {
@@ -104,7 +110,8 @@ public abstract class AbstractHgTest extends NbTestCase {
 //        workDir = new File(System.getProperty("work.dir")); 
 //        FileUtil.refreshFor(workDir);          
         try {
-            HgCommand.doCreate(getWorkDir(), null);
+            HgCommand.doCreate(getWorkTreeDir(), null);
+            new File(getWorkTreeDir(), "empty").createNewFile();
         } catch (IOException iOException) {
             throw iOException;
         } catch (HgException hgException) {
@@ -122,7 +129,7 @@ public abstract class AbstractHgTest extends NbTestCase {
     
     
     protected void commit(File... files) throws HgException, IOException {
-        commitIntoRepository(getWorkDir(), files);
+        commitIntoRepository(getWorkTreeDir(), files);
     }
 
     protected void commitIntoRepository (File repository, File... files) throws HgException, IOException {
@@ -152,12 +159,12 @@ public abstract class AbstractHgTest extends NbTestCase {
 
     protected File clone(File file) throws HgException, IOException {
         String path = file.getAbsolutePath() + "_cloned";
-        HgCommand.doClone(getWorkDir(), new File(path), null);
+        HgCommand.doClone(getWorkTreeDir(), new File(path), null);
         return new File(path);
     }
     
     protected  void assertStatus(File f, int status) throws HgException, IOException {
-        FileInformation s = HgCommand.getStatus(getWorkDir(), Collections.singletonList(f)).get(f);
+        FileInformation s = HgCommand.getStatus(getWorkTreeDir(), Collections.singletonList(f)).get(f);
         if (status == FileInformation.STATUS_VERSIONED_UPTODATE) {
             assertEquals(s, null);
         } else {
@@ -170,7 +177,7 @@ public abstract class AbstractHgTest extends NbTestCase {
     }
 
     protected File createFolder(String name) throws IOException {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject wd = FileUtil.toFileObject(getWorkTreeDir());
         FileObject folder = wd.createFolder(name);        
         return FileUtil.toFile(folder);
     }
@@ -188,7 +195,7 @@ public abstract class AbstractHgTest extends NbTestCase {
     }
     
     protected File createFile(String name) throws IOException {
-        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject wd = FileUtil.toFileObject(getWorkTreeDir());
         FileObject fo = wd.createData(name);
         return FileUtil.toFile(fo);
     }
