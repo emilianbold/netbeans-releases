@@ -448,7 +448,9 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 }
             }
             findDriverClass();
-            wp.fireChangeEvent();
+            if (wp != null) {
+                wp.fireChangeEvent();
+            }
         }
     }//GEN-LAST:event_browseButtonActionPerformed
 
@@ -649,7 +651,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         // update status line and OK button
         String message = null;
         if (drvs.isEmpty()) {
-            if (wd.getDownloadFrom() != null) {
+            if (wd != null && wd.getDownloadFrom() != null) {
                 message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom());
             } else {
                 message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");

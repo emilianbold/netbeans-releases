@@ -256,11 +256,6 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         DataFolder df = DataFolder.findFolder(fo);
 
         String fileName = drv.getClassName().replace('.', '_'); //NOI18N
-        // removed old one first
-        FileObject current = df.getPrimaryFile().getFileObject(fileName, "xml"); // NOI18N
-        if (current != null && current.isValid()) {
-            current.delete();
-        }
         AtomicWriter writer = new AtomicWriter(drv, df, fileName);
         df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
 
