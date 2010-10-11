@@ -72,11 +72,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -509,7 +507,8 @@ public final class CreateElement implements ErrorRule<Void> {
      * @return true if target's file is writable
      */
     private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
-	FileObject fo = SourceUtils.getFile(ElementHandle.create(target.getEnclosingElement()), info.getClasspathInfo());
+        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
+        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
 	if(fo != null && fo.canWrite())
 	    return true;
 	else

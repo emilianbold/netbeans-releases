@@ -203,7 +203,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
             // ignore local references
             if (TRACE) {
-                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(); // NOI18N
+                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(System.err); // NOI18N
             }
             return false;
         }
@@ -211,7 +211,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         if (!UIDProviderIml.isPersistable(referencedUID)) {
             // ignore local references
             if (TRACE) {
-                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(); // NOI18N
+                new Exception("Ignore reference to local object "+referencedObject).printStackTrace(System.err); // NOI18N
             }
             return false;
         }
@@ -219,6 +219,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         CsmUID<CsmObject> ownerUID = getUID(owner, "Ignore local owners ", TRACE); // NOI18N
         CsmObject closestTopLevelObject = ref.getClosestTopLevelObject();
         CsmUID<CsmObject> closestTopLevelObjectUID = getUID(closestTopLevelObject, "Why local top level object? ", true); // NOI18N
+        assert closestTopLevelObjectUID == null || UIDProviderIml.isPersistable(closestTopLevelObjectUID) : "not persistable top level object " + closestTopLevelObject;
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
         //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {

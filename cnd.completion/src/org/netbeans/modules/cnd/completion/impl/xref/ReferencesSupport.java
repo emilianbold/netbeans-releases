@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
@@ -167,11 +168,23 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token) {
-        CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
-        return csmOwner;
+    /*package*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+            FileReferencesContext fileReferencesContext) {
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
+        CsmObject out = context.getLastObject();
+        return out;
     }
 
+    /*package*/ static CsmObject findClosestTopLevelObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+            FileReferencesContext fileReferencesContext) {
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
+        CsmObject out = context.getLastObject();
+        if (CsmKindUtilities.isType(out) || CsmKindUtilities.isTemplateParameter(out)) {
+            out = context.getLastScope();
+        }
+        return out;
+    }
+    
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<TokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);

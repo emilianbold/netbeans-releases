@@ -84,7 +84,7 @@ public class ExternalChangesTest extends AbstractHgTest {
         super.setUp();
 
         // create
-        workdirFO = FileUtil.toFileObject(workdir = getWorkDir());
+        workdirFO = FileUtil.toFileObject(workdir = getWorkTreeDir());
         File folder = new File(new File(workdir, "folder1"), "folder2");
         folder.mkdirs();
         modifiedFile = new File(folder, "file");

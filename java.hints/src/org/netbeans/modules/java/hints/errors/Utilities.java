@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeParameterElement;
 import java.util.HashSet;
@@ -108,6 +110,8 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
@@ -340,6 +344,13 @@ public class Utilities {
      * @throws java.io.IOException
      */
     public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
+        if (!target.canWrite()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(Utilities.class, "ERR_ReadOnlyTargetFile", FileUtil.getFileDisplayName(target)), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            
+            return null;
+        }
+        
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
         
