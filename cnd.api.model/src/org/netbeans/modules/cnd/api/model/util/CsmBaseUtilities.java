@@ -376,8 +376,8 @@ public class CsmBaseUtilities {
             } else if (CsmKindUtilities.isVariable(csmTopLevelObject)) {
                 CsmVariable var = (CsmVariable) csmTopLevelObject;
                 csmTopLevelObject = var.getScope();
-                if (csmTopLevelObject == null) {
-                    // we have top level variable declaration with unresolved scope
+                if (csmTopLevelObject == null || CsmKindUtilities.isNamespace(csmTopLevelObject)) {
+                    // we have top level variable declaration or decl with unresolved scope
                     return var;
                 }
                 // else let scope to be analyzed
@@ -389,6 +389,7 @@ public class CsmBaseUtilities {
                 csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
                 continue;
             } else {
+                assert false : "unexpected top level object " + csmTopLevelObject;
                 break;
             }
         }
