@@ -48,13 +48,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
-import nu.validator.htmlparser.impl.StackNode;
-import nu.validator.htmlparser.impl.StateSnapshot;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
@@ -128,6 +124,7 @@ public class Html5Parser implements HtmlParser {
                 }
             });
             Driver driver = new Driver(tokenizer);
+            driver.setTransitionHandler(treeBuilder);
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
 
@@ -179,19 +176,6 @@ public class Html5Parser implements HtmlParser {
 
     public String getName() {
         return PARSER_NAME;
-    }
-
-    public static StateSnapshot makeTreeBuilderSnapshot(AstNode node) {
-        int treeBuilderState = node.treeBuilderState;
-        List<StackNode> stack = new ArrayList<StackNode>();
-        while (node != null && !node.isRootNode()) {
-            stack.add(0, new StackNode("http://www.w3.org/1999/xhtml", (ElementName) node.elementName, node));
-            node = node.parent();
-        }
-
-        StateSnapshot snapshot = new StateSnapshot(stack.toArray(new StackNode[]{}),
-                new StackNode[]{}, null, treeBuilderState);
-        return snapshot;
     }
 
     private static class Html5ParserResult extends DefaultHtmlParseResult {
