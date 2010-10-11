@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -67,7 +68,7 @@ public class RemoteFileSystem extends FileSystem {
 
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
-    private final RemoteFileObjectBase root;
+    private final RootFileObject root;
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
 
@@ -104,6 +105,14 @@ public class RemoteFileSystem extends FileSystem {
     @Override
     public RemoteFileObjectBase getRoot() {
         return root;
+    }
+
+    public CndFileSystemProvider.FileInfo[] getChildInfo(String path) {
+        return root.getChildInfo(path);
+    }
+
+    public boolean exists(String path) {
+        return root.exists(path);
     }
 
     @Override

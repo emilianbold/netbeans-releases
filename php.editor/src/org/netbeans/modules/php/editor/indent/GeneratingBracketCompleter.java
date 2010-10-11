@@ -171,7 +171,7 @@ public class GeneratingBracketCompleter {
         
     }
     
-    static final String TYPE_PLACEHOLDER = "<type>";
+    static final String TYPE_PLACEHOLDER = "type";
     
     private static void generateFunctionDoc(BaseDocument doc, int offset, int indent, ParserResult info, FunctionDeclaration decl) throws BadLocationException {
         StringBuilder toAdd = new StringBuilder();

@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 
 /**
@@ -66,6 +68,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     private final TokenItem<TokenId> token;
     private CsmObject target = null;
+    private CsmContext context = null;
     private CsmObject owner = null;
     private CsmObject closestTopLevelObject = null;
     private boolean findDone = false;
@@ -115,7 +118,8 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     private void initOwner() {
         if (owner == null) {
-            owner = ReferencesSupport.findOwnerObject(getContainingFile(), this.offset, token);
+            initContext();
+            owner = context.getLastObject();
         }
     }
 
@@ -255,9 +259,18 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
 
     private void initClosestTopLevelObject() {
         if (closestTopLevelObject == null && isValid()) {
-            if (closestTopLevelObject == null) {
-                closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(getOwner());
-            }
+            initContext();
+            CsmObject lastObject = context.getLastObject();
+            if (CsmKindUtilities.isType(lastObject) || CsmKindUtilities.isTemplateParameter(lastObject)) {
+                lastObject = context.getLastScope();
+            }   
+            closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(lastObject);
+        }
+    }
+
+    private void initContext() {
+        if (context == null) {
+            context = CsmOffsetResolver.findContext(getContainingFile(), offset, fileReferencesContext);
         }
     }
 }

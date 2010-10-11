@@ -58,13 +58,13 @@ import org.openide.util.Exceptions;
  *
  * @author ondra
  */
-public class SearchHistoryTest extends AbstractHgTest {
+public class SearchHistoryTestCase extends AbstractHgTest {
 
     private File dataRootDir;
     private File wc;
     private File repoDir;
 
-    public SearchHistoryTest(String arg0) {
+    public SearchHistoryTestCase(String arg0) {
         super(arg0);
     }
 
@@ -73,8 +73,8 @@ public class SearchHistoryTest extends AbstractHgTest {
        super.setUp();
 
         // create
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
-        wc = getWorkDir();
+        FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
+        wc = getWorkTreeDir();
         System.setProperty("netbeans.user", getWorkDir() + "/cache");
         new File(getWorkDir(), "cache").createNewFile();
     }
@@ -113,7 +113,7 @@ public class SearchHistoryTest extends AbstractHgTest {
 
     public void testDiffView () throws Throwable {
         // create a file and initial commit
-        File file = new File(getWorkDir(), "file.txt");
+        File file = new File(getWorkTreeDir(), "file.txt");
         file.createNewFile();
 
         // chain of change & commit

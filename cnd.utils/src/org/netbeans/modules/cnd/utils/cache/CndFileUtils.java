@@ -290,15 +290,16 @@ public final class CndFileUtils {
        }
    }
 
-   private static boolean isWindows = Utilities.isWindows();
+   /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
+   private static final boolean isWindows = Utilities.isWindows();
 
     private static Flags getFlags(File file, String absolutePath, boolean indexParentFolder) {
         assert file != null || absolutePath != null;
         absolutePath = (absolutePath == null) ? file.getAbsolutePath() : absolutePath;
-        absolutePath = changeStringCaseIfNeeded(absolutePath);
         if (isWindows) {
             absolutePath = absolutePath.replace('/', '\\');
         }
+        absolutePath = changeStringCaseIfNeeded(absolutePath);
         Flags exists;
         ConcurrentMap<String, Flags> files = getFilesMap();
         exists = files.get(absolutePath);
@@ -346,11 +347,11 @@ public final class CndFileUtils {
 
     private static void index(File file, String path, ConcurrentMap<String, Flags> files) {
         if (file.canRead()) {
-            File[] listFiles = listFilesImpl(file);
+            CndFileSystemProvider.FileInfo[] listFiles = listFilesImpl(file);
             for (int i = 0; i < listFiles.length; i++) {
-                File curFile = listFiles[i];
-                String absPath = changeStringCaseIfNeeded(curFile.getAbsolutePath());
-                if (curFile.isDirectory()) {
+                CndFileSystemProvider.FileInfo curFile = listFiles[i];
+                String absPath = changeStringCaseIfNeeded(curFile.absolutePath);
+                if (curFile.directory) {
                     files.putIfAbsent(absPath, Flags.DIRECTORY);
                 } else {
                     files.put(absPath, Flags.FILE);
@@ -390,26 +391,25 @@ public final class CndFileUtils {
     }
 
     private static boolean existsImpl(File file) {
-       FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
-       if (fo == null) {
+       Boolean exists = CndFileSystemProvider.exists(file.getAbsolutePath());
+       if (exists == null) {
             return file.exists();
        } else {
-            return fo.isValid();
+            return exists.booleanValue();
        }
     }
 
-    private static File[] listFilesImpl(File file) {
-       FileObject fo = CndFileSystemProvider.toFileObject(file.getAbsolutePath());
-       if (fo == null) {
-            return file.listFiles();
-       } else {
-           //FileObject[] children = fo.getChildren();
-           // FIXUP: a very very dirty hack, just to make sure it will fly
-           fo.getFileObject("dummy"); // NOI18N
-           return file.listFiles();
+    private static CndFileSystemProvider.FileInfo[] listFilesImpl(File file) {
+       CndFileSystemProvider.FileInfo[] info = CndFileSystemProvider.getChildInfo(file.getAbsolutePath());
+       if (info == null) {
+            File[] children = file.listFiles();
+            info = new CndFileSystemProvider.FileInfo[(children == null) ? 0 : children.length];
+            for (int i = 0; i < children.length; i++) {
+                info[i] = new CndFileSystemProvider.FileInfo(children[i].getAbsolutePath(), children[i].isDirectory());
+            }
        }
+       return info;
     }
-
 
     private static final Lock maRefLock = new ReentrantLock();
     

@@ -47,6 +47,7 @@ import java.util.Collection;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -60,6 +61,15 @@ import org.openide.util.Lookup;
 public abstract class CndFileSystemProvider {
 
     private static final DefaultProvider DEFAULT = new DefaultProvider();
+
+    public static class FileInfo {
+        public final String absolutePath;
+        public final boolean directory;
+        public FileInfo(String absolutePath, boolean directory) {
+            this.absolutePath = absolutePath;
+            this.directory = directory;
+        }
+    }
 
     private static DefaultProvider getDefault() {
         return DEFAULT;
@@ -75,6 +85,14 @@ public abstract class CndFileSystemProvider {
 
     public static File toFile(FileObject fileObject) {
         return getDefault().toFileImpl(fileObject);
+    }
+
+    public static Boolean exists(CharSequence path) {
+        return getDefault().existsImpl(path);
+    }
+
+    public static FileInfo[] getChildInfo(CharSequence path) {
+        return getDefault().getChildInfoImpl(path);
     }
 
     public static FileObject toFileObject(CharSequence path) {
@@ -94,6 +112,16 @@ public abstract class CndFileSystemProvider {
         CndUtils.assertNotNull(result, "Null file object unique string"); //NOI18N
         return result;
     }
+
+    /**
+     * Checks whether the file specified by path exists or not
+     * @param path
+     * @return Boolean.TRUE if the file belongs to this provider file system and exists,
+     * Boolean.FALSE if the file belongs to this provider file system and does NOT exist,
+     * or NULL if the file does not belong to this provider file system
+     */
+    protected abstract Boolean existsImpl(CharSequence path);
+    protected abstract FileInfo[] getChildInfoImpl(CharSequence path);
 
     protected abstract FileObject toFileObjectImpl(CharSequence path);
     protected abstract File toFileImpl(FileObject fileObject);
@@ -164,6 +192,28 @@ public abstract class CndFileSystemProvider {
                 fo = InvalidFileObjectSupport.getInvalidFileObject(getFileFileSystem(), file.getAbsolutePath());
             }
             return fo;
+        }
+
+        @Override
+        protected Boolean existsImpl(CharSequence path) {
+            for (CndFileSystemProvider provider : cache) {
+                Boolean result = provider.existsImpl(path);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected FileInfo[] getChildInfoImpl(CharSequence path) {
+            for (CndFileSystemProvider provider : cache) {
+                FileInfo[] result = provider.getChildInfoImpl(path);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
         }
 
         @Override

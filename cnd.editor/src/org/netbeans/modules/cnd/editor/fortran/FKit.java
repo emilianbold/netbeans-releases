@@ -68,14 +68,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 
-import org.netbeans.modules.cnd.editor.fortran.indent.FortranHotCharIndent;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.openide.util.Exceptions;
 
 /**
 * Fortran editor kit with appropriate document
@@ -132,7 +129,7 @@ public class FKit extends NbEditorKit {
 
     @Override
     protected Action[] createActions() {
-	int arraySize = 5;
+	int arraySize = 4;
 	int numAddClasses = 0;
 	if (actionClasses != null) {
 	    numAddClasses = actionClasses.size();
@@ -154,7 +151,6 @@ public class FKit extends NbEditorKit {
 	    }
 	}
 	fortranActions[index++] = new FFormatAction();
-	fortranActions[index++] = new CCDefaultKeyTypedAction();
 	fortranActions[index++] = new CommentAction("!"); // NOI18N
 	fortranActions[index++] = new UncommentAction("!"); // NOI18N
 	fortranActions[index++] = new ToggleCommentAction("!"); // NOI18N
@@ -244,33 +240,4 @@ public class FKit extends NbEditorKit {
             }
         }
     }    
-
-    private static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-        @Override
-        protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            BaseDocument doc = Utilities.getDocument(target);
-            int offset = target.getCaretPosition();
-            if (FortranHotCharIndent.INSTANCE.getKeywordBasedReformatBlock(doc, offset, typedText)) {
-                Indent indent = Indent.get(doc);
-                indent.lock();
-                try {
-                    doc.putProperty("abbrev-ignore-modification", Boolean.TRUE); // NOI18N
-                    indent.reindent(offset);
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally{
-                    doc.putProperty("abbrev-ignore-modification", Boolean.FALSE); // NOI18N
-                    indent.unlock();
-                }
-            }
-       	}
-
-        @Override
-        protected void insertString(BaseDocument doc, int dotPos,
-                Caret caret, String str,
-                boolean overwrite) throws BadLocationException {
-            super.insertString(doc, dotPos, caret, str, overwrite);
-            FortranBracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
-        }
-   }
 }

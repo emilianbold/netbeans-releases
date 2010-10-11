@@ -261,8 +261,8 @@ public class HgCommand {
 
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
-    public static final String HG_MERGE_CONFLICT_WIN1_ERR = "merging"; // NOI18N
-    public static final String HG_MERGE_CONFLICT_WIN2_ERR = "failed!"; // NOI18N
+    public static final String HG_MERGE_FAILED1_ERR = "merging"; // NOI18N
+    public static final String HG_MERGE_FAILED2_ERR = "failed!"; // NOI18N
     private static final String HG_MERGE_MULTIPLE_HEADS_ERR = "abort: repo has "; // NOI18N
     private static final String HG_MERGE_UNCOMMITTED_ERR = "abort: outstanding uncommitted merges"; // NOI18N
 
@@ -570,7 +570,7 @@ public class HgCommand {
         }
 
         List<String> list = exec(command);
-        if (list.isEmpty())
+        if (list.isEmpty() && doBackup)
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_STRIP_FAILED"), logger);
 
         return list;
@@ -3261,13 +3261,12 @@ public class HgCommand {
         return msg.indexOf(HG_BACKOUT_MERGE_NEEDED_ERR) > -1;                       // NOI18N
     }
 
-    public static boolean isMergeConflictMsg(String msg) {
-        if(Utilities.isWindows() ) {
-            return (msg.indexOf(HG_MERGE_CONFLICT_WIN1_ERR) > -1) &&        // NOI18N
-                    (msg.indexOf(HG_MERGE_CONFLICT_WIN2_ERR) > -1);         // NOI18N
-        }else{
-            return msg.indexOf(HG_MERGE_CONFLICT_ERR) > -1;                 // NOI18N
-        }
+    public static boolean isMergeFailedMsg (String msg) {
+        return (msg.indexOf(HG_MERGE_FAILED1_ERR) > -1) && (msg.indexOf(HG_MERGE_FAILED2_ERR) > -1);
+    }
+
+    public static boolean isConflictDetectedInMsg (String msg) {
+        return msg.indexOf(HG_MERGE_CONFLICT_ERR) > -1;
     }
 
     public static boolean isMergeUnavailableMsg(String msg) {
