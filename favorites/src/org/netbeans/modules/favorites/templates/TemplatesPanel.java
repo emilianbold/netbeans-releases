@@ -64,6 +64,7 @@ import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.CopyAction;
@@ -71,12 +72,15 @@ import org.openide.actions.CutAction;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.PasteAction;
 import org.openide.actions.PropertiesAction;
-import org.openide.actions.RenameAction;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.MultiFileSystem;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -90,6 +94,7 @@ import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -488,7 +493,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         Node [] nodes = manager.getSelectedNodes ();
         assert nodes != null : "Selected Nodes cannot be null.";
         assert nodes.length == 1 : "One one node can be selected, but was " + Arrays.asList (nodes);
-        view.invokeInplaceEditing ();
+        showRename((TemplateNode) nodes[0]);
     }//GEN-LAST:event_renameButtonActionPerformed
     
     private void addButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
@@ -520,7 +525,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameAction.class),
+                                    SystemAction.get (RenameTemplateAction.class),
                                     null,
                                     SystemAction.get (PropertiesAction.class),
         };
@@ -534,7 +539,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameAction.class),
+                                    SystemAction.get (RenameTemplateAction.class),
         };
 
         public TemplateNode (Node n) { 
@@ -598,6 +603,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
 
         @Override
+        public boolean canRename() {
+            return false;
+        }
+
+        @Override
         public PropertySet[] getPropertySets () {
             return new Node.PropertySet [] { createTemplateProperties (this) };
         }
@@ -617,6 +627,41 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                 Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
             }
             setDisplayName (origDisplayName);
+        }
+
+    }
+
+    private static class RenameTemplateAction extends NodeAction {
+
+        @Override
+        protected boolean surviveFocusChange() {
+            return false;
+        }
+
+        @Override
+        public String getName() {
+            return NbBundle.getMessage(RenameTemplateAction.class, "Action_Rename");
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(RenameTemplateAction.class);
+        }
+
+        @Override
+        protected boolean enable(Node[] activatedNodes) {
+            // exactly one node should be selected
+            if ((activatedNodes == null) || (activatedNodes.length != 1)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void performAction(Node[] activatedNodes) {
+            TemplateNode n = (TemplateNode) activatedNodes[0]; // we supposed that one node is activated
+            showRename(n);
         }
 
     }
@@ -1042,6 +1087,77 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         supp.moveDown (origPos);
         // getNodePosition() is not really reliable here.
         // assert origPos + 1 == getNodePosition (n) : "Node " + n + " has been moved from " + origPos + " to pos " + getNodePosition (n);
+    }
+
+    private static void showRename(TemplateNode n) {
+        String name = n.getFileName();
+        String displayName = n.getDisplayName();
+        FileObject fo = n.getLookup().lookup(FileObject.class);
+        RenameTemplatePanel editPanel = new RenameTemplatePanel(isUserFile(fo));
+        editPanel.setFileName(name);
+        editPanel.setFileDisplayName(displayName);
+        String title = org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "RenameTemplatePanel.title.text");
+        DialogDescriptor dd = new DialogDescriptor(editPanel, title);
+        Object res = DialogDisplayer.getDefault().notify(dd);
+        if (DialogDescriptor.OK_OPTION.equals(res)) {
+            name = editPanel.getFileName();
+            displayName = editPanel.getFileDisplayName();
+            n.setFileName(name);
+            try {
+                fo.setAttribute (TEMPLATE_DISPLAY_NAME_ATTRIBUTE, displayName);
+                fo.setAttribute (TEMPLATE_LOCALIZING_BUNDLE_ATTRIBUTE, null);
+            } catch (IOException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
+            }
+            n.setDisplayName(displayName);
+        }
+    }
+
+    /** Test if the file physically exists on disk and thus was created by user and can be renamed. */
+    private static boolean isUserFile(FileObject fo) {
+        String path = fo.getPath();
+        // Find if this path is on non-local filesystems
+        FileSystem fs;
+        try {
+            fs = fo.getFileSystem();
+        } catch (FileStateInvalidException ex) {
+            return false;
+        }
+        return !isOnNonLocalFS(fs, path);
+    }
+
+    private static boolean isOnNonLocalFS(FileSystem fs, String path) {
+        if (fs instanceof MultiFileSystem) {
+            MultiFileSystem mfs = (MultiFileSystem) fs;
+            try {
+                java.lang.reflect.Method getDelegatesMethod;
+                getDelegatesMethod = MultiFileSystem.class.getDeclaredMethod("getDelegates"); // NOI18N
+                getDelegatesMethod.setAccessible(true);
+                FileSystem[] delegates = (FileSystem[]) getDelegatesMethod.invoke(mfs);
+                for (FileSystem fsd : delegates) {
+                    if (isOnNonLocalFS(fsd, path)) {
+                        return true;
+                    }
+                }
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return false;
+        } else {
+            if (fs instanceof LocalFileSystem) {
+                return false; // is local FS
+            } else {
+                return fs.findResource(path) != null;
+            }
+        }
     }
     
     // action
