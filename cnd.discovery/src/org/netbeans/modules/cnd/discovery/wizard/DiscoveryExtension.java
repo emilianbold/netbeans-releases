@@ -77,6 +77,17 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     /** Creates a new instance of DiscoveryExtension */
     public DiscoveryExtension() {
     }
+
+    @Override
+    public void discoverArtifacts(Map<String, Object> map) {
+        DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
+        Applicable applicable = isApplicable(descriptor);
+        if (applicable != null && applicable.isApplicable()) {
+            descriptor.setCompilerName(applicable.getCompilerName());
+            descriptor.setDependencies(applicable.getDependencies());
+            descriptor.setRootFolder(applicable.getSourceRoot());
+        }
+    }
     
     @Override
     public Set<FileObject> createProject(WizardDescriptor wizard) throws IOException{
@@ -235,7 +246,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void discoverProject(final Map<String, Object> map, final Project lastSelectedProject, ProjectKind projectKind) {
         ImportExecutable importer = new ImportExecutable(map, lastSelectedProject, projectKind);
-        importer.process(this);
+        if (lastSelectedProject != null) {
+            importer.process(this);
+        }
     }
 
     private static class ProjectProxyImpl implements ProjectProxy {

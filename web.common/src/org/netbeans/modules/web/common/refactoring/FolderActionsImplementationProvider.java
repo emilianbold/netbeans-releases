@@ -44,6 +44,7 @@ package org.netbeans.modules.web.common.refactoring;
 import java.util.Collection;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.modules.refactoring.api.ui.ExplorerContext;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -101,7 +102,8 @@ public class FolderActionsImplementationProvider extends ActionsImplementationPr
         assert nodes.size() == 1;
         Node node = nodes.iterator().next();
         FileObject file = getFileObjectFromNode(node);
-        UI.openRefactoringUI(new RenameRefactoringUI(file));
+        String newName = getName(selectedNodes);
+        UI.openRefactoringUI(new RenameRefactoringUI(file, newName));
     }
 
     private static FileObject getFileObjectFromNode(Node node) {
@@ -122,4 +124,12 @@ public class FolderActionsImplementationProvider extends ActionsImplementationPr
     private static EditorCookie getEditorCookie(Node node) {
         return node.getLookup().lookup(EditorCookie.class);
     }
+
+    private static String getName(Lookup look) {
+        ExplorerContext ren = look.lookup(ExplorerContext.class);
+        if (ren==null)
+            return null;
+        return ren.getNewName(); //NOI18N
+    }
+
 }

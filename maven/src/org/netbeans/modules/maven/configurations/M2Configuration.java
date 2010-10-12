@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
  */
 public class M2Configuration extends AbstractMavenActionsProvider implements ProjectConfiguration  {
 
-    public static String DEFAULT = "%%DEFAULT%%"; //NOI18N
+    public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
     static M2Configuration createDefault(NbMavenProjectImpl prj) {
         return new M2Configuration(DEFAULT, prj);

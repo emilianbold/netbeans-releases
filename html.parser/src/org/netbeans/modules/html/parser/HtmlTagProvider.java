@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.html.parser;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
+import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
@@ -105,18 +109,7 @@ public class HtmlTagProvider {
         }
 
         private HtmlTagType findType() {
-            if (isPureHtmlTag()) {
-                //descriptor is available only for html tags
-                return HtmlTagType.HTML;
-            } else {
-                if (ElementDescriptorRules.MATHML_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.MATHML;
-                } else if (ElementDescriptorRules.SVG_TAG_NAMES.contains(getName())) {
-                    return HtmlTagType.SVG;
-                } else {
-                    return HtmlTagType.UNKNOWN;
-                }
-            }
+            return isPureHtmlTag() ? descriptor.getTagType() : HtmlTagType.UNKNOWN;
         }
 
         private Map<String, HtmlTagAttribute> wrap(Collection<Attribute> attrNames) {
@@ -208,7 +201,24 @@ public class HtmlTagProvider {
             }
             return children;
         }
+
+        public HelpItem getHelp() {
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>Element '");
+            header.append(descriptor.getName());
+            header.append("'</h2>");
+
+            return isPureHtmlTag() && descriptor.getHelpLink() != null
+                    ? new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(descriptor.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString())
+                    : null;
+
+        }
+
     }
+
 
     private static class HtmlTagAttributeAdapter implements HtmlTagAttribute {
 
@@ -232,6 +242,18 @@ public class HtmlTagProvider {
 
         public Collection<String> getPossibleValues() {
             return Collections.emptyList();
+        }
+
+        public HelpItem getHelp() {
+            StringBuilder header = new StringBuilder();
+            header.append("<h2>Attribute '");
+            header.append(attr.getName());
+            header.append("'</h2>");
+
+            return new DefaultHelpItem(
+                    Documentation.getDefault().resolveLink(attr.getHelpLink()),
+                    Documentation.getDefault(),
+                    header.toString());
         }
     }
 }

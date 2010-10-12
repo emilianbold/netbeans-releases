@@ -106,7 +106,7 @@ public class CreateDependencies implements PropertyChangeListener {
                 String ldLibPath = ImportExecutable.getLdLibraryPath(activeConfiguration);
                 boolean search = false;
                 for(String dll : dependencies) {
-                    String p = ImportExecutable.findLocation(dll, ldLibPath, root);
+                    String p = ImportExecutable.findLocation(dll, ldLibPath);
                     if (p != null) {
                         dllPaths.put(dll, p);
                     } else {
@@ -229,6 +229,8 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     ImportExecutable.switchModel(true, lastSelectedProject);
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 } finally {
                     progress.finish();
                 }

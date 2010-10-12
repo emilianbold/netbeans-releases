@@ -81,8 +81,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -165,15 +165,12 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
-                <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
-                <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.search</friend>
                 <package>org.netbeans.modules.maven.indexer.api</package>
@@ -182,12 +179,28 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/nexus-indexer-3.0.2.jar</runtime-relative-path>
-                <binary-origin>external/nexus-indexer-3.0.2.jar</binary-origin>
+                <runtime-relative-path>ext/maven/nexus-indexer-3.0.4.jar</runtime-relative-path>
+                <binary-origin>external/nexus-indexer-3.0.4.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/maven/nexus-indexer-artifact-1.0.0.jar</runtime-relative-path>
-                <binary-origin>external/nexus-indexer-artifact-1.0.0.jar</binary-origin>
+                <runtime-relative-path>ext/maven/nexus-indexer-artifact-1.0.1.jar</runtime-relative-path>
+                <binary-origin>external/nexus-indexer-artifact-1.0.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/jetty-client-7.0.0.RC6.jar</runtime-relative-path>
+                <binary-origin>external/jetty-client-7.0.0.RC6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/jetty-http-7.0.0.RC6.jar</runtime-relative-path>
+                <binary-origin>external/jetty-http-7.0.0.RC6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/jetty-io-7.0.0.RC6.jar</runtime-relative-path>
+                <binary-origin>external/jetty-io-7.0.0.RC6.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/maven/jetty-util-7.0.0.RC6.jar</runtime-relative-path>
+                <binary-origin>external/jetty-util-7.0.0.RC6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

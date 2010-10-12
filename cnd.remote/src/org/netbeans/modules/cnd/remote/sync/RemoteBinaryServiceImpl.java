@@ -52,7 +52,9 @@ import java.util.concurrent.FutureTask;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -153,11 +155,13 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
             if (localPath != null &&
                     RemotePathMap.isTheSame(execEnv,
-                    new File(remotePath).getParentFile().getAbsolutePath(),
-                    new File(localPath).getParentFile())) {
+                    //new File(remotePath).getParentFile().getAbsolutePath(),
+                    CndPathUtilitities.getDirName(remotePath),
+                    CndFileUtils.createLocalFile(localPath).getParentFile())) {
                 if (lastResult == null) {
                     lastResult = new RemoteBinaryResult(localPath, new FutureTask<Boolean>(new Callable<Boolean>() {
 
+                        @Override
                         public Boolean call() throws Exception {
                             return true;
                         }
@@ -201,7 +205,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             final String newTimestamp = getTimestamp();
 
             if (timeStamp != null && timeStamp.equals(newTimestamp)) {
-                if (new File(lastResult.localFName).exists()) {
+                if (CndFileUtils.isValidLocalFile(lastResult.localFName)) {
                     return lastResult;
                 }
             }
@@ -211,6 +215,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
             FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
 
+                @Override
                 public Boolean call() throws Exception {
 
                     String remoteCopyPath = null;

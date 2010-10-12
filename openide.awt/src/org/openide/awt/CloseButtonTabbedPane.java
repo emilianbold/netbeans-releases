@@ -513,17 +513,24 @@ final class CloseButtonTabbedPane extends JTabbedPane implements PropertyChangeL
             super(new FlowLayout(FlowLayout.LEFT, 0, 0));
             setOpaque(false);
             label = new JLabel("") {
+                
+                private String lastText = null;
+                
                 @Override
                 public String getText() {
+                    String currentText = "";
                     int i = indexOfTabComponent(ButtonTab.this);
-                    if (i >= 0) {
-                        String tabTitle = getTitleAt(i);
-                        if (!super.getText().equals(tabTitle)) {
-                            setText(tabTitle);
-                        }
-                        return tabTitle;
+                    if (i >= 0)
+                        currentText = getTitleAt(i);
+                    
+                    if (null != lastText && lastText.equals(currentText))
+                        return lastText;
+                    
+                    lastText = currentText;
+                    if (!super.getText().equals(currentText)) {
+                        setText(currentText);
                     }
-                    return "";
+                    return currentText;
                 }
 
                 @Override

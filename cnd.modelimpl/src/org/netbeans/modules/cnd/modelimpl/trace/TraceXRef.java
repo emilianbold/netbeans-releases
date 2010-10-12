@@ -1179,7 +1179,7 @@ public class TraceXRef extends TraceModel {
         public void outputLineAction(OutputEvent ev) {
             CsmFile file = fileUID.getObject();
             if (file != null) {
-                CsmUtilities.openSource(new OffsetableBase(file, offset, offset));
+                CsmUtilities.openSource(OffsetableBase.create(file, offset, offset));
             }
         }
 

@@ -62,6 +62,7 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -70,20 +71,21 @@ import org.openide.filesystems.FileObject;
 public class WsitServiceChangeListener implements ServiceChangeListener {
     
     Service service;
-    FileObject implFile;
     Project project;
+    DataObject dataObject;
     
-    public WsitServiceChangeListener(Service service, FileObject implFile, Project project) {
+    public WsitServiceChangeListener(Service service, DataObject dataObject, Project project) {
         this.service = service;
-        this.implFile = implFile;
         this.project = project;
+        this.dataObject = dataObject;
     }
     
     public void propertyChanged(String propertyName, String oldValue, String newValue) { }
     
     public void operationAdded(MethodModel method) {
         
-        Binding binding = WSITModelSupport.getBinding(service, implFile, project, false, null);
+        Binding binding = WSITModelSupport.getBinding(service, 
+                dataObject.getPrimaryFile(), project, false, null);
         if (binding != null) {
             BindingOperation bO = getBindingOperation(binding, method.getOperationName());
             if(bO == null){
@@ -108,7 +110,8 @@ public class WsitServiceChangeListener implements ServiceChangeListener {
     }
     
     public void operationRemoved(MethodModel method) {
-        Binding binding = WSITModelSupport.getBinding(service, implFile, project, false, null);
+        Binding binding = WSITModelSupport.getBinding(service, 
+                dataObject.getPrimaryFile(), project, false, null);
         if (binding != null) {
             WSDLModel model = binding.getModel();
             String methodName = method.getOperationName();

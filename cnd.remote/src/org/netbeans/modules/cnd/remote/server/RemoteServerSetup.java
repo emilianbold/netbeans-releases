@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.openide.modules.InstalledFileLocator;
@@ -120,7 +121,7 @@ public class RemoteServerSetup {
             RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
                 String localFileName = binarySetupMap.get(path);
-                File file = new File(localFileName);
+                File file = CndFileUtils.createLocalFile(localFileName);
                 if (!file.isAbsolute()) {
                     file = InstalledFileLocator.getDefault().locate(localFileName, "org.netbeans.modules.cnd.remote", false); //NOI18N
                 }

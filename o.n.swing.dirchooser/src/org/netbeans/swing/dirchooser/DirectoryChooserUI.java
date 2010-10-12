@@ -1664,7 +1664,15 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         });
     }
     
-    private void setCursor(JComponent comp, int type) {
+    private void setCursor (final JComponent comp, final int type) {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run () {
+                    setCursor(comp, type);
+                }
+            });
+        }
         Window window = SwingUtilities.getWindowAncestor(comp);
         if (window != null) {
             Cursor cursor = Cursor.getPredefinedCursor(type);
@@ -2059,6 +2067,8 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         private WeakReference<TreePath> curSelPath;
         /** timer for slow click to rename feature */ 
         private Timer renameTimer;
+        /** timer for slow dbl-click */
+        private Timer dblClickTimer;
         /** path to rename for slow click to rename feature */
         private TreePath pathToRename;
         
@@ -2122,36 +2132,51 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 newFolderAction.setEnabled(canWrite(node.getFile()));
     
                 if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 2)) {
-                    cancelRename();
-                    if(node.isNetBeansProject()) {
-                        fileChooser.approveSelection();
-                    } else if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){
-                        fileChooser.approveSelection();
-                    } else {
-                        changeTreeDirectory(node.getFile());
-                    }
-                    
+                    handleDblClick(node);
+                    return;
                 }
                 
                 // handles click to rename feature
                 if (SwingUtilities.isLeftMouseButton(e) && (e.getClickCount() == 1)) {
                     if (pathToRename != null) {
-                        if (renameTimer != null) {
-                            renameTimer.stop();
+                        if (dblClickTimer != null) {
+                            handleDblClick(node);
+                            return;
                         }
                         // start slow click rename timer
                         renameTimer = new Timer(800, this);
                         renameTimer.setRepeats(false);
                         renameTimer.start();
+                        startDblClickTimer();
                     }
                 }
                 
+                startDblClickTimer();
                 ((DirectoryTreeModel) tree.getModel()).nodeChanged(node);
                 if (row == 0) {
                     tree.revalidate();
                     tree.repaint();
                 }
             }
+        }
+
+        private void handleDblClick (DirectoryNode node) {
+            cancelRename();
+            cancelDblClick();
+            if(node.isNetBeansProject()) {
+                fileChooser.approveSelection();
+            } else if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){
+                fileChooser.approveSelection();
+            } else {
+                changeTreeDirectory(node.getFile());
+            }
+        }
+
+        private void startDblClickTimer () {
+            cancelDblClick();
+            dblClickTimer = new Timer(500, this);
+            dblClickTimer.setRepeats(false);
+            dblClickTimer.start();
         }
 
         @Override
@@ -2217,13 +2242,18 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
         
         public void actionPerformed(ActionEvent e) {
             if (tree.isFocusOwner() && isSelectionKept(pathToRename)) {
-                DirectoryNode node = (DirectoryNode)tree.getLastSelectedPathComponent();
-                if (node != null) {
-                    applyEdit(node);
+                if (e.getSource() == renameTimer) {
+                    DirectoryNode node = (DirectoryNode)tree.getLastSelectedPathComponent();
+                    if (node != null) {
+                        applyEdit(node);
+                    }
                 }
             }
             // clear
-            cancelRename();
+            if (e.getSource() != dblClickTimer) {
+                cancelRename();
+            }
+            cancelDblClick();
         }
         
         void preprocessMouseEvent (MouseEvent e) {
@@ -2252,6 +2282,14 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                 renameTimer = null;
             }
             pathToRename = null;
+        }
+
+        private void cancelDblClick () {
+            Timer t = dblClickTimer;
+            if (t != null) {
+                t.stop();
+                dblClickTimer = null;
+            }
         }
         
         /******** implementation of focus listener, for slow click rename cancelling ******/ 

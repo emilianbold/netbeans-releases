@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -212,11 +211,16 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
+                    String path = cu.getSourceFileAbsolutePath();
+                    File normalizeFile = CndFileUtils.normalizeFile(new File(path));
+                    if (!normalizeFile.exists()) {
+                        continue;
+                    }
                     ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
-                        language = ItemProperties.LanguageKind.CPP;
+                        language = ItemProperties.LanguageKind.C;
                         res++;
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
                         language = ItemProperties.LanguageKind.CPP;
@@ -229,9 +233,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    String path = cu.getSourceFileAbsolutePath();
-                    path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
-                    path = path.replace('\\', '/');
+                    path = normalizeFile.getAbsolutePath().replace('\\', '/');
                     if (commonRoot == null) {
                         int i = path.lastIndexOf('/');
                         if (i >= 0) {
@@ -351,16 +353,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         continue;
                     }
                     DwarfSource source = null;
-                    if (LANG.DW_LANG_C.toString().equals(lang)
-                            || LANG.DW_LANG_C89.toString().equals(lang)
-                            || LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, getCommpilerSettings(), grepBase);
+                    if (LANG.DW_LANG_C.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_C89.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_C99.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, getCommpilerSettings(), grepBase);
-                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang) ||
-                           LANG.DW_LANG_Fortran90.toString().equals(lang) ||
-                           LANG.DW_LANG_Fortran95.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.CPP, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran90.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase);
                     } else {
                         if (FULL_TRACE) {
                             System.out.println("Unknown language: " + lang);  // NOI18N

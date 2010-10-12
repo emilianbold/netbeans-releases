@@ -54,9 +54,11 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -65,6 +67,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
@@ -72,6 +75,8 @@ import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -125,36 +130,7 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                 try {
                     String locale = document.getText(0, document.getLength());
 
-                    if (locale.length() == 0) {
-                        setError("ERR_LocaleIsEmpty");
-                        return;
-                    }
-
-                    String[] components = locale.split("_");
-
-                    if (components.length > 3) {
-                        setError("ERR_InvalidLocale");
-                        return;
-                    }
-
-                    if (!Arrays.asList(Locale.getISOLanguages()).contains(components[0])) {
-                        setError("ERR_UnknownLanguage");
-                        return;
-                    }
-
-                    if (components.length > 1) {
-                        if (!Arrays.asList(Locale.getISOCountries()).contains(components[1])) {
-                            setError("ERR_UnknownCountry");
-                            return;
-                        }
-
-                        if (!Arrays.asList(Locale.getAvailableLocales()).contains(new Locale(components[0], components[1]))) {
-                            setError("ERR_UnsupportedLocale");
-                            return;
-                        }
-                    }
-
-                    setError(null);
+                    setError(getErrorsForLocale(locale));
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -201,6 +177,14 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
                     ((DefaultListModel) lUseIn.getModel ()).set (i, "+" + name.substring (1));
             }
         });
+        
+        installedLocalesList.addListSelectionListener(new ListSelectionListener() {
+
+            public void valueChanged(ListSelectionEvent e) {
+                enableDisableButtons();
+            }
+        });
+        enableDisableButtons();
     }
 
     private void setError(String error) {
@@ -457,13 +441,25 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        DictionaryInstallerPanel panel = new DictionaryInstallerPanel();
-        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_AddDictionary"));
+        Collection<String> currentLocales = new HashSet<String>();
+        ListModel locales = installedLocalesList.getModel();
+
+        for (int c = 0; c < locales.getSize(); c++) {
+            currentLocales.add(locales.getElementAt(c).toString());
+        }
+
+        JButton okButton = new JButton(NbBundle.getMessage(SpellcheckerOptionsPanel.class, "BTN_Add"));
+        DictionaryInstallerPanel panel = new DictionaryInstallerPanel(okButton, currentLocales);
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SpellcheckerOptionsPanel.class, "LBL_AddDictionary"), true, new Object[] {okButton, DialogDescriptor.CANCEL_OPTION}, okButton, DialogDescriptor.DEFAULT_ALIGN, null, null);
+
+        dd.setClosingOptions(null);
+        panel.setNotifications(dd.createNotificationLineSupport());
+        
         Dialog d = DialogDisplayer.getDefault().createDialog(dd);
 
         d.setVisible(true);
 
-        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+        if (dd.getValue() == okButton) {
             DictionaryDescription desc = panel.createDescription();
 
             addedDictionaries.add(desc);
@@ -536,6 +532,38 @@ public class SpellcheckerOptionsPanel extends javax.swing.JPanel {
         return result;
     }
 
+    public static String getErrorsForLocale(String locale) {
+        if (locale.length() == 0) {
+            return "ERR_LocaleIsEmpty";
+        }
+
+        String[] components = locale.split("_");
+
+        if (components.length > 3) {
+            return "ERR_InvalidLocale";
+        }
+
+        if (!Arrays.asList(Locale.getISOLanguages()).contains(components[0])) {
+            return "ERR_UnknownLanguage";
+        }
+
+        if (components.length > 1) {
+            if (!Arrays.asList(Locale.getISOCountries()).contains(components[1])) {
+                return "ERR_UnknownCountry";
+            }
+
+            if (!Arrays.asList(Locale.getAvailableLocales()).contains(new Locale(components[0], components[1]))) {
+                return "ERR_UnsupportedLocale";
+            }
+        }
+
+        return null;
+    }
+
+    private void enableDisableButtons() {
+        removeButton.setEnabled(installedLocalesList.getSelectedIndex() != (-1));
+    }
+    
     private static final Comparator<String> CategoryComparator = new Comparator<String> () {
 
         public int compare (String o1, String o2) {

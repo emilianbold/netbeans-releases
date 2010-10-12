@@ -42,8 +42,7 @@
 
 package org.netbeans.modules.cnd.makeproject.api;
 
-import java.io.File;
-import javax.swing.filechooser.FileFilter;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -51,12 +50,12 @@ import javax.swing.filechooser.FileFilter;
  */
 public interface SourceFolderInfo {
 
-    File getFile();
+    FileObject getFileObject();
 
     String getFolderName();
 
     boolean isAddSubfoldersSelected();
 
-    FileFilter getFileFilter();
+    // FileFilter getFileFilter();
 
 }

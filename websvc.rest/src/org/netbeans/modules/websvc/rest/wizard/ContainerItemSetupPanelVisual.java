@@ -604,13 +604,13 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         } else if (uriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyUriTemplate");
             return false;
-        } else if (!isValidUri(uriTextField.getText().trim())) {
+        } else if (!Util.isValidUri(uriTextField.getText().trim())) {
             AbstractPanel.setErrorMessage(wizard, "MSG_IncorrectUriTemplate");
             return false;
         } else if (containerUriTextField.getText().trim().length() == 0) {
             AbstractPanel.setErrorMessage(wizard, "MSG_EmptyContainerUriTemplate");
             return false;
-        } else if (!isValidUri(containerUriTextField.getText().trim())) {
+        } else if (!Util.isValidUri(containerUriTextField.getText().trim())) {
             AbstractPanel.setErrorMessage(wizard, "MSG_IncorrectUriTemplate");
             return false;
         } else if (! Util.isValidPackageName(packageName)) {
@@ -626,35 +626,6 @@ private void representationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRS
         return true;
     }
 
-    private boolean isValidUri(String uri) {
-        StringTokenizer segments = new StringTokenizer(uri, "/ "); //NOI18N
-        Set<String> uriParts = new HashSet<String>();
-        while (segments.hasMoreTokens()) {
-            String segment = segments.nextToken();
-            if (segment.startsWith("{")) { //NOI18N
-                if (segment.length() > 2 && segment.endsWith("}")) { //NOI18N
-                    String uriPart = segment.substring(1, segment.length() - 1);
-                    if (!Utilities.isJavaIdentifier(uriPart)) {
-                        return false;
-                    }
-                    if (uriParts.contains(uriPart)) {
-                        return false;
-                    } else {
-                        uriParts.add(uriPart);
-                    }
-
-                } else {
-                    return false;
-                }
-            } else {
-                if (segment.contains("{") || segment.contains("}")) { //NOI18N
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
     public SourceGroup getLocationValue() {
         return (SourceGroup)locationComboBox.getSelectedItem();
     }

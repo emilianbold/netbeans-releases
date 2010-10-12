@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JFileChooser;
@@ -53,20 +52,22 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private JList exeList;
-    private FileFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
-    private FileFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
-    private FileFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter elfExecutableFileFilter = FileFilterFactory.getElfExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter exeExecutableFileFilter = FileFilterFactory.getPeExecutableFileFilter();
+    private FileFilterFactory.FileAndFileObjectFilter machOExecutableFileFilter = FileFilterFactory.getMacOSXExecutableFileFilter();
     private DocumentListener documentListener;
     private DialogDescriptor dialogDescriptor;
     private MakeConfiguration conf;
@@ -77,7 +78,9 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         initComponents();
         instructionsTextArea.setBackground(getBackground());
 
-        File root = new File(conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir());
+        FileObject root = RemoteFileUtil.getFileObject(
+                conf.getMakefileConfiguration().getAbsBuildCommandWorkingDir(),
+                conf.getFileSystemHost());
         String[] executables = findAllExecutables(root);
         exeList = new JList(executables);
         executableList.setViewportView(exeList);
@@ -133,12 +136,15 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
 
     private void validateExe() {
         String errorText = null;
-        File exe = new File(executableTextField.getText());
+        FileObject exe = RemoteFileUtil.getFileObject(
+                executableTextField.getText(),
+                conf.getFileSystemHost());
+
         if (executableTextField.getText().length() == 0) {
             errorText = getString("NO_EXE_ERROR");
-        } else if (!exe.exists()) {
+        } else if (!exe.isValid()) {
             errorText = getString("EXE_DOESNT_EXISTS");
-        } else if (exe.isDirectory() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
+        } else if (exe.isFolder() || (!elfExecutableFileFilter.accept(exe) && !exeExecutableFileFilter.accept(exe) && !machOExecutableFileFilter.accept(exe))) {
             errorText = getString("FILE_NOT_AN_EXECUTABLE");
         }
         if (errorText != null) {
@@ -158,8 +164,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         return executableTextField.getText();
     }
 
-    private String[] findAllExecutables(File root) {
-        if (!root.exists() || !root.isDirectory()) {
+    private String[] findAllExecutables(FileObject root) {
+        if (!root.isValid() || !root.isFolder()) {
             // Something is wrong
             return new String[]{};
         }
@@ -168,13 +174,13 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         return aLlist.toArray(new String[aLlist.size()]);
     }
 
-    private void addExecutables(File dir, List<String> filesAdded) {
-        File[] files = dir.listFiles();
+    private void addExecutables(FileObject dir, List<String> filesAdded) {
+        FileObject[] files = dir.getChildren();
         if (files == null) {
             return;
         }
         for (int i = 0; i < files.length; i++) {
-            if (files[i].isDirectory()) {
+            if (files[i].isFolder()) {
                 // FIXUP: is this the best way to deal with files under SCCS?
                 // Unfortunately the SCCS directory contains data files with the same
                 // suffixes as the the source files, and a simple file filter based on
@@ -325,13 +331,16 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         } else {
             filters = new FileFilter[]{FileFilterFactory.getElfExecutableFileFilter()};
         }
-        JFileChooser fileChooser = new FileChooser(
+        JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
+                conf.getRemoteMode(),
+                conf.getFileSystemHost(),
                 getString("CHOOSER_TITLE_TXT"),
                 getString("CHOOSER_BUTTON_TXT"),
                 JFileChooser.FILES_ONLY,
                 filters,
                 seed,
                 false);
+        
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;

@@ -45,13 +45,14 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -60,16 +61,17 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class ParserConfigurationPanel extends javax.swing.JPanel implements HelpCtx.Provider {
 
-    private ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel;
+    private final ParserConfigurationDescriptorPanel controller;
     private boolean first = true;
 
     /*package-local*/ ParserConfigurationPanel(ParserConfigurationDescriptorPanel sourceFoldersDescriptorPanel) {
         initComponents();
-        this.sourceFoldersDescriptorPanel = sourceFoldersDescriptorPanel;
+        this.controller = sourceFoldersDescriptorPanel;
 
         // Accessibility
         getAccessibleContext().setAccessibleDescription(getString("INCLUDE_LABEL_AD"));
@@ -85,7 +87,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     }
 
     private void update(DocumentEvent e) {
-        sourceFoldersDescriptorPanel.stateChanged(null);
+        controller.stateChanged(null);
     }
 
     void read(WizardDescriptor settings) {
@@ -96,24 +98,24 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         if (first) {
             first = false;
             @SuppressWarnings("unchecked")
-            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty("sourceFoldersList"); // NOI18N
+            ArrayList<FolderEntry> roots = (ArrayList) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_LIST); // NOI18N
             if (roots != null) {
                 StringBuilder buf = new StringBuilder();
                 for(FolderEntry folder : roots){
                     if (buf.length()>0) {
                         buf.append(';');
                     }
-                    File dir = folder.getFile();
+                    FileObject dir = folder.getFileObject();
                     if (dir != null) {
-                        buf.append(dir.getAbsolutePath());
-                        if (dir.isDirectory()) {
-                            final File[] listFiles = dir.listFiles();
+                        buf.append(RemoteFileUtil.getAbsolutePath(dir));
+                        if (dir.isFolder()) {
+                            final FileObject[] listFiles = dir.getChildren();
                             if (listFiles != null) {
-                                for (File sub : listFiles){
-                                    if (sub.isDirectory()) {
-                                        if (sub.getName().toLowerCase().endsWith("include")) { // NOI18N
+                                for (FileObject sub : listFiles){
+                                    if (sub.isFolder()) {
+                                        if (sub.getNameExt().toLowerCase().endsWith("include")) { // NOI18N
                                             buf.append(';');
-                                            buf.append(sub.getAbsolutePath());
+                                            buf.append(RemoteFileUtil.getAbsolutePath(sub));
                                         }
                                     }
                                 }
@@ -128,15 +130,15 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void store(WizardDescriptor wizardDescriptor) {
         if (manualButton.isSelected()) {
-            wizardDescriptor.putProperty("includeTextField", includeTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", macroTextField.getText()); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "true"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, includeTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, macroTextField.getText()); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "true"); // NOI18N
         } else {
-            wizardDescriptor.putProperty("includeTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("macroTextField", ""); // NOI18N
-            wizardDescriptor.putProperty("manualCA", "false"); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_INCLUDES, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MACROS, ""); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE, "false"); // NOI18N
         }
-        wizardDescriptor.putProperty("consolidationLevel", "file"); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL, "file"); // NOI18N
     }
 
     boolean valid(WizardDescriptor settings) {
@@ -397,7 +399,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
         return outerPanel;
     }
 
-    private static class IncludesListPanel extends ListEditorPanel<String> {
+    private class IncludesListPanel extends ListEditorPanel<String> {
 
         public IncludesListPanel(List<String> objects) {
             super(objects);
@@ -413,7 +415,11 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N
             }
-            FileChooser fileChooser = new FileChooser(getString("INCLUDE_DIR_DIALOG_TITLE_TXT"), getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                    controller.getWizardDescriptor(),
+                    getString("INCLUDE_DIR_DIALOG_TITLE_TXT"),
+                    getString("INCLUDE_DIR_DIALOG_BUTTON_TXT"),
+                    JFileChooser.DIRECTORIES_ONLY, null, seed, true);
             int ret = fileChooser.showOpenDialog(this);
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
@@ -455,7 +461,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
         @Override
         public String copyAction(String o) {
-            return new String(o);
+            return o; // new String(o); ???
         }
 
         @Override

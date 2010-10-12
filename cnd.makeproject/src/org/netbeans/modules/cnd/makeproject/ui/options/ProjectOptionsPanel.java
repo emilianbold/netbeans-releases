@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -117,10 +118,10 @@ public class ProjectOptionsPanel extends JPanel {
         rebuildPropsChangedCheckBox.setSelected(makeOptions.getRebuildPropChanged());
         makeOptionsTextField.setText(makeOptions.getMakeOptions());
         filePathcomboBox.removeAllItems();
-        for (int i = 0; i < MakeOptions.PathModeNames.length; i++) {
-            filePathcomboBox.addItem(MakeOptions.PathModeNames[i]);
+        for (MakeProjectOptions.PathMode pathMode : MakeProjectOptions.PathMode.values()) {
+            filePathcomboBox.addItem(pathMode);
         }
-        filePathcomboBox.setSelectedIndex(makeOptions.getPathMode());
+        filePathcomboBox.setSelectedItem(makeOptions.getPathMode());
         saveCheckBox.setSelected(makeOptions.getSave());
         reuseCheckBox.setSelected(makeOptions.getReuse());
         viewBinaryFilesCheckBox.setSelected(makeOptions.getViewBinaryFiles());
@@ -140,7 +141,7 @@ public class ProjectOptionsPanel extends JPanel {
         makeOptions.setDepencyChecking(dependencyCheckingCheckBox.isSelected());
         makeOptions.setRebuildPropChanged(rebuildPropsChangedCheckBox.isSelected());
         makeOptions.setMakeOptions(makeOptionsTextField.getText());
-        makeOptions.setPathMode(filePathcomboBox.getSelectedIndex());
+        makeOptions.setPathMode((MakeProjectOptions.PathMode) filePathcomboBox.getSelectedItem());
         makeOptions.setSave(saveCheckBox.isSelected());
         makeOptions.setReuse(reuseCheckBox.isSelected());
         makeOptions.setViewBinaryFiles(viewBinaryFilesCheckBox.isSelected());

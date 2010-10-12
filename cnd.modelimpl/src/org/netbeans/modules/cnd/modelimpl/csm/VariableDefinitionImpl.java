@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
@@ -91,19 +92,16 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     private final TemplateDescriptor templateDescriptor;
 
     /** Creates a new instance of VariableDefinitionImpl */
-    public VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, String name) {
-        super(ast, file, type, getLastname(name), null, false, true);
+    private VariableDefinitionImpl(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
+        super(ast, file, type, name, null,_static, _extern);
         templateDescriptor = createTemplateDescriptor(ast, null, null, true);
         classOrNspNames = getClassOrNspNames(ast);
-        registerInProject();
     }
 
-    private static String getLastname(String name){
-        int i = name.lastIndexOf("::"); // NOI18N
-        if (i >=0){
-            name = name.substring(i+2);
-        }
-        return name;
+    public static VariableDefinitionImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern) {
+        VariableDefinitionImpl variableDefinitionImpl = new VariableDefinitionImpl(ast, file, type, name, _static, _extern);
+        postObjectCreateRegistration(true, variableDefinitionImpl);
+        return variableDefinitionImpl;
     }
 
     @Override
@@ -111,6 +109,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return CsmDeclaration.Kind.VARIABLE_DEFINITION;
     }
     
+    @Override
     public CsmVariable getDeclaration() {
         CsmVariable declaration = _getDeclaration(); 
 	if( declaration == null ) {
@@ -253,7 +252,8 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
-                        l.add(NameCache.getManager().getString(token.getText()));
+                        CharSequence name = AstUtil.getText(token);
+                        l.add(NameCache.getManager().getString(name));
                     }
                 }
             }
@@ -277,14 +277,17 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         return null;
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName(); // NOI18N
     }
     
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }    

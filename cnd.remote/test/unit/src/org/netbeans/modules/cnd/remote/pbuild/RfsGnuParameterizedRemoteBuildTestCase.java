@@ -58,13 +58,13 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.sync.ZipSyncFactory;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Vladimir Kvashin
@@ -97,7 +97,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         File projectDirFile = new File(projectPath);
         assertTrue(projectDirFile.exists());
         setupHost(sync);
-        FileObject projectDirFO = FileUtil.toFileObject(projectDirFile);
+        FileObject projectDirFO = CndFileUtils.toFileObject(projectDirFile);
         MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
         changeProjectHost(makeProject, getTestExecutionEnvironment());
         long time = System.currentTimeMillis();

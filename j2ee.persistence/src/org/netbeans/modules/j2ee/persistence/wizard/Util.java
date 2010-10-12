@@ -396,6 +396,11 @@ public class Util {
                 PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                 punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(), version);
                 punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
+                // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                // See issue 142575 - desc 10
+                if (!Util.isJavaSE(project)) {
+                    punit.setExcludeUnlistedClasses(false);
+                }
             }
             punit.setName(panel.getPersistenceUnitName());
             ProviderUtil.setTableGeneration(punit, panel.getTableGeneration(), project);
@@ -484,6 +489,11 @@ public class Util {
             }
             punit = ProviderUtil.buildPersistenceUnit("tmp", provider, connection, version);
             punit.setTransactionType("RESOURCE_LOCAL"); //NOI18N
+            // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+            // See issue 142575 - desc 10, and issue 180810
+            if (!Util.isJavaSE(project)) {
+                punit.setExcludeUnlistedClasses(false);
+            }
         }
         if (puName == null) {
             puName = getCandidateName(project);

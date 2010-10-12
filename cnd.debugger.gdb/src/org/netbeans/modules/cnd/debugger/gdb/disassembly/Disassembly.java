@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.debugger.gdb.disassembly;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -69,6 +68,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.common.disassembly.DisProgressPanel;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -177,11 +177,6 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             int pos = RESPONSE_HEADER.length();
             boolean nameSet = false;
 
-            File srcFile = null;
-            if (resolvedFileName != null) {
-                srcFile = new File(resolvedFileName);
-            }
-
             long start = System.currentTimeMillis();
             boolean dialogOpened = false;
             DisProgressPanel panel = null;
@@ -223,9 +218,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
                     if (lineIdx > 0) {
                         //String path = debugger.getRunDirectory();
                         String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                        if (srcFile != null && srcFile.getName().equals(fileStr)) {
-                            FileObject src_fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(srcFile));
-                            if (src_fo != null) {
+                        if (resolvedFileName != null && CndPathUtilitities.getBaseName(resolvedFileName).equals(fileStr)) {
+                            FileObject src_fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(resolvedFileName));
+                            if (src_fo != null && src_fo.isValid()) {
                                 try {
                                     String lineText = DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText();
                                     if (lineText != null && lineText.length() > 0) {

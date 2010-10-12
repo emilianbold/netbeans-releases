@@ -42,6 +42,8 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -54,6 +56,7 @@ import org.openide.util.HelpCtx;
         this.data = data;
     }
 
+    @Override
     public CreateHostVisualPanel3 getComponent() {
         if (component == null) {
             component = new CreateHostVisualPanel3(data);
@@ -61,25 +64,34 @@ import org.openide.util.HelpCtx;
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewRemoteDevelopmentHostWizardP3");
     }
 
+    @Override
     public boolean isValid() {
         return true;
     }
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void readSettings(WizardDescriptor settings) {
         getComponent().init();
     }
 
+    @Override
     public void storeSettings(WizardDescriptor settings) {
+        // "hostUID" is needed in the case this page works within another wizard
+        // it isn't surprizing that WizardConstants.PROPERTY_HOST_UID from makeproject is used - the panel is common for setting up a host and creating a project
+        settings.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(data.getExecutionEnvironment())); // NOI18N
         data.setDisplayName(getComponent().getHostDisplayName());
         data.setSyncFactory(getComponent().getRemoteSyncFactory());
     }

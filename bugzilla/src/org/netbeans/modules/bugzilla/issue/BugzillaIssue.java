@@ -172,6 +172,8 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     private Map<String, String> attributes;
     private Map<String, TaskOperation> availableOperations;
 
+    private static final RequestProcessor parallelRP = new RequestProcessor("BugzillaIssue", 5); //NOI18N
+
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
         this.data = data;
@@ -958,6 +960,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 return false;
             }
             getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
+            getBugzillaRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -1174,7 +1177,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
             handle.switchToIndeterminate();
-            RequestProcessor.getDefault().post(new Runnable() {
+            parallelRP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -1217,7 +1220,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
                 handle.switchToIndeterminate();
-                RequestProcessor.getDefault().post(new Runnable() {
+                parallelRP.post(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -1242,7 +1245,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
                 handle.switchToIndeterminate();
-                RequestProcessor.getDefault().post(new Runnable() {
+                parallelRP.post(new Runnable() {
                     @Override
                     public void run() {
                         try {

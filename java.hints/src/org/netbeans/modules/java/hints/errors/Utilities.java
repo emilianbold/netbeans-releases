@@ -43,6 +43,10 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeParameterElement;
 import java.util.HashSet;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
@@ -88,11 +92,13 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -104,6 +110,8 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
@@ -336,6 +344,13 @@ public class Utilities {
      * @throws java.io.IOException
      */
     public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
+        if (!target.canWrite()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(Utilities.class, "ERR_ReadOnlyTargetFile", FileUtil.getFileDisplayName(target)), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            
+            return null;
+        }
+        
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
         
@@ -750,7 +765,7 @@ public class Utilities {
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }
 
-    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
+    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target) {
         List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
         List<String> argumentNames = new LinkedList<String>();
         Set<String>      usedArgumentNames = new HashSet<String>();
@@ -761,7 +776,13 @@ public class Utilities {
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
 
-            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+            if (tm == null || containsErrorsRecursively(tm)) {
+                return null;
+            }
+
+            Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(tm);
+
+            if (!allTypeVarsAccessible(typeVars, target)) {
                 return null;
             }
 
@@ -804,26 +825,110 @@ public class Utilities {
     //=>
     //ArrayList<Unknown> xxx;
     //xxx = new ArrayList<Unknown>();
-    public static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
+    public static boolean containsErrorsRecursively(TypeMirror tm) {
         switch (tm.getKind()) {
-            case WILDCARD:
-            case TYPEVAR:
             case ERROR:
                 return true;
             case DECLARED:
                 DeclaredType type = (DeclaredType) tm;
 
                 for (TypeMirror t : type.getTypeArguments()) {
-                    if (containsErrorsOrTypevarsRecursively(t))
+                    if (containsErrorsRecursively(t))
                         return true;
                 }
 
                 return false;
             case ARRAY:
-                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
+                return containsErrorsRecursively(((ArrayType) tm).getComponentType());
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null && containsErrorsRecursively(((WildcardType) tm).getExtendsBound())) {
+                    return true;
+                }
+                if (((WildcardType) tm).getSuperBound() != null && containsErrorsRecursively(((WildcardType) tm).getSuperBound())) {
+                    return true;
+                }
+                return false;
             default:
                 return false;
         }
+    }
+
+    public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {
+        if (tm == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<TypeVariable> typeVars = new LinkedList<TypeVariable>();
+
+        containedTypevarsRecursively(tm, typeVars);
+
+        return typeVars;
+    }
+
+    private static void containedTypevarsRecursively(@NonNull TypeMirror tm, @NonNull Collection<TypeVariable> typeVars) {
+        switch (tm.getKind()) {
+            case TYPEVAR:
+                typeVars.add((TypeVariable) tm);
+                break;
+            case DECLARED:
+                DeclaredType type = (DeclaredType) tm;
+
+                for (TypeMirror t : type.getTypeArguments()) {
+                    containedTypevarsRecursively(t, typeVars);
+                }
+
+                break;
+            case ARRAY:
+                containedTypevarsRecursively(((ArrayType) tm).getComponentType(), typeVars);
+                break;
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getExtendsBound(), typeVars);
+                }
+                if (((WildcardType) tm).getSuperBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getSuperBound(), typeVars);
+                }
+                break;
+        }
+    }
+
+    public static boolean allTypeVarsAccessible(Collection<TypeVariable> typeVars, Element target) {
+        if (target == null) {
+            return typeVars.isEmpty();
+        }
+        
+        Set<TypeVariable> targetTypeVars = new HashSet<TypeVariable>();
+
+        OUTER: while (target.getKind() != ElementKind.PACKAGE) {
+            Iterable<? extends TypeParameterElement> tpes;
+
+            switch (target.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    tpes = ((TypeElement) target).getTypeParameters();
+                    break;
+                case METHOD:
+                case CONSTRUCTOR:
+                    tpes = ((ExecutableElement) target).getTypeParameters();
+                    break;
+                default:
+                    break OUTER;
+            }
+
+            for (TypeParameterElement tpe : tpes) {
+                targetTypeVars.add((TypeVariable) tpe.asType());
+            }
+
+            if (target.getModifiers().contains(Modifier.STATIC)) {
+                break;
+            }
+
+            target = target.getEnclosingElement();
+        }
+
+        return targetTypeVars.containsAll(typeVars);
     }
 
 }

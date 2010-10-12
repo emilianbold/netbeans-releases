@@ -1998,7 +1998,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         boolean indexResult=true;
                         try {
-                            indexResult=index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
+                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
                             if (indexResult) {
                                 crawler.storeTimestamps();
                                 return true;
@@ -2885,8 +2885,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
-                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
-                    depCtx.fullRescanSourceRoots = depCtx.newRoots2Deps.keySet();
+                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());                                                
+//                    depCtx.fullRescanSourceRoots = new HashSet<URL>(addedOrChanged.keySet()); - probably unneeded, only hurts performance. The indexer should be responsible for dependencies.
                 }
             } else {
                 restarted = true;

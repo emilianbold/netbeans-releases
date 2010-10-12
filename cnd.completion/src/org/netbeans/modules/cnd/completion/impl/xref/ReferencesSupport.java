@@ -91,12 +91,10 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
-import org.openide.util.UserQuestionException;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
@@ -105,12 +103,12 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
-import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 /**
  *
@@ -151,8 +149,8 @@ public final class ReferencesSupport {
     public static BaseDocument getBaseDocument(final String absPath) throws DataObjectNotFoundException, IOException {
         File file = new File(absPath);
         // convert file into file object
-        FileObject fileObject = FileUtil.toFileObject(file);
-        if (fileObject == null) {
+        FileObject fileObject = CndFileUtils.toFileObject(file);
+        if (fileObject == null || !fileObject.isValid()) {
             return null;
         }
         DataObject dataObject = DataObject.find(fileObject);
@@ -161,13 +159,7 @@ public final class ReferencesSupport {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
 
-        StyledDocument doc = null;
-        try {
-            doc = cookie.openDocument();
-        } catch (UserQuestionException ex) {
-            ex.confirmed();
-            doc = cookie.openDocument();
-        }
+        StyledDocument doc = CsmUtilities.openDocument(cookie);
 
         return doc instanceof BaseDocument ? (BaseDocument) doc : null;
     }
@@ -176,11 +168,23 @@ public final class ReferencesSupport {
         return findReferencedObject(csmFile, doc, offset, null, null);
     }
 
-    /*static*/ static CsmObject findOwnerObject(CsmFile csmFile, BaseDocument baseDocument, int offset, TokenItem<TokenId> token) {
-        CsmObject csmOwner = CsmOffsetResolver.findObject(csmFile, offset);
-        return csmOwner;
+    /*package*/ static CsmObject findOwnerObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+            FileReferencesContext fileReferencesContext) {
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
+        CsmObject out = context.getLastObject();
+        return out;
     }
 
+    /*package*/ static CsmObject findClosestTopLevelObject(CsmFile csmFile, int offset, TokenItem<TokenId> token, 
+            FileReferencesContext fileReferencesContext) {
+        CsmContext context = CsmOffsetResolver.findContext(csmFile, offset, fileReferencesContext);
+        CsmObject out = context.getLastObject();
+        if (CsmKindUtilities.isType(out) || CsmKindUtilities.isTemplateParameter(out)) {
+            out = context.getLastScope();
+        }
+        return out;
+    }
+    
     /*package*/ CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc,
             final int offset, TokenItem<TokenId> jumpToken, FileReferencesContext fileReferencesContext) {
         long oldVersion = CsmFileInfoQuery.getDefault().getFileVersion(csmFile);
@@ -227,11 +231,11 @@ public final class ReferencesSupport {
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, FAKE, oldVersion);
+                    putReferencedObject(csmFile, key, UNRESOLVED, oldVersion);
                 } else {
                     putReferencedObject(csmFile, key, csmItem, oldVersion);
                 }
-            } else if (csmItem == FAKE) {
+            } else if (csmItem == UNRESOLVED) {
                 csmItem = null;
             }
         }
@@ -472,10 +476,7 @@ public final class ReferencesSupport {
         } else {
             CsmFile file = ref.getContainingFile();
             CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
-            Document doc = null;
-            if (ces != null) {
-                doc = ces.getDocument();
-            }
+            Document doc = CsmUtilities.openDocument(ces);
             return doc instanceof BaseDocument ? (BaseDocument) doc : null;
         }
     }
@@ -554,58 +555,7 @@ public final class ReferencesSupport {
         return doc;
     }
 
-    static CsmReferenceKind getReferenceKind(CsmReference ref) {
-        CsmReferenceKind kind = CsmReferenceKind.UNKNOWN;
-        CsmObject owner = ref.getOwner();
-        if (CsmKindUtilities.isType(owner) || CsmKindUtilities.isInheritance(owner)) {
-            kind = getReferenceUsageKind(ref);
-        } else if (CsmKindUtilities.isInclude(owner)) {
-            kind = CsmReferenceKind.DIRECT_USAGE;
-        } else {
-            CsmObject target = ref.getReferencedObject();
-            if (target == null) {
-                kind = getReferenceUsageKind(ref);
-            } else {
-                CsmObject[] decDef = CsmBaseUtilities.getDefinitionDeclaration(target, true);
-                CsmObject targetDecl = decDef[0];
-                CsmObject targetDef = decDef[1];
-                assert targetDecl != null;
-                kind = CsmReferenceKind.DIRECT_USAGE;
-                if (owner != null) {
-                    if (owner.equals(targetDef)) {
-                        kind = CsmReferenceKind.DEFINITION;
-                    } else if (sameDeclaration(owner, targetDecl)) {
-                        kind = CsmReferenceKind.DECLARATION;
-                    } else {
-                        kind = getReferenceUsageKind(ref);
-                    }
-                }
-            }
-        }
-        return kind;
-    }
-
-    private static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
-        if (checkDecl.equals(targetDecl)) {
-            return true;
-        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
-            CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
-            CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
-            if (fqnCheck.equals(fqnTarget)) {
-                return true;
-            }
-            String strFqn = fqnCheck.toString().trim();
-            // we consider const and not const methods as the same
-            if (strFqn.endsWith("const")) { //NOI18N
-                int cutConstInd = strFqn.lastIndexOf("const"); //NOI18N
-                assert cutConstInd >= 0;
-                fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
-            }
-            return fqnCheck.equals(fqnTarget);
-        }
-        return false;
-    }
-
+   
     static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
         CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
         if (ref instanceof ReferenceImpl) {
@@ -643,7 +593,7 @@ public final class ReferencesSupport {
     private final Object cacheLock = new CacheLock();
     private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
-    private static CsmObject FAKE = new CsmObject() {
+    private static CsmObject UNRESOLVED = new CsmObject() {
 
         @Override
         public String toString() {
@@ -658,7 +608,7 @@ public final class ReferencesSupport {
             CsmObject out = null;
             if (map != null) {
                 out = map.get(offset);
-                if (out == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                if (out == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                     // we don't beleive in such fake and put null instead
                     map.put(offset, null);
                     out = null;
@@ -670,7 +620,7 @@ public final class ReferencesSupport {
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         synchronized (cacheLock) {
-            if (object == FAKE && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+            if (object == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                 return;
@@ -706,6 +656,7 @@ public final class ReferencesSupport {
      */
     public static CsmObject findMacro(List<CsmReference> macroUsages, final int offset) {
         int index = Collections.binarySearch(macroUsages, new RefOffsetKey(offset), new Comparator<CsmReference>() {
+            @Override
             public int compare(CsmReference o1, CsmReference o2) {
                 if (o1 instanceof RefOffsetKey) {
                     if (o2.getStartOffset() <= o1.getStartOffset() &&
@@ -738,40 +689,54 @@ public final class ReferencesSupport {
             this.offset = offset;
         }
 
+        @Override
         public CsmReferenceKind getKind() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public CsmObject getReferencedObject() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public CsmObject getOwner() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public CsmFile getContainingFile() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public int getStartOffset() {
             return offset;
         }
 
+        @Override
         public int getEndOffset() {
             return offset;
         }
 
+        @Override
         public Position getStartPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public Position getEndPosition() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
         }
 
+        @Override
         public CharSequence getText() {
-            throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+            throw new UnsupportedOperationException("Not supported."); // NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported.");// NOI18N 
         }
     }
 }
