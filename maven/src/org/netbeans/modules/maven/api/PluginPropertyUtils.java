@@ -75,14 +75,14 @@ public class PluginPropertyUtils {
     private PluginPropertyUtils() {
     }
 
-    private static List<String> LIFECYCLE_PLUGINS = Arrays.asList(new String[]{
+    private static List<String> LIFECYCLE_PLUGINS = Arrays.asList(
                 Constants.PLUGIN_COMPILER,
                 Constants.PLUGIN_SUREFIRE,
                 Constants.PLUGIN_EAR,
                 Constants.PLUGIN_JAR,
                 Constants.PLUGIN_WAR,
                 Constants.PLUGIN_RESOURCES
-            });
+            );
     
     
     /**
@@ -108,13 +108,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) || 
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
 
@@ -135,8 +133,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkConfiguration(eval, plug.getConfiguration(), property);
@@ -166,18 +163,14 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, property, report);
     }
 
+    @SuppressWarnings("deprecation")
     private static String getReportPluginPropertyImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String property, String report) {
         String toRet = null;
-        if (prj.getReportPlugins() == null) {
-            return toRet;
-        }
-        for (Object obj : prj.getReportPlugins()) {
-            ReportPlugin plug = (ReportPlugin)obj;
+        for (ReportPlugin plug : prj.getReportPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
-                    for (Object obj2 : plug.getReportSets()) {
-                        ReportSet exe = (ReportSet)obj2;
+                    for (ReportSet exe : plug.getReportSets()) {
                         if (exe.getReports().contains(report)) {
                             toRet = checkConfiguration(eval, exe.getConfiguration(), property);
                             if (toRet != null) {
@@ -205,8 +198,7 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 toRet = plug.getVersion();
@@ -217,8 +209,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = plug.getVersion();
@@ -274,13 +265,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) ||
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
 
@@ -301,8 +290,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
@@ -334,18 +322,14 @@ public class PluginPropertyUtils {
         return getReportPluginPropertyListImpl(prj, createEvaluator(prj), groupId, artifactId, multiproperty, singleproperty, goal);
     }
 
+    @SuppressWarnings("deprecation")
     private static String[] getReportPluginPropertyListImpl(MavenProject prj, NBPluginParameterExpressionEvaluator eval, String groupId, String artifactId, String multiproperty, String singleproperty, String goal) {
         String[] toRet = null;
-        if (prj.getReportPlugins() == null) {
-            return toRet;
-        }
-        for (Object obj : prj.getReportPlugins()) {
-            ReportPlugin plug = (ReportPlugin)obj;
+        for (ReportPlugin plug : prj.getReportPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getReportSets() != null) {
-                    for (Object obj2 : plug.getReportSets()) {
-                        ReportSet exe = (ReportSet)obj2;
+                    for (ReportSet exe : plug.getReportSets()) {
                         if (exe.getReports().contains(goal)) {
                             toRet = checkListConfiguration(eval, exe.getConfiguration(), multiproperty, singleproperty);
                             if (toRet != null) {
@@ -361,8 +345,7 @@ public class PluginPropertyUtils {
         }
         if (toRet == null) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkListConfiguration(eval, plug.getConfiguration(), multiproperty, singleproperty);
@@ -415,13 +398,11 @@ public class PluginPropertyUtils {
         if (prj.getBuildPlugins() == null) {
             return toRet;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (artifactId.equals(plug.getArtifactId()) &&
                    groupId.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null && goal != null) {
-                    for (Object obj2 : plug.getExecutions()) {
-                        PluginExecution exe = (PluginExecution)obj2;
+                    for (PluginExecution exe : plug.getExecutions()) {
                         if (exe.getGoals().contains(goal) ||
                                 ("default-" + goal).equals(exe.getId())) { //this is a maven 2.2.0+ thing.. #179328 //NOI18N
                             toRet = checkPropertiesConfiguration(eval, exe.getConfiguration(), propertyParameter);
@@ -441,8 +422,7 @@ public class PluginPropertyUtils {
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 LIFECYCLE_PLUGINS.contains(artifactId)) {  //NOI18N
             if (prj.getPluginManagement() != null) {
-                for (Object obj : prj.getPluginManagement().getPlugins()) {
-                    Plugin plug = (Plugin)obj;
+                for (Plugin plug : prj.getPluginManagement().getPlugins()) {
                     if (artifactId.equals(plug.getArtifactId()) &&
                         groupId.equals(plug.getGroupId())) {
                         toRet = checkPropertiesConfiguration(eval, plug.getConfiguration(), propertyParameter);
