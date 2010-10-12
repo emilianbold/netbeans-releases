@@ -215,7 +215,7 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, ProjectParameters prjParams, boolean saveNow) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
@@ -288,7 +288,7 @@ public class MakeProjectGenerator {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();
                 projectDescriptor.closed();
                 projectDescriptor.clean();
@@ -300,9 +300,11 @@ public class MakeProjectGenerator {
         } else {
             task.run();
         }
-        // create Makefile
-        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
-                projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+        if (!prjParams.getFullRemote()) {
+            // create Makefile
+            copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
+                    projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+        }
         return h;
     }
 
