@@ -297,7 +297,7 @@ public class ProjectCreator {
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();
-        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null);
+        projectDescriptor.initLogicalFolders(null, false, null, importantItems, null, false);
         rootFolder = projectDescriptor.getLogicalFolders();
         //projectDescriptor.addSourceRootRaw(workingDir);
         projectDescriptor.addSourceRootRaw(CndPathUtilitities.toRelativePath(baseDir, workingDir));
