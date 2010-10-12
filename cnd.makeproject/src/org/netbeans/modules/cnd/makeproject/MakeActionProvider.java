@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -735,7 +736,12 @@ public final class MakeActionProvider implements ActionProvider {
         if (actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, "build-tests"); // NOI18N
         } else {
-            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
+            if (conf.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                String buildCommandFromProjectProperties = conf.getMakefileConfiguration().getBuildCommand().getValue();
+                buildCommand = makeArtifact.getBuildCommand(buildCommandFromProjectProperties, makeCommand, ""); // NOI18N
+            } else {
+                buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
+            }
         }
         String args = "";
         int index = getArgsIndex(buildCommand);
