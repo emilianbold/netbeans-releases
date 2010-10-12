@@ -396,11 +396,11 @@ public class TemplateUtils {
     }
 
     public static boolean isTemplateQualifiedName(String name) {
-        return name.contains("<");
+        return name.contains("<"); // NOI18N
     }
 
     public static String getTemplateQualifiedNameWithoutSiffix(String name) {
-        return name.replaceAll("<.*", "");
+        return name.replaceAll("<.*", ""); // NOI18N
     }
 
     private TemplateUtils() {
