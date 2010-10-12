@@ -66,12 +66,15 @@ public class WizardConstants {
     public static final String PROPERTY_SOURCE_FOLDERS_FILTER = "sourceFoldersFilter"; // String // NOI18N
 
     public static final String PROPERTY_TOOLS_CACHE_MANAGER = "ToolsCacheManager"; // String // NOI18N
-    //public static final String PROPERTY_DISPLAY_NAME = "displayName"; // String // NOI18N
+    public static final String PROPERTY_PREFERED_PROJECT_NAME = "displayName"; // String // NOI18N
     public static final String PROPERTY_NATIVE_PROJ_DIR = "nativeProjDir"; // String // NOI18N
     public static final String PROPERTY_NATIVE_PROJ_FO = "nativeProjFO"; // String // NOI18N
     public static final String PROPERTY_BUILD_COMMAND = "buildCommandTextField"; // String // NOI18N
     public static final String PROPERTY_CLEAN_COMMAND = "cleanCommandTextField"; // String // NOI18N
     public static final String PROPERTY_BUILD_RESULT = "outputTextField"; // String // NOI18N
+    public static final String PROPERTY_DEPENDENCY_KIND = "dependencyKind"; // IteratorExtension.ProjectKind // NOI18N
+    public static final String PROPERTY_DEPENDENCIES = "dependencies"; // ArrayList<String> // NOI18N
+    public static final String PROPERTY_TRUE_SOURCE_ROOT = "trueSourceRoot"; // Boolean // NOI18N
     public static final String PROPERTY_INCLUDES = "includeTextField"; // String // NOI18N
     public static final String PROPERTY_MACROS = "macroTextField"; // String // NOI18N
     public static final String PROPERTY_CONFIGURE_SCRIPT_PATH = "configureName"; // String // NOI18N
