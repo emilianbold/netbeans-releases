@@ -47,7 +47,6 @@ import java.awt.event.FocusEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.editor.*;
 import javax.swing.Action;
 import org.openide.util.ImageUtilities;
@@ -66,8 +65,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -83,7 +80,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -103,14 +99,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbPreferences;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -135,36 +128,6 @@ public final class SearchBar extends JPanel {
     
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
     public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
-
-    /** Shared mouse listener used for setting the border painting property
-     * of the toolbar buttons and for invoking the popup menu.
-     */
-    private static final MouseListener sharedMouseListener
-        = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            public @Override void mouseEntered(MouseEvent evt) {
-                Object src = evt.getSource();
-                
-                if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
-                    AbstractButton button = (AbstractButton)evt.getSource();
-                    if (button.isEnabled()) {
-                        button.setContentAreaFilled(true);
-                        button.setBorderPainted(true);
-                    }
-                }
-            }
-            
-            public @Override void mouseExited(MouseEvent evt) {
-                Object src = evt.getSource();
-                if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
-                    AbstractButton button = (AbstractButton)evt.getSource();
-                    button.setContentAreaFilled(false);
-                    button.setBorderPainted(false);
-                }
-            }
-            
-            protected void showPopup(MouseEvent evt) {
-            }
-        };
 
     private JTextComponent component;
     private JButton closeButton;
@@ -202,8 +165,14 @@ public final class SearchBar extends JPanel {
     @SuppressWarnings("unchecked")
     public SearchBar(JTextComponent component) {
         this.component = component;
-
+        component.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                looseFocus();
+            }
+        });
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        setFocusCycleRoot(true);
         Color bgColor = getBackground();
         bgColor = new Color( Math.max( 0, bgColor.getRed() - 20 ),
                              Math.max( 0, bgColor.getGreen() - 20 ),
@@ -211,9 +180,6 @@ public final class SearchBar extends JPanel {
         setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
         
-        //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        addMouseListener(sharedMouseListener);
-
         Keymap keymap = component.getKeymap();
         
         if (keymap instanceof MultiKeymap) {
@@ -363,13 +329,6 @@ public final class SearchBar extends JPanel {
             }
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
-
-        incrementalSearchTextField.addFocusListener(new FocusAdapter() {
-            public @Override void focusLost(FocusEvent e) {
-                navigateOnFocusLost = false;
-                looseFocus();
-            }
-        });
         
         // ENTER to find next
         incrementalSearchTextField.addActionListener(new ActionListener() {
@@ -416,9 +375,7 @@ public final class SearchBar extends JPanel {
         matchCaseCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchMatchCase();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         matchCaseCheckBox.setSelected(getMatchCase());
@@ -429,9 +386,7 @@ public final class SearchBar extends JPanel {
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchWholeWords();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         wholeWordsCheckBox.setSelected(getWholeWords());
@@ -445,9 +400,7 @@ public final class SearchBar extends JPanel {
                 switchRegExp();
                 // Switch other checkbozes on/off
                 wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         regexpCheckBox.setSelected(getRegExp());
@@ -458,9 +411,7 @@ public final class SearchBar extends JPanel {
         highlightCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchHighlightResults();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         highlightCheckBox.setSelected(getHighlightResults());
@@ -544,8 +495,6 @@ public final class SearchBar extends JPanel {
     }
     
     private void makeBarExpandable() {
-//        inBar.add(findPreviousButton);
-//        inBar.add(findNextButton);
         inBar.add(matchCaseCheckBox);
         inBar.add(wholeWordsCheckBox);
         inBar.add(regexpCheckBox);
@@ -796,13 +745,7 @@ public final class SearchBar extends JPanel {
     }
 
     private void processButton(AbstractButton button) {
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
         button.setMargin(BUTTON_INSETS);
-        if (button instanceof JButton) {
-            button.addMouseListener(sharedMouseListener);
-        }
-        button.setFocusable(false);
     }
     
     @SuppressWarnings("unchecked")
