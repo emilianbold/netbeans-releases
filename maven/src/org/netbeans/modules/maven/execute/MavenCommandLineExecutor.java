@@ -182,7 +182,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             if (Utilities.isWindows()) { //#153101
                 processIssue153101(x, ioput);
             } else {
-                LOGGER.log(Level.WARNING , x.getMessage(), x);
+                ioput.getErr().println(x.getMessage());
             }
         } catch (InterruptedException x) {
             //TODO
@@ -469,7 +469,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
             });
         } else {
-            LOGGER.log(Level.WARNING, x.getMessage(), x);
+            ioput.getErr().println(x.getMessage());
         }
     }
     
