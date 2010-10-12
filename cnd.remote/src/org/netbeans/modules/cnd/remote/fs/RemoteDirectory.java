@@ -51,6 +51,7 @@ import java.net.ConnectException;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -99,7 +100,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
 
     @Override
     public FileObject getFileObject(String relativePath) {
-        return (FileObject) getFileOrCheckExistence(relativePath, Mode.FILE_OBJECT);
+        FileObject fo = (FileObject) getFileOrCheckExistence(relativePath, Mode.FILE_OBJECT);
+        if (fo == null) {
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, relativePath);
+        }
+        return fo;
     }
 
     /**
