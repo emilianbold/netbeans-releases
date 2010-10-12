@@ -232,8 +232,8 @@ public class PluginPropertyUtils {
 
     
     private static String checkConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String property) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(property);
             if (source != null) {
                 try {
@@ -376,8 +376,8 @@ public class PluginPropertyUtils {
 
 
     private static String[] checkListConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String multiproperty, String singleproperty) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(multiproperty);
             if (source != null) {
                 List<String> toRet = new ArrayList<String>();
@@ -455,8 +455,8 @@ public class PluginPropertyUtils {
     }
     
     private static Properties checkPropertiesConfiguration(NBPluginParameterExpressionEvaluator eval, Object conf, String propertyParameter) {
-        if (conf != null && conf instanceof Xpp3Dom) {
-            Xpp3Dom dom = (Xpp3Dom)conf;
+        if (conf != null) {
+            Xpp3Dom dom = (Xpp3Dom) conf; // MNG-4862
             Xpp3Dom source = dom.getChild(propertyParameter);
             if (source != null) {
                 Properties toRet = new Properties();
