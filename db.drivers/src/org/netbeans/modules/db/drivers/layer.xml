@@ -48,9 +48,7 @@ made subject to such option by the copyright holder.
     <folder name="Databases">
         <folder name="JDBCDrivers">
             <file name="oracle_thin.xml" url="oracle_thin.xml"/>
-                <attr name="position" intvalue="100"/>
             <file name="oracle_oci.xml" url="oracle_oci.xml"/>
-                <attr name="position" intvalue="200"/>
             <file name="mysql.xml" url="mysql.xml"/>
             <file name="postgresql.xml" url="postgresql.xml"/>
         </folder>
