@@ -51,6 +51,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -121,12 +122,14 @@ public final class Actions extends Object {
             return VIEW;
         }
         
+        @Override
         public void actionPerformed(ActionEvent evt) {
             final TopComponent projectsTab = Tab.findDefault();
             projectsTab.open();
             projectsTab.requestActive();
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(View.class);
         }
@@ -148,6 +151,7 @@ public final class Actions extends Object {
             putValue("noIconInMenu", Boolean.TRUE); //NOI18N
         }
         
+        @Override
         protected void performAction(Node[] activatedNodes) {
             Tab proj = Tab.findDefault();
             proj.open();
@@ -155,6 +159,7 @@ public final class Actions extends Object {
             proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
         }
 
+        @Override
         protected boolean enable(Node[] activatedNodes) {
             if (activatedNodes.length != 1) {
                 return false;
@@ -167,6 +172,7 @@ public final class Actions extends Object {
             /*return Tab.findDefault().containsNode(dobj);*/
           }
 
+        @Override
         public String getName() {
             return NbBundle.getMessage(Select.class, "ACT_Select_Main_Menu"); // NOI18N
         }
@@ -176,6 +182,7 @@ public final class Actions extends Object {
             return "org/netbeans/modules/favorites/resources/actionView.png"; // NOI18N
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return null;
         }
@@ -203,6 +210,7 @@ public final class Actions extends Object {
         
         /** Enabled only if the current project is ProjectDataObject.
         */
+        @Override
         public boolean enable (Node[] arr) {
             if ((arr == null) || (arr.length == 0)) return false;
 
@@ -220,6 +228,7 @@ public final class Actions extends Object {
         * presented as an item in a menu.
         * @return the name of the action
         */
+        @Override
         public String getName() {
             return NbBundle.getMessage (
                     Actions.class, "ACT_Remove"); // NOI18N
@@ -228,6 +237,7 @@ public final class Actions extends Object {
         /** Help context where to find more about the action.
         * @return the help context for this action
         */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Remove.class);
         }
@@ -237,6 +247,7 @@ public final class Actions extends Object {
         *
         * @param arr gives array of actually activated nodes.
         */
+        @Override
         protected void performAction (Node[] arr) {
             for (int i = 0; i < arr.length; i++) {
                 DataObject shad = arr[i].getCookie(DataObject.class);
@@ -280,6 +291,7 @@ public final class Actions extends Object {
         
         /** Enabled only if the current project is ProjectDataObject.
         */
+        @Override
         public boolean enable (Node[] arr) {
             if ((arr == null) || (arr.length == 0)) return false;
             if (arr.length == 1 && arr[0] instanceof FavoritesNode) return true;
@@ -298,6 +310,7 @@ public final class Actions extends Object {
         * presented as an item in a menu.
         * @return the name of the action
         */
+        @Override
         public String getName() {
             return NbBundle.getMessage (
                     Actions.class, "ACT_Add"); // NOI18N
@@ -306,6 +319,7 @@ public final class Actions extends Object {
         /** Help context where to find more about the action.
         * @return the help context for this action
         */
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Add.class);
         }
@@ -315,6 +329,7 @@ public final class Actions extends Object {
         *
         * @param activatedNodes gives array of actually activated nodes.
         */
+        @Override
         protected void performAction (final Node[] activatedNodes) {
             try {
                 final List<DataObject> toShadows;
@@ -404,6 +419,7 @@ public final class Actions extends Object {
                 }
                 if (setSelected) {
                     SwingUtilities.invokeLater(new Runnable () {
+                        @Override
                         public void run() {
                             try {
                                 projectsTab.getExplorerManager().setExploredContextAndSelection(toSelect[0],toSelect);
@@ -478,10 +494,7 @@ public final class Actions extends Object {
                     listDest.addAll(listAdd);
                     listDest.add(root);
                 } else {
-                    //Root not found. It should not happen because root is defined in layer
-                    for (int i = 0; i < children.length; i++) {
-                        listDest.add(children[i]);
-                    }
+                    listDest.addAll(Arrays.asList(children));
                     listDest.addAll(listAdd);
                 }
                 //Set desired order
