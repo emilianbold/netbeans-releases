@@ -45,16 +45,25 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.CancellationException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.filesystems.FileObject;
 
 public class ProjectSupport {
@@ -170,4 +179,40 @@ public class ProjectSupport {
                 throw new IllegalStateException("Unexpected path mode: " + pathMode); //NOI18N
         }
     }
+
+    public static String convertWorkingDirToRemoteIfNeeded(ProjectActionEvent pae, String localDir) {
+        ExecutionEnvironment execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
+        if (!checkConnection(execEnv)) {
+            return null;
+        }
+        if (execEnv.isRemote()) {
+            if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
+                PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
+                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
+            } else {
+                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
+            }
+        }
+        return localDir;
+    }
+
+    public static boolean checkConnection(ExecutionEnvironment execEnv) {
+        if (execEnv.isRemote()) {
+            try {
+                ConnectionManager.getInstance().connectTo(execEnv);
+                ServerRecord record = ServerList.get(execEnv);
+                if (record.isOffline()) {
+                    record.validate(true);
+                }
+                return record.isOnline();
+            } catch (IOException ex) {
+                return false;
+            } catch (CancellationException ex) {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
 }
