@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -45,6 +45,7 @@
 package org.netbeans.modules.db.explorer.dlg;
 
 import java.awt.BorderLayout;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -216,6 +217,9 @@ public class SchemaPanel extends javax.swing.JPanel {
     }
     
     public boolean setSchemas(List<String> items, String schema) {
+        if (items == null) {
+            items = Collections.emptyList();
+        }
         schemaComboBox.removeAllItems();
         for (int i = 0; i < items.size(); i++)
             schemaComboBox.addItem(items.get(i));
