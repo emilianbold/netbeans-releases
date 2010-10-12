@@ -251,11 +251,11 @@ public final class NbMavenProjectImpl implements Project {
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            Properties props = new Properties();
+            Properties props = createSystemPropsForProjectLoading();
             if (properties != null) {
                 props.putAll(properties);
-                req.setUserProperties(props);
             }
+            req.setUserProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             req.setOffline(true);
@@ -263,7 +263,6 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            req.setUserProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = embedder.readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
