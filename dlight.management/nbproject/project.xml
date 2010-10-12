@@ -79,6 +79,8 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>com.sun.tools.analytics.model</friend>
+                <friend>com.sun.tools.analytics.web.managment</friend>
                 <friend>com.sun.tools.analytics.cli</friend>
                 <friend>com.sun.tools.analytics.dataproviders</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
