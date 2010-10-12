@@ -287,6 +287,19 @@ public final class ELTypeUtilities {
         return result;
     }
 
+    public static boolean isScopeObject(Node target) {
+        if (!(target instanceof AstIdentifier)) {
+            return false;
+        }
+        for (ELImplicitObject each : ELTypeUtilities.getImplicitObjects()) {
+            if (each.getType() == ELImplicitObject.Type.SCOPE_TYPE
+                    && each.getName().equals(target.getImage())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private TypeMirror getTypeMirrorFor(Element element) {
         if (element.getKind() == ElementKind.METHOD) {
             return getReturnType((ExecutableElement) element);
@@ -474,6 +487,20 @@ public final class ELTypeUtilities {
         return result[0];
     }
 
+    private TypeElement getTypeFor(final String clazz) {
+        SourceTask<TypeElement> task = new SourceTask<TypeElement>() {
+
+            @Override
+            public void run(CompilationController info) throws Exception {
+                setResult(info.getElements().getTypeElement(clazz));
+                return;
+            }
+        };
+        runTask(task);
+        return task.getResult();
+    }
+
+
     private class TypeResolverVisitor implements NodeVisitor {
 
         private final ELElement elem;
@@ -505,23 +532,38 @@ public final class ELTypeUtilities {
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node child = parent.jjtGetChild(i);
                         if (child instanceof AstPropertySuffix || child instanceof AstMethodSuffix) {
-                            final ExecutableElement propertyType = getElementForProperty(child, enclosing);
+                            Element propertyType = getElementForProperty(child, enclosing);
                             if (propertyType == null) {
-                                // give up
+                                // special case handling for scope objects; their types don't help
+                                // in resolving the beans they contain. The code below handles cases
+                                // like sessionScope.myBean => sessionScope is in position parent.jjtGetChild(i - 1)
+                                if (i > 0 && isScopeObject(parent.jjtGetChild(i - 1))) {
+                                    final String clazz = ELVariableResolvers.findBeanClass(child.getImage(), elem.getParserResult().getFileObject());
+                                    if (clazz == null) {
+                                        return;
+                                    }
+                                    // it's a managed bean in a scope
+                                    propertyType = getTypeFor(clazz);
+                                }
+                            }
+                            if (propertyType == null) {
                                 return;
                             }
                             if (child.equals(target)) {
                                 result = propertyType;
-                            } else {
+                            } else if (propertyType.getKind() == ElementKind.METHOD) {
+                                final ExecutableElement method = (ExecutableElement) propertyType;
                                 SourceTask<Element> task = new SourceTask<Element>() {
 
                                     @Override
                                     public void run(CompilationController info) throws Exception {
-                                        setResult(info.getTypes().asElement(getReturnType(propertyType)));
+                                        setResult(info.getTypes().asElement(getReturnType(method)));
                                     }
                                 };
                                 runTask(task);
                                 enclosing = task.getResult();
+                            } else {
+                                enclosing = propertyType;
                             }
                         }
                     }
