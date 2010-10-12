@@ -82,10 +82,6 @@
                 <binary-origin>external/commons-logging-api-1.1.1.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/htmlparser.jar</runtime-relative-path>
-                <binary-origin>external/htmlparser.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/io-xml-util.jar</runtime-relative-path>
                 <binary-origin>external/io-xml-util.jar</binary-origin>
             </class-path-extension>

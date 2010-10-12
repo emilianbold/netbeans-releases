@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -50,7 +50,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.Vector;
 
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
@@ -399,7 +398,7 @@ public class DriverListUtil {
     
     public static String findFreeName(String name) {
         String ret;
-        Vector<String> names = new Vector<String> ();
+        List<String> names = new ArrayList<String> ();
         JDBCDriver[] drivers = JDBCDriverManager.getDefault().getDrivers();
         for (int i = 0; i < drivers.length; i++)
             names.add(drivers[i].getDisplayName());

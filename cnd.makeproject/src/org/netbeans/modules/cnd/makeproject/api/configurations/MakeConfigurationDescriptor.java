@@ -262,7 +262,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath) {
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, 
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -272,7 +273,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
-        externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+        if (!addGeneratedMakefileToLogicalView) {
+            externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+        }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
                 externalFileItems.addItem(new Item(importantItems.next()));
@@ -368,6 +371,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void setBaseDirFileObject(FileObject baseDirFO) {
+        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
         this.baseDirFO = baseDirFO;
     }
 

@@ -105,6 +105,8 @@
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.tools.customizer</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.analytics.web.managment</friend>
+                <friend>com.sun.tools.analytics.model</friend>
                 <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.cli</friend>
                 <friend>com.sun.tools.analytics.targets</friend>

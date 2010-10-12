@@ -50,6 +50,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -130,7 +131,7 @@ final class StatisticsPanel extends JPanel {
         toolbar.setFocusable(false);
         toolbar.setRollover(true);
         toolbar.setFloatable(false);
-
+        toolbar.setBorder(BorderFactory.createEtchedBorder());
         return toolbar;
     }
     
