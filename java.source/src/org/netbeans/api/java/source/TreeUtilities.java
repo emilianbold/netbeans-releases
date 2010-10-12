@@ -84,6 +84,12 @@ import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
  */
 public final class TreeUtilities {
     
+    /**{@link Kind}s that are represented by {@link ClassTree}.
+     * 
+     * @since 0.67
+     */
+    public static final Set<Kind> CLASS_TREE_KINDS = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE);
+    
     private final CompilationInfo info;
     private final CommentHandlerService handler;
     
@@ -95,20 +101,26 @@ public final class TreeUtilities {
     }
     
     /**Checks whether the given tree represents a class.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.CLASS</code> should be used instead.
      */
+    @Deprecated
     public boolean isClass(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION)) == 0;
     }
     
     /**Checks whether the given tree represents an interface.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.INTERFACE</code> should be used instead.
      */
+    @Deprecated
     public boolean isInterface(ClassTree tree) {
         final long flags = ((JCTree.JCModifiers) tree.getModifiers()).flags;
         return (flags & Flags.INTERFACE) != 0 && (flags & Flags.ANNOTATION) == 0;
     }
     
     /**Checks whether the given tree represents an enum.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.ENUM</code> should be used instead.
      */
+    @Deprecated
     public boolean isEnum(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.ENUM) != 0;
     }
@@ -121,7 +133,9 @@ public final class TreeUtilities {
     }
     
     /**Checks whether the given tree represents an annotation.
+     * @deprecated since 0.67, <code>Tree.getKind() == Kind.ANNOTATION_TYPE</code> should be used instead.
      */
+    @Deprecated
     public boolean isAnnotation(ClassTree tree) {
         return (((JCTree.JCModifiers)tree.getModifiers()).flags & Flags.ANNOTATION) != 0;
     }

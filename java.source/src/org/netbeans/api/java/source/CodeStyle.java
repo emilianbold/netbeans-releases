@@ -317,6 +317,9 @@ public final class CodeStyle {
         return preferences.getBoolean(alignMultilineAssignment, getDefaultAsBoolean(alignMultilineAssignment));
     }
 
+    /**
+     * @since 0.67
+     */
     public boolean alignMultilineTryResources() {
         return preferences.getBoolean(alignMultilineTryResources, getDefaultAsBoolean(alignMultilineTryResources));
     }
@@ -396,6 +399,9 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.67
+     */
     public WrapStyle wrapTryResources() {
         String wrap = preferences.get(wrapTryResources, getDefaultAsString(wrapTryResources));
         return WrapStyle.valueOf(wrap);
@@ -548,6 +554,9 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeWhileParen, getDefaultAsBoolean(spaceBeforeWhileParen));
     }
 
+    /**
+     * @since 0.67
+     */
     public boolean spaceBeforeTryParen() {
         return preferences.getBoolean(spaceBeforeTryParen, getDefaultAsBoolean(spaceBeforeTryParen));
     }
@@ -668,6 +677,9 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceWithinSwitchParens, getDefaultAsBoolean(spaceWithinSwitchParens));
     }
 
+    /**
+     * @since 0.67
+     */
     public boolean spaceWithinTryParens() {
         return preferences.getBoolean(spaceWithinTryParens, getDefaultAsBoolean(spaceWithinTryParens));
     }

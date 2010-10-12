@@ -459,6 +459,15 @@ public final class TreeMaker {
         return delegate.Continue(label);
     }
 
+    /**
+     * Creates new DisjointTypeTree.
+     *
+     * @param typeComponents components from which the DisjointTypeTree should be created.
+     *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
+     *                       {@link PrimitiveTypeTree}, {@link WildcardTree}, {@link ParameterizedTypeTree} or {@link ArrayTypeTree}.
+     * @return newly created DisjointTypeTree
+     * @since 0.67
+     */
     public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
         return delegate.DisjointType(typeComponents);
     }
@@ -917,6 +926,17 @@ public final class TreeMaker {
         return Try(Collections.<Tree>emptyList(), tryBlock, catches, finallyBlock);
     }
 
+    /**
+     * Creates a new TryTree.
+     *
+     * @param resource     the resources of the try clause. The elements of the list
+     *                     should either be {@link VariableTree}s or {@link ExpressionTree}s.
+     * @param tryBlock     the statement block in the try clause.
+     * @param catches      the list of catch clauses, or an empty list.
+     * @param finallyBlock the finally clause, or null.
+     * @see com.sun.source.tree.TryTree
+     * @since 0.67
+     */
     public TryTree Try(List<? extends Tree> resources,
                 BlockTree tryBlock,
                 List<? extends CatchTree> catches,
