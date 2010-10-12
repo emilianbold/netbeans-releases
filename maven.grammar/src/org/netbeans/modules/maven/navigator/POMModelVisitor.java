@@ -53,6 +53,8 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -109,7 +111,6 @@ import org.netbeans.modules.xml.xam.Model;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -123,6 +124,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POMComponentVisitor {
 
+    private static final Logger LOG = Logger.getLogger(POMModelVisitor.class.getName());
     private static RequestProcessor RP = new RequestProcessor(POMModelVisitor.class);
     private Map<String, POMCutHolder> childs = new LinkedHashMap<String, POMCutHolder>();
     private int count = 0;
@@ -1464,17 +1466,18 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 POMModel[] models = parentHolder.getSource();
                 Object[] cuts = parentHolder.getCutValues();
                 for (int i = 0; i < parentHolder.getCutsSize(); i++) {
-                    try {
-                        // prevent deadlock 185923
-                        synchronized (models[i]) {
-                            m.invoke(visitor, cuts[i]);
-                        }
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
+                    Object cut = cuts[i];
+                    // prevent deadlock 185923
+                    if (cut != null && !type.isInstance(cut)) {
+                        LOG.log(Level.WARNING, "#185428: {0} is not assignable to {1}", new Object[] {cut, type});
+                        continue;
+                    }
+                    synchronized (models[i]) {
+                        m.invoke(visitor, cut);
                     }
                 }
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (Exception x) {
+                LOG.log(Level.WARNING, null, x);
             }
             children = Arrays.asList(visitor.getChildValues());
             return children;
