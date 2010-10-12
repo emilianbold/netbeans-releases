@@ -152,11 +152,14 @@ public final class Actions extends Object {
         }
         
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            Tab proj = Tab.findDefault();
-            proj.open();
-            proj.requestActive();
-            proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
+        protected void performAction(final Node[] activatedNodes) {
+            final Tab proj = Tab.findDefault();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    proj.doSelectNode(activatedNodes[0].getCookie(DataObject.class));
+                }
+            });
         }
 
         @Override

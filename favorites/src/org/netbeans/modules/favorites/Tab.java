@@ -45,6 +45,7 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -504,34 +505,43 @@ implements Runnable, ExplorerManager.Provider {
         return check(node, obj);
     }
 
-    protected void doSelectNode (DataObject obj) {
+    protected void doSelectNode (final DataObject obj) {
         //#142155: For some selected nodes there is no corresponding dataobject
         if (obj == null) {
             return;
         }
-        Node root = getExplorerManager ().getRootContext ();
-        if (selectNode (obj, root)) {
-            requestActive();
-            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-        } else {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
-            FileObject file = chooseFileObject(obj.getPrimaryFile());
-            if (file == null) {
-                return;
-            }
-
-            try {
-                final DataObject dobj = DataObject.find(file);
-                Actions.RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Actions.Add.addToFavorites(Collections.singletonList(dobj));
+        Node root = getExplorerManager().getRootContext();
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_SearchingForNode"));
+        final boolean selected = selectNode(obj, root);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (selected) {
+                    open();
+                    requestActive();
+                    StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
+                    FileObject file = chooseFileObject(obj.getPrimaryFile());
+                    if (file == null) {
+                        return;
                     }
-                });
-            } catch (DataObjectNotFoundException e) {
-                LOG.log(Level.WARNING, null, e);
+                    open();
+                    requestActive();
+                    try {
+                        final DataObject dobj = DataObject.find(file);
+                        Actions.RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Actions.Add.addToFavorites(Collections.singletonList(dobj));
+                            }
+                        });
+                    } catch (DataObjectNotFoundException e) {
+                        LOG.log(Level.WARNING, null, e);
+                    }
+                }
             }
-        }
+        });
     }
 
     /**
