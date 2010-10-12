@@ -31,6 +31,11 @@ create_test_result() {
     echo '</testsuite>' >>$FILE
 }
 
+#NB_BRANCH default
+if [ -z ${NB_BRANCH} ]; then
+    export NB_BRANCH=default
+fi
+
 #JAVAFX build 1/0
 if [ -z ${RUNJAVAFX} ]; then
     export RUNJAVAFX=1
