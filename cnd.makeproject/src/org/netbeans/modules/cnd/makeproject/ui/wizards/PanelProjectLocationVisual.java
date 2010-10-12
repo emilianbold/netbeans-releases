@@ -702,17 +702,19 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
         });
 
-        //String projectName = (String) settings.getProperty(WizardConstants.PROPERTY_DISPLAY_NAME); //NOI18N
         if (projectName == null) {
-            String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
-            if (workingDir != null && workingDir.length() > 0 &&
-                    (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME) ||
-                    templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
-                name = CndPathUtilitities.getBaseName(workingDir);
-            } else {
-                String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
-                if (sourcesPath != null && sourcesPath.length() > 0) {
-                    name = CndPathUtilitities.getBaseName(sourcesPath);
+            String name = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
+            if (name == null) {
+                String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
+                if (workingDir != null && workingDir.length() > 0 &&
+                        (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME) ||
+                        templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
+                    name = CndPathUtilitities.getBaseName(workingDir);
+                } else {
+                    String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
+                    if (sourcesPath != null && sourcesPath.length() > 0) {
+                        name = CndPathUtilitities.getBaseName(sourcesPath);
+                    }
                 }
             }
             int baseCount = 1;

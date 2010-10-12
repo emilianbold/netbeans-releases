@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
@@ -436,7 +437,11 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else if (wizardtype == TYPE_BINARY) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
-                extension.discoverProject(wiz.getProperties(), null, IteratorExtension.ProjectKind.IncludeDependencies);
+                IteratorExtension.ProjectKind kind = (ProjectKind) wiz.getProperty(WizardConstants.PROPERTY_DEPENDENCY_KIND);
+                if (kind == null) {
+                    kind = IteratorExtension.ProjectKind.IncludeDependencies;
+                }
+                extension.discoverProject(wiz.getProperties(), null, kind);
                 //resultSet.addAll(extension.createProject(wiz));
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB || wizardtype == TYPE_DB_APPLICATION) {
