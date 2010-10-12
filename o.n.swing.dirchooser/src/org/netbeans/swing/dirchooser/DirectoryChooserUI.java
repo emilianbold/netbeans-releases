@@ -1672,22 +1672,23 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                     setCursor(comp, type);
                 }
             });
-        }
-        Window window = SwingUtilities.getWindowAncestor(comp);
-        if (window != null) {
-            Cursor cursor = Cursor.getPredefinedCursor(type);
-            window.setCursor(cursor);
-            window.setFocusable(true);
-        }
-        
-        JRootPane pane = fileChooser.getRootPane();
-        if( null == blocker )
-            blocker = new InputBlocker();
-        
-        if(type == Cursor.WAIT_CURSOR) {
-            blocker.block(pane);
-        } else if (type == Cursor.DEFAULT_CURSOR){
-            blocker.unBlock(pane);
+        } else {
+            Window window = SwingUtilities.getWindowAncestor(comp);
+            if (window != null) {
+                Cursor cursor = Cursor.getPredefinedCursor(type);
+                window.setCursor(cursor);
+                window.setFocusable(true);
+            }
+
+            JRootPane pane = fileChooser.getRootPane();
+            if( null == blocker )
+                blocker = new InputBlocker();
+
+            if(type == Cursor.WAIT_CURSOR) {
+                blocker.block(pane);
+            } else if (type == Cursor.DEFAULT_CURSOR){
+                blocker.unBlock(pane);
+            }
         }
     }
     
