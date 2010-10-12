@@ -49,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -64,12 +63,7 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
-import org.netbeans.modules.cnd.api.remote.RemoteProject;
-import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
@@ -86,7 +80,6 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -241,7 +234,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         // TODO: this is actual only for sun studio compiler
         env.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
 
-        String workingDirectory = convertWorkingDirToRemoteIfNeeded(runDirectory);
+        String workingDirectory = ProjectSupport.convertWorkingDirToRemoteIfNeeded(pae, runDirectory);
 
         if (workingDirectory == null) {
             // TODO: fix me
@@ -310,41 +303,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 pae.getActionName());
 
         executorTask = es.run();
-    }
-
-    private String convertWorkingDirToRemoteIfNeeded(String localDir) {
-        ExecutionEnvironment execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
-        if (!checkConnection(execEnv)) {
-            return null;
-        }
-        if (execEnv.isRemote()) {
-            if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
-                PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
-                return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
-            } else {
-                return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
-            }
-        }
-        return localDir;
-    }
-
-    protected static boolean checkConnection(ExecutionEnvironment execEnv) {
-        if (execEnv.isRemote()) {
-            try {
-                ConnectionManager.getInstance().connectTo(execEnv);
-                ServerRecord record = ServerList.get(execEnv);
-                if (record.isOffline()) {
-                    record.validate(true);
-                }
-                return record.isOnline();
-            } catch (IOException ex) {
-                return false;
-            } catch (CancellationException ex) {
-                return false;
-            }
-        } else {
-            return true;
-        }
     }
 
     @Override
