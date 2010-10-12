@@ -245,14 +245,8 @@ public final class NbMavenProjectImpl implements Project {
      * @return
      */
     public MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
-//        AggregateProgressHandle hndl = createDownloadHandle();
         try {
-//            ProgressTransferListener.setAggregateHandle(hndl);
-//            hndl.start();
             MavenExecutionRequest req = embedder.createMavenExecutionRequest();
-//            ProgressTransferListener ptl = new ProgressTransferListener();
-//            req.setTransferListener(ptl);
-
             req.addActiveProfiles(activeProfiles);
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
@@ -275,25 +269,20 @@ public final class NbMavenProjectImpl implements Project {
                 return res.getProject();
             } else {
                 List<Throwable> exc = res.getExceptions();
-                //TODO how to report to the user?
                 for (Throwable ex : exc) {
-                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
+                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
                 }
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
-        } finally {
-//            hndl.finish();
-//            ProgressTransferListener.clearAggregateHandle();
         }
         File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
         try {
             return embedder.readProject(fallback);
         } catch (Exception x) {
             // oh well..
-            //NOPMD
         }
         return null;
     }
