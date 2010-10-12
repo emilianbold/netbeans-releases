@@ -95,41 +95,14 @@ public class Html5Parser implements HtmlParser {
             InputSource is = new InputSource(new StringReader(code));
             final AstNodeTreeBuilder treeBuilder = new AstNodeTreeBuilder(AstNodeFactory.shared().createRootNode(0, code.length()));
             final Tokenizer tokenizer = new ErrorReportingTokenizer(treeBuilder);
-            final Collection<ProblemDescription> problems = new ArrayList<ProblemDescription>();
 
-            treeBuilder.setErrorHandler(new ErrorHandler() {
-
-                public void warning(SAXParseException exception) throws SAXException {
-                    handleProblem(exception, ProblemDescription.WARNING);
-                }
-
-                public void error(SAXParseException exception) throws SAXException {
-                    handleProblem(exception, ProblemDescription.ERROR);
-                }
-
-                public void fatalError(SAXParseException exception) throws SAXException {
-                    handleProblem(exception, ProblemDescription.FATAL);
-                }
-
-                private void handleProblem(SAXException exception, int problemType) {
-//                     AstNode current = treeBuilder.getCurrentNode();
-
-                    ProblemDescription problem = ProblemDescription.create("nokey", //NOI18N
-                            exception.getLocalizedMessage(),
-                            problemType,
-                            //                            current.startOffset(), current.endOffset());
-                            treeBuilder.tagBeginningOffset(), treeBuilder.tagEndOffset());
-
-                    problems.add(problem);
-                }
-            });
             Driver driver = new Driver(tokenizer);
             driver.setTransitionHandler(treeBuilder);
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
 
             //html 5 source are validated by the validator.nu,
-            //if there's no such validator available, use the errors from the parser itself
+            //if there's no such validator available, no errors are provided
             if (preferedVersion == HtmlVersion.HTML5) {
                 Validator html5validator = ValidatorService.getValidator(preferedVersion);
                 if (html5validator != null) {
@@ -145,7 +118,7 @@ public class Html5Parser implements HtmlParser {
                 }
             }
 
-            return new Html5ParserResult(source, root, problems, preferedVersion);
+            return new Html5ParserResult(source, root, Collections.<ProblemDescription>emptyList(), preferedVersion);
 
         } catch (SAXException ex) {
             throw new ParseException(ex);
