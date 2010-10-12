@@ -66,7 +66,7 @@ public class WizardConstants {
     public static final String PROPERTY_SOURCE_FOLDERS_FILTER = "sourceFoldersFilter"; // String // NOI18N
 
     public static final String PROPERTY_TOOLS_CACHE_MANAGER = "ToolsCacheManager"; // String // NOI18N
-    public static final String PROPERTY_DISPLAY_NAME = "displayName"; // String // NOI18N
+    //public static final String PROPERTY_DISPLAY_NAME = "displayName"; // String // NOI18N
     public static final String PROPERTY_NATIVE_PROJ_DIR = "nativeProjDir"; // String // NOI18N
     public static final String PROPERTY_NATIVE_PROJ_FO = "nativeProjFO"; // String // NOI18N
     public static final String PROPERTY_BUILD_COMMAND = "buildCommandTextField"; // String // NOI18N
