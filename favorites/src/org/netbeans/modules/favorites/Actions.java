@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.favorites;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyVetoException;
@@ -59,7 +60,6 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.favorites.api.Favorites;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -69,10 +69,12 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -87,6 +89,7 @@ public final class Actions extends Object {
     private static File currentDir = null;
 
     private static final Logger LOG = Logger.getLogger(Actions.class.getName());
+    static final RequestProcessor RP = new RequestProcessor("Favorites Actions", 1); //NOI18N
 
     private Actions () {
         // noinstances
@@ -313,9 +316,8 @@ public final class Actions extends Object {
         * @param activatedNodes gives array of actually activated nodes.
         */
         protected void performAction (final Node[] activatedNodes) {
-            List<DataObject> toShadows;
-
             try {
+                final List<DataObject> toShadows;
                 if (activatedNodes.length == 1 && activatedNodes[0] instanceof FavoritesNode) {
                     // show JFileChooser
                     FileObject fo = chooseFileObject();
@@ -329,7 +331,12 @@ public final class Actions extends Object {
                             toShadows.add(obj);
                     }
                 }
-                addToFavorites(toShadows);
+                RP.post(new Runnable () {
+                    @Override
+                    public void run() {
+                        addToFavorites(toShadows);
+                    }
+                });
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, null, e);
             }
@@ -413,18 +420,41 @@ public final class Actions extends Object {
             DataObject createdDO = null;
             for (DataObject obj : dos) {
                 try {
-                    if (createdDO == null) {
-                        // Select only first node in array added to favorites
-                        createdDO = obj.createShadow(favourities);
-                        listAdd.add(createdDO);
+                    DataShadow added = findShadow(favourities, obj);
+                    if (added != null) {
+                        if (createdDO == null) {
+                            createdDO = added;
+                        }
                     } else {
-                        listAdd.add(obj.createShadow(favourities));
+                        if (createdDO == null) {
+                            // Select only first node in array added to favorites
+                            createdDO = obj.createShadow(favourities);
+                            listAdd.add(createdDO);
+                        } else {
+                            listAdd.add(obj.createShadow(favourities));
+                        }
                     }
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 }
             }
             return createdDO;
+        }
+
+        private static DataShadow findShadow (DataFolder f, DataObject dobj) {
+            FileObject fo = dobj.getPrimaryFile();
+            if (fo != null) {
+                DataObject [] arr = f.getChildren();
+                for (int i = 0; i < arr.length; i++) {
+                    if (arr[i] instanceof DataShadow) {
+                        DataShadow obj = (DataShadow) arr[i];
+                        if (fo.equals(obj.getOriginal().getPrimaryFile())) {
+                            return obj;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         public static void reorderAfterAddition(final DataFolder favourities, final DataObject[] children, final List<? extends DataObject> listAdd) {
@@ -470,13 +500,19 @@ public final class Actions extends Object {
         }
 
         static void addToFavorites(List<DataObject> toShadows) {
+            assert !EventQueue.isDispatchThread();
             final DataFolder f = FavoritesNode.getFolder();
             final DataObject[] arr = f.getChildren();
             final List<DataObject> listAdd = new ArrayList<DataObject>();
-            DataObject createdDO = createShadows(f, toShadows, listAdd);
+            final DataObject toSelect = createShadows(f, toShadows, listAdd);
             //This is done to set desired order of nodes in view
             reorderAfterAddition(f, arr, listAdd);
-            selectAfterAddition(createdDO);
+            EventQueue.invokeLater(new Runnable () {
+                @Override
+                public void run () {
+                    selectAfterAddition(toSelect);
+                }
+            });
         }
 
         static boolean isAllowed(DataObject dataObject) {
@@ -488,10 +524,6 @@ public final class Actions extends Object {
             if (fo != null) {
                 //#63459: Do not enable action on internal object/URL.
                 if (URLMapper.findURL(fo, URLMapper.EXTERNAL) == null) {
-                    return false;
-                }
-                //Allow to link only once
-                if (Favorites.getDefault().isInFavorites(fo)) {
                     return false;
                 }
                 //Check if it is root.

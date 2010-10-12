@@ -514,7 +514,13 @@ implements Runnable, ExplorerManager.Provider {
             }
 
             try {
-                Actions.Add.addToFavorites(Collections.singletonList(DataObject.find(file)));
+                final DataObject dobj = DataObject.find(file);
+                Actions.RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Actions.Add.addToFavorites(Collections.singletonList(dobj));
+                    }
+                });
             } catch (DataObjectNotFoundException e) {
                 LOG.log(Level.WARNING, null, e);
             }

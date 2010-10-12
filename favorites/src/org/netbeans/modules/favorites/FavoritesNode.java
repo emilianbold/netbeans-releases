@@ -621,7 +621,12 @@ public final class FavoritesNode extends FilterNode implements Index {
 
         @Override
         public Transferable paste() throws IOException {
-            Actions.Add.addToFavorites(Arrays.asList(dos));
+            Actions.RP.post(new Runnable () {
+                @Override
+                public void run() {
+                    Actions.Add.addToFavorites(Arrays.asList(dos));
+                }
+            });
             return null;
         }
 
