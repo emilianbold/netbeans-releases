@@ -1674,7 +1674,10 @@ public final class VeryPretty extends JCTree.Visitor {
         }
         int n = 0;
         switch (tree.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 n = before ? cs.getBlankLinesBeforeClass() : cs.getBlankLinesAfterClass();
         	if (((JCClassDecl) tree).defs.nonEmpty() && !before) {
                     n = 0;

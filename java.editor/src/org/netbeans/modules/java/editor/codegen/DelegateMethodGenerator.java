@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.editor.codegen;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -281,7 +282,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
     }
     
     static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();

@@ -48,6 +48,7 @@ import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.util.TreePathScanner;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -596,7 +597,11 @@ public class Utilities {
 
         switch (parentPath.getLeaf().getKind()) {
             case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
-            case CLASS: children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
             case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
             default:    children = Collections.singleton(leaf); break;
         }
@@ -740,7 +745,7 @@ public class Utilities {
     }
 
     public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
-        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
             from = from.getParentPath();
         }
 

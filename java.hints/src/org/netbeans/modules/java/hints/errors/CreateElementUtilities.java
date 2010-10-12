@@ -150,7 +150,10 @@ public final class CreateElementUtilities {
                 return computeTypeParameter(types, info, currentPath, unresolved, offset);
             case PARAMETERIZED_TYPE:
                 return computeParametrizedType(types, info, currentPath, unresolved, offset, typeParameterBound, numTypeParameters);
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 return computeClass(types, info, currentPath, unresolved, offset);
                 
             case CONDITIONAL_EXPRESSION:

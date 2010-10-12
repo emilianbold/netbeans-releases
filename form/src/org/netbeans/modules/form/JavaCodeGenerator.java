@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.form;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.*;
 import org.openide.filesystems.*;
 import org.openide.nodes.*;
@@ -3060,7 +3061,7 @@ class JavaCodeGenerator extends CodeGenerator {
 
     private static ClassTree findMainClass(CompilationController controller, String name) {
         for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-            if (t.getKind() == Tree.Kind.CLASS &&
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) &&
                     name.equals(((ClassTree) t).getSimpleName().toString())) {
 
                 return (ClassTree) t;

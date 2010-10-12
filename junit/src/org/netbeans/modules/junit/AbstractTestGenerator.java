@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileObject;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
@@ -1829,7 +1830,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         Name firstFound = null;
         for (int index : tstClassMap.getNestedClassIndexes()) {
             Tree member = tstClassMembers.get(index);
-            assert member.getKind() == Tree.Kind.CLASS;
+            assert TreeUtilities.CLASS_TREE_KINDS.contains(member.getKind());
             ClassTree nestedClass = (ClassTree) member;
             if (nestedClass.getModifiers().getFlags().contains(ABSTRACT)) {
                 continue;

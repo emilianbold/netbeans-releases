@@ -114,6 +114,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -963,11 +964,11 @@ public class SemanticHighlighter extends JavaParserResultTask {
                 //constructor:
                 TreePath tp = getCurrentPath();
                 
-                while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+                while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     tp = tp.getParentPath();
                 }
                 
-                if (tp != null && tp.getLeaf().getKind() == Kind.CLASS) {
+                if (tp != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                     name = ((ClassTree) tp.getLeaf()).getSimpleName().toString();
                 } else {
                     name = null;

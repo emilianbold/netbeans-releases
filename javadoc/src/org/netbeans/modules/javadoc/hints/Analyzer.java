@@ -90,6 +90,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
@@ -279,7 +280,10 @@ final class Analyzer {
                 return vt.getType().getKind() == Kind.ERRONEOUS
                         || ERROR_IDENT.contentEquals(vt.getName());
 
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 ClassTree ct = (ClassTree) leaf;
                 if (ERROR_IDENT.contentEquals(ct.getSimpleName())) {
                     return true;
@@ -300,7 +304,10 @@ final class Analyzer {
         int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
         boolean onLine = hintSeverity == HintSeverity.CURRENT_LINE_WARNING;
         switch (leaf.getKind()) {
+        case ANNOTATION_TYPE:
         case CLASS:
+        case ENUM:
+        case INTERFACE:
             return access.isAccessible(javac, path, false)
                     && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
         case METHOD:
@@ -669,7 +676,7 @@ final class Analyzer {
                     int[] span = null;
                     if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
                         span = javac.getTreeUtilities().findNameSpan((MethodTree) t);
-                    } else if (t.getKind() == Tree.Kind.CLASS) {
+                    } else if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         span = javac.getTreeUtilities().findNameSpan((ClassTree) t);
                     } else if (Tree.Kind.VARIABLE == t.getKind()) {
                         span = javac.getTreeUtilities().findNameSpan((VariableTree) t);

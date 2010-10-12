@@ -1474,7 +1474,10 @@ public class TreeFactory {
                         );
                 return clone;
             }
-            case CLASS: {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE: {
                 ClassTree t = (ClassTree) node;
                 // copy all the members, for constructor change their name
                 // too!

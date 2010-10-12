@@ -462,7 +462,7 @@ public class Reformatter implements ReformatTask {
                 CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
                 List<? extends Tree> typeDecls = cut.getTypeDecls();
                 int size = typeDecls.size();
-                int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+                int cnt = size > 0 && org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(typeDecls.get(size - 1).getKind()) ? cs.getBlankLinesAfterClass() : 1;
                 if (cnt < 1)
                     cnt = 1;
                 String s = pretty.getNewlines(cnt);
@@ -484,7 +484,7 @@ public class Reformatter implements ReformatTask {
             CompilationUnitTree cut = (CompilationUnitTree) path.getLeaf();
             List<? extends Tree> typeDecls = cut.getTypeDecls();
             int size = typeDecls.size();
-            int cnt = size > 0 && typeDecls.get(size - 1).getKind() == Tree.Kind.CLASS ? cs.getBlankLinesAfterClass() : 1;
+            int cnt = size > 0 && org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(typeDecls.get(size - 1).getKind()) ? cs.getBlankLinesAfterClass() : 1;
             if (cnt < 1)
                 cnt = 1;
             String s = pretty.getNewlines(cnt);
@@ -748,7 +748,10 @@ public class Reformatter implements ReformatTask {
                                 scan(member, p);
                                 blankLines(cs.getBlankLinesAfterMethods());
                                 break;
+                            case ANNOTATION_TYPE:
                             case CLASS:
+                            case ENUM:
+                            case INTERFACE:
                                 if (!first)
                                     blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
@@ -830,7 +833,7 @@ public class Reformatter implements ReformatTask {
                         space();
                     }
                 } else if (afterAnnotation) {
-                    if (parent.getKind() == Tree.Kind.CLASS || parent.getKind() == Tree.Kind.BLOCK) {
+                    if (org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) || parent.getKind() == Tree.Kind.BLOCK) {
                         switch (cs.wrapAnnotations()) {
                             case WRAP_ALWAYS:
                                 newline();
@@ -1006,7 +1009,7 @@ public class Reformatter implements ReformatTask {
             path = path.getParentPath();
             Tree grandParent = path.getLeaf();
             boolean isStandalone = parent.getKind() != Tree.Kind.VARIABLE ||
-                    grandParent.getKind() == Tree.Kind.CLASS || grandParent.getKind() == Tree.Kind.BLOCK;
+                    org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()) || grandParent.getKind() == Tree.Kind.BLOCK;
             while (tokens.offset() < endPos) {
                 if (afterAnnotation) {
                     if (!isStandalone) {
@@ -1174,7 +1177,10 @@ public class Reformatter implements ReformatTask {
             CodeStyle.BracePlacement bracePlacement;
             boolean spaceBeforeLeftBrace = false;
             switch (getCurrentPath().getParentPath().getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     bracePlacement = cs.getOtherBracePlacement();
                     if (node.isStatic())
                         spaceBeforeLeftBrace = cs.spaceBeforeStaticInitLeftBrace();
@@ -2084,7 +2090,7 @@ public class Reformatter implements ReformatTask {
                 switch (parent.getKind()) {
                     case ASSIGNMENT:
                         Tree grandParent = getCurrentPath().getParentPath().getParentPath().getLeaf();
-                        if (grandParent.getKind() != Tree.Kind.BLOCK && grandParent.getKind() != Tree.Kind.CLASS)
+                        if (grandParent.getKind() != Tree.Kind.BLOCK && !org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()))
                             break;
                     case VARIABLE:
                     case METHOD:
@@ -3269,7 +3275,10 @@ public class Reformatter implements ReformatTask {
             }
             if (lastTree != null && path != null) {
                 switch (path.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     for (Tree tree : ((ClassTree)path.getLeaf()).getMembers()) {
                         if (tree == lastTree) {
                             indent += tabSize;

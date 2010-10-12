@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -119,7 +120,7 @@ public class ClassEncapsulation {
         assert suppressWarnings != null;
         final TreePath tp = ctx.getPath();
         final Tree owner = tp.getParentPath().getLeaf();
-        if (owner.getKind() != Kind.CLASS) {
+        if (!TreeUtilities.CLASS_TREE_KINDS.contains(owner.getKind())) {
             return null;
         }
         if (!hasRequiredVisibility(((ClassTree)tp.getLeaf()).getModifiers().getFlags(),visibility)) {
@@ -167,7 +168,7 @@ public class ClassEncapsulation {
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.PARSED);
                         final TreePath tp = handle.resolve(controller);
-                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                        if (tp != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             position[0] = (int) controller.getTrees().getSourcePositions().getStartPosition(
                                     tp.getCompilationUnit(),
                                     (ClassTree)tp.getLeaf())+1;

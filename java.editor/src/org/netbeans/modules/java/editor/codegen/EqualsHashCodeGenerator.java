@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.editor.codegen;
 
 import java.util.Map.Entry;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
@@ -383,7 +384,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     }
     
     static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
-        assert path.getLeaf().getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
             TreeMaker make = wc.getTreeMaker();

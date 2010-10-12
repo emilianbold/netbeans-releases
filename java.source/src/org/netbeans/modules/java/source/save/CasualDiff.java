@@ -50,6 +50,7 @@ import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import java.util.logging.Logger;
 import org.netbeans.api.java.source.Comment.Style;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import static com.sun.source.tree.Tree.*;
 import org.netbeans.api.lexer.TokenSequence;
@@ -133,12 +134,12 @@ public class CasualDiff {
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : copy.getCompilationUnit());
 
         for (Tree t : oldTreePath) {
-            if (t != oldTree && (t.getKind() == Kind.CLASS || t.getKind() == Kind.BLOCK)) {
+            if (t != oldTree && (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) || t.getKind() == Kind.BLOCK)) {
                 td.printer.indent();
             }
         }
 
-        if (oldTree.getKind() == Kind.CLASS && oldTreePath.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
+        if (org.netbeans.api.java.source.TreeUtilities.CLASS_TREE_KINDS.contains(oldTree.getKind()) && oldTreePath.getParentPath().getLeaf().getKind() == Kind.NEW_CLASS) {
             td.anonClass = true;
         }
 

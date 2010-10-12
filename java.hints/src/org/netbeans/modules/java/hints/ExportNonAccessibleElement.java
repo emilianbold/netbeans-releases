@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -135,7 +136,11 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
             switch (treePath.getLeaf().getKind()) {
                 case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
-                case CLASS: span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
                 case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
             }
 
@@ -364,7 +369,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                     Element e = handle.resolveElement(wc);
                     
                     Tree t = wc.getTrees().getTree(e);
-                    if (t.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         ClassTree ct = (ClassTree)t;
                         Set<Modifier> flags = new HashSet<Modifier>(ct.getModifiers().getFlags());
                         flags.remove(Modifier.PUBLIC);

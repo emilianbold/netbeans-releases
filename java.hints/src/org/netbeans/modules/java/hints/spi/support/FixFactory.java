@@ -250,7 +250,10 @@ public final class FixFactory {
                     ModifiersTree modifiers = null;
 
                     switch (top.getKind()) {
+                        case ANNOTATION_TYPE:
                         case CLASS:
+                        case ENUM:
+                        case INTERFACE:
                             modifiers = ((ClassTree) top).getModifiers();
                             break;
                         case METHOD:

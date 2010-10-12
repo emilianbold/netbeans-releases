@@ -82,6 +82,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -152,12 +153,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
                 parent = path;
-            if (leafKind == Kind.CLASS && firstClass == null)
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && firstClass == null)
                 firstClass = path;
             if (leafKind == Kind.METHOD && firstMethod == null && firstClass == null)
                 firstMethod = path;
             //static/dynamic initializer:
-            if (   leafKind == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
+            if (   leafKind == Kind.BLOCK && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
 

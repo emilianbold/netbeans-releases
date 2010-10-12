@@ -577,7 +577,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case IMPORT:
                     insideImport(env);
                     break;
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     insideClass(env);
                     break;
                 case VARIABLE:
@@ -912,7 +915,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, TYPE_PARAMETER), controller.getTypes().getDeclaredType(controller.getElements().getTypeElement("java.lang.Throwable"))); //NOI18N
                 } else {
-                    boolean isLocal = path.getParentPath().getLeaf().getKind() != Tree.Kind.CLASS;
+                    boolean isLocal = !TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind());
                     addMemberModifiers(env, var.getModifiers().getFlags(), isLocal);
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
                     ModifiersTree mods = var.getModifiers();
@@ -1038,7 +1041,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addLocalConstantsAndTypes(env);
                     } else {
                         Tree mthParent = path.getParentPath().getLeaf();
-                        if (mthParent.getKind() == Tree.Kind.CLASS && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(mthParent.getKind()) && controller.getTreeUtilities().isAnnotation((ClassTree)mthParent)) {
                             addKeyword(env, DEFAULT_KEYWORD, SPACE, false);
                         } else {
                             addKeyword(env, THROWS_KEYWORD, SPACE, false);
@@ -1111,7 +1114,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree grandParent = grandParentPath != null ? grandParentPath.getLeaf() : null;
             if (isTopLevelClass(parent, env.getRoot())) {
                 addClassModifiers(env, m);
-            } else if (parent.getKind() != Tree.Kind.VARIABLE || grandParent == null || grandParent.getKind() == Tree.Kind.CLASS) {
+            } else if (parent.getKind() != Tree.Kind.VARIABLE || grandParent == null || TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind())) {
                 addMemberModifiers(env, m, false);
                 addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
             } else if (parent.getKind() == Tree.Kind.VARIABLE && grandParent.getKind() == Tree.Kind.METHOD) {
@@ -1190,7 +1193,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     } else {
                         pPath = pPath.getParentPath();
                         Tree.Kind pKind = pPath.getLeaf().getKind();
-                        if (pKind == Tree.Kind.CLASS || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(pKind) || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
                             el = trees.getElement(pPath);
                         }
                     }
@@ -1223,7 +1226,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             } else {
                 pPath = pPath.getParentPath();
                 Tree.Kind pKind = pPath.getLeaf().getKind();
-                if (pKind == Tree.Kind.CLASS || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(pKind) || pKind == Tree.Kind.METHOD || pKind == Tree.Kind.VARIABLE) {
                     el = trees.getElement(pPath);
                 }
             }
@@ -1427,9 +1430,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                     Set<TypeMirror> exs = null;
                     boolean inImport = false;
                     boolean insideNew = false;
-                    if (parent.getKind() == Tree.Kind.CLASS && ((ClassTree)parent).getExtendsClause() == fa) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getExtendsClause() == fa) {
                         kinds = EnumSet.of(CLASS);
-                    } else if (parent.getKind() == Tree.Kind.CLASS && ((ClassTree)parent).getImplementsClause().contains(fa)) {
+                    } else if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree)parent).getImplementsClause().contains(fa)) {
                         kinds = EnumSet.of(INTERFACE);
                     } else if (parent.getKind() == Tree.Kind.IMPORT) {
                         inImport = true;
@@ -3390,7 +3393,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             boolean beforeAnyClass = true;
             boolean beforePublicClass = true;
             for(Tree t : cu.getTypeDecls()) {
-                if (t.getKind() == Tree.Kind.CLASS) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                     int pos = (int)sourcePositions.getEndPosition(cu, t);
                     if (pos != Diagnostic.NOPOS && offset >= pos) {
                         beforeAnyClass = false;
@@ -3833,7 +3836,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private boolean isTopLevelClass(Tree tree, CompilationUnitTree root) {
-            if (tree.getKind() == Tree.Kind.CLASS || (tree.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)tree).getExpression().getKind() == Tree.Kind.ERRONEOUS)) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || (tree.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)tree).getExpression().getKind() == Tree.Kind.ERRONEOUS)) {
                 for (Tree t : root.getTypeDecls())
                     if (tree == t)
                         return true;
@@ -4708,10 +4711,10 @@ public class JavaCompletionProvider implements CompletionProvider {
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
             TreeUtilities tu = controller.getTreeUtilities();
-            if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
+            if (upToOffset && TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 return new Env(offset, prefix, controller, orig, sourcePositions, null);
-            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
+            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()))) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
@@ -4760,7 +4763,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     tu.reattributeTreeTo(block, scope, block);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
-            } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
+            } else if (grandParent != null && TreeUtilities.CLASS_TREE_KINDS.contains(grandParent.getKind()) &&
                     parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
                 if (tu.isEnum((ClassTree)grandParent)) {
                     controller.toPhase(Phase.RESOLVED);
@@ -4791,7 +4794,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     tu.reattributeTree(init, scope);
                 }
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
-            } else if (parent != null && parent.getKind() == Tree.Kind.CLASS && tree.getKind() == Tree.Kind.VARIABLE &&
+            } else if (parent != null && TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && tree.getKind() == Tree.Kind.VARIABLE &&
                     ((VariableTree)tree).getInitializer() != null && orig == path &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {

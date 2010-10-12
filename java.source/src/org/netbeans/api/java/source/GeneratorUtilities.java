@@ -648,7 +648,10 @@ public final class GeneratorUtilities {
             int ret = 0;
             ModifiersTree modifiers = null;
             switch (tree.getKind()) {
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 ret = 4000;
                 modifiers = ((ClassTree)tree).getModifiers();
                 break;

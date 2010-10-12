@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
@@ -154,7 +155,7 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
 
        if (treePathHandles != null) { 
            for (TreePathHandle treePathHandle : treePathHandles) {
-                if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+                if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
                     WebModule webModule = WebModule.getWebModule(treePathHandle.getFileObject());
                     if (webModule != null) {
                         CompilationInfo info = JSFRefactoringUtils.getCompilationInfo(refactoring, treePathHandle.getFileObject());

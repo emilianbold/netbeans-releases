@@ -58,6 +58,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.TextAction;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
@@ -155,7 +156,7 @@ public final class GenerateJavadocAction extends TextAction {
                 Kind kind = leaf.getKind();
                 SourcePositions positions = javac.getTrees().getSourcePositions();
                 
-                while (kind != Kind.CLASS && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
+                while (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Kind.METHOD && kind != Kind.VARIABLE && kind != Kind.COMPILATION_UNIT) {
                     tp = tp.getParentPath();
                     if (tp == null) {
                         leaf = null;

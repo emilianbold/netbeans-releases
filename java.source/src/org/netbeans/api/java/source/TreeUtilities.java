@@ -319,7 +319,7 @@ public final class TreeUtilities {
                 case GTGTGT:
                 case GTGT:
                 case GT:
-                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || path.getLeaf().getKind() == Tree.Kind.CLASS || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
+                    if (path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT || TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
                     if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
@@ -488,7 +488,7 @@ public final class TreeUtilities {
                 path = new TreePath(path, tree);
         }
         Scope scope = info.getTrees().getScope(path);
-        if (path.getLeaf().getKind() == Tree.Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
             TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
             ts.move(pos);
             while(ts.movePrevious()) {
