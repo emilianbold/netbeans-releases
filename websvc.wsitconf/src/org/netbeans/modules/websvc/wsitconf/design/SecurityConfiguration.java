@@ -174,7 +174,7 @@ public class SecurityConfiguration implements WSConfiguration {
   
     private void addServiceChangeListener() {        
         if (scl == null) {
-            scl = new  WsitServiceChangeListener(service, implementationFile.getPrimaryFile(), project);
+            scl = new  WsitServiceChangeListener(service, implementationFile, project);
         }
         if ((scl != null) && (serviceModel != null)) {
             serviceModel.addServiceChangeListener(scl);

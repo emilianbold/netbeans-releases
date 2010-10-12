@@ -680,10 +680,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     @Override
     void read(WizardDescriptor settings) {
         initialized = false;
-        File projectLocation = (File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);
+        File projectLocation = (File) settings.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // File - SIC! for projects always local
+        String projectName = null;
         if (projectLocation == null) {
             projectLocation = ProjectChooser.getProjectsFolder();
         } else {
+            projectName = projectLocation.getName();
             projectLocation = projectLocation.getParentFile();
         }
         this.projectLocationTextField.setText(projectLocation.getAbsolutePath());
@@ -700,10 +702,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
             }
         });
 
-        String projectName = (String) settings.getProperty(WizardConstants.PROPERTY_DISPLAY_NAME); //NOI18N
+        //String projectName = (String) settings.getProperty(WizardConstants.PROPERTY_DISPLAY_NAME); //NOI18N
         if (projectName == null) {
             String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
-            if (workingDir != null && workingDir.length() > 0 && templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) {
+            if (workingDir != null && workingDir.length() > 0 &&
+                    (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME) ||
+                    templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
                 name = CndPathUtilitities.getBaseName(workingDir);
             } else {
                 String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
