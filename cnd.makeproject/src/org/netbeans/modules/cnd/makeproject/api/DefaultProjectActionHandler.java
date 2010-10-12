@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -319,7 +318,6 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
         }
         if (execEnv.isRemote()) {
             if (RemoteSyncSupport.getRemoteMode(pae.getProject()) == RemoteProject.Mode.LOCAL_SOURCES) {
-                PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
                 return HostInfoProvider.getMapper(execEnv).getRemotePath(localDir, false);
             } else {
                 return pae.getConfiguration().getMakefileConfiguration().getBuildCommandWorkingDir().getValue(); //XXX:fullRemote
