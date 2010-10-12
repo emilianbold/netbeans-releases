@@ -187,6 +187,17 @@ public class TopSecurityManager extends SecurityManager {
         }
     }
     
+    static Class[] getStack() {
+        SecurityManager s = System.getSecurityManager();
+        TopSecurityManager t;
+        if (s instanceof TopSecurityManager) {
+            t = (TopSecurityManager)s;
+        } else {
+            t = new TopSecurityManager();
+        }
+        return t.getClassContext();
+    }
+    
     private static boolean officialExit = false;
     /** Can be called from core classes to exit the system.
      * Direct calls to System.exit will not be honored, for safety.

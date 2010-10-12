@@ -487,6 +487,18 @@ public final class ModuleManager {
             return super.shouldDelegateResource(pkg, parent);
         }
 
+        @Override
+        protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            try {
+                return super.loadClass(name, resolve);
+            } catch (ClassNotFoundException ex) {
+                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                if (l == null) {
+                    throw ex;
+                }
+                return Class.forName(name, resolve, l);
+            }
+        }
     }
 
     /** @see #create(File,Object,boolean,boolean,boolean)

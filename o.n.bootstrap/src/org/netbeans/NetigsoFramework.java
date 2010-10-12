@@ -217,4 +217,24 @@ public abstract class NetigsoFramework {
         toInit = new ArrayList<NetigsoModule>();
         toEnable.clear();
     }
+    
+    static ClassLoader findFallbackLoader() {
+        Object f = framework;
+        if (f == null) {
+            return null;
+        }
+        ClassLoader frameworkLoader = f.getClass().getClassLoader();
+        
+        Class[] stack = TopSecurityManager.getStack();
+        for (int i = 0; i < stack.length; i++) {
+            ClassLoader sl = stack[i].getClassLoader();
+            if (sl == null) {
+                continue;
+            }
+            if (sl.getClass().getClassLoader() == frameworkLoader) {
+                return stack[i].getClassLoader();
+            }
+        }
+        return null;
+    }
 }
