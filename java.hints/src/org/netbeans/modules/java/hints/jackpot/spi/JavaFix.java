@@ -88,6 +88,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -494,7 +495,7 @@ public abstract class JavaFix {
 
                     members = members.subList(1, members.size());
 
-                    assert parent.getLeaf().getKind() == Kind.CLASS;
+                    assert TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind());
                     
                     List<Tree> newMembers = new LinkedList<Tree>();
 

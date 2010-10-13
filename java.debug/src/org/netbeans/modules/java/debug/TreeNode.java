@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -58,6 +59,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DisjointTypeTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -248,6 +250,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         }
 
         @Override
+        public Void visitAnnotatedType(AnnotatedTypeTree node, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitAnnotatedType(node, below);
+
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
         public Void visitMethodInvocation(MethodInvocationTree tree, List<Node> d) {
             List<Node> below = new ArrayList<Node>();
             
@@ -391,6 +405,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingComments(below);
             super.visitContinue(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitDisjointType(DisjointTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitDisjointType(tree, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }

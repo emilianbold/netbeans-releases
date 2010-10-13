@@ -52,6 +52,7 @@ import javax.lang.model.type.*;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.util.Parameters;
 
 /**
@@ -134,7 +135,7 @@ public class SourceUtils {
         CompilationUnitTree cunittree = controller.getCompilationUnit();
         if (cunittree != null) {
             for (Tree tree : cunittree.getTypeDecls()) {
-                if (tree.getKind() != Tree.Kind.CLASS) {
+                if (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                     continue;
                 }
                 ClassTree classTree = (ClassTree)tree;

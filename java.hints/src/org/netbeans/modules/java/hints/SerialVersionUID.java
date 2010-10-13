@@ -57,6 +57,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
@@ -77,7 +78,6 @@ import org.openide.util.NbBundle;
 public class SerialVersionUID extends AbstractHint {
     private static final String SIMPLE_SERIALIZABLE = "Serializable";
 
-    private static final Set<Tree.Kind> TREE_KINDS = EnumSet.<Tree.Kind>of(Tree.Kind.CLASS);
     private static final String SERIAL = "serial"; //NOI18N
     private static final String SVUID = "serialVersionUID"; //NOI18N
     private static final String SERIALIZABLE = "java.io.Serializable"; //NOI18N
@@ -93,11 +93,11 @@ public class SerialVersionUID extends AbstractHint {
     }
 
     public Set<Kind> getTreeKinds() {
-        return TREE_KINDS;
+        return TreeUtilities.CLASS_TREE_KINDS;
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {
-        if (treePath == null || treePath.getLeaf().getKind() != Kind.CLASS) {
+        if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
             return null;
         }
         cancel.set(false);
@@ -195,7 +195,7 @@ public class SerialVersionUID extends AbstractHint {
                 return;
             }
             TreePath treePath = handle.resolve(copy);
-            if (treePath == null || treePath.getLeaf().getKind() != Kind.CLASS) {
+            if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
                 return;
             }
             ClassTree classTree = (ClassTree) treePath.getLeaf();

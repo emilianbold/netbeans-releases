@@ -88,6 +88,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -258,7 +259,7 @@ public class JavaSourceHelper {
         if (cu != null) {
             List<? extends Tree> decls = cu.getTypeDecls();
             for (Tree decl : decls) {
-                if (decl.getKind() != Tree.Kind.CLASS) {
+                if (!TreeUtilities.CLASS_TREE_KINDS.contains(decl.getKind())) {
                     continue;
                 }
 
@@ -712,7 +713,7 @@ public class JavaSourceHelper {
 
         final String mainElementName = controller.getFileObject().getName();
         for (Tree tree : controller.getCompilationUnit().getTypeDecls()) {
-            if (tree.getKind() != Tree.Kind.CLASS) {
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 continue;
             }
             ClassTree classTree = (ClassTree) tree;

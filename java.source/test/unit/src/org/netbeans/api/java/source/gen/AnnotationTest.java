@@ -67,6 +67,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.save.Reformatter;
@@ -126,7 +127,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree copy = make.setLabel((ClassTree) typeDecl, "Foo");
                         workingCopy.rewrite(typeDecl, copy);
                     }
@@ -164,7 +165,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree ct = (ClassTree) typeDecl;
                         ClassTree copy = make.AnnotationType(ct.getModifiers(),"Foo", ct.getMembers());
                         System.err.println(copy.toString());
@@ -204,7 +205,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree ct = (ClassTree) typeDecl;
                         ClassTree copy = make.AnnotationType(ct.getModifiers(),"Foo", ct.getMembers());
                         System.err.println(copy.toString());
@@ -812,7 +813,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         ClassTree copy = make.AnnotationType(clazz.getModifiers(), "Foo", clazz.getMembers());
                         workingCopy.rewrite(typeDecl, copy);
@@ -849,7 +850,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
                         //XXX: ideally, TreeMaker.Class should be enough but it is not right now, and it may not be possible to change due to compatibility:
@@ -888,7 +889,7 @@ public class AnnotationTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         ClassTree copy = make.AnnotationType(clazz.getModifiers(), "Foo", clazz.getMembers());
                         workingCopy.rewrite(typeDecl, copy);

@@ -69,6 +69,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
@@ -153,7 +154,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                 }
             }
 
-            if (leaf.getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(leaf.getKind())) {
                 CompilationUnitTree cut = info.getCompilationUnit();
                 // do not offer for class declarations without body
                 long start = info.getTrees().getSourcePositions().getStartPosition(cut, leaf);
@@ -245,7 +246,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                             }
                             public void makeClassAbstract(Tree toModify, String className) {
                                 //the toModify has to be a class tree:
-                                if (toModify.getKind() == Kind.CLASS) {
+                                if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
                                     ClassTree clazz = (ClassTree) toModify;
                                     ModifiersTree modifiers = clazz.getModifiers();
                                     Set<Modifier> newModifiersSet = new HashSet<Modifier>(modifiers.getFlags());

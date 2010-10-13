@@ -58,6 +58,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
@@ -102,7 +103,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? SendEmailCodeGenerator.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            path = path != null ? SendEmailCodeGenerator.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
             if (component == null || controller == null || path == null)
                 return ret;
             try {
