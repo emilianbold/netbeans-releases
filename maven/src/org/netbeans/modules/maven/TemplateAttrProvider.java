@@ -44,9 +44,9 @@ package org.netbeans.modules.maven;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.maven.model.License;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -71,7 +71,7 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
     }
     
     public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
-        Map<String, String> values = new HashMap<String, String>();
+        Map<String,String> values = new TreeMap<String,String>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
         if (license == null) {
             // try to match the project's license URL and the mavenLicenseURL attribute of license template
