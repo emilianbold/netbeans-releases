@@ -701,9 +701,12 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
         });
+        String prefferedName = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
+        if (prefferedName != null) {
+            name = prefferedName;
+        }
 
         if (projectName == null) {
-            String name = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
             if (name == null) {
                 String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
                 if (workingDir != null && workingDir.length() > 0 &&

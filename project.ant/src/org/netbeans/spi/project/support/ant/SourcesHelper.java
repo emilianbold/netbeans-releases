@@ -97,6 +97,8 @@ import org.openide.util.WeakSet;
  * @author Jesse Glick
  */
 public final class SourcesHelper {
+    
+    private static final Logger LOG = Logger.getLogger(SourcesHelper.class.getName());
 
     private class Root {
         protected final String location;
@@ -953,6 +955,10 @@ public final class SourcesHelper {
                     if (loc == null) {
                         continue;
                     }
+                    if (!loc.isFolder()) {
+                        LOG.log(Level.WARNING, "Group root: {0} is not a folder.", FileUtil.getFileDisplayName(loc));
+                        continue;
+                    }
                     if (rootsByDir.containsKey(loc)) {
                         continue;
                     }
@@ -990,6 +996,10 @@ public final class SourcesHelper {
                     listen(locF);
                     FileObject loc = FileUtil.toFileObject(locF);
                     if (loc == null) {
+                        continue;
+                    }
+                    if (!loc.isFolder()) {
+                        LOG.log(Level.WARNING, "Group root: {0} is not a folder.", FileUtil.getFileDisplayName(loc));
                         continue;
                     }
                     if (!dirs.add(loc)) {
@@ -1098,7 +1108,6 @@ public final class SourcesHelper {
     }
 
     private class SourceGroupModifierImpl implements SourceGroupModifierImplementation {
-        private Logger logger = Logger.getLogger(SourcesHelper.class.getName());
 
         public SourceGroup createSourceGroup(String type, String hint) {
             SourceRoot root = findRoot(type, hint);
@@ -1113,7 +1122,7 @@ public final class SourcesHelper {
                 try {
                     foloc = FileUtil.createFolder(loc);
                 } catch (IOException ex) {
-                    logger.log(Level.WARNING, "Failed to create folder " + loc, ex);
+                    LOG.log(Level.WARNING, "Failed to create folder " + loc, ex);
                     return null;
                 }
             } else {
