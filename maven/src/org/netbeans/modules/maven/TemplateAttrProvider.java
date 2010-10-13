@@ -69,14 +69,14 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         project = prj;
     }
     
-    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+    public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String, String> values = new HashMap<String, String>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
         if (license == null) {
             // try to match the project's license URL and the mavenLicenseURL attribute of license template
-            List lst = project.getOriginalMavenProject().getLicenses();
-            if (lst != null && lst.size() > 0) {
-                String url = ((License)lst.get(0)).getUrl();
+            List<License> lst = project.getOriginalMavenProject().getLicenses();
+            if (!lst.isEmpty()) {
+                String url = lst.get(0).getUrl();
                 FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
                 if (url != null && licenses != null) {
                     for (FileObject fo : licenses.getChildren()) {
