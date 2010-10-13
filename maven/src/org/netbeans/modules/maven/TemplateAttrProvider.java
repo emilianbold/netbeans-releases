@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.maven.model.License;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -100,15 +101,9 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             values.put("encoding", encoding); // NOI18N
         }
 
-        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
-        String pdname = pi.getDisplayName();
-        String pname = pi.getName();
-        if (pdname != null) {
-            values.put("displayName", pdname); // NOI18N
-        }
-        if (pname != null) {
-            values.put("name", pname); // NOI18N
-        }
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        values.put("name", pi.getName()); // NOI18N
+        values.put("displayName", pi.getDisplayName()); // NOI18N
 
         if (values.size() > 0) {
             return Collections.singletonMap("project", values); // NOI18N
