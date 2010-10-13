@@ -78,6 +78,7 @@ public class Reformatter implements ReformatTask {
         this.codeStyle = codeStyle;
     }
 
+    @Override
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
             codeStyle = CodeStyle.getDefault(doc);
@@ -90,7 +91,7 @@ public class Reformatter implements ReformatTask {
             }
         } else {
             int endOffset = doc.getLength();
-            TokenHierarchy hierarchy = TokenHierarchy.get(doc);
+            TokenHierarchy<?> hierarchy = TokenHierarchy.get(doc);
             if (hierarchy == null) {
                 return;
             }
@@ -101,6 +102,12 @@ public class Reformatter implements ReformatTask {
     private void reformatImpl(Context.Region region) throws BadLocationException {
         int startOffset = region.getStartOffset();
         int endOffset = region.getEndOffset();
+        if (endOffset > 0 && endOffset < doc.getLength()) {
+            String text = doc.getText(endOffset - 1, 1);
+            if (text.charAt(0) == '\n') {
+                endOffset--;
+            }
+        }
         Language<CppTokenId> language = CndLexerUtilities.getLanguage(context.mimePath());
         if (language != null) {
             reformatLanguage(language, startOffset, endOffset);
@@ -108,7 +115,7 @@ public class Reformatter implements ReformatTask {
     }
 
     private void reformatLanguage(Language<CppTokenId> language, int startOffset, int endOffset) throws BadLocationException {
-        TokenHierarchy hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
+        TokenHierarchy<?> hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
         if (hierarchy == null) {
             return;
         }
@@ -117,7 +124,7 @@ public class Reformatter implements ReformatTask {
 
                 
     @SuppressWarnings("unchecked")
-    private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
+    private void reformatImpl(TokenHierarchy<?> hierarchy, int startOffset, int endOffset) throws BadLocationException {
         TokenSequence<?> ts = hierarchy.tokenSequence();
         ts.move(startOffset);
         if (ts.moveNext() && ts.token().id() != CppTokenId.NEW_LINE){
@@ -223,18 +230,22 @@ public class Reformatter implements ReformatTask {
         return true;
     }
     
+    @Override
     public ExtraLock reformatLock() {
         return new Lock();
     }
 
     public static class Factory implements ReformatTask.Factory {
+        @Override
         public ReformatTask createTask(Context context) {
             return new Reformatter(context);
         }        
     }
 
     private static class Lock implements ExtraLock {
+        @Override
         public void lock() {}
+        @Override
         public void unlock() {}        
     }
     
