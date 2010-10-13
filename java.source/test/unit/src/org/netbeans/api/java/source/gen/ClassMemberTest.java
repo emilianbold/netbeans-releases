@@ -574,7 +574,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
      * as an empty initilizer in the tree with position -1. This causes many
      * problems during generating. See issues for details.
      */
-    public void testAddAfterEmptyInit1() throws Exception {
+    public void DISABLEDtestAddAfterEmptyInit1() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +
@@ -627,7 +627,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
      * as an empty initilizer in the tree with position -1. This causes many
      * problems during generating. See issues for details.
      */
-    public void testAddAfterEmptyInit2() throws Exception {
+    public void DISABLEDtestAddAfterEmptyInit2() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package hierbas.del.litoral;\n" +

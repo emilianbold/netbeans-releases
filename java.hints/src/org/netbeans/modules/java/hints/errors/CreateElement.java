@@ -143,7 +143,7 @@ public final class CreateElement implements ErrorRule<Void> {
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
 
-        TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        TreePath path = info.getTreeUtilities().pathFor(Math.max((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf()), offset) + 1);
 
         while(path != null) {
             Tree leaf = path.getLeaf();
