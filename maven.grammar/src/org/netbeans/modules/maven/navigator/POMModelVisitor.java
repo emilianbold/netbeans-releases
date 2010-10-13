@@ -1183,11 +1183,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
         @Override
         public String getShortDescription() {
-            String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
-            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
-            assert values.length == mdls.length : "Values (len=" + values.length + ") don't match models (len=" + mdls.length + ")." +  Arrays.toString(values);
             StringBuffer buff = new StringBuffer();
-            int index = 0;
             buff.append("<html>" + //NOI18N
                     NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Defined_in") +
                     "<p><table><thead><tr><th>" + //NOI18N
@@ -1195,6 +1191,10 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                     "</th><th>" + //NOI18N
                     NbBundle.getMessage(POMModelVisitor.class, "TOOLTIP_Value") +
                     "</th></tr></thead><tbody>"); //NOI18N
+            String[] values = getLookup().lookup(POMCutHolder.class).getCutValuesAsString();
+            POMModel[] mdls = getLookup().lookup(POMCutHolder.class).getSource();
+            if (values.length == mdls.length) {
+            int index = 0;
             for (POMModel mdl : mdls) {
                 String artifact = mdl.getProject().getArtifactId();
                 buff.append("<tr><td>"); //NOI18N
@@ -1203,6 +1203,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 buff.append(values[index] != null ? values[index] : org.openide.util.NbBundle.getMessage(POMModelVisitor.class, "UNDEFINED"));
                 buff.append("</td></tr>");//NOI18N
                 index++;
+            }
+            } else {
+                LOG.log(Level.WARNING, "#180901: {0} length does not match {1} length", new Object[] {Arrays.toString(values), Arrays.toString(mdls)});
             }
             buff.append("</tbody></table>");//NOI18N
 
