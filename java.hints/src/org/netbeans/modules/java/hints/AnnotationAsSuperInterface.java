@@ -59,7 +59,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
 
     private static final List<Fix> NO_FIXES = Collections.<Fix>emptyList();
     
-    private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.CLASS);
+    private Set<Kind> KINDS = Collections.<Tree.Kind>singleton(Tree.Kind.ANNOTATION_TYPE);
     
     public AnnotationAsSuperInterface() {
         super( true, true, HintSeverity.WARNING, "AnnotationAsSuperInterface");
@@ -73,7 +73,7 @@ public class AnnotationAsSuperInterface extends AbstractHint {
         
         Tree node = treePath.getLeaf();
 
-        if ( !TreeUtilities.CLASS_TREE_KINDS.contains(node.getKind()) ) {
+        if (node.getKind() != Tree.Kind.ANNOTATION_TYPE) {
             return null;
         }
         

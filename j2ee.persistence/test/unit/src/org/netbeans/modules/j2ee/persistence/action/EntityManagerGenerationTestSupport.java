@@ -7,6 +7,7 @@
 
 package org.netbeans.modules.j2ee.persistence.action;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -48,7 +49,7 @@ public abstract class EntityManagerGenerationTestSupport  extends SourceTestSupp
                 TreeMaker make = workingCopy.getTreeMaker();
                 
                 for (Tree typeDeclaration : cut.getTypeDecls()){
-                    if (Tree.Kind.CLASS == typeDeclaration.getKind()){
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDeclaration.getKind())){
                         ClassTree clazz = (ClassTree) typeDeclaration;
                         ClassTree modifiedClazz = getStrategy(workingCopy, make, clazz, options).generate();
                         workingCopy.rewrite(clazz, modifiedClazz);

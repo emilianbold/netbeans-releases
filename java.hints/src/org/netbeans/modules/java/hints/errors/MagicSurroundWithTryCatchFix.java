@@ -411,7 +411,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         // find the containing top level class
         ClassTree containingTopLevel = null;
         for (Tree t : statement) {
-            if (Kind.CLASS == t.getKind()) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 containingTopLevel = (ClassTree) t;
             }
         }

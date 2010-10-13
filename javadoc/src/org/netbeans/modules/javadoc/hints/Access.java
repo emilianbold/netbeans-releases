@@ -142,7 +142,7 @@ enum Access {
         }
         Tree parent = parentPath.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
-        return Tree.Kind.CLASS == parent.getKind()
+        return TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind())
                 && (utils.isInterface((ClassTree) parent) || utils.isAnnotation((ClassTree) parent));
     }
 }

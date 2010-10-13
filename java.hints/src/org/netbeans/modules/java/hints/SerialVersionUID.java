@@ -78,7 +78,6 @@ import org.openide.util.NbBundle;
 public class SerialVersionUID extends AbstractHint {
     private static final String SIMPLE_SERIALIZABLE = "Serializable";
 
-    private static final Set<Tree.Kind> TREE_KINDS = EnumSet.<Tree.Kind>of(Tree.Kind.CLASS);
     private static final String SERIAL = "serial"; //NOI18N
     private static final String SVUID = "serialVersionUID"; //NOI18N
     private static final String SERIALIZABLE = "java.io.Serializable"; //NOI18N
@@ -94,7 +93,7 @@ public class SerialVersionUID extends AbstractHint {
     }
 
     public Set<Kind> getTreeKinds() {
-        return TREE_KINDS;
+        return TreeUtilities.CLASS_TREE_KINDS;
     }
 
     public List<ErrorDescription> run(CompilationInfo info, TreePath treePath) {

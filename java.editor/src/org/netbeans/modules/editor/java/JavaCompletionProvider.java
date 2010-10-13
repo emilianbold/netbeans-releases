@@ -3629,7 +3629,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private void addElementCreators(Env env) throws IOException {
             CompilationController controller = env.getController();
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
-            TreePath clsPath = Utilities.getPathElementOfKind(Tree.Kind.CLASS, env.getPath());
+            TreePath clsPath = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, env.getPath());
             if (clsPath == null)
                 return;
             ClassTree cls = (ClassTree)clsPath.getLeaf();

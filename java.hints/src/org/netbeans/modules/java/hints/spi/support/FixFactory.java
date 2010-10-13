@@ -74,7 +74,7 @@ import org.openide.util.Parameters;
  */
 public final class FixFactory {
 
-    private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
+    private static final Set<Kind> DECLARATION = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.METHOD, Kind.VARIABLE);
     
     private FixFactory() {}
 
@@ -227,8 +227,6 @@ public final class FixFactory {
 
             return NbBundle.getMessage(FixFactory.class, "LBL_FIX_Suppress_Waning",  keyNames.toString() );  // NOI18N
         }
-
-        private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
 
         public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);

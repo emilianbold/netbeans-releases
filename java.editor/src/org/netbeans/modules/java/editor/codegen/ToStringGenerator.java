@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.codegen.ui.ElementNode;
@@ -100,7 +101,7 @@ public class ToStringGenerator implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            path = path != null ? Utilities.getPathElementOfKind(Tree.Kind.CLASS, path) : null;
+            path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
             if (component == null || controller == null || path == null) {
                 return ret;
             }
@@ -158,7 +159,7 @@ public class ToStringGenerator implements CodeGenerator {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         TreePath path = copy.getTreeUtilities().pathFor(caretOffset);
-                        path = Utilities.getPathElementOfKind(Tree.Kind.CLASS, path);
+                        path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                         if (path == null)
                             return;
                         ClassTree cls = (ClassTree) path.getLeaf();

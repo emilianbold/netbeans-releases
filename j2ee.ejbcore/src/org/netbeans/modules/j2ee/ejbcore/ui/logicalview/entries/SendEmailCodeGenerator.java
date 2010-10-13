@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -368,7 +369,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }
 
-    public static TreePath getPathElementOfKind(EnumSet<Tree.Kind> kinds, TreePath path) {
+    public static TreePath getPathElementOfKind(Set<Tree.Kind> kinds, TreePath path) {
         while (path != null) {
             if (kinds.contains(path.getLeaf().getKind()))
                 return path;

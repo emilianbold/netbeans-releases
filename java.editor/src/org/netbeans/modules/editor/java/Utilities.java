@@ -337,7 +337,7 @@ public final class Utilities {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }
     
-    public static TreePath getPathElementOfKind(EnumSet<Tree.Kind> kinds, TreePath path) {
+    public static TreePath getPathElementOfKind(Set<Tree.Kind> kinds, TreePath path) {
         while (path != null) {
             if (kinds.contains(path.getLeaf().getKind()))
                 return path;

@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
 public class ClassStructure {
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = "FinalClass") //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription finalClass(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (cls.getModifiers().getFlags().contains(Modifier.FINAL)) {
@@ -220,7 +220,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (context.getInfo().getTreeUtilities().isInterface(cls) && cls.getMembers().isEmpty() && cls.getImplementsClause().size() < 2) {
@@ -231,7 +231,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription classMayBeInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final TreeUtilities treeUtilities = context.getInfo().getTreeUtilities();
@@ -244,7 +244,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription multipleTopLevelClassesInFile(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();

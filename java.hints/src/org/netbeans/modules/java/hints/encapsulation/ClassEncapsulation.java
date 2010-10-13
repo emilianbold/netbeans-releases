@@ -90,7 +90,7 @@ public class ClassEncapsulation {
     static final boolean ALLOW_ENUMS_DEFAULT = false;
 
     @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)   //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription publicCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, Modifier.PUBLIC,
@@ -98,7 +98,7 @@ public class ClassEncapsulation {
     }
 
     @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)    //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription protectedCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, Modifier.PROTECTED,
@@ -106,7 +106,7 @@ public class ClassEncapsulation {
     }
 
     @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription packageCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, null,

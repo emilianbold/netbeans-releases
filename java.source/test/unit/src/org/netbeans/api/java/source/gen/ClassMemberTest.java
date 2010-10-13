@@ -129,7 +129,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.insertClassMember(classTree, 0, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -175,7 +175,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.insertClassMember(classTree, 2, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -215,7 +215,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.addClassMember(classTree, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -267,7 +267,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
                         List<VariableTree> arguments = new ArrayList<VariableTree>();
@@ -332,7 +332,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         VariableTree member = make.Variable(
                                 make.Modifiers(Collections.<Modifier>emptySet()),
@@ -384,7 +384,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         VariableTree variable = (VariableTree) ((ClassTree) typeDecl).getMembers().get(0);
                         VariableTree copy = make.setLabel(variable, "newFieldName");
                         workingCopy.rewrite(variable, copy);
@@ -430,7 +430,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         VariableTree variable = (VariableTree) ((ClassTree) typeDecl).getMembers().get(0);
                         ModifiersTree mods = variable.getModifiers();
                         workingCopy.rewrite(mods, make.Modifiers(Collections.<Modifier>singleton(Modifier.PUBLIC)));
@@ -469,7 +469,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         MethodTree method = m(make);
                         MethodTree methodC = make.Method(method.getModifiers(),
@@ -607,7 +607,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.addClassMember(classTree, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -656,7 +656,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.addClassMember(classTree, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -887,7 +887,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.insertClassMember(classTree, 0, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -939,7 +939,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.insertClassMember(classTree, 2, m(make));
                         workingCopy.rewrite(classTree, copy);
@@ -1475,7 +1475,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                         break;
                     }
@@ -1511,7 +1511,7 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                         break;
                     }
