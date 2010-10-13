@@ -604,6 +604,26 @@ Microsystems, Inc. All Rights Reserved.
           Disables #113341 so that the first version of a module JAR to be encountered is loaded,
           even if a later cluster contains a newer version of the same module.
       </api>
+      <api name="netbeans.bootdelegation" category="devel" group="systemproperty" type="export">
+          <p>
+          Similar to OSGi's <code>org.osgi.framework.bootdelegation</code> property.
+          Allows unit tests (or even regular code) to prevent classloading from
+          application classloader for other, then explicitly enumerated packages.
+          </p>
+          <p>
+          This property shall contain a set of comma separated values of 
+          package names. Classes from those packages will be loaded by the 
+          classloader framework from application classloader. If the name of
+          a package ends with <code>.*</code> suffix, all packages under the
+          given package name are allowed for delegation (but not the package by itself).
+          </p>
+          <p>
+          The classes from the <code>java.*</code> namespace are allowed
+          and do not need to be enumerated at all. If this property is not
+          specified at all, all classes visible by the application classloader
+          can be accessed. Available since version 1.26.
+          </p>
+      </api>
   </p>
  </answer>
 
