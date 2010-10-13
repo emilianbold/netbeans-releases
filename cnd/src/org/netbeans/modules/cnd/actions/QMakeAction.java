@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
@@ -191,7 +192,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 inputVisible(true).
                 inputOutput(inputOutput).
                 outLineBased(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 postMessageDisplayer(new PostMessageDisplayer.Default("QMake")). // NOI18N
                 outConvertorFactory(processChangeListener);

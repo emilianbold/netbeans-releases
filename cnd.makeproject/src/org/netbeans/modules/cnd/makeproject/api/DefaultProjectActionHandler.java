@@ -277,7 +277,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(!unbuffer).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
                 postExecution(processChangeListener).
                 errConvertorFactory(processChangeListener).

@@ -74,10 +74,15 @@ public class Html5ParserTest extends NbTestCase {
     }
 
     public static Test xsuite() {
-        AstNodeTreeBuilder.DEBUG = true;
+        String testName = "testaParseErrorneousHeadContent";
+        
+        System.err.println("Only " + testName + " test is going to be run!!!!");
+        System.err.println("******************************************************\n");
+        
+//        AstNodeTreeBuilder.DEBUG = true;
 //        AstNodeTreeBuilder.DEBUG_STATES = true;
         TestSuite suite = new TestSuite();
-        suite.addTest(new Html5ParserTest("testSimpleDocument"));
+        suite.addTest(new Html5ParserTest(testName));
         return suite;
     }
 
@@ -93,20 +98,16 @@ public class Html5ParserTest extends NbTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-        AstNodeTreeBuilder.DEBUG_STATES = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
         assertNotNull(root);
-        AstNodeUtils.dumpTree(result.root());
+//        AstNodeUtils.dumpTree(result.root());
 
-        Collection<ProblemDescription> problems = result.getProblems();
-        for(ProblemDescription pd : problems) {
-            System.out.println(pd);
-        }
-
-        AstNode leaf = AstNodeUtils.findDescendant(root, 48, true);
-
-        System.out.println("leaf="+leaf);
+//        Collection<ProblemDescription> problems = result.getProblems();
+//        for(ProblemDescription pd : problems) {
+//            System.out.println(pd);
+//        }
 
     }
 
@@ -114,12 +115,12 @@ public class Html5ParserTest extends NbTestCase {
         String code = "<!doctype html><html><head><title>x</title></head><body><div onclick=\"alert();\"/></body></html>";
         //             012345678901234567890123456789012345678901234567890123456789012345678 901234567 8901234567890123456789
         //             0         1         2         3         4         5         6          7          8         9
-            
-        AstNodeTreeBuilder.DEBUG_STATES = true;
+
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
         assertNotNull(root);
-        AstNodeUtils.dumpTree(result.root());
+//        AstNodeUtils.dumpTree(result.root());
 
         AstNode html = AstNodeUtils.query(root, "html");
         assertEquals("html", html.name());
@@ -134,6 +135,25 @@ public class Html5ParserTest extends NbTestCase {
         assertEquals(56, body.endOffset());
         assertEquals(50, body.logicalStartOffset());
         assertEquals(88, body.logicalEndOffset());
+
+        AstNode bodyEndTag = body.getMatchingTag();
+        assertNotNull(bodyEndTag);
+        assertSame(body, bodyEndTag.getMatchingTag());
+        assertSame(bodyEndTag, body.getMatchingTag());
+
+        AstNode title = AstNodeUtils.query(root, "html/head/title");
+        assertEquals("title", title.name());
+        assertEquals(27, title.startOffset());
+        assertEquals(34, title.endOffset());
+        assertEquals(27, title.logicalStartOffset());
+        assertEquals(43, title.logicalEndOffset());
+
+        AstNode titleEndTag = title.getMatchingTag();
+        assertNotNull(titleEndTag);
+        assertSame(title, titleEndTag.getMatchingTag());
+        assertSame(titleEndTag, title.getMatchingTag());
+
+
 
     }
 
@@ -195,12 +215,12 @@ public class Html5ParserTest extends NbTestCase {
         //             0123456789012345 67890123456 7890123456 789 012345678 90123456789012345678 90123456789012 345678901 23456789
         //             0         1          2          3           4          5         6          7          8           9
 
-        AstNodeTreeBuilder.DEBUG = true;
-        AstNodeTreeBuilder.DEBUG_STATES = true;
+//        AstNodeTreeBuilder.DEBUG = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
         assertNotNull(root);
-        AstNodeUtils.dumpTree(result.root());
+//        AstNodeUtils.dumpTree(result.root());
         
         AstNode head = AstNodeUtils.query(root, "html/head");
         assertNotNull(head);
@@ -279,7 +299,7 @@ public class Html5ParserTest extends NbTestCase {
                 + "</html>");
         AstNode root = result.root();
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         assertNotNull(root);
         AstNode htmlOpen = AstNodeUtils.query(root, "html");
@@ -437,15 +457,13 @@ public class Html5ParserTest extends NbTestCase {
                 + "</body>\n"
                 + "</html>\n";
 
-        System.out.println("code len = " + code.length());
-        System.out.println("code=" + code);
 
-        AstNodeTreeBuilder.DEBUG_STATES = true;
+//        AstNodeTreeBuilder.DEBUG_STATES = true;
         HtmlParseResult result = parse(code);
         AstNode root = result.root();
 
         assertNotNull(root);
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
 
         AstNode body = AstNodeUtils.query(result.root(), "html/body");
         assertNotNull(body);
@@ -520,7 +538,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(body.parent());
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
     }
 
     public void testUnclosedTitleTag() throws ParseException {
@@ -557,7 +575,7 @@ public class Html5ParserTest extends NbTestCase {
 
         assertNotNull(root);
 
-        AstNodeUtils.dumpTree(root);
+//        AstNodeUtils.dumpTree(root);
     }
 
     private HtmlParseResult parse(CharSequence code) throws ParseException {

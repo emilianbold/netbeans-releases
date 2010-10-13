@@ -415,7 +415,24 @@ public abstract class WebRestSupport extends RestSupport {
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
                 RestConfig rc = RestConfig.DD;
                 rc.setResourcePath(configPanel.getApplicationPath());
-                rc.setJerseyLibSelected(true);
+                /*
+                 * Fix for BZ#190982 -  Option "Add Jersey library" is 
+                 * ignored when RESTful webservice is created for JEE5
+                 * 
+                 * This is result of annotationConfigAvailable=false
+                 * which leads to configType==CONFIG_TYPE_DD.
+                 * So either it is important and jersey library 
+                 * SHOULD be really added or panel property is just 
+                 * ignored.
+                 * In the first case jersey library checkbox should 
+                 * be removed from UI at all. And user will
+                 * not be able to change its value.
+                 * 
+                 * Here is the fix for second case.
+                 * 
+                 * rc.setJerseyLibSelected(true);
+                 */
+                rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
                 return rc;
             }
         } else {

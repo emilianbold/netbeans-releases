@@ -167,10 +167,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         level--;
                         break;
                     case CPPTokenTypes.LESSTHAN:
-                        // getTemplateParameters does not work for constructors and destructors...
-                        if(!CsmKindUtilities.isConstructor(this) && !CsmKindUtilities.isDestructor(this)) {
-                            TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
-                        }
+                        TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
@@ -219,7 +216,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( sb.length() == 0 ) {
             sb.append("unknown>"); // NOI18N
         }
-        sb.append(getScopeSuffix());
         sb.append("::"); // NOI18N
         sb.append(getQualifiedNamePostfix());
         return sb.toString();
