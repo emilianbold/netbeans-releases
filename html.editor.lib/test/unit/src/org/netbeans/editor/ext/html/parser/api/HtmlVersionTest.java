@@ -54,6 +54,10 @@ public class HtmlVersionTest extends NbTestCase {
         super(name);
     }
 
+    public static void setDefaultHtmlVersion(HtmlVersion version) {
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
+    }
+
     public void testDisplayName() {
         HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
 

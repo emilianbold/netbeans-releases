@@ -132,7 +132,14 @@ public enum HtmlVersion {
 
     }
     /** The default html version. */
-    public static final HtmlVersion DEFAULT_VERSION = HTML41_TRANSATIONAL;
+    private static final HtmlVersion DEFAULT_VERSION = HTML5;
+    public static HtmlVersion DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = null;
+    
+    public static HtmlVersion getDefaultVersion() {
+        return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_VERSION;
+    }
+
+
     private final String displayName;
     private final String publicID, systemID;
     private final String fallbackPublicID;

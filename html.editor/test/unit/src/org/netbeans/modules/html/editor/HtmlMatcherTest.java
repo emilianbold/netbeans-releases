@@ -32,6 +32,7 @@ package org.netbeans.modules.html.editor;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.html.editor.test.TestBase;
@@ -54,6 +55,13 @@ public class HtmlMatcherTest extends TestBase {
     
     public HtmlMatcherTest(String name) {
         super(name);
+    }
+
+
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
+        super.setUp();
     }
 
 //    @Override

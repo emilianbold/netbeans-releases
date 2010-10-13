@@ -66,7 +66,7 @@ public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTempla
         Project project = FileOwnerQuery.getOwner(target.getPrimaryFile());
         HtmlVersion version;
         if(project == null) {
-            version = HtmlVersion.DEFAULT_VERSION;
+            version = HtmlVersion.getDefaultVersion();
         } else {
             version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
         }
