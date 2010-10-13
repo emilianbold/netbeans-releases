@@ -40,26 +40,14 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.libs.git.progress;
 
 import java.io.File;
-import java.util.Map;
-import org.netbeans.libs.git.progress.NotificationListener;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
  * @author ondra
  */
-public interface GitClient {
-
-    public void add (File[] roots, ProgressMonitor monitor) throws GitException;
-    public void addNotificationListener (NotificationListener listener);
-    public GitRevisionInfo commit(File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException;
-    public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
-    public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
-    public void init () throws GitException;
-    public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
-    public void removeNotificationListener (NotificationListener listener);
-    public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException;
+public interface FileListener extends NotificationListener {
+    public void notifyFile (File file);
 }

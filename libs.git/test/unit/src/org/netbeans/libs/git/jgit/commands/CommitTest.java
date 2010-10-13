@@ -56,8 +56,7 @@ import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -82,13 +81,13 @@ public class CommitTest extends AbstractGitTestCase {
         File toCommit = new File(workDir, "testnotadd.txt");
         write(toCommit, "blablabla");
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
-        client.add(new File[] { toCommit }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        GitRevisionInfo info = client.commit(new File[0], "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(new File[0], "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         Git git = new Git(repository);
@@ -109,13 +108,13 @@ public class CommitTest extends AbstractGitTestCase {
         File toCommit = new File(workDir, "testnotadd.txt");
         write(toCommit, "blablabla");
         GitClient client = getClient(workDir);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
-        client.add(new File[] { toCommit }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        GitRevisionInfo info = client.commit(new File[] { toCommit }, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { toCommit }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(new File[] { toCommit }, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         Git git = new Git(repository);
@@ -143,12 +142,12 @@ public class CommitTest extends AbstractGitTestCase {
         write(another, "this is another test!");
 
         GitClient client = getClient(workDir);
-        client.add(new File[] { newOne, another }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { newOne, another }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { newOne, another }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { newOne, another }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        GitRevisionInfo info = client.commit(new File[] { newOne, another }, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { newOne, another }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(new File[] { newOne, another }, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { newOne, another }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
@@ -164,12 +163,12 @@ public class CommitTest extends AbstractGitTestCase {
         write(newOne, "!modification!");
         write(another, "another modification!");
 
-        client.add(new File[] { workDir }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
-        info = client.commit(new File[] { newOne, another }, "second commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(new File[] { newOne, another }, "second commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, newOne, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, another, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         modifiedFiles = info.getModifiedFiles();
@@ -189,32 +188,32 @@ public class CommitTest extends AbstractGitTestCase {
         write(file2, "file2 content");
         File[] files = new File[] { file1, file2 };
         GitClient client = getClient(workDir);
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo info = client.commit(new File[] { file1 }, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(new File[] { file1 }, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_ADDED));
-        Map<File, GitStatus> statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         // file1 should be up to date
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         // but file2 should still be staged for commit
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
-        info = client.commit(new File[] { file2 }, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(new File[] { file2 }, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file2).getStatus().equals(Status.STATUS_ADDED));
 
         write(file1, "file1 content changed");
         write(file2, "file2 content changed");
-        client.add(new File[] { file1 }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file1 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
-        info = client.commit(new File[] { file1 }, "change in content", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(new File[] { file1 }, "change in content", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_MODIFIED));
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         // file1 should be up to date
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         // but file2 was not staged
@@ -222,32 +221,32 @@ public class CommitTest extends AbstractGitTestCase {
 
         write(file1, "file1 content changed again");
         write(file2, "file2 content changed again");
-        client.add(new File[] { file1, file2 }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file1, file2 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         write(file2, "file2 content changed again and again");
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
-        info = client.commit(new File[] { file1 }, "another change in content", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(new File[] { file1 }, "another change in content", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_MODIFIED));
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         // file1 should be up to date
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         // but file2 should still be staged for commit
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
 
         write(file1, "file1 content changed again and again");
-        client.add(new File[] { file1 }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        client.remove(new File[] { file2 }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file1 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(new File[] { file2 }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, false);
-        info = client.commit(new File[] { file1 }, "another change in content", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(new File[] { file1 }, "another change in content", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_MODIFIED));
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         // file1 should be up to date
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         // but file2 should still be staged for commit
@@ -259,26 +258,26 @@ public class CommitTest extends AbstractGitTestCase {
         write(file, "file1 content");
         File[] files = new File[] { file };
         GitClient client = getClient(workDir);
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo info = client.commit(files, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(files, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file).getStatus().equals(Status.STATUS_ADDED));
 
-        Map<File, GitStatus> statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         file.delete();
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, false);
 
         // commit should remove file from the repository
-        client.remove(files, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        info = client.commit(files, "deleting file", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(files, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(files, "deleting file", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file).getStatus().equals(Status.STATUS_REMOVED));
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertNull(statuses.get(file));
     }
 
@@ -295,14 +294,14 @@ public class CommitTest extends AbstractGitTestCase {
         write(file2, "file2 content");
         File[] files = new File[] { folder };
         GitClient client = getClient(workDir);
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo info = client.commit(files, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(files, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(2, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_ADDED));
         assertTrue(modifiedFiles.get(file2).getStatus().equals(Status.STATUS_ADDED));
 
-        Map<File, GitStatus> statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
@@ -333,12 +332,12 @@ public class CommitTest extends AbstractGitTestCase {
         write(file22, "file2 content");
         File[] files = new File[] { folder1, folder2 };
         GitClient client = getClient(workDir);
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo info = client.commit(files, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(files, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(4, modifiedFiles.size());
 
-        Map<File, GitStatus> statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -354,14 +353,14 @@ public class CommitTest extends AbstractGitTestCase {
         write(file21, "!modification!");
         write(file22, "another modification!");
 
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
-        client.commit(files, "second commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(files, "second commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -395,13 +394,13 @@ public class CommitTest extends AbstractGitTestCase {
         File[] filesToCommit = new File[] { folder1, subfolder21 };
         File[] filesSingleFolder = new File[] { subfolder21 };
         GitClient client = getClient(workDir);
-        client.add(trees, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
 
         // COMMIT SOME
-        GitRevisionInfo info = client.commit(filesSingleFolder, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(filesSingleFolder, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(1, modifiedFiles.size());
-        Map<File, GitStatus> statuses = client.getStatus(trees, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -412,10 +411,10 @@ public class CommitTest extends AbstractGitTestCase {
         assertEquals("initial commit", com.getFullMessage());
 
         // COMMIT ALL
-        info = client.commit(trees, "commit all", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(trees, "commit all", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(3, modifiedFiles.size());
-        statuses = client.getStatus(trees, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -426,16 +425,16 @@ public class CommitTest extends AbstractGitTestCase {
         write(file21, "!modification!");
         write(file22, "another modification!");
 
-        client.add(trees, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(trees, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
         assertStatus(statuses, workDir, file22, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
-        info = client.commit(filesToCommit, "second commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(filesToCommit, "second commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(3, modifiedFiles.size());
-        statuses = client.getStatus(trees, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -446,8 +445,8 @@ public class CommitTest extends AbstractGitTestCase {
         assertEquals("second commit", com.getFullMessage());
 
         // COMMIT ALL
-        client.commit(trees, "commit all", FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(trees, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(trees, "commit all", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(trees, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file11, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file12, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file21, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -467,29 +466,29 @@ public class CommitTest extends AbstractGitTestCase {
         write(file2, "file2 content");
         File[] files = new File[] { folder };
         GitClient client = getClient(workDir);
-        client.add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        GitRevisionInfo info = client.commit(files, "initial commit", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        GitRevisionInfo info = client.commit(files, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
         Map<File, GitFileInfo> modifiedFiles = info.getModifiedFiles();
         assertEquals(2, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_ADDED));
         assertTrue(modifiedFiles.get(file2).getStatus().equals(Status.STATUS_ADDED));
 
-        Map<File, GitStatus> statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
-        client.remove(files, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(files, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
 
         // commit should remove file from the repository
-        info = client.commit(files, "deleting files", FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        info = client.commit(files, "deleting files", ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFiles = info.getModifiedFiles();
         assertEquals(2, modifiedFiles.size());
         assertTrue(modifiedFiles.get(file1).getStatus().equals(Status.STATUS_REMOVED));
         assertTrue(modifiedFiles.get(file2).getStatus().equals(Status.STATUS_REMOVED));
-        statuses = client.getStatus(files, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertNull(statuses.get(file1));
         assertNull(statuses.get(file2));
     }

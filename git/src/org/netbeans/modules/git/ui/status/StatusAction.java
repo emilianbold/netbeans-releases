@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
@@ -74,16 +74,17 @@ public class StatusAction extends SingleRepositoryAction {
                     LOG.log(Level.WARNING, null, ex);
                     return;
                 }
-                class StatusMonitor extends DefaultProgressMonitor implements StatusProgressMonitor {
+                class StatusMonitor implements StatusListener {
                     @Override
                     public void notifyStatus (GitStatus status) {
                         LOG.log(Level.INFO, "{0} - {1}", new Object[] { status.getFile(), status });
                         setProgress(status.getRelativePath());
                     }
-                };
+                }
                 StatusMonitor m = new StatusMonitor();
                 try {
-                    Map<File, GitStatus> statuses = client.getStatus(roots, m);
+                    client.addNotificationListener(m);
+                    Map<File, GitStatus> statuses = client.getStatus(roots, this);
                 } catch (GitException ex) {
                     // notify in some way
                 }

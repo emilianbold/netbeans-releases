@@ -47,19 +47,22 @@ import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import org.netbeans.modules.git.client.GitCanceledException;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -89,6 +92,38 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         invocationHandlerLogger = (Logger) f.get(GitClientInvocationHandler.class);
     }
 
+    /**
+     * tests that we don't miss any command that needs to run in indexing bridge.
+     * If a method is added to GitClient, we NEED to evaluate and decide if it's a command running in the IB. If it is and we miss the command,
+     * the IDE might start scanning during the command execution.
+     * @throws Exception
+     */
+    public void testMethodsRunningInIndexingBridge () throws Exception {
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "commit", "copyAfter", "getStatus", "init", "remove",
+                "removeNotificationListener", "remove", "rename"));
+        Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList("remove"));
+        Field f = GitClientInvocationHandler.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
+        f.setAccessible(true);
+        Set<String> actualIBCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+
+        Method[] methods = GitClient.class.getDeclaredMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (Method m : methods) {
+            String methodName = m.getName();
+            assertTrue(methodName, allTestedMethods.contains(methodName));
+            if (indexingBridgeMethods.contains(methodName)) {
+                assertTrue(methodName, actualIBCommands.contains(methodName));
+                indexingBridgeMethods.remove(methodName);
+            }
+        }
+        assertTrue(indexingBridgeMethods.isEmpty());
+    }
+
     public void testIndexingBridge () throws Exception {
         indexingLogger.setLevel(Level.ALL);
         LogHandler h = new LogHandler();
@@ -101,19 +136,19 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         folder.mkdirs();
         file.createNewFile();
         h.reset();
-        client.add(new File[] { file }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.commit(new File[] { file }, "aaa", StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { file }, "aaa", ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.copyAfter(file, new File(folder, "file2"), FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.copyAfter(file, new File(folder, "file2"), ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
-        client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
 
         h.reset();
@@ -125,14 +160,45 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
 
         h.reset();
         h.setExpectedParents(new File[] { file.getParentFile() });
-        client.remove(new File[] { file }, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(h.bridgeAccessed);
         assertTrue(h.expectedParents.isEmpty());
 
         h.reset();
         write(file, "aaa");
-        client.rename(file, new File(folder, "file2"), false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        client.rename(file, new File(folder, "file2"), false, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(h.bridgeAccessed);
+    }
+
+    /**
+     * tests that we don't miss any parallelizable commands.
+     * If a method is added to GitClient, we NEED to evaluate and decide if it's parallelizable. If it is and we miss the command, the IDE might get blocked.
+     * @throws Exception
+     */
+    public void testExclusiveMethods () throws Exception {
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "commit", "copyAfter", "getStatus", "init", "remove",
+                "removeNotificationListener", "remove", "rename"));
+        Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "getStatus", "removeNotificationListener"));
+        Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
+        f.setAccessible(true);
+        Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
+
+        Method[] methods = GitClient.class.getDeclaredMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (Method m : methods) {
+            String methodName = m.getName();
+            assertTrue(methodName, allTestedMethods.contains(methodName));
+            if (parallelizableMethods.contains(methodName)) {
+                assertTrue(methodName, actualParallelizableCommands.contains(methodName));
+                parallelizableMethods.remove(methodName);
+            }
+        }
+        assertTrue(parallelizableMethods.isEmpty());
     }
 
     public void testExclusiveAccess () throws Exception {
@@ -140,12 +206,13 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file.createNewFile();
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
         final Exception[] exs = new Exception[2];
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -156,7 +223,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -179,12 +246,13 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file.createNewFile();
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
         final Exception[] exs = new Exception[2];
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -198,7 +266,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.remove(new File[] { file }, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -222,12 +290,13 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file.createNewFile();
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
         final Exception[] exs = new Exception[2];
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -238,7 +307,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.getStatus(new File[] { file }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.getStatus(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -262,13 +331,15 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         final Exception[] exs = new Exception[2];
+        final DefaultProgressMonitor pm = new DefaultProgressMonitor();
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file, file2 }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file, file2 }, pm);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -276,10 +347,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         });
         t1.start();
         m.waitAtBarrier();
-        m.cancel();
+        pm.cancel();
         m.cont = true;
         t1.join();
-        assertTrue(m.isCanceled());
+        assertTrue(pm.isCanceled());
         assertEquals(1, m.count);
     }
 
@@ -288,12 +359,13 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file.createNewFile();
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
         final Exception[] exs = new Exception[2];
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -304,7 +376,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                    client.add(new File[] { file }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     exs[1] = ex;
                 }
@@ -330,14 +402,14 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         final Exception[] exs = new Exception[2];
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             public void perform () {
-                setProgressMonitor(m);
                 try {
-                    client.add(new File[] { file, file2 }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file, file2 }, this);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -349,7 +421,6 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         m.cont = true;
         t.waitFinished();
         assertTrue(supp.isCanceled());
-        assertTrue(m.isCanceled());
         assertEquals(1, m.count);
     }
 
@@ -362,7 +433,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         file3.createNewFile();
 
         final GitClient client = Git.getInstance().getClient(repositoryLocation);
-        final GitProgressSupport.DefaultProgressMonitor[] ms = new GitProgressSupport.DefaultProgressMonitor[1];
+        final FileListener[] ms = new FileListener[1];
         final Exception[] exs = new Exception[2];
         ProgressLogHandler h = new ProgressLogHandler();
         Logger log = Logger.getLogger(GitProgressSupport.class.getName());
@@ -386,12 +457,13 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             }
         });
 
-        final InhibitMonitor m = new InhibitMonitor();
+        final InhibitListener m = new InhibitListener();
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    client.add(new File[] { file3 }, m);
+                    client.addNotificationListener(m);
+                    client.add(new File[] { file3 }, ProgressMonitor.NULL_PROGRESS_MONITOR);
                 } catch (GitException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -401,13 +473,10 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         thread.start();
 
         GitProgressSupport supp = new GitProgressSupport() {
-            abstract class InternMonitor extends DefaultProgressMonitor implements FileProgressMonitor {
-            }
-
             @Override
             public void perform () {
-                InternMonitor m;
-                ms[0] = m = new InternMonitor() {
+                FileListener list;
+                ms[0] = list = new FileListener () {
                     @Override
                     public void notifyFile(File file) {
                         // barrier
@@ -421,7 +490,6 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                         setProgress(file.getName());
                     }
                 };
-                setProgressMonitor(ms[0]);
                 try {
                     // barrier
                     flags[2] = true;
@@ -431,7 +499,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                             Thread.sleep(100);
                         } catch (Exception e) {}
                     }
-                    getClient().add(new File[] { file, file2 }, m);
+                    GitClient client = getClient();
+                    client.addNotificationListener(list);
+                    client.add(new File[] { file, file2 }, this);
                 } catch (GitException ex) {
                     exs[0] = ex;
                 }
@@ -476,7 +546,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         assertEquals(expectedMessages, h.progressMessages);
     }
 
-    private static class InhibitMonitor extends DefaultProgressMonitor implements FileProgressMonitor {
+    private static class InhibitListener implements FileListener {
         private boolean cont;
         private boolean barrierAccessed;
         private int count;

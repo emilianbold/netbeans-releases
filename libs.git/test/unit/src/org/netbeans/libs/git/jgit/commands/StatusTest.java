@@ -51,8 +51,9 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
@@ -62,6 +63,11 @@ public class StatusTest extends AbstractGitTestCase {
 
     private File workDir;
     private Repository repository;
+    private static final StatusListener NULL_STATUS_LISTENER = new StatusListener() {
+        @Override
+        public void notifyStatus(GitStatus status) {
+        }
+    };
 
     public StatusTest(String testName) throws IOException {
         super(testName);
@@ -129,24 +135,26 @@ public class StatusTest extends AbstractGitTestCase {
         uptodate_deleted.delete();
         deleted_untracked.createNewFile();
 
-        TestStatusProgressMonitor monitor = new TestStatusProgressMonitor();
-        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, monitor);
+        TestStatusListener listener = new TestStatusListener();
+        GitClient client = getClient(workDir);
+        client.addNotificationListener(listener);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.isEmpty());
-        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
-        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
-        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, monitor);
-        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
-        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_MODIFIED, false, monitor);
-        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
-        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
         // what about isIgnored() here?
-        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false, listener);
     }
 
     public void testStatusSingleFile () throws Exception {
@@ -169,20 +177,24 @@ public class StatusTest extends AbstractGitTestCase {
         write(modified_modified, "modification2 modified_modified");
 
         GitClient client = getClient(workDir);
-        TestStatusProgressMonitor monitor = new TestStatusProgressMonitor();
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { untracked }, monitor);
+        TestStatusListener monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { untracked }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, monitor);
-        monitor = new TestStatusProgressMonitor();
-        statuses = client.getStatus(new File[] { added_modified }, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { added_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
-        monitor = new TestStatusProgressMonitor();
-        statuses = client.getStatus(new File[] { uptodate_modified }, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { uptodate_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
-        monitor = new TestStatusProgressMonitor();
-        statuses = client.getStatus(new File[] { modified_modified }, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { modified_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
     }
@@ -215,8 +227,9 @@ public class StatusTest extends AbstractGitTestCase {
         commit(f1, f2, f3, f4, f5, f6);
 
         GitClient client = getClient(workDir);
-        TestStatusProgressMonitor monitor = new TestStatusProgressMonitor();
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, monitor);
+        TestStatusListener monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(6, statuses.size());
         assertStatus(statuses, workDir, f1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
         assertStatus(statuses, workDir, f2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
@@ -230,8 +243,8 @@ public class StatusTest extends AbstractGitTestCase {
         File folder = new File(workDir.getParent(), "folder1");
         folder.mkdirs();
         try {
-            StatusProgressMonitor monitor = new TestStatusProgressMonitor();
-            getClient(workDir).getStatus(new File[] { folder }, monitor);
+            StatusListener monitor = new TestStatusListener();
+            getClient(workDir).getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
             fail("Different tree");
         } catch (IllegalArgumentException ex) {
             // OK
@@ -263,7 +276,7 @@ public class StatusTest extends AbstractGitTestCase {
         write(new File(workDir, ".gitignore"), "folder\nfile1");
         write(new File(folder2, ".gitignore"), "subfolder");
 
-        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(folder).isFolder());
@@ -290,7 +303,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         add(file2);
 
-        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.get(file).isTracked());
         assertFalse(statuses.get(folder).isTracked());
         assertFalse(statuses.get(folder2).isTracked());
@@ -302,7 +315,7 @@ public class StatusTest extends AbstractGitTestCase {
         final File file2 = new File(workDir, "file2");
         file2.createNewFile();
 
-        class Monitor extends DefaultProgressMonitor implements StatusProgressMonitor {
+        class Monitor extends DefaultProgressMonitor implements StatusListener {
             private boolean barrierAccessed;
             private int count;
             private boolean cont;
@@ -334,6 +347,7 @@ public class StatusTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
+                    client.addNotificationListener(m);
                     client.getStatus(new File[] { file, file2 }, m);
                 } catch (GitException ex) {
                     exs[0] = ex;
@@ -350,15 +364,15 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(null, exs[0]);
     }
 
-    private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusProgressMonitor monitor) {
+    private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
         assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
         assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
     }
 
-    private static class TestStatusProgressMonitor extends DefaultProgressMonitor implements StatusProgressMonitor {
+    private static class TestStatusListener implements StatusListener {
         private final Map<File, GitStatus> notifiedStatuses;
 
-        public TestStatusProgressMonitor() {
+        public TestStatusListener() {
             notifiedStatuses = new HashMap<File, GitStatus>();
         }
 

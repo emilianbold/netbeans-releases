@@ -49,8 +49,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
@@ -80,7 +80,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         modifiedFile = new File(folder, "file");
         VersioningManager.getInstance();
         write(modifiedFile, "");
-        getClient(repositoryLocation).add(new File[] { modifiedFile }, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).add(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         modifiedFO = FileUtil.toFileObject(modifiedFile);
         Git.STATUS_LOG.setLevel(Level.ALL);
     }
@@ -90,7 +90,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
         waitForRefresh();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
@@ -103,7 +103,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         System.setProperty("versioning.git.handleExternalEvents", "false");
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
@@ -117,7 +117,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
 
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         Git.getInstance().refreshWorkingCopyTimestamp(repositoryLocation);
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
         failIfRefreshed();
@@ -146,7 +146,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
             @Override
             public void close() throws SecurityException {}
         });
-        Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(refreshed[0]);
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));
@@ -172,7 +172,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
             @Override
             public void close() throws SecurityException {}
         });
-        Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(refreshed[0]);
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX));

@@ -60,7 +60,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.utils.TestUtils;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
@@ -184,7 +184,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected void add (File... files) throws GitException {
-        getClient(wc).add(files, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).add(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     protected void commit (File... files) throws GitException {
@@ -192,7 +192,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected void remove (boolean cached, File... files) throws GitException {
-        getClient(wc).remove(files, cached, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+        getClient(wc).remove(files, cached, ProgressMonitor.NULL_PROGRESS_MONITOR);
     }
 
     protected void copyFile(File source, File target) throws IOException {
@@ -211,7 +211,7 @@ public class AbstractGitTestCase extends NbTestCase {
         }
     }
 
-    protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileProgressMonitor {
+    protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
         public final HashSet<File> notifiedFiles = new HashSet<File>();
         public final List<String> notifiedWarnings = new LinkedList<String>();
         private boolean barrierAccessed;

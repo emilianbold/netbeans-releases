@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author ondra
  */
-public abstract class GitProgressSupport implements Runnable, Cancellable {
+public abstract class GitProgressSupport implements Runnable, Cancellable, ProgressMonitor {
     private volatile boolean canceled;
 
     private static final Logger LOG = Logger.getLogger(GitProgressSupport.class.getName());
@@ -68,7 +68,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
     private String displayName = ""; // NOI18N
     private File repositoryRoot;
     private RequestProcessor.Task task;
-    private ProgressMonitor progressMonitor;
     private GitClient gitClient;
 
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
@@ -101,17 +100,13 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
 
     protected abstract void perform ();
 
+    @Override
     public synchronized boolean isCanceled () {
         return canceled;
     }
 
     @Override
     public synchronized boolean cancel () {
-        if (progressMonitor != null) {
-            if (!progressMonitor.cancel()) {
-                return false;
-            }
-        }
         if (canceled) {
             return false;
         }
@@ -170,10 +165,6 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         return gitClient;
     }
 
-    protected void setProgressMonitor (ProgressMonitor monitor) {
-        this.progressMonitor = monitor;
-    }
-
     void setRepositoryStateBlocked (File repository, boolean blocked) {
         if (repository == null) {
             throw new IllegalArgumentException("Trying to block/unblock progress on null repository"); //NOI18N
@@ -185,7 +176,28 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
         }
     }
 
-    public class DefaultProgressMonitor extends ProgressMonitor.DefaultProgressMonitor {
+    @Override
+    public void started() {
+        
+    }
+
+    @Override
+    public void finished() {
+        
+    }
+
+    @Override
+    public void preparationsFailed(String message) {
+        
+    }
+
+    @Override
+    public void notifyError(String message) {
+        
+    }
+
+    @Override
+    public void notifyWarning(String message) {
         
     }
 

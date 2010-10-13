@@ -84,6 +84,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(file));
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[0], m);
         assertEquals(Collections.singleton(file), m.notifiedFiles);
         assertDirCacheSize(1);
@@ -97,6 +98,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Collections.singleton(file));
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file }, m);
         assertEquals(Collections.singleton(file), m.notifiedFiles);
         assertDirCacheSize(1);
@@ -104,6 +106,7 @@ public class AddTest extends AbstractGitTestCase {
 
         // no error while adding the same file twice
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file }, m);
         assertEquals(Collections.<File>emptySet(), m.notifiedFiles);
         assertDirCacheEntry(Collections.singleton(file));
@@ -111,6 +114,7 @@ public class AddTest extends AbstractGitTestCase {
         write(file, "hello, i've changed");
         assertDirCacheEntryModified(Collections.singleton(file));
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file }, m);
         assertEquals(Collections.singleton(file), m.notifiedFiles);
         assertDirCacheSize(1);
@@ -128,6 +132,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file, file2, file3));
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file }, m);
         assertEquals(Collections.singleton(file), m.notifiedFiles);
         assertDirCacheSize(1);
@@ -135,6 +140,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file2, file3));
 
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file2 }, m);
         assertEquals(Collections.singleton(file2), m.notifiedFiles);
         assertDirCacheSize(2);
@@ -142,6 +148,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file3));
 
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { file, file2 }, m);
         assertEquals(Collections.<File>emptySet(), m.notifiedFiles);
         assertDirCacheSize(2);
@@ -181,6 +188,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file, file1_1, file1_2, file1_1_1, file1_1_2, file2_1, file2_2, file2_1_1, file2_1_2));
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { subfolder1 }, m);
         assertEquals(new HashSet<File>(Arrays.asList(file1_1_1, file1_1_2)), m.notifiedFiles);
         assertDirCacheSize(2);
@@ -188,6 +196,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file, file1_1, file1_2, file2_1, file2_2, file2_1_1, file2_1_2));
 
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { folder1 }, m);
         assertEquals(new HashSet<File>(Arrays.asList(file1_1, file1_2)), m.notifiedFiles);
         assertDirCacheSize(4);
@@ -195,6 +204,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file, file2_1, file2_1_1, file2_1_2));
 
         m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { folder2 }, m);
         assertEquals(new HashSet<File>(Arrays.asList(file2_1, file2_2, file2_1_1, file2_1_2)), m.notifiedFiles);
         assertDirCacheSize(8);
@@ -221,6 +231,7 @@ public class AddTest extends AbstractGitTestCase {
         assertNullDirCacheEntry(Arrays.asList(file1_1, file2_1, file1_2, file2_2));
         GitClient client = getClient(workDir);
         Monitor m = new Monitor();
+        client.addNotificationListener(m);
         client.add(new File[] { folder1, folder2 }, m);
         assertEquals(new HashSet<File>(Arrays.asList(file1_2)), m.notifiedFiles);
         assertDirCacheSize(1);
@@ -241,6 +252,7 @@ public class AddTest extends AbstractGitTestCase {
             @Override
             public void run() {
                 try {
+                    client.addNotificationListener(m);
                     client.add(new File[] { file, file2 },m);
                 } catch (GitException ex) {
                     exs[0] = ex;

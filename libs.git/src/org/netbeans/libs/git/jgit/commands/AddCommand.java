@@ -61,7 +61,8 @@ import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -69,12 +70,14 @@ import org.netbeans.libs.git.progress.FileProgressMonitor;
  */
 public class AddCommand extends GitCommand {
     private final File[] roots;
-    private final FileProgressMonitor monitor;
+    private final ProgressMonitor monitor;
+    private final FileListener listener;
 
-    public AddCommand (Repository repository, File[] roots, FileProgressMonitor monitor) {
+    public AddCommand (Repository repository, File[] roots, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
         this.monitor = monitor;
+        this.listener = listener;
     }
 
     @Override
@@ -117,7 +120,7 @@ public class AddCommand extends GitCommand {
                             }
                             DirCacheIterator it = treeeWalk.getTree(0, DirCacheIterator.class);
                             if (it == null || !it.getDirCacheEntry().getObjectId().equals(entry.getObjectId())) {
-                                monitor.notifyFile(file);
+                                listener.notifyFile(file);
                             }
                             builder.add(entry);
                             lastAddedFile = path;

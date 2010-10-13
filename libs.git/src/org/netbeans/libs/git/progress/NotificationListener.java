@@ -42,20 +42,10 @@
 
 package org.netbeans.libs.git.progress;
 
-import java.io.File;
-
 /**
  *
  * @author ondra
  */
-public interface FileProgressMonitor extends ProgressMonitor {
-    public static final FileProgressMonitor NULL_PROGRESS_MONITOR = new DefaultFileProgressMonitor();
+public interface NotificationListener {
 
-    public void notifyFile (File file);
-
-    static class DefaultFileProgressMonitor extends DefaultProgressMonitor implements FileProgressMonitor {
-        @Override
-        public void notifyFile(File file) {
-        }
-    }
 }

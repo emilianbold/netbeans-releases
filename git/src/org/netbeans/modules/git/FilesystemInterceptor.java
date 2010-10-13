@@ -53,7 +53,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
@@ -152,7 +152,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(file);
         try {
-            git.getClient(root).remove(new File[] { file }, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+            git.getClient(root).remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
             if (root.equals(file) && file.exists()) {
                 root.delete();
             }
@@ -193,13 +193,13 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (root == null) return;
         try {
             if (root.equals(dstRoot)) {
-                git.getClient(root).rename(from, to, false, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).rename(from, to, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
             } else {
                 boolean result = from.renameTo(to);
                 if (!result) {
                     throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                 }
-                git.getClient(root).remove(new File[] { from }, true, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).remove(new File[] { from }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
             }
         } catch (GitException e) {
             IOException ex = new IOException();
@@ -250,7 +250,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (root == null) return;
         try {
             if (root.equals(dstRoot)) {
-                git.getClient(root).copyAfter(from, to, FileProgressMonitor.NULL_PROGRESS_MONITOR);
+                git.getClient(root).copyAfter(from, to, ProgressMonitor.NULL_PROGRESS_MONITOR);
             }
         } catch (GitException e) {
             IOException ex = new IOException();

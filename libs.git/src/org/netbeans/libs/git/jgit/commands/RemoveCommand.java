@@ -56,7 +56,8 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -64,12 +65,14 @@ import org.netbeans.libs.git.progress.FileProgressMonitor;
  */
 public class RemoveCommand extends GitCommand {
     private final File[] roots;
-    private final FileProgressMonitor monitor;
+    private final FileListener listener;
+    private final ProgressMonitor monitor;
     private final boolean cached;
 
-    public RemoveCommand (Repository repository, File[] roots, boolean cached, FileProgressMonitor monitor) {
+    public RemoveCommand (Repository repository, File[] roots, boolean cached, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.roots = roots;
+        this.listener = listener;
         this.monitor = monitor;
         this.cached = cached;
     }
@@ -98,12 +101,12 @@ public class RemoveCommand extends GitCommand {
                             treeWalk.enterSubtree();
                             if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
                                 if (!cached) {
-                                    monitor.notifyFile(path);
+                                    listener.notifyFile(path);
                                 }
                                 edit.add(new DirCacheEditor.DeleteTree(treeWalk.getPathString()));
                             }
                         } else {
-                            monitor.notifyFile(path);
+                            listener.notifyFile(path);
                             edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
                         }
                     }

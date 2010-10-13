@@ -57,7 +57,8 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -67,14 +68,16 @@ abstract class MoveTreeCommand extends GitCommand {
     private final File source;
     private final File target;
     private final boolean after;
-    private final FileProgressMonitor monitor;
+    private final ProgressMonitor monitor;
     private final boolean keepSourceTree;
+    private final FileListener listener;
 
-    protected MoveTreeCommand (Repository repository, File source, File target, boolean after, boolean keepSourceTree, FileProgressMonitor monitor) {
+    protected MoveTreeCommand (Repository repository, File source, File target, boolean after, boolean keepSourceTree, ProgressMonitor monitor, FileListener listener) {
         super(repository, monitor);
         this.source = source;
         this.target = target;
         this.monitor = monitor;
+        this.listener = listener;
         this.after = after;
         this.keepSourceTree = keepSourceTree;
     }
@@ -109,7 +112,7 @@ abstract class MoveTreeCommand extends GitCommand {
                         DirCacheEntry copied = new DirCacheEntry(newPath);
                         copied.copyMetaData(e);
                         File newFile = new File(repository.getWorkTree().getAbsolutePath() + File.separator + newPath);
-                        monitor.notifyFile(newFile);
+                        listener.notifyFile(newFile);
                         builder.add(copied);
                         if (keepSourceTree) {
                             builder.add(e);

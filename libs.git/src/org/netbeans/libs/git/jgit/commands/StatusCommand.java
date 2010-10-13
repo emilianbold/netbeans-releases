@@ -71,7 +71,8 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.JGitStatus;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
@@ -80,12 +81,14 @@ import org.netbeans.libs.git.progress.StatusProgressMonitor;
 public class StatusCommand extends GitCommand {
     private final LinkedHashMap<File, GitStatus> statuses;
     private final File[] roots;
-    private final StatusProgressMonitor monitor;
+    private final ProgressMonitor monitor;
+    private final StatusListener listener;
 
-    public StatusCommand (Repository repository, File[] roots, StatusProgressMonitor monitor) {
+    public StatusCommand (Repository repository, File[] roots, ProgressMonitor monitor, StatusListener listener) {
         super(repository, monitor);
         this.roots = roots;
         this.monitor = monitor;
+        this.listener = listener;
         statuses = new LinkedHashMap<File, GitStatus>();
     }
 
@@ -176,7 +179,7 @@ public class StatusCommand extends GitCommand {
                     }
                     GitStatus status = new JGitStatus(tracked, path, workTreePath, file, statusHeadIndex, statusIndexWC, statusHeadWC, inConflict, isFolder, renames.get(path));
                     statuses.put(file, status);
-                    monitor.notifyStatus(status);
+                    listener.notifyStatus(status);
                 }
             } finally {
                 cache.unlock();

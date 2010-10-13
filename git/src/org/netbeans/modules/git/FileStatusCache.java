@@ -59,7 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -180,7 +180,7 @@ public class FileStatusCache {
             Map<File, GitStatus> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+                interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), ProgressMonitor.NULL_PROGRESS_MONITOR);
                 for (File root : refreshEntry.getValue()) {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
                     for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)))) {

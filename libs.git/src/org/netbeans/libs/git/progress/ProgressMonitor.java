@@ -49,8 +49,6 @@ package org.netbeans.libs.git.progress;
 public interface ProgressMonitor {
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new DefaultProgressMonitor();
     
-    public boolean cancel ();
-
     public boolean isCanceled ();
 
     public void started();
@@ -66,7 +64,6 @@ public interface ProgressMonitor {
     public static class DefaultProgressMonitor implements ProgressMonitor {
         private boolean canceled;
 
-        @Override
         public final synchronized boolean cancel () {
             boolean alreadyCanceled = canceled;
             canceled = true;

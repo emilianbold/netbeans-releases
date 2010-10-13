@@ -62,7 +62,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.util.lookup.ServiceProvider;
@@ -87,7 +87,7 @@ public class StatusTest extends AbstractGitTestCase {
     public void testStatusOnNoRepository () throws Exception {
         File folder = createFolder(repositoryLocation.getParentFile(), "folder");
         GitClient client = getClient(folder);
-        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(statuses.isEmpty());
     }
 
@@ -533,7 +533,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         add(repositoryLocation);
         commit(repositoryLocation);
-        Map<File, GitStatus> statuses = getClient(repositoryLocation).getStatus(new File[] { repositoryLocation }, StatusProgressMonitor.NULL_PROGRESS_MONITOR);
+        Map<File, GitStatus> statuses = getClient(repositoryLocation).getStatus(new File[] { repositoryLocation }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.get(file).isTracked());
         assertFalse(statuses.get(folder).isTracked());
         assertFalse(statuses.get(folder2).isTracked());

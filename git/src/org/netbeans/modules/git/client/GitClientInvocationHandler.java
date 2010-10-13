@@ -64,7 +64,7 @@ import org.netbeans.modules.versioning.util.IndexingBridge;
 public class GitClientInvocationHandler implements InvocationHandler {
     private final GitClient client;
     private final File repositoryRoot;
-    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("getStatus")); //NOI18N
+    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "getStatus", "removeNotificationListener")); //NOI18N
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("remove")); //NOI18N
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("getStatus")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());

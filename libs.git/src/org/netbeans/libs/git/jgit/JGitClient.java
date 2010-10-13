@@ -47,7 +47,11 @@ import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -56,19 +60,22 @@ import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.NotificationListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.netbeans.libs.git.progress.StatusProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
 
 /**
  *
  * @author ondra
  */
-public class JGitClient implements GitClient {
+public class JGitClient implements GitClient, StatusListener, FileListener {
     private final JGitRepository gitRepository;
+    private final Set<NotificationListener> listeners;
 
     public JGitClient (JGitRepository gitRepository) {
         this.gitRepository = gitRepository;
+        this.listeners = new HashSet<NotificationListener>();
     }
 
     /**
@@ -78,10 +85,17 @@ public class JGitClient implements GitClient {
      * @throws GitException an error occurs
      */
     @Override
-    public void add (File[] roots, FileProgressMonitor monitor) throws GitException {
+    public void add (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        AddCommand cmd = new AddCommand(repository, roots, monitor);
+        AddCommand cmd = new AddCommand(repository, roots, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public void addNotificationListener (NotificationListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     /**
@@ -107,9 +121,9 @@ public class JGitClient implements GitClient {
      * @throws GitException
      */
     @Override
-    public void copyAfter (File source, File target, FileProgressMonitor monitor) throws GitException {
+    public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        CopyCommand cmd = new CopyCommand(repository, source, target, monitor);
+        CopyCommand cmd = new CopyCommand(repository, source, target, monitor, this);
         cmd.execute();
     }
 
@@ -120,9 +134,9 @@ public class JGitClient implements GitClient {
      * @return status array
      * @throws GitException when an error occurs
      */
-    public Map<File, GitStatus> getStatus (File[] roots, StatusProgressMonitor monitor) throws GitException {
+    public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        StatusCommand cmd = new StatusCommand(repository, roots, monitor);
+        StatusCommand cmd = new StatusCommand(repository, roots, monitor, this);
         cmd.execute();
         return cmd.getStatuses();
     }
@@ -156,10 +170,17 @@ public class JGitClient implements GitClient {
      * @param monitor
      */
     @Override
-    public void remove(File[] roots, boolean cached, FileProgressMonitor monitor) throws GitException {
+    public void remove(File[] roots, boolean cached, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        RemoveCommand cmd = new RemoveCommand(repository, roots, cached, monitor);
+        RemoveCommand cmd = new RemoveCommand(repository, roots, cached, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public void removeNotificationListener(NotificationListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
     }
 
     /**
@@ -170,9 +191,35 @@ public class JGitClient implements GitClient {
      * @throws GitException
      */
     @Override
-    public void rename (File source, File target, boolean after, FileProgressMonitor monitor) throws GitException {
+    public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
-        RenameCommand cmd = new RenameCommand(repository, source, target, after, monitor);
+        RenameCommand cmd = new RenameCommand(repository, source, target, after, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public void notifyFile (File file) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof FileListener) {
+                ((FileListener) list).notifyFile(file);
+            }
+        }
+    }
+
+    @Override
+    public void notifyStatus (GitStatus status) {
+        List<NotificationListener> lists;
+        synchronized (listeners) {
+            lists = new LinkedList<NotificationListener>(listeners);
+        }
+        for (NotificationListener list : lists) {
+            if (list instanceof StatusListener) {
+                ((StatusListener) list).notifyStatus(status);
+            }
+        }
     }
 }

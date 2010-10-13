@@ -45,7 +45,8 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.progress.FileProgressMonitor;
+import org.netbeans.libs.git.progress.FileListener;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -57,8 +58,8 @@ public class RenameCommand extends MoveTreeCommand {
     final File target;
     final boolean after;
 
-    public RenameCommand (Repository repository, File source, File target, boolean after, FileProgressMonitor monitor) {
-        super(repository, source, target, after, false, monitor);
+    public RenameCommand (Repository repository, File source, File target, boolean after, ProgressMonitor monitor, FileListener listener){
+        super(repository, source, target, after, false, monitor, listener);
         this.source = source;
         this.target = target;
         this.after = after;
