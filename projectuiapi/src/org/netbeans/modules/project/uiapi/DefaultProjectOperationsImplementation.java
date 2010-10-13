@@ -144,6 +144,7 @@ public final class DefaultProjectOperationsImplementation {
             }
             
             FileObject projectFolder = project.getProjectDirectory();
+            projectFolder.refresh(); // #190983
             
             if (!projectFolder.isValid()) {
                 LOG.log(Level.WARNING, "invalid project folder: {0}", projectFolder);
