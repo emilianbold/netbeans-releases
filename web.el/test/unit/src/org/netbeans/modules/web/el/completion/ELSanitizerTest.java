@@ -46,8 +46,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
+ * Tests for {@code ELSanitizer}
  *
- * @author erno
+ * @author Erno Mononen
  */
 public class ELSanitizerTest {
 
@@ -73,6 +74,17 @@ public class ELSanitizerTest {
         assertEquals("#{just[]}", sanitized);
     }
 
+    @Test
+    public void testSanitizeSpace() {
+        String sanitized = ELSanitizer.sanitize("#{foo. }");
+        assertEquals("#{foo.x }", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo.    }");
+        assertEquals("#{foo.x    }", sanitized);
+
+        sanitized = ELSanitizer.sanitize("#{foo.bar. }");
+        assertEquals("#{foo.bar.x }", sanitized);
+    }
 
     @Test
     public void testSanitizeBrackets() {
@@ -129,5 +141,13 @@ public class ELSanitizerTest {
 
         sanitized = ELSanitizer.sanitize("#{");
         assertEquals("#{x}", sanitized);
+    }
+
+    @Test
+    public void testFindLastNonWhiteSpace() {
+        assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo "));
+        assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo     "));
+        assertEquals(6, ELSanitizer.findLastNonWhiteSpace("foo bar"));
+        assertEquals(6, ELSanitizer.findLastNonWhiteSpace("foo bar "));
     }
 }

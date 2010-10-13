@@ -40,39 +40,50 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.api;
+package org.netbeans.core.startup;
 
-import org.netbeans.junit.NbTestCase;
+import java.io.File;
+import java.util.Collections;
+import org.netbeans.Module;
+import org.netbeans.ModuleManager;
 
 /**
  *
- * @author marekfukala
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class HtmlVersionTest extends NbTestCase {
+public class NbBootDelegationTest extends NbInstallerTestBase {
 
-    public HtmlVersionTest(String name) {
-        super(name);
+    public NbBootDelegationTest(String n) {
+        super(n);
+    }
+    
+    public void testNetBeansBootDelegation() throws Exception {
+        ModuleManager mgr = Main.getModuleSystem().getManager();
+        mgr.mutexPrivileged().enterWriteAccess();
+        System.setProperty("netbeans.bootdelegation", "javax.swing, javax.naming.*");
+        try {
+            Module m1 = mgr.create(new File(jars, "simple-module.jar"), null, false, false, false);
+            mgr.enable(Collections.singleton(m1));
+            final ClassLoader ldr = m1.getClassLoader();
+            Class<?> jtree = Class.forName("javax.swing.JTree", true, ldr);
+            assertNotNull("JTree found", jtree);
+            String tableModel = "javax.swing.table.TableModel";
+            try {
+                Class<?> model = Class.forName(tableModel, true, ldr);
+                fail("Model shall not be accessible: " + model);
+            } catch (ClassNotFoundException ex) {
+                // OK
+                assertNotNull("The class exists on boot path", ClassLoader.getSystemClassLoader().loadClass(tableModel));
+            }
+            Class<?> list = Class.forName("java.util.ArrayList", true, ldr);
+            assertNotNull("java packages are always accessible", list);
+            Class<?> naming = Class.forName("javax.naming.event.EventContext", true, ldr);
+            assertNotNull("naming is recursively visible", naming);
+        } finally {
+            System.getProperties().remove("netbeans.bootdelegation");
+            mgr.mutexPrivileged().exitWriteAccess();
+        }
     }
 
-    public static void setDefaultHtmlVersion(HtmlVersion version) {
-        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
-    }
 
-    public void testDisplayName() {
-        HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
-
-        assertEquals("HTML 4.01 Transitional", v.getDisplayName());
-        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
-        assertNull(v.getDefaultNamespace());
-        assertFalse(v.isXhtml());
-        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
-        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
-    }
-
-    public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.findByPublicId("-//W3C//DTD HTML 4.01//EN"));
-
-        //hmmm, its not possible to guess the proper xhtml version just by the namespace...
-        assertSame(HtmlVersion.XHTML10_STICT, HtmlVersion.findByNamespace("http://www.w3.org/1999/xhtml"));
-    }
 }

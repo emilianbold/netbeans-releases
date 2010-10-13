@@ -88,7 +88,7 @@ public class ReformatterImpl {
         ts.moveStart();
         Token<CppTokenId> previous = ts.lookPrevious();
         while(ts.moveNext()){
-            if (ts.offset() > endOffset) {
+            if (ts.offset() >= endOffset) {
                 break;
             }
             //System.out.println("========"+previous+"==========");
