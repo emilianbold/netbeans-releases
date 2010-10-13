@@ -309,7 +309,11 @@ public final class FileUtilities {
                 FileObject kid = dataFiles.nextElement();
                 if ((kid.hasExt("java") || kid.hasExt("class")) && Utilities.isJavaIdentifier(kid.getName())) {
                     // at least one java or class inside directory -> valid package
-                    result.add(nameObtainer.getPackageName(file));
+                    String packageName = nameObtainer.getPackageName(file);
+                    if (packageName == null) {
+                        continue;
+                    }
+                    result.add(packageName);
                     if (onlyRoots) {
                         // don't recurse into subfolders
                         return;
