@@ -98,6 +98,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     Framework getFramework() {
         return framework;
     }
+    @Override
+    protected ClassLoader findFrameworkClassLoader() {
+        Framework f = framework;
+        if (f != null) {
+            return f.getClass().getClassLoader();
+        }
+        return getClass().getClassLoader();
+    }
 
     @Override
     protected void prepare(Lookup lkp, Collection<? extends Module> preregister) {
