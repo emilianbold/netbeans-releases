@@ -40,35 +40,38 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.api;
+package org.netbeans.modules.html.editor;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class HtmlVersionTest extends NbTestCase {
+@ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
+public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTemplateAttributesProvider {
 
-    public HtmlVersionTest(String name) {
-        super(name);
+    private static final String DOCTYPE_TEMPLATE_PROPERTY_NAME = "doctype"; //NOI18N
+
+    @Override
+    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+        Project project = FileOwnerQuery.getOwner(target.getPrimaryFile());
+        HtmlVersion version;
+        if(project == null) {
+            version = HtmlVersion.DEFAULT_VERSION;
+        } else {
+            version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+        }
+
+        return Collections.singletonMap(DOCTYPE_TEMPLATE_PROPERTY_NAME, version.getDoctypeDeclaration());
     }
 
-    public void testDisplayName() {
-        HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
-
-        assertEquals("HTML 4.01 Transitional", v.getDisplayName());
-        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
-        assertNull(v.getDefaultNamespace());
-        assertFalse(v.isXhtml());
-        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
-        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
-    }
-
-    public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.findByPublicId("-//W3C//DTD HTML 4.01//EN"));
-
-        //hmmm, its not possible to guess the proper xhtml version just by the namespace...
-        assertSame(HtmlVersion.XHTML10_STICT, HtmlVersion.findByNamespace("http://www.w3.org/1999/xhtml"));
-    }
 }
