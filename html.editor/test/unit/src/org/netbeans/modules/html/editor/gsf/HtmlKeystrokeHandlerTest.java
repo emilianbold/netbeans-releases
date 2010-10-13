@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.html.editor.gsf;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.Collections;
 import java.util.List;
@@ -65,6 +66,13 @@ public class HtmlKeystrokeHandlerTest extends TestBase {
     public HtmlKeystrokeHandlerTest() {
         super(HtmlKeystrokeHandlerTest.class.getName());
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
+    }
+
 
     public void testEmptyFile() throws ParseException {
         assertLogicalRanges("|", new int[][]{}); //no range
