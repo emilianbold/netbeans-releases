@@ -50,11 +50,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
@@ -166,6 +164,7 @@ public class ServerRegistry implements VetoableChangeListener {
             }
             RubyServerFactory result = new RubyServerFactory(platform);
             result.initGlassFish();
+            result.initTrinidad();
             result.initMongrel();
             result.initWEBrick();
             if (ENABLE_PASSENGER) {
@@ -181,54 +180,58 @@ public class ServerRegistry implements VetoableChangeListener {
             return Collections.<RubyServer>unmodifiableList(servers);
         }
 
-        private void initGlassFish() {
-            if (platform.isJRuby()) {
-                GemManager gemManager = platform.getGemManager();
-                if (gemManager == null) {
-                    return;
-                }
-
-                List<GemInfo> versions = gemManager.getVersions(GlassFishGem.GEM_NAME);
-                GemInfo glassFishGemInfo = versions.isEmpty() ? null : versions.get(0);
-                if (glassFishGemInfo == null) {
-                    // remove all glassfish from gems
-                    for (Iterator<RubyServer> it = servers.iterator(); it.hasNext();) {
-                        if (it.next() instanceof GlassFishGem) {
-                            it.remove();
-                        }
-                    }
-                    return;
-
-                }
-
-                GlassFishGem candidate = new GlassFishGem(platform, glassFishGemInfo);
-                if (!servers.contains(candidate)) {
-                    servers.add(candidate);
-                }
+        private RubyServer createInstance(Class clazz, GemInfo gemInfo) {
+            if (clazz == Trinidad.class) {
+                return new Trinidad(platform, gemInfo);
+            } else if (clazz == GlassFishGem.class) {
+                return new GlassFishGem(platform, gemInfo);
+            } else if (clazz == Mongrel.class) {
+                return new Mongrel(platform, gemInfo.getVersion());
+            } else if (clazz == Passenger.class) {
+                return new Passenger(platform, gemInfo.getVersion());
             }
+            return null;
         }
 
-        private void initMongrel() {
+        private void initServer(Class clazz, String gemName) {
             GemManager gemManager = platform.getGemManager();
             if (gemManager == null) {
                 return;
             }
 
-            String mongrelVersion = gemManager.getLatestVersion(Mongrel.GEM_NAME);
-            if (mongrelVersion == null) {
-                // remove all mongrels
+            List<GemInfo> versions = gemManager.getVersions(gemName);
+            GemInfo gemInfo = versions.isEmpty() ? null : versions.get(0);
+            if (gemInfo == null) {
+                // remove all glassfish from gems
                 for (Iterator<RubyServer> it = servers.iterator(); it.hasNext();) {
-                    if (it.next() instanceof Mongrel) {
+                    if (it.next().getClass() == clazz) {
                         it.remove();
                     }
                 }
                 return;
 
             }
-            Mongrel candidate = new Mongrel(platform, mongrelVersion);
+
+            RubyServer candidate = createInstance(clazz, gemInfo);
             if (!servers.contains(candidate)) {
                 servers.add(candidate);
             }
+        }
+
+        private void initGlassFish() {
+            if (platform.isJRuby()) {
+                initServer(GlassFishGem.class, GlassFishGem.GEM_NAME);
+            }
+        }
+
+        private void initTrinidad() {
+            if (platform.isJRuby()) {
+                initServer(Trinidad.class, Trinidad.GEM_NAME);
+            }
+        }
+
+        private void initMongrel() {
+            initServer(Mongrel.class, Mongrel.GEM_NAME);
         }
 
         private void initWEBrick() {
@@ -239,26 +242,7 @@ public class ServerRegistry implements VetoableChangeListener {
         }
 
         private void initPassenger() {
-            GemManager gemManager = platform.getGemManager();
-            if (gemManager == null) {
-                return;
-            }
-
-            String passengerVersion = gemManager.getLatestVersion(Passenger.GEM_NAME);
-            if (passengerVersion == null) {
-                // remove all passengers
-                for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
-                    if (it.next() instanceof Passenger) {
-                        it.remove();
-                    }
-                }
-                return;
-
-            }
-            Passenger candidate = new Passenger(platform, passengerVersion);
-            if (!servers.contains(candidate)) {
-                servers.add(candidate);
-            }
+            initServer(Passenger.class, Passenger.GEM_NAME);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -186,7 +187,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 frontWindow(true).
                 inputVisible(true).
                 inputOutput(inputOutput).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 postMessageDisplayer(new PostMessageDisplayer.Default("CMake")). // NOI18N
                 outConvertorFactory(processChangeListener);
