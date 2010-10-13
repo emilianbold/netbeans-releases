@@ -173,12 +173,12 @@ public class ActionsSearchProvider implements SearchProvider {
                 displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
             }
         }
-        
+
         // #140580 - check for duplicate actions
         if (duplicateCheck.put(action, displayName) != null) {
             return true;
         }
-        return response.addResult(new ActionResult(action), displayName, null,
+         return response.addResult(new ActionResult(action), displayName, null,
                 Collections.singletonList(stroke));
     }
 
@@ -298,8 +298,9 @@ public class ActionsSearchProvider implements SearchProvider {
                 }
 
                 a.actionPerformed(ae);
-                uiLog();
+                uiLog(true);
             } catch (Throwable thr) {
+                uiLog(false);
                 if (thr instanceof ThreadDeath) {
                     throw (ThreadDeath)thr;
                 }
@@ -316,8 +317,8 @@ public class ActionsSearchProvider implements SearchProvider {
             }
         }
 
-        private void uiLog() {
-            LogRecord rec = new LogRecord(Level.FINER, "LOG_QUICKSEARCH_ACTION"); // NOI18N
+        private void uiLog(boolean success) {
+            LogRecord rec = new LogRecord(Level.FINER, success?"LOG_QUICKSEARCH_ACTION":"LOG_QUICKSEARCH_ACTION_FAILED"); // NOI18N
             rec.setParameters(new Object[] { command.getClass().getName(), command.getValue(Action.NAME) });
             rec.setResourceBundle(NbBundle.getBundle(ActionsSearchProvider.class));
             rec.setResourceBundleName(ActionsSearchProvider.class.getPackage().getName() + ".Bundle"); // NOI18N
