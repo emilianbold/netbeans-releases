@@ -247,7 +247,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
             return false;
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -256,8 +256,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-
-
+                return showServerSelectionDialog(project, provider, config);
             }
         }
         return true;

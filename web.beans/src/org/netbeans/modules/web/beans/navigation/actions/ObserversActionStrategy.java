@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.ObserversModel;
@@ -82,13 +81,15 @@ final class ObserversActionStrategy implements ModelActionStrategy {
         if (var == null) {
             return false;
         }
-        /*if (!model.isEventInjectionPoint(var)) {
+        if (context[2] == InspectActionId.OBSERVERS &&
+                !model.isEventInjectionPoint(var)) 
+        {
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(GoToInjectableAtCaretAction.class,
                             "LBL_NotEventInjectionPoint"), // NOI18N
                     StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             return false;
-        }*/
+        }
         return model.isEventInjectionPoint(var);
     }
 
@@ -97,7 +98,7 @@ final class ObserversActionStrategy implements ModelActionStrategy {
      */
     @Override
     public void invokeModelAction( final WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] subject,
             JTextComponent component, FileObject fileObject )
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model,
@@ -113,17 +114,16 @@ final class ObserversActionStrategy implements ModelActionStrategy {
         final CompilationController controller = model.getCompilationController();
         final ObserversModel uiModel = new ObserversModel(observers,controller, 
                 metaModel);
-        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showObserversDialog(observers,  metaModel , 
-                    model , handleVar, uiModel ,name );
+                    model , subject, uiModel ,name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showObserversDialog(observers,  
-                            metaModel, null , handleVar, uiModel , name );
+                            metaModel, null , subject, uiModel , name );
                 }
             });
         }

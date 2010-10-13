@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,45 +34,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.spi.impl;
 
-import org.netbeans.modules.refactoring.api.impl.ActionsImplementationFactory;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.ruby.railsprojects.server;
+
+import java.util.regex.Pattern;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 
 /**
- * @author Jan Becicka
+ *
+ * @author David Calavera
  */
-public class WhereUsedAction extends RefactoringGlobalAction {
+public class Trinidad extends JRubyServerBase {
 
-    /**
-     * Creates a new instance of WhereUsedAction
-     */
-    public WhereUsedAction() {
-        super(NbBundle.getMessage(WhereUsedAction.class, "LBL_WhereUsedAction"), null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
-    }
-    
-    public final void performAction(Lookup context) {
-        ActionsImplementationFactory.doFindUsages(context);
-    }
-    
-    public org.openide.util.HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    static final String GEM_NAME = "trinidad";
 
-    protected boolean asynchronous() {
-        return false;
-    }
+    private static final Pattern[] PATTERNS = {
+        Pattern.compile(".*org.apache.coyote.http11.Http11Protocol start.*", Pattern.DOTALL),
+        Pattern.compile(".*INFO: Starting Coyote HTTP/1.1.*", Pattern.DOTALL)
+    };
 
-    protected boolean enable(Lookup context) {
-        return true;
+    private static final String LABEL = "LBL_Trinidad";
+
+    public Trinidad(RubyPlatform platform, GemInfo gemInfo) {
+        super(platform, gemInfo);
     }
 
     @Override
-    protected boolean applicable(Lookup context) {
-        return ActionsImplementationFactory.canFindUsages(context);
+    protected String getLabel() {
+        return LABEL;
+    }
+
+    @Override
+    protected Pattern[] getPatterns() {
+        return PATTERNS;
+    }
+
+    @Override
+    protected String getGemName() {
+        return GEM_NAME;
     }
 }

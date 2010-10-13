@@ -106,7 +106,7 @@ public class PackageRenameHandlerImpl implements PackageRenameHandler {
         ic.add(d);
         Lookup l = new AbstractLookup(ic);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
-        if (a.isEnabled()) {
+        if (Boolean.TRUE.equals(a.getValue("applicable"))) { //NOI18N
             a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
         }
     }
