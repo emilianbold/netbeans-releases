@@ -749,7 +749,7 @@ public class NbModuleSuite {
             for (Item item : config.tests) {
                 allClasses.add(item.clazz);
             }
-            preparePatches(System.getProperty("java.class.path"), System.getProperties(), allClasses.toArray(new Class[0]));
+            preparePatches(System.getProperty("java.class.path"), System.getProperties(), allClasses.toArray(new Class<?>[0]));
             
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
@@ -809,8 +809,7 @@ public class NbModuleSuite {
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
                 exit.invoke(life);
                 SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                    }
+                    public @Override void run() {}
                 });
             }
         }
@@ -944,7 +943,7 @@ public class NbModuleSuite {
         }
 
         
-        static void preparePatches(String path, Properties prop, Class... classes) throws URISyntaxException {
+        static void preparePatches(String path, Properties prop, Class<?>... classes) throws URISyntaxException {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -958,7 +957,7 @@ public class NbModuleSuite {
                     sep = File.pathSeparator;
                 }
             }
-            for (Class c : classes) {
+            for (Class<?> c : classes) {
                 URL test = c.getProtectionDomain().getCodeSource().getLocation();
                 Assert.assertNotNull("URL found for " + c, test);
                 sb.append(sep).append(new File(test.toURI()).getPath());
@@ -1028,7 +1027,7 @@ public class NbModuleSuite {
                 return super.findResources(name);
             }
 
-            private final boolean isUnit(String res) {
+            private boolean isUnit(String res) {
                 if (res.startsWith("junit")) {
                     return true;
                 }
@@ -1123,7 +1122,7 @@ public class NbModuleSuite {
                         String out = xml.substring(0, matcherEnabled.start(1)) + (enable ? "true" : "false") + xml.substring(matcherEnabled.end(1));
                         writeModule(target, out);
                     } catch (IllegalStateException ex) {
-                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                        throw new IOException("Unparsable:\n" + xml, ex);
                     }
                 }
             }
@@ -1137,7 +1136,7 @@ public class NbModuleSuite {
                     try {
                         writeModule(target, out);
                     } catch (IllegalStateException ex) {
-                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                        throw new IOException("Unparsable:\n" + xml, ex);
                     }
                 }
             }
@@ -1150,7 +1149,7 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.fine("rewrite module file: " + file);
+                LOG.log(Level.FINE, "rewrite module file: {0}", file);
                 charDump(previous);
                 LOG.fine("new----");
                 charDump(xml);
