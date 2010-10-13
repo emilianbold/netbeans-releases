@@ -304,6 +304,15 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
         if(tag_gt_offset != -1 && currentTag != null) {
             currentTag.setEndOffset(tag_gt_offset);
             currentTag.setLogicalEndOffset(tag_gt_offset);
+
+            //refresh the matching open tag's logical end offset
+            if(currentTag.type() == AstNode.NodeType.ENDTAG) {
+                AstNode pair = currentTag.getMatchingTag();
+                if(pair != null) {
+                    pair.setLogicalEndOffset(tag_gt_offset);
+                }
+            }
+
             currentTag = null;
             tag_gt_offset = -1;
         }

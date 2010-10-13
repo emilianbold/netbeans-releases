@@ -40,39 +40,43 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.api;
+package org.netbeans.modules.ruby.railsprojects.server;
 
-import org.netbeans.junit.NbTestCase;
+import java.util.regex.Pattern;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.gems.GemInfo;
 
 /**
  *
- * @author marekfukala
+ * @author David Calavera
  */
-public class HtmlVersionTest extends NbTestCase {
+public class Trinidad extends JRubyServerBase {
 
-    public HtmlVersionTest(String name) {
-        super(name);
+    static final String GEM_NAME = "trinidad";
+
+    private static final Pattern[] PATTERNS = {
+        Pattern.compile(".*org.apache.coyote.http11.Http11Protocol start.*", Pattern.DOTALL),
+        Pattern.compile(".*INFO: Starting Coyote HTTP/1.1.*", Pattern.DOTALL)
+    };
+
+    private static final String LABEL = "LBL_Trinidad";
+
+    public Trinidad(RubyPlatform platform, GemInfo gemInfo) {
+        super(platform, gemInfo);
     }
 
-    public static void setDefaultHtmlVersion(HtmlVersion version) {
-        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
+    @Override
+    protected String getLabel() {
+        return LABEL;
     }
 
-    public void testDisplayName() {
-        HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
-
-        assertEquals("HTML 4.01 Transitional", v.getDisplayName());
-        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
-        assertNull(v.getDefaultNamespace());
-        assertFalse(v.isXhtml());
-        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
-        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
+    @Override
+    protected Pattern[] getPatterns() {
+        return PATTERNS;
     }
 
-    public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.findByPublicId("-//W3C//DTD HTML 4.01//EN"));
-
-        //hmmm, its not possible to guess the proper xhtml version just by the namespace...
-        assertSame(HtmlVersion.XHTML10_STICT, HtmlVersion.findByNamespace("http://www.w3.org/1999/xhtml"));
+    @Override
+    protected String getGemName() {
+        return GEM_NAME;
     }
 }

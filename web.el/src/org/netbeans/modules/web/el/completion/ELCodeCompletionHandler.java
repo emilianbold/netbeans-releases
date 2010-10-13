@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.AstDeferredExpression;
+import com.sun.el.parser.AstDynamicExpression;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
@@ -93,7 +95,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
-        Node target = element.findNodeAt(context.getCaretOffset());
+        Node target = getTargetNode(element, context.getCaretOffset());
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
@@ -159,6 +161,20 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // try to sanitize
         ELSanitizer sanitizer = new ELSanitizer(result);
         return sanitizer.sanitized();
+    }
+
+    private Node getTargetNode(ELElement element, int offset) {
+        Node result = element.findNodeAt(offset);
+        // in EL AST for example #{foo.bar^} the caret is at a deferred expression node, whereas
+        // for code completion we need the "bar" property node; the code below tries to accomplish
+        // that
+        if (result instanceof AstDeferredExpression || result instanceof AstDynamicExpression) {
+            Node realTarget = element.findNodeAt(offset - 1);
+            if (realTarget != null) {
+                result = realTarget;
+            }
+        }
+        return result;
     }
 
     private FileObject getFileObject(CodeCompletionContext context) {

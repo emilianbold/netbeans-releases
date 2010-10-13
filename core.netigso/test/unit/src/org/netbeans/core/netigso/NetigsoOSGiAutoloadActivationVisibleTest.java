@@ -40,39 +40,19 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.api;
-
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.core.netigso;
 
 /**
  *
- * @author marekfukala
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class HtmlVersionTest extends NbTestCase {
-
-    public HtmlVersionTest(String name) {
+public class NetigsoOSGiAutoloadActivationVisibleTest extends NetigsoOSGiActivationVisibleTest {
+    public NetigsoOSGiAutoloadActivationVisibleTest(String name) {
         super(name);
     }
-
-    public static void setDefaultHtmlVersion(HtmlVersion version) {
-        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
-    }
-
-    public void testDisplayName() {
-        HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
-
-        assertEquals("HTML 4.01 Transitional", v.getDisplayName());
-        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
-        assertNull(v.getDefaultNamespace());
-        assertFalse(v.isXhtml());
-        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
-        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
-    }
-
-    public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.findByPublicId("-//W3C//DTD HTML 4.01//EN"));
-
-        //hmmm, its not possible to guess the proper xhtml version just by the namespace...
-        assertSame(HtmlVersion.XHTML10_STICT, HtmlVersion.findByNamespace("http://www.w3.org/1999/xhtml"));
+    
+    @Override
+    protected boolean autoload() {
+        return true;
     }
 }
