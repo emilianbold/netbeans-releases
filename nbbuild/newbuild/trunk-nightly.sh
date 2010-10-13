@@ -14,7 +14,7 @@ if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
     rm -rf $NB_ALL
-    hg clone $WORKSPACE $NB_ALL
+    hg clone -r release68_fixes $WORKSPACE $NB_ALL
     if [ $RUNJAVAFX == 1 ]; then
         #Clone also javafx sources - XXX needs to be parametrized
         cd $NB_ALL
