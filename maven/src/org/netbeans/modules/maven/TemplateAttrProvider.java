@@ -44,10 +44,12 @@ package org.netbeans.modules.maven;
 
 import java.nio.charset.Charset;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.apache.maven.model.License;
+import org.apache.maven.model.Organization;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
@@ -92,6 +94,14 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         }
         if (license != null) {
             values.put("license", license); // NOI18N
+        }
+
+        Organization organization = project.getOriginalMavenProject().getOrganization();
+        if (organization != null) {
+            String organizationName = organization.getName();
+            if (organizationName != null) {
+                values.put("organization", organizationName); // NOI18N
+            }
         }
 
         FileEncodingQueryImplementation enc = project.getLookup().lookup(FileEncodingQueryImplementation.class);

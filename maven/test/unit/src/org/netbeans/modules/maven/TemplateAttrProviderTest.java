@@ -80,7 +80,7 @@ public class TemplateAttrProviderTest extends NbTestCase {
 "    </organization>\n" +
 "</project>\n" +
 "");
-        assertEquals("{project={displayName=Test, encoding=UTF-8, license=apache20, name=testgrp_testart_jar_1.0}}",
+        assertEquals("{project={displayName=Test, encoding=UTF-8, license=apache20, name=testgrp_testart_jar_1.0, organization=Yoyodyne Corp.}}",
                      ProjectManager.getDefault().findProject(d).getLookup().lookup(CreateFromTemplateAttributesProvider.class).attributesFor(null, DataFolder.findFolder(FileUtil.getConfigRoot()), null).toString());
     }
 
