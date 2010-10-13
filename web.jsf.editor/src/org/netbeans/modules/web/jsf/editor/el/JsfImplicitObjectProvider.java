@@ -53,6 +53,7 @@ import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
+import static org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.Type.*;
 
 /**
  * @author ads

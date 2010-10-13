@@ -332,6 +332,10 @@ public class AstNode {
         return endOffset;
     }
 
+    public void setEndOffset(int offset) {
+        this.endOffset = offset;
+    }
+
     public int logicalStartOffset() {
         return getLogicalRange()[0];
     }

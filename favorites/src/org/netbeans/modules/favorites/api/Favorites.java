@@ -64,7 +64,7 @@ import org.openide.loaders.DataShadow;
 public final class Favorites {
     private static Favorites INSTANCE;
 
-    private static Logger LOG = Logger.getLogger(Favorites.class.getName());
+    private static final Logger LOG = Logger.getLogger(Favorites.class.getName());
 
     /**
      * Returns a default instance of Favorites.

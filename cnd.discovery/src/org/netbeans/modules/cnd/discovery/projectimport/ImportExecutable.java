@@ -114,7 +114,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class ImportExecutable implements PropertyChangeListener {
-    private static final boolean DLL_FILE_SEARCH = false;
+    private static final boolean DLL_FILE_SEARCH = true;
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 2);
     private final Map<String, Object> map;
     private Project lastSelectedProject;
@@ -122,6 +122,7 @@ public class ImportExecutable implements PropertyChangeListener {
     private CreateDependencies cd;
     private final boolean createProjectMode;
     private String sourcesPath;
+    private List<String> dependencies;
 
     public ImportExecutable(Map<String, Object> map, Project lastSelectedProject, ProjectKind projectKind) {
         this.map = map;
@@ -153,11 +154,13 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
 
+    @SuppressWarnings("unchecked")
     private void createProject() {
         String binaryPath = (String) map.get(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
         sourcesPath = (String) map.get(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
         File projectFolder = (File) map.get(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
         String projectName = (String) map.get(WizardConstants.PROPERTY_NAME); // NOI18N
+        dependencies = (List<String>) map.get(WizardConstants.PROPERTY_DEPENDENCIES);
         String baseDir;
         if (projectFolder != null) {
             projectFolder = CndFileUtils.normalizeFile(projectFolder);
@@ -194,25 +197,28 @@ public class ImportExecutable implements PropertyChangeListener {
         prjParams.setOpenFlag(false)
                  .setConfiguration(conf)
                  .setImportantFiles(Collections.<String>singletonList(binaryPath).iterator());
-        List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
-        list.add(new SourceFolderInfo() {
+        Boolean trueSourceRoot = (Boolean) map.get(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT);
+        if (trueSourceRoot != null && trueSourceRoot.booleanValue()) {
+            List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
+            list.add(new SourceFolderInfo() {
 
-            @Override
-            public FileObject getFileObject() {
-                return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(sourcesPath));
-            }
+                @Override
+                public FileObject getFileObject() {
+                    return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(sourcesPath));
+                }
 
-            @Override
-            public String getFolderName() {
-                return getFileObject().getNameExt();
-            }
+                @Override
+                public String getFolderName() {
+                    return getFileObject().getNameExt();
+                }
 
-            @Override
-            public boolean isAddSubfoldersSelected() {
-                return true;
-            }
-        });
-        prjParams.setSourceFolders(list.iterator());
+                @Override
+                public boolean isAddSubfoldersSelected() {
+                    return true;
+                }
+            });
+            prjParams.setSourceFolders(list.iterator());
+        }
         prjParams.setSourceFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
         try {
             lastSelectedProject = ProjectGenerator.createProject(prjParams);
@@ -278,7 +284,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                     discoverScripts(lastSelectedProject);
                                     saveMakeConfigurationDescriptor(lastSelectedProject);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
-                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies());
+                                        cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies);
                                     }
                                 } catch (IOException ex) {
                                     ex.printStackTrace();
@@ -300,16 +306,8 @@ public class ImportExecutable implements PropertyChangeListener {
 
                     }
                     switchModel(true, lastSelectedProject);
-                    //if (createProjectMode) {
-                        postModelDiscovery(lastSelectedProject);
-                    //}
-                    if (open || cd != null) {
-                        if (open) {
-                            onProjectParsingFinished("main", lastSelectedProject); // NOI18N
-                        } else {
-                            onProjectParsingFinished(null, lastSelectedProject); // NOI18N
-                        }
-                    }
+                    String main = open ? "main": null;  // NOI18N
+                    onProjectParsingFinished(main, lastSelectedProject);
                 } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -428,43 +426,54 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     private String additionalDependencies(Applicable applicable, MakeConfiguration activeConfiguration) {
-        String root = sourcesPath;
-        if (root == null || root.length()==0) {
-            root = applicable.getSourceRoot();
-        }
-        if (root == null || root.length() == 0) {
-            return null;
-        }
-        if (applicable.getDependencies() == null || applicable.getDependencies().isEmpty()) {
-            return null;
-        }
-        Map<String,String> dllPaths = new HashMap<String, String>();
-        String ldLibPath = getLdLibraryPath(activeConfiguration);
-        boolean search = false;
-        for(String dll : applicable.getDependencies()) {
-            String p = findLocation(dll, ldLibPath);
-            if (p != null) {
-                dllPaths.put(dll, p);
-            } else {
-                search = true;
-                dllPaths.put(dll, null);
+        if (dependencies == null) {
+            String root = sourcesPath;
+            if (root == null || root.length()==0) {
+                root = applicable.getSourceRoot();
             }
-        }
-        if (search) {
-            gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
-        }
-        StringBuilder buf = new StringBuilder();
-        for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
-            if (entry.getValue() != null) {
-                if (isMyDll(entry.getValue(), root)) {
-                    if (buf.length() > 0) {
-                        buf.append(';');
-                    }
-                    buf.append(entry.getValue());
+            if (root == null || root.length() == 0) {
+                return null;
+            }
+            if (applicable.getDependencies() == null || applicable.getDependencies().isEmpty()) {
+                return null;
+            }
+            Map<String,String> dllPaths = new HashMap<String, String>();
+            String ldLibPath = getLdLibraryPath(activeConfiguration);
+            boolean search = false;
+            for(String dll : applicable.getDependencies()) {
+                String p = findLocation(dll, ldLibPath);
+                if (p != null) {
+                    dllPaths.put(dll, p);
+                } else {
+                    search = true;
+                    dllPaths.put(dll, null);
                 }
             }
+            if (search) {
+                gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
+            }
+            StringBuilder buf = new StringBuilder();
+            for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
+                if (entry.getValue() != null) {
+                    if (isMyDll(entry.getValue(), root)) {
+                        if (buf.length() > 0) {
+                            buf.append(';');
+                        }
+                        buf.append(entry.getValue());
+                    }
+                }
+            }
+            return buf.toString();
+        } else {
+            StringBuilder buf = new StringBuilder();
+            for(String path : dependencies) {
+                if (buf.length() > 0) {
+                    buf.append(';');
+                }
+                buf.append(path);
+            }
+            return buf.toString();
         }
-        return buf.toString();
     }
 
     static String getLdLibraryPath(MakeConfiguration activeConfiguration) {
@@ -501,7 +510,7 @@ public class ImportExecutable implements PropertyChangeListener {
 
     private static final List<CsmProgressListener> listeners = new ArrayList<CsmProgressListener>(1);
 
-    private void onProjectParsingFinished(final String functionName, Project makeProject) {
+    private void onProjectParsingFinished(final String functionName, final Project makeProject) {
         if (makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             CsmProgressListener listener = new CsmProgressAdapter() {
@@ -519,6 +528,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 break;
                             }
                         }
+                        fixExcludedHeaderFiles(makeProject);
                         if (cd != null) {
                             cd.create();
                         }

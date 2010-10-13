@@ -1,6 +1,61 @@
+diff -r 7a65a61dbdfa src/nu/validator/htmlparser/impl/ElementName.java
+--- a/src/nu/validator/htmlparser/impl/ElementName.java	Wed Sep 22 18:01:16 2010 +0300
++++ b/src/nu/validator/htmlparser/impl/ElementName.java	Tue Oct 12 16:36:02 2010 +0200
+@@ -1,4 +1,4 @@
+-/*
++    /*
+  * Copyright (c) 2008-2010 Mozilla Foundation
+  *
+  * Permission is hereby granted, free of charge, to any person obtaining a 
+diff -r 7a65a61dbdfa src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java
+--- a/src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java	Wed Sep 22 18:01:16 2010 +0300
++++ b/src/nu/validator/htmlparser/impl/ErrorReportingTokenizer.java	Tue Oct 12 16:36:02 2010 +0200
+@@ -328,7 +328,8 @@
+     @Override protected int transition(int from, int to, boolean reconsume,
+             int pos) throws SAXException {
+         if (transitionHandler != null) {
+-            transitionHandler.transition(from, to, reconsume, pos);
++            //we need to use the real offset in the source, not just the buffer offset...
++            transitionHandler.transition(from, to, reconsume, currentBufferGlobalOffset + pos);
+         }
+         return to;
+     }
+diff -r 7a65a61dbdfa src/nu/validator/htmlparser/impl/Tokenizer.java
+--- a/src/nu/validator/htmlparser/impl/Tokenizer.java	Wed Sep 22 18:01:16 2010 +0300
++++ b/src/nu/validator/htmlparser/impl/Tokenizer.java	Tue Oct 12 16:36:02 2010 +0200
+@@ -507,6 +507,9 @@
+ 
+     // [NOCPP[
+ 
++    //holds the offset of the current buffer relative to the beginning of the input source
++    protected int currentBufferGlobalOffset;
++
+     protected LocatorImpl ampersandLocation;
+ 
+     public Tokenizer(TokenHandler tokenHandler, boolean newAttributesEachTime) {
+@@ -1333,6 +1336,11 @@
+         } else {
+             buffer.setStart(pos + 1);
+         }
++
++        if(!buffer.hasMore()) {
++            currentBufferGlobalOffset += buffer.getEnd();
++        }
++
+         return lastCR;
+     }
+ 
+@@ -6776,6 +6784,7 @@
+         }
+         // ]NOCPP]
+         resetToDataState();
++        currentBufferGlobalOffset = 0;
+     }
+ 
+     protected void errGarbageAfterLtSlash() throws SAXException {
 diff -r 7a65a61dbdfa src/nu/validator/htmlparser/impl/TreeBuilder.java
 --- a/src/nu/validator/htmlparser/impl/TreeBuilder.java	Wed Sep 22 18:01:16 2010 +0300
-+++ b/src/nu/validator/htmlparser/impl/TreeBuilder.java	Mon Oct 11 14:22:12 2010 +0200
++++ b/src/nu/validator/htmlparser/impl/TreeBuilder.java	Tue Oct 12 16:36:02 2010 +0200
 @@ -1426,7 +1426,7 @@
          end();
      }
