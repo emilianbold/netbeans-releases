@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.Template;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
