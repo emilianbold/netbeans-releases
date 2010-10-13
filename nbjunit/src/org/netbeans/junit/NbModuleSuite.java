@@ -666,40 +666,31 @@ public class NbModuleSuite {
         private void runInRuntimeContainer(TestResult result) throws Exception {
             System.getProperties().remove("netbeans.dirs");
             File platform = findPlatform();
-            File[] boot = new File(platform, "lib").listFiles();
             List<URL> bootCP = new ArrayList<URL>();
-            for (int i = 0; i < boot.length; i++) {
-                URL u = boot[i].toURI().toURL();
-                if (u.toExternalForm().endsWith(".jar")) {
-                    bootCP.add(u);
-                }
-            }
+            List<File> dirs = new ArrayList<File>();
+            dirs.add(new File(platform, "lib"));
             
             File jdkHome = new File(System.getProperty("java.home"));
             if (!"Mac OS X".equals(System.getProperty("os.name"))) {
                 jdkHome = jdkHome.getParentFile();
             }
-            File jdkLib = new File(jdkHome, "lib");
-            if (jdkLib.isDirectory()) {
-                for (File jar : jdkLib.listFiles()) {
-                    if (jar.getName().endsWith(".jar")) {
-                        bootCP.add(jar.toURI().toURL());
-                    }
-                }
-            }
+            dirs.add(new File(jdkHome, "lib"));
 
             //in case we're running code coverage, load the coverage libraries
-            if (System.getProperty("code.coverage.classpath") != null)
-            {
-                File coveragePath = new File(System.getProperty("code.coverage.classpath"));
-                if (coveragePath.isDirectory()) {
-                    for (File jar : coveragePath.listFiles()) {
+            if (System.getProperty("code.coverage.classpath") != null) {
+                dirs.add(new File(System.getProperty("code.coverage.classpath")));
+            }
+
+            for (File dir: dirs) {
+                File[] jars = dir.listFiles();
+                if (jars != null) {
+                    for (File jar : jars) {
                         if (jar.getName().endsWith(".jar")) {
                             bootCP.add(jar.toURI().toURL());
                         }
                     }
                 }
-            }            
+            }
             
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
