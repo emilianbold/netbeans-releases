@@ -829,28 +829,30 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
             Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
             resolve(RESOLVE_FIXED); // XXX constant?
 
-            // check for other preselections
-            Properties p = System.getProperties();
-            Enumeration<Object> keys = p.keys();
-            List<String> keyList = new LinkedList<String>();
-            while(keys.hasMoreElements()) {
-                Object key = keys.nextElement();
-                if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
-                    keyList.add(key.toString());
-                }
-            }
-            for (String key : keyList) {
-                String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
-                String value = p.getProperty(key);
-                IssueField issueField = repository.getConfiguration().getField(fieldName);
-                if(issueField != null) {
-                    if(issueField.isReadOnly()) {
-                        Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
-                    } else {
-                        setFieldValue(issueField, value);
+            if(BugzillaUtil.isNbRepository(repository)) {
+                // check for other preselections
+                Properties p = System.getProperties();
+                Enumeration<Object> keys = p.keys();
+                List<String> keyList = new LinkedList<String>();
+                while(keys.hasMoreElements()) {
+                    Object key = keys.nextElement();
+                    if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
+                        keyList.add(key.toString());
                     }
-                } else {
-                    Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                }
+                for (String key : keyList) {
+                    String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
+                    String value = p.getProperty(key);
+                    IssueField issueField = repository.getConfiguration().getField(fieldName);
+                    if(issueField != null) {
+                        if(issueField.isReadOnly()) {
+                            Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
+                        } else {
+                            setFieldValue(issueField, value);
+                        }
+                    } else {
+                        Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                    }
                 }
             }
 
