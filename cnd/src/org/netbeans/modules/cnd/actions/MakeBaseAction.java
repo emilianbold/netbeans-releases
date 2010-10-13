@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.settings.MakeSettings;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -196,7 +197,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         NativeExecutionDescriptor descr = new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
                 inputVisible(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 inputOutput(inputOutput).
                 outLineBased(true).
                 postExecution(processChangeListener).
