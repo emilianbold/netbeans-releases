@@ -835,7 +835,7 @@ public class NbModuleSuite {
                 try {
                     File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                     File harness = nbjunit.getParentFile().getParentFile();
-                    Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
+                    Assert.assertEquals(nbjunit + " is in a folder named 'harness'", "harness", harness.getName());
                     TreeSet<File> sorted = new TreeSet<File>();
                     for (File p : harness.getParentFile().listFiles()) {
                         if (p.getName().startsWith("platform")) {
