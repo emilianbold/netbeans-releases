@@ -90,7 +90,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     public CndFileSystemProvider.FileInfo[] getChildInfo(String relativePath) {
-        return (CndFileSystemProvider.FileInfo[]) getFileOrCheckExistence(relativePath, Mode.EXISTENCE);
+        return (CndFileSystemProvider.FileInfo[]) getFileOrCheckExistence(relativePath, Mode.CHILDINFO);
     }
 
     public boolean exists(String relativePath) {
