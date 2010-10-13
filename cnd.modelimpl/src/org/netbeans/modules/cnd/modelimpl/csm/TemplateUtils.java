@@ -395,6 +395,13 @@ public class TemplateUtils {
         return newMapping;
     }
 
+    public static boolean isTemplateQualifiedName(String name) {
+        return name.contains("<"); // NOI18N
+    }
+
+    public static String getTemplateQualifiedNameWithoutSiffix(String name) {
+        return name.replaceAll("<.*", ""); // NOI18N
+    }
 
     private TemplateUtils() {
     }
