@@ -69,6 +69,9 @@ public class CreateHtmlFromTemplateAttributeProvider implements CreateFromTempla
             version = HtmlVersion.getDefaultVersion();
         } else {
             version = ProjectDefaultHtmlSourceVersionController.getDefaultHtmlVersion(project);
+            if(version == null) {
+                version = HtmlVersion.getDefaultVersion();
+            }
         }
 
         return Collections.singletonMap(DOCTYPE_TEMPLATE_PROPERTY_NAME, version.getDoctypeDeclaration());
