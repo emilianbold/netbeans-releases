@@ -60,6 +60,12 @@ public class SyntaxAnalyzerResultTest extends TestBase {
     }
 
 
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+
     public void testBasic() throws ParseException {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";
         HtmlSource source = new HtmlSource(code);
