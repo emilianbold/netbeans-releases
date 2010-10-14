@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -55,6 +56,9 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
@@ -239,6 +243,32 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
                 fo == null || !fo.isValid());
     }
 
+    @ForAllEnvironments
+    public void testWrite() throws Exception {
+        String tempFile = null;
+        try {
+            FileObject fo;
+            String stdio_h = "/usr/include/stdio.h";
+            fo = rootFO.getFileObject(stdio_h);
+            assertNotNull("null file object for " + stdio_h, fo);
+            assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
+            ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
+            assertEquals("mktemp failed", 0, res.exitCode);
+            tempFile = res.output;
+            fo = rootFO.getFileObject(tempFile);
+            assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
+            String content = "a quick brown fox...";
+            writeFile(fo, content);
+            CharSequence readContent = readFile(fo);
+            assertEquals("File content differ", content.toString(), readContent.toString());
+            readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
+            assertEquals("File content differ", content.toString(), readContent.toString());
+        } finally {
+            if (tempFile != null) {
+                CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+            }
+        }
+    }
     
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteFileSystemTestCase.class);
