@@ -42,24 +42,22 @@
 
 package org.netbeans.modules.maven;
 
-import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
+import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
-import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
-import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
-import org.netbeans.modules.xml.xam.Model.State;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -79,8 +77,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private List<String> sharedProfiles = new ArrayList<String>();
     private AuxiliaryConfiguration ac;
     private final NbMavenProjectImpl nmp;
-//    private ModelLineage lineage;
-    private boolean haveTried = false;
+    private List<Model> lineage;
 
     ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
         this.nmp = nmp;
@@ -93,28 +90,23 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
      * reset caching of the lineage, invoked from MavenProject reloads
      */
     synchronized void clearLineageCache() {
-//        lineage = null;
-        haveTried = false;
+        lineage = null;
     }
 
-//    /**
-//     * cache the lineage for repeated use..
-//     * @return
-//     */
-//    synchronized ModelLineage getLineage() {
-//        if (lineage == null && !haveTried) {
-//            try {
-//                //use project embedder to save time (online embedder creation is costly)
-//                // could cause some problems with cached models though..
-//                // something to consider when problems actually arise
-//                lineage = EmbedderFactory.createModelLineage(nmp.getPOMFile(), nmp.getEmbedder(), true);
-//            } catch (ProjectBuildingException ex) {
-//                Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
-//                haveTried = true;
-//            }
-//        }
-//        return lineage;
-//    }
+    /**
+     * cache the lineage for repeated use
+     */
+    private synchronized List<Model> getLineage() {
+        if (lineage == null) {
+            try {
+                lineage = EmbedderFactory.createModelLineage(nmp.getPOMFile(), nmp.getEmbedder());
+            } catch (ModelBuildingException ex) {
+                Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
+                lineage = Collections.emptyList();
+            }
+        }
+        return lineage;
+    }
 
     public @Override List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
@@ -142,6 +134,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
             profileIds.add(profile);
         }
         
+        /* MNG-4060: no longer supported
         File basedir = FileUtil.normalizeFile(mavenProject.getBasedir());
         FileObject fileObject = FileUtil.toFileObject(basedir);
         if (fileObject != null) {//144159
@@ -158,6 +151,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
                 }
             }
         }
+         */
         profileIds.addAll(getActiveProfiles(shared));
         return new ArrayList<String>(profileIds);
     }
@@ -251,42 +245,16 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
     
     private void extractProfilesFromModelLineage(Set<String> profileIds) {
-//        try {
-//            ModelLineage lin = getLineage();
-//            if (lin == null) return;
-//            Iterator it = lin.modelIterator();
-//            while (it.hasNext()) {
-//                Model mdl = (Model) it.next();
-//                List mdlProfiles = mdl.getProfiles();
-//                if (mdlProfiles != null) {
-//                    Iterator it2 = mdlProfiles.iterator();
-//                    while (it2.hasNext()) {
-//                        Profile prf = (Profile) it2.next();
-//                        profileIds.add(prf.getId());
-//                    }
-//                }
-//            }
-
-//#172526 - recursive hunt for profiles in child modules is rather expensive with little added value..
-//
-//            if (lineage != null && lineage.getOriginatingModel() != null) {
-//                @SuppressWarnings("unchecked")
-//                List<String> modules = lineage.getOriginatingModel().getModules();
-//                File basedir = FileUtil.normalizeFile(file.getParentFile());
-//                for (String module : modules) {
-//                    File childPom = FileUtil.normalizeFile(new File(basedir, module));
-//                    if (childPom.exists() && !childPom.isFile()) {
-//                        childPom = new File(childPom, "pom.xml"); //NOI18N
-//                    }
-//                    if (childPom.isFile()) {
-//                            extractProfilesFromModelLineage(childPom, profileIds);
-//                    }
-//                }
-//            }
-
-//        } catch (ProjectBuildingException ex) {
-//            Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error reading model lineage", ex);//NOI18N
-//        }
+        /* Cannot use this as it would trigger a stack overflow when loading the project:
+        for (Profile profile : nmp.getOriginalMavenProject().getModel().getProfiles()) {
+            profileIds.add(profile.getId());
+        }
+         */
+        for (Model model : getLineage()) {
+            for (Profile profile : model.getProfiles()) {
+                profileIds.add(profile.getId());
+            }
+        }
     }
 
     private List<String> retrieveActiveProfiles(AuxiliaryConfiguration ac, boolean shared) {
