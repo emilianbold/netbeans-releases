@@ -52,11 +52,10 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.openide.util.Exceptions;
 
 /**
@@ -70,7 +69,6 @@ public final class ClassIndexManager {
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
-    private final ReentrantReadWriteLock lock;
     private final InternalLock internalLock;
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
     private boolean invalid;
@@ -79,7 +77,6 @@ public final class ClassIndexManager {
     private int depth = 0;
 
     private ClassIndexManager() {
-        this.lock = new ReentrantReadWriteLock (false);
         this.internalLock = new InternalLock();
     }
 
@@ -94,17 +91,18 @@ public final class ClassIndexManager {
     }
 
     @Deprecated
-    public <T> T writeLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
+    public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
         //Ugly, in scala much more cleaner.
         return prepareWriteLock(
-                new ExceptionAction<T>() {
-                    public T run() throws IOException, InterruptedException {
-                        return takeWriteLock(r);
-                    }
-                });
+            new Action<T>() {
+                @Override
+                public T run() throws IOException, InterruptedException {
+                    return IndexManager.writeAccess(r);
+                }
+            });
     }
 
-    public <T> T prepareWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
+    public <T> T prepareWriteLock(final Action<T> r) throws IOException, InterruptedException {
         synchronized (internalLock) {
             depth++;
             if (depth == 1) {
@@ -143,61 +141,7 @@ public final class ClassIndexManager {
             }
         }
     }
-
-    public <T> T takeWriteLock(final ExceptionAction<T> r) throws IOException, InterruptedException {
-        this.lock.writeLock().lock();
-        try {
-            return Utilities.runPriorityIO(new Callable<T>() {
-                @Override
-                public T call() throws Exception {
-                    return r.run();
-                }
-            });
-        } catch (IOException ioe) {
-            //rethrow ioe
-            throw ioe;
-        } catch (InterruptedException ie) {
-            //rethrow ioe
-            throw ie;
-        } catch (RuntimeException re) {
-            //rethrow ioe
-            throw re;
-        } catch (Exception e) {
-            throw new IOException(e);
-        } finally {
-            this.lock.writeLock().unlock();
-        }
-    }
-    
-    public <T> T readLock (final ExceptionAction<T> r) throws IOException, InterruptedException {
-        this.lock.readLock().lock();
-        try {
-            return Utilities.runPriorityIO(new Callable<T>() {
-                @Override
-                public T call() throws Exception {
-                    return r.run();
-                }
-            });
-        } catch (IOException ioe) {
-            //rethrow ioe
-            throw ioe;
-        } catch (InterruptedException ie) {
-            //rethrow ioe
-            throw ie;
-        } catch (RuntimeException re) {
-            //rethrow ioe
-            throw re;
-        } catch (Exception e) {
-            throw new IOException(e);
-        } finally {
-            this.lock.readLock().unlock();
-        }
-    }
-    
-    public boolean holdsWriteLock () {
-        return this.lock.isWriteLockedByCurrentThread();
-    }
-
+               
     public ClassIndexImpl getUsagesQuery (URL root) {
         synchronized (internalLock) {
             assert root != null;
@@ -264,11 +208,7 @@ public final class ClassIndexManager {
             }
         }
     }
-    
-    public static interface ExceptionAction<T> {
-        public T run () throws IOException, InterruptedException;
-    }
-    
+            
     private void fire (final Set<? extends URL> roots, final byte op) {
         if (!this.listeners.isEmpty()) {
             ClassIndexManagerListener[] _listeners;

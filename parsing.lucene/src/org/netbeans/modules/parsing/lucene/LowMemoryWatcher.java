@@ -37,15 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene.util;
+package org.netbeans.modules.parsing.lucene;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface EvictionPolicy<K,V extends Evictable> {
-    boolean shouldEvict (int size, K key, V value);
+class LowMemoryWatcher {
+
+    private static float heapLimit = 0.8f;
+    private static LowMemoryWatcher instance;
+    private final MemoryMXBean memBean;
+
+    private LowMemoryWatcher () {
+        this.memBean = ManagementFactory.getMemoryMXBean();
+        assert this.memBean != null;
+    }
+    
+    public boolean isLowMemory () {
+        if (this.memBean != null) {
+            final MemoryUsage usage = this.memBean.getHeapMemoryUsage();
+            if (usage != null) {
+                long used = usage.getUsed();
+                long max = usage.getMax();
+                return used > max * heapLimit;
+            }
+        }
+        return false;
+    }
+    
+    static synchronized LowMemoryWatcher getInstance() {
+        if (instance == null) {
+            instance = new LowMemoryWatcher();
+        }
+        return instance;
+    }
+
+    static float getHeapLimit () {
+        return heapLimit;
+    }
+
+    static void setHeapLimit(final float limit) {
+        heapLimit = limit;
+    }    
+    
 }

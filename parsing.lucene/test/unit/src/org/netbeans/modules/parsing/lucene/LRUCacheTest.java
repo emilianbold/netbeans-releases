@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,14 +34,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.usages;
+
+package org.netbeans.modules.parsing.lucene;
+
+import java.util.HashSet;
+import java.util.Set;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface ResultConvertor<P,T> {
-    public static final class Stop extends Exception {};
-    public abstract T convert (P p) throws Stop;
+public class LRUCacheTest extends NbTestCase {
+
+    public LRUCacheTest(final String name) {
+        super(name);
+    }
+
+    private Set<Integer> used = new HashSet<Integer>();
+
+    @Test
+    public void testLRU() {
+        final LRUCache<Integer,Evictable> ev = new LRUCache<Integer, Evictable>(new TestEvictionPolicy());
+        final Set<Integer> golden = new HashSet<Integer>();
+        for (int i=0; i<10; i++) {
+            used.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        for (int i=0; i<5; i++) {
+            used.add(i);
+            golden.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        for (int i=10; i<15; i++) {
+            used.add(i);
+            golden.add(i);
+            ev.put(i, new EvictableInt(i));
+        }
+        assertEquals(golden, used);
+    }
+
+    private static class TestEvictionPolicy implements EvictionPolicy<Integer,Evictable> {
+        @Override
+        public boolean shouldEvict(int size, Integer key, Evictable value) {
+            return size > 10;
+        }
+    }
+
+    private class EvictableInt implements Evictable {
+
+        private Integer value;
+        
+        public EvictableInt(final int i) {
+            this.value = i;
+        }
+
+        @Override
+        public void evicted() {            
+            used.remove(value);
+        }
+    }
+
 }

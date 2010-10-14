@@ -93,7 +93,6 @@ import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 import org.netbeans.api.annotations.common.NonNull;
@@ -124,10 +123,9 @@ import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.FQN2Files;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
-import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Index;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -140,7 +138,6 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -435,7 +432,7 @@ public class JavacParser extends Parser {
                 }
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
-                Index.cancel.set(canceled);
+                ClassIndexImpl.cancel.set(canceled);
                 result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
             }
         }
@@ -470,7 +467,7 @@ public class JavacParser extends Parser {
 
     public void resultFinished (boolean isCancelable) {
         if (isCancelable) {
-            Index.cancel.remove();
+            ClassIndexImpl.cancel.remove();
         }
     }
 

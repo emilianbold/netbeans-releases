@@ -40,57 +40,74 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene;
+package org.netbeans.modules.parsing.lucene;
 
-import java.net.URL;
-import java.util.logging.Logger;
-import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
-import org.netbeans.modules.parsing.impl.indexing.lucene.util.EvictionPolicy;
-import org.netbeans.modules.parsing.impl.indexing.lucene.util.LRUCache;
-import org.openide.util.Utilities;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class IndexCacheFactory {
-    
-    private static final Logger LOG = Logger.getLogger(IndexCacheFactory.class.getName());
-    private static final IndexCacheFactory instance = new IndexCacheFactory();
-    private final LRUCache<URL, Evictable> cache;
+final class LRUCache<K,V extends Evictable> {
 
-    private IndexCacheFactory() {
-        this.cache = new LRUCache<URL, Evictable>(new DefaultPolicy());
-    }
+    private final LinkedHashMap<K, V> cache;
+    private final ReadWriteLock lock;
 
-    public LRUCache<URL,Evictable> getCache() {
-        return cache;
-    }
-
-    public static IndexCacheFactory getDefault() {
-        return instance;
-    }
-
-    private static class DefaultPolicy implements EvictionPolicy<URL,Evictable> {
-        private static final int DEFAULT_SIZE = 400;
-        private static final boolean NEEDS_REMOVE =  Boolean.getBoolean("IndexCache.force") || (Utilities.isUnix() && !Utilities.isMac());  //NOI18N
-        private static final int MAX_SIZE;
-        static {
-            int value = DEFAULT_SIZE;
-            final String sizeStr = System.getProperty("IndexCache.size");   //NOI18N
-            if (sizeStr != null) {
-                try {
-                    value = Integer.parseInt(sizeStr);
-                } catch (NumberFormatException nfe) {
-                    LOG.warning("Wrong (non integer) cache size: " + sizeStr);  //NOI18N
+    public LRUCache (final EvictionPolicy<? super K,? super V> policy) {
+        this.lock = new ReentrantReadWriteLock();
+        this.cache = new LinkedHashMap<K, V>(10,0.75f,true) {
+            @Override
+            protected boolean removeEldestEntry(Entry<K, V> eldest) {
+                final boolean evict = policy.shouldEvict(this.size(), eldest.getKey(), eldest.getValue());
+                if (evict) {
+                    eldest.getValue().evicted();
                 }
-            }            
-            MAX_SIZE = value;
-            LOG.fine("NEEDS_REMOVE: " + NEEDS_REMOVE +" MAX_SIZE: " + MAX_SIZE);    //NOI18N
-        }
+                return evict;
+            }
+        };
+    }
 
-        public boolean shouldEvict(int size, URL key, Evictable value) {
-            return NEEDS_REMOVE && size>MAX_SIZE;
+    public void put (final K key, final V evictable) {
+        assert key != null;
+        assert evictable != null;
+        this.lock.writeLock().lock();
+        try {
+            this.cache.put(key, evictable);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    public V get(final K key) {
+        assert key != null;
+        this.lock.readLock().lock();
+        try {
+            return this.cache.get(key);
+        } finally {
+            this.lock.readLock().unlock();
+        }
+    }
+
+    public V remove (final K key) {
+        assert key != null;
+        this.lock.writeLock().lock();
+        try {
+            return this.cache.remove(key);
+        } finally {
+            this.lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public String toString () {
+        this.lock.readLock().lock();
+        try {
+            return this.cache.toString();
+        } finally {
+            this.lock.readLock().unlock();
         }
     }
 

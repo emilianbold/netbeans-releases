@@ -59,6 +59,7 @@ import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -77,7 +78,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         LOG.log(Level.FINE, "index({0})", context.getRootURI());
         try {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
-            cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     CachingArchiveProvider.getDefault().clearArchive(context.getRootURI());
                     File cacheFolder = JavaIndex.getClassFolder(context.getRootURI());
@@ -145,7 +147,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             assert removedRoots != null;
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             try {
-                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                    @Override
                     public Void run() throws IOException, InterruptedException {
                         //todo:
                         for (URL removedRoot : removedRoots) {
@@ -164,9 +167,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                return ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                return ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
+                    @Override
                     public Boolean run() throws IOException, InterruptedException {
-                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                        return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
+                            @Override
                             public Boolean run() throws IOException, InterruptedException {
                                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
                                 if (uq == null) {
