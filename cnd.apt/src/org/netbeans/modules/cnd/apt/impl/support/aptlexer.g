@@ -297,6 +297,7 @@ tokens {
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
+    LITERAL__Imaginary="_Imaginary"; // NOI18N
 
 
     // Fortran tokens

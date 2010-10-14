@@ -951,21 +951,24 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public List<Folder> getAllFolders(boolean projectFilesOnly) {
         List<Folder> folders = new ArrayList<Folder>();
+        getAllFolders(folders, projectFilesOnly);
+        return folders;
+    }
 
+    private void getAllFolders(List<Folder> folders, boolean projectFilesOnly) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
-                    if (!projectFilesOnly || ((Folder) item).isProjectFiles()) {
-                        folders.add((Folder) item);
-                        folders.addAll(((Folder) item).getAllFolders(projectFilesOnly));
+                    Folder folder = (Folder) item;
+                    if (!projectFilesOnly || folder.isProjectFiles()) {
+                        folders.add(folder);
+                        folder.getAllFolders(folders, projectFilesOnly);
                     }
                 }
             }
         }
-
-        return folders;
     }
 
     public List<Folder> getAllTests() {
