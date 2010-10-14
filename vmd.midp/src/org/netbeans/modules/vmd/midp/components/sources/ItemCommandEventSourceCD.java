@@ -66,7 +66,9 @@ import org.netbeans.modules.vmd.midp.screen.ItemCommandSRItemPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.general.RootCode;
 
 /**
  * @author David Kaspar
@@ -118,6 +120,15 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
         return Arrays.asList(
             // info
             InfoPresenter.create(EventSourceSupport.createItemCommandEventSourceInfoResolver()),
+            // code
+            new RootCode.CodeComponentDependencyPresenter () {
+                protected void collectRequiredComponents (Collection<DesignComponent> requiredComponents) {
+                    PropertyValue propertyValue = getComponent ().readProperty (PROP_COMMAND);
+                    DesignComponent component = propertyValue.getComponent();
+                    if (component != null)
+                        requiredComponents.add(component);
+                }
+            },
             // general
             GoToSourcePresenter.createForwarder (PROP_COMMAND),
             new SecondaryGoToSourcePresenter() {
@@ -132,68 +143,53 @@ public final class ItemCommandEventSourceCD extends ComponentDescriptor {
             new ItemCommandSRItemPresenter(),
             // flow
             new FlowEventSourcePinPresenter() {
-            protected DesignComponent getComponentForAttachingPin() {
-                return getFormComponent(getComponent());
-            }
-            
-            protected String getDisplayName() {
-                DesignComponent command = getCommandComponent(getComponent());
-                InfoPresenter presenter = command.getPresenter(InfoPresenter.class);
-                return presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
-                
-            }
-            
-            protected String getOrder() {
-                return FlowItemCommandPinOrderPresenter.CATEGORY_ID;
-            }
-            
-            @Override
-            protected boolean canRename() {
-                DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
-                return command != null;
-            }
-            
-            @Override
-            protected String getRenameName() {
-                DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
-                return (String) command.readProperty(CommandCD.PROP_LABEL).getPrimitiveValue ();
-            }
-            
-            @Override
-            protected void setRenameName(String name) {
-                DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
-                command.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue(name));
-            }
-            
-            @Override
-            protected DesignEventFilter getEventFilter() {
-                return super.getEventFilter().addDescentFilter(getComponent(), ItemCommandEventSourceCD.PROP_COMMAND);
-            }
-        },
+                protected DesignComponent getComponentForAttachingPin() {
+                    return getFormComponent(getComponent());
+                }
+
+                protected String getDisplayName() {
+                    DesignComponent command = getCommandComponent(getComponent());
+                    InfoPresenter presenter = command.getPresenter(InfoPresenter.class);
+                    return presenter.getDisplayName(InfoPresenter.NameType.PRIMARY);
+
+                }
+
+                protected String getOrder() {
+                    return FlowItemCommandPinOrderPresenter.CATEGORY_ID;
+                }
+
+                @Override
+                protected boolean canRename() {
+                    DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
+                    return command != null;
+                }
+
+                @Override
+                protected String getRenameName() {
+                    DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
+                    return (String) command.readProperty(CommandCD.PROP_LABEL).getPrimitiveValue ();
+                }
+
+                @Override
+                protected void setRenameName(String name) {
+                    DesignComponent command = ItemCommandEventSourceCD.getCommandComponent(getComponent());
+                    command.writeProperty(CommandCD.PROP_LABEL, MidpTypes.createStringValue(name));
+                }
+
+                @Override
+                protected DesignEventFilter getEventFilter() {
+                    return super.getEventFilter().addDescentFilter(getComponent(), ItemCommandEventSourceCD.PROP_COMMAND);
+                }
+            },
             DeleteDependencyPresenter.createDependentOnPropertyPresenter(PROP_ITEM),
             DeleteDependencyPresenter.createDependentOnPropertyPresenter(PROP_COMMAND),
             new DeletePresenter() {
-            protected void delete() {
-                DesignComponent component = getComponent();
-                DesignComponent item = component.readProperty(PROP_ITEM).getComponent();
-                ArraySupport.remove(item, ItemCD.PROP_COMMANDS, component);
+                protected void delete() {
+                    DesignComponent component = getComponent();
+                    DesignComponent item = component.readProperty(PROP_ITEM).getComponent();
+                    ArraySupport.remove(item, ItemCD.PROP_COMMANDS, component);
+                }
             }
-        }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         );
     }
     
