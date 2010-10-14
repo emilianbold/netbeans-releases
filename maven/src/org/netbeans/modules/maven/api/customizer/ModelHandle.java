@@ -103,7 +103,7 @@ public final class ModelHandle {
     
     static class AccessorImpl extends CustomizerProviderImpl.ModelAccessor {
         
-         public ModelHandle createHandle(POMModel model, ProfilesModel prof,
+         public @Override ModelHandle createHandle(POMModel model, ProfilesModel prof,
                                         MavenProject proj, 
                                         Map<String, ActionToGoalMapping> mapp, 
                                         List<ModelHandle.Configuration> configs,
@@ -120,7 +120,6 @@ public final class ModelHandle {
     
     }
     
-    /** Creates a new instance of ModelHandle */
     private ModelHandle(POMModel mdl, ProfilesModel profile, MavenProject proj,
                         Map<String, ActionToGoalMapping> mappings,
                         List<Configuration> configs, Configuration active,
@@ -154,15 +153,6 @@ public final class ModelHandle {
         return profiles;
     }
     
-    /**
-     * warning: can update the model, for non-updating one for use in value getters
-     * use getNetbeansPublicProfile(false)
-     * @return
-     */
-    public Profile getNetbeansPublicProfile() {
-        return getNetbeansPublicProfile(true);
-    }
-    
     public Profile getNetbeansPublicProfile(boolean addIfNotPresent) {
         if (publicProfile == null) {
             List<Profile> lst = model.getProject().getProfiles();
@@ -192,14 +182,6 @@ public final class ModelHandle {
             return model.getFactory().createProfile();
         }
         return publicProfile;
-    }
-    /**
-     * warning: can update the model, for non-updating one for use in value getters
-     * use getNetbeansPrivateProfile(false)
-     * @return 
-     */
-    public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile() {
-        return getNetbeansPrivateProfile(true);
     }
     
     public org.netbeans.modules.maven.model.profile.Profile getNetbeansPrivateProfile(boolean addIfNotPresent) {

@@ -331,7 +331,7 @@ public class POHImpl extends ProjectOpenedHook {
                         model.getProject().setProperties(props);
                     }
                     props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile();
+                    org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile(true);
                     org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
                     if (privs == null) {
                         privs = handle.getProfileModel().getFactory().createProperties();

@@ -698,10 +698,10 @@ public class RunJarPanel extends javax.swing.JPanel {
             jarPlugin.setArtifactId(ARTFACTID_JAR); 
             jarPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
             jarPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_JAR));
-            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
+            BuildBase base = handle.getNetbeansPublicProfile(true).getBuildBase();
             if (base == null) {
                 base = handle.getPOMModel().getFactory().createBuildBase();
-                handle.getNetbeansPublicProfile().setBuildBase(base);
+                handle.getNetbeansPublicProfile(true).setBuildBase(base);
             }
             base.addPlugin(jarPlugin);
         }
@@ -724,10 +724,10 @@ public class RunJarPanel extends javax.swing.JPanel {
             assPlugin.setArtifactId(ARITFACTID_ASSEMBLY); 
             assPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
             assPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_ASSEMBLY));
-            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
+            BuildBase base = handle.getNetbeansPublicProfile(true).getBuildBase();
             if (base == null) {
                 base = handle.getPOMModel().getFactory().createBuildBase();
-                handle.getNetbeansPublicProfile().setBuildBase(base);
+                handle.getNetbeansPublicProfile(true).setBuildBase(base);
             }
             base.addPlugin(assPlugin);
         }

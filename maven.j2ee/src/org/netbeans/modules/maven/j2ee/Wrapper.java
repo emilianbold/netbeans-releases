@@ -242,7 +242,7 @@ public class Wrapper {
                         props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                         handle.markAsModified(handle.getPOMModel());
                     }
-                    privateProf = handle.getNetbeansPrivateProfile();
+                    privateProf = handle.getNetbeansPrivateProfile(true);
                     org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
                     if (privs == null) {
                         privs = handle.getProfileModel().getFactory().createProperties();
