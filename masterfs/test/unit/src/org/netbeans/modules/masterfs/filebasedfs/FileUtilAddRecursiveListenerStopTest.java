@@ -106,6 +106,9 @@ implements Callable<Boolean>, FileChangeListener {
         assertEquals("One event delivered: " + events, 1, events.size());
     }
 
+    /** This test fails randomly in cases the folders get ordered in a way that
+     the "7" folder (used in the test) is the first folder in the list of known
+     file objects. */
     public void testAddListenerCanStop() throws IOException {
         cnt = 2;
         CharSequence log = Log.enable("org.netbeans.modules.masterfs", Level.INFO);
@@ -117,7 +120,7 @@ implements Callable<Boolean>, FileChangeListener {
             fail("There shall be info about interruption:\n" + log);
         }
 
-        FileObject fourth = root.getFileObject("5");
+        FileObject fourth = root.getFileObject("7");
         assertNotNull("Folder found", fourth);
         LOG.info("About to create a file");
         FileObject res = fourth.createData("Ahoj");
