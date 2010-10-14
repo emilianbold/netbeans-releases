@@ -54,8 +54,6 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.Build;
-import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Project;
@@ -78,6 +76,7 @@ import org.openide.util.NbBundle;
 })
 public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
 
+    private static final String MASTER_PROPERTY = "netbeans.run.params"; // NOI18N
     private static final String PROPERTY = "netbeans.run.params.ide"; // NOI18N
     private static final String ARTIFACT_ID = "nbm-maven-plugin";
     private static final String GROUP_ID = "org.codehaus.mojo";
@@ -103,6 +102,9 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
                 break;
             }
         }
+        if (text == null) {
+            text = prj.getProperties().getProperty(MASTER_PROPERTY);
+        }
         if (text == null || !text.contains(eval)) {
             missingInterpolation(prj.getFile());
             return false;
@@ -126,31 +128,14 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
                 if (properties.getProperty(PROPERTY) == null) {
                     properties.setProperty(PROPERTY, "");
                 }
-                Build build = project.getBuild();
-                if (build == null) {
-                    build = factory.createBuild();
-                    project.setBuild(build);
-                }
-                org.netbeans.modules.maven.model.pom.Plugin plugin = build.findPluginById(GROUP_ID, ARTIFACT_ID);
-                if (plugin == null) {
-                    plugin = factory.createPlugin();
-                    plugin.setGroupId(GROUP_ID);
-                    plugin.setArtifactId(ARTIFACT_ID);
-                    build.addPlugin(plugin);
-                }
-                Configuration configuration = plugin.getConfiguration();
-                if (configuration == null) {
-                    configuration = factory.createConfiguration();
-                    plugin.setConfiguration(configuration);
-                }
-                String args = configuration.getSimpleParameter(ADDITIONAL_ARGUMENTS);
+                String args = properties.getProperty(MASTER_PROPERTY);
                 String ref = "${" + PROPERTY + "}"; // NOI18N
                 if (args == null) {
                     args = ref;
                 } else if (!args.contains(ref)) {
                     args += " " + ref;
                 }
-                configuration.setSimpleParameter(ADDITIONAL_ARGUMENTS, args);
+                properties.setProperty(MASTER_PROPERTY, args);
             }
         }));
     }
