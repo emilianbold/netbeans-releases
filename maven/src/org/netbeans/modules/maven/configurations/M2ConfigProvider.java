@@ -53,6 +53,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -76,9 +78,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private NbMavenProjectImpl project;
-    private List<M2Configuration> profiles = null;
-    private List<M2Configuration> shared = null;
-    private List<M2Configuration> nonshared = null;
+    private SortedSet<M2Configuration> profiles = null;
+    private SortedSet<M2Configuration> shared = null;
+    private SortedSet<M2Configuration> nonshared = null;
     private final M2Configuration DEFAULT;
     private M2Configuration active;
     private String initialActive;
@@ -171,7 +173,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             //read from auxconf
             nonshared = readConfiguration(false);
         }
-        ArrayList<M2Configuration> toRet = new ArrayList<M2Configuration>();
+        Collection<M2Configuration> toRet = new TreeSet<M2Configuration>();
         toRet.add(DEFAULT);
         toRet.addAll(shared);
         toRet.addAll(nonshared);
@@ -264,8 +266,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     public synchronized void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
         writeAuxiliaryData(aux, true, shared);
         writeAuxiliaryData(aux, false, nonshared);
-        this.shared = shared;
-        this.nonshared = nonshared;
+        this.shared = new TreeSet<M2Configuration>(shared);
+        this.nonshared = new TreeSet<M2Configuration>(nonshared);
         //#174637
         if (active != null) {
             if (shared.contains(active)) {
@@ -299,9 +301,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
     }
 
-    private List<M2Configuration> createProfilesList() {
+    private SortedSet<M2Configuration> createProfilesList() {
         List<String> profs = profileHandler.getAllProfiles();
-        List<M2Configuration> config = new ArrayList<M2Configuration>();
+        SortedSet<M2Configuration> config = new TreeSet<M2Configuration>();
 //        config.add(DEFAULT);
         for (String prof : profs) {
             M2Configuration c = new M2Configuration(prof, project);
@@ -331,12 +333,12 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
     }
     
-    private List<M2Configuration> readConfiguration(boolean shared) {
+    private SortedSet<M2Configuration> readConfiguration(boolean shared) {
         Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
         if (el != null) {
             NodeList list = el.getElementsByTagNameNS(NAMESPACE, CONFIG);
             if (list.getLength() > 0) {
-                List<M2Configuration> toRet = new ArrayList<M2Configuration>();
+                SortedSet<M2Configuration> toRet = new TreeSet<M2Configuration>();
                 int len = list.getLength();
                 for (int i = 0; i < len; i++) {
                     Element enEl = (Element)list.item(i);
@@ -367,7 +369,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 return toRet;
             }
         }
-        return new ArrayList<M2Configuration>();
+        return new TreeSet<M2Configuration>();
     }
 
     public static void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value) {
