@@ -666,40 +666,31 @@ public class NbModuleSuite {
         private void runInRuntimeContainer(TestResult result) throws Exception {
             System.getProperties().remove("netbeans.dirs");
             File platform = findPlatform();
-            File[] boot = new File(platform, "lib").listFiles();
             List<URL> bootCP = new ArrayList<URL>();
-            for (int i = 0; i < boot.length; i++) {
-                URL u = boot[i].toURI().toURL();
-                if (u.toExternalForm().endsWith(".jar")) {
-                    bootCP.add(u);
-                }
-            }
+            List<File> dirs = new ArrayList<File>();
+            dirs.add(new File(platform, "lib"));
             
             File jdkHome = new File(System.getProperty("java.home"));
             if (!"Mac OS X".equals(System.getProperty("os.name"))) {
                 jdkHome = jdkHome.getParentFile();
             }
-            File jdkLib = new File(jdkHome, "lib");
-            if (jdkLib.isDirectory()) {
-                for (File jar : jdkLib.listFiles()) {
-                    if (jar.getName().endsWith(".jar")) {
-                        bootCP.add(jar.toURI().toURL());
-                    }
-                }
-            }
+            dirs.add(new File(jdkHome, "lib"));
 
             //in case we're running code coverage, load the coverage libraries
-            if (System.getProperty("code.coverage.classpath") != null)
-            {
-                File coveragePath = new File(System.getProperty("code.coverage.classpath"));
-                if (coveragePath.isDirectory()) {
-                    for (File jar : coveragePath.listFiles()) {
+            if (System.getProperty("code.coverage.classpath") != null) {
+                dirs.add(new File(System.getProperty("code.coverage.classpath")));
+            }
+
+            for (File dir: dirs) {
+                File[] jars = dir.listFiles();
+                if (jars != null) {
+                    for (File jar : jars) {
                         if (jar.getName().endsWith(".jar")) {
                             bootCP.add(jar.toURI().toURL());
                         }
                     }
                 }
-            }            
+            }
             
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
@@ -758,7 +749,7 @@ public class NbModuleSuite {
             for (Item item : config.tests) {
                 allClasses.add(item.clazz);
             }
-            preparePatches(System.getProperty("java.class.path"), System.getProperties(), allClasses.toArray(new Class[0]));
+            preparePatches(System.getProperty("java.class.path"), System.getProperties(), allClasses.toArray(new Class<?>[0]));
             
             List<String> args = new ArrayList<String>();
             args.add("--nosplash");
@@ -818,8 +809,7 @@ public class NbModuleSuite {
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
                 exit.invoke(life);
                 SwingUtilities.invokeAndWait(new Runnable() {
-                    public void run() {
-                    }
+                    public @Override void run() {}
                 });
             }
         }
@@ -835,7 +825,7 @@ public class NbModuleSuite {
                 try {
                     File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                     File harness = nbjunit.getParentFile().getParentFile();
-                    Assert.assertEquals("NbJUnit is in harness", "harness", harness.getName());
+                    Assert.assertEquals(nbjunit + " is in a folder named 'harness'", "harness", harness.getName());
                     TreeSet<File> sorted = new TreeSet<File>();
                     for (File p : harness.getParentFile().listFiles()) {
                         if (p.getName().startsWith("platform")) {
@@ -953,7 +943,7 @@ public class NbModuleSuite {
         }
 
         
-        static void preparePatches(String path, Properties prop, Class... classes) throws URISyntaxException {
+        static void preparePatches(String path, Properties prop, Class<?>... classes) throws URISyntaxException {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
             StringBuilder sb = new StringBuilder();
             String sep = "";
@@ -967,7 +957,7 @@ public class NbModuleSuite {
                     sep = File.pathSeparator;
                 }
             }
-            for (Class c : classes) {
+            for (Class<?> c : classes) {
                 URL test = c.getProtectionDomain().getCodeSource().getLocation();
                 Assert.assertNotNull("URL found for " + c, test);
                 sb.append(sep).append(new File(test.toURI()).getPath());
@@ -1037,7 +1027,7 @@ public class NbModuleSuite {
                 return super.findResources(name);
             }
 
-            private final boolean isUnit(String res) {
+            private boolean isUnit(String res) {
                 if (res.startsWith("junit")) {
                     return true;
                 }
@@ -1132,7 +1122,7 @@ public class NbModuleSuite {
                         String out = xml.substring(0, matcherEnabled.start(1)) + (enable ? "true" : "false") + xml.substring(matcherEnabled.end(1));
                         writeModule(target, out);
                     } catch (IllegalStateException ex) {
-                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                        throw new IOException("Unparsable:\n" + xml, ex);
                     }
                 }
             }
@@ -1146,7 +1136,7 @@ public class NbModuleSuite {
                     try {
                         writeModule(target, out);
                     } catch (IllegalStateException ex) {
-                        throw (IOException) new IOException("Unparsable:\n" + xml).initCause(ex);
+                        throw new IOException("Unparsable:\n" + xml, ex);
                     }
                 }
             }
@@ -1159,7 +1149,7 @@ public class NbModuleSuite {
                 if (previous.equals(xml)) {
                     return;
                 }
-                LOG.fine("rewrite module file: " + file);
+                LOG.log(Level.FINE, "rewrite module file: {0}", file);
                 charDump(previous);
                 LOG.fine("new----");
                 charDump(xml);
