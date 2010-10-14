@@ -502,7 +502,7 @@ public final class CndFileUtils {
         }
 
         private File clearCachesAboutFile(FileEvent fe) {
-            return clearCachesAboutFile(FileUtil.toFile(fe.getFile()), true);
+            return clearCachesAboutFile(CndFileUtils.toFile(fe.getFile()), true);
         }
         
         private File clearCachesAboutFile(File f, boolean withParent) {

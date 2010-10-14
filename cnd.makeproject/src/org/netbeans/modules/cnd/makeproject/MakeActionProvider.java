@@ -116,6 +116,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -716,7 +717,7 @@ public final class MakeActionProvider implements ActionProvider {
         // FIXUP: not sure this is used...
         if (conf.isMakefileConfiguration()) {
             DataObject d = context.lookup(DataObject.class);
-            String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
+            String path = CndFileUtils.toFile(d.getPrimaryFile()).getPath();
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
@@ -1099,7 +1100,7 @@ public final class MakeActionProvider implements ActionProvider {
             try {
                 DataObject dao = node.getCookie(DataObject.class);
                 if (dao != null) {
-                    File file = FileUtil.toFile(dao.getPrimaryFile());
+                    File file = CndFileUtils.toFile(dao.getPrimaryFile());
                     item = getProjectDescriptor().findItemByFile(file);
                 }
             } catch (NullPointerException ex) {

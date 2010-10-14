@@ -64,11 +64,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -1024,7 +1024,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         try {
             DataFolder targetFolder = getTemplateWizard().getTargetFolder();
             FileObject fo = targetFolder.getPrimaryFile();
-            fullFolderName = FileUtil.toFile(fo).getPath();
+            fullFolderName = CndFileUtils.toFile(fo).getPath();
         } catch (IOException ioe) {
             // FIXUP
         }

@@ -72,7 +72,7 @@ public final class DirectoryAttributes {
             br = new BufferedReader(new FileReader(file));
             // check version
             String line = br.readLine();
-            String prefix = "VERSION=";
+            String prefix = "VERSION="; // NOI18N
             if (line == null || ! line.startsWith(prefix)) {
                 throw wrongFormatException();
             }
@@ -80,7 +80,7 @@ public final class DirectoryAttributes {
             try {
                 version = Integer.parseInt(line.substring(prefix.length()));
             } catch (NumberFormatException nfe) {
-                throw new IOException("wrong version format " + file.getAbsolutePath(), nfe);
+                throw new IOException("wrong version format " + file.getAbsolutePath(), nfe); // NOI18N
             }
             if (version > VERSION) {
                 throw new IOException("attributes file version " + version +  //NNOI18N

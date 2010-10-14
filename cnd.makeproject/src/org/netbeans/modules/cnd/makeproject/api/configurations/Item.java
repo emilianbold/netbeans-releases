@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
@@ -259,7 +258,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             // File has been moved
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
-                String newPath = FileUtil.toFile(fo).getPath();
+                String newPath = CndFileUtils.toFile(fo).getPath();
                 if (!CndPathUtilitities.isPathAbsolute(getPath())) {
                     newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
                 }

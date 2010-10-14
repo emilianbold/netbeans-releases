@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -75,7 +76,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.IOProvider;
@@ -151,7 +151,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
         
-        File shellFile = FileUtil.toFile(fileObject);
+        File shellFile = CndFileUtils.toFile(fileObject);
         // Build directory
         String bdir = bes.getRunDirectory();
         String buildDir = getAbsoluteBuildDir(bdir, shellFile).getAbsolutePath();

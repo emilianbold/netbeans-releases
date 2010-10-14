@@ -476,7 +476,7 @@ class RemoteSyncActions {
         if (dataObject != null) {
             FileObject fo = dataObject.getPrimaryFile();
             if (fo != null) {
-                File file = FileUtil.toFile(fo);
+                File file = FileUtil.toFile(fo); // XXX:fullRemote
                 if (!file.isDirectory()) {
                     files.add(file);
                 }
