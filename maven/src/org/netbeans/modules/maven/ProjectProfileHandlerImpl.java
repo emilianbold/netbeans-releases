@@ -39,27 +39,18 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.maven;
 
-import org.codehaus.plexus.util.IOUtil;
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
-import org.apache.maven.profiles.ProfilesRoot;
-import org.apache.maven.profiles.io.xpp3.ProfilesXpp3Reader;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.ProjectBuildingException;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
@@ -69,6 +60,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbCollections;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -81,7 +73,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
 
     private static final String PROFILES = "profiles";//NOI18N
     private static final String ACTIVEPROFILES = "activeProfiles";//NOI18N
-    private static final String SEPERATOR = " ";//NOI18N
+    private static final String SEPARATOR = " ";//NOI18N
     private static final String NAMESPACE = null;//FIXME add propper namespase
     private List<String> privateProfiles = new ArrayList<String>();
     private List<String> sharedProfiles = new ArrayList<String>();
@@ -124,21 +116,20 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
 //        return lineage;
 //    }
 
-    public List<String> getAllProfiles() {
+    public @Override List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
         //pom+profiles.xml profiles come first
         extractProfiles(profileIds);
         //Add settings file Properties
-        profileIds.addAll(MavenSettingsSingleton.getInstance().createUserSettingsModel().
-                getProfilesAsMap().keySet());
+        profileIds.addAll(NbCollections.checkedMapByFilter(MavenSettingsSingleton.getInstance().createUserSettingsModel().getProfilesAsMap(), String.class, org.apache.maven.settings.Profile.class, true).keySet());
 
         return new ArrayList<String>(profileIds);
     }
 
-    public List<String> getActiveProfiles(boolean shared) {
+    public @Override List<String> getActiveProfiles(boolean shared) {
        return new ArrayList<String>(shared ? sharedProfiles : privateProfiles);
     }
-    public List<String> getMergedActiveProfiles(boolean shared) {
+    public @Override List<String> getMergedActiveProfiles(boolean shared) {
         Set<String> profileIds = new HashSet<String>();
         MavenProject mavenProject = nmp.getOriginalMavenProject();
         List<Profile> profiles = mavenProject.getActiveProfiles();
@@ -171,7 +162,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         return new ArrayList<String>(profileIds);
     }
 
-    public void disableProfile(String id, boolean shared) {
+    public @Override void disableProfile(String id, boolean shared) {
         Element element = ac.getConfigurationFragment(PROFILES, NAMESPACE, shared);
         if (element == null) {
 
@@ -183,15 +174,15 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         String activeProfiles = element.getAttributeNS(NAMESPACE, ACTIVEPROFILES);
 
         if (activeProfiles != null && activeProfiles.length() > 0) {
-            StringTokenizer tokenizer = new StringTokenizer(activeProfiles, SEPERATOR);
+            StringTokenizer tokenizer = new StringTokenizer(activeProfiles, SEPARATOR);
             Set<String> set = new HashSet<String>(tokenizer.countTokens());
             while (tokenizer.hasMoreTokens()) {
                 set.add(tokenizer.nextToken());
             }
             set.remove(id);
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (String profle : set) {
-                buffer.append(profle).append(SEPERATOR);
+                buffer.append(profle).append(SEPARATOR);
             }
             element.setAttributeNS(NAMESPACE, ACTIVEPROFILES, buffer.toString().trim());
         }
@@ -204,7 +195,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         }
     }
 
-    public void enableProfile(String id, boolean shared) {
+    public @Override void enableProfile(String id, boolean shared) {
         Element element = ac.getConfigurationFragment(PROFILES, NAMESPACE, shared);
         if (element == null) {
 
@@ -216,19 +207,22 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
 
 
         String activeProfiles = element.getAttributeNS(NAMESPACE, ACTIVEPROFILES);
-        element.setAttributeNS(NAMESPACE, ACTIVEPROFILES, activeProfiles + SEPERATOR + id);
+        element.setAttributeNS(NAMESPACE, ACTIVEPROFILES, activeProfiles + SEPARATOR + id);
         ac.putConfigurationFragment(element, shared);
-        if(shared){
-            if(!sharedProfiles.contains(id))
-             sharedProfiles.add(id);
-        }else{
-            if(!privateProfiles.contains(id))
-             privateProfiles.add(id);
+        if (shared) {
+            if (!sharedProfiles.contains(id)) {
+                sharedProfiles.add(id);
+            }
+        } else {
+            if (!privateProfiles.contains(id)) {
+                privateProfiles.add(id);
+            }
         }
     }
 
     private void extractProfiles(Set<String> profileIds) {
         extractProfilesFromModelLineage(profileIds);
+        /* MNG-4060: no longer supported
         File basedir = FileUtil.normalizeFile(nmp.getPOMFile().getParentFile());
         FileObject fileObject = FileUtil.toFileObject(basedir);
         //read from profiles.xml
@@ -253,6 +247,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
                 }
             }
         }
+         */
     }
     
     private void extractProfilesFromModelLineage(Set<String> profileIds) {
@@ -303,7 +298,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
             String activeProfiles = element.getAttributeNS(NAMESPACE, ACTIVEPROFILES);
 
             if (activeProfiles != null && activeProfiles.length() > 0) {
-                StringTokenizer tokenizer = new StringTokenizer(activeProfiles, SEPERATOR);
+                StringTokenizer tokenizer = new StringTokenizer(activeProfiles, SEPARATOR);
 
                 while (tokenizer.hasMoreTokens()) {
                     prifileides.add(tokenizer.nextToken());
@@ -313,7 +308,4 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
         return new ArrayList<String>(prifileides);
     }
 
-
-
- 
 }
