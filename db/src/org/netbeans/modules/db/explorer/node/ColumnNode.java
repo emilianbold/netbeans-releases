@@ -148,7 +148,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                                     if (pkey != null) {
                                         Collection<Column> columns = pkey.getColumns();
                                         for (Column c : columns) {
-                                            if (c.getName().equals(column.getName())) {
+                                            if (c.getName() != null && c.getName().equals(column.getName())) {
                                                 found = true;
                                                 icon = PRIMARY;
                                                 description = TOOLTIP_PRIMARY;
