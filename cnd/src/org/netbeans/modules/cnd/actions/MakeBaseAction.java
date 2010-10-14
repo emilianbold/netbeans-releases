@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -73,7 +74,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.IOProvider;
@@ -137,7 +137,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         }
         DataObject dataObject = node.getCookie(DataObject.class);
         final FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = FileUtil.toFile(fileObject);
+        File makefile = CndFileUtils.toFile(fileObject);
         // Build directory
         String buildDir = getBuildDirectory(node,PredefinedToolKind.MakeTool);
         // Executable
