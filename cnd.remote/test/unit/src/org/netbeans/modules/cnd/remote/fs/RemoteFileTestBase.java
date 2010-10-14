@@ -44,9 +44,11 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
@@ -83,6 +85,18 @@ public class RemoteFileTestBase extends RemoteTestBase {
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
         assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         return readFile(fo);
+    }
+
+    protected void writeFile(FileObject fo, CharSequence content) throws Exception {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
+            bw.append(content);
+        } finally {
+            if (bw != null) {
+                bw.close();
+            }
+        }
     }
 
     protected CharSequence readFile(FileObject fo) throws Exception {
