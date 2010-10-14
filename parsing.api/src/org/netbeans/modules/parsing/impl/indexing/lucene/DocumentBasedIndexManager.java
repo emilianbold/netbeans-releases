@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 
@@ -54,20 +53,14 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Tomas Zezula
  */
-public final class LuceneIndexManager {
+public final class DocumentBasedIndexManager {
 
-    private static LuceneIndexManager instance;
-    private volatile boolean invalid;
-    private final ReentrantReadWriteLock lock  = new ReentrantReadWriteLock();
+    private static DocumentBasedIndexManager instance;
 
-    private final Map<URL, LuceneIndex> indexes = new HashMap<URL, LuceneIndex> ();
+    private final Map<URL, DocumentBasedIndex> indexes = new HashMap<URL, DocumentBasedIndex> ();
 
-    private LuceneIndexManager() {}
+    private DocumentBasedIndexManager() {}
 
-
-    public static interface Action<R> {
-        public R run () throws IOException;
-    }
 
     public static enum Mode {
         OPENED,
@@ -76,55 +69,26 @@ public final class LuceneIndexManager {
     }
 
 
-    public <R> R writeAccess (final Action<R> action) throws IOException {
-        assert action != null;
-        lock.writeLock().lock();
-        try {
-            return action.run();
-        }
-        finally {
-            lock.writeLock().unlock();
-        }
-    }
-
-    public <R> R readAccess (final Action<R> action) throws IOException {
-        assert action != null;
-        lock.readLock().lock();
-        try {
-            return action.run();
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
-
-    boolean holdsWriteLock () {
-        return lock.isWriteLockedByCurrentThread();
-    }
-
-
-    public static synchronized LuceneIndexManager getDefault () {
+    public static synchronized DocumentBasedIndexManager getDefault () {
         if (instance == null) {
-            instance = new LuceneIndexManager();
+            instance = new DocumentBasedIndexManager();
         }
         return instance;
     }
 
-    public synchronized LuceneIndex getIndex (final URL root, final Mode mode) throws IOException {
+    public synchronized DocumentBasedIndex getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
-        if (invalid) {
-            return null;
-        }
-        LuceneIndex li = indexes.get(root);
+        DocumentBasedIndex li = indexes.get(root);
         if (li == null) {
             switch (mode) {
                 case CREATE:
-                    li = new LuceneIndex(root);
+                    li = new DocumentBasedIndex(root);
                     indexes.put(root,li);
                     break;
                 case IF_EXIST:
                     final FileObject fo = URLMapper.findFileObject(root);
                     if (fo != null && fo.isFolder() && fo.getChildren(false).hasMoreElements()) {
-                        li = new LuceneIndex(root);
+                        li = new DocumentBasedIndex(root);
                         indexes.put(root,li);
                     }
                     break;

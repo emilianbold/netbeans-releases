@@ -50,6 +50,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -85,7 +86,7 @@ public class SourcePathTest extends NbTestCase {
         final ClassPath sp2 = SourcePath.sources(base, false);
         assertTrue (sp2.entries().isEmpty());
         
-        ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {
                 ClassIndexManager.getDefault().createUsagesQuery(base.entries().get(0).getURL(), true);
                 return null;
@@ -93,7 +94,7 @@ public class SourcePathTest extends NbTestCase {
         });
         assertEquals(1,sp2.entries().size());
         assertEquals(base.entries().get(0).getURL(), sp2.entries().get(0).getURL());
-        ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {
                 ClassIndexManager.getDefault().createUsagesQuery(base.entries().get(1).getURL(), true);
                 return null;

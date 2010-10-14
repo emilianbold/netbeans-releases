@@ -96,6 +96,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -149,7 +150,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     splitSources(files,javaSources),
                     context.getRootURI());
 
-            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
@@ -315,7 +316,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 JavaIndex.LOG.fine("Ignoring request with no root"); //NOI18N
                 return;
             }
-            ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
                 public Void run() throws IOException, InterruptedException {
                     try {
                         final JavaParsingContext javaContext = new JavaParsingContext(context);
@@ -755,9 +756,9 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             try {
-                boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
                     public Boolean run() throws IOException, InterruptedException {
-                        return ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Boolean>() {
+                        return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
                             public Boolean run() throws IOException, InterruptedException {
                                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
                                 if (uq == null) {
@@ -839,7 +840,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassIndexManager cim = ClassIndexManager.getDefault();
             final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
-                cim.prepareWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                cim.prepareWriteLock(new IndexManager.Action<Void>() {
                     public Void run() throws IOException, InterruptedException {
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
