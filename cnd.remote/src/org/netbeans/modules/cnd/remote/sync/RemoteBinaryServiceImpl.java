@@ -166,6 +166,8 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                             return true;
                         }
                     }));
+                    File file = new File(localPath);
+                    lastResult.setTimeStamp(""+file.lastModified()); // NOI18N
                 }
             } else {
                 result = syncImpl();
@@ -254,8 +256,10 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             });
 
             RequestProcessor.getDefault().post(task);
+            RemoteBinaryResult remoteBinaryResult = new RemoteBinaryResult(localFile.getAbsolutePath(), task);
+            remoteBinaryResult.setTimeStamp(newTimestamp);
 
-            return new RemoteBinaryResult(localFile.getAbsolutePath(), task);
+            return remoteBinaryResult;
         }
 
         private String getTimestamp() {
