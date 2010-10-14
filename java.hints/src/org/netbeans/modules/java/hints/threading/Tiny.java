@@ -369,8 +369,10 @@ public class Tiny {
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
-                        constraints=@Constraint(variable="$to", type="long"),
-                        constraints=@Constraint(variable="$nanos", type="int"))
+                        constraints={
+                            @Constraint(variable="$to", type="long"),
+                            @Constraint(variable="$nanos", type="int")
+                        })
     })
     public static ErrorDescription sleepInSync(HintContext ctx) {
         if (!isSynced(ctx, ctx.getPath())) {
@@ -387,8 +389,10 @@ public class Tiny {
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
-                        constraints=@Constraint(variable="$to", type="long"),
-                        constraints=@Constraint(variable="$nanos", type="int"))
+                        constraints={
+                            @Constraint(variable="$to", type="long"),
+                            @Constraint(variable="$nanos", type="int")
+                        })
     })
     public static ErrorDescription sleepInLoop(HintContext ctx) {
         if (findLoop(ctx.getPath()) == null) {
