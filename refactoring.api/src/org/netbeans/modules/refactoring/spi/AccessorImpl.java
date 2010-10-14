@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
+import org.netbeans.modules.refactoring.api.impl.APIAccessor;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 
@@ -74,5 +75,15 @@ final class AccessorImpl extends SPIAccessor {
     
     public String getNewFileContent(SimpleRefactoringElementImplementation impl) {
         return impl.getNewFileContent();
+    }
+
+    @Override
+    public boolean hasChangesInGuardedBlocks(RefactoringElementsBag bag) {
+        return bag.hasGuarded;
+    }
+
+    @Override
+    public boolean hasChangesInReadOnlyFiles(RefactoringElementsBag bag) {
+        return bag.hasReadOnly;
     }
 }

@@ -69,7 +69,8 @@ import org.openide.util.*;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
-import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
+import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
+        import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
 import org.openide.awt.Mnemonics;
 
 
@@ -378,8 +379,24 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                 //inputState != currentState means, that panels changed and dialog will not be closed
                 LOGGER.log(Level.FINEST, "refactor - inputState={0}, currentState={1}", new Object[] {inputState, currentState});
                 if (inputState == currentState) {
+                    final RefactoringSession session = getResult();
+
+                    if (session!=null && !previewAll && currentState != POST_CHECK && (APIAccessor.DEFAULT.hasChangesInGuardedBlocks(session) || APIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session))) {
+                        currentState = POST_CHECK;
+                        SwingUtilities.invokeLater(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                placeErrorPanel(new Problem(false, NbBundle.getMessage(ParametersPanel.class, 
+                                        APIAccessor.DEFAULT.hasChangesInReadOnlyFiles(session) ?
+                                            "LBL_CannotRefactorReadOnlyFile":
+                                            "LBL_CannotRefactorGuardedBlock")));
+                            }
+                        });
+                        return;
+                    }
+
                     try {
-                        RefactoringSession session = getResult();
                         if (!previewAll && session != null) {
                             UndoWatcher.watch(session, ParametersPanel.this);
                             session.addProgressListener(ParametersPanel.this);
