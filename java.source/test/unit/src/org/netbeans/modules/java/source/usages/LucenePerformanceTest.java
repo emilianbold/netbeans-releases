@@ -65,9 +65,12 @@ import java.util.TreeSet;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.FSDirectory;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.Queries;
+import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 
 /**
  *
@@ -96,7 +99,7 @@ public class LucenePerformanceTest extends NbTestCase {
     public void testPerformance () throws Exception {
         final File indexDir = new File (this.getWorkDir(),"index");
         indexDir.mkdirs();
-        final Index index = LuceneIndex.create (indexDir);
+        final Index index = IndexManager.createIndex(indexDir, DocumentUtil.createAnalyzer());
         List<Pair<Pair<String,String>,Object[]>> data = prepareData(20000,1000,50);
 //        Map<String,List<String>> data = loadData(new File ("/tmp/data"));
 //        storeData(new File ("/tmp/data"),data);
@@ -112,8 +115,8 @@ public class LucenePerformanceTest extends NbTestCase {
         
         Set<String> result = new HashSet<String>();
         startTime = System.currentTimeMillis();
-        final Pair<ResultConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
-        index.queryTerms(result, filter.second, filter.first);
+        final Pair<StoppableConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter("", true);
+        index.queryTerms(result, filter.second, filter.first, null);
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Packages: " + delta);
@@ -128,7 +131,8 @@ public class LucenePerformanceTest extends NbTestCase {
                 result2,
                 DocumentUtil.elementHandleConvertor(),
                 DocumentUtil.declaredTypesFieldSelector(),
-                QueryUtil.createQuery(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"",NameKind.PREFIX));
+                null,
+                Queries.createQuery(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,"",Queries.QueryKind.PREFIX));
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("All classes: " + delta);
@@ -147,7 +151,8 @@ public class LucenePerformanceTest extends NbTestCase {
                 result2,
                 DocumentUtil.elementHandleConvertor(),
                 DocumentUtil.declaredTypesFieldSelector(),
-                QueryUtil.createQuery(Pair.of(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME),"Class7",NameKind.PREFIX));
+                null,
+                Queries.createQuery(DocumentUtil.FIELD_SIMPLE_NAME,DocumentUtil.FIELD_CASE_INSENSITIVE_NAME,"Class7",Queries.QueryKind.PREFIX));
         endTime = System.currentTimeMillis();
         delta = (endTime-startTime);
         System.out.println("Prefix classes: " + delta + " size: " + result.size());
