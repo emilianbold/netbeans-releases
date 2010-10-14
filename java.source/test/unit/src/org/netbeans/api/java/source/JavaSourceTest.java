@@ -1376,8 +1376,9 @@ public class JavaSourceTest extends NbTestCase {
     }
     
     public void testIndexCancel2() throws Exception {
+        final IndexFactory oldFactory = IndexManagerTestUtilities.getIndexFactory();
         final TestIndexFactory factory = new TestIndexFactory();
-        PersistentClassIndex.setIndexFactory(factory);
+        IndexManagerTestUtilities.setIndexFactory(factory);
         try {
             FileObject test = createTestFile ("Test1");
             final ClassPath bootPath = createBootPath ();
@@ -1452,7 +1453,7 @@ public class JavaSourceTest extends NbTestCase {
                 regs.unregister(ClassPath.SOURCE, new ClassPath[]{sourcePath});
             }
         } finally {
-            PersistentClassIndex.setIndexFactory(null);
+            IndexManagerTestUtilities.setIndexFactory(oldFactory);
         }
     }
 
