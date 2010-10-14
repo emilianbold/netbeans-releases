@@ -63,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
@@ -95,6 +96,8 @@ public class WebProjectRestSupport extends WebRestSupport {
     String[] classPathTypes = new String[] {
                 ClassPath.COMPILE
             };
+
+    private ServerLibrary serverJerseyLibrary;
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebProjectRestSupport(Project project) {
@@ -175,7 +178,8 @@ public class WebProjectRestSupport extends WebRestSupport {
         WebRestSupport.RestConfig restConfig = null;
         if (!isRestSupportOn()) {
             needsRefresh = true;
-            restConfig = setApplicationConfigProperty(RestUtils.isAnnotationConfigAvailable(project));
+            restConfig = setApplicationConfigProperty(
+                    RestUtils.isAnnotationConfigAvailable(project));
         }
 
         extendBuildScripts();
@@ -202,13 +206,20 @@ public class WebProjectRestSupport extends WebRestSupport {
             }
         }
 
-        if (restConfig != null && restConfig.isJerseyLibSelected()) {
-            if (hasServerJerseeyLibrary) {
-                if (!serverLibraryAdded) {
-                    addServerJerseyLibrary();
+        boolean added = false;
+        if (restConfig != null) {
+            if (restConfig.isServerJerseyLibSelected()) {
+                added = addDeployableServerJerseyLibrary();
+            }
+            if ( !added || restConfig.isJerseyLibSelected()) {
+                if (hasServerJerseeyLibrary) {
+                    if (!serverLibraryAdded) {
+                        addServerJerseyLibrary();
+                    }
                 }
-            } else {
-                addIdeJerseyLibrary(true, restConfigType);
+                else {
+                    addIdeJerseyLibrary(true, restConfigType);
+                }
             }
         }
 

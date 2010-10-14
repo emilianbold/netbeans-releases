@@ -46,18 +46,33 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
+import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -80,6 +95,7 @@ import org.openide.util.NbBundle;
  */
 public abstract class WebRestSupport extends RestSupport {
 
+    private static final String JERSEY = "jersey";                      //NOI18N
     public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
     public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
     public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
@@ -220,6 +236,65 @@ public abstract class WebRestSupport extends RestSupport {
             return getRestServletAdaptor(getWebApp()) != null;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+            return false;
+        }
+    }
+    
+    public ServerLibrary getServerJerseyLibrary(){
+        try {
+            J2eeModuleProvider provider = project.getLookup().lookup(
+                    J2eeModuleProvider.class);
+            if ( provider == null ){
+                return null;
+            }
+            String id = provider.getServerInstanceID();
+            if ( id == null ){
+                return null;
+            }
+            ServerInstance serverInstance =Deployment.getDefault().getServerInstance(id);
+            if ( serverInstance == null ){
+                return null;
+            }
+            ServerInstance.LibraryManager libManager = serverInstance.getLibraryManager();
+            if ( libManager == null ){
+                return null;
+            }
+            
+            ServerLibrary library = findJerseyLibrary(libManager.getDeployableLibraries());
+            if ( library != null ){
+                return library;
+            }
+            library = findJerseyLibrary(libManager.getDeployedLibraries());
+            return library;
+        } catch (InstanceRemovedException ex) {
+            Logger.getLogger(WebRestSupport.class.getName()).log(Level.INFO, null, ex);
+            return null;
+        }
+    }
+    
+    public boolean addDeployableServerJerseyLibrary() {
+        J2eeModuleProvider provider = project.getLookup().lookup(
+                J2eeModuleProvider.class);
+        ServerLibrary serverLibrary = getServerJerseyLibrary();
+        if (provider != null && serverLibrary != null) {
+            try {
+                provider.getConfigSupport().configureLibrary(
+                        ServerLibraryDependency.minimalVersion(serverLibrary.getName(),
+                        serverLibrary.getSpecificationVersion(),
+                        serverLibrary.getImplementationVersion()));
+                Preferences prefs = ProjectUtils.getPreferences(project,
+                        ProjectUtils.class, true);
+                prefs.put(BrokenServerLibrarySupport.OFFER_LIBRARY_DEPLOYMENT,
+                        Boolean.TRUE.toString());
+                return true;
+            } 
+            catch (ConfigurationException ex) {
+                Logger.getLogger(WebRestSupport.class.getName()).log(Level.WARNING, 
+                        "Exception during extending an web project", ex); //NOI18N
+                return false;
+            }
+        }
+        else {
             return false;
         }
     }
@@ -395,7 +470,8 @@ public abstract class WebRestSupport extends RestSupport {
     }
 
     protected RestConfig setApplicationConfigProperty(boolean annotationConfigAvailable) {
-        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(annotationConfigAvailable);
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                annotationConfigAvailable, getServerJerseyLibrary()!=null);
         DialogDescriptor desc = new DialogDescriptor(configPanel,
                 NbBundle.getMessage(WebRestSupport.class, "TTL_ApplicationConfigPanel"));
         DialogDisplayer.getDefault().notify(desc);
@@ -411,6 +487,7 @@ public abstract class WebRestSupport extends RestSupport {
                 RestConfig rc = RestConfig.IDE;
                 rc.setResourcePath(applicationPath);
                 rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
                 return rc;
             } else if (WebRestSupport.CONFIG_TYPE_DD.equals(configType)) {
                 RestConfig rc = RestConfig.DD;
@@ -433,12 +510,14 @@ public abstract class WebRestSupport extends RestSupport {
                  * rc.setJerseyLibSelected(true);
                  */
                 rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
                 return rc;
             }
         } else {
             setProjectProperty(WebRestSupport.PROP_REST_CONFIG_TYPE, WebRestSupport.CONFIG_TYPE_USER);
             RestConfig rc = RestConfig.USER;
             rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+            rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
             return rc;
         }
         return RestConfig.USER;
@@ -460,6 +539,17 @@ public abstract class WebRestSupport extends RestSupport {
             }
         }
     }
+    
+    private ServerLibrary findJerseyLibrary(Collection<ServerLibrary> collection){
+        for( Iterator<ServerLibrary> iterator = collection.iterator(); iterator.hasNext();){
+            ServerLibrary library = iterator.next();
+            String title = library.getImplementationTitle();
+            if ( title.toLowerCase(Locale.ENGLISH).contains(JERSEY) ){
+                return library;
+            }
+        }
+        return null;
+    }
 
     @Override
     public int getProjectType() {
@@ -473,6 +563,7 @@ public abstract class WebRestSupport extends RestSupport {
 
         private String resourcePath;
         private boolean jerseyLibSelected;
+        private boolean serverJerseyLibSelected;
 
         public boolean isJerseyLibSelected() {
             return jerseyLibSelected;
@@ -488,6 +579,14 @@ public abstract class WebRestSupport extends RestSupport {
 
         public void setResourcePath(String reseourcePath) {
             this.resourcePath = reseourcePath;
+        }
+        
+        public void setServerJerseyLibSelected(boolean isSelected){
+            serverJerseyLibSelected = isSelected;
+        }
+        
+        public boolean isServerJerseyLibSelected(){
+            return serverJerseyLibSelected;
         }
 
     }
