@@ -130,6 +130,8 @@ public final class WatchProjects {
         clearField("java.awt.KeyboardFocusManager", "activeWindow");
         clearField("java.awt.KeyboardFocusManager", "focusOwner");
         clearField("java.awt.KeyboardFocusManager", "permanentFocusOwner");
+        clearField("java.awt.KeyboardFocusManager", "newFocusOwner");
+        clearField("java.awt.KeyboardFocusManager", "currentFocusCycleRoot");
 //        clearField("org.netbeans.jemmy.EventTool", "listenerSet");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusOwner");
         clearField("sun.awt.X11.XKeyboardFocusManagerPeer", "currentFocusedWindow");
