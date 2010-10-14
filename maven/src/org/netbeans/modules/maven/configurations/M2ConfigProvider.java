@@ -50,9 +50,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
@@ -76,9 +78,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
 
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private NbMavenProjectImpl project;
-    private List<M2Configuration> profiles = null;
-    private List<M2Configuration> shared = null;
-    private List<M2Configuration> nonshared = null;
+    private SortedSet<M2Configuration> profiles = null;
+    private SortedSet<M2Configuration> shared = null;
+    private SortedSet<M2Configuration> nonshared = null;
     private final M2Configuration DEFAULT;
     private M2Configuration active;
     private String initialActive;
@@ -116,13 +118,13 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         
         active = DEFAULT;
         propertyChange = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
+            public @Override void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     synchronized (M2ConfigProvider.this) {
                         profiles = null;
                     }
                     RP.post(new Runnable() {
-                        public void run() {
+                        public @Override void run() {
                             checkActiveAgainstAll(getConfigurations(), false);
                             firePropertyChange();
                         }
@@ -143,7 +145,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         }
         if (!found) {
             Runnable dothis = new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         try {
                             doSetActiveConfiguration(DEFAULT, active);
                         } catch (Exception ex) {
@@ -171,7 +173,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             //read from auxconf
             nonshared = readConfiguration(false);
         }
-        ArrayList<M2Configuration> toRet = new ArrayList<M2Configuration>();
+        Collection<M2Configuration> toRet = new TreeSet<M2Configuration>();
         toRet.add(DEFAULT);
         toRet.addAll(shared);
         toRet.addAll(nonshared);
@@ -191,7 +193,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         
     }
     
-    public synchronized Collection<M2Configuration> getConfigurations() {
+    public @Override synchronized Collection<M2Configuration> getConfigurations() {
         return getConfigurations(false);
     }
 
@@ -214,16 +216,16 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         return nonshared;
     }
     
-    public boolean hasCustomizer() {
+    public @Override boolean hasCustomizer() {
         return true;
     }
 
-    public void customize() {
+    public @Override void customize() {
         CustomizerProviderImpl prv = project.getLookup().lookup(CustomizerProviderImpl.class);
         prv.showCustomizer(ModelHandle.PANEL_CONFIGURATION);
     }
 
-    public boolean configurationsAffectAction(String action) {
+    public @Override boolean configurationsAffectAction(String action) {
         if (ActionProvider.COMMAND_DELETE.equals(action) || ActionProvider.COMMAND_COPY.equals(action) || ActionProvider.COMMAND_MOVE.equals(action)) {
             return false;
         }
@@ -231,7 +233,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     }
 
 
-    public synchronized M2Configuration getActiveConfiguration() {
+    public @Override synchronized M2Configuration getActiveConfiguration() {
         Collection<M2Configuration> confs = getConfigurations(false);
         if (initialActive != null) {
             for (M2Configuration conf : confs) {
@@ -243,7 +245,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             }
             if (initialActive != null) {
                 RP.post(new Runnable() {
-                    public void run() {
+                    public @Override void run() {
                         try {
                             doSetActiveConfiguration(DEFAULT, null);
                         } catch (Exception ex) {
@@ -264,8 +266,8 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
     public synchronized void setConfigurations(List<M2Configuration> shared, List<M2Configuration> nonshared, boolean includeProfiles) {
         writeAuxiliaryData(aux, true, shared);
         writeAuxiliaryData(aux, false, nonshared);
-        this.shared = shared;
-        this.nonshared = nonshared;
+        this.shared = new TreeSet<M2Configuration>(shared);
+        this.nonshared = new TreeSet<M2Configuration>(nonshared);
         //#174637
         if (active != null) {
             if (shared.contains(active)) {
@@ -283,7 +285,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         firePropertyChange();
     }
 
-    public synchronized void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
+    public @Override synchronized void setActiveConfiguration(M2Configuration configuration) throws IllegalArgumentException, IOException {
         if (active == configuration || (active != null && active.equals(configuration))) {
             return;
         }
@@ -299,9 +301,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         support.firePropertyChange(PROP_CONFIGURATION_ACTIVE, old, active);
     }
 
-    private List<M2Configuration> createProfilesList() {
+    private SortedSet<M2Configuration> createProfilesList() {
         List<String> profs = profileHandler.getAllProfiles();
-        List<M2Configuration> config = new ArrayList<M2Configuration>();
+        SortedSet<M2Configuration> config = new TreeSet<M2Configuration>();
 //        config.add(DEFAULT);
         for (String prof : profs) {
             M2Configuration c = new M2Configuration(prof, project);
@@ -311,7 +313,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         return config;
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener lst) {
+    public @Override synchronized void addPropertyChangeListener(PropertyChangeListener lst) {
         if (support.getPropertyChangeListeners().length == 0) {
             project.getProjectWatcher().addPropertyChangeListener(propertyChange);
         }
@@ -319,7 +321,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
 
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener lst) {
+    public @Override synchronized void removePropertyChangeListener(PropertyChangeListener lst) {
         support.removePropertyChangeListener(lst);
         if (support.getPropertyChangeListeners().length == 0) {
             project.getProjectWatcher().removePropertyChangeListener(propertyChange);
@@ -331,12 +333,12 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
         support.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
     }
     
-    private List<M2Configuration> readConfiguration(boolean shared) {
+    private SortedSet<M2Configuration> readConfiguration(boolean shared) {
         Element el = aux.getConfigurationFragment(ROOT, NAMESPACE, shared);
         if (el != null) {
             NodeList list = el.getElementsByTagNameNS(NAMESPACE, CONFIG);
             if (list.getLength() > 0) {
-                List<M2Configuration> toRet = new ArrayList<M2Configuration>();
+                SortedSet<M2Configuration> toRet = new TreeSet<M2Configuration>();
                 int len = list.getLength();
                 for (int i = 0; i < len; i++) {
                     Element enEl = (Element)list.item(i);
@@ -359,7 +361,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                         String key = propEl.getAttribute(PROPERTY_NAME_ATTR);
                         String value = propEl.getTextContent();
                         if (key != null && value != null) {
-                            c.getProperties().setProperty(key, value);
+                            c.getProperties().put(key, value);
                         }
                     }
                     toRet.add(c);
@@ -367,7 +369,7 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
                 return toRet;
             }
         }
-        return new ArrayList<M2Configuration>();
+        return new TreeSet<M2Configuration>();
     }
 
     public static void writeAuxiliaryData(AuxiliaryConfiguration conf, String property, String value) {
@@ -409,10 +411,9 @@ public class M2ConfigProvider implements ProjectConfigurationProvider<M2Configur
             Element child  = enEl.getOwnerDocument().createElementNS(NAMESPACE, CONFIG);
             child.setAttribute(CONFIG_ID_ATTR, config.getId());
             child.setAttribute(CONFIG_PROFILES_ATTR, StringUtils.join(config.getActivatedProfiles().iterator(), " "));
-            Enumeration en = config.getProperties().propertyNames();
-            while (en.hasMoreElements()) {
-                String key = (String)en.nextElement();
-                String value = config.getProperties().getProperty(key);
+            for (Map.Entry<String,String> entry : config.getProperties().entrySet()) {
+                String key = entry.getKey();
+                String value = entry.getValue();
                 if (key != null && value != null) {
                     Element prop  = enEl.getOwnerDocument().createElementNS(NAMESPACE, PROPERTY);
                     prop.setAttribute(PROPERTY_NAME_ATTR, key);
