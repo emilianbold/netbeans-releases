@@ -49,8 +49,8 @@ import java.net.URL;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 
@@ -184,7 +184,7 @@ public abstract class CndBreakpoint extends Breakpoint {
                 assert(!(url == null && Boolean.getBoolean("gdb.assertions.enabled"))); // NOI18N
                 FileObject fo = URLMapper.findFileObject(new URL(url));
                 if (fo != null) {
-                    path = FileUtil.toFile(fo).getAbsolutePath();
+                    path = CndFileUtils.toFile(fo).getAbsolutePath();
                     if (Utilities.isWindows()) {
                         path = path.replace("\\", "/"); // NOI18N
                     }

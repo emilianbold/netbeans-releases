@@ -371,7 +371,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         @Override
         public void fileDeleted(FileEvent fe) {
             FileObject fo = fe.getFile();
-            project.onFileRemoved(FileUtil.toFile(fo));
+            project.onFileRemoved(CndFileUtils.toFile(fo));
             fo.removeFileChangeListener(this);
         }
     };

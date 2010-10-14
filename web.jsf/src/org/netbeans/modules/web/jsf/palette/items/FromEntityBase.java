@@ -306,8 +306,8 @@ public abstract class FromEntityBase {
         //
         String keyBodyValue = null;
         String keyStringBodyValue = null;
-        String keyGetterValue = "UNDEFINED";
-        String keyTypeValue = "UNDEFINED";
+        String keyGetterValue = "UNDEFINED_PK_GETTER";
+        String keyTypeValue = "UNDEFINED_PK_TYPE";
         Boolean keyEmbeddedValue = Boolean.FALSE;        //
         Boolean keyDerivedValue = Boolean.FALSE;
         if(primaryGetter != null) {
