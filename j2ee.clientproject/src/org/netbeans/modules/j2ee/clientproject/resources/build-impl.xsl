@@ -286,7 +286,7 @@ made subject to such option by the copyright holder.
                 </condition>
                 <!-- #189395 - temporary workaround till GlassFish issue #13144 is fixed -->
                 <condition property="is.server.weblogic" value="true">
-                    <equals arg1="j2ee.server.type" arg2="WebLogic9"/>
+                    <equals arg1="${{j2ee.server.type}}" arg2="WebLogic9"/>
                 </condition>
             </target>
             
