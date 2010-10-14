@@ -87,7 +87,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
     @Override
     protected File toFileImpl(FileObject fileObject) {
-        return null;
+        return (fileObject instanceof RemoteFileObjectBase) ? ((RemoteFileObjectBase) fileObject).cache : null ;
     }
 
     @Override
