@@ -63,6 +63,8 @@ import org.openide.filesystems.FileObject;
  */
 public class RemoteDirectory extends RemoteFileObjectBase {
 
+    private DirectoryAttributes attrs;
+
     public RemoteDirectory(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             FileObject parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);
@@ -107,6 +109,16 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         return fo;
     }
 
+    public boolean canWrite(String childNameExt) throws IOException {
+        synchronized (this) {
+            if (attrs == null) {
+                attrs = new DirectoryAttributes(CndFileUtils.createLocalFile(cache, RemoteFileSupport.FLAG_FILE_NAME));
+                attrs.load();
+            }
+        }
+        return attrs.isWritable(childNameExt);
+    }
+
     /**
      *
      * @param relativePath
@@ -123,18 +135,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         try {
             File file = CndFileUtils.createLocalFile(cache, relativePath);
             if (!file.exists()) {
-                File parentFile;
-                String parentRemotePath;
                 int slashPos = relativePath.lastIndexOf('/');
                 if (slashPos == -1) {
-                    parentRemotePath = (remotePath.length() == 0) ? "/" : remotePath; // NOI18N
-                    parentFile = cache;
+                    String parentRemotePath = (remotePath.length() == 0) ? "/" : remotePath; // NOI18N
+                    DirectoryAttributes newAttrs = getRemoteFileSupport().ensureDirSync(cache, parentRemotePath);
+                    if (newAttrs != null) {
+                        attrs = newAttrs;
+                    }
                 } else {
-                    parentFile = file.getParentFile();
-                    parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
+                    File parentFile = file.getParentFile();
+                    String parentRemotePath = remotePath + '/' + relativePath.substring(0, slashPos);
+                    getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
                 }
-                getRemoteFileSupport().ensureDirSync(parentFile, parentRemotePath);
-
+                
                 if (!file.exists()) {
                     return null;
                 }
@@ -171,7 +184,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 if (pathTokenizer.hasMoreElements() || resultIsDirectory) {
                     resultFileObject = new RemoteDirectory(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
                 } else {
-                    resultFileObject = new RemotePlainFile(fileSystem, execEnv, resultFileObject, remoteAbsPath.toString(), cacheFile);
+                    resultFileObject = new RemotePlainFile(fileSystem, execEnv, (RemoteDirectory) resultFileObject, remoteAbsPath.toString(), cacheFile);
                 }
             }
             return resultFileObject;
@@ -191,7 +204,10 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     @Override
     public FileObject[] getChildren() {
         try {
-            getRemoteFileSupport().ensureDirSync(cache, remotePath);
+            DirectoryAttributes newAttrs = getRemoteFileSupport().ensureDirSync(cache, remotePath);
+            if (newAttrs != null) {
+                attrs = newAttrs;
+            }
             File[] childrenFiles = cache.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept(File dir, String name) {

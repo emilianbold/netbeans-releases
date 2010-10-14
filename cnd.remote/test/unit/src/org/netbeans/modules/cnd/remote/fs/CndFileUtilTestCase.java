@@ -37,48 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.gizmo.support;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
+import java.io.File;
+import junit.framework.Test;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
  *
- * @author mt154047
+ * @author Vladimir Kvashin
  */
-public final class GizmoServiceInfo {
+public class CndFileUtilTestCase extends RemoteTestBase {
 
-    static{
-        GizmoServiceInfoAccessor.setDefault(new GizmoServiceInfoAccessorImpl());
-    }
-    public static final String GIZMO_PROJECT_FOLDER = "GizmoProjectFolder";//NOI18N
-    public static final String GIZMO_PROJECT_EXECUTABLE = "GizmoProjectExecutable";//NOI18N
-    /** Session executable ID (path + time stamp) */
-    public static final String GIZMO_PROJECT_EXECUTABLE_ID = "GizmoProjectExecutableID";//NOI18N
-    public static final String GIZMO_REMOTE_EXECUTABLE = "GizmoProjectRemoteExecutable";//NOI18N
-    /** Session remote executable ID (path + time stamp) */
-    public static final String GIZMO_REMOTE_EXECUTABLE_ID = "GizmoProjectRemoteExecutableID";//NOI18N
-    public static final String GIZMO_DEMANGLE_UTILITY = "GizmoDemangleUtility";//NOI18N
-    public static final String CPP_COMPILER = "GizmoCppCompiler";//NOI18N
-    public static final String CPP_COMPILER_BIN_PATH = "GizmoCppCompilerBinPath";//NOI18N
-    public static final String PLATFORM = "gizmo.platform";//NOI18N
-    static final String GIZMO_RUN = "project.gizmo.run";//NOI18N
-
-    public static   boolean isPlatformSupported(String platform){
-        return platform != null &&  (platform.indexOf("Solaris") != -1 || platform.indexOf("Linux") != -1);//NOI18N
+    public CndFileUtilTestCase(String testName, ExecutionEnvironment execEnv) {
+        super(testName, execEnv);
     }
 
-    static final class GizmoServiceInfoAccessorImpl extends GizmoServiceInfoAccessor{
-
-        @Override
-        public String getGIZMO_RUN() {
-            return GIZMO_RUN;
-        }
-
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        ServerList.addServer(execEnv, execEnv.getDisplayName(), null, true, false);
+        ConnectionManager.getInstance().connectTo(execEnv);
     }
 
-    private GizmoServiceInfo() {
+    @ForAllEnvironments
+    public void testExists() {
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        String baseDir = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
+        String stdio_h = baseDir + "usr/include/stdio.h";
+        boolean exists = CndFileUtils.exists(new File(stdio_h));
+        assertTrue(exists);
     }
+
+    public static Test suite() {
+        return new RemoteDevelopmentTest(CndFileUtilTestCase.class);
+    }
+
 }
