@@ -467,17 +467,27 @@ public class JBPluginUtils {
                 Node child = children.item(i);
                 if (child.getNodeName().equals("Service")) {  // NOI18N
                     NodeList nl = child.getChildNodes();
-                    for (int j = 0; j < nl.getLength(); j++){
+                    for (int j = 0; j < nl.getLength(); j++) {
                         Node ch = nl.item(j);
 
                         if (ch.getNodeName().equals("Connector")) {  // NOI18N
-                            return ch.getAttributes().getNamedItem("port").getNodeValue();
+                            String port = ch.getAttributes().getNamedItem("port").getNodeValue();
+                            if (port.startsWith("$")) {
+                                // FIXME check properties somehow
+                                return defaultPort;
+                            }
+                            try {
+                                Integer.parseInt(port);
+                                return port;
+                            } catch (NumberFormatException ex) {
+                                return defaultPort;
+                            }
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.log(Level.INFO, null, e);
             // it is ok
             // it optional functionality so we don't need to look at any exception
         }

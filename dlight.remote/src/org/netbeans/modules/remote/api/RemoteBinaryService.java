@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.api;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,14 +66,14 @@ public abstract class RemoteBinaryService {
     }
 
     /**
-     * Returns an ID to be used as a refference to the RemoteBinaryService.
+     * Returns an ID to be used as a reference to the RemoteBinaryService.
      *
      * The method can be very slow.
      * It should never be called from AWT thread.
      */
     public static RemoteBinaryID getRemoteBinary(ExecutionEnvironment execEnv, String remotePath) {
         if (execEnv.isLocal()) {
-            return new RemoteBinaryID(remotePath);
+            return new RemoteBinaryID(remotePath, ""+ new File(remotePath).lastModified()); // NOI18N
         } else {
             RemoteBinaryService rbs = Lookup.getDefault().lookup(RemoteBinaryService.class);
 
@@ -86,7 +87,7 @@ public abstract class RemoteBinaryService {
                 return null;
             }
 
-            RemoteBinaryID id = new RemoteBinaryID(result.localFName);
+            RemoteBinaryID id = new RemoteBinaryID(result.localFName, result.timeStamp);
             Future<Boolean> prevResult = readiness.put(id, result.syncResult);
 
             if (prevResult != null && prevResult != result.syncResult) {
@@ -111,23 +112,43 @@ public abstract class RemoteBinaryService {
 
         public final String localFName;
         public final Future<Boolean> syncResult;
+        private String timeStamp;
 
         public RemoteBinaryResult(String localFName, Future<Boolean> syncResult) {
             this.localFName = localFName;
             this.syncResult = syncResult;
+        }
+        public void setTimeStamp(String timeStamp) {
+            this.timeStamp = timeStamp;
+        }
+
+        public String getTimeStamp() {
+            return timeStamp;
         }
     }
 
     public static class RemoteBinaryID {
 
         private final String id;
+        private final String timeStamp;
 
-        private RemoteBinaryID(String id) {
+        private RemoteBinaryID(String id, String timeStamp) {
             this.id = id;
+            this.timeStamp = timeStamp;
         }
 
         public static RemoteBinaryID fromIDString(String str) {
-            return new RemoteBinaryID(str);
+            int i = str.lastIndexOf(';'); // NOI18N
+            String timeStamp = "0"; // NOI18N
+            if (i > 0) {
+                timeStamp = str.substring(i+1);
+                str = str.substring(0, i);
+            }
+            return new RemoteBinaryID(str, timeStamp);
+        }
+
+        public String getTimeStamp() {
+            return timeStamp;
         }
 
         public String toIDString() {
