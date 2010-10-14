@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileUtil;
 
 /**
  * Misc projct related utility functions
@@ -75,13 +74,13 @@ public class RemoteProjectSupport {
     }
 
     public static boolean projectExists(Project project) {
-        File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
         File nbproject = CndFileUtils.createLocalFile(baseDir, "nbproject"); //NOI18N
         return nbproject.exists();
     }
 
     public static File getPrivateStorage(Project project) {
-        File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
         final File privProjectStorage = CndFileUtils.createLocalFile(new File(baseDir, "nbproject"), "private"); //NOI18N
         return privProjectStorage;
     }
@@ -89,7 +88,7 @@ public class RemoteProjectSupport {
     public static File[] getProjectSourceDirs(Project project) {
         MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
         if (conf == null) {
-            File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+            File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
             return new File[] { baseDir };
         } else {
             return getProjectSourceDirs(project, conf);
@@ -97,7 +96,7 @@ public class RemoteProjectSupport {
     }
 
     public static File[] getProjectSourceDirs(Project project, MakeConfiguration conf) {
-        File baseDir = FileUtil.toFile(project.getProjectDirectory()).getAbsoluteFile();
+        File baseDir = CndFileUtils.toFile(project.getProjectDirectory()).getAbsoluteFile();
         if (conf == null) {
             return new File[] { baseDir };
         }

@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProjectType;
 import org.netbeans.modules.cnd.test.CndTestIOProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -282,7 +283,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
             FileObject projectDirFO = projectDataObject.getPrimaryFile();
             if (mainProjectDir == null) {
                 mainProjectDirFO = projectDirFO;
-                mainProjectDir = FileUtil.toFile(projectDirFO);
+                mainProjectDir = CndFileUtils.toFile(projectDirFO);
             }
             ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor(true);
