@@ -111,9 +111,9 @@ public class PHPDocCommentParser {
             PHPDocTag.Type tagType = findTagOnLine(line);
             if (tagType != null) { // is a tag defined on the line
                 if (lastTag == null) { // is it the first tag in the block
-                    blockDescription = description.trim();  // save the block description
+                    blockDescription = description.length() > 0 && description.charAt(description.length() - 1) == '\n' ? description.substring(0, description.length() -1) : description;  // save the block description
                 } else { // create last recognized tag
-                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim(), comment, startOffset + 3);
+                    PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.substring(0, description.length() -1), comment, startOffset + 3);
                     if (tag != null) {
                         tags.add(tag);
                     }
@@ -121,7 +121,7 @@ public class PHPDocCommentParser {
                 lastTag = tagType;  // remember the recognized tag
                 lastStartIndex = index;
                 description = "";
-                line = line.substring(tagType.name().length() + 1).trim(); // and the first line of description of the tag
+                line = line.substring(tagType.name().length() + 1); // and the first line of description of the tag
             }
             index = matcher.end();
             lastEndIndex = matcher.start();
@@ -138,7 +138,7 @@ public class PHPDocCommentParser {
             if (lastTag == null) {
                 blockDescription = description.trim();  
             } else {
-                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.trim(), comment, startOffset + 3);
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.substring(0, description.length() -1), comment, startOffset + 3);
                 if (tag != null) {
                     tags.add(tag);
                 }
@@ -153,7 +153,7 @@ public class PHPDocCommentParser {
                 blockDescription = description + line;
             } else {
                 description = description + line;
-                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description, comment, startOffset + 3);
+                PHPDocTag tag = createTag(startOffset + 3 + lastStartIndex, startOffset + 3 + lastEndIndex, lastTag, description.substring(0, description.length() -1), comment, startOffset + 3);
                 if (tag != null) {
                     tags.add(tag);
                 }
@@ -197,7 +197,7 @@ public class PHPDocCommentParser {
     }
 
     private List<String> getTypes(String description) {
-        String[] tokens = description.split("[ ]+"); //NOI18N
+        String[] tokens = description.trim().split("[ ]+"); //NOI18N
         ArrayList<String> types = new ArrayList<String>();
         if (tokens.length > 0) {
             if (tokens[0].indexOf('|') > -1) {
@@ -214,7 +214,7 @@ public class PHPDocCommentParser {
     }
 
     private String getVaribleName(String description) {
-        String[] tokens = description.split("[ ]+"); //NOI18N
+        String[] tokens = description.trim().split("[ ]+"); //NOI18N
         String variable = null;
 
         if (tokens.length > 0 && tokens[0].length() > 0 && tokens[0].charAt(0) == '$'){
@@ -254,7 +254,7 @@ public class PHPDocCommentParser {
     private PHPDocTag.Type findTagOnLine(String line) {
         PHPDocTag.Type type = null;
         if (line.length() > 0 && line.charAt(0) == '@') {
-            String[] tokens = line.split("[ ]+");
+            String[] tokens = line.trim().split("[ ]+");
             if (tokens.length > 0) {
                 String tag = tokens[0].substring(1).toUpperCase();
                 if (tag.indexOf('-') > -1) {
