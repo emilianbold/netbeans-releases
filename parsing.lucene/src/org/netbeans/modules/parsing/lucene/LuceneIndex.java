@@ -181,7 +181,7 @@ public class LuceneIndex implements Index {
         final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
         try {
             do {
-                if (cancel.get()) {
+                if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
                 final Term currentTerm = terms.term();
@@ -226,7 +226,7 @@ public class LuceneIndex implements Index {
         final TermCollector termCollector = new TermCollector();
         try {
             for (Query q : queries) {
-                if (cancel.get()) {
+                if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
                 if (q instanceof TermCollector.TermCollecting) {
@@ -243,7 +243,7 @@ public class LuceneIndex implements Index {
         }
         
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (cancel.get()) {
+            if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum, selector);
