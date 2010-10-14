@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -66,6 +67,7 @@ implements Callable<Boolean>, FileChangeListener {
     private FileObject root;
     private List<FileEvent> events = new ArrayList<FileEvent>();
     private int cnt;
+    @SuppressWarnings("NonConstantLogger")
     private Logger LOG;
 
     public FileUtilAddRecursiveListenerStopTest(String n) {
@@ -109,6 +111,7 @@ implements Callable<Boolean>, FileChangeListener {
     /** This test fails randomly in cases the folders get ordered in a way that
      the "7" folder (used in the test) is the first folder in the list of known
      file objects. */
+    @RandomlyFails // NB-Core-Build #5300: No events delivered
     public void testAddListenerCanStop() throws IOException {
         cnt = 2;
         CharSequence log = Log.enable("org.netbeans.modules.masterfs", Level.INFO);
