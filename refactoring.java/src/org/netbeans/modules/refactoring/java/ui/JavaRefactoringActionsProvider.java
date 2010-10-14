@@ -645,7 +645,10 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
         TreePath selection = null;
         while (currentPath != null && selection == null) {
             switch (currentPath.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case NEW_CLASS:
                 case METHOD:
                     selection = currentPath;

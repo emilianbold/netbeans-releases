@@ -126,7 +126,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             t = tree.getLeaf();
         }
 
-        if (t.getKind() == Tree.Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
             int[] pos = treeUtils.findNameSpan((ClassTree)t);
             if (pos == null) {
                 //#121084 hotfix
@@ -286,7 +286,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     private static TreePath getEnclosingTree(TreePath tp) {
         while(tp != null) {
             Tree tree = tp.getLeaf();
-            if (tree.getKind() == Tree.Kind.CLASS || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || tree.getKind() == Tree.Kind.METHOD || tree.getKind() == Tree.Kind.IMPORT) {
                 return tp;
             } 
             tp = tp.getParentPath();

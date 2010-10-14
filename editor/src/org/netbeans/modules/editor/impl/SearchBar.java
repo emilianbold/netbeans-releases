@@ -103,7 +103,6 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbPreferences;
 
 
 /**
@@ -171,6 +170,9 @@ public final class SearchBar extends JPanel {
                 looseFocus();
             }
         });
+        FindSupport findSupport = FindSupport.getFindSupport();
+        findProps = new HashMap<Object, Object>(findSupport.getFindProperties());
+        
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
         Color bgColor = getBackground();
@@ -435,19 +437,6 @@ public final class SearchBar extends JPanel {
                 }
             }
         });
-
-        // configure find properties
-        findProps = new HashMap<Object, Object>();
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
-        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, false);
-        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, true);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, false);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
-        // XXX take from preferences
-        findProps.put(EditorFindSupport.FIND_MATCH_CASE, false);
-        findProps.put(EditorFindSupport.FIND_REG_EXP, false);
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
         
         // padding at the end of the toolbar
         JPanel spacer = new JPanel();
@@ -590,6 +579,9 @@ public final class SearchBar extends JPanel {
     }
     
     private void gainFocus() {
+        FindSupport findSupport = FindSupport.getFindSupport();
+        findProps = new HashMap<Object, Object>(findSupport.getFindProperties());
+
         if (isVisible()) {
             incrementalSearchTextField.requestFocusInWindow();
             return;
@@ -611,6 +603,11 @@ public final class SearchBar extends JPanel {
             findPreviousButton.setEnabled(false);
             findNextButton.setEnabled(false);
         }
+        wholeWordsCheckBox.setSelected(getWholeWords());
+        wholeWordsCheckBox.setEnabled(!getRegExp());
+        matchCaseCheckBox.setSelected(getMatchCase());
+        regexpCheckBox.setSelected(getRegExp());
+        highlightCheckBox.setSelected(getHighlightResults());
     }
 
     private void looseFocus() {
@@ -891,46 +888,40 @@ public final class SearchBar extends JPanel {
         }
         return null;
     }
-    
-    // preferences
-    private static final String IS_HIGHLIGHT_RESULTS = "isHighlightResults";
-    private static final String IS_REG_EXP = "isRegExp";
-    private static final String IS_MATCH_CASE = "isMatchCase";
-    private static final String IS_WHOLE_WORDS = "isWholeWords";
-    
-    private Preferences prefs() {
-        return NbPreferences.forModule(SearchBar.class);
-    }
-    
+
     private boolean getMatchCase() {
-        return prefs().getBoolean(IS_MATCH_CASE, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_MATCH_CASE);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchMatchCase() {
-        prefs().putBoolean(IS_MATCH_CASE, !getMatchCase());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getMatchCase());
     }
-    
+
     private boolean getWholeWords() {
-        return prefs().getBoolean(IS_WHOLE_WORDS, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_WHOLE_WORDS);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchWholeWords() {
-        prefs().putBoolean(IS_WHOLE_WORDS, !getWholeWords());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getWholeWords());
     }
-    
+
     private boolean getRegExp() {
-        return prefs().getBoolean(IS_REG_EXP, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_REG_EXP);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchRegExp() {
-        prefs().putBoolean(IS_REG_EXP, !getRegExp());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getRegExp());
     }
-    
+
     private boolean getHighlightResults() {
-        return prefs().getBoolean(IS_HIGHLIGHT_RESULTS, true); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchHighlightResults() {
-        prefs().putBoolean(IS_HIGHLIGHT_RESULTS, !getHighlightResults());
-    }  
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getHighlightResults());
+    }
 }

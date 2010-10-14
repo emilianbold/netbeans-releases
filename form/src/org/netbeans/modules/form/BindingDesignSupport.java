@@ -72,6 +72,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.form.FormUtils.TypeHelper;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
@@ -393,7 +394,7 @@ public class BindingDesignSupport {
                             CompilationUnitTree cu = cc.getCompilationUnit();
                             ClassTree clazz = null;
                             for (Tree typeDecl : cu.getTypeDecls()) {
-                                if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                                     ClassTree candidate = (ClassTree)typeDecl;
                                     if (candidate.getSimpleName().toString().equals(simpleTypeName)) {
                                         clazz = candidate;
@@ -596,7 +597,7 @@ public class BindingDesignSupport {
                     CompilationUnitTree cu = cc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             clazz = (ClassTree) typeDecl;
                             break;
                         }

@@ -67,6 +67,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -150,7 +151,7 @@ class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
                     wcopy.toPhase(JavaSource.Phase.RESOLVED);
 
                     for (Tree t: wcopy.getCompilationUnit().getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS && className.equals(((ClassTree) t).getSimpleName().toString())) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) && className.equals(((ClassTree) t).getSimpleName().toString())) {
                             ClassTree orig = (ClassTree) t;
                             TreeMaker maker = wcopy.getTreeMaker();
                             TypeElement superclassElm = wcopy.getElements().getTypeElement(superclassName);

@@ -106,7 +106,7 @@ enum Access {
         Tree leaf = path.getLeaf();
         if (parent != null) {
             Tree.Kind parentKind = parent.getLeaf().getKind();
-            if (parentKind != Tree.Kind.CLASS && parentKind != Tree.Kind.COMPILATION_UNIT) {
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(parentKind) && parentKind != Tree.Kind.COMPILATION_UNIT) {
                 // not class member
                 return false;
             }
@@ -119,7 +119,10 @@ enum Access {
         Set<Modifier> flags;
         switch (leaf.getKind()) {
         case COMPILATION_UNIT: return true;
-        case CLASS: flags = ((ClassTree) leaf).getModifiers().getFlags(); break;
+        case ANNOTATION_TYPE:case CLASS:
+            case ENUM:
+            case INTERFACE:
+                flags = ((ClassTree) leaf).getModifiers().getFlags(); break;
         case METHOD: flags = ((MethodTree) leaf).getModifiers().getFlags(); break;
         case VARIABLE: flags = ((VariableTree) leaf).getModifiers().getFlags(); break;
         default: return false;
@@ -139,7 +142,7 @@ enum Access {
         }
         Tree parent = parentPath.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
-        return Tree.Kind.CLASS == parent.getKind()
+        return TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind())
                 && (utils.isInterface((ClassTree) parent) || utils.isAnnotation((ClassTree) parent));
     }
 }

@@ -231,7 +231,7 @@ final class TopClassFinder {
         List<ClassTree> result = new ArrayList<ClassTree>(typeDecls.size());
         
         for (Tree typeDecl : typeDecls) {
-            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                 ClassTree clsTree = (ClassTree) typeDecl;
                 if (isTestable(clsTree, treeUtils)) {
                     result.add(clsTree);
@@ -260,7 +260,7 @@ final class TopClassFinder {
 
         Trees trees = compInfo.getTrees();
         for (Tree typeDecl : typeDecls) {
-            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                 Element element = trees.getElement(
                         new TreePath(new TreePath(compilationUnit), typeDecl));
                 TypeElement typeElement = (TypeElement) element;

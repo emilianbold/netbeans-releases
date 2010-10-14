@@ -136,7 +136,7 @@ public class EnumTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         VariableTree vt = (VariableTree) clazz.getMembers().get(1);
                         VariableTree copy = make.setLabel(vt, "A2");
@@ -188,7 +188,7 @@ public class EnumTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         VariableTree vt = (VariableTree) clazz.getMembers().get(3);
                         VariableTree copy = make.setLabel(vt, "C2");
@@ -1078,7 +1078,7 @@ public class EnumTest extends GeneratorTest {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         VariableTree vt = (VariableTree) clazz.getMembers().get(1);
                         VariableTree copy = make.setLabel(vt, "A2");

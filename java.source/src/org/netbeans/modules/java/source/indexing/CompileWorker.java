@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.lang.model.element.TypeElement;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -81,7 +82,7 @@ abstract class CompileWorker {
         List<String> fqns = new LinkedList<String>();
         boolean hasClassesLivingElsewhere = false;
         for (Tree t : cut.getTypeDecls()) {
-            if (t.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 String fqn = pack + ((ClassTree) t).getSimpleName().toString();
                 fqns.add(fqn);
                 if (!path.equals(fqn)) {

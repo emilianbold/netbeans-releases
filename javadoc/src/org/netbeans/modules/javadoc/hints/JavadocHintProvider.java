@@ -92,7 +92,7 @@ public final class JavadocHintProvider extends AbstractHint {
     }
     
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.VARIABLE);
+        return EnumSet.of(Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.VARIABLE);
     }
     
     public List<ErrorDescription> run(CompilationInfo javac, TreePath path) {

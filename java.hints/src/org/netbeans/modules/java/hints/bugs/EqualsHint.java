@@ -47,6 +47,7 @@ import com.sun.source.util.TreePath;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
@@ -151,7 +152,7 @@ public class EqualsHint {
         } else {
             TreePath cls = ctx.getPath();
 
-            while (cls != null && cls.getLeaf().getKind() != Kind.CLASS) {
+            while (cls != null && !TreeUtilities.CLASS_TREE_KINDS.contains(cls.getLeaf().getKind())) {
                 cls = cls.getParentPath();
             }
 

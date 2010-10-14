@@ -135,6 +135,9 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
         Problem problemFromWhereUsed = null;
         for (RefactoringElement refacElem : inner.getRefactoringElements()) {
             ElementGrip elem = refacElem.getLookup().lookup(ElementGrip.class);
+            if (files.contains(refacElem.getParentFile())) {
+                continue;
+            }
             if (!isPendingDelete(elem, refactoredObjects)) {
                 problemFromWhereUsed = new Problem(false, getString("ERR_ReferencesFound"), ProblemDetailsFactory.createProblemDetails(new ProblemDetailsImplemen(new WhereUsedQueryUI(elem!=null?elem.getHandle():null, elem!=null?elem.toString():"", refactoring), inner)));
                 break;

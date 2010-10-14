@@ -67,6 +67,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileUtil;
@@ -128,7 +129,7 @@ public class TwoModificationsTest extends GeneratorTest {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         
                         AnnotationTree wsAnnotation = make.Annotation(
