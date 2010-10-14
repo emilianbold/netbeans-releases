@@ -32,10 +32,15 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
         this.encodingQuery = encodingQuery;
     }
 
+    @Override
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String, String> values = new HashMap<String, String>();
+        EditableProperties priv  = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String license = props.getProperty("project.license"); // NOI18N
+        String license = priv.getProperty("project.license"); // NOI18N
+        if (license == null) {
+            license = props.getProperty("project.license"); // NOI18N
+        }
         if (license != null) {
             values.put("license", license); // NOI18N
         }

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -544,7 +545,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         
         private static ClassTree findClass(CompilationInfo javac, String name) {
             for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
-                if (Tree.Kind.CLASS == tree.getKind()
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
                         && !javac.getTreeUtilities().isInterface((ClassTree) tree)
                         && !javac.getTreeUtilities().isAnnotation((ClassTree) tree)
                         && !javac.getTreeUtilities().isEnum((ClassTree) tree)

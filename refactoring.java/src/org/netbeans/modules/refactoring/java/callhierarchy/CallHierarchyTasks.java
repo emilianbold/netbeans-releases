@@ -83,6 +83,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
@@ -364,7 +365,7 @@ final class CallHierarchyTasks {
             while (declaration != null) {
                 switch (declaration.getLeaf().getKind()) {
                     case BLOCK:
-                        if (declaration.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(declaration.getParentPath().getLeaf().getKind())) {
                             // it is static or instance initializer
                             return declaration;
                         }
@@ -372,7 +373,7 @@ final class CallHierarchyTasks {
                     case METHOD:
                         return declaration;
                     case VARIABLE:
-                        if (declaration.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(declaration.getParentPath().getLeaf().getKind())) {
                             // it is field declaration
                             // private int field = init();
                             return declaration;

@@ -55,6 +55,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import static org.netbeans.api.java.source.JavaSource.*;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestSuite;
 
@@ -113,7 +114,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         workingCopy.rewrite(clazz.getExtendsClause(), make.Identifier("String"));
                     }
@@ -155,7 +156,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.setExtends(classTree, make.Identifier("String"));
 //                        ClassTree copy = make.Class(
@@ -206,7 +207,7 @@ public class ClassExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.Class(
                                 classTree.getModifiers(),

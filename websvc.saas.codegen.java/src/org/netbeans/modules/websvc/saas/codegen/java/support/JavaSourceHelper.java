@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.websvc.saas.codegen.java.support;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.websvc.saas.codegen.Constants;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
@@ -258,7 +259,7 @@ public class JavaSourceHelper {
         if (cu != null) {
             List<? extends Tree> decls = cu.getTypeDecls();
             for (Tree decl : decls) {
-                if (decl.getKind() != Tree.Kind.CLASS) {
+                if (!TreeUtilities.CLASS_TREE_KINDS.contains(decl.getKind())) {
                     continue;
                 }
 
@@ -709,7 +710,7 @@ public class JavaSourceHelper {
 
         final String mainElementName = controller.getFileObject().getName();
         for (Tree tree : controller.getCompilationUnit().getTypeDecls()) {
-            if (tree.getKind() != Tree.Kind.CLASS) {
+            if (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 continue;
             }
             ClassTree classTree = (ClassTree) tree;

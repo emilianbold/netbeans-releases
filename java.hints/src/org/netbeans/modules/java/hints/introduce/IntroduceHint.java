@@ -117,6 +117,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
@@ -374,7 +375,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         List<TreePath> result = new LinkedList<TreePath>();
         TreePath parent = method.getParentPath();
 
-        if (parent.getLeaf().getKind() == Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind())) {
             for (Tree t : ((ClassTree) parent.getLeaf()).getMembers()) {
                 TreePath tp = new TreePath(parent, t);
 
@@ -389,7 +390,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static boolean isInsideClass(TreePath tp) {
         while (tp != null) {
-            if (tp.getLeaf().getKind() == Kind.CLASS)
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()))
                 return true;
 
             tp = tp.getParentPath();
@@ -571,9 +572,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             index++;
         }
 
-        ExitsFromAllBranches efab = new ExitsFromAllBranches(info);
-
-        boolean exitsFromAllBranches = efab.scan(new TreePath(block, statementsToWrap.get(statementsToWrap.size() - 1)), null) == Boolean.TRUE;
+        boolean exitsFromAllBranches = Utilities.exitsFromAllBranchers(info, new TreePath(block, statementsToWrap.get(statementsToWrap.size() - 1)));
 
         String exitsError = scanner.verifyExits(exitsFromAllBranches);
 
@@ -655,7 +654,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         while (one.getLeaf().getKind() != Kind.COMPILATION_UNIT && one.getLeaf().getKind() != null) {
             Tree t = one.getLeaf();
-            if (t.getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 oneClass = (ClassTree) t;
                 break;
             }
@@ -664,7 +663,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         while (two.getLeaf().getKind() != Kind.COMPILATION_UNIT && two.getLeaf().getKind() != null) {
             Tree t = two.getLeaf();
-            if (t.getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 twoClass = (ClassTree) t;
                 break;
             }
@@ -753,7 +752,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 && (   !StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface())
                 || (   statementPath.getParentPath() != null
                 && statementPath.getParentPath().getLeaf().getKind() != Kind.BLOCK))) {
-            if (statementPath.getLeaf().getKind() == Kind.CLASS)
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind()))
                 return null;
 
             statementPath = statementPath.getParentPath();
@@ -770,7 +769,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
             if (   path.getLeaf().getKind() == Kind.BLOCK
                 && path.getParentPath() != null
-                && path.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+                && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
                 //initializer:
                 return path;
             }
@@ -783,7 +782,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
     private static TreePath findClass(TreePath path) {
         while (path != null) {
-            if (path.getLeaf().getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
                 return path;
             }
 
@@ -1326,48 +1325,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
     }
 
-    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
-
-        private CompilationInfo info;
-        private Set<Tree> seenTrees = new HashSet<Tree>();
-
-        public ExitsFromAllBranches(CompilationInfo info) {
-            this.info = info;
-        }
-
-        @Override
-        public Boolean scan(Tree tree, Void p) {
-            seenTrees.add(tree);
-            return super.scan(tree, p);
-        }
-
-        @Override
-        public Boolean visitIf(IfTree node, Void p) {
-            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
-        }
-
-        @Override
-        public Boolean visitReturn(ReturnTree node, Void p) {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBreak(BreakTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitContinue(ContinueTree node, Void p) {
-            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
-        }
-
-        @Override
-        public Boolean visitClass(ClassTree node, Void p) {
-            return false;
-        }
-
-    }
-
     private static final class IntroduceFix implements Fix {
 
         private String guessedName;
@@ -1446,7 +1403,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             //find first class:
                             TreePath pathToClass = resolved;
 
-                            while (pathToClass != null && pathToClass.getLeaf().getKind() != Kind.CLASS) {
+                            while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
                                 pathToClass = pathToClass.getParentPath();
                             }
 
@@ -1594,7 +1551,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     TreePath pathToClass = resolved;
 
-                    while (pathToClass != null && pathToClass.getLeaf().getKind() != Kind.CLASS) {
+                    while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
                         pathToClass = pathToClass.getParentPath();
                     }
 

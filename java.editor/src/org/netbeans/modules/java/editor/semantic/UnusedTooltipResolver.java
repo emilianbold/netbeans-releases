@@ -82,7 +82,10 @@ final class UnusedTooltipResolver implements HighlightAttributeValue<String> {
                             case IMPORT:
                                 isInImport = true;
                                 break OUTER;
+                            case ANNOTATION_TYPE:
                             case CLASS:
+                            case ENUM:
+                            case INTERFACE:
                             case METHOD:
                             case BLOCK:
                                 isInImport = false;

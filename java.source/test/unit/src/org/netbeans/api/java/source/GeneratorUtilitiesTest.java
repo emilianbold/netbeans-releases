@@ -451,7 +451,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             GeneratorUtilities utilities = GeneratorUtilities.get(copy);
             assertNotNull(utilities);
@@ -509,7 +509,10 @@ public class GeneratorUtilitiesTest extends NbTestCase {
                 case METHOD:
                     name = ((MethodTree)t).getName();
                     break;
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     name = ((ClassTree)t).getSimpleName();
                     break;
                 }
@@ -544,7 +547,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -637,7 +640,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -671,7 +674,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -739,7 +742,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -771,7 +774,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -831,7 +834,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             assertNotNull(te);
@@ -891,7 +894,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.RESOLVED);
             TreePath tp = copy.getTreeUtilities().pathFor(offset);
-            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            assertTrue(TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()));
             ClassTree ct = (ClassTree)tp.getLeaf();
             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
             DeclaredType dt = (DeclaredType) copy.getTreeUtilities().parseType("java.util.List<java.lang.String>", te);
