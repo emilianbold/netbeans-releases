@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
+package org.netbeans.modules.maven.configurations;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +54,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.apache.maven.project.MavenProject;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
@@ -73,13 +74,13 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     private static final String ACTIVEPROFILES = "activeProfiles";//NOI18N
     private static final String SEPARATOR = " ";//NOI18N
     private static final String NAMESPACE = null;//FIXME add propper namespase
-    private List<String> privateProfiles = new ArrayList<String>();
-    private List<String> sharedProfiles = new ArrayList<String>();
-    private AuxiliaryConfiguration ac;
+    private final List<String> privateProfiles = new ArrayList<String>();
+    private final List<String> sharedProfiles = new ArrayList<String>();
+    private final AuxiliaryConfiguration ac;
     private final NbMavenProjectImpl nmp;
     private List<Model> lineage;
 
-    ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
+    public ProjectProfileHandlerImpl(NbMavenProjectImpl nmp, AuxiliaryConfiguration ac) {
         this.nmp = nmp;
         this.ac = ac;
         privateProfiles.addAll(retrieveActiveProfiles(ac, false));
@@ -89,7 +90,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     /**
      * reset caching of the lineage, invoked from MavenProject reloads
      */
-    synchronized void clearLineageCache() {
+    public synchronized void clearLineageCache() {
         lineage = null;
     }
 
