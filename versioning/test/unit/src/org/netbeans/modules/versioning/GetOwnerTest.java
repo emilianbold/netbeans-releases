@@ -102,7 +102,35 @@ public class GetOwnerTest extends NbTestCase {
             System.setSecurityManager(defaultSecurityManager);
         }
     }
- 
+     
+    public void testGetOwnerKnowFileType() throws IOException {
+        assertTrue(VersioningManager.getInstance().getOwner(getVersionedFolder()) instanceof TestVCS);
+        File f = new File(getVersionedFolder(), "file");
+        f.createNewFile();
+        
+        testGetOwnerKnowFileType(f, true);
+        
+        f = new File(getVersionedFolder(), "folder");
+        f.mkdirs();
+        testGetOwnerKnowFileType(f, false);                         
+    }
+    
+    private void testGetOwnerKnowFileType(File f, boolean isFile) throws IOException {                
+        accessMonitor.files.clear();
+        VersioningSystem vs = VersioningManager.getInstance().getOwner(f, isFile); // true => its a file, no io.file.isFile() call needed
+        assertNotNull(vs);
+        
+        // file wasn't accessed even on first shot
+        assertFalse(accessMonitor.files.contains(f.getAbsolutePath()));
+        
+        accessMonitor.files.clear();
+        vs = VersioningManager.getInstance().getOwner(f, isFile); 
+        assertNotNull(vs);
+        
+        // file wasn't accessed
+        assertFalse(accessMonitor.files.contains(f.getAbsolutePath()));               
+    }
+    
     public void testGetOwnerVersioned() throws IOException {
         assertTrue(VersioningManager.getInstance().getOwner(getVersionedFolder()) instanceof TestVCS);
         File aRoot = new File(getVersionedFolder(), "a.txt");
@@ -158,8 +186,6 @@ public class GetOwnerTest extends NbTestCase {
             child.createNewFile();
             child2.createNewFile();
         }
-        accessMonitor.checkFiles.add(child.getAbsolutePath());
-        accessMonitor.checkFiles.add(child2.getAbsolutePath());
         
         assertFileAccess(child, isVersioned, true /* access */);
         
@@ -196,10 +222,8 @@ public class GetOwnerTest extends NbTestCase {
 
     private class StatFiles extends SecurityManager {
         private List<String> files = new LinkedList<String>();        
-        private List<String> checkFiles = new LinkedList<String>();        
         @Override
         public void checkRead(String file) {
-            if(!checkFiles.contains(file)) return;
             files.add(file);
         }       
         @Override
