@@ -295,8 +295,9 @@ public final class NbMavenProjectImpl implements Project {
 
     private static Properties cloneStaticProps() {
         synchronized (statics) {
-            if (statics.size() == 0) {
-                //not initialized
+            if (statics.isEmpty()) { // not yet initialized
+                // Now a misnomer, but available to activate profiles only during NB project parse:
+                statics.setProperty("netbeans.execution", "true"); // NOI18N
                 EmbedderFactory.fillEnvVars(statics);
                 statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
             }
