@@ -67,19 +67,15 @@ import org.openide.util.actions.SystemAction;
 public class ShareMenu extends DynamicMenu implements Presenter.Menu {
     private final Lookup lookup;
 
-    private ShareMenu (VCSContext ctx, Lookup lookup) {
-        super(ctx, NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu"));
+    public ShareMenu () {
+        this(null);
+    }
+    
+    public ShareMenu (Lookup lookup) {
+        super(NbBundle.getMessage(ShareMenu.class, "CTL_MenuItem_ShareMenu"));
         this.lookup = lookup;
     }
     
-    public ShareMenu(VCSContext ctx) {
-        this(ctx, null);
-    }
-
-    public ShareMenu (Lookup lookup) {
-        this(null, lookup);
-    }
-
     @Override
     protected JMenu createMenu() {
         JMenu menu = new JMenu(this);
