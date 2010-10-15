@@ -148,6 +148,12 @@ made subject to such option by the copyright holder.
 	        mask="ffffffff00ff00000000000000000000ffff"/>
         <resolver mime="application/x-shobj+elf"/>
     </file>
+    <file>
+	<!--          ! < a r c h >     -->
+	<magic   hex="213c617263683e"
+	        mask="ffffffffffffff"/>
+        <resolver mime="application/x-stobj+elf"/>
+    </file>
 
     <file>
 	<!-- Uset this shortened hex string to test. It should indescriminately

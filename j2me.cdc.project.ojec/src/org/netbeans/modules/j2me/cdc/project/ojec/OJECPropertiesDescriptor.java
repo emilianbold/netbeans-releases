@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,15 +42,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.j2me.cdc.project.ojec;
 
-import org.openide.nodes.Children;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.mobility.project.PropertyDescriptor;
+import org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor;
 
-/** A node to represent an Elf shared library object */
-public class DllNode extends CndDataNode {
-
-    public DllNode(DllObject obj) {
-	super(obj, Children.LEAF, obj.getLookup());
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/DllIcon.gif");	// NOI18N
+/**
+ *
+ * @author Adam Sotona
+ */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=35)
+public class OJECPropertiesDescriptor implements ProjectPropertiesDescriptor {
+    
+    private Reference<Set<PropertyDescriptor>> ref = new WeakReference(null);
+    
+    /** Creates a new instance of OJECPropertiesDescriptor */
+    public OJECPropertiesDescriptor() {
+    }
+    
+    public Set getPropertyDescriptors() {
+        Set<PropertyDescriptor> set = ref.get();
+        if (set == null) {
+            set = new HashSet();
+            ref = new WeakReference(set);
+        }
+        return new HashSet(set);
     }
 }

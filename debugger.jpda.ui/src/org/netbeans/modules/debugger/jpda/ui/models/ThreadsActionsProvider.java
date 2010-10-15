@@ -75,6 +75,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     private Action SUSPEND_ACTION;
     private Action RESUME_ACTION;
     private Action INTERRUPT_ACTION;
+    private Action GO_TO_SOURCE_ACTION;
 
     private Action MAKE_CURRENT_ACTION = Models.createAction (
         NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_MakeCurrent_Label"),
@@ -92,24 +93,26 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
 
-    private static Action GO_TO_SOURCE_ACTION = Models.createAction (
-        NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
-        new Models.ActionPerformer () {
-            public boolean isEnabled (Object node) {
-                if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
-                return isGoToSourceSupported ((JPDAThread) node);
-            }
-            
-            public void perform (Object[] nodes) {
-                if (nodes[0] instanceof MonitorModel.ThreadWithBordel) nodes[0] = ((MonitorModel.ThreadWithBordel) nodes[0]).getOriginalThread();
-                String language = DebuggerManager.getDebuggerManager ().
-                    getCurrentSession ().getCurrentLanguage ();
-                SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-                sp.showSource ((JPDAThread) nodes [0], language);
-            }
-        },
-        Models.MULTISELECTION_TYPE_EXACTLY_ONE
-    );
+    private static Action createGO_TO_SOURCE_ACTION(RequestProcessor requestProcessor) {
+        return Models.createAction (
+            NbBundle.getBundle(ThreadsActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
+            new DebuggingActionsProvider.LazyActionPerformer (requestProcessor) {
+                public boolean isEnabled (Object node) {
+                    if (node instanceof MonitorModel.ThreadWithBordel) node = ((MonitorModel.ThreadWithBordel) node).getOriginalThread();
+                    return isGoToSourceSupported ((JPDAThread) node);
+                }
+
+                public void run (Object[] nodes) {
+                    if (nodes[0] instanceof MonitorModel.ThreadWithBordel) nodes[0] = ((MonitorModel.ThreadWithBordel) nodes[0]).getOriginalThread();
+                    String language = DebuggerManager.getDebuggerManager ().
+                        getCurrentSession ().getCurrentLanguage ();
+                    SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
+                    sp.showSource ((JPDAThread) nodes [0], language);
+                }
+            },
+            Models.MULTISELECTION_TYPE_EXACTLY_ONE
+        );
+    }
 
     private Action createSUSPEND_ACTION(RequestProcessor requestProcessor) {
         return Models.createAction (
@@ -203,6 +206,7 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
         SUSPEND_ACTION = createSUSPEND_ACTION(requestProcessor);
         RESUME_ACTION = createRESUME_ACTION(requestProcessor);
         INTERRUPT_ACTION = createINTERRUPT_ACTION(requestProcessor);
+        GO_TO_SOURCE_ACTION = createGO_TO_SOURCE_ACTION(requestProcessor);
     }
     
     public Action[] getActions (Object node) throws UnknownTypeException {
@@ -259,11 +263,6 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     }
 
     private static boolean isGoToSourceSupported (JPDAThread t) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
-        if (!t.isSuspended ())
-            return false;
-        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        return sp.sourceAvailable (t, language, true);
+        return t.isSuspended ();
     }
 }
