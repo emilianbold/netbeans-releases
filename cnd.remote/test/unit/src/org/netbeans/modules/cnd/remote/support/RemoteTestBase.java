@@ -171,6 +171,10 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
     protected void setUp() throws Exception {
         System.err.printf("\n###> setUp    %s\n", getClass().getName() + '.' + getName());
         super.setUp();
+        connectRemoteHost();
+    }
+
+    protected void connectRemoteHost() throws Exception {
         final ExecutionEnvironment env = getTestExecutionEnvironment();
         if (env != null) {
             // the password should be stored in the initialization phase
