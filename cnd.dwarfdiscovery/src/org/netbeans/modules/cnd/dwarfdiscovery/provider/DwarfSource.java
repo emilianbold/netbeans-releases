@@ -181,6 +181,10 @@ public class DwarfSource implements SourceFileProperties{
     public String getItemPath() {
         return fullName;
     }
+
+    void resetItemPath(String path) {
+        fullName = path;
+    }
     
     @Override
     public String getItemName() {
