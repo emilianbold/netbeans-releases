@@ -47,16 +47,12 @@ import com.sun.jdi.AbsentInformationException;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.debugger.Properties;
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.api.debugger.DebuggerManager;
@@ -68,7 +64,9 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Utility methods for sources.
@@ -308,13 +306,18 @@ public class SourcePath {
     ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
-        String url;
+        String sourcePath;
         try {
-            url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
+            sourcePath = convertSlash (t.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
-            url = getURL (
-                    convertClassNameToRelativePath (t.getClassName ()), true
-                );
+            sourcePath = convertClassNameToRelativePath (t.getClassName ());
+        }
+        String url = getURL (sourcePath, true);
+        if (url == null) {
+            String message = NbBundle.getMessage(SourcePath.class, "No_URL_Warning", sourcePath);
+            ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+            StatusDisplayer.getDefault().setStatusText(message);
+            return ;
         }
         final int ln = lineNumber;
         final String u = url;
@@ -344,9 +347,11 @@ public class SourcePath {
                 );
             }
             if (url == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Show Source: No URL for source path "+csf.getSourcePath (stratumn)+
-                        "\nThe reason is likely no opened project for this source file.");
+                String message = NbBundle.getMessage(SourcePath.class,
+                                                     "No_URL_Warning",
+                                                     csf.getSourcePath (stratumn));
+                ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+                StatusDisplayer.getDefault().setStatusText(message);
                 return ;
             }
             lineNumber = csf.getLineNumber (stratumn);
@@ -356,9 +361,11 @@ public class SourcePath {
                 convertClassNameToRelativePath (csf.getClassName ()), true
             );
             if (url == null) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING,
-                        "Show Source: No source URL for class "+csf.getClassName()+
-                        "\nThe reason is likely no opened project for the source file.");
+                String message = NbBundle.getMessage(SourcePath.class,
+                                                     "No_URL_Warning",
+                                                     csf.getClassName());
+                ErrorManager.getDefault().log(ErrorManager.WARNING, message);
+                StatusDisplayer.getDefault().setStatusText(message);
                 return ;
             }
             lineNumber = csf.getLineNumber (stratumn);
