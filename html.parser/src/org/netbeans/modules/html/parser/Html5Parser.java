@@ -74,10 +74,8 @@ import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -103,7 +101,7 @@ public class Html5Parser implements HtmlParser {
 
             //html 5 source are validated by the validator.nu,
             //if there's no such validator available, no errors are provided
-            if (preferedVersion == HtmlVersion.HTML5) {
+            if (preferedVersion == HtmlVersion.HTML5 || preferedVersion == HtmlVersion.XHTML5) {
                 Validator html5validator = ValidatorService.getValidator(preferedVersion);
                 if (html5validator != null) {
                     ValidationContext context = new ValidationContext(code, preferedVersion, source.getSourceFileObject());
@@ -129,6 +127,7 @@ public class Html5Parser implements HtmlParser {
 
     public boolean canParse(HtmlVersion version) {
         return version == HtmlVersion.HTML5
+                || version == HtmlVersion.XHTML5
                 || version == HtmlVersion.HTML32
                 || version == HtmlVersion.HTML41_STRICT
                 || version == HtmlVersion.HTML41_TRANSATIONAL
