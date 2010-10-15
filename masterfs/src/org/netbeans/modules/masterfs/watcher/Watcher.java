@@ -73,6 +73,12 @@ public class Watcher extends AnnotationProvider {
     private final Ext ext;
 
     public Watcher() {
+        // Watcher disabled manually or for some tests
+        if (Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
+            ext = null;
+            return;
+        }
+        
         Notifier<?> notifier = getNotifierForPlatform();
         ext = notifier == null ? null : new Ext(notifier);
 

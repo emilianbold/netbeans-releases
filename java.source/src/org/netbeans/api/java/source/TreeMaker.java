@@ -43,7 +43,6 @@
  */
 package org.netbeans.api.java.source;
 
-import java.util.Map;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
@@ -58,6 +57,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.tools.JavaFileObject;
@@ -457,6 +457,19 @@ public final class TreeMaker {
      */
     public ContinueTree Continue(CharSequence label) {
         return delegate.Continue(label);
+    }
+
+    /**
+     * Creates new DisjointTypeTree.
+     *
+     * @param typeComponents components from which the DisjointTypeTree should be created.
+     *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
+     *                       {@link PrimitiveTypeTree}, {@link WildcardTree}, {@link ParameterizedTypeTree} or {@link ArrayTypeTree}.
+     * @return newly created DisjointTypeTree
+     * @since 0.67
+     */
+    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+        return delegate.DisjointType(typeComponents);
     }
     
     /** Creates a new DoWhileLoopTree.
@@ -910,7 +923,25 @@ public final class TreeMaker {
     public TryTree Try(BlockTree tryBlock, 
                 List<? extends CatchTree> catches, 
                 BlockTree finallyBlock) {
-        return delegate.Try(tryBlock, catches, finallyBlock);
+        return Try(Collections.<Tree>emptyList(), tryBlock, catches, finallyBlock);
+    }
+
+    /**
+     * Creates a new TryTree.
+     *
+     * @param resource     the resources of the try clause. The elements of the list
+     *                     should either be {@link VariableTree}s or {@link ExpressionTree}s.
+     * @param tryBlock     the statement block in the try clause.
+     * @param catches      the list of catch clauses, or an empty list.
+     * @param finallyBlock the finally clause, or null.
+     * @see com.sun.source.tree.TryTree
+     * @since 0.67
+     */
+    public TryTree Try(List<? extends Tree> resources,
+                BlockTree tryBlock,
+                List<? extends CatchTree> catches,
+                BlockTree finallyBlock) {
+        return delegate.Try(resources, tryBlock, catches, finallyBlock);
     }
     
     /**

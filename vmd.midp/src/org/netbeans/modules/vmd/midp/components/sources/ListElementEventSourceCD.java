@@ -72,9 +72,11 @@ import org.openide.util.NbBundle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.midp.actions.GoToSourcePresenter;
+import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.PropertyEditorResourceLazyInit;
 
 /**

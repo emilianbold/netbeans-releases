@@ -701,18 +701,23 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                 controller.fireChangeEvent(); // Notify that the panel changed
             }
         });
+        String prefferedName = (String) settings.getProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME); //NOI18N
+        if (prefferedName != null) {
+            name = prefferedName;
+        }
 
-        //String projectName = (String) settings.getProperty(WizardConstants.PROPERTY_DISPLAY_NAME); //NOI18N
         if (projectName == null) {
-            String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
-            if (workingDir != null && workingDir.length() > 0 &&
-                    (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME) ||
-                    templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
-                name = CndPathUtilitities.getBaseName(workingDir);
-            } else {
-                String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
-                if (sourcesPath != null && sourcesPath.length() > 0) {
-                    name = CndPathUtilitities.getBaseName(sourcesPath);
+            if (name == null) {
+                String workingDir = (String) settings.getProperty(WizardConstants.PROPERTY_WORKING_DIR); //NOI18N
+                if (workingDir != null && workingDir.length() > 0 &&
+                        (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME) ||
+                        templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
+                    name = CndPathUtilitities.getBaseName(workingDir);
+                } else {
+                    String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
+                    if (sourcesPath != null && sourcesPath.length() > 0) {
+                        name = CndPathUtilitities.getBaseName(sourcesPath);
+                    }
                 }
             }
             int baseCount = 1;

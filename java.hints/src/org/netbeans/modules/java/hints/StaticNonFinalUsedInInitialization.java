@@ -90,7 +90,10 @@ public class StaticNonFinalUsedInInitialization {
                 return null;
             }
             switch (current.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case METHOD:
                     return null;
                 case BLOCK:

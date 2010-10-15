@@ -85,6 +85,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
@@ -161,7 +162,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
 
                 while (catchTree != null
                         && catchTree.getLeaf().getKind() != Kind.TRY
-                        && catchTree.getLeaf().getKind() != Kind.CLASS
+                        && !TreeUtilities.CLASS_TREE_KINDS.contains(catchTree.getLeaf().getKind())
                         && catchTree.getLeaf().getKind() != Kind.CATCH)
                     catchTree = catchTree.getParentPath();
 
@@ -410,7 +411,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         // find the containing top level class
         ClassTree containingTopLevel = null;
         for (Tree t : statement) {
-            if (Kind.CLASS == t.getKind()) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 containingTopLevel = (ClassTree) t;
             }
         }

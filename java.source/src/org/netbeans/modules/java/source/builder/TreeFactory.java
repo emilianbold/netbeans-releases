@@ -294,6 +294,13 @@ public class TreeFactory {
         return make.at(NOPOS).Continue(n);
     }
     
+    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+        ListBuffer<JCExpression> components = new ListBuffer<JCExpression>();
+        for (Tree t : typeComponents)
+            components.append((JCExpression)t);
+        return make.at(NOPOS).TypeDisjoint(components.toList());
+    }
+
     public DoWhileLoopTree DoWhileLoop(ExpressionTree condition, StatementTree statement) {
         return make.at(NOPOS).DoLoop((JCStatement)statement, (JCExpression)condition);
     }
@@ -630,13 +637,17 @@ public class TreeFactory {
         return make.at(NOPOS).Throw((JCExpression)expression);
     }
     
-    public TryTree Try(BlockTree tryBlock, 
+    public TryTree Try(List<? extends Tree> resources,
+                       BlockTree tryBlock,
                        List<? extends CatchTree> catchList, 
                        BlockTree finallyBlock) {
+        ListBuffer<JCTree> res = new ListBuffer<JCTree>();
+        for (Tree t : resources)
+            res.append((JCTree)t);
         ListBuffer<JCCatch> catches = new ListBuffer<JCCatch>();
         for (CatchTree t : catchList)
             catches.append((JCCatch)t);
-        return make.at(NOPOS).Try((JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
+        return make.at(NOPOS).Try(res.toList(), (JCBlock)tryBlock, catches.toList(), (JCBlock)finallyBlock);
     }
     
     public com.sun.tools.javac.util.List<JCExpression> Types(List<Type> ts) {
@@ -1383,6 +1394,7 @@ public class TreeFactory {
 
     private TryTree modifyTryCatch(TryTree traj, int index, CatchTree kec, Operation op) {
         TryTree copy = Try(
+            traj.getResources(),
             traj.getBlock(),
             c(traj.getCatches(), index, kec, op),
             traj.getFinallyBlock()
@@ -1462,7 +1474,10 @@ public class TreeFactory {
                         );
                 return clone;
             }
-            case CLASS: {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE: {
                 ClassTree t = (ClassTree) node;
                 // copy all the members, for constructor change their name
                 // too!

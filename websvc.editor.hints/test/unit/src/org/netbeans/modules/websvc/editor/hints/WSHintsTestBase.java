@@ -55,6 +55,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -100,7 +101,7 @@ public abstract class WSHintsTestBase extends NbTestCase {
                 workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ruleEngine.getProblemsFound().clear();
                 for (Tree tree : workingCopy.getCompilationUnit().getTypeDecls()) {
-                    if (tree.getKind() == Tree.Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                         TreePath path = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), tree);
                         TypeElement javaClass = (TypeElement) workingCopy.getTrees().getElement(path);
 

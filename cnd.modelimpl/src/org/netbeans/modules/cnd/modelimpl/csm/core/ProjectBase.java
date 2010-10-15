@@ -1058,7 +1058,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
+        File file = nativeFile.getFile();
+        CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getSimpleName() + ") returned null file"); //NOI18N
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
         APTFileSearch searcher = null;
         Object aPlatformProject = getPlatformProject();
@@ -1880,7 +1882,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final FileImpl getFile(FileObject file, boolean treatSymlinkAsSeparateFile) {
-        return getFileContainer().getFile(FileUtil.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
+        return getFileContainer().getFile(CndFileUtils.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
     }
 
     public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {

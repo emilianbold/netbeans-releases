@@ -49,13 +49,14 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.openide.filesystems.FileObject;
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
-public class M2Configuration extends AbstractMavenActionsProvider implements ProjectConfiguration  {
+public class M2Configuration extends AbstractMavenActionsProvider implements ProjectConfiguration, Comparable<M2Configuration> {
 
     public static final String DEFAULT = "%%DEFAULT%%"; //NOI18N
     
@@ -73,7 +74,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return new M2Configuration(DEFAULT, prj);
     }
     
-    private final String id;
+    private @NonNull final String id;
     private List<String> profiles;
     private final NbMavenProjectImpl project;
     static final String FILENAME = "nbactions.xml"; //NOI18N
@@ -82,22 +83,23 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
     static final String FILENAME_SUFFIX = ".xml"; //NOI18N
     private Date lastModified = new Date();
     private boolean lastTimeExists = true;
-    private final Properties properties = new Properties();
+    private final Map<String,String> properties = new HashMap<String,String>();
     
     public M2Configuration(String id, NbMavenProjectImpl proj) {
+        assert id != null;
         this.id = id;
         this.project = proj;
         profiles = Collections.<String>emptyList();
     }
 
-    public String getDisplayName() {
+    public @Override String getDisplayName() {
         if (DEFAULT.equals(id)) {
             return NbBundle.getMessage(M2Configuration.class, "TXT_DefaultConfig");
         }
         return id;
     }
     
-    public String getId() {
+    public @NonNull String getId() {
         return id;
     }
     
@@ -109,7 +111,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return profiles;
     }
 
-    public Properties getProperties() {
+    public Map<String,String> getProperties() {
         return properties;
     }
     
@@ -121,29 +123,19 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         return FILENAME_PREFIX + id + FILENAME_SUFFIX;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final M2Configuration other = (M2Configuration) obj;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
+    public @Override boolean equals(Object obj) {
+        return obj instanceof M2Configuration && id.equals(((M2Configuration) obj).id);
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.id != null ? this.id.hashCode() : 0);
-        return hash;
+    public @Override int hashCode() {
+        return id.hashCode();
     }
 
-    public InputStream getActionDefinitionStream() {
+    public @Override int compareTo(M2Configuration o) {
+        return id.compareTo(o.id);
+    }
+
+    public @Override InputStream getActionDefinitionStream() {
         FileObject fo = project.getProjectDirectory().getFileObject(getFileNameExt(id));
         lastTimeExists = fo != null;
         if (fo != null) {
@@ -173,14 +165,9 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
             Reader read = performDynamicSubstitutions(Collections.<String,String>emptyMap(), getRawMappingsAsString());
             // basically doing a copy here..
             ActionToGoalMapping mapping = reader.read(read);    
-            List lst = mapping.getActions();
-            if (lst != null) {
-                Iterator it = lst.iterator();
-                while(it.hasNext()) {
-                    NetbeansActionMapping mapp = (NetbeansActionMapping) it.next();
-                    if (mapp.getActionName().startsWith("CUSTOM-")) { //NOI18N
-                        toRet.add(mapp);
-                    }
+            for (NetbeansActionMapping mapp : mapping.getActions()) {
+                if (mapp.getActionName().startsWith("CUSTOM-")) { //NOI18N
+                    toRet.add(mapp);
                 }
             }
             return toRet.toArray(new NetbeansActionMapping[toRet.size()]);
@@ -199,6 +186,5 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Pro
         lastTimeExists = fo != null;
         return ((fo == null && prevExists) || (fo != null && fo.lastModified().after(lastModified)));
     }
-
 
 }

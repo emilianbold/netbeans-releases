@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import com.sun.el.parser.AstDeferredExpression;
+import com.sun.el.parser.AstDynamicExpression;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstMethodSuffix;
 import com.sun.el.parser.AstPropertySuffix;
@@ -93,7 +95,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (element == null || !element.isValid()) {
             return CodeCompletionResult.NONE;
         }
-        Node target = element.findNodeAt(context.getCaretOffset());
+        Node target = getTargetNode(element, context.getCaretOffset());
         AstPath path = new AstPath(element.getNode());
         List<Node> rootToNode = path.rootToNode(target);
         if (rootToNode.isEmpty()) {
@@ -115,22 +117,13 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         ELTypeUtilities typeUtilities = ELTypeUtilities.create(getFileObject(context));
         Node previous = rootToNode.get(rootToNode.size() - 1);
 
-        // due to the ast structure in the case of identifiers we need to try to
-        // resolve the type of the identifier, otherwise the type of the preceding
-        // node.
-        Node nodeToResolve;
-        if (target instanceof AstIdentifier
-                && (previous instanceof AstIdentifier
-                || previous instanceof AstPropertySuffix
-                || previous instanceof AstMethodSuffix)) {
-            nodeToResolve = target;
-        } else {
-            nodeToResolve = previous;
-        }
+        Node nodeToResolve = getNodeToResolve(target, previous);
+        Element resolved =
+                typeUtilities.resolveElement(element, nodeToResolve);
 
-        Element resolved = typeUtilities.resolveElement(element, nodeToResolve);
-
-        if (resolved == null) {
+        if (ELTypeUtilities.isScopeObject(nodeToResolve)) {
+            proposeBeansFromScope(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);
+        } else if(resolved == null) {
             // not yet working properly
             //proposeFunctions(context, prefix, element, prefix, typeUtilities, proposals);
             proposeManagedBeans(context, prefixMatcher, element, typeUtilities, proposals);
@@ -145,6 +138,20 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         return proposals.isEmpty() ? CodeCompletionResult.NONE : result;
     }
 
+    private Node getNodeToResolve(Node target, Node previous) {
+        // due to the ast structure in the case of identifiers we need to try to
+        // resolve the type of the identifier, otherwise the type of the preceding
+        // node.
+        if (target instanceof AstIdentifier
+                && (previous instanceof AstIdentifier
+                || previous instanceof AstPropertySuffix
+                || previous instanceof AstMethodSuffix)) {
+            return target;
+        } else {
+            return previous;
+        }
+    }
+
     private ELElement getElementAt(ParserResult parserResult, int offset) {
         ELParserResult elParserResult = (ELParserResult) parserResult;
         ELElement result = elParserResult.getElementAt(offset);
@@ -154,6 +161,20 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         // try to sanitize
         ELSanitizer sanitizer = new ELSanitizer(result);
         return sanitizer.sanitized();
+    }
+
+    private Node getTargetNode(ELElement element, int offset) {
+        Node result = element.findNodeAt(offset);
+        // in EL AST for example #{foo.bar^} the caret is at a deferred expression node, whereas
+        // for code completion we need the "bar" property node; the code below tries to accomplish
+        // that
+        if (result instanceof AstDeferredExpression || result instanceof AstDynamicExpression) {
+            Node realTarget = element.findNodeAt(offset - 1);
+            if (realTarget != null) {
+                result = realTarget;
+            }
+        }
+        return result;
     }
 
     private FileObject getFileObject(CodeCompletionContext context) {
@@ -219,6 +240,30 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
             PrefixMatcher prefix, ELElement elElement, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
 
         for (VariableInfo bean : ELVariableResolvers.getManagedBeans(getFileObject(context))) {
+            if (!prefix.matches(bean.name)) {
+                continue;
+            }
+            Element element = typeUtilities.getElementForType(bean.clazz);
+            ELJavaCompletionItem item = new ELJavaCompletionItem(element, elElement, typeUtilities);
+            item.setAnchorOffset(context.getCaretOffset() - prefix.length());
+            item.setSmart(true);
+            proposals.add(item);
+        }
+    }
+
+    private void proposeBeansFromScope(CodeCompletionContext context,
+            PrefixMatcher prefix, ELElement elElement, Node scopeNode, ELTypeUtilities typeUtilities, List<CompletionProposal> proposals) {
+
+        String scope = scopeNode.getImage();
+        // this is ugly, but in the JSF model beans
+        // are stored to "session", "application" etc (instead of "sessionScope").
+        // see org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope
+        final String scopeString = "Scope";//NOI18N
+        if (scope.endsWith(scopeString)) {
+            scope = scope.substring(0, scope.length() - scopeString.length());
+        }
+
+        for (VariableInfo bean : ELVariableResolvers.getBeansInScope(scope, getFileObject(context))) {
             if (!prefix.matches(bean.name)) {
                 continue;
             }

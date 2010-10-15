@@ -72,6 +72,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -118,7 +119,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         if (Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind()) {
             return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
-        if (Kind.CLASS == handle.getKind()) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
             return handleClass(refactoringElementsBag, handle, element);
         }
         return null;

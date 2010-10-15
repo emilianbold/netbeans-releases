@@ -108,13 +108,7 @@ final class ELSanitizer {
     private static String secondPass(String expression) {
         String spaces = "";
         if (expression.endsWith(" ")) {
-            int lastNonWhiteSpace = -1;
-            for (int i = expression.length() - 1; i >= 0; i--) {
-                if (!Character.isWhitespace(expression.charAt(i))) {
-                    lastNonWhiteSpace = i;
-                    break;
-                }
-            }
+            int lastNonWhiteSpace = findLastNonWhiteSpace(expression);
             if (lastNonWhiteSpace > 0) {
                 spaces = expression.substring(lastNonWhiteSpace + 1);
                 expression = expression.substring(0, lastNonWhiteSpace + 1);
@@ -132,6 +126,11 @@ final class ELSanitizer {
                     return expression;
                 }
             }
+            // sanitizes cases where the expressions ends with dot and spaces,
+            // e.g. #{foo.  }
+            if (ELTokenId.DOT == elToken) {
+                return expression + ADDED_SUFFIX + spaces ;
+            }
             // for operators
             if (ELTokenId.ELTokenCategories.OPERATORS.hasCategory(elToken)) {
                 return expression + spaces + ADDED_SUFFIX;
@@ -144,6 +143,18 @@ final class ELSanitizer {
 
     }
 
+    // package private for tests
+    static int findLastNonWhiteSpace(String str) {
+        int lastNonWhiteSpace = -1;
+        for (int i = str.length() - 1; i >= 0; i--) {
+            if (!Character.isWhitespace(str.charAt(i))) {
+                lastNonWhiteSpace = i;
+                break;
+            }
+        }
+        return lastNonWhiteSpace;
+    }
+    
     private static class CleanExpression {
 
         private final String clean, prefix, suffix;

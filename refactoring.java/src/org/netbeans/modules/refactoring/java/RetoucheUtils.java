@@ -788,7 +788,7 @@ public class RetoucheUtils {
         Tree selectedTree = path.getLeaf();
         TreeUtilities utils = javac.getTreeUtilities();
         while(true) {
-            if (Tree.Kind.CLASS == selectedTree.getKind()) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(selectedTree.getKind())) {
                 ClassTree classTree = (ClassTree) selectedTree;
                 if (isEnum && utils.isEnum(classTree)
                         || isInterface && utils.isInterface(classTree)

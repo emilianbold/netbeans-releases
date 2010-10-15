@@ -143,7 +143,12 @@ public class WebBeansModelProviderImpl extends EventInjectionPointLogic {
         {
             return true;
         }
-        if ( isObservesParameter(element, parent, annotations, impl)){
+        /*
+         * Parameter with @Observes annotation is not plain injection point. 
+         */
+        boolean hasObserves = AnnotationObjectProvider.hasAnnotation(element, 
+                OBSERVES_ANNOTATION, getImplementation(impl).getHelper());
+        if ( !hasObserves && isObservesParameter(element, parent, annotations, impl)){
             return true;
         }
         return impl.getHelper().hasAnnotation(annotations, INJECT_ANNOTATION)||

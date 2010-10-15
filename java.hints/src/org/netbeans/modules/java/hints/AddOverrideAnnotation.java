@@ -192,7 +192,7 @@ public class AddOverrideAnnotation extends AbstractHint {
             return NbBundle.getMessage(AddOverrideAnnotation.class, "FIX_AddOverrideAnnotation");
         }
         
-        private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
+        private static final Set<Kind> DECLARATION = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.METHOD, Kind.VARIABLE);
         
         public ChangeInfo implement() throws IOException {
             JavaSource js = JavaSource.forFileObject(file);

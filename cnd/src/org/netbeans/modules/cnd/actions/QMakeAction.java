@@ -58,13 +58,14 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.IOProvider;
@@ -131,7 +132,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File proFile = FileUtil.toFile(fileObject);
+        File proFile = CndFileUtils.toFile(fileObject);
         // Build directory
         String buildDir = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
         // Executable
@@ -191,7 +192,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 inputVisible(true).
                 inputOutput(inputOutput).
                 outLineBased(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 postMessageDisplayer(new PostMessageDisplayer.Default("QMake")). // NOI18N
                 outConvertorFactory(processChangeListener);

@@ -55,6 +55,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -151,6 +152,23 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
                 process();
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
+            }
+        }
+    });
+
+    private RequestProcessor.Task updateVisibleSpans = WORKER.create(new Runnable() {
+        public void run() {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    public void run() {
+                        updateCurrentVisibleSpan();
+                        reschedule();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     });
@@ -529,19 +547,14 @@ public class ComponentPeer implements PropertyChangeListener, DocumentListener, 
         //#156490: updateCurrentVisibleSpan invokes viewToModel, which may throw StateInvariantError
         //if the starting position of view disappeared from the document in the current change (before the views are adjusted)
         //reschedule to later, when the views are adjusted to the new state
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                updateCurrentVisibleSpan();
-                reschedule();
-            }
-        });
+        updateVisibleSpans.schedule(250);
     }
 
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tokenList) {
             reschedule();
         } else {
-            updateCurrentVisibleSpan();
+            doUpdateCurrentVisibleSpan();
         }
     }
     

@@ -608,7 +608,10 @@ public class HintsInvoker {
 
         private boolean pushSuppressWarrnings(TreePath path) {
             switch(path.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case METHOD:
                 case VARIABLE:
                     Set<String> current = suppresWarnings.size() == 0 ? null : suppresWarnings.peek();

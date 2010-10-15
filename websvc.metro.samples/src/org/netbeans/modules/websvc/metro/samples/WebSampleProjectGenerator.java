@@ -54,6 +54,11 @@ import java.util.Stack;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
 import org.netbeans.modules.websvc.wsitconf.api.DevDefaultsProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileLock;
@@ -61,12 +66,14 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.xml.XMLUtil;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * Create a sample web project by unzipping a template into some directory
@@ -75,6 +82,9 @@ import org.xml.sax.InputSource;
  */
 public class WebSampleProjectGenerator {
     
+    private static final String DEFAULT_PORT = "8080";              // NOI18N
+    private static final String LOCALHOST = "localhost";            // NOI18N
+
     private WebSampleProjectGenerator() {}
 
     public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/web-project/3";    //NOI18N
@@ -106,6 +116,7 @@ public class WebSampleProjectGenerator {
                         replaceText(e, name);
                     }
                     saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
+                    updateServerReference( prjLoc , serverID );
                 }
             } catch (Exception e) {
                 throw new IOException(e.toString());
@@ -124,6 +135,7 @@ public class WebSampleProjectGenerator {
                     try {
                         FileObject prjLoc = createProjectFolder(new File(projectLocation, prjName.substring(prjName.lastIndexOf("/")+1, prjName.indexOf('.'))));
                         unzip(is, prjLoc);
+                        updateServerReference( prjLoc , serverID );
                         projects.add(prjLoc);
                         Boolean needsDefaults = (Boolean)template.getAttribute("needsdefaults");
                         if (needsDefaults) {
@@ -138,6 +150,56 @@ public class WebSampleProjectGenerator {
             }
         }
         return projects;
+    }
+    
+    private static void updateServerReference(FileObject fileObject, 
+            String serverID) throws IOException, InstanceRemovedException, SAXException
+    {
+        ServerInstance serverInstance = Deployment.getDefault().
+            getServerInstance(serverID);
+        if ( serverInstance == null ){
+            return;
+        }
+        Descriptor descriptor = serverInstance.getDescriptor();
+        if ( descriptor == null ) {
+            return ;
+        }
+        String host = descriptor.getHostname();
+        int port = descriptor.getHttpPort();
+        if ( fileObject.isFolder() ){
+            FileObject[] files = fileObject.getChildren();
+            for (FileObject file : files) {
+                updateServerReference( file , serverID);
+            }
+        }
+        else {
+            String name = fileObject.getNameExt();
+            if ( name.endsWith("catalog.xml")) {    // NOI18N   
+                File file = FileUtil.toFile( fileObject );
+                Document doc = XMLUtil.parse(new InputSource(file.toURI().toString()), 
+                        false, true, null, null);
+                NodeList nlist = doc.getElementsByTagName( "system");       //NOI18N
+                if (nlist != null) {
+                    for (int i=0; i < nlist.getLength(); i++) {
+                        Node node = nlist.item(i);
+                        if (node.getNodeType() != Node.ELEMENT_NODE) {
+                            continue;
+                        }
+                        Element element = (Element)node;
+                        Attr attribute = element.getAttributeNode("systemId");//NOI18N
+                        String value = attribute.getValue();
+                        if ( host != null && host.length()>0 && value.contains(LOCALHOST)){
+                            value = value.replace(LOCALHOST, host);
+                        }
+                        if ( port!=0 && value.contains(DEFAULT_PORT) ){
+                            value = value.replace(DEFAULT_PORT, ""+port);
+                        }
+                        attribute.setValue(value);
+                    }
+                    saveXml(doc, fileObject.getParent(), name);
+                }
+            }
+        }
     }
     
     private static FileObject createProjectFolder(File projectFolder) throws IOException {

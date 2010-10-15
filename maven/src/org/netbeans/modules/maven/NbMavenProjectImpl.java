@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -118,6 +117,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
@@ -245,23 +245,17 @@ public final class NbMavenProjectImpl implements Project {
      * @return
      */
     public MavenProject loadMavenProject(MavenEmbedder embedder, List<String> activeProfiles, Properties properties) {
-//        AggregateProgressHandle hndl = createDownloadHandle();
         try {
-//            ProgressTransferListener.setAggregateHandle(hndl);
-//            hndl.start();
             MavenExecutionRequest req = embedder.createMavenExecutionRequest();
-//            ProgressTransferListener ptl = new ProgressTransferListener();
-//            req.setTransferListener(ptl);
-
             req.addActiveProfiles(activeProfiles);
             req.setPom(projectFile);
             req.setNoSnapshotUpdates(true);
             req.setUpdateSnapshots(false);
-            Properties props = new Properties();
+            Properties props = createSystemPropsForProjectLoading();
             if (properties != null) {
                 props.putAll(properties);
-                req.setUserProperties(props);
             }
+            req.setUserProperties(props);
             //MEVENIDE-634 i'm wondering if this fixes the issue
             req.setInteractiveMode(false);
             req.setOffline(true);
@@ -269,31 +263,25 @@ public final class NbMavenProjectImpl implements Project {
             // that will not be used in current pom anyway..
             // #135070
             req.setRecursive(false);
-            req.setUserProperties(createSystemPropsForProjectLoading());
             MavenExecutionResult res = embedder.readProjectWithDependencies(req);
             if (!res.hasExceptions()) {
                 return res.getProject();
             } else {
                 List<Throwable> exc = res.getExceptions();
-                //TODO how to report to the user?
                 for (Throwable ex : exc) {
-                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
+                    Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.FINE, "Exception thrown while loading maven project at " + getProjectDirectory(), ex); //NOI18N
                 }
             }
         } catch (RuntimeException exc) {
             //guard against exceptions that are not processed by the embedder
             //#136184 NumberFormatException
             Logger.getLogger(NbMavenProjectImpl.class.getName()).log(Level.INFO, "Runtime exception thrown while loading maven project at " + getProjectDirectory(), exc); //NOI18N
-        } finally {
-//            hndl.finish();
-//            ProgressTransferListener.clearAggregateHandle();
         }
         File fallback = InstalledFileLocator.getDefault().locate("modules/ext/maven/fallback_pom.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
         try {
             return embedder.readProject(fallback);
         } catch (Exception x) {
             // oh well..
-            //NOPMD
         }
         return null;
     }
@@ -700,23 +688,15 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public URI[] getGeneratedSourceRoots() {
-
         //TODO more or less a hack.. should be better supported by embedder itself.
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources"); //NOI18N
         Set<URI> uris = new HashSet<URI>();
-
-        File fil = new File(uri);
-        if (fil.exists() && fil.isDirectory()) {
-            File[] fils = fil.listFiles(new FileFilter() {
-
-                @Override
-                public boolean accept(File pathname) {
-                    return pathname.isDirectory();
-                }
-            });
-            if (fils != null) { //#163842 maybe if the dir was deleted right before listFiles()
-                for (int i = 0; i < fils.length; i++) {
-                    uris.add(fils[i].toURI());
+        File[] roots = new File(uri).listFiles();
+        if (roots != null) {
+            for (File root : roots) {
+                File[] kids = root.listFiles();
+                if (kids != null && /* #190626 */kids.length > 0) {
+                    uris.add(root.toURI());
                 }
             }
         }

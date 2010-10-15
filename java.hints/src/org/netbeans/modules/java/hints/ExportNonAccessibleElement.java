@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -88,6 +89,7 @@ import org.openide.util.NbBundle;
  */
 public class ExportNonAccessibleElement extends AbstractHint 
 implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
+    private static final Set<Kind> DECLARATION = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.METHOD, Kind.VARIABLE);
     private transient volatile boolean stop;
     
     /** Creates a new instance of AddOverrideAnnotation */
@@ -96,7 +98,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
     }
     
     public Set<Kind> getTreeKinds() {
-        return EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.VARIABLE);
+        return DECLARATION;
     }
 
     public List<ErrorDescription> run(CompilationInfo compilationInfo,
@@ -135,7 +137,11 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
 
             switch (treePath.getLeaf().getKind()) {
                 case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
-                case CLASS: span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
                 case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
             }
 
@@ -354,8 +360,6 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
             return NbBundle.getMessage(MissingHashCode.class, msg);
         }
         
-        private static final Set<Kind> DECLARATION = EnumSet.of(Kind.CLASS, Kind.METHOD, Kind.VARIABLE);
-        
         public ChangeInfo implement() throws IOException {
             ModificationResult result = JavaSource.forFileObject(file).runModificationTask(new Task<WorkingCopy>() {
 
@@ -364,7 +368,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                     Element e = handle.resolveElement(wc);
                     
                     Tree t = wc.getTrees().getTree(e);
-                    if (t.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         ClassTree ct = (ClassTree)t;
                         Set<Modifier> flags = new HashSet<Modifier>(ct.getModifiers().getFlags());
                         flags.remove(Modifier.PUBLIC);

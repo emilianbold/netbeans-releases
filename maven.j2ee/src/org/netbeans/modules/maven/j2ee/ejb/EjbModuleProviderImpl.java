@@ -219,7 +219,9 @@ public class EjbModuleProviderImpl extends J2eeModuleProvider implements EjbJarP
     @Override
     public File[] getRequiredLibraries() {
         ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
-        ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.COMPILE);
+        // do not use COMPILE classpath here because it contains dependencies
+        // with *provided* scope which should not be deployed
+        ClassPath cp = cppImpl.getProjectSourcesClassPath(ClassPath.EXECUTE);
         List<File> files = new ArrayList<File>();
         for (FileObject fo : cp.getRoots()) {
             fo = FileUtil.getArchiveFile(fo);

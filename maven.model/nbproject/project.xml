@@ -136,6 +136,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.javeleon.netbeans</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven</friend>

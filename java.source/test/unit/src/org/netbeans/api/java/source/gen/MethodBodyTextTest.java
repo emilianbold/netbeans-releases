@@ -105,7 +105,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         BlockTree newBody = make.createMethodBody(node, "{ System.err.println(\"Nothing.\"); }");
@@ -134,7 +134,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         StringBuffer body = new StringBuffer();
                         body.append("{ System.out.println(\"Again Nothing\"); }");
@@ -209,7 +209,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         MethodTree node = (MethodTree) clazz.getMembers().get(1);
                         String body = "{ List l; }";
@@ -269,7 +269,7 @@ public class MethodBodyTextTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree clazz = (ClassTree) typeDecl;
                         MethodTree method = (MethodTree) clazz.getMembers().get(0);
                         ExpressionStatementTree statement = make.ExpressionStatement(

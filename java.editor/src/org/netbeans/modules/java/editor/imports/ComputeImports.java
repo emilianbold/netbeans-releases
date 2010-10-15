@@ -439,7 +439,7 @@ public class ComputeImports {
             return super.visitAnnotation(node, p);
         }
         
-        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.CLASS);
+        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE);
         
         //resolving scope for each unresolved identifier is very slow, and not really necessary for Trees.isAccessible -
         //scope for the nearest class should be OK

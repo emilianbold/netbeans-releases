@@ -54,6 +54,10 @@ public class HtmlVersionTest extends NbTestCase {
         super(name);
     }
 
+    public static void setDefaultHtmlVersion(HtmlVersion version) {
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
+    }
+
     public void testDisplayName() {
         HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
 
@@ -61,6 +65,8 @@ public class HtmlVersionTest extends NbTestCase {
         assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
         assertNull(v.getDefaultNamespace());
         assertFalse(v.isXhtml());
+        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
+        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
     }
 
     public void testFinds() {
