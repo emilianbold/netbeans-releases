@@ -275,13 +275,18 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     weAreSaving = true;
 
                     //we need to finish transactions in the same thread we initiated them, doh..
-                    if (handle.getPOMModel().isIntransaction()) {
-                        if (handle.isModified(handle.getPOMModel())) {
-                            handle.getPOMModel().endTransaction();
-                        } else {
-                            handle.getPOMModel().rollbackTransaction();
+                    // but #189854: this cannot be while holding project mutex
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            if (handle.getPOMModel().isIntransaction()) {
+                                if (handle.isModified(handle.getPOMModel())) {
+                                    handle.getPOMModel().endTransaction();
+                                } else {
+                                    handle.getPOMModel().rollbackTransaction();
+                                }
+                            }
                         }
-                    }
+                    });
                 }
             } else {
                 try {
