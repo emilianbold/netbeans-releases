@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
@@ -141,9 +142,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE_ID, executable+";"+executableID.getTimeStamp()); // NOI18N
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+            File file = new File(executable);
+            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE_ID, executable+";"+file.lastModified()); // NOI18N
         }
 
         targetConf.setExecutionEnvironment(execEnv);

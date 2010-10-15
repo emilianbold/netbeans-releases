@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
             <goal>nbm:run-platform</goal>
         </goals>
         <properties>
-            <netbeans.run.params.ide>--reload ${module}</netbeans.run.params.ide>
+            <netbeans.run.params>--reload ${module}</netbeans.run.params>
         </properties>
     </action>
 </actions>

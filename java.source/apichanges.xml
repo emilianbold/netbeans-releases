@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="jdk7-update">
+             <api name="general"/>
+             <summary>Added several methods to support new API for modeling JDK7 features.</summary>
+             <version major="0" minor="67"/>
+             <date day="12" month="10" year="2010"/>
+             <author login="jlahoda"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CodeStyle.alignMultilineTryResources</code>, <code>CodeStyle.spaceBeforeTryParen</code>,
+                 <code>CodeStyle.spaceWithinTryParens</code>, <code>CodeStyle.wrapTryResources</code>
+                 <code>TreeMaker.DisjointType</code>, <code>CodeStyle.Try</code> and <code>TreeUtilities.CLASS_TREE_KINDS</code>
+                 to support new language features in JDK7.
+             </description>
+             <issue number="190767"/>
+        </change>
         <change id="TreeMaker.PackageAnnotations">
              <api name="general"/>
              <summary>Added TreeMaker.CompilationUnit(List&lt;AnnotationTree&gt;, ...), TreeMaker.addPackageAnnotation, TreeMaker.insertPackageAnnotation, TreeMaker.removePackageAnnotation methods.</summary>

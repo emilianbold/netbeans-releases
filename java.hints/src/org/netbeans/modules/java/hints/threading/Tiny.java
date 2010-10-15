@@ -65,6 +65,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
@@ -181,7 +182,7 @@ public class Tiny {
 
         TreePath up = ctx.getPath().getParentPath();
 
-        while (up != null && up.getLeaf().getKind() != Kind.METHOD && up.getLeaf().getKind() != Kind.CLASS) {
+        while (up != null && up.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(up.getLeaf().getKind())) {
             if (up.getLeaf().getKind() == Kind.SYNCHRONIZED) {
                 return null;
             }
@@ -336,7 +337,7 @@ public class Tiny {
 
         TreePath inspect = ctx.getPath();
 
-        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS) {
+        while (inspect != null && !TreeUtilities.CLASS_TREE_KINDS.contains(inspect.getLeaf().getKind())) {
             if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
                 Element current = ctx.getInfo().getTrees().getElement(new TreePath(inspect, ((SynchronizedTree) inspect.getLeaf()).getExpression()));
 
@@ -368,8 +369,10 @@ public class Tiny {
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
-                        constraints=@Constraint(variable="$to", type="long"),
-                        constraints=@Constraint(variable="$nanos", type="int"))
+                        constraints={
+                            @Constraint(variable="$to", type="long"),
+                            @Constraint(variable="$nanos", type="int")
+                        })
     })
     public static ErrorDescription sleepInSync(HintContext ctx) {
         if (!isSynced(ctx, ctx.getPath())) {
@@ -386,8 +389,10 @@ public class Tiny {
         @TriggerPattern(value="java.lang.Thread.sleep($to)",
                         constraints=@Constraint(variable="$to", type="long")),
         @TriggerPattern(value="java.lang.Thread.sleep($to, $nanos)",
-                        constraints=@Constraint(variable="$to", type="long"),
-                        constraints=@Constraint(variable="$nanos", type="int"))
+                        constraints={
+                            @Constraint(variable="$to", type="long"),
+                            @Constraint(variable="$nanos", type="int")
+                        })
     })
     public static ErrorDescription sleepInLoop(HintContext ctx) {
         if (findLoop(ctx.getPath()) == null) {
@@ -422,7 +427,7 @@ public class Tiny {
     }
 
     private static boolean isSynced(HintContext ctx, TreePath inspect) {
-        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS) {
+        while (inspect != null && !TreeUtilities.CLASS_TREE_KINDS.contains(inspect.getLeaf().getKind())) {
             if (inspect.getLeaf().getKind() == Kind.SYNCHRONIZED) {
                 return true;
             }
@@ -444,7 +449,7 @@ public class Tiny {
     private static final Set<Kind> LOOP_KINDS = EnumSet.of(Kind.DO_WHILE_LOOP, Kind.ENHANCED_FOR_LOOP, Kind.FOR_LOOP, Kind.WHILE_LOOP);
 
     private static TreePath findLoop(TreePath inspect) {
-        while (inspect != null && inspect.getLeaf().getKind() != Kind.CLASS && !LOOP_KINDS.contains(inspect.getLeaf().getKind())) {
+        while (inspect != null && !TreeUtilities.CLASS_TREE_KINDS.contains(inspect.getLeaf().getKind()) && !LOOP_KINDS.contains(inspect.getLeaf().getKind())) {
             inspect = inspect.getParentPath();
         }
 

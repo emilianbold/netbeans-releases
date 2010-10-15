@@ -454,7 +454,7 @@ public class WorkingCopy extends CompilationController {
                         ia.setImports(cut.getImports());
                         importsFilled = true;
                     }
-                    if (t.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         classes.add((ClassTree) t);
                     }
                 }

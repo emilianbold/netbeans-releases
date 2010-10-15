@@ -219,7 +219,7 @@ public final class  UiUtils {
         if (tree != null) {
             if (tree.getKind() == Tree.Kind.METHOD) {
                 return getMethodHeader((MethodTree) tree, info, formatString);
-            } else if (tree.getKind() == Tree.Kind.CLASS) {
+            } else if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 return getClassHeader((ClassTree)tree, info, formatString);
             } else if (tree.getKind() == Tree.Kind.VARIABLE) {
                 return getVariableHeader((VariableTree)tree, info, formatString);

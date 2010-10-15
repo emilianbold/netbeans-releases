@@ -90,6 +90,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileUtil;
@@ -263,7 +264,7 @@ public class Hacks {
     public static VariableElement attributeThis(CompilationInfo info, TreePath tp) {
         //XXX:
         while (tp != null) {
-            if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                 Element currentElement = info.getTrees().getElement(tp);
 
                 if (currentElement == null || !(currentElement instanceof ClassSymbol)) return null;

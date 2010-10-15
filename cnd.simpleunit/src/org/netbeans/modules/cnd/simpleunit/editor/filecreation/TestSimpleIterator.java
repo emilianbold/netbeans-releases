@@ -61,12 +61,12 @@ import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -108,7 +108,7 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
             }
         }
         FileObject rootFolder = getRootFolder();
-        File rootFolderFile = FileUtil.toFile(rootFolder);
+        File rootFolderFile = CndFileUtils.toFile(rootFolder);
         params.putAll(CodeGenerator.generateTemplateParamsForFunctions(
                 getTestFileName().replaceFirst("[.].*", ""), // NOI18N
                 rootFolderFile.getAbsolutePath(),

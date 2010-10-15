@@ -296,12 +296,12 @@ class DocRenderer {
                         break;
                     case LINK:
                         String lline = String.format("<a href=\"%s\">%s</a><br>\n", //NOI18N
-                                tag.getValue(), tag.getValue());
+                                tag.getValue().trim(), tag.getValue().trim());
 
                         links.append(lline);
                         break;
                     case RETURN:
-                        String rparts[] = tag.getValue().split("\\s+", 2); //NOI18N
+                        String rparts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                         if (rparts.length > 0) {
                             String type = rparts[0];
@@ -317,7 +317,7 @@ class DocRenderer {
                         break;
                     default:
                         String oline = String.format("<tr><th>%s</th><td>%s</td></tr>\n", //NOI18N
-                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue()));
+                                processPhpDoc(tag.getKind().toString()), processPhpDoc(tag.getValue().trim()));
 
                         others.append(oline);
                         break;

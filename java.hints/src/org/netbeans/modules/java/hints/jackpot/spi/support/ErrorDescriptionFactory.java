@@ -119,7 +119,10 @@ public class ErrorDescriptionFactory {
         switch (tree.getKind()) {
             case METHOD:
                 return context.getInfo().getTreeUtilities().findNameSpan((MethodTree) tree);
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 return context.getInfo().getTreeUtilities().findNameSpan((ClassTree) tree);
             case VARIABLE:
                 return context.getInfo().getTreeUtilities().findNameSpan((VariableTree) tree);

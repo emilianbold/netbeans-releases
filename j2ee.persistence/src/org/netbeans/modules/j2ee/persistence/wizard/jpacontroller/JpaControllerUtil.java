@@ -814,6 +814,7 @@ public class JpaControllerUtil {
         private String guessColumnName(ExecutableElement pkMethod){
             Element pkFieldvariable = guessField(pkMethod);
             Element pkFieldElement = isFieldAccess ? pkFieldvariable : guessGetter(pkMethod);
+            if(pkFieldElement == null) return null;//something is missed, may be getter name do not match variable name, see #190854
             String pkMethodName = pkMethod.getSimpleName().toString();
             String columnName = null;
             AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N

@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
@@ -321,7 +322,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 
         TreePath tp = newClassToConvert;
 
-        while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+        while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             tp = tp.getParentPath();
         }
         

@@ -70,7 +70,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     private FileLock lock;
 
     public RemotePlainFile(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            FileObject parent, String remotePath, File cache) {
+            RemoteDirectory parent, String remotePath, File cache) {
         super(fileSystem, execEnv, parent, remotePath, cache);
     }
 
@@ -126,6 +126,11 @@ public class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
+    public RemoteDirectory getParent() {
+        return (RemoteDirectory) super.getParent();
+    }        
+
+    @Override
     public FileLock lock() throws IOException {
         synchronized (this) {
             if (lock == null) {
@@ -142,7 +147,12 @@ public class RemotePlainFile extends RemoteFileObjectBase {
 
     @Override
     public boolean canWrite() {
-        return true;
+        try {
+            return getParent().canWrite(getNameExt());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return true;
+        }
     }
 
     @Override

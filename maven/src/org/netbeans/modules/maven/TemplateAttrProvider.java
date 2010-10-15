@@ -47,8 +47,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import org.apache.maven.model.License;
+import org.apache.maven.model.Organization;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -69,14 +72,14 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         project = prj;
     }
     
-    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        Map<String, String> values = new HashMap<String, String>();
+    public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
+        Map<String,String> values = new TreeMap<String,String>();
         String license = project.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_LICENSE, true); //NOI18N
         if (license == null) {
             // try to match the project's license URL and the mavenLicenseURL attribute of license template
-            List lst = project.getOriginalMavenProject().getLicenses();
-            if (lst != null && lst.size() > 0) {
-                String url = ((License)lst.get(0)).getUrl();
+            List<License> lst = project.getOriginalMavenProject().getLicenses();
+            if (!lst.isEmpty()) {
+                String url = lst.get(0).getUrl();
                 FileObject licenses = FileUtil.getConfigFile("Templates/Licenses"); //NOI18N
                 if (url != null && licenses != null) {
                     for (FileObject fo : licenses.getChildren()) {
@@ -93,6 +96,14 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             values.put("license", license); // NOI18N
         }
 
+        Organization organization = project.getOriginalMavenProject().getOrganization();
+        if (organization != null) {
+            String organizationName = organization.getName();
+            if (organizationName != null) {
+                values.put("organization", organizationName); // NOI18N
+            }
+        }
+
         FileEncodingQueryImplementation enc = project.getLookup().lookup(FileEncodingQueryImplementation.class);
         Charset charset = enc.getEncoding(target.getPrimaryFile());
         String encoding = (charset != null) ? charset.name() : null;
@@ -100,15 +111,9 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
             values.put("encoding", encoding); // NOI18N
         }
 
-        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
-        String pdname = pi.getDisplayName();
-        String pname = pi.getName();
-        if (pdname != null) {
-            values.put("displayName", pdname); // NOI18N
-        }
-        if (pname != null) {
-            values.put("name", pname); // NOI18N
-        }
+        ProjectInformation pi = ProjectUtils.getInformation(project);
+        values.put("name", pi.getName()); // NOI18N
+        values.put("displayName", pi.getDisplayName()); // NOI18N
 
         if (values.size() > 0) {
             return Collections.singletonMap("project", values); // NOI18N

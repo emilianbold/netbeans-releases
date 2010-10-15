@@ -73,6 +73,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -376,7 +377,7 @@ public class AddParameterOrLocalFix implements Fix {
     private TreePath findOutmostBlock(TreePath tp) {
         TreePath block = null;
 
-        while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+        while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             if (tp.getLeaf().getKind() == Kind.BLOCK) {
                 block = tp;
             }

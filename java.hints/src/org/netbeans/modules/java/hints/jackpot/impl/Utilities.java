@@ -687,7 +687,10 @@ public class Utilities {
                 case METHOD:
                     handleSuppressWarnings(info, path, ((MethodTree) leaf).getModifiers(), keys);
                     break;
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     handleSuppressWarnings(info, path, ((ClassTree) leaf).getModifiers(), keys);
                     break;
                 case VARIABLE:

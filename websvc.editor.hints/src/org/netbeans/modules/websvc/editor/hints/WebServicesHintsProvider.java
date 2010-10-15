@@ -51,6 +51,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakListeners;
@@ -124,7 +125,7 @@ public class WebServicesHintsProvider {
                     break;
                 }
                 
-                if (tree.getKind() == Tree.Kind.CLASS){
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
                     TreePath path = info.getTrees().getPath(info.getCompilationUnit(), tree);
                     TypeElement javaClass = (TypeElement) info.getTrees().getElement(path);
                     if (javaClass != null) {

@@ -52,6 +52,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,6 +132,8 @@ public final class DLightSession implements
     private final boolean useSharedStorage;
     private CountDownLatch collectorsDoneFlag;
     private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();
+    
+    private final static ConcurrentMap<String, SessionDataFiltersSupport> sharedDataFilterSupports = new ConcurrentHashMap<String, SessionDataFiltersSupport>();
 
     public static enum SessionState {
 
@@ -152,7 +156,14 @@ public final class DLightSession implements
         this.sharedStorageID = sharedStorageID;
         this.useSharedStorage = sharedStorageID != null;
         sessionID = sessionCount++;
-        dataFiltersSupport = new SessionDataFiltersSupport();
+        SessionDataFiltersSupport newSupport = new SessionDataFiltersSupport();
+        if (useSharedStorage) {
+            SessionDataFiltersSupport old = sharedDataFilterSupports.putIfAbsent(sharedStorageID, newSupport);
+            if (old != null) {
+                newSupport = old;
+            }
+        }
+        dataFiltersSupport = newSupport;
     }
 
     public final long getStartTime() {

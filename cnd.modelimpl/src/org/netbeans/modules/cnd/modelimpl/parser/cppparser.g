@@ -375,6 +375,7 @@ tokens {
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
+	protected static final int tsIMAGINARY = 0x20000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -1244,7 +1245,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;}
 	:
 	(
 		// Class definition
@@ -1267,7 +1268,8 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
@@ -1714,6 +1716,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_double        {ts |= tsDOUBLE;}
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
+        | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
     ;
 
 qualified_type
@@ -2792,6 +2795,7 @@ single_statement
     ;
 
 statement
+	{StorageClass sc = scInvalid;}
 	:
 	(	
                 // Issue 83496   C++ parser does not allow class definition inside function
@@ -2819,7 +2823,8 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",
 				LT(1).getLine());
@@ -3332,6 +3337,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_double
             |   LITERAL_void
             |   literal_complex
+            |   LITERAL__Imaginary
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3506,6 +3512,7 @@ lazy_expression_predicate
     |   LITERAL_double
     |   LITERAL_void
     |   literal_complex
+    |   LITERAL__Imaginary
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 
