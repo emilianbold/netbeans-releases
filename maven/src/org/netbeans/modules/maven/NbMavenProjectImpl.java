@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -118,6 +117,7 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
 import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
@@ -688,23 +688,15 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public URI[] getGeneratedSourceRoots() {
-
         //TODO more or less a hack.. should be better supported by embedder itself.
         URI uri = FileUtilities.getDirURI(getProjectDirectory(), "target/generated-sources"); //NOI18N
         Set<URI> uris = new HashSet<URI>();
-
-        File fil = new File(uri);
-        if (fil.exists() && fil.isDirectory()) {
-            File[] fils = fil.listFiles(new FileFilter() {
-
-                @Override
-                public boolean accept(File pathname) {
-                    return pathname.isDirectory();
-                }
-            });
-            if (fils != null) { //#163842 maybe if the dir was deleted right before listFiles()
-                for (int i = 0; i < fils.length; i++) {
-                    uris.add(fils[i].toURI());
+        File[] roots = new File(uri).listFiles();
+        if (roots != null) {
+            for (File root : roots) {
+                File[] kids = root.listFiles();
+                if (kids != null && /* #190626 */kids.length > 0) {
+                    uris.add(root.toURI());
                 }
             }
         }

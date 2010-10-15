@@ -119,6 +119,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -3023,13 +3024,7 @@ public class WizardDescriptor extends DialogDescriptor {
                 public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                     if (EventType.ACTIVATED == hlevt.getEventType()) {
                         if (hlevt.getURL () != null) {
-                            try {
-                                Desktop.getDesktop().browse(hlevt.getURL().toURI());
-                            } catch (IOException ex) {
-                                err.log(Level.INFO, ex.getLocalizedMessage() + " while opening " + hlevt.getURL());
-                            } catch (URISyntaxException ex) {
-                                err.log(Level.INFO, ex.getLocalizedMessage() + " while opening " + hlevt.getURL());
-                            }
+                            URLDisplayer.getDefault().showURLExternal(hlevt.getURL());
                         }
                     }
                 }

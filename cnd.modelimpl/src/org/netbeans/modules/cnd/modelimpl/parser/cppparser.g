@@ -375,6 +375,7 @@ tokens {
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
+	protected static final int tsIMAGINARY = 0x20000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -1714,6 +1715,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_double        {ts |= tsDOUBLE;}
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
+        | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
     ;
 
 qualified_type
@@ -3332,6 +3334,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_double
             |   LITERAL_void
             |   literal_complex
+            |   LITERAL__Imaginary
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3506,6 +3509,7 @@ lazy_expression_predicate
     |   LITERAL_double
     |   LITERAL_void
     |   literal_complex
+    |   LITERAL__Imaginary
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 

@@ -1882,7 +1882,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final FileImpl getFile(FileObject file, boolean treatSymlinkAsSeparateFile) {
-        return getFileContainer().getFile(FileUtil.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
+        return getFileContainer().getFile(CndFileUtils.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
     }
 
     public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {

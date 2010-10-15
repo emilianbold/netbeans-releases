@@ -951,21 +951,24 @@ public class Folder implements FileChangeListener, ChangeListener {
      */
     public List<Folder> getAllFolders(boolean projectFilesOnly) {
         List<Folder> folders = new ArrayList<Folder>();
+        getAllFolders(folders, projectFilesOnly);
+        return folders;
+    }
 
+    private void getAllFolders(List<Folder> folders, boolean projectFilesOnly) {
         if (!projectFilesOnly || isProjectFiles()) {
             Iterator<?> iter = new ArrayList<Object>(getElements()).iterator();
             while (iter.hasNext()) {
                 Object item = iter.next();
                 if (item instanceof Folder) {
-                    if (!projectFilesOnly || ((Folder) item).isProjectFiles()) {
-                        folders.add((Folder) item);
-                        folders.addAll(((Folder) item).getAllFolders(projectFilesOnly));
+                    Folder folder = (Folder) item;
+                    if (!projectFilesOnly || folder.isProjectFiles()) {
+                        folders.add(folder);
+                        folder.getAllFolders(folders, projectFilesOnly);
                     }
                 }
             }
         }
-
-        return folders;
     }
 
     public List<Folder> getAllTests() {
@@ -1047,7 +1050,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = FileUtil.toFile(fileObject);
+        File file = CndFileUtils.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, "------------fileDataCreated {0} in {1}", new Object[]{file, getPath()}); // NOI18N
         }
@@ -1071,7 +1074,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
         if (fileObject.isValid()) {
-            File file = FileUtil.toFile(fileObject);
+            File file = CndFileUtils.toFile(fileObject);
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, "------------fileFolderCreated {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
             }
@@ -1086,7 +1089,7 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDeleted(FileEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = FileUtil.toFile(fileObject);
+        File file = CndFileUtils.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
             log.log(Level.FINE, "------------fileDeleted {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
         }
@@ -1148,15 +1151,14 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileRenamed(FileRenameEvent fe) {
         FileObject fileObject = fe.getFile();
-        File file = FileUtil.toFile(fileObject);
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
+            log.log(Level.FINE, "------------fileRenamed {0} in {1}", new Object[]{fileObject.getPath(), getPath()}); // NOI18N
         }
         // Try only folders. Items are taken care of in Item.propertyChange takes care of it....
         Folder folder = findFolderByName(fe.getName());
         if (folder != null && folder.isDiskFolder()) {
             // Add new Folder
-            Folder top = getConfigurationDescriptor().addFilesFromDir(this, file, true, false);
+            Folder top = getConfigurationDescriptor().addFilesFromDir(this, fileObject, true, false, null);
             // Copy all configurations
             copyConfigurations(folder, top);
             // Remove old folder
