@@ -79,6 +79,13 @@ public enum HtmlVersion {
 
     HTML5(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_5"), null, null), //no public id nor system id, just <!doctype html>
 
+    XHTML5(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X5"),
+        null, //no public id nor system id, just <!doctype html>
+        null,
+        null,
+        "http://www.w3.org/1999/xhtml",
+        true),
+
     XHTML10_STICT(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X10_STRICT"),
         "-//W3C//DTD XHTML 1.0 Strict//EN",
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd",
@@ -112,25 +119,20 @@ public enum HtmlVersion {
     private static final String DOCTYPE_PREFIX = "<!doctype html public \""; //NOI18N
     private static final String HTML5_DOCTYPE = "<!doctype html>"; //NOI18N
 
-    public static HtmlVersion findByPublicId(String publicId) {
-        for (HtmlVersion version : HtmlVersion.values()) {
-            if (publicId == null && publicId == version.publicID //null check
-                    || publicId != null && publicId.equals(version.getPublicID())) {
-                return version;
+    public static HtmlVersion find(String publicId, String namespace) {
+        if(publicId == null) {
+            //x/html5
+            return XHTML5.getDefaultNamespace().equals(namespace) ? XHTML5 : HTML5;
+        } else {
+            for (HtmlVersion version : HtmlVersion.values()) {
+            if (publicId.equals(version.getPublicID())) {
+                    return version;
+                }
             }
         }
         return null;
     }
 
-    public static HtmlVersion findByNamespace(String namespace) {
-        for (HtmlVersion version : HtmlVersion.values()) {
-            if (namespace.equals(version.getDefaultNamespace())) {
-                return version;
-            }
-        }
-        return null;
-
-    }
     /** The default html version. */
     private static final HtmlVersion DEFAULT_VERSION = HTML5;
     public static HtmlVersion DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = null;
@@ -138,7 +140,6 @@ public enum HtmlVersion {
     public static HtmlVersion getDefaultVersion() {
         return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_VERSION;
     }
-
 
     private final String displayName;
     private final String publicID, systemID;
