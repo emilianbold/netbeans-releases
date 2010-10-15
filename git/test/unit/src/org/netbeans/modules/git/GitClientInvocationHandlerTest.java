@@ -100,8 +100,8 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
      */
     public void testMethodsRunningInIndexingBridge () throws Exception {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "commit", "copyAfter", "getStatus", "init", "remove",
-                "removeNotificationListener", "remove", "rename"));
-        Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList("remove"));
+                "removeNotificationListener", "remove", "rename", "reset"));
+        Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList("remove", "reset"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
         f.setAccessible(true);
         Set<String> actualIBCommands = (Set<String>) f.get(GitClientInvocationHandler.class);
@@ -122,6 +122,38 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
             }
         }
         assertTrue(indexingBridgeMethods.isEmpty());
+    }
+
+    /**
+     * tests that we don't miss any read-only commands.
+     * If a method is added to GitClient, we NEED to evaluate and decide if it's read-only.
+     * If it is and we miss the command, the support will refresh index timestamp when it's not supposed to.
+     * @throws Exception
+     */
+    public void testIndexReadOnlyMethods () throws Exception {
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "commit", "copyAfter", "getStatus", "init", "remove",
+                "removeNotificationListener", "remove", "rename", "reset"));
+        Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "getStatus", "removeNotificationListener"));
+        Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
+        f.setAccessible(true);
+        Set<String> actualReadOnlyMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
+
+        Method[] methods = GitClient.class.getDeclaredMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (Method m : methods) {
+            String methodName = m.getName();
+            assertTrue(methodName, allTestedMethods.contains(methodName));
+            if (readOnlyMethods.contains(methodName)) {
+                assertTrue(methodName, actualReadOnlyMethods.contains(methodName));
+                readOnlyMethods.remove(methodName);
+            }
+        }
+        assertTrue(readOnlyMethods.isEmpty());
     }
 
     public void testIndexingBridge () throws Exception {
@@ -177,7 +209,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
      */
     public void testExclusiveMethods () throws Exception {
         Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "commit", "copyAfter", "getStatus", "init", "remove",
-                "removeNotificationListener", "remove", "rename"));
+                "removeNotificationListener", "remove", "rename", "reset"));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "getStatus", "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
