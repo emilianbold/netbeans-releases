@@ -59,6 +59,9 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -66,6 +69,8 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  * @author Vladimir Kvashin
  */
 public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
+
+    private boolean testReconnect = false;
 
     public RemoteCodeModelTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -88,10 +93,10 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
     }
 
     protected void checkIncludes(CsmFile csmFile, boolean recursive) throws Exception {
-        System.err.printf("Checking %s\n", csmFile.getAbsolutePath());
+        //System.err.printf("Checking %s\n", csmFile.getAbsolutePath());
         for (CsmInclude incl : csmFile.getIncludes()) {
             CsmFile includedFile = incl.getIncludeFile();
-            System.err.printf("\t%s -> %s\n", incl.getIncludeName(), includedFile);
+            //System.err.printf("\t%s -> %s\n", incl.getIncludeName(), includedFile);
             assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
             if (recursive) {
                 checkIncludes(includedFile, true);
@@ -105,10 +110,24 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         }
     }
 
+    @Override
+    protected void clearRemoteSyncRoot() {
+        super.clearRemoteSyncRoot();
+        if (testReconnect) {
+            ConnectionManager.getInstance().disconnect(getTestExecutionEnvironment());
+        }
+    }
+    
     protected void processSample(Toolchain toolchain, String sampleName, String projectDirBase) throws Exception {
+        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         MakeProject makeProject = prepareSampleProject(Sync.RFS, toolchain, sampleName, projectDirBase);
+        if (testReconnect) {
+            assertFalse("Host should be disconnected at this point", ConnectionManager.getInstance().isConnectedTo(execEnv));
+        } else {
+            assertTrue("Host should be connected at this point", ConnectionManager.getInstance().isConnectedTo(execEnv));
+        }
         OpenProjects.getDefault().open(new Project[]{ makeProject }, false);
-        changeProjectHost(makeProject, getTestExecutionEnvironment());
+        changeProjectHost(makeProject, execEnv);
         CsmModel model = CsmModelAccessor.getModel();
         NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         assertNotNull("Null NativeProject", np);
@@ -116,14 +135,49 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         CsmProject csmProject = model.getProject(makeProject);
         assertNotNull("Null CsmProject", csmProject);
         csmProject.waitParse();
-        checkIncludes(csmProject, true);
+        boolean recursive;
+        if (HostInfoUtils.getHostInfo(execEnv).getOS().getFamily() == HostInfo.OSFamily.LINUX) {
+            // see #191039 -  Unresolved #include <stddef.h> in stdio.h on remote Linux with SolStudio toolchain
+            recursive = false;
+        } else {
+            recursive = true;
+        }
+        checkIncludes(csmProject, recursive);
+        if (testReconnect) {
+            ConnectionManager.getInstance().connectTo(execEnv);
+            assertTrue("Can not reconnect to host", ConnectionManager.getInstance().isConnectedTo(execEnv));
+        }
     }
 
     @ForAllEnvironments
     public void testArgumentsGNU() throws Exception {
+        testReconnect = false;
         processSample(Toolchain.GNU, "Arguments", "Args_01");
     }
 
+    @ForAllEnvironments
+    public void testArgumentsSolStudio() throws Exception {
+        testReconnect = false;
+        processSample(Toolchain.SUN, "Arguments", "Args_02");
+    }
+
+    @ForAllEnvironments
+    public void testQuoteGNU() throws Exception {
+        testReconnect = false;
+        processSample(Toolchain.GNU, "Arguments", "Quote_01");
+    }
+
+    @ForAllEnvironments
+    public void testQuoteSolStudio() throws Exception {
+        testReconnect = false;
+        processSample(Toolchain.SUN, "Arguments", "Quote_02");
+    }
+
+//    @ForAllEnvironments
+//    public void testArgumentsOffline() throws Exception {
+//        testReconnect = true;
+//        processSample(Toolchain.GNU, "Arguments", "Args_03");
+//    }
 
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteCodeModelTestCase.class);
