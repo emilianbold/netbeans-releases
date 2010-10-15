@@ -75,9 +75,8 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.model.profile.Profile;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -339,6 +338,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
+        project.getLookup().lookup(AuxiliaryProperties.class).put(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();
@@ -349,45 +349,11 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
             }
         };
-        final ModelOperation<ProfilesModel> profoperation = new ModelOperation<ProfilesModel>() {
-            public void performOperation(ProfilesModel model) {
-                Profile privateProfile = null;
-                List<org.netbeans.modules.maven.model.profile.Profile> lst = model.getProfilesRoot().getProfiles();
-                if (lst != null) {
-                    for (org.netbeans.modules.maven.model.profile.Profile profile : lst) {
-                        if (ModelHandle.PROFILE_PRIVATE.equals(profile.getId())) {
-                            privateProfile = profile;
-                            break;
-                        }
-                    }
-                }
-                if (privateProfile == null) {
-                    privateProfile = model.getFactory().createProfile();
-                    privateProfile.setId(ModelHandle.PROFILE_PRIVATE);
-                    org.netbeans.modules.maven.model.profile.Activation act = model.getFactory().createActivation();
-                    org.netbeans.modules.maven.model.profile.ActivationProperty prop = model.getFactory().createActivationProperty();
-                    prop.setName(ModelHandle.PROPERTY_PROFILE);
-                    prop.setValue("true"); //NOI18N
-                    act.setActivationProperty(prop);
-                    privateProfile.setActivation(act);
-                    model.getProfilesRoot().addProfile(privateProfile);
-                }
-                org.netbeans.modules.maven.model.profile.Properties props = privateProfile.getProperties();
-                if (props == null) {
-                    props = model.getFactory().createProperties();
-                    privateProfile.setProperties(props);
-                }
-                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
-            }
-        };
-
         final FileObject projDir = targetPrj.getProjectDirectory();
         final FileObject fo = projDir.getFileObject("pom.xml"); //NOI18N
         try {
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject fo2 = FileUtil.createData(projDir, "profiles.xml");
-                    Utilities.performProfilesModelOperations(fo2, Collections.singletonList(profoperation));
                     Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
                 }
             });

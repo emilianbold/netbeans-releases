@@ -68,7 +68,6 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.cmd.Constructor;
 import org.netbeans.modules.maven.execute.cmd.ShellConstructor;
 import org.netbeans.api.extexecution.ExternalProcessSupport;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -265,7 +264,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
-        toRet.add("-D" + ModelHandle.PROPERTY_PROFILE + "=true"); //NOI18N
 
         String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
         if (localRepo != null) {

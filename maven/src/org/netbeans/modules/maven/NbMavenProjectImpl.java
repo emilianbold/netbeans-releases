@@ -103,7 +103,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
@@ -298,7 +297,6 @@ public final class NbMavenProjectImpl implements Project {
         synchronized (statics) {
             if (statics.size() == 0) {
                 //not initialized
-                statics.setProperty(ModelHandle.PROPERTY_PROFILE, "true"); //NOI18N
                 EmbedderFactory.fillEnvVars(statics);
                 statics.putAll(AbstractMavenExecutor.excludeNetBeansProperties(System.getProperties()));
             }

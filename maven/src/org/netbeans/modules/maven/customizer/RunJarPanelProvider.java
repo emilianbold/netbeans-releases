@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.maven.customizer;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -75,11 +73,6 @@ public class RunJarPanelProvider implements ProjectCustomizer.CompositeCategoryP
         ModelHandle handle = context.lookup(ModelHandle.class);
         NbMavenProjectImpl project = context.lookup(NbMavenProjectImpl.class);
         final RunJarPanel panel = new RunJarPanel(handle, project);
-        category.setOkButtonListener(new ActionListener() {
-            public void actionPerformed(ActionEvent arg0) {
-                panel.applyExternalChanges();
-            }
-        });
         return panel;
     }
     
