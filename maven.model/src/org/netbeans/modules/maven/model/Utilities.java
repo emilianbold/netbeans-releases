@@ -58,8 +58,6 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
-import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
 import org.netbeans.modules.xml.xam.Model;
@@ -333,46 +331,6 @@ public class Utilities {
     }
 
     /**
-     * performs model modifying operations on top of the profiles.xml model. After modifications,
-     * the model is persisted to file.
-     * @param profilesFileObject
-     * @param operations
-     */
-    public static void performProfilesModelOperations(FileObject profilesFileObject, List<ModelOperation<ProfilesModel>> operations) {
-        assert profilesFileObject != null;
-        assert operations != null;
-        ModelSource source = profilesFileObject.getSize() == 0 ?
-            Utilities.createModelSourceForMissingFile(FileUtil.toFile(profilesFileObject), true, PROFILES_SKELETON, "text/x-maven-profile+xml") :
-            Utilities.createModelSource(profilesFileObject);
-        ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
-        if (model != null) {
-            try {
-                model.sync();
-                if (Model.State.VALID != model.getState()) {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
-                    return;
-                }
-                model.startTransaction();
-                for (ModelOperation<ProfilesModel> op : operations) {
-                    op.performOperation(model);
-                }
-                model.endTransaction();
-                Utilities.saveChanges(model);
-            } catch (IOException ex) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
-                Logger.getLogger(Utilities.class.getName()).log(Level.INFO, "Cannot write profiles.xml", ex);
-            } finally {
-                if (model.isIntransaction()) {
-                    model.rollbackTransaction();
-                }
-            }
-        } else {
-            //TODO report error.. what is the error?
-        }
-    }
-
-
-    /**
      * performs model modifying operations on top of the settings.xml model. After modifications,
      * the model is persisted to file.
      * @param profilesFileObject
@@ -387,7 +345,7 @@ public class Utilities {
             try {
                 model.sync();
                 if (Model.State.VALID != model.getState()) {
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_PROFILE", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_SETTINGS", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                     return;
                 }
                 model.startTransaction();

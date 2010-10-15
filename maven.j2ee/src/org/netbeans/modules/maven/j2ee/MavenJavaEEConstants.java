@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,26 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-package org.netbeans.modules.maven.model.profile;
-
-
-/**
  *
- * @author mkleint
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-public interface RepositoryPolicy extends ProfilesComponent {
 
-//  <!--xs:complexType name="RepositoryPolicy">
-//    <xs:all>
-//      <xs:element name="enabled" minOccurs="0" type="xs:boolean" default="true">
-//      <xs:element name="updatePolicy" minOccurs="0" type="xs:string">
-//      <xs:element name="checksumPolicy" minOccurs="0" type="xs:string">
-//    </xs:all>
-//  </xs:complexType-->
+package org.netbeans.modules.maven.j2ee;
+
+public class MavenJavaEEConstants {
+
+    private MavenJavaEEConstants() {}
+
+    public static final String HINT_DEPLOY_J2EE_SERVER_OLD = "netbeans.deployment.server.type"; //NOI18N
+
+    public static final String HINT_DEPLOY_J2EE_SERVER_ID = "netbeans.deployment.server.id"; //NOI18N
+
+    public static final String HINT_DEPLOY_J2EE_SERVER = "netbeans.hint.deploy.server"; //NOI18N
+
+    /**
+     * values according to the org.netbeans.api.j2ee.core.Profile class.
+     * 1.4, 1.5, 1.6, 1.6-web
+     */
+    public static final String HINT_J2EE_VERSION = "netbeans.hint.j2eeVersion"; //NOI18N
+
+    /**
+     * when present, will deploy the web/ejb/ear project to an app server
+     * defined in netbeans.
+     * only meaningful value is "true"
+     */
+    public static final String ACTION_PROPERTY_DEPLOY = "netbeans.deploy"; //NOI18N
+
+    /**
+     * denotes wheater the netbeans app server deployment shall be performed in
+     * debug mode. Optional property, complementary to ACTION_PROPERTY_DEPLOY.
+     */
+    public static final String ACTION_PROPERTY_DEPLOY_DEBUG_MODE = "netbeans.deploy.debugmode"; //NOI18N
+
+    /**
+     * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
+     */
+    public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N
 
 }

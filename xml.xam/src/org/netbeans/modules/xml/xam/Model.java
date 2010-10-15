@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.xam;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.event.UndoableEditListener;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 
 /**
  * Interface describing an abstract model. The model is based on a
@@ -146,7 +147,7 @@ public interface Model<C extends Component<C>> extends Referenceable {
     /** 
      * This method will block until a transaction can be started. A transaction
      * in this context will fire events (such as property change) when 
-     * #endTransaction() has been invoked. A transaction must be 
+     * {@link #endTransaction} has been invoked. A transaction must be
      * be acquired during a mutation, reading can be performed without
      * a transaction. Only a single transaction at a time is supported. Mutations
      * which occur based on events will not be reflected until the transaction
@@ -154,7 +155,7 @@ public interface Model<C extends Component<C>> extends Referenceable {
      * @return true if transaction is acquired successfully, else false, for example
      * if model has transitioned into invalid state.
      */
-    boolean startTransaction();
+    @CheckReturnValue boolean startTransaction();
     
     /**
      * This method stops the transaction and causes all events to be fired. 

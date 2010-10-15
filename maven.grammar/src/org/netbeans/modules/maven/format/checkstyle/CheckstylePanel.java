@@ -86,20 +86,11 @@ public class CheckstylePanel extends javax.swing.JPanel {
         checkboxUpdater = new CheckBoxUpdater(cbEnable) {
             @Override
             public Boolean getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
-                    if (props != null && props.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING) != null) {
-                        val = prof.getProperties().getProperty(Constants.HINT_CHECKSTYLE_FORMATTING);
-                    }
-                }
-                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING);
                     }
-                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true);
                 }
@@ -120,20 +111,6 @@ public class CheckstylePanel extends javax.swing.JPanel {
                 String val = value != null ? value.toString() : null;
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_CHECKSTYLE_FORMATTING) != null) {
-                        profprops.setProperty(Constants.HINT_CHECKSTYLE_FORMATTING, val);
-                        if (hasConfig) {
-                            // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_CHECKSTYLE_FORMATTING, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_CHECKSTYLE_FORMATTING)) {
                     Properties modprops = handle.getPOMModel().getProject().getProperties();

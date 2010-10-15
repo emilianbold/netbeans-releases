@@ -41,26 +41,12 @@
  */
 package org.netbeans.modules.maven.api;
 
-import org.netbeans.modules.maven.MavenProjectPropsImpl;
-
 /**
  * Various constants used across the integration, Maven property names with a meaning in the IDE,
  * plugin groupIds, artifactIds etc.
  * @author mkleint
  */
 public interface Constants {
-    
-    public final String HINT_DEPLOY_J2EE_SERVER_OLD = "netbeans.deployment.server.type"; //NOI18N
-    
-    public final String HINT_DEPLOY_J2EE_SERVER_ID = "netbeans.deployment.server.id"; //NOI18N
-    
-    public final String HINT_DEPLOY_J2EE_SERVER = "netbeans.hint.deploy.server"; //NOI18N
-
-    /**
-     * values according to the org.netbeans.api.j2ee.core.Profile class.
-     * 1.4, 1.5, 1.6, 1.6-web
-     */
-    public final String HINT_J2EE_VERSION = "netbeans.hint.j2eeVersion"; //NOI18N
     
     /**
      * Maven property that hints netbeans to use a given license template.
@@ -127,24 +113,6 @@ public interface Constants {
      * </ul>
      */
     public static final String ACTION_PROPERTY_JPDALISTEN = "jpda.listen";
-
-    /**
-     * when present, will deploy the web/ejb/ear project to an app server
-     * defined in netbeans.
-     * only meaningful value is "true"
-     */
-    public static final String ACTION_PROPERTY_DEPLOY = "netbeans.deploy"; //NOI18N
-
-    /**
-     * denotes wheater the netbeans app server deployment shall be performed in 
-     * debug mode. Optional property, complementary to ACTION_PROPERTY_DEPLOY.
-     */
-    public static final String ACTION_PROPERTY_DEPLOY_DEBUG_MODE = "netbeans.deploy.debugmode"; //NOI18N
-
-    /**
-     * Optional property, complementary to ACTION_PROPERTY_DEPLOY.
-     */
-    public static final String ACTION_PROPERTY_DEPLOY_REDEPLOY = "netbeans.deploy.forceRedeploy"; //NOI18N
 
     /**
      * Optional property, if defined the project type will attempt to redirect meaningful

@@ -95,9 +95,6 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         Collection<Action> col = new ArrayList<Action>();
-        if (project.getProjectDirectory().getFileObject("profiles.xml") == null) { //NOI18N
-            col.add(new AddProfileXmlAction());
-        }
         if (! new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml").exists()) { //NOI18N
             col.add(new AddSettingsXmlAction());
         }
@@ -127,10 +124,6 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             //#119134 for some unknown reason, the pom.xml might be missing from the project directory in some cases.
             // prevent passing null to the list that causes problems down the stream.
             fobs.add(fo);
-        }
-        FileObject fo2 = project.getProjectDirectory().getFileObject("profiles.xml"); //NOI18N
-        if (fo2 != null) {
-            fobs.add(fo2);
         }
         setFiles(fobs);
     }
@@ -212,7 +205,6 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             }
             Collection<File> keys = new ArrayList<File>();
             keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "pom.xml")); //NOI18N
-            keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "profiles.xml")); //NOI18N
             keys.add(new File(MavenSettingsSingleton.getInstance().getM2UserDir(), "settings.xml")); //NOI18N
             setKeys(keys);
             ((ProjectFilesNode)getNode()).setMyFiles();
@@ -224,31 +216,6 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
         }
     }
 
-    private class AddProfileXmlAction extends AbstractAction {
-        AddProfileXmlAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ProjectFilesNode.class, "BTN_Create_profile_xml"));
-        }
-        public void actionPerformed(ActionEvent e) {
-            try {
-                DataFolder folder = DataFolder.findFolder(project.getProjectDirectory());
-                // path to template...
-                FileObject temp = FileUtil.getConfigFile("Maven2Templates/profiles.xml"); //NOI18N
-                DataObject dobj = DataObject.find(temp);
-                DataObject newOne = dobj.createFromTemplate(folder);
-                EditCookie cook = newOne.getCookie(EditCookie.class);
-                if (cook != null) {
-                    cook.edit();
-                }
-                
-            } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        
-    }
-    
     private class AddSettingsXmlAction extends AbstractAction {
         AddSettingsXmlAction() {
             putValue(Action.NAME, NbBundle.getMessage(ProjectFilesNode.class, "BTN_Create_settings_xml"));
