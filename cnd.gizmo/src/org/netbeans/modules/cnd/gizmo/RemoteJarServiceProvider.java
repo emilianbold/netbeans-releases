@@ -53,7 +53,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.dwarfdump.Offset2LineService;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -98,10 +98,10 @@ public class RemoteJarServiceProvider implements SetupProvider {
     }
 
     @Override
-    public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
-        Map<String, String> result = new HashMap<String, String>();
+    public Map<String, File> getBinaryFiles(ExecutionEnvironment env) {
+        Map<String, File> result = new HashMap<String, File>();
         if (relativePath != null && localAbsPath != null) {
-            result.put(relativePath, localAbsPath); // NOI18N
+            result.put(relativePath, CndFileUtils.createLocalFile(localAbsPath)); // NOI18N
         }
         return result;
     }
