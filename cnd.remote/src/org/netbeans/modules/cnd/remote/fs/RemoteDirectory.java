@@ -156,6 +156,8 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (mode == Mode.EXISTENCE) {
                 return Boolean.valueOf(file.exists());
             } else if (mode == Mode.CHILDINFO) {
+                File cacheFile = CndFileUtils.createLocalFile(cache, relativePath);
+                getRemoteFileSupport().ensureDirSync(cacheFile, remotePath + '/' + relativePath);
                 File[] children = file.listFiles();
                 if (children == null) {
                     return new CndFileSystemProvider.FileInfo[0];
