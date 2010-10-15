@@ -702,11 +702,16 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         manager().addRecentDebugTarget(progname, false);
 
         // Only in tool (see convergence discussions)
+	/*
         if (DebuggerManager.isStandalone()) {
             manager().enableConsoleWindow();
         } else {
             manager().enablePioWindow();
         }
+	 *
+	 */
+	manager().enableConsoleWindow();
+	DebuggerManager.openComponent("callstackView", true); // NOI18N
 
         if (Log.Bpt.fix6810534) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
