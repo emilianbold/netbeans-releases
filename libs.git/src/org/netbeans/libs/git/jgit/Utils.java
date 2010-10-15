@@ -48,14 +48,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.NotTreeFilter;
 import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.netbeans.libs.git.GitException;
 
 /**
  *
@@ -173,5 +180,43 @@ public final class Utils {
             paths.add(Constants.encode(filter.getPath()));
         }
         return paths;
+    }
+
+    public static RevCommit findCommit (Repository repository, String revision) throws GitException {
+        try {
+            ObjectId commitId = parseObjectId(repository, revision);
+            return new RevWalk(repository).parseCommit(commitId);
+        } catch (MissingObjectException ex) {
+            throw new GitException("Commit with the given id [" + revision + "] does not exist.");
+        } catch (IncorrectObjectTypeException ex) {
+            throw new GitException("The given id [" + revision + "] is not a commit or an annotated tag.");
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    public static ObjectId parseObjectId (Repository repository, String objectId) throws GitException {
+        try {
+            return repository.resolve(objectId);
+        } catch (AmbiguousObjectException ex) {
+            throw new GitException("Given objectId [" + objectId + "] is not unique.", ex);
+        } catch (IOException ex) {
+            throw new GitException(ex);
+        }
+    }
+
+    /**
+     * Recursively deletes the file or directory.
+     *
+     * @param file file/directory to delete
+     */
+    public static void deleteRecursively(File file) {
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
+        }
+        file.delete();
     }
 }

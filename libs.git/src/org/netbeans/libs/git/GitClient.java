@@ -53,13 +53,83 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  */
 public interface GitClient {
 
-    public void add (File[] roots, ProgressMonitor monitor) throws GitException;
+    public enum ResetType {
+        SOFT, MIXED, HARD
+    }
+
+    /**
+     * Adds all files under the given roots to the index
+     * @param roots
+     * @param monitor
+     * @throws GitException an error occurs
+     */
+    public void add(File[] roots, ProgressMonitor monitor) throws GitException;
+
     public void addNotificationListener (NotificationListener listener);
+
+    /**
+     * Commits all changes made in the index to all files under the given roots
+     * @param roots
+     * @param commitMessage
+     * @param monitor
+     * @throws GitException an error occurs
+     */
     public GitRevisionInfo commit(File[] roots, String commitMessage, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Modifies the index. The entries representing files under the source are copied and the newly created entries represent the corresponding files under the target.
+     * @param source
+     * @param target
+     * @param monitor
+     * @throws GitException
+     */
     public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Returns an array of statuses for files under given roots
+     * @param roots root folders or files
+     * @return status array
+     * @throws GitException when an error occurs
+     */
     public Map<File, GitStatus> getStatus (File[] roots, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Initializes an empty git repository
+     * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
+     */
     public void init () throws GitException;
+
+    /**
+     * Removes given files/folders from the index and/or from the working tree
+     * @param roots files/folders to remove
+     * @param cached if <code>true</code> the working tree will not be affected
+     * @param monitor
+     */
     public void remove (File[] roots, boolean cached, ProgressMonitor monitor) throws GitException;
     public void removeNotificationListener (NotificationListener listener);
+
+    /**
+     * Renames source file or folder to target
+     * @param source file or folder to be renamed
+     * @param target target file or folder. Must not yet exist.
+     * @param after set to true if you don't only want to correct the index
+     * @throws GitException
+     */
     public void rename (File source, File target, boolean after, ProgressMonitor monitor) throws GitException;
+    
+    /**
+     * Updates entries for given files in the index with those from the given revision
+     * @param revision revision to go back to
+     * @param roots files or folders to update in the index
+     * @throws GitException
+     */
+    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
+     * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type
+     * @param revisionStr revision HEAD will reference to
+     * @param resetType type of reset, see git help reset
+     * @throws GitException
+     */
+    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException;
 }

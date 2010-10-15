@@ -56,4 +56,8 @@ public class GitException extends Exception {
         super(message);
     }
 
+    public GitException (String message, Throwable ex) {
+        super(message, ex);
+    }
+
 }

@@ -170,6 +170,7 @@ public class CommitCommand extends GitCommand {
                         DirCacheEntry e = new DirCacheEntry(path);
                         e.setFileMode(treeWalk.getFileMode(T_HEAD));
                         e.setObjectId(treeWalk.getObjectId(T_HEAD));
+                        e.smudgeRacilyClean();
                         toAdd.add(e);
                     }
                 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.ResetCommand;
 import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
@@ -143,9 +144,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
 
     @Override
     /**
-     * Returns an instance of {@link GitRepository} related to the given <code>workDir</code>
-     * @param workDir local folder where the git repository is located or where it will be created
-     * @param forceCreate if set to true, a new non-bare repository will be created inside the given workDir
+     * Initializes an empty git repository
      * @throws GitException if the repository could not be created either because it already exists inside <code>workDir</code> or cannot be created for other reasons.
      */
     public void init () throws GitException {
@@ -198,7 +197,22 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public void notifyFile (File file) {
+    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
+        cmd.execute();
+    }
+
+    @Override
+    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
+        cmd.execute();
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="listener methods">
+    @Override
+    public void notifyFile(File file) {
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);
@@ -211,7 +225,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public void notifyStatus (GitStatus status) {
+    public void notifyStatus(GitStatus status) {
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);
@@ -221,5 +235,5 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
                 ((StatusListener) list).notifyStatus(status);
             }
         }
-    }
+    }// </editor-fold>
 }
