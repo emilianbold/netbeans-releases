@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,9 +34,13 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.parsing.lucene;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -65,11 +63,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
+import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
@@ -86,10 +82,10 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.java.source.usages.ResultConvertor.Stop;
-import org.netbeans.modules.java.source.util.LMListener;
-import org.netbeans.modules.parsing.impl.indexing.lucene.IndexCacheFactory;
-import org.netbeans.modules.parsing.impl.indexing.lucene.util.Evictable;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -100,7 +96,7 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 //@NotTreadSafe
-class LuceneIndex extends Index {
+public class LuceneIndex implements Index {
 
     private static final String PROP_INDEX_POLICY = "java.index.useMemCache";   //NOI18N
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
@@ -108,56 +104,49 @@ class LuceneIndex extends Index {
     private static final CachePolicy DEFAULT_CACHE_POLICY = CachePolicy.DYNAMIC;
     private static final float DEFAULT_CACHE_SIZE = 0.05f;
     private static final CachePolicy cachePolicy = getCachePolicy();
-    private static final String REFERENCES = "refs";    // NOI18N
-    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());    
-    private static final Analyzer analyzer;  //Analyzer used to store documents
+    private static final Logger LOGGER = Logger.getLogger(LuceneIndex.class.getName());
+    private static final FieldSelector ALL_FIELDS = new AllFieldsSelector();
     
-    static {
-        final PerFieldAnalyzerWrapper _analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.FIELD_IDENTS, new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.FIELD_FEATURE_IDENTS, new WhitespaceAnalyzer());
-        _analyzer.addAnalyzer(DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, new DocumentUtil.LCWhitespaceAnalyzer());
-        analyzer = _analyzer;
-    }
     
-    private final DirCache dirCache;
+    private final DirCache dirCache;       
 
-    static Index create (final File cacheRoot) throws IOException {
+    public static LuceneIndex create (final File cacheRoot, final Analyzer analyzer) throws IOException {
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
-        return new LuceneIndex (getReferencesCacheFolder(cacheRoot));
+        return new LuceneIndex (cacheRoot, analyzer);
     }
 
     /** Creates a new instance of LuceneIndex */
-    private LuceneIndex (final File refCacheRoot) throws IOException {
+    private LuceneIndex (final File refCacheRoot, final Analyzer analyzer) throws IOException {
         assert refCacheRoot != null;
-        this.dirCache = new DirCache(refCacheRoot,cachePolicy);
+        assert analyzer != null;
+        this.dirCache = new DirCache(refCacheRoot,cachePolicy, analyzer);
     }
     
     @Override
     public <T> void query (
             final @NonNull Collection<? super T> result,
-            final @NonNull ResultConvertor<? super Document, T> convertor,
-            final @NonNull FieldSelector selector,
+            final @NonNull Convertor<? super Document, T> convertor,
+            @NullAllowed FieldSelector selector,
+            final @NullAllowed AtomicBoolean cancel,
             final @NonNull Query... queries
             ) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);   //NOI18N
-        Parameters.notNull("selector", selector);   //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
-        Parameters.notNull("result", result);       //NOI18N
-        
+        Parameters.notNull("result", result);       //NOI18N        
         final IndexReader in = dirCache.getReader();
         if (in == null) {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
             return;
         }
-        final AtomicBoolean _cancel = cancel.get();
-        assert _cancel != null;        
+        if (selector == null) {
+            selector = ALL_FIELDS;
+        }
         final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = QueryUtil.createBitSetCollector(bs);
+        final Collector c = new BitSetCollector(bs);
         final Searcher searcher = new IndexSearcher(in);
         try {
             for (Query q : queries) {
-                if (_cancel.get()) {
+                if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
                 searcher.search(q, c);
@@ -166,17 +155,13 @@ class LuceneIndex extends Index {
             searcher.close();
         }        
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (_cancel.get()) {
+            if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum, selector);
-            try {
-                final T value = convertor.convert(doc);
-                if (value != null) {
-                    result.add (value);
-                }
-            } catch (ResultConvertor.Stop stop) {
-                //Stop not supported not needed
+            final T value = convertor.convert(doc);
+            if (value != null) {
+                result.add (value);
             }
         }
     }
@@ -185,19 +170,18 @@ class LuceneIndex extends Index {
     public <T> void queryTerms(
             final @NonNull Collection<? super T> result,
             final @NullAllowed Term seekTo,
-            final @NonNull ResultConvertor<Term,T> filter) throws IOException, InterruptedException {
+            final @NonNull StoppableConvertor<Term,T> filter,
+            final @NullAllowed AtomicBoolean cancel) throws IOException, InterruptedException {
         
         final IndexReader in = dirCache.getReader();
         if (in == null) {
             return;
         }
-        final AtomicBoolean _cancel = cancel.get();
-        assert _cancel != null;
 
         final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
         try {
             do {
-                if (_cancel.get()) {
+                if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
                 final Term currentTerm = terms.term();
@@ -208,7 +192,7 @@ class LuceneIndex extends Index {
                     }
                 }
             } while (terms.next());
-        } catch (ResultConvertor.Stop stop) {
+        } catch (StoppableConvertor.Stop stop) {
             //Stop iteration of TermEnum
         } finally {
             terms.close();
@@ -218,9 +202,10 @@ class LuceneIndex extends Index {
     @Override
     public <S, T> void queryDocTerms(
             final @NonNull Map<? super T, Set<S>> result,
-            final @NonNull ResultConvertor<? super Document, T> convertor,
-            final @NonNull ResultConvertor<? super Term, S> termConvertor,
-            final @NonNull FieldSelector selector,
+            final @NonNull Convertor<? super Document, T> convertor,
+            final @NonNull Convertor<? super Term, S> termConvertor,
+            @NullAllowed FieldSelector selector,
+            final @NullAllowed AtomicBoolean cancel,
             final @NonNull Query... queries) throws IOException, InterruptedException {
         Parameters.notNull("queries", queries);             //NOI18N
         Parameters.notNull("slector", selector);            //NOI18N
@@ -232,15 +217,16 @@ class LuceneIndex extends Index {
             LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));   //NOI18N
             return;
         }
-        final AtomicBoolean _cancel = cancel.get();
-        assert _cancel != null;
+        if (selector == null) {
+            selector = ALL_FIELDS;
+        }
         final BitSet bs = new BitSet(in.maxDoc());
-        final Collector c = QueryUtil.createBitSetCollector(bs);
+        final Collector c = new BitSetCollector(bs);
         final Searcher searcher = new IndexSearcher(in);
         final TermCollector termCollector = new TermCollector();
         try {
             for (Query q : queries) {
-                if (_cancel.get()) {
+                if (cancel != null && cancel.get()) {
                     throw new InterruptedException ();
                 }
                 if (q instanceof TermCollector.TermCollecting) {
@@ -257,30 +243,22 @@ class LuceneIndex extends Index {
         }
         
         for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-            if (_cancel.get()) {
+            if (cancel != null && cancel.get()) {
                 throw new InterruptedException ();
             }
             final Document doc = in.document(docNum, selector);
-            try {
-                final T value = convertor.convert(doc);
-                if (value != null) {
-                    final Set<Term> terms = termCollector.get(docNum);
-                    result.put (value, convertTerms(termConvertor, terms));
-                }
-            } catch (ResultConvertor.Stop stop) {
-                //Stop not supported not needed
+            final T value = convertor.convert(doc);
+            if (value != null) {
+                final Set<Term> terms = termCollector.get(docNum);
+                result.put (value, convertTerms(termConvertor, terms));
             }
         }
     }
     
-    private static <T> Set<T> convertTerms(final ResultConvertor<? super Term, T> convertor, final Set<? extends Term> terms) {
+    private static <T> Set<T> convertTerms(final Convertor<? super Term, T> convertor, final Set<? extends Term> terms) {
         final Set<T> result = new HashSet<T>(terms.size());
         for (Term term : terms) {
-            try {
-                result.add(convertor.convert(term));
-            } catch (Stop ex) {
-                //Not thrown, ignore
-            }
+            result.add(convertor.convert(term));
         }
         return result;
     }
@@ -289,11 +267,11 @@ class LuceneIndex extends Index {
     public <S, T> void store (
             final @NonNull Collection<T> toAdd,
             final @NonNull Collection<S> toDelete,
-            final @NonNull ResultConvertor<? super T, ? extends Document> docConvertor,
-            final @NonNull ResultConvertor<? super S, ? extends Query> queryConvertor,
+            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
+            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
             final boolean optimize) throws IOException{
         try {
-            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            IndexManager.writeAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     _store(toAdd, toDelete, docConvertor, queryConvertor, optimize);
@@ -308,21 +286,16 @@ class LuceneIndex extends Index {
     private <S, T> void _store (
             final @NonNull Collection<T> data,
             final @NonNull Collection<S> toDelete,
-            final @NonNull ResultConvertor<? super T, ? extends Document> docConvertor,
-            final @NonNull ResultConvertor<? super S, ? extends Query> queryConvertor,
+            final @NonNull Convertor<? super T, ? extends Document> docConvertor,
+            final @NonNull Convertor<? super S, ? extends Query> queryConvertor,
             final boolean optimize) throws IOException {
-        assert ClassIndexManager.getDefault().holdsWriteLock();
+        assert IndexManager.holdsWriteLock();
         boolean create = !exists();
         final IndexWriter out = dirCache.getWriter(create);
         try {
             if (!create) {
                 for (S td : toDelete) {
-                    try {
-                        out.deleteDocuments(queryConvertor.convert(td));
-                    } catch (Stop ex) {
-                        //Never thrown
-                        Exceptions.printStackTrace(ex);
-                    }
+                    out.deleteDocuments(queryConvertor.convert(td));
                 }
             }
             storeData(out, data, docConvertor, optimize);
@@ -338,18 +311,12 @@ class LuceneIndex extends Index {
     private <T> void storeData (
             final IndexWriter out,
             final @NonNull Collection<T> data,
-            final @NonNull ResultConvertor<? super T, ? extends Document> convertor,
+            final @NonNull Convertor<? super T, ? extends Document> convertor,
             final boolean optimize) throws IOException {
         if (debugIndexMerging) {
             out.setInfoStream (System.err);
-        }
-        final LuceneIndexMBean indexSettings = LuceneIndexMBeanImpl.getDefault();
-        if (indexSettings != null) {
-            out.setMergeFactor(indexSettings.getMergeFactor());
-            out.setMaxMergeDocs(indexSettings.getMaxMergeDocs());
-            out.setMaxBufferedDocs(indexSettings.getMaxBufferedDocs());
-        }
-        final LMListener lmListener = new LMListener ();
+        }                
+        final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
         Directory memDir = null;
         IndexWriter activeOut = null;
         if (lmListener.isLowMemory()) {
@@ -357,23 +324,18 @@ class LuceneIndex extends Index {
         }
         else {
             memDir = new RAMDirectory ();
-            activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
+            activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
         }
         for (Iterator<T> it = data.iterator(); it.hasNext();) {
-            try {
-                T entry = it.next();
-                it.remove();
-                final Document doc = convertor.convert(entry);
-                activeOut.addDocument(doc);
-                if (memDir != null && lmListener.isLowMemory()) {
-                    activeOut.close();
-                    out.addIndexesNoOptimize(new Directory[] {memDir});
-                    memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, analyzer, true, IndexWriter.MaxFieldLength.LIMITED);
-                }
-            } catch (Stop ex) {
-                //Never thrown but log
-                Exceptions.printStackTrace(ex);
+            T entry = it.next();
+            it.remove();
+            final Document doc = convertor.convert(entry);
+            activeOut.addDocument(doc);
+            if (memDir != null && lmListener.isLowMemory()) {
+                activeOut.close();
+                out.addIndexesNoOptimize(new Directory[] {memDir});
+                memDir = new RAMDirectory ();
+                activeOut = new IndexWriter (memDir, dirCache.getAnalyzer(), true, IndexWriter.MaxFieldLength.LIMITED);
             }
         }
         if (memDir != null) {
@@ -395,7 +357,7 @@ class LuceneIndex extends Index {
     @Override
     public void clear () throws IOException {
         try {
-            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+            IndexManager.writeAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run() throws IOException, InterruptedException {
                     dirCache.clear();
@@ -427,15 +389,7 @@ class LuceneIndex extends Index {
     @Override
     public String toString () {
         return getClass().getSimpleName()+"["+this.dirCache.toString()+"]";  //NOI18N
-    }
-    
-    private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
-        File refRoot = new File (cacheRoot,REFERENCES);
-        if (!refRoot.exists()) {
-            refRoot.mkdir();
-        }
-        return refRoot;
-    }
+    }    
            
     private static CachePolicy getCachePolicy() {
         final String value = System.getProperty(PROP_INDEX_POLICY);   //NOI18N
@@ -455,6 +409,14 @@ class LuceneIndex extends Index {
     
 
     //<editor-fold defaultstate="collapsed" desc="Private classes (NoNormsReader, TermComparator, CachePolicy)">
+    
+    private static class AllFieldsSelector implements FieldSelector {
+        @Override
+        public FieldSelectorResult accept(final String fieldName) {
+            return FieldSelectorResult.LOAD;
+        }
+    }
+    
     private static class NoNormsReader extends FilterIndexReader {
 
         //@GuardedBy (this)
@@ -548,6 +510,7 @@ class LuceneIndex extends Index {
         
         private final File folder;
         private final CachePolicy cachePolicy;
+        private final Analyzer analyzer;
         private FSDirectory fsDir;
         private RAMDirectory memDir;
         private CleanReference ref;
@@ -555,12 +518,21 @@ class LuceneIndex extends Index {
         private volatile boolean closed;
         private volatile Boolean validCache;
         
-        private DirCache(final @NonNull File folder, final @NonNull CachePolicy cachePolicy) throws IOException {
+        private DirCache(
+                final @NonNull File folder,
+                final @NonNull CachePolicy cachePolicy,
+                final @NonNull Analyzer analyzer) throws IOException {
             assert folder != null;
             assert cachePolicy != null;
+            assert analyzer != null;
             this.folder = folder;
             this.fsDir = createFSDirectory(folder);
             this.cachePolicy = cachePolicy;                        
+            this.analyzer = analyzer;
+        }
+        
+        Analyzer getAnalyzer() {
+            return this.analyzer;
         }
                                 
         synchronized void clear() throws IOException {
@@ -762,7 +734,7 @@ class LuceneIndex extends Index {
                     @Override
                     public void run () {
                         try {
-                            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
+                            IndexManager.writeAccess(new IndexManager.Action<Void>() {
                                 @Override
                                 public Void run() throws IOException, InterruptedException {
                                     close(false);
@@ -808,9 +780,9 @@ class LuceneIndex extends Index {
             return locks;
         }
         
-        private void checkPreconditions () throws ClassIndexImpl.IndexAlreadyClosedException{
+        private void checkPreconditions () throws IndexClosedException {
             if (closed) {
-                throw new ClassIndexImpl.IndexAlreadyClosedException();
+                throw new IndexClosedException();
             }
         }
         

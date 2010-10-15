@@ -54,10 +54,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
@@ -67,11 +69,11 @@ import org.openide.util.Utilities;
  */
 public abstract class ClassIndexImpl {
     
-    public final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
-
-    private State state = State.NEW;
-
-
+    public static enum State {
+        NEW,
+        INITIALIZED,
+    }
+    
     public static enum UsageType {
 
         SUPER_CLASS( 0 ),
@@ -90,20 +92,18 @@ public abstract class ClassIndexImpl {
             return this.offset;
         }
     }
+    
+    public static final ThreadLocal<AtomicBoolean> cancel = new ThreadLocal<AtomicBoolean> ();       
+    public static ClassIndexFactory FACTORY;
 
-    public static enum State {
-        NEW,
-        INITIALIZED,
-    }
+    private State state = State.NEW;
+    private final List<WeakReference<ClassIndexImplListener>> listeners = Collections.synchronizedList(new ArrayList<WeakReference<ClassIndexImplListener>> ());
     
-        
-    public static ClassIndexFactory FACTORY;    
+    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
     
-    public abstract <T> void getDeclaredTypes (String name, ClassIndex.NameKind kind, final ResultConvertor<? super Document, T> convertor, final Set<? super T> result) throws IOException, InterruptedException;
-    
-    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, ResultConvertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
+    public abstract <T> void getDeclaredElements (String ident, ClassIndex.NameKind kind, Convertor<? super Document, T> convertor, Map<T,Set<String>> result) throws IOException, InterruptedException;
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
@@ -183,10 +183,7 @@ public abstract class ClassIndexImpl {
         }
         this.state=state;
     }
-    
-    public static final class IndexAlreadyClosedException extends IOException {        
-    }
-    
+        
     public static interface Writer {
         void clear() throws IOException;
         void deleteEnclosedAndStore (final List<Pair<Pair<String,String>, Object[]>> refs, final Set<Pair<String,String>> topLevels) throws IOException;

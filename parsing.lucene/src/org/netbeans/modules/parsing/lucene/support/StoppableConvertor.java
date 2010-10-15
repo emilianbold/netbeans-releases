@@ -37,78 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene.util;
-
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+package org.netbeans.modules.parsing.lucene.support;
 
 /**
- *
+ * A convertor used by the {@link Index#queryTerms} to convert lucene Terms
+ * into user types.
+ * The interface allows isolation of user code from the lucene
+ * specific types.
  * @author Tomas Zezula
  */
-public final class LRUCache<K,V extends Evictable> {
-
-    private final LinkedHashMap<K, V> cache;
-    private final ReadWriteLock lock;
-
-    public LRUCache (final EvictionPolicy<? super K,? super V> policy) {
-        this.lock = new ReentrantReadWriteLock();
-        this.cache = new LinkedHashMap<K, V>(10,0.75f,true) {
-            @Override
-            protected boolean removeEldestEntry(Entry<K, V> eldest) {
-                final boolean evict = policy.shouldEvict(this.size(), eldest.getKey(), eldest.getValue());
-                if (evict) {
-                    eldest.getValue().evicted();
-                }
-                return evict;
-            }
-        };
-    }
-
-    public void put (final K key, final V evictable) {
-        assert key != null;
-        assert evictable != null;
-        this.lock.writeLock().lock();
-        try {
-            this.cache.put(key, evictable);
-        } finally {
-            this.lock.writeLock().unlock();
-        }
-    }
-
-    public V get(final K key) {
-        assert key != null;
-        this.lock.readLock().lock();
-        try {
-            return this.cache.get(key);
-        } finally {
-            this.lock.readLock().unlock();
-        }
-    }
-
-    public V remove (final K key) {
-        assert key != null;
-        this.lock.writeLock().lock();
-        try {
-            return this.cache.remove(key);
-        } finally {
-            this.lock.writeLock().unlock();
-        }
-    }
-
-    @Override
-    public String toString () {
-        this.lock.readLock().lock();
-        try {
-            return this.cache.toString();
-        } finally {
-            this.lock.readLock().unlock();
-        }
-    }
+public interface StoppableConvertor<P,R> {   
+    
+    /**
+     * The exception used by the convertor to stop the iteration.
+     */
+    public static final class Stop extends Exception {};
+    
+    /**
+     * Converts given object
+     * @param p the object to be converted
+     * @return the result of conversion
+     * @throws Stop to stop the index iteration
+     */
+    R convert (P param) throws Stop;
 
 }

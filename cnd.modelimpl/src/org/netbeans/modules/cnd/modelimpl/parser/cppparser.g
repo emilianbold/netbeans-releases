@@ -1245,7 +1245,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;}
 	:
 	(
 		// Class definition
@@ -1268,7 +1268,8 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
@@ -2794,6 +2795,7 @@ single_statement
     ;
 
 statement
+	{StorageClass sc = scInvalid;}
 	:
 	(	
                 // Issue 83496   C++ parser does not allow class definition inside function
@@ -2821,7 +2823,8 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",
 				LT(1).getLine());

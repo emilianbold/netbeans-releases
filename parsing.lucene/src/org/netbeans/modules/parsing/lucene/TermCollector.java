@@ -37,17 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.impl.indexing.lucene.util;
+package org.netbeans.modules.parsing.lucene;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import org.apache.lucene.index.Term;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  *
  * @author Tomas Zezula
  */
-public interface Evictable {
-
-    public void evicted ();
+public final class TermCollector {
+    
+    private final Map<Integer, Set<Term>> doc2Terms;
+    
+    TermCollector() {
+        doc2Terms = new HashMap<Integer, Set<Term>>();
+    }
+    
+    public void add (final int docId, final @NonNull Term term) {
+        Set<Term> slot = doc2Terms.get(docId);
+        if (slot == null) {
+            slot = new HashSet<Term>();
+            doc2Terms.put(docId, slot);
+        }
+        slot.add(term);
+    }
+    
+    Set<Term> get(final int docId) {
+        return doc2Terms.get(docId);
+    }
+    
+    
+    public static interface TermCollecting {
+        void attach (TermCollector collector);
+    }
 
 }
