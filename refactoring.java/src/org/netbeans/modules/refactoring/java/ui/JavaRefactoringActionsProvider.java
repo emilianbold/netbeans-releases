@@ -467,7 +467,7 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int endOffset,
                         CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    return wrap(ChangeParametersUI.create(selectedElement, info));
+                    return wrap(ChangeParametersUI.create(TreePathHandle.create(selected, info), info));
                 }
             };
         } else {
