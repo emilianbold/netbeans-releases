@@ -71,6 +71,7 @@ public class ElfReader extends ByteStreamReader {
     private ElfSection[] sections = null;
     private HashMap<String, Integer> sectionsMap = new HashMap<String, Integer>();
     private StringTableSection stringTableSection = null;
+    private List<String> pubNames = null;
     private long shiftIvArchive = 0;
     private long lengthIvArchive = 0;
     
@@ -245,6 +246,7 @@ public class ElfReader extends ByteStreamReader {
             skipBytes(4);
         }
         List<SectionHeader> headers = new ArrayList<SectionHeader>();
+        pubNames = new ArrayList<String>();
         for (int j = 0; j < ncmds; j++){
             int cmd = readInt();
             int cmdSize = readInt();
@@ -286,6 +288,14 @@ public class ElfReader extends ByteStreamReader {
                 read(strings);
                 stringTableSection = new StringTableSection(this, strings);
                 seek(pointer);
+            } else if (LoadCommand.LC_LOAD_DYLIB.is(cmd)){ //LC_LOAD_DYLIB
+                int offset = readInt();
+                long pointer = getFilePointer();
+                seek(pointer+offset-12);
+                String readString = readString();
+                pubNames.add(readString);
+                seek(pointer);
+                skipBytes(cmdSize - 12);
             } else {
                 skipBytes(cmdSize - 8);
             }
@@ -390,7 +400,10 @@ public class ElfReader extends ByteStreamReader {
     }
 
     public List<String> readPubNames() throws IOException{
-        List<String> res = new ArrayList<String>();
+        if (pubNames != null) {
+            return pubNames;
+        }
+        pubNames = new ArrayList<String>();
         long save = getFilePointer();
         if (false) {
             // another way to find shared libraries
@@ -416,7 +429,7 @@ public class ElfReader extends ByteStreamReader {
                     long s = sectionHeadersTable[idx].sh_offset;
                     for(int l : libs){
                         seek(s+l);
-                        res.add(readString());
+                        pubNames.add(readString());
                     }
                 }
             }
@@ -445,7 +458,7 @@ public class ElfReader extends ByteStreamReader {
                     long start = sectionHeadersTable[idx].sh_offset;
                     for(int l : libs){
                         seek(start+l);
-                        res.add(readString());
+                        pubNames.add(readString());
                     }
                 }
 
@@ -454,7 +467,7 @@ public class ElfReader extends ByteStreamReader {
             seek(p+elfHeader.e_phentsize);
         }
         seek(save);
-        return res;
+        return pubNames;
     }
 
     private void readProgramHeaderTable() throws IOException {

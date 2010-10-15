@@ -336,6 +336,10 @@ public class OccurrencesFinderImplTest extends TestBase {
         //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
     }
+    
+    public void testMagicMethod171249() throws Exception {
+        checkOccurrences(getTestPath(), "class OldC^lass {", true);
+    }
 
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)

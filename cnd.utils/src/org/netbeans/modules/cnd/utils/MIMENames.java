@@ -113,6 +113,9 @@ public final class MIMENames {
     /** ELF Shared Object files */
     public static final String ELF_SHOBJ_MIME_TYPE = "application/x-shobj+elf"; //NOI18N
 
+    /** ELF Static Object files */
+    public static final String ELF_STOBJ_MIME_TYPE = "application/x-stobj+elf"; //NOI18N
+
     /** ELF Object files */
     public static final String ELF_OBJECT_MIME_TYPE = "application/x-object+elf"; //NOI18N
 
@@ -187,6 +190,7 @@ public final class MIMENames {
                 mime.equals(ELF_EXE_MIME_TYPE) ||
                 mime.equals(ELF_CORE_MIME_TYPE) ||
                 mime.equals(ELF_SHOBJ_MIME_TYPE) ||
+                mime.equals(ELF_STOBJ_MIME_TYPE) ||
                 mime.equals(ELF_GENERIC_MIME_TYPE) ||
                 mime.equals(ELF_OBJECT_MIME_TYPE);
     }
