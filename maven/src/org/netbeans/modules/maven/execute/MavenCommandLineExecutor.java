@@ -264,7 +264,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
-        toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
         String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
         if (localRepo != null) {

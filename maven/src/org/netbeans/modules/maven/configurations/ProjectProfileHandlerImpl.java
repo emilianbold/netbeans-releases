@@ -111,7 +111,7 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
 
     public @Override List<String> getAllProfiles() {
         Set<String> profileIds = new HashSet<String>();
-        //pom+profiles.xml profiles come first
+        //pom profiles come first
         extractProfiles(profileIds);
         //Add settings file Properties
         profileIds.addAll(NbCollections.checkedMapByFilter(MavenSettingsSingleton.getInstance().createUserSettingsModel().getProfilesAsMap(), String.class, org.apache.maven.settings.Profile.class, true).keySet());
@@ -135,24 +135,6 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
             profileIds.add(profile);
         }
         
-        /* MNG-4060: no longer supported
-        File basedir = FileUtil.normalizeFile(mavenProject.getBasedir());
-        FileObject fileObject = FileUtil.toFileObject(basedir);
-        if (fileObject != null) {//144159
-            //read from profiles.xml
-            FileObject profilesFo = fileObject.getFileObject("profiles.xml");
-            if (profilesFo != null) {
-                ModelSource ms = Utilities.createModelSource(profilesFo);
-                ProfilesModel pm = ProfilesModelFactory.getDefault().getModel(ms);
-                if (State.VALID.equals(pm.getState())) {
-                    List<String> actProfs = pm.getProfilesRoot().getActiveProfiles();
-                    if (actProfs != null) {
-                        profileIds.addAll(actProfs);
-                    }
-                }
-            }
-        }
-         */
         profileIds.addAll(getActiveProfiles(shared));
         return new ArrayList<String>(profileIds);
     }
@@ -216,36 +198,6 @@ public class ProjectProfileHandlerImpl implements ProjectProfileHandler {
     }
 
     private void extractProfiles(Set<String> profileIds) {
-        extractProfilesFromModelLineage(profileIds);
-        /* MNG-4060: no longer supported
-        File basedir = FileUtil.normalizeFile(nmp.getPOMFile().getParentFile());
-        FileObject fileObject = FileUtil.toFileObject(basedir);
-        //read from profiles.xml
-        if (fileObject != null) { //144159
-            FileObject profiles = fileObject.getFileObject("profiles.xml");
-            if (profiles != null) {
-                // using xpp3 reader because xam based model needs project instance (for encoding)
-                // and might deadlock
-                ProfilesXpp3Reader reader = new ProfilesXpp3Reader();
-                InputStream in = null;
-                try {
-                    in = profiles.getInputStream();
-                    ProfilesRoot root = reader.read(in);
-                    List<org.apache.maven.profiles.Profile> profs = root.getProfiles();
-                    for (org.apache.maven.profiles.Profile prf : profs) {
-                        profileIds.add(prf.getId());
-                    }
-                } catch (Exception e) {
-                    Logger.getLogger(ProjectProfileHandlerImpl.class.getName()).log(Level.FINE, "Error while retrieving profiles from profiles.xml file. Ignore.", e); //NOI18N
-                } finally {
-                    IOUtil.close(in);
-                }
-            }
-        }
-         */
-    }
-    
-    private void extractProfilesFromModelLineage(Set<String> profileIds) {
         /* Cannot use this as it would trigger a stack overflow when loading the project:
         for (Profile profile : nmp.getOriginalMavenProject().getModel().getProfiles()) {
             profileIds.add(profile.getId());

@@ -779,16 +779,19 @@ public class DebuggingNodeModel implements ExtendedNodeModel {
             if (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME.equals(evt.getPropertyName())) {
                 CallStackFrame currentFrame = debugger.getCurrentCallStackFrame();
                 CallStackFrame lastcurrentFrame = null;
+                JPDAThread lastCurrentFrameThread;
                 synchronized (this) {
-                    JPDAThread lastCurrentFrameThread = lastCurrentFrameThreadRef.get();
-                    if (lastCurrentFrameThread != null) {
-                        try {
-                            CallStackFrame[] frames = lastCurrentFrameThread.getCallStack(lastCurrentFrameDepth, lastCurrentFrameDepth + 1);
-                            if (frames.length > 0) {
-                                lastcurrentFrame = frames[0];
-                            }
-                        } catch (AbsentInformationException aiex) {}
-                    }
+                    lastCurrentFrameThread = lastCurrentFrameThreadRef.get();
+                }
+                if (lastCurrentFrameThread != null) {
+                    try {
+                        CallStackFrame[] frames = lastCurrentFrameThread.getCallStack(lastCurrentFrameDepth, lastCurrentFrameDepth + 1);
+                        if (frames.length > 0) {
+                            lastcurrentFrame = frames[0];
+                        }
+                    } catch (AbsentInformationException aiex) {}
+                }
+                synchronized (this) {
                     //lastcurrentFrame = lastCurrentFrame;//Ref.get();
                     //lastCurrentFrameRef = new WeakReference(currentFrame);
                     //lastCurrentFrame = currentFrame;
