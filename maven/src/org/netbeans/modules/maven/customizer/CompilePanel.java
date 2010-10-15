@@ -152,20 +152,11 @@ public class CompilePanel extends javax.swing.JPanel {
             }
 
             public String getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
-                    if (props != null && props.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                        val = prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
-                    }
-                }
-                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
                     }
-                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true);
                 }
@@ -194,20 +185,6 @@ public class CompilePanel extends javax.swing.JPanel {
                 }
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, true) != null;
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                        profprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value);
-                        if (hasConfig) {
-                            // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_COMPILE_ON_SAVE, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
                     Properties modprops = handle.getPOMModel().getProject().getProperties();
@@ -283,20 +260,11 @@ public class CompilePanel extends javax.swing.JPanel {
 
             @Override
             public JavaPlatform getValue() {
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
-                    if (props != null && props.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
-                        val = props.getProperty(Constants.HINT_JDK_PLATFORM);
-                    }
-                }
-                if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
                     if (props != null) {
                         val = props.getProperty(Constants.HINT_JDK_PLATFORM);
                     }
-                }
                 if (val == null) {
                     val = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true);
                 }
@@ -322,20 +290,6 @@ public class CompilePanel extends javax.swing.JPanel {
 
                 boolean hasConfig = handle.getRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, true) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
-
-                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
-                    if (profprops != null && profprops.getProperty(Constants.HINT_JDK_PLATFORM) != null) {
-                        profprops.setProperty(Constants.HINT_JDK_PLATFORM, platformId);
-                        if (hasConfig) {
-                            // in this case clean up the auxiliary config
-                            handle.setRawAuxiliaryProperty(Constants.HINT_JDK_PLATFORM, null, true);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                        return;
-                    }
-                }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_JDK_PLATFORM)) {
                     Properties modprops = handle.getPOMModel().getProject().getProperties();

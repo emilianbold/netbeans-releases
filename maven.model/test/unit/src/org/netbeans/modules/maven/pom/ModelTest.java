@@ -63,10 +63,6 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.model.profile.Profile;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
-import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
-import org.netbeans.modules.maven.model.profile.ProfilesRoot;
 import org.netbeans.modules.maven.model.settings.Settings;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
@@ -211,52 +207,6 @@ public class ModelTest extends TestCase {
             file.deleteOnExit();
         }
 
-    }
-
-    public void testProfiles() throws Exception {
-        ModelSource source = createModelSource("profiles.xml");
-        try {
-            assertTrue(source.isEditable());
-            ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
-            assertNotNull(model.getRootComponent());
-            ProfilesRoot prj = model.getProfilesRoot();
-            assertNotNull(prj);
-
-            List<Profile> profiles = prj.getProfiles();
-            assertNotNull(profiles);
-            assertNotNull(prj.findProfileById("profile1"));
-
-            List<String> actives = prj.getActiveProfiles();
-            assertNotNull(actives);
-            assertEquals("profile1", actives.get(0));
-        } finally {
-            File file = source.getLookup().lookup(File.class);
-            file.deleteOnExit();
-        }
-    }
-
-    public void testMissingProfiles() throws Exception {
-        String dir = System.getProperty("java.io.tmpdir");
-        File sourceFile = new File(dir, "foo.bar");
-        try {
-            assertFalse(sourceFile.exists());
-            String PROFILES_SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                    "<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                    "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +
-                    "</profilesXml>";
-
-            ModelSource source = Utilities.createModelSourceForMissingFile(sourceFile, true,
-                    PROFILES_SKELETON, "text/xml");
-            assertTrue(source.isEditable());
-            ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
-            assertNotNull(model.getRootComponent());
-            model.startTransaction();
-            model.getProfilesRoot().addActiveProfile("active");
-            model.endTransaction();
-            Utilities.saveChanges(model);
-        } finally {
-            sourceFile.deleteOnExit();
-        }
     }
 
     private ModelSource createModelSource(String templateName) throws FileNotFoundException, IOException, URISyntaxException {
