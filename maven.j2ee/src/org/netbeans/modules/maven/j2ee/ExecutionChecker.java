@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
@@ -109,7 +108,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
             if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
                 //dump the nb java support's timestamp fil in output directory..
@@ -117,8 +116,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
             String moduleUri = config.getProperties().getProperty(MODULEURI);
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
-            boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
-            boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
+            boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
+            boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
             boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
 
             performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy);
@@ -251,7 +250,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
@@ -301,7 +300,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             if (mapp != null) {
                 java.util.Properties props = mapp.getProperties();
                 if (props != null) {
-                    props.remove(Constants.ACTION_PROPERTY_DEPLOY);
+                    props.remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
                     ModelHandle.setUserActionMapping(mapp, handle.getActionMappings());
                     handle.markAsModified(handle.getActionMappings());
                     ModelHandleUtils.writeModelHandle(handle, project);
@@ -338,7 +337,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        project.getLookup().lookup(AuxiliaryProperties.class).put(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
+        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();
@@ -346,7 +345,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     props = model.getFactory().createProperties();
                     model.getProject().setProperties(props);
                 }
-                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
             }
         };
         final FileObject projDir = targetPrj.getProjectDirectory();

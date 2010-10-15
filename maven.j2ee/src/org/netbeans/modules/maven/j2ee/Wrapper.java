@@ -48,7 +48,6 @@ import javax.swing.JLabel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -137,14 +136,14 @@ public class Wrapper {
         return  new ComboBoxUpdater<Wrapper>(combo, label) {
             public Wrapper getDefaultValue() {
                 Wrapper wr = null;
-                String id = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                String id = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
                 if (id != null) {
                     wr = Wrapper.findWrapperByInstance(id, combo);
                 }
                 if (wr == null) {
-                    String str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                    String str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
                     if (str == null) {
-                        str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                        str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD);
                     }
                     if (str != null) {
                         wr = findWrapperByType(str, combo);
@@ -155,7 +154,7 @@ public class Wrapper {
 
             public Wrapper getValue() {
                 Wrapper wr = null;
-                String id = handle.getRawAuxiliaryProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+                String id = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
                 if (id != null) {
                     wr = findWrapperByInstance(id, combo);
                 }
@@ -164,10 +163,10 @@ public class Wrapper {
                     Properties props = model.getProject().getProperties();
                     String str = null;
                     if (props != null) {
-                        str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                        str = props.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
                     }
                     if (str == null) {
-                        str = handle.getRawAuxiliaryProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+                        str = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
                     }
                     if (str != null) {
                         wr = findWrapperByType(str, combo);
@@ -183,24 +182,24 @@ public class Wrapper {
                 String sID = wr.getServerID();
                 String iID = wr.getServerInstanceID();
                 //remove old deprecated data.
-                handle.setRawAuxiliaryProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null, true);
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, null, true);
                 POMModel model = handle.getPOMModel();
                 if (ExecutionChecker.DEV_NULL.equals(iID)) {
                     Properties props = model.getProject().getProperties();
                     if (props != null) {
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                         handle.markAsModified(handle.getPOMModel());
                     }
-                    handle.setRawAuxiliaryProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null, true);
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null, true);
                 } else {
                     Properties props = model.getProject().getProperties();
                     if (props == null) {
                         props = model.getFactory().createProperties();
                         model.getProject().setProperties(props);
                     }
-                    props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
                     handle.markAsModified(handle.getPOMModel());
-                    handle.setRawAuxiliaryProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
                 }
             }
         };

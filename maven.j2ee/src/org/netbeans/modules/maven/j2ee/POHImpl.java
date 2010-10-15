@@ -51,7 +51,6 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
@@ -258,11 +257,11 @@ public class POHImpl extends ProjectOpenedHook {
         }
         if (ids[0] == null) {
             AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-            String val = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_ID, true);
-            ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER, true);
+            String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+            ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
             if (ids[1] == null) {
                 //try checking for old values..
-                ids[1] = props.get(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
+                ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
             }
             if (ids[1] != null) {
                 String[] instances = Deployment.getDefault().getInstancesOfServer(ids[1]);
@@ -322,14 +321,14 @@ public class POHImpl extends ProjectOpenedHook {
                         props = model.getFactory().createProperties();
                         model.getProject().setProperties(props);
                     }
-                    props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
+                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, serverType);
                 } else {
                     Properties props = model.getProject().getProperties();
                     if (props != null) {
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                     }
                 }
-                prj.getLookup().lookup(AuxiliaryProperties.class).put(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, true);
+                prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, true);
                 handle.markAsModified(handle.getPOMModel());
                 ModelHandleUtils.writeModelHandle(handle, prj);
             } catch (IOException ex) {

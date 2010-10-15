@@ -60,7 +60,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
@@ -70,6 +69,7 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import static org.netbeans.modules.maven.j2ee.ExecutionChecker.CLIENTURLPART;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 import org.netbeans.modules.maven.j2ee.Wrapper;
 import org.netbeans.modules.maven.model.pom.Dependency;
@@ -155,12 +155,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                             root.setProperties(props);
                         }
                         replaceDependency("javaee-web-api", "javaee-api");
-                        props.setProperty(Constants.HINT_J2EE_VERSION, p.toPropertiesString());
+                        props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, p.toPropertiesString());
                         handle.markAsModified(handle.getPOMModel());
                     } else {
                         Properties props = root.getProperties();
-                        if (props != null && props.getProperty(Constants.HINT_J2EE_VERSION) != null) {
-                            props.setProperty(Constants.HINT_J2EE_VERSION, null);
+                        if (props != null && props.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION) != null) {
+                            props.setProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
                             if (props.getProperties().size() == 0) {
                                 ((AbstractDocumentComponent)root).removeChild("properties", props);
                             }
@@ -405,7 +405,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 return true;
             }
         }
-        if (map.getProperties().containsKey(Constants.ACTION_PROPERTY_DEPLOY)) {
+        if (map.getProperties().containsKey(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY)) {
             return true;
         }
         return false;
