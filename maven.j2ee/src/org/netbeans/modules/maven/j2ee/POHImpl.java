@@ -257,7 +257,8 @@ public class POHImpl extends ProjectOpenedHook {
         }
         if (ids[0] == null) {
             AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-            String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+            // XXX should this first look up HINT_DEPLOY_J2EE_SERVER_ID in project (profile, ...) properties? Cf. Wrapper.createComboBoxUpdater.getDefaultValue
+            String val = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
             ids[1] = props.get(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
             if (ids[1] == null) {
                 //try checking for old values..
@@ -328,7 +329,7 @@ public class POHImpl extends ProjectOpenedHook {
                         props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                     }
                 }
-                prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, true);
+                prj.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, newOne, false);
                 handle.markAsModified(handle.getPOMModel());
                 ModelHandleUtils.writeModelHandle(handle, prj);
             } catch (IOException ex) {

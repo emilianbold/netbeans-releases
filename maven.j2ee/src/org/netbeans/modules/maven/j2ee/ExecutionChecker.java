@@ -337,7 +337,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
+        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();

@@ -154,7 +154,7 @@ public class Wrapper {
 
             public Wrapper getValue() {
                 Wrapper wr = null;
-                String id = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, true);
+                String id = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
                 if (id != null) {
                     wr = findWrapperByInstance(id, combo);
                 }
@@ -190,7 +190,7 @@ public class Wrapper {
                         props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                         handle.markAsModified(handle.getPOMModel());
                     }
-                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null, true);
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null, false);
                 } else {
                     Properties props = model.getProject().getProperties();
                     if (props == null) {
@@ -199,7 +199,7 @@ public class Wrapper {
                     }
                     props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
                     handle.markAsModified(handle.getPOMModel());
-                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, true);
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
                 }
             }
         };
