@@ -53,6 +53,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
@@ -119,8 +120,7 @@ public class MavenProjectPropsImpl {
         }
         if (transaction) {
             if (shared) {
-                transPropsShared.put(key, value);
-                sharedChanged = true;
+                sharedChanged |= !Utilities.compareObjects(value, transPropsShared.put(key, value));
             } else {
                 transPropsPrivate.put(key, value);
             }
