@@ -70,9 +70,6 @@ public class HtmlVersionTest extends NbTestCase {
     }
 
     public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.findByPublicId("-//W3C//DTD HTML 4.01//EN"));
-
-        //hmmm, its not possible to guess the proper xhtml version just by the namespace...
-        assertSame(HtmlVersion.XHTML10_STICT, HtmlVersion.findByNamespace("http://www.w3.org/1999/xhtml"));
+        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.find("-//W3C//DTD HTML 4.01//EN", null));
     }
 }

@@ -92,7 +92,7 @@ public class NbReaderProvider implements ReaderProvider {
 
     @Override
     public boolean isXMLContent(String identifier) {
-        return HtmlVersion.findByPublicId(identifier).isXhtml();
+        return HtmlVersion.find(identifier, null).isXhtml();
     }
 
     @Override
