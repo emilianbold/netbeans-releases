@@ -1,0 +1,3 @@
+    <target name="clean-ojec" if="ojec-platform.trigger">
+        <delete dir="${{dist.dir}}/lib"/>
+    </target>

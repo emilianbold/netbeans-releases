@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Buildsystem">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <folder name="nbproject">
+                <folder name="build-impl.xml">
+                    <folder name="init-subtargets">
+                        <file name="ojec-init" url="ojec-init">
+                            <attr name="position" intvalue="715"/>
+                        </file>
+                    </folder>
+                    <folder name="run-subtargets">
+                        <file name="ojec-run" url="ojec-run">
+                            <attr name="position" intvalue="415"/>
+                        </file>
+                    </folder>
+                    <folder name="debug-subtargets">
+                        <file name="ojec-debug" url="ojec-debug">
+                            <attr name="position" intvalue="415"/>
+                        </file>
+                    </folder>
+                    <folder name="clean-subtargets">
+                        <file name="clean-ojec" url="clean-ojec">
+                            <attr name="position" intvalue="1315"/>
+                        </file>
+                    </folder>
+                </folder>
+            </folder>
+        </folder>
+    </folder>
+    <folder name="Templates">
+        <folder name="CDC">
+            <file name="Main.java" url="Main.template">
+                <attr name="position" intvalue="425"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ojec/resources/main.html"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ojec.Bundle"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ojec/resources/ojec-class.gif"/>
+                <attr name="CDC" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateCategory" stringvalue="CDC/OJEC"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="MainTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="ojec">
+                <!-- todo change the template -->
+                <attr name="templateName" stringvalue="Templates/CDC/Main.java"/>
+                <attr name="templateType" stringvalue="main"/>
+            </file>
+        </folder>
+    </folder>    
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="ojec-ant-utils.xml" url="Utils.xml">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2me.cdc.project.ojec.Bundle#ojec-ant-utils"/>
+            </file>
+        </folder>
+    </folder>    
+</filesystem>
