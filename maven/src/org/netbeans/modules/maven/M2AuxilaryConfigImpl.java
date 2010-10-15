@@ -200,11 +200,11 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
 
     public @Override synchronized void putConfigurationFragment(final Element fragment, final boolean shared) throws IllegalArgumentException {
         Document doc = null;
-        FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
         if (shared) {
             if (scheduledDocument != null) {
                 doc = scheduledDocument;
             } else {
+                FileObject config = project.getProjectDirectory().getFileObject(CONFIG_FILE_NAME);
                 if (config != null) {
                     try {
                         doc = XMLUtil.parse(new InputSource(config.getInputStream()), false, true, null, null);

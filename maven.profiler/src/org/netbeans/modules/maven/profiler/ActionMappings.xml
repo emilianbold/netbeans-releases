@@ -89,10 +89,10 @@ made subject to such option by the copyright holder.
             <goal>nbm:run-ide</goal>
         </goals>
         <properties>
+            <!-- XXX should this use netbeans.run.params.ide instead? -->
             <netbeans.run.params>${profiler.args} -classpath %classpath ${packageClassName}</netbeans.run.params>
             <exec.executable>${profiler.java}</exec.executable>
             <profiler.action>profile</profiler.action>
-            <netbeans.execution>true</netbeans.execution>
         </properties>
     </action>
 
