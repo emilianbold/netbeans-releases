@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +59,7 @@ import com.sun.jdi.Bootstrap;
 import com.sun.jdi.connect.ListeningConnector;
 import com.sun.jdi.connect.Transport;
 import com.sun.jdi.connect.Connector;
+import java.beans.PropertyChangeListener;
 
 import java.lang.ref.WeakReference;
 import java.net.InetAddress;
@@ -107,6 +107,7 @@ import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -863,6 +864,8 @@ public class JPDAStart extends Task implements Runnable {
 
     private static class Listener extends DebuggerManagerAdapter {
 
+        private final PropertyChangeListener pcl = WeakListeners.propertyChange(this, null);
+
         private Set<DebuggerEngine> engines = new HashSet<DebuggerEngine>();
 
         private Breakpoint first;
@@ -894,7 +897,7 @@ public class JPDAStart extends Task implements Runnable {
                             if (first != null) {
                                 DebuggerManager.getDebuggerManager().removeBreakpoint(first);
                                 first = null;
-                                ((JPDADebugger) e.getSource()).removePropertyChangeListener(Listener.this);
+                                ((JPDADebugger) e.getSource()).removePropertyChangeListener(JPDADebugger.PROP_STATE, pcl);
                             }
                         }
                     });
@@ -951,7 +954,7 @@ public class JPDAStart extends Task implements Runnable {
             if (debugger == null) return;
             debugger.addPropertyChangeListener (
                 JPDADebugger.PROP_STATE,
-                this
+                pcl
             );
             engines.add(engine);
         }
@@ -984,7 +987,7 @@ public class JPDAStart extends Task implements Runnable {
             if (engines.remove(engine)) {
                 debugger.removePropertyChangeListener (
                     JPDADebugger.PROP_STATE,
-                    this
+                    pcl
                 );
             }
             if (engines.isEmpty()) {
