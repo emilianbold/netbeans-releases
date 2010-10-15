@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  */
 public class ConvertToDiamond implements ErrorRule<Void> {
 
-    private static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.note.diamond.redundant.args", "compiler.note.diamond.redundant.args.1"));
+    private static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args", "compiler.warn.diamond.redundant.args.1"));
 
     public Set<String> getCodes() {
         return CODES;
