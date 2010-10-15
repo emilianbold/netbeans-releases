@@ -180,7 +180,9 @@ public class ResetCommand extends GitCommand {
                                 for (Map.Entry<File, DirCacheEntry> e : toCheckout.entrySet()) {
                                     // ... create/overwrite this file ...
                                     File file = e.getKey();
-                                    file.getParentFile().mkdirs();
+                                    if (!ensureParentFolderExists(file.getParentFile())) {
+                                        continue;
+                                    }
                                     if (file.isDirectory()) {
                                         monitor.notifyWarning("Replacing directory " + file.getAbsolutePath());
                                         Utils.deleteRecursively(file);
@@ -245,5 +247,20 @@ public class ResetCommand extends GitCommand {
             }
             file = file.getParentFile();
         }
+    }
+
+    private boolean ensureParentFolderExists (File parentFolder) {
+        File predecessor = parentFolder;
+        while (!predecessor.exists()) {
+            predecessor = predecessor.getParentFile();
+        }
+        if (predecessor.isFile()) {
+            if (!predecessor.delete()) {
+                monitor.notifyError("Cannot replace file " + predecessor.getAbsolutePath());
+                return false;
+            }
+            monitor.notifyWarning("Replacing file " + predecessor.getAbsolutePath());
+        }
+        return parentFolder.mkdirs() || parentFolder.exists();
     }
 }

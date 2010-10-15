@@ -59,6 +59,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.jgit.commands.AddCommand;
+import org.netbeans.libs.git.jgit.commands.CheckoutIndexCommand;
 import org.netbeans.libs.git.jgit.commands.CommitCommand;
 import org.netbeans.libs.git.jgit.commands.RemoveCommand;
 import org.netbeans.libs.git.progress.FileListener;
@@ -96,6 +97,19 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     public void addNotificationListener (NotificationListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
+        }
+    }
+
+    @Override
+    public void checkout (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
+        Repository repository = gitRepository.getRepository();
+        if (revision != null) {
+            ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
+            cmd.execute();
+        }
+        if (!monitor.isCanceled()) {
+            CheckoutIndexCommand cmd = new CheckoutIndexCommand(repository, roots, monitor, this);
+            cmd.execute();
         }
     }
 

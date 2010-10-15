@@ -68,6 +68,14 @@ public interface GitClient {
     public void addNotificationListener (NotificationListener listener);
 
     /**
+     * Checks out the index into the working copy root. Does not move HEAD.
+     * @param revision if not null, index is updated with the revision content before checking out to WC
+     * @param roots files/folders to checkout
+     * @throws GitException other error
+     */
+    public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Commits all changes made in the index to all files under the given roots
      * @param roots
      * @param commitMessage

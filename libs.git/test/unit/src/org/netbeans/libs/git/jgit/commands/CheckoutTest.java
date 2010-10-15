@@ -44,13 +44,18 @@ package org.netbeans.libs.git.jgit.commands;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheCheckout;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -107,5 +112,130 @@ public class CheckoutTest extends AbstractGitTestCase {
         } finally {
             cache.unlock();
         }
+    }
+
+    public void testCheckoutFilesFromIndex () throws Exception {
+        File file1 = new File(workDir, "file1");
+        write(file1, "file 1 content");
+        File file2 = new File(workDir, "file2");
+        write(file2, "file 2 content");
+        File[] files = new File[] { file1, file2 };
+        add(files);
+        commit(files);
+
+        String content1 = "change in file 1";
+        write(file1, content1);
+        write(file2, "change in file 2");
+        add(files);
+
+        write(file1, "another change in file 1");
+        String content2 = "another change in file 2";
+        write(file2, content2);
+
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        client.checkout(new File[] { file1 }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        assertEquals(content1, read(file1));
+        assertEquals(content2, read(file2));
+
+        file1.delete();
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        client.checkout(new File[] { file1 }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        assertEquals(content1, read(file1));
+        assertEquals(content2, read(file2));
+    }
+
+    public void testCheckoutFilesFromIndexFolderToFile () throws Exception {
+        File file1 = new File(workDir, "file1");
+        write(file1, "file 1 content");
+        File file2 = new File(file1, "file2");
+        File[] files = new File[] { file1 };
+        add(files);
+        commit(files);
+
+        file1.delete();
+        file1.mkdirs();
+        write(file2, "blabla");
+
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, false);
+        client.checkout(new File[] { file1 }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assert(file1.isFile());
+        assertEquals("file 1 content", read(file1));
+    }
+
+    public void testCheckoutFilesFromIndexFileToFolder () throws Exception {
+        File folder = new File(workDir, "folder");
+        File subFolder = new File(folder, "folder");
+        File file1 = new File(subFolder, "file2");
+        subFolder.mkdirs();
+        write(file1, "file 1 content");
+        File[] files = new File[] { folder };
+        add(files);
+        commit(files);
+
+        file1.delete();
+        subFolder.delete();
+        folder.delete();
+        write(folder, "blabla");
+
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, false);
+        client.checkout(new File[] { folder }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assert(file1.isFile());
+        assertEquals("file 1 content", read(file1));
+    }
+
+    public void testCheckoutPathsFromRevision () throws Exception {
+        File file1 = new File(workDir, "file1");
+        write(file1, "file 1 content");
+        File[] files = new File[] { file1 };
+        add(files);
+        commit(files);
+
+        String content1 = "change in file 1";
+        write(file1, content1);
+        add(files);
+        commit(files);
+
+        write(file1, "another change in file 1");
+
+        Iterator<RevCommit> logs = new Git(repository).log().call().iterator();
+        String currentRevision = logs.next().getId().getName();
+        String previousRevision = logs.next().getId().getName();
+
+        GitClient client = getClient(workDir);
+        Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        client.checkout(new File[] { file1 }, currentRevision, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertEquals(content1, read(file1));
+        assertEquals(currentRevision, new Git(repository).log().call().iterator().next().getId().getName());
+
+        write(file1, "another change in file 1");
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
+        client.checkout(new File[] { file1 }, previousRevision, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_MODIFIED, false);
+        assertEquals("file 1 content", read(file1));
+        assertEquals(currentRevision, new Git(repository).log().call().iterator().next().getId().getName());
     }
 }
