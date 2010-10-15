@@ -96,6 +96,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            FtpSyncWorkerTestCase.class,
            RemoteBuildUpdatesDownloadTestCase.class,
            RfsRemoteControllerDeathTestCase.class,
+           RemoteCodeModelTestCase.class,
            CndFileUtilTestCase.class
        );
    }
