@@ -259,11 +259,6 @@ public class ThreadsActionsProvider implements NodeActionsProvider {
     }
 
     private static boolean isGoToSourceSupported (JPDAThread t) {
-        String language = DebuggerManager.getDebuggerManager ().
-            getCurrentSession ().getCurrentLanguage ();
-        if (!t.isSuspended ())
-            return false;
-        SourcePath sp = DebuggerManager.getDebuggerManager().getCurrentEngine().lookupFirst(null, SourcePath.class);
-        return sp.sourceAvailable (t, language, true);
+        return t.isSuspended ();
     }
 }

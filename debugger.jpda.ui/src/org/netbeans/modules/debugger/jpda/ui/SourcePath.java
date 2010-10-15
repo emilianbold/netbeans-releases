@@ -308,13 +308,18 @@ public class SourcePath {
     ) {
         int lineNumber = t.getLineNumber (stratumn);
         if (lineNumber < 1) lineNumber = 1;
-        String url;
+        String sourcePath;
         try {
-            url = getURL (convertSlash (t.getSourcePath (stratumn)), true);
+            sourcePath = convertSlash (t.getSourcePath (stratumn));
         } catch (AbsentInformationException e) {
-            url = getURL (
-                    convertClassNameToRelativePath (t.getClassName ()), true
-                );
+            sourcePath = convertClassNameToRelativePath (t.getClassName ());
+        }
+        String url = getURL (sourcePath, true);
+        if (url == null) {
+            ErrorManager.getDefault().log(ErrorManager.WARNING,
+                    "Show Source: No URL for source path "+sourcePath+
+                    "\nThe reason is likely no opened project for this source file.");
+            return ;
         }
         final int ln = lineNumber;
         final String u = url;
