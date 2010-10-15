@@ -34,7 +34,7 @@
             <file name="Main.java" url="Main.template">
                 <attr name="position" intvalue="425"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ojec/resources/main.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ojec/resources/Main.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2me.cdc.project.ojec.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2me/cdc/project/ojec/resources/ojec-class.gif"/>
