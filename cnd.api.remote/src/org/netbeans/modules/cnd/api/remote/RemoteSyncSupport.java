@@ -86,7 +86,16 @@ public final class RemoteSyncSupport {
         if (remoteProject == null) {
             return null;
         } else {
-            return remoteProject.getSyncFactory().getPathMap(remoteProject.getDevelopmentHost());
+            PathMap pathMap = null;
+            ExecutionEnvironment execEnv = remoteProject.getDevelopmentHost();
+            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+            if (syncFactory != null) {
+                pathMap = syncFactory.getPathMap(execEnv);
+            }
+            if (pathMap == null) {
+                pathMap = HostInfoProvider.getMapper(execEnv);
+            }
+            return pathMap;
         }
     }
 
