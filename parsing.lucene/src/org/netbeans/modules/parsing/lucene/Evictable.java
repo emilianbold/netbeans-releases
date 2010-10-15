@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,67 +34,20 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.usages;
-import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
-import org.apache.lucene.index.IndexWriter;
-
-import java.util.logging.Logger;
-import java.util.logging.Level;
+package org.netbeans.modules.parsing.lucene;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class LuceneIndexMBeanImpl extends StandardMBean implements LuceneIndexMBean {
+interface Evictable {
 
-    private static LuceneIndexMBeanImpl instance;
+    public void evicted ();
 
-    private int mergeFactor = IndexWriter.DEFAULT_MERGE_FACTOR;
-    private int maxMergeDocs = IndexWriter.DEFAULT_MAX_MERGE_DOCS;
-    private int maxBufferedDocs = IndexWriter.DEFAULT_MAX_BUFFERED_DOCS;
-
-    private LuceneIndexMBeanImpl () throws NotCompliantMBeanException {
-        super (LuceneIndexMBean.class);
-    }
-    
-    public int getMergeFactor () {
-        return this.mergeFactor;
-    }
-    
-    public void setMergeFactor (int mf) {
-        this.mergeFactor = mf;
-    }
-    
-    public int getMaxMergeDocs () {
-        return this.maxMergeDocs;
-    }
-    
-    public void setMaxMergeDocs (int nd) {
-        this.maxMergeDocs = nd;
-    }
-    
-    public int getMaxBufferedDocs () {
-        return this.maxBufferedDocs;
-    }
-    
-    public void setMaxBufferedDocs (int nd) {
-        this.maxBufferedDocs = nd;
-    }
-
-    private static Logger log = Logger.getLogger(LuceneIndexMBeanImpl.class.getName());
-    public static synchronized LuceneIndexMBeanImpl getDefault () {
-        if (instance == null) {
-            try {
-                instance = new LuceneIndexMBeanImpl ();            
-            } catch (NotCompliantMBeanException e) {
-                if (log.isLoggable(Level.SEVERE))
-                    log.log(Level.SEVERE, e.getMessage(), e);
-            }
-        }
-        return instance;
-    }
-    
 }

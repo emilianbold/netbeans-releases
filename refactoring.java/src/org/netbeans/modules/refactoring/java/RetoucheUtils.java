@@ -315,6 +315,8 @@ public class RetoucheUtils {
             return false;
         if (name.startsWith("."))  //NOI18N
             return  false;
+        if (name.contains("..")) //NOI18N
+            return false;
         StringTokenizer tokenizer = new StringTokenizer(name, "."); // NOI18N
         while (tokenizer.hasMoreTokens()) {
             if (!Utilities.isJavaIdentifier(tokenizer.nextToken())) {
