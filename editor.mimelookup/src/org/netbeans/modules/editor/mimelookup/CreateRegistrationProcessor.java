@@ -62,6 +62,7 @@ import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -98,7 +99,7 @@ public class CreateRegistrationProcessor extends LayerGeneratingProcessor {
                 for (Entry<? extends ExecutableElement, ? extends AnnotationValue> e : am.getElementValues().entrySet()) {
                     if (!e.getKey().getSimpleName().contentEquals("value")) continue;
 
-                    for (AnnotationMirror r : (AnnotationMirror[]) e.getValue().getValue()) {
+                    for (AnnotationMirror r : NbCollections.iterable(NbCollections.checkedIteratorByFilter(((Iterable) e.getValue().getValue()).iterator(), AnnotationMirror.class, true))) {
                         process(el, r);
                     }
                 }
