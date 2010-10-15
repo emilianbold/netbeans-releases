@@ -319,6 +319,7 @@ public class Dwarf {
                     if (!currentList.hasNext()) {
                         continue;
                     }
+                    break;
                 } else {
                     currentList = null;
                     return;
