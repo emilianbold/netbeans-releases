@@ -136,10 +136,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
 
-    /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject mavenProject, Project prj) {
-        this(mavenProject, true, prj);
-    }
     public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
         this.nbRepo = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans");
@@ -752,7 +748,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         txtVersion.setText(version);
     }
 
-    private static Node noResultsNode, searchingNode;
+    private static Node noResultsNode, searchingNode, tooGeneralNode;
 
     private static Node getNoResultsNode() {
         if (noResultsNode == null) {
@@ -800,6 +796,30 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         }
 
         return new FilterNode (searchingNode, Children.LEAF);
+    }
+    
+    private static Node getTooGeneralNode() {
+        if (tooGeneralNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/resources/empty.png"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Too General"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(QueryPanel.class, "LBL_Node_TooGeneral")); //NOI18N
+
+            tooGeneralNode = nd;
+        }
+
+        return new FilterNode (tooGeneralNode, Children.LEAF);
     }
     
     private class ResultsRootNode extends AbstractNode {
@@ -938,6 +958,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     resultsRootNode.setOneChild(getSearchingNode());
+                    AddDependencyPanel.this.searchField.setForeground(defSearchC);
+                    AddDependencyPanel.this.nls.clearMessages();
                 }
             });
 
@@ -970,8 +992,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
             Task t = RPofQueryPanel.post(new Runnable() {
 
+                @Override
                 public void run() {
-                    boolean isError = false;
                     //first try with classes search included,
                     try {
                         RepositoryQueries.find(queryRequest);
@@ -979,29 +1001,39 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                         // if failing, then exclude classes from search..
                         if (queryRequest.countObservers()>0) {
                             try {
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    public void run() {
+                                        AddDependencyPanel.this.nls.setInformationMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_ClassesExcluded")); //NOI18N
+                                    }
+                                });
                                 queryRequest.changeFields(fieldsNonClasses);
                                 RepositoryQueries.find(queryRequest);
-                                //TODO show that classes were excluded somehow?
                             } catch (BooleanQuery.TooManyClauses exc2) {
                                 // if still failing, report to the user
                                 SwingUtilities.invokeLater(new Runnable() {
-
                                     public void run() {
                                         AddDependencyPanel.this.searchField.setForeground(Color.RED);
-                                        AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral"));
+                                        AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
+                                        resultsRootNode.setOneChild(getTooGeneralNode());
                                     }
                                 });
-                                isError = true;
                             }
                         }
-                    }
-                    
-                    if (!isError) SwingUtilities.invokeLater(new Runnable() {
+                    } catch (OutOfMemoryError oome) {
+                        // running into OOME may still happen in Lucene despite the fact that
+                        // we are trying hard to prevent it in NexusRepositoryIndexerImpl
+                        // (see #190265)
+                        // in the bad circumstances theoretically any thread may encounter OOME
+                        // but most probably this thread will be it
+                        // trying to indicate the condition to the user here
+                        SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                AddDependencyPanel.this.searchField.setForeground(defSearchC);
-                                AddDependencyPanel.this.nls.clearMessages();
-                        }
-                    });
+                                AddDependencyPanel.this.searchField.setForeground(Color.RED);
+                                AddDependencyPanel.this.nls.setWarningMessage(NbBundle.getMessage(AddDependencyPanel.class, "MSG_TooGeneral")); //NOI18N
+                                resultsRootNode.setOneChild(getTooGeneralNode());
+                            }
+                        });
+                    }
                 }
             });
 
@@ -1040,7 +1072,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
                 List<Node> newNodes = new ArrayList<Node>(keyList.size());
 
-                // still searching?
+                    // still searching?
                 if (null!=queryRequest && !queryRequest.isFinished())
                     newNodes.add(getSearchingNode());
                 

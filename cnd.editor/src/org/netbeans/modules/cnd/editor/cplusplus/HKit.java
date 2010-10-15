@@ -68,6 +68,6 @@ public class HKit extends CCKit {
 
     @Override
     protected Filter<CppTokenId> getFilter() {
-        return CndLexerUtilities.getGccCppFilter();
+        return CndLexerUtilities.getHeaderFilter();
     }
 }

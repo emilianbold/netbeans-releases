@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -197,21 +198,23 @@ public class RemoteFileSupport extends NamedRunnable {
     /**
      * Ensured that the directory is synchronized
      */
-    public final void ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
-        // TODO: synchronization
-        if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+    public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
+        DirectoryAttributes attrs = null;
+        if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
-                if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-                    syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir));
+                File flagFile = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
+                if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
+                    attrs = syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir), flagFile);
                     removeLock(dir);
                 }
             }
         }
+        return attrs;
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, ConnectException {
+    private DirectoryAttributes syncDirStruct(final File dir, final String remoteDir, final File flagFile) throws IOException, ConnectException {
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
@@ -222,10 +225,11 @@ public class RemoteFileSupport extends NamedRunnable {
         final String script = "test -d \"" + rdir + "\" && " + // NOI18N
                 "cd \"" + rdir + "\" &&" + // NOI18N
                 "for D in `/bin/ls`; do " + // NOI18N
-                "if [ -d \"$D\" ]; then echo D \"$D\"; else echo F \"$D\"; fi; done"; // NOI18N
+                "if [ -d \"$D\" ]; then echo D \"$D\"; else if [ -w \"$D\" ]; then echo w \"$D\"; else echo r \"$D\"; fi; fi; done"; // NOI18N
 
         final AtomicReference<IOException> ex = new AtomicReference<IOException>();
         final AtomicBoolean dirCreated = new AtomicBoolean(false);
+        final DirectoryAttributes attrs = new DirectoryAttributes(flagFile);
 
         LineProcessor outputProcessor = new LineProcessor() {
             @Override
@@ -238,12 +242,15 @@ public class RemoteFileSupport extends NamedRunnable {
                     }
                 }
                 CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
-                boolean directory = inputLine.charAt(0) == 'D';
+                char mode = inputLine.charAt(0);
+                boolean directory = (mode == 'D');
                 String fileName = inputLine.substring(2);
                 if (directory) {
                     fileName = fixCaseSensitivePathIfNeeded(fileName);
+                } else {
+                    attrs.setWritable(fileName, mode == 'w');
                 }
-                File file = new File(dir, fileName);
+                File file = CndFileUtils.createLocalFile(dir, fileName);
                 try {
                     RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
                     if (directory) {
@@ -301,7 +308,7 @@ public class RemoteFileSupport extends NamedRunnable {
         }
 
         if (dirCreated.get()) {
-            File flag = new File(dir, FLAG_FILE_NAME);
+            File flag = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
             RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
@@ -311,6 +318,8 @@ public class RemoteFileSupport extends NamedRunnable {
             }
             dirSyncCount++;
         }
+        attrs.store();
+        return attrs;
     }
 
     /*package-local test method*/ final void resetStatistic() {

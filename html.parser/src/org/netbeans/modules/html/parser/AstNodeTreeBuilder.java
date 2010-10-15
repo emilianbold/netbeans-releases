@@ -47,11 +47,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Stack;
-import nu.validator.htmlparser.common.TokenizerState;
-import nu.validator.htmlparser.common.TokenizerStateListener;
+import nu.validator.htmlparser.common.TransitionHandler;
 import nu.validator.htmlparser.impl.CoalescingTreeBuilder;
 import nu.validator.htmlparser.impl.ElementName;
 import nu.validator.htmlparser.impl.HtmlAttributes;
+import static nu.validator.htmlparser.impl.Tokenizer.*;
 import nu.validator.htmlparser.impl.TreeBuilder;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeFactory;
@@ -65,7 +65,7 @@ import org.xml.sax.SAXException;
  *
  * @author marekfukala
  */
-public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TokenizerState, TokenizerStateListener {
+public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implements TransitionHandler {
 
     public static boolean DEBUG = false;
     public static boolean DEBUG_STATES = false;
@@ -73,7 +73,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private AstNode root;
     //element's internall offsets
     private int tag_lt_offset;
-    private int tag_gt_offset;
     private boolean self_closing_starttag;
     //stack of opened tags
     private Stack<AstNode> stack = new Stack<AstNode>();
@@ -82,6 +81,8 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
     private ElementName startTag;
     //holds found attributes of an open tag
     private Stack<AttrInfo> attrs = new Stack<AttrInfo>();
+
+    private AstNode currentTag;
 
     public AstNodeTreeBuilder(AstNode rootNode) {
         this.root = rootNode;
@@ -187,10 +188,6 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
         stack.push(t);
 
-        //>>>experimental only!!!
-        t.elementName = startTag;
-        //<<<
-
         //stray end tags - add them to the current node
         AstNode head;
         while ((head = physicalEndTagsQueue.poll()) != null) {
@@ -221,24 +218,33 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     }
 
-    @Override
-    public void stateChanged(int from, int to, int offset) {
+    public void transition(int from, int to, boolean reconsume, int offset) throws SAXException {
         if (DEBUG_STATES) {
-            System.out.println(STATE_NAMES[from] + " -> " + STATE_NAMES[to] + " at " + offset);
+            System.out.println(Util.TOKENIZER_STATE_NAMES[from] + " -> " + Util.TOKENIZER_STATE_NAMES[to] + " at " + offset);
         }
 
+        int tag_gt_offset = -1;
         switch (to) {
             case TAG_OPEN:
                 tag_lt_offset = offset;
                 break;
 
-            case CLOSE_TAG_OPEN_NOT_PCDATA:
-                switch (from) {
-                    case TAG_OPEN_NON_PCDATA:
-                        //close tag in CDATA (e.g. </style> tag after embedded stylesheet)
-                        tag_lt_offset = offset - 1; //the state transition happens after <'/' char found
+            case NON_DATA_END_TAG_NAME:
+                if(from == RAWTEXT_RCDATA_LESS_THAN_SIGN) {
+                    //end tag in RAW text (like <title> content)
+                    tag_lt_offset = offset - 1; //-1 is here because we are already at the tag name just after the &lt; char
                 }
+                break;
 
+            case RAWTEXT:
+                //strange transition happening at the closing > char at the tag end:
+                //<style type=\"text/css\"> 
+                if(from == AFTER_ATTRIBUTE_VALUE_QUOTED) {
+                    tag_gt_offset = offset;
+                }
+                break;
+
+            case RCDATA:
             case DATA:
                 switch (from) {
                     case SELF_CLOSING_START_TAG:
@@ -250,8 +256,9 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                     case BEFORE_ATTRIBUTE_NAME:
                     case BEFORE_ATTRIBUTE_VALUE:
                     case ATTRIBUTE_VALUE_UNQUOTED:
-                    case CLOSE_TAG_OPEN_NOT_PCDATA:
-                        tag_gt_offset = offset;
+                    case NON_DATA_END_TAG_NAME:
+                        //+1 ... add the > char itself
+                        tag_gt_offset = offset + 1;
                         break;
 
                 }
@@ -290,52 +297,55 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
                 break;
 
         }
+
+        //set the current tag end offset:
+        //the transition for the closing tag symbol are done AFTER the element for the tag is created,
+        //so it needs to be additionaly set to the latest element
+        if(tag_gt_offset != -1 && currentTag != null) {
+            currentTag.setEndOffset(tag_gt_offset);
+            currentTag.setLogicalEndOffset(tag_gt_offset);
+
+            //refresh the matching open tag's logical end offset
+            if(currentTag.type() == AstNode.NodeType.ENDTAG) {
+                AstNode pair = currentTag.getMatchingTag();
+                if(pair != null) {
+                    pair.setLogicalEndOffset(tag_gt_offset);
+                }
+            }
+
+            currentTag = null;
+            tag_gt_offset = -1;
+        }
+
     }
 
     @Override
     public void startTag(ElementName en, HtmlAttributes ha, boolean bln) throws SAXException {
         if (DEBUG) {
-            System.out.println("startTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
+            System.out.println("startTag " + en.name + "(" + tag_lt_offset + " - ?)");
         }
-
+        
         startTag = en;
         super.startTag(en, ha, bln);
-
-        //>>>experimental only!!!!!!!!!
-        AstNode last = stack.peek();
-        last.treeBuilderState = mode;
-        //<<<
-
-
         startTag = null;
     }
 
     @Override
     public void endTag(ElementName en) throws SAXException {
         if (DEBUG) {
-            System.out.print("endTag " + en.name + "(" + tagBeginningOffset() + " - " + tagEndOffset() + ")");
+            System.out.print("endTag " + en.name + "(" + tag_lt_offset + " - ?)");
         }
 
-        physicalEndTagsQueue.add(factory.createEndTag(en.name, tagBeginningOffset(), tagEndOffset()));
+        physicalEndTagsQueue.add(currentTag = factory.createEndTag(en.name, tag_lt_offset, -1));
 
         if (DEBUG) {
             System.out.println("end tags: " + dumpEndTags());
-
         }
 
         super.endTag(en);
     }
 
-    public int tagBeginningOffset() {
-        return tag_lt_offset;
-    }
-
-    public int tagEndOffset() {
-        return tag_gt_offset + 1 /* 1 == the '>' length */;
-    }
-
     private void resetIntenallPositions() {
-        tag_gt_offset = -1;
         tag_lt_offset = -1;
         self_closing_starttag = false;
         attrs.clear();
@@ -363,10 +373,13 @@ public class AstNodeTreeBuilder extends CoalescingTreeBuilder<AstNode> implement
 
     @Override
     protected AstNode createElement(String namespace, String name, HtmlAttributes attributes) throws SAXException {
+        if(DEBUG) {
+            System.out.println("createElement(" + name + ")");
+        }
 
         AstNode node;
         if (startTag != null && startTag.name.equals(name)) {
-            node = factory.createOpenTag(name, tag_lt_offset, tag_gt_offset + 1, self_closing_starttag);
+            currentTag = node = factory.createOpenTag(name, tag_lt_offset, -1, self_closing_starttag);
             addAttributesToElement(node, attributes);
             resetIntenallPositions();
 

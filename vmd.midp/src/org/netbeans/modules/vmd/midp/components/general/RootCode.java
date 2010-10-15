@@ -86,7 +86,7 @@ public final class RootCode {
         protected void generateClassBodyCode (StyledDocument document) {
             MultiGuardedSection section = MultiGuardedSection.create (document, getComponent ().getComponentID () + "-initialize"); // NOI18N
             section.getWriter ().write ("//<editor-fold defaultstate=\"collapsed\" desc=\" Generated Method: initialize \">\n"); // NOI18N
-            section.getWriter ().write ("/**\n * Initilizes the application.\n * It is called only once when the MIDlet is started. The method is called before the <code>startMIDlet</code> method.\n */\n"); // NOI18N
+            section.getWriter ().write ("/**\n * Initializes the application.\n * It is called only once when the MIDlet is started. The method is called before the <code>startMIDlet</code> method.\n */\n"); // NOI18N
             section.getWriter ().write ("private void initialize () {\n").commit (); // NOI18N
             section.switchToEditable (getComponent ().getComponentID () + "-preInitialize"); // NOI18N
             section.getWriter ().write (" // write pre-initialize user code here\n").commit (); // NOI18N
@@ -112,11 +112,12 @@ public final class RootCode {
         ArrayList<DesignComponent> list = new ArrayList<DesignComponent> ();
         HashMap<DesignComponent, HashSet<DesignComponent>> map = new HashMap<DesignComponent, HashSet<DesignComponent>> ();
 
-        for (DesignComponent component : DocumentSupport.gatherAllComponentsOfTypeID (document, ClassCD.TYPEID)) {
-            if (MidpTypes.getBoolean (component.readProperty (ClassCD.PROP_LAZY_INIT)))
-                continue;
-
-            list.add (component);
+        for (DesignComponent component : DocumentSupport.gatherAllComponents (document)) {
+            if (document.getDescriptorRegistry().isInHierarchy(ClassCD.TYPEID, component.getType())) {
+                if (! MidpTypes.getBoolean (component.readProperty (ClassCD.PROP_LAZY_INIT))) {
+                    list.add (component);
+                }
+            }
 
             ArrayList<DesignComponent> requiredComponents = new ArrayList<DesignComponent> ();
             collectRequiredComponents (component, requiredComponents);

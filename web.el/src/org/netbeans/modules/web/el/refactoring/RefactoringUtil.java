@@ -45,6 +45,8 @@ package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.Node;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -141,10 +143,18 @@ public final class RefactoringUtil {
      * <code>property</code>.
      */
     public static String getPropertyName(String accessor) {
-        Parameters.notEmpty("accessor", accessor); //NO18N
+        //XXX: leaving out 'set' for refactoring, need more clever AST analysis to be able to
+        // tell apart getters and setters in EL
+        return getPropertyName(accessor, false);
+    }
 
-        int prefixLength = getPrefixLength(accessor);
+    public static String getPropertyName(String accessor, boolean includeSetter) {
+        Parameters.notEmpty("accessor", accessor); //NO18N
+        int prefixLength = getPrefixLength(accessor, includeSetter);
         String withoutPrefix = accessor.substring(prefixLength);
+        if (withoutPrefix.isEmpty()) { // method name is simply is/get/set
+            return accessor;
+        }
         char firstChar = withoutPrefix.charAt(0);
 
         if (!Character.isUpperCase(firstChar)) {
@@ -153,11 +163,15 @@ public final class RefactoringUtil {
 
         return Character.toLowerCase(firstChar) + withoutPrefix.substring(1);
     }
+    
+    private static int getPrefixLength(String accessor, boolean includeSetter) {
+        List<String> accessorPrefixes = new ArrayList<String>();
+        accessorPrefixes.add("get");
+        if (includeSetter) {
+            accessorPrefixes.add("set");
+        }
+        accessorPrefixes.add("is");
 
-    private static int getPrefixLength(String accessor) {
-        //XXX: leaving out 'set' for now, need more clever AST analysis to be able to
-        // tell apart getters and setters in EL
-        String[] accessorPrefixes = new String[]{"get", /*"set",*/ "is"};
         for (String prefix : accessorPrefixes) {
             if (accessor.startsWith(prefix)) {
                 return prefix.length();

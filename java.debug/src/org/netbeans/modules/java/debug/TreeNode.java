@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -58,6 +59,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DisjointTypeTree;
 import com.sun.source.tree.DoWhileLoopTree;
 import com.sun.source.tree.EmptyStatementTree;
 import com.sun.source.tree.EnhancedForLoopTree;
@@ -92,7 +94,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -161,13 +162,22 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return parent;
     }
 
-    /** Creates a new instance of TreeNode */
     public TreeNode(CompilationInfo info, TreePath tree, List<Node> nodes) {
         super(nodes.isEmpty() ? Children.LEAF: new NodeChilren(nodes), Lookups.singleton(tree.getLeaf()));
         this.tree = tree;
         this.info = info;
         this.synthetic = info.getTreeUtilities().isSynthetic(tree);
-        setDisplayName(tree.getLeaf().getKind().toString() + ":" + tree.getLeaf().toString()); //NOI18N
+        int start = (int) info.getTrees().getSourcePositions().getStartPosition(tree.getCompilationUnit(), tree.getLeaf());
+        int end   = (int) info.getTrees().getSourcePositions().getEndPosition(tree.getCompilationUnit(), tree.getLeaf());
+        String text;
+
+        if (start >= 0 && end >= 0 && end > start) {
+            text = info.getText().substring(start, end + 1);
+        } else {
+            text = tree.getLeaf().toString();
+        }
+
+        setDisplayName(tree.getLeaf().getKind().toString() + ":" + text); //NOI18N
         setIconBaseWithExtension("org/netbeans/modules/java/debug/resources/tree.png"); //NOI18N
     }
 
@@ -203,14 +213,14 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
         return -1;
     }
     
-    private static final class NodeChilren extends Children.Keys {
+    private static final class NodeChilren extends Children.Keys<Node> {
         
         public NodeChilren(List<Node> nodes) {
             setKeys(nodes);
         }
         
-        protected Node[] createNodes(Object key) {
-            return new Node[] {(Node) key};
+        protected Node[] createNodes(Node key) {
+            return new Node[] {key};
         }
         
     }
@@ -235,6 +245,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             
             super.visitAnnotation(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitAnnotatedType(AnnotatedTypeTree node, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitAnnotatedType(node, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
@@ -383,6 +405,18 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             addCorrespondingComments(below);
             super.visitContinue(tree, below);
             
+            d.add(new TreeNode(info, getCurrentPath(), below));
+            return null;
+        }
+
+        @Override
+        public Void visitDisjointType(DisjointTypeTree tree, List<Node> d) {
+            List<Node> below = new ArrayList<Node>();
+
+            addCorrespondingType(below);
+            addCorrespondingComments(below);
+            super.visitDisjointType(tree, below);
+
             d.add(new TreeNode(info, getCurrentPath(), below));
             return null;
         }
@@ -819,7 +853,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             Element el = info.getTrees().getElement(getCurrentPath());
             
             if (el != null) {
-                below.add(new ElementNode(info, el, Collections.EMPTY_LIST));
+                below.add(new ElementNode(info, el, Collections.<Node>emptyList()));
             } else {
                 below.add(new NotFoundElementNode(NbBundle.getMessage(TreeNode.class, "Cannot_Resolve_Element")));
             }

@@ -178,6 +178,7 @@
                 <friend>org.netbeans.modules.dlight.xml</friend>
                 <package>org.netbeans.modules.dlight.visualizers.api</package>
                 <package>org.netbeans.modules.dlight.visualizers.spi</package>
+                <package>org.netbeans.modules.dlight.visualizers.support</package>
             </friend-packages>
         </data>
     </configuration>

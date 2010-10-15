@@ -44,13 +44,15 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.spi.utils.FileSystemsProvider;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -58,38 +60,130 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Vladimir Kvashin
  */
-@ServiceProvider(service=FileSystemsProvider.class)
-public class RemoteFileSystemsProvider extends FileSystemsProvider {
+@ServiceProvider(service=CndFileSystemProvider.class)
+public class RemoteFileSystemsProvider extends CndFileSystemProvider {
 
-    public static final boolean USE_REMOTE_FS = CndUtils.getBoolean("cnd.remote.fs", true);
-
-    @Override
-    protected Data getImpl(File file) {
-        if (USE_REMOTE_FS) {
-            return getImpl(file.getAbsolutePath());
-        }
-        return null;
-    }
+    private static final String PROTOCOL_PREFIX = "rfs:"; // NOI18N
+    
+   /** just to speed it up, since Utilities.isWindows will get string property, test equals, etc */
+   private static final boolean isWindows = Utilities.isWindows();
 
     @Override
     protected boolean isMine(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
-            }
-            if (pathStartsWith(path, prefix)) {
-                return true;
-            }
+        String prefix = CndUtils.getIncludeFileBase();
+        if (isWindows) {
+            path = path.toString().replace('\\', '/');
+        }
+        if (pathStartsWith(path, prefix)) {
+            return true;
         }
         return false;
     }
 
     @Override
-    protected Data getImpl(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
+    protected FileObject toFileObjectImpl(File file) {
+        return filePathToFileObject(file.getAbsolutePath());
+    }
+
+    @Override
+    protected File toFileImpl(FileObject fileObject) {
+        return (fileObject instanceof RemoteFileObjectBase) ? ((RemoteFileObjectBase) fileObject).cache : null ;
+    }
+
+    @Override
+    protected FileObject toFileObjectImpl(CharSequence path) {
+        if (CharSequenceUtils.startsWith(path, PROTOCOL_PREFIX)) {
+            // path is like "rfs:,hostname:22/tmp/filename.ext"
+            int port = 0;
+            StringBuilder hostName = new StringBuilder();
+            CharSequence remotePath = null;
+            boolean insideHost = true;
+            for (int i = PROTOCOL_PREFIX.length(); i < path.length(); i++) {
+                char c = path.charAt(i);
+                if (insideHost) {
+                    if (c == ':') {
+                        insideHost = false;
+                    } else {
+                        hostName.append(c);
+                    }
+                } else {
+                    if (Character.isDigit(c)) {
+                        int digit = (int) c - (int) '0';
+                        port = port * 10 + digit;
+                    } else {
+                        remotePath = path.subSequence(i, path.length());
+                        break;
+                    }
+                }
+            }
+            if (remotePath == null || hostName.length() == 0) {
+                throw new IllegalArgumentException("Invalid path: " + path); //NOI18N
+            }
+            FileObject fo = null;
+            RemoteFileSystem fs = null;
+            ExecutionEnvironment env = getExecutionEnvironment(hostName.toString(), 0);
+            if (env != null) {
+                fs = RemoteFileSystemManager.getInstance().get(env);
+                fo = fs.findResource(remotePath.toString());
+            }
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(fs, remotePath);
+            }
+            return fo;
+        } else {
+            return filePathToFileObject(path);
+        }
+    }
+
+    @Override
+    protected CharSequence toPathImpl(FileObject fileObject) {
+        if (fileObject instanceof RemoteFileObjectBase) {
+            ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
+            return PROTOCOL_PREFIX + env.getHost() + ':' + env.getSSHPort() + fileObject.getPath();
+        }
+        return null;
+    }
+
+    @Override
+    protected FileInfo[] getChildInfoImpl(CharSequence path) {
+        FileSystemAndString p = getFileSystemAndRemotePath(path);
+        if (p != null) {
+            CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
+            CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
+            p.fileSystem.getChildInfo(p.remotePath.toString());
+        }
+        return null;
+    }
+
+    @Override
+    protected Boolean existsImpl(CharSequence path) {
+        FileSystemAndString p = getFileSystemAndRemotePath(path);
+        if (p != null) {
+            CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
+            CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
+            return p.fileSystem.exists(p.remotePath.toString());
+        }
+        return null;
+    }
+
+    private FileObject filePathToFileObject(CharSequence path) {
+        FileSystemAndString p = getFileSystemAndRemotePath(path);
+        if (p != null) {
+            CndUtils.assertNotNull(p.fileSystem, "null file system"); //NOI18N
+            CndUtils.assertNotNull(p.remotePath, "null remote path"); //NOI18N
+            FileObject fo = p.fileSystem.findResource(p.remotePath.toString());
+            if (fo == null) {
+                fo = InvalidFileObjectSupport.getInvalidFileObject(p.fileSystem, p.remotePath);
+            }
+            return fo;
+        }
+        return null;
+    }
+
+    private FileSystemAndString getFileSystemAndRemotePath(CharSequence path) {
+        String prefix = CndUtils.getIncludeFileBase();
+        if (prefix != null) {
+            if (isWindows) {
                 path = path.toString().replace('\\', '/');
             }
             if (pathStartsWith(path, prefix)) {
@@ -98,11 +192,14 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
                 if (slashPos >= 0) {
                     String hostName = rest.subSequence(0, slashPos).toString();
                     CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                    ExecutionEnvironment env = getExecutionEnvironment(hostName);
+                    ExecutionEnvironment env = getExecutionEnvironment(hostName, 0);
+                    RemoteFileSystem fs = null;
+                    FileObject fo = null;
                     if (env != null) {
-                        final RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
-                        Data data = new Data(fs, remotePath.toString());
-                        return data;
+                        fs = RemoteFileSystemManager.getInstance().get(env);
+                        if (fs != null) {
+                            return new FileSystemAndString(fs, remotePath);
+                        }
                     }
                 }
             }
@@ -120,32 +217,40 @@ public class RemoteFileSystemsProvider extends FileSystemsProvider {
 
     @Override
     protected String getCaseInsensitivePathImpl(CharSequence path) {
-        if (USE_REMOTE_FS) {
-            String prefix = CndUtils.getIncludeFileBase();
-            if (Utilities.isWindows()) {
-                path = path.toString().replace('\\', '/');
-            }
-            if (pathStartsWith(path, prefix)) {
-                CharSequence start = path.subSequence(0, prefix.length());
-                CharSequence rest = path.subSequence(prefix.length(), path.length());
-                return start + 
-                        (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
-            }
+        String prefix = CndUtils.getIncludeFileBase();
+        if (Utilities.isWindows()) {
+            path = path.toString().replace('\\', '/');
+        }
+        if (pathStartsWith(path, prefix)) {
+            CharSequence start = path.subSequence(0, prefix.length());
+            CharSequence rest = path.subSequence(prefix.length(), path.length());
+            return start +
+                    (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
         }
         return null;
     }
 
-
-    private ExecutionEnvironment getExecutionEnvironment(String hostName) {
+    private ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
         ExecutionEnvironment result = null;
         for(ExecutionEnvironment env : ServerList.getEnvironments()) {
             if (hostName.equals(EnvUtils.toHostID(env))) {
-                result = env;
-                if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                    break;
+                if (port == 0 || port == env.getSSHPort()) {
+                    result = env;
+                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                        break;
+                    }
                 }
             }
         }
         return result;
+    }
+
+    private static class FileSystemAndString {
+        public final RemoteFileSystem fileSystem;
+        public final CharSequence remotePath;
+        public FileSystemAndString(RemoteFileSystem first, CharSequence second) {
+            this.fileSystem = first;
+            this.remotePath = second;
+        }
     }
 }

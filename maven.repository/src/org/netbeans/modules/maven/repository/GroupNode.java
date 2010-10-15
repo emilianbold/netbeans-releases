@@ -45,8 +45,6 @@ import java.awt.Image;
 import java.util.List;
 import javax.swing.Action;
 
-import org.netbeans.modules.maven.indexer.api.NBArtifactInfo;
-import org.netbeans.modules.maven.indexer.api.NBGroupInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
@@ -65,24 +63,6 @@ public class GroupNode extends AbstractNode {
         super(Children.create(new GroupChildren(info, id), true));
         setName(id);
         setDisplayName(id);
-    }
-
-    public GroupNode( final RepositoryInfo info,final NBGroupInfo groupInfo) {
-        super(new Children.Keys<NBArtifactInfo>() {
-
-            @Override
-            protected Node[] createNodes(NBArtifactInfo arg0) {
-                return new Node[]{new ArtifactNode(info,arg0)};
-            }
-
-            @Override
-            protected void addNotify() {
-                super.addNotify();
-                setKeys(groupInfo.getArtifactInfos());
-            }
-        });
-        setName(groupInfo.getName());
-        setDisplayName(groupInfo.getName());
     }
 
     static class GroupChildren extends ChildFactory<String> {

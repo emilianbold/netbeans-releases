@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -115,6 +116,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -715,7 +717,7 @@ public final class MakeActionProvider implements ActionProvider {
         // FIXUP: not sure this is used...
         if (conf.isMakefileConfiguration()) {
             DataObject d = context.lookup(DataObject.class);
-            String path = FileUtil.toFile(d.getPrimaryFile()).getPath();
+            String path = CndFileUtils.toFile(d.getPrimaryFile()).getPath();
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, path, conf, null, false);
             actionEvents.add(projectActionEvent);
             RunDialogPanel.addElementToExecutablePicklist(path);
@@ -735,7 +737,12 @@ public final class MakeActionProvider implements ActionProvider {
         if (actionEvent == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             buildCommand = makeArtifact.getBuildCommand(makeCommand, "build-tests"); // NOI18N
         } else {
-            buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
+            if (conf.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+                String buildCommandFromProjectProperties = conf.getMakefileConfiguration().getBuildCommand().getValue();
+                buildCommand = makeArtifact.getBuildCommand(buildCommandFromProjectProperties, makeCommand, ""); // NOI18N
+            } else {
+                buildCommand = makeArtifact.getBuildCommand(makeCommand, ""); // NOI18N
+            }
         }
         String args = "";
         int index = getArgsIndex(buildCommand);
@@ -1093,7 +1100,7 @@ public final class MakeActionProvider implements ActionProvider {
             try {
                 DataObject dao = node.getCookie(DataObject.class);
                 if (dao != null) {
-                    File file = FileUtil.toFile(dao.getPrimaryFile());
+                    File file = CndFileUtils.toFile(dao.getPrimaryFile());
                     item = getProjectDescriptor().findItemByFile(file);
                 }
             } catch (NullPointerException ex) {

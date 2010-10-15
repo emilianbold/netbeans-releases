@@ -336,9 +336,7 @@ public final class J2EEProjectProperties {
         // remove all props first:
         removeServerClasspathProperties(epTarget);
 
-        String classpath = project == null
-                ? toClasspathString(j2eePlatform.getClasspathEntries(), root)
-                : toClasspathString(Util.getJ2eePlatformClasspathEntries(project), root);
+        String classpath = toClasspathString(Util.getJ2eePlatformClasspathEntries(project, j2eePlatform), root);
         epTarget.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
         // set j2ee.platform.embeddableejb.classpath

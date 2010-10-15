@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.client.ClientUtils;
@@ -555,7 +556,7 @@ public final class SourceUtils {
                     List<? extends Tree> topLevels = cu.getTypeDecls();
 
                     for (Tree topLevel : topLevels) {
-                        if (topLevel.getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(topLevel.getKind())) {
                             TypeElement type = (TypeElement) trees.getElement(TreePath.getPath(cu, topLevel));
 
                             if (type != null) {

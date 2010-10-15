@@ -310,7 +310,7 @@ Group system
         assertNotNull("Editor is open", arr2);
         assertEquals("One Editor is open", 1, arr2.length);
 
-        Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes();
+        Node[] newNodes = obj.getFolder().getNodeDelegate().getChildren().getNodes(true);
         assertEquals("One new node", 1, newNodes.length);
         assertEquals("the new obj.\nOld nodes: " + Arrays.toString(origNodes) + "\nNew nodes: " + Arrays.toString(newNodes),
             newObj, newNodes[0].getLookup().lookup(DataObject.class)

@@ -270,7 +270,7 @@ public final class TreePathHandle {
                     && clsSym.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
                     && clsSym.sourcefile.toUri().isAbsolute()) {
                     u = clsSym.sourcefile.toUri().toURL();
-                } else {
+                } else if (clsSym.classfile != null) {
                     u = clsSym.classfile.toUri().toURL();
                 }
             } catch (MalformedURLException ex) {
@@ -364,14 +364,14 @@ public final class TreePathHandle {
             } else {
                 if (enclElIsCorrespondingEl) {
                     ElementKind k = element.getKind();
-                    if (k.isClass() || k.isInterface()) {
-                        kind = Tree.Kind.CLASS;
-                    } else if (k.isField()) {
-                        kind = Tree.Kind.VARIABLE;
-                    } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
-                        kind = Tree.Kind.METHOD;
-                    } else {
-                        kind = null;
+                    switch (k) {
+                        case ANNOTATION_TYPE: kind = Tree.Kind.ANNOTATION_TYPE; break;
+                        case CLASS: kind = Tree.Kind.CLASS; break;
+                        case ENUM: kind = Tree.Kind.ENUM; break;
+                        case INTERFACE: kind = Tree.Kind.INTERFACE; break;
+                        case ENUM_CONSTANT: case FIELD: kind = Tree.Kind.VARIABLE; break;
+                        case METHOD: case CONSTRUCTOR: kind = Tree.Kind.METHOD; break;
+                        default: kind = null; break;
                     }
                 } else {
                     kind = null;

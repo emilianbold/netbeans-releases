@@ -1661,6 +1661,23 @@ public final class FileUtil extends Object {
     }
 
     /**
+     * See {@link #normalizeFile} for details
+     * @param path file path to normalize
+     * @return normalized file path
+     * @since 7.42
+     */
+    public static String normalizePath(final String path) {
+        Map<String, String> normalizedPaths = getNormalizedFilesMap();
+        String normalized = normalizedPaths.get(path);
+        if (normalized == null) {
+            File ret = normalizeFileImpl(new File(path));
+            normalized = ret.getPath();
+            normalizedPaths.put(path, normalized);
+        }
+        return normalized;
+    }
+    
+    /**
      * Normalize a file path to a clean form.
      * This method may for example make sure that the returned file uses
      * the natural case on Windows; that old Windows 8.3 filenames are changed to the long form;

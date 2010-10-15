@@ -8,7 +8,6 @@ package org.netbeans.modules.maven.execute.model.io.jdom;
  //- Imported classes and packages -/
 //---------------------------------/
 
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -391,26 +390,6 @@ public class NetbeansBuildActionJDOMWriter {
         findAndReplaceSimpleLists(innerCount, root, value.getActivatedProfiles(), "activatedProfiles", "activatedProfile");
     } //-- void updateNetbeansActionMapping(NetbeansActionMapping, String, Counter, Element) 
 
-    /**
-     * Method write.
-     * @deprecated
-     * 
-     * @param actions
-     * @param stream
-     * @param document
-     * @throws java.io.IOException
-     */
-    @Deprecated
-    public void write(ActionToGoalMapping actions, Document document, OutputStream stream)
-        throws java.io.IOException
-    {
-        updateActionToGoalMapping(actions, "actions", new Counter(0), document.getRootElement());
-        XMLOutputter outputter = new XMLOutputter();
-        outputter.setFormat(Format.getPrettyFormat()
-        .setIndent("    ")
-        .setLineSeparator(System.getProperty("line.separator")));
-        outputter.output(document, stream);
-    } //-- void write(ActionToGoalMapping, Document, OutputStream) 
 
     /**
      * Method write.

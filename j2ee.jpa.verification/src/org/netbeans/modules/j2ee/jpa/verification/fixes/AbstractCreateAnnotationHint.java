@@ -99,7 +99,10 @@ abstract class AbstractCreateAnnotationHint implements Fix {
                     Tree newElemTree = null;
                     
                     switch (elemTree.getKind()){
+                    case ANNOTATION_TYPE:
                     case CLASS:
+                    case ENUM:
+                    case INTERFACE:
                         newElemTree = genUtils.addAnnotation((ClassTree)elemTree, annTree);
                         break;
                     case METHOD:

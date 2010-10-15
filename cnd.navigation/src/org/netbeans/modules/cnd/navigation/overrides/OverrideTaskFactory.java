@@ -99,7 +99,7 @@ public class OverrideTaskFactory extends EditorAwareCsmFileTaskFactory {
                         pr = new PhaseRunnerImpl(dobj, file, doc);
                     }
             } catch (DataObjectNotFoundException ex)  {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             }
         }
         return pr != null ? pr : lazyRunner();

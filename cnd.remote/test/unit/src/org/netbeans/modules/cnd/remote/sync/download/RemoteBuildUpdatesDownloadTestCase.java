@@ -52,11 +52,13 @@ import java.util.logging.Level;
 import junit.framework.AssertionFailedError;
 import org.netbeans.modules.cnd.remote.pbuild.*;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.download.FileDownloadInfo.State;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -64,7 +66,6 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.filesystems.FileUtil;
 /**
  *
  * @author Vladimir Kvashin
@@ -114,9 +115,9 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         changeProjectHost(makeProject, ExecutionEnvironmentFactory.getLocal());
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
         changeProjectHost(makeProject, getTestExecutionEnvironment());
-        File token_l = new File(FileUtil.toFile(makeProject.getProjectDirectory()), "token.l");
+        File token_l = new File(CndFileUtils.toFile(makeProject.getProjectDirectory()), "token.l");
         token_l.setLastModified(System.currentTimeMillis() + 2000);
-        File token_y = new File(FileUtil.toFile(makeProject.getProjectDirectory()), "token.y");
+        File token_y = new File(CndFileUtils.toFile(makeProject.getProjectDirectory()), "token.y");
         token_y.setLastModified(System.currentTimeMillis() + 2000);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
         // Bug #182762 - Second clean & build for LexYacc build on remote host fails
@@ -130,7 +131,7 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
         int timeout = getSampleBuildTimeout();
         buildProject(makeProject, ActionProvider.COMMAND_CLEAN, timeout, TimeUnit.SECONDS);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, timeout, TimeUnit.SECONDS);
-        File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
+        File projectDirFile = CndFileUtils.toFile(makeProject.getProjectDirectory());
         NameStatePair[] filesToCheck = new NameStatePair[] {
             new NameStatePair(new File(projectDirFile, "y.tab.c"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(projectDirFile, "y.tab.h"), FileDownloadInfo.State.UNCONFIRMED),
@@ -140,12 +141,13 @@ public class RemoteBuildUpdatesDownloadTestCase extends RemoteBuildTestBase {
     }
 
     @ForAllEnvironments
+    @RandomlyFails
     public void testNonProjectUpdates() throws Exception {
         final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
         MakeProject makeProject = openProject("TestNonProjectUpdates", execEnv, Sync.RFS, Toolchain.GNU);
         changeProjectHost(makeProject, execEnv);
         buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-        File projectDirFile = FileUtil.toFile(makeProject.getProjectDirectory());
+        File projectDirFile = CndFileUtils.toFile(makeProject.getProjectDirectory());
         NameStatePair[] filesToCheck = new NameStatePair[] {
             new NameStatePair(new File(projectDirFile, "file_1.c"), FileDownloadInfo.State.UNCONFIRMED),
             new NameStatePair(new File(projectDirFile, "file_1.cc"), FileDownloadInfo.State.UNCONFIRMED),

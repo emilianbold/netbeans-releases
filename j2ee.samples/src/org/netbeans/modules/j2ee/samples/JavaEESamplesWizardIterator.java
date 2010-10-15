@@ -112,6 +112,10 @@ public class JavaEESamplesWizardIterator implements WizardDescriptor.Instantiati
             createFolder(dirF);
             dir = FileUtil.toFileObject(dirF);
             unZipFile(template.getInputStream(), dir);
+            WebSampleProjectGenerator.configureServer(dir);
+            for (FileObject child : dir.getChildren()) {
+                WebSampleProjectGenerator.configureServer(child);
+            }
         }
 
         ProjectManager.getDefault().clearNonProjectCache();

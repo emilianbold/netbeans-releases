@@ -1917,6 +1917,11 @@ public class PHPFormatterTest extends PHPTestBase {
 	reformatFileContents("testfiles/formatting/html/html04.php", options);
     }
 
+    public void testHtml05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/html05.php", options);
+    }
+
     public void testIssue175229() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
@@ -1940,6 +1945,11 @@ public class PHPFormatterTest extends PHPTestBase {
     public void testIssue187309() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	reformatFileContents("testfiles/formatting/html/issue187309.php", options);
+    }
+
+    public void testIssue190652() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+	reformatFileContents("testfiles/formatting/html/issue190652.php", options);
     }
 
     public void test183200_01() throws Exception {
@@ -2124,6 +2134,20 @@ public class PHPFormatterTest extends PHPTestBase {
         reformatFileContents("testfiles/formatting/issue189835_06.php", options);
     }
 
+    public void testIssue190544() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/html/issue190544.php", options);
+    }
+
+    public void testIssue179184() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/html/issue179184.php", options);
+    }
+
+    public void testIssue190426() throws Exception {
+	HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/issue190426.php", options);
+    }
 
     private void reformatFileContents(String file) throws Exception {
         reformatFileContents(file, new IndentPrefs(2, 2));

@@ -50,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.indent.CssIndentTaskFactory;
 import org.netbeans.modules.css.formatting.api.support.AbstractIndenter;
@@ -70,6 +71,7 @@ public class HtmlIndenterTest extends TestBase2 {
     protected void setUp() throws Exception {
         super.setUp();
 
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
         AbstractIndenter.inUnitTestRun = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();

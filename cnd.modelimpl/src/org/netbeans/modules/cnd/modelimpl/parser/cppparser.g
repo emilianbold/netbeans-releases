@@ -375,6 +375,7 @@ tokens {
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
+	protected static final int tsIMAGINARY = 0x20000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -673,9 +674,11 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                    |
                     {shouldProceed()}?
                     external_declaration 
-                    | 
+                    |
                     {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
@@ -1550,7 +1553,7 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther])
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther, 0])
         ;
 
 declaration[int kind]
@@ -1712,6 +1715,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_double        {ts |= tsDOUBLE;}
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
+        | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
     ;
 
 qualified_type
@@ -1857,7 +1861,7 @@ init_declarator_list[int kind]
 	;
 
 init_declarator[int kind]
-	:	declarator[kind]
+	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
                         ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
@@ -1868,7 +1872,9 @@ init_declarator[int kind]
 	;
 
 initializer
-    :  
+    : 
+        (balanceParensInExpression LCURLY) => balanceParensInExpression initializer
+    | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
@@ -1977,7 +1983,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator[declOther]
+		declarator[declOther, 0]
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -2001,52 +2007,52 @@ cv_qualifier_seq
 	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
 	;
 
-declarator[int kind]
+declarator[int kind, int level]
     :
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // void (__attribute__((noreturn)) ****f) (void);
-        (attribute_specification)=> attribute_specification!
-        declarator[kind]
+        {level < 5}? (attribute_specification)=> attribute_specification!
+        declarator[kind, level + 1]
     |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
-        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
+        {level < 5}? (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        restrict_declarator[kind, level + 1]
     |
         // type (var) = {...}
-        (LPAREN declarator[kind] RPAREN ASSIGNEQUAL LCURLY) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5}? (LPAREN declarator[kind, level + 1] RPAREN ASSIGNEQUAL LCURLY) =>
+        LPAREN declarator[kind, level + 1] RPAREN
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level + 1] RPAREN
     |
-        direct_declarator[kind]
+        {level < 5}? direct_declarator[kind, level + 1]
     ;
 
-restrict_declarator[int kind]
+restrict_declarator[int kind, int level]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        (LPAREN declarator[kind, level] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // char *__attribute__((aligned(8))) *f;
         (attribute_specification)=> attribute_specification!
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |   
-        (literal_restrict!)? direct_declarator[kind]
+        (literal_restrict!)? direct_declarator[kind, level]
     ;
 
-direct_declarator[int kind]
+direct_declarator[int kind, int level]
 {String id; TypeQualifier tq;}
     :
         // Must be function declaration
@@ -2112,7 +2118,7 @@ direct_declarator[int kind]
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind] RPAREN
+		LPAREN declarator[kind, level+1] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         declarator_suffixes
         (options {greedy=true;} :variable_attribute_specification)?
@@ -2473,12 +2479,12 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator[declFunctionParam])=> declarator[declFunctionParam]        // if arg name given
+				(declarator[declFunctionParam, 0])=> declarator[declFunctionParam, 0]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)
 		|
-			(declarator[declOther])=> declarator[declOther]	// DW 24/3/98 Mods for K & R
+			(declarator[declOther, 0])=> declarator[declOther, 0]	// DW 24/3/98 Mods for K & R
 		|
 			ELLIPSIS
 		)
@@ -2850,7 +2856,7 @@ statement
 	|
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
                 {if (statementTrace>=1)
-			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
+			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
 	|
                 {if (statementTrace>=1) 
@@ -2994,7 +3000,7 @@ condition_declaration {int ts = tsInvalid;}
         cv_qualifier_seq (LITERAL_typename)?
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
-        declarator[declStatement]
+        declarator[declStatement, 0]
         ASSIGNEQUAL assignment_expression
     ;
 
@@ -3328,6 +3334,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_double
             |   LITERAL_void
             |   literal_complex
+            |   LITERAL__Imaginary
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3502,6 +3509,7 @@ lazy_expression_predicate
     |   LITERAL_double
     |   LITERAL_void
     |   literal_complex
+    |   LITERAL__Imaginary
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 

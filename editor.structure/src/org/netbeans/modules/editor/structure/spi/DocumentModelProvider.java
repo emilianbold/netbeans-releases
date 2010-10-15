@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.editor.structure.spi;
 
+import org.netbeans.modules.editor.structure.DocumentModelProviderFactory;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModel.DocumentChange;
 import org.netbeans.modules.editor.structure.api.DocumentModel.DocumentModelModificationTransaction;
 import org.netbeans.modules.editor.structure.api.DocumentModel.DocumentModelTransactionCancelledException;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  * The DocumentModelProvider is responsible for parsing the text document
@@ -87,6 +89,7 @@ import org.netbeans.modules.editor.structure.api.DocumentModelException;
  * @see org.netbeans.modules.editor.structure.api.DocumentModel
  *
  */
+@MimeLocation(subfolderName=DocumentModelProviderFactory.FOLDER_NAME)
 public interface DocumentModelProvider {
     
     /** Method called by the DocumentModel when the model content needs to be updated.

@@ -263,7 +263,6 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
-    @RandomlyFails // NB-Core-Build #3979 (in FolderChildrenEagerTest)
     public void testOrderAttributesAreReflected() throws Exception {
         FileObject root = FileUtil.createFolder(FileUtil.getConfigRoot(), "order");
 
@@ -292,7 +291,6 @@ public class FolderChildrenTest extends NbTestCase {
     }
 
     private static Object holder;
-    @RandomlyFails // NB-Core-Build #2838 (in FolderChildrenEagerTest)
     public void testChildrenCanGC () throws Exception {
         Filter filter = new Filter();
         holder = filter;
@@ -317,7 +315,6 @@ public class FolderChildrenTest extends NbTestCase {
         assertGC("Children can disappear even we hold the filter", ref);
     }
 
-    @RandomlyFails // NB-Core-Build #1043 (in FolderChildrenEagerTest)
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
         String pref = getName() + '/';
         FileObject bb = FileUtil.createFolder(FileUtil.getConfigRoot(), pref + "/BB");
@@ -807,10 +804,6 @@ public class FolderChildrenTest extends NbTestCase {
         for (int i = 0; i < cnt; i++) {
             nodes.add(snapshot.get(i));
         }
-        if ("false".equals(System.getProperty("org.openide.loaders.DataFolder.lazy"))) {
-            assertEquals("Eager children generate one event", 1, listener.cnt);
-            return;
-        }
         assertEquals("No events delivered", 0, listener.cnt);
     }
 
@@ -856,11 +849,6 @@ public class FolderChildrenTest extends NbTestCase {
             }
         });
         LOG.info("testNodeKeysNotChanged addNodeListener");
-        if (folderNode.getChildren().getClass().equals(FolderChildrenEager.class)) {
-            // TODO - investigate further why assertGC("Cannot GC childNode2", ref) fails
-            LOG.info("testNodeKeysNotChanged TODO return");
-            return;
-        }
 
         // refresh children
         LOG.info("testNodeKeysNotChanged about to getNodes");
@@ -901,6 +889,8 @@ public class FolderChildrenTest extends NbTestCase {
         
         public boolean isVisible(FileObject file) {
             if (block != null) {
+                assertFalse("No readAccess", Children.MUTEX.isReadAccess());
+                assertFalse("No writeAccess", Children.MUTEX.isWriteAccess());
                 synchronized (block) {
                     try {
                         block.notifyAll();

@@ -75,6 +75,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -486,7 +487,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             //check static/dynamic initializer:
             TreePath path = getCurrentPath();
             
-            if (path.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
                 handleTree(node, null, false);
             }
             

@@ -106,7 +106,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private final boolean global;
     
     /** Constructor used for global namespace */
-    public NamespaceImpl(ProjectBase project, boolean fake) {
+    private NamespaceImpl(ProjectBase project, boolean fake) {
         this.name = GLOBAL;
         this.qualifiedName = CharSequences.empty(); // NOI18N
         this.parentUID = null;
@@ -122,14 +122,19 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
         this.projectRef = new WeakReference<ProjectBase>(project);
         this.declarationsSorageKey = fake ? null : new DeclarationContainerNamespace(this).getKey();
+    }
+
+    public static NamespaceImpl create(ProjectBase project, boolean fake) {
+        NamespaceImpl namespaceImpl = new NamespaceImpl(project, fake);
         if (!fake) {
-            project.registerNamespace(this);
+            project.registerNamespace(namespaceImpl);
         }
+        return namespaceImpl;
     }
     
     private static final boolean CHECK_PARENT = false;
     
-    public NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
+    protected NamespaceImpl(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
         this.name = NameCache.getManager().getString(name);
         this.global = false;
         assert project != null;
@@ -157,12 +162,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.parentRef = null;
         declarationsSorageKey = new DeclarationContainerNamespace(this).getKey();
         
-        project.registerNamespace(this);
+    }
+
+    public static NamespaceImpl create(ProjectBase project, NamespaceImpl parent, String name, String qualifiedName) {
+        NamespaceImpl namespaceImpl = new NamespaceImpl(project, parent, name, qualifiedName);
+        project.registerNamespace(namespaceImpl);
         if( parent != null ) {
             // nb: this.parent should be set first, since getQualidfiedName request parent's fqn
-            parent.addNestedNamespace(this);
+            parent.addNestedNamespace(namespaceImpl);
         }
-        notify(this, NotifyEvent.NAMESPACE_ADDED);
+        namespaceImpl.notify(namespaceImpl, NotifyEvent.NAMESPACE_ADDED);
+        return namespaceImpl;
     }
 
     protected enum NotifyEvent {
@@ -443,10 +453,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         
         // TODO: remove this dirty hack!
-        if( (declaration instanceof VariableImpl) ) {
-            VariableImpl v = (VariableImpl) declaration;
+        if( (declaration instanceof VariableImpl<?>) ) {
+            VariableImpl<?> v = (VariableImpl<?>) declaration;
             if( isNamespaceScope(v, isGlobal()) ) {
-                v.setScope(this, true);
+                v.setScope(this);
             } else {
                 return;
             }

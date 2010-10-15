@@ -79,7 +79,7 @@ import org.netbeans.modules.dlight.indicators.graph.TimeSeriesIndicatorConfigura
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesPlot;
 import org.netbeans.modules.dlight.extras.api.ViewportAware;
 import org.netbeans.modules.dlight.extras.api.ViewportModel;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.indicators.DetailDescriptor;
 import org.netbeans.modules.dlight.indicators.TimeSeriesDescriptor;
 import org.netbeans.modules.dlight.indicators.graph.TimeSeriesDataContainer;

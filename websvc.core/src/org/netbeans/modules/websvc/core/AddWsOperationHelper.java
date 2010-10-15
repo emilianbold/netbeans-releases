@@ -72,6 +72,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
@@ -212,13 +213,19 @@ public class AddWsOperationHelper {
                                 increaseProgress = false;
                             }                           
                         }
+                        boolean needAnnotations = createAnnotations;
                         
                         if (increaseProgress) handle.progress(20);
                         
                         ClassTree javaClass = workingCopy.getTrees().getTree(typeElement);
                         TypeElement webMethodAn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         TypeElement webParamAn = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                                               
+                                    
+                        if( needAnnotations ){
+                            needAnnotations = checkMethodAnnotation( typeElement , 
+                                    webMethodAn);
+                        }
+                        
                        // Public modifier
                         ModifiersTree modifiersTree = make.Modifiers(
                                 Collections.<Modifier>singleton(Modifier.PUBLIC),
@@ -226,7 +233,7 @@ public class AddWsOperationHelper {
                                 );                        
                         
                         // add @WebMethod annotation
-                        if(createAnnotations && seiClass[0] == null) {
+                        if(needAnnotations && seiClass[0] == null) {
 
                             String methodName = method.getName().toString();
                             // find value for @WebMethod:oparationName
@@ -288,7 +295,7 @@ public class AddWsOperationHelper {
                         List<? extends VariableTree> parameters = method.getParameters();
                         List<VariableTree> newParameters = new ArrayList<VariableTree>();
                         
-                        if(createAnnotations && seiClass[0] == null) {
+                        if(needAnnotations && seiClass[0] == null) {
                             for (VariableTree param:parameters) {
                                 AnnotationTree paramAnnotation = make.Annotation(
                                         make.QualIdent(webParamAn),
@@ -380,6 +387,32 @@ public class AddWsOperationHelper {
             }            
         }
 
+    }
+    
+    private boolean checkMethodAnnotation( TypeElement element, 
+            Element annotationElement ) 
+    {
+        List<ExecutableElement> methods = ElementFilter.methodsIn( 
+                element.getEnclosedElements() );
+        if ( methods.size() == 0 ){
+            return true;
+        }
+        for (ExecutableElement method : methods) {
+            // ignore constructors
+            if ( method.getKind() == ElementKind.METHOD ){
+                List<? extends AnnotationMirror> annotationMirrors = 
+                    method.getAnnotationMirrors();
+                for (AnnotationMirror annotationMirror : annotationMirrors) {
+                    DeclaredType annotationType = 
+                        annotationMirror.getAnnotationType();
+                    Element annotation = annotationType.asElement();
+                    if ( annotationElement.equals( annotation )){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private String getEndpointInterface(TypeElement classEl, CompilationController controller) {

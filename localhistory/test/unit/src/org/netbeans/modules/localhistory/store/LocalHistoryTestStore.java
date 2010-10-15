@@ -30,10 +30,11 @@
  */
 package org.netbeans.modules.localhistory.store;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Set;
 import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
@@ -49,6 +50,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     private Method getLabelsFileMethod;
     private Method getStoreFileMethod;
     private Method cleanUpImplMethod;
+    private Field lockedFolders;
     
     public LocalHistoryTestStore(String storePath) {      
         store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
@@ -98,8 +100,8 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.fileCreate(file, ts);
     }
 
-    public void fileChange(File file, long ts) {
-        store.fileChange(file, ts);
+    public void fileChange(File file, boolean handleAsync, long ts) {
+        store.fileChange(file, handleAsync, ts);
     }
 
     public void deleteEntry(File file, long ts) {
@@ -151,12 +153,20 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         return (File) getLabelsFileMethod.invoke(store, new Object[]{file});           
     }    
     
-    File getStoreFile(File file, long ts) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
+    File getStoreFile(File file, long ts, boolean forceCreate) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if(getStoreFileMethod == null) {            
             getStoreFileMethod = store.getClass().getDeclaredMethod("getStoreFile", new Class[] {File.class, String.class, boolean.class});
             getStoreFileMethod.setAccessible(true);            
         }
-        return (File) getStoreFileMethod.invoke(store, new Object[]{file, Long.toString(ts), true});           
-    }              
+        return (File) getStoreFileMethod.invoke(store, new Object[]{file, Long.toString(ts), forceCreate});
+    }
+
+    Set<File> getReleasedLocks() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        if(lockedFolders == null) {
+            lockedFolders = store.getClass().getDeclaredField("lockedFolders");
+            lockedFolders.setAccessible(true);
+        }
+        return (Set<File>) lockedFolders.get(store);
+    }
     
 }

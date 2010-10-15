@@ -580,7 +580,7 @@ public class GridBagCustomizer implements GridCustomizer {
                 if (fill != -1) {
                     ((GridBagManager)gridManager).setFill(component, fill);
                 }
-                gridManager.updateLayout();
+                gridManager.updateLayout(false);
                 GridUtils.revalidateGrid(gridManager);
                 GridUtils.addPaddingComponents(gridManager, columns, rows);
                 GridUtils.revalidateGrid(gridManager);

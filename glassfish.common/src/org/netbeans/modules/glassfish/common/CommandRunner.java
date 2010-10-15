@@ -434,10 +434,10 @@ public class CommandRunner extends BasicTask<OperationState> {
                 contextRoot, computePreserveSessions(ip), properties, libraries));
     }
 
-    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries)  {
+    public Future<OperationState> redeploy(String moduleName, String contextRoot, File[] libraries, boolean resourcesChanged)  {
         LogViewMgr.displayOutput(ip,null);
         return execute(new Commands.RedeployCommand(moduleName, contextRoot, 
-                computePreserveSessions(ip), libraries));
+                computePreserveSessions(ip), libraries, resourcesChanged));
     }
 
     private static Boolean computePreserveSessions(Map<String,String> ip) {

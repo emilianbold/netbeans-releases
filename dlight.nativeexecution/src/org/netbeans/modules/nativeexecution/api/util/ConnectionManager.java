@@ -87,6 +87,7 @@ public final class ConnectionManager {
             new ConcurrentHashMap<ExecutionEnvironment, JSch>();
     private static final ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask> connectionTasks =
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
+    private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -161,6 +162,8 @@ public final class ConnectionManager {
         }
     }
 
+    private static final int RETRY_MAX = 10;
+
     /**
      *
      * @param env <tt>ExecutionEnvironment</tt> to connect to.
@@ -187,6 +190,35 @@ public final class ConnectionManager {
             }
         }
 
+        if (!UNIT_TEST_MODE) {
+            initiateConnection(env, jsch);
+        } else {
+            // Attempt to workaround "Auth fail" in tests, see IZ 190458
+            // We try to reconnect up to 10 times if "Auth fail" exception happens
+            int retry = RETRY_MAX;
+            IOException ex = null;
+            while (retry > 0) {
+                try {
+                    initiateConnection(env, jsch);
+                    return;
+                } catch (IOException e) {
+                    if (!(e.getCause() instanceof JSchException)) {
+                        throw e;
+                    }
+                    if (!"Auth fail".equals(e.getCause().getMessage())) { //NOI18N
+                        throw e;
+                    }
+                    ex = e;
+                }
+                System.out.println("AUTH_FAIL: Connection failed, re-runing test " + retry); // NOI18N
+                retry--;
+            }
+            System.out.println("AUTH_FAIL: Retry limit reached"); // NOI18N
+            throw ex;
+        }
+    }
+
+    private void initiateConnection(final ExecutionEnvironment env, final JSch jsch) throws IOException, CancellationException {
         JSchConnectionTask connectionTask;
 
         synchronized (connectionTasks) {
@@ -209,7 +241,9 @@ public final class ConnectionManager {
             JSchChannelsSupport cs = connectionTask.getResult();
 
             if (cs != null) {
-                channelsSupport.put(env, cs);
+                synchronized (channelsSupport) {
+                    channelsSupport.put(env, cs);
+                }
             } else {
                 JSchConnectionTask.Problem problem = connectionTask.getProblem();
                 switch (problem.type) {
@@ -228,7 +262,7 @@ public final class ConnectionManager {
 
             fireConnected(env);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            // don't report interrupted exception
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
@@ -416,7 +450,7 @@ public final class ConnectionManager {
                 }
 
                 try {
-                    String knownHosts = auth.getKnownHosts();
+                    String knownHosts = auth.getKnownHostsFile();
                     if (knownHosts != null) {
                         jsch.setKnownHosts(knownHosts);
                     }
@@ -427,7 +461,7 @@ public final class ConnectionManager {
                 switch (auth.getType()) {
                     case SSH_KEY:
                         try {
-                            jsch.addIdentity(auth.getKey());
+                            jsch.addIdentity(auth.getSSHKeyFile());
                         } catch (JSchException ex) {
                             Exceptions.printStackTrace(ex);
                         }

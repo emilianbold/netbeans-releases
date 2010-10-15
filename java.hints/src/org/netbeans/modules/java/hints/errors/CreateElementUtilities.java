@@ -150,7 +150,10 @@ public final class CreateElementUtilities {
                 return computeTypeParameter(types, info, currentPath, unresolved, offset);
             case PARAMETERIZED_TYPE:
                 return computeParametrizedType(types, info, currentPath, unresolved, offset, typeParameterBound, numTypeParameters);
+            case ANNOTATION_TYPE:
             case CLASS:
+            case ENUM:
+            case INTERFACE:
                 return computeClass(types, info, currentPath, unresolved, offset);
                 
             case CONDITIONAL_EXPRESSION:
@@ -791,7 +794,7 @@ public final class CreateElementUtilities {
         return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType());
     }
     
-    private static final Set<Kind> STOP_LOOKING_FOR_METHOD = EnumSet.of(Kind.METHOD, Kind.CLASS, Kind.COMPILATION_UNIT);
+    private static final Set<Kind> STOP_LOOKING_FOR_METHOD = EnumSet.of(Kind.METHOD, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.COMPILATION_UNIT);
             
     private static TreePath findMethod(TreePath tp) {
         while (!STOP_LOOKING_FOR_METHOD.contains(tp.getLeaf().getKind())) {

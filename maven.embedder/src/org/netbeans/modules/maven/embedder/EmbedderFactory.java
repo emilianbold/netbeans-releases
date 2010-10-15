@@ -40,18 +40,12 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-// XXX consider applying trunk changes (see 8adec913cf27 merge):
-// ba4b1fcc88c8 - add a custom defaults populator component, fix partially the model lineage construction.
-// 8ce0d6255b77 - add model lineage embedder method
-// 0d491d8f5dc1 - make MavenJavaExecutor compile insert dummy code, comment out code as necessary
-
 package org.netbeans.modules.maven.embedder;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -64,10 +58,8 @@ import org.apache.maven.artifact.repository.ArtifactRepositoryPolicy;
 import org.apache.maven.model.building.ModelBuildingException;
 import org.codehaus.plexus.PlexusContainerException;
 import org.codehaus.plexus.classworlds.ClassWorld;
-import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.component.repository.exception.ComponentLookupException;
 import java.util.prefs.Preferences;
-import org.apache.maven.execution.MavenExecutionRequestPopulator;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.building.DefaultModelBuildingRequest;
 import org.apache.maven.model.building.ModelBuilder;
@@ -78,14 +70,8 @@ import org.apache.maven.repository.RepositorySystem;
 import org.codehaus.plexus.ContainerConfiguration;
 import org.codehaus.plexus.DefaultContainerConfiguration;
 import org.codehaus.plexus.DefaultPlexusContainer;
-import org.codehaus.plexus.PlexusContainer;
-import org.codehaus.plexus.component.discovery.ComponentDiscoverer;
-import org.codehaus.plexus.component.discovery.ComponentDiscoveryEvent;
-import org.codehaus.plexus.component.discovery.ComponentDiscoveryListener;
+
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
-import org.codehaus.plexus.component.repository.ComponentSetDescriptor;
-import org.codehaus.plexus.configuration.PlexusConfigurationException;
-import org.codehaus.plexus.context.Context;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -135,16 +121,14 @@ public final class EmbedderFactory {
         }
     }
 
-    private static <T> void setImplementationClass(ComponentDescriptor<T> desc, Class<?> implementationClass) { // type-safe accessor
-        desc.setImplementationClass(implementationClass.asSubclass(desc.getRoleClass()));
-    }
+   
 
-    private static <T> void addComponentDescriptor(ComponentSetDescriptor componentSetDescriptor, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
+    private static <T> void addComponentDescriptor(DefaultPlexusContainer container, Class<T> roleClass, Class<? extends T> implementationClass, String roleHint) {
         ComponentDescriptor<T> componentDescriptor = new ComponentDescriptor<T>();
         componentDescriptor.setRoleClass(roleClass);
-        componentDescriptor.setImplementationClass(implementationClass);
+        componentDescriptor.setImplementationClass(implementationClass.asSubclass(roleClass));
         componentDescriptor.setRoleHint(roleHint);
-        componentSetDescriptor.addComponentDescriptor(componentDescriptor);
+        container.addComponentDescriptor(componentDescriptor);
     }
 
     public static class NbLocalArtifactRepository extends LocalArtifactRepository {
@@ -170,31 +154,16 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
-            .setName("mavenCore");
-
-        // addComponentDescriptor does not work in this case, perhaps because there is a default impl already:
-        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
-                ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor<?> desc : set.getComponents()) {
-                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
-                    }
-                }
-            }
-        });
-        // Annotations do not seem to work: @Component(role=LocalArtifactRepository.class, hint=LocalArtifactRepository.IDE_WORKSPACE)
-        dpcreq.addComponentDiscoverer(new ComponentDiscoverer() {
-            public @Override List<ComponentSetDescriptor> findComponents(Context context, ClassRealm classRealm) throws PlexusConfigurationException {
-                ComponentSetDescriptor csd = new ComponentSetDescriptor();
-                addComponentDescriptor(csd, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
-                return Collections.singletonList(csd);
-            }
-        });
-        PlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+            .setName("maven");
+        
+        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        
+        addComponentDescriptor(pc, LocalArtifactRepository.class, NbLocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE);
+       
         try {
+            
             assert pc.lookup(LocalArtifactRepository.class, LocalArtifactRepository.IDE_WORKSPACE) instanceof NbLocalArtifactRepository;
-            assert pc.lookup(MavenExecutionRequestPopulator.class) instanceof NbExecutionRequestPopulator;
+           
         } catch (ComponentLookupException x) {
             assert false : x;
         }
@@ -279,23 +248,12 @@ public final class EmbedderFactory {
         final String mavenCoreRealmId = "plexus.core";
         ContainerConfiguration dpcreq = new DefaultContainerConfiguration()
             .setClassWorld( new ClassWorld(mavenCoreRealmId, EmbedderFactory.class.getClassLoader()) )
-            .setName("mavenCore");
+            .setName("maven");
 
-
-        dpcreq.addComponentDiscoveryListener(new ComponentDiscoveryListener() {
-            public @Override void componentDiscovered(ComponentDiscoveryEvent event) {
-                ComponentSetDescriptor set = event.getComponentSetDescriptor();
-                for (ComponentDescriptor<?> desc : set.getComponents()) {
-                    if (MavenExecutionRequestPopulator.class.getName().equals(desc.getRole())) {
-                        setImplementationClass(desc, NbExecutionRequestPopulator.class);
-                    }
-                }
-            }
-        });
-        DefaultPlexusContainer dpc = new DefaultPlexusContainer(dpcreq);
-
+        DefaultPlexusContainer pc = new DefaultPlexusContainer(dpcreq);
+        
         EmbedderConfiguration req = new EmbedderConfiguration();
-        req.setContainer(dpc);
+        req.setContainer(pc);
         setLocalRepoPreference(req);
 
 //        //TODO remove explicit activation
@@ -338,121 +296,6 @@ public final class EmbedderFactory {
 
         return embedder;
     }
-//
-//    public static MavenEmbedder createExecuteEmbedder(MavenEmbedderLogger logger) /*throws MavenEmbedderException*/ {
-//        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-//
-//
-//        ClassWorld world = new ClassWorld();
-//        File rootPackageFolder = InstalledFileLocator.getDefault().locate("modules/ext/maven/rootpackage", "org.netbeans.modules.maven.embedder", false); //NOI18N
-//        if (rootPackageFolder != null) {
-//            rootPackageFolder = FileUtil.normalizeFile(rootPackageFolder);
-//        }
-//        // kind of separation layer between the netbeans classloading world and maven classworld.
-//        try {
-//            ClassRealm nbRealm = world.newRealm("netbeans", loader); //NOI18N
-//            //MEVENIDE-647
-//            ClassRealm plexusRealm = world.newRealm("plexus.core", loader.getParent()); //NOI18N
-//            //loader.getParent() contains rt.jar+tools.jar (what's what we want) but also openide.modules, openide.util and startup (that's what we don't want but probably can live with)
-//
-//            // these are all packages that are from the embedder jar..
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.doxia"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.plexus"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.codehaus.classworlds"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.maven"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.commons"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.log4j"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xbean"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.apache.xerces"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/maven"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "META-INF/plexus"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "com.jcraft.jsch"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.aspectj"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.cyberneko"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.easymock"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "hidden.org.codehaus.plexus"); //NOI18N
-//
-//            // from netbeans allow just Lookup and the mevenide bridges
-//            plexusRealm.importFrom(nbRealm.getId(), "org.openide.util"); //NOI18N
-//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.bridges"); //NOI18N
-//            //have custom lifecycle executor to collect all projects in reactor..
-//            plexusRealm.importFrom(nbRealm.getId(), "org.netbeans.modules.maven.embedder.exec"); //NOI18N
-//
-//            if (rootPackageFolder != null) { //#154108 well, the broken embedder is more broken in jnlp based netbeans..
-//                //hack to enable reports, default package is EVIL!
-//                plexusRealm.addURL(rootPackageFolder.toURI().toURL());
-//            }
-//        } catch (NoSuchRealmException ex) {
-//            ex.printStackTrace();
-//        } catch (DuplicateRealmException ex) {
-//            ex.printStackTrace();
-//        } catch (MalformedURLException ex) {
-//            ex.printStackTrace();
-//        }
-//        Configuration req = new DefaultConfiguration();
-//        req.setClassWorld(world);
-//        req.setMavenEmbedderLogger(logger);
-//        setLocalRepoPreference(req);
-//
-//        //TODO remove explicit activation
-//        req.addActiveProfile("netbeans-public").addActiveProfile("netbeans-private"); //NOI18N
-//        File userSettingsPath = MavenEmbedder.DEFAULT_USER_SETTINGS_FILE; //NOI18N
-//        File globalSettingsPath = InstalledFileLocator.getDefault().locate("modules/ext/maven/settings.xml", "org.netbeans.modules.maven.embedder", false); //NOI18N
-//
-//        //validating  Configuration
-//        ConfigurationValidationResult cvr = MavenEmbedder.validateConfiguration(req);
-//        Exception userSettingsException = cvr.getUserSettingsException();
-//        if (userSettingsException != null) {
-//            Exceptions.printStackTrace(Exceptions.attachMessage(userSettingsException,
-//                    "Maven Settings file cannot be properly parsed. Until it's fixed, it will be ignored."));
-//        }
-//        if (userSettingsPath.exists()) {
-//            if (cvr.isValid()) {
-//                req.setUserSettingsFile(userSettingsPath);
-//            } else {
-//                LOG.info("Maven settings file is corrupted. See http://www.netbeans.org/issues/show_bug.cgi?id=96919"); //NOI18N
-//                req.setUserSettingsFile(globalSettingsPath);
-//            }
-//        }
-//
-//        req.setGlobalSettingsFile(globalSettingsPath);
-//
-//        req.setConfigurationCustomizer(new ContainerCustomizer() {
-//
-//            public void customize(PlexusContainer plexusContainer) {
-//                //have custom lifecycle executor to collect all projects in reactor..
-//                ComponentDescriptor desc = plexusContainer.getComponentDescriptor(LifecycleExecutor.ROLE);
-//                desc.setImplementation(MyLifecycleExecutor.class.getName()); //NOI18N
-//                try {
-//                    PlexusConfiguration oldConf = desc.getConfiguration();
-//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-//                    copyConfig(oldConf, conf);
-//                    desc.setConfiguration(conf);
-//                } catch (PlexusConfigurationException ex) {
-//                    ex.printStackTrace();
-//                }
-//
-//                desc = plexusContainer.getComponentDescriptor(BuildPlanner.class.getName());
-//                desc.setImplementation(NBBuildPlanner.class.getName()); //NOI18N
-//                try {
-//                    PlexusConfiguration oldConf = desc.getConfiguration();
-//                    XmlPlexusConfiguration conf = new XmlPlexusConfiguration(oldConf.getName());
-//                    copyConfig(oldConf, conf);
-//                    desc.setConfiguration(conf);
-//                } catch (PlexusConfigurationException ex) {
-//                    ex.printStackTrace();
-//                }
-//            }
-//        });
-//
-//        MavenEmbedder embedder = null;
-//        try {
-//            embedder = new MavenEmbedder(req);
-//        } catch (MavenEmbedderException e) {
-//            ErrorManager.getDefault().notify(e);
-//        }
-//        return embedder;
-//    }
 
     public static ArtifactRepository createRemoteRepository(MavenEmbedder embedder, String url, String id) {
         try {

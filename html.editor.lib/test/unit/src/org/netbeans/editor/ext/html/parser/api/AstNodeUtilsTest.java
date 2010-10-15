@@ -70,6 +70,13 @@ public class AstNodeUtilsTest extends TestBase {
         super(testName);
     }
 
+    
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AstNodeUtilsTest("testFindClosestNodeBackward"));

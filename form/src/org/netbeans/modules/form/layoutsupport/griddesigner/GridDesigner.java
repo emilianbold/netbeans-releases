@@ -51,12 +51,16 @@ import java.awt.EventQueue;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.LayoutManager;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.Customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -486,6 +490,24 @@ public class GridDesigner extends JPanel implements Customizer {
         String delegate1 = cont1.getLayoutSupport().getLayoutDelegate().getClass().getName();
         String delegate2 = cont2.getLayoutSupport().getLayoutDelegate().getClass().getName();
         return delegate1.equals(delegate2);
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        Component comp = this;
+        while ((comp != null) && !(comp instanceof Window)) {
+            comp = comp.getParent();
+        }
+        if (comp != null) {
+            ((Window)comp).addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    // Unregister listeners
+                    setSelectedNodes(Collections.EMPTY_LIST);
+                }
+            });
+        }
     }
 
     /**

@@ -883,10 +883,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     // private method for deleting every subfiles/subdirectories of a file object
     static void deleteSubFiles(File file) throws IOException {
-        if (file.isDirectory() && file.exists()) {
-            File files[] = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteFile(files[i]);
+        File files[] = file.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                deleteFile(f);
             }
         } else {
             // probably do nothing - file is not a directory
@@ -1307,7 +1307,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
      */
     public static void assertGC(final String text, final Reference<?> ref, final Set<?> rootsHint) {
         NbModuleLogHandler.whileIgnoringOOME(new Runnable() {
-            @SuppressWarnings("SleepWhileHoldingLock")
+            @SuppressWarnings({"SleepWhileHoldingLock", "SleepWhileInLoop"})
             public @Override void run() {
         List<byte[]> alloc = new ArrayList<byte[]>();
         int size = 100000;

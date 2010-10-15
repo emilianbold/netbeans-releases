@@ -48,7 +48,6 @@ import java.awt.Font;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.Hashtable;
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Map;
@@ -93,7 +92,6 @@ import javax.swing.undo.CannotRedoException;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.lib.editor.util.ListenerList;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.BaseDocument_PropertyHandler;
@@ -108,7 +106,6 @@ import org.netbeans.modules.editor.lib.impl.MarkVector;
 import org.netbeans.modules.editor.lib.impl.MultiMark;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -1853,7 +1850,14 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     public final void breakAtomicLock() {
         if (atomicEdits != null && atomicEdits.size() > 0) {
             atomicEdits.end();
-            atomicEdits.undo();
+            if (atomicEdits.canUndo()) {
+                atomicEdits.undo();
+            } else {
+                LOG.log(Level.WARNING,
+                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
+                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
+                        new CannotUndoException());
+            }
             atomicEdits = null;
         }
     }

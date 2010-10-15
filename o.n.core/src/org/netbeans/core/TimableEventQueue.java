@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFrame;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -261,9 +262,12 @@ implements Runnable {
             return true;
         }
         if (w instanceof JFrame) {
-            Component glass = ((JFrame)w).getGlassPane();
-            if (glass.getCursor().getType() == Cursor.WAIT_CURSOR) {
-                return true;
+            JRootPane root = ((JFrame)w).getRootPane();
+            if (null != root) {
+                Component glass = root.getGlassPane();
+                if (null != glass && glass.getCursor().getType() == Cursor.WAIT_CURSOR) {
+                    return true;
+                }
             }
         }
         return false;

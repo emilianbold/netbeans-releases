@@ -73,7 +73,7 @@ import org.openide.util.CharSequences;
  *
  * @author eu155513
  */
-public class TemplateParameterImpl extends OffsetableDeclarationBase implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
+public final class TemplateParameterImpl<T> extends OffsetableDeclarationBase<T> implements CsmClassifierBasedTemplateParameter, CsmTemplate, SelfPersistent {
     private final CharSequence name;
     private CsmUID<CsmScope> scope;
 
@@ -81,7 +81,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
 
     private TemplateDescriptor templateDescriptor = null;
     
-    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, boolean global) {
+    public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file);
         // TODO what about explicite type in ast?
         this.name = NameCache.getManager().getString(name);
@@ -91,15 +91,17 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         }
     }
 
-    public TemplateParameterImpl(AST ast, String name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
+    public TemplateParameterImpl(AST ast, CharSequence name, CsmFile file, CsmScope scope, boolean global, AST defaultValue) {
         this(ast, name, file, scope, global);
         this.defaultValue = TypeFactory.createType(defaultValue, file, null, 0);
     }
     
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CsmObject getDefaultValue() {
         return defaultValue;
     }
@@ -123,14 +125,17 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         return name.hashCode();
     }
 
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }
@@ -155,14 +160,17 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
     
+    @Override
     public CsmScope getScope() {
         return scope == null? null : scope.getObject();
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.TEMPLATE_PARAMETER;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         CsmScope s = getScope();
         if (CsmKindUtilities.isFunction(s)) {

@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.IncludesListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.MacrosListModel;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationImpl;
 import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -531,13 +532,18 @@ public final class SelectConfigurationPanel extends JPanel {
         }
         @Override
         public void run() {
-            buildModel(wizardDescriptor);
-            creteTreeModel(wizardDescriptor);
-            wizard.stateChanged(null);
-            //System.out.println("End analyzing");
-            if (!isStoped){
-                wasTerminated = false;
+            try {
+                buildModel(wizardDescriptor);
+                creteTreeModel(wizardDescriptor);
+                wizard.stateChanged(null);
+                //System.out.println("End analyzing");
+                if (!isStoped){
+                    wasTerminated = false;
+                }
+            } catch (Throwable ex) {
+                Exceptions.printStackTrace(ex);
             }
+
         }
     }
 

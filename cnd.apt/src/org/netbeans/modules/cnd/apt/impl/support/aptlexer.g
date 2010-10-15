@@ -297,6 +297,7 @@ tokens {
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
+    LITERAL__Imaginary="_Imaginary"; // NOI18N
 
 
     // Fortran tokens
@@ -1041,7 +1042,29 @@ protected  Space : (options {combineChars=true;}:' ' | '\t' | '\f');
 
 CHAR_LITERAL
         :   
-            '\'' (Escape | ~( '\'' | '\\' ))* '\''
+            '\'' CHAR_LITERAL_BODY
+        ;
+
+protected CHAR_LITERAL_BODY
+        :   
+		(       
+                        '\\'                        
+                        (   options{greedy=true;}:
+                            (	"\r\n" {offset--;} // MS 
+                            |	"\r"     // MAC
+                            |	"\n"     // Unix
+                            ) {deferredNewline();}
+                        | 
+                            '\''
+                        |   
+                            '\\'    
+                        )?
+		|	
+                         ~('\'' | '\r' | '\n' | '\\')
+		)*
+            ('\'' // correct ending of char literal
+                |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
+            )
         ;
 
 protected STRING_LITERAL

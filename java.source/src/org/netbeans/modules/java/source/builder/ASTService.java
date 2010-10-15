@@ -88,7 +88,11 @@ public final class ASTService {
             return null;
         switch (tree.getKind()) {
             case COMPILATION_UNIT: return ((JCCompilationUnit)tree).packge;
-            case CLASS:            return ((JCClassDecl)tree).sym;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return ((JCClassDecl)tree).sym;
             case METHOD:           return ((JCMethodDecl)tree).sym;
             case VARIABLE:         return ((JCVariableDecl)tree).sym;
             case MEMBER_SELECT:    return ((JCFieldAccess)tree).sym;

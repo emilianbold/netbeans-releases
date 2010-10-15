@@ -48,8 +48,8 @@ package org.netbeans.modules.cnd.repository.spi;
  */
 public interface KeyDataPresentation {
     short getUnitPresentation();
-    short getKindPresentation();
     CharSequence getNamePresentation();
+    short getKindPresentation();
 
     int getFilePresentation();
     int getStartPresentation();

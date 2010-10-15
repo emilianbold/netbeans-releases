@@ -62,8 +62,12 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
 
     private volatile List<CsmStatement> statements;
 
-    public CompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    protected CompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+    }
+
+    public static CompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new CompoundStatementImpl(ast, file, scope);
     }
 
     @Override

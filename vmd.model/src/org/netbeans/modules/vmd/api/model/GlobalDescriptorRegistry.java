@@ -71,6 +71,7 @@ final class GlobalDescriptorRegistry {
     // HINT - use WeakReference, then use FileChangeListener as WeakReference
 
     private static final HashMap<String, WeakReference<GlobalDescriptorRegistry>> registries = new HashMap<String, WeakReference<GlobalDescriptorRegistry>> ();
+    private static final RequestProcessor RP = new RequestProcessor(GlobalDescriptorRegistry.class);
 
     static GlobalDescriptorRegistry getGlobalDescriptorRegistry (String projectType) {
         assert Debug.isFriend (DescriptorRegistry.class, "getDescriptorRegistry")  ||  Debug.isFriend (ComponentSerializationSupport.class); // NOI18N
@@ -168,7 +169,7 @@ final class GlobalDescriptorRegistry {
     }
     
     private void reloadLater() {
-        RequestProcessor.getDefault().post(new Runnable () {
+        RP.post(new Runnable () {
             public void run () {
                 reload();
             }

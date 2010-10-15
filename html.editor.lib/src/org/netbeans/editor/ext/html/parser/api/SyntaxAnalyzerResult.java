@@ -108,7 +108,7 @@ public class SyntaxAnalyzerResult {
         if (found != null) {
             return found;
         }
-        return detected != null ? detected : HtmlVersion.HTML41_TRANSATIONAL; //fallback if nothing can be determined
+        return detected != null ? detected : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
     }
     
     public HtmlModel getHtmlModel() {

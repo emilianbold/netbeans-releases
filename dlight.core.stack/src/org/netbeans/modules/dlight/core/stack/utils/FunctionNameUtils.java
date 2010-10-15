@@ -189,7 +189,11 @@ public final class FunctionNameUtils {
         return functionSignature.substring(start);
     }
     
-public static String getFunctionName(String functionSignature) {
+    public static String getFullFunctionName(String functionSignature){
+        return getFunctionModule(functionSignature) + "`" + getFunctionName(functionSignature); // NOI18N
+    }
+
+    public static String getFunctionName(String functionSignature) {
         int start = 0;
         int templateLevel = 0;
         boolean isOperator = false;
@@ -200,10 +204,10 @@ public static String getFunctionName(String functionSignature) {
                 functionSignature = functionSignature.substring(0, ssOpenmp) + functionSignature.substring(j + 1);
             }
         }
-        if (functionSignature.indexOf("`") != -1){
-            start = functionSignature.indexOf("`") + 1;
+        if (functionSignature.indexOf("`") != -1) {//NOI18N
+            start = functionSignature.indexOf("`") + 1;//NOI18N
         }
-        for (int  i= start; i < functionSignature.length(); i++) {
+        for (int i = start; i < functionSignature.length(); i++) {
             char c = functionSignature.charAt(i);
             switch (c) {
                 case '<':
@@ -226,9 +230,9 @@ public static String getFunctionName(String functionSignature) {
                     }
                     break;
                 case '.':
-                    if (functionSignature.indexOf("`") != -1 && functionSignature.indexOf("`") > i){
+                    if (functionSignature.indexOf("`") != -1 && functionSignature.indexOf("`") > i) {//NOI18N
                         break;
-                    }                    
+                    }
                     return functionSignature.substring(start, i);
                 case ' ':
                     if (functionSignature.length() > i + 1
@@ -258,5 +262,5 @@ public static String getFunctionName(String functionSignature) {
             }
         }
         return functionSignature.substring(start);
-    }      
+    }
 }

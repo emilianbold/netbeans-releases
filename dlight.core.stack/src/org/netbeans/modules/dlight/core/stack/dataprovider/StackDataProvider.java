@@ -47,7 +47,7 @@ import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCallWithMetric;
 import org.netbeans.modules.dlight.core.stack.api.FunctionMetric;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;
-import org.netbeans.modules.dlight.spi.impl.TreeTableDataProvider;
+import org.netbeans.modules.dlight.spi.dataprovider.TreeTableDataProvider;
 
 public interface StackDataProvider extends SourceFileInfoDataProvider, TreeTableDataProvider<FunctionCallTreeTableNode> {
 

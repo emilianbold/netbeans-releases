@@ -90,10 +90,6 @@ public class ActionToGoalMapping implements java.io.Serializable {
      */
     public void removeAction(NetbeansActionMapping netbeansActionMapping)
     {
-        if ( !(netbeansActionMapping instanceof NetbeansActionMapping) )
-        {
-            throw new ClassCastException( "ActionToGoalMapping.removeActions(netbeansActionMapping) parameter must be instanceof " + NetbeansActionMapping.class.getName() );
-        }
         getActions().remove( netbeansActionMapping );
     } //-- void removeAction(NetbeansActionMapping) 
 

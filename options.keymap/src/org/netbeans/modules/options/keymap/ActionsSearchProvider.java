@@ -67,6 +67,7 @@ import org.netbeans.spi.quicksearch.SearchResponse;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
+import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -172,12 +173,12 @@ public class ActionsSearchProvider implements SearchProvider {
                 displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
             }
         }
-        
+
         // #140580 - check for duplicate actions
         if (duplicateCheck.put(action, displayName) != null) {
             return true;
         }
-        return response.addResult(new ActionResult(action), displayName, null,
+         return response.addResult(new ActionResult(action), displayName, null,
                 Collections.singletonList(stroke));
     }
 
@@ -285,9 +286,21 @@ public class ActionsSearchProvider implements SearchProvider {
             // be careful, some actions throws assertions etc, because they
             // are not written to be invoked directly
             try {
-                command.actionPerformed(createActionEvent(command));
-                uiLog();
+                Action a = command;
+                ActionEvent ae = createActionEvent(command);
+                Object p = ae.getSource();
+                if (p instanceof CloneableEditor) {
+                    JEditorPane pane = ((CloneableEditor) p).getEditorPane();
+                    Action activeCommand = pane.getActionMap().get(command.getValue(Action.NAME));
+                    if (activeCommand != null) {
+                        a = activeCommand;
+                    }
+                }
+
+                a.actionPerformed(ae);
+                uiLog(true);
             } catch (Throwable thr) {
+                uiLog(false);
                 if (thr instanceof ThreadDeath) {
                     throw (ThreadDeath)thr;
                 }
@@ -304,8 +317,8 @@ public class ActionsSearchProvider implements SearchProvider {
             }
         }
 
-        private void uiLog() {
-            LogRecord rec = new LogRecord(Level.FINER, "LOG_QUICKSEARCH_ACTION"); // NOI18N
+        private void uiLog(boolean success) {
+            LogRecord rec = new LogRecord(Level.FINER, success?"LOG_QUICKSEARCH_ACTION":"LOG_QUICKSEARCH_ACTION_FAILED"); // NOI18N
             rec.setParameters(new Object[] { command.getClass().getName(), command.getValue(Action.NAME) });
             rec.setResourceBundle(NbBundle.getBundle(ActionsSearchProvider.class));
             rec.setResourceBundleName(ActionsSearchProvider.class.getPackage().getName() + ".Bundle"); // NOI18N

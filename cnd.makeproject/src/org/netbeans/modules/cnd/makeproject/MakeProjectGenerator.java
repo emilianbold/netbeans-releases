@@ -53,10 +53,15 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -73,12 +78,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.loaders.CreateFromTemplateHandler;
 
 /**
  * Creates a MakeProject from scratch according to some initial configuration.
  */
 public class MakeProjectGenerator {
+
+    private static final String PROP_DBCONN = "dbconn"; // NOI18N
 
     private MakeProjectGenerator() {
     }
@@ -100,7 +113,7 @@ public class MakeProjectGenerator {
             } else {
                 projectName = name + baseCount;
             }
-            File projectNameFile = new File(projectFolder, projectName);
+            File projectNameFile = CndFileUtils.createLocalFile(projectFolder, projectName);
             if (!projectNameFile.exists()) {
                 break;
             }
@@ -122,7 +135,7 @@ public class MakeProjectGenerator {
             profile.setBuildFirst(false);
         }
 
-        FileObject dirFO = createProjectDir(projectFolder);
+        FileObject dirFO = createProjectDir(prjParams);
         prjParams.setConfigurations(copyConfs);
         createProject(dirFO, prjParams, true);
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
@@ -144,10 +157,18 @@ public class MakeProjectGenerator {
      * @throws IOException in case something went wrong
      */
     public static MakeProject createProject(ProjectParameters prjParams) throws IOException {
-        FileObject dirFO = createProjectDir(prjParams.getProjectFolder());
+        FileObject dirFO = createProjectDir(prjParams);
         AntProjectHelper h = createProject(dirFO, prjParams, false); //NOI18N
         MakeProject p = (MakeProject) ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
+        p.setRemoteMode(prjParams.getRemoteMode());
+        if (prjParams.getRemoteMode() == RemoteProject.Mode.REMOTE_SOURCES) {
+            p.setRemoteFileSystemHost(ExecutionEnvironmentFactory.fromUniqueID(prjParams.getHostUID()));
+        }
+        if(prjParams.getDatabaseConnection() != null) {
+            Preferences prefs = ProjectUtils.getPreferences(p, ProjectSupport.class, true);
+            prefs.put(PROP_DBCONN, prjParams.getDatabaseConnection());
+        }
         //FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
         return p;
     }
@@ -194,10 +215,19 @@ public class MakeProjectGenerator {
     return null;
     }
      */
-    private static AntProjectHelper createProject(FileObject dirFO, ProjectParameters prjParams, boolean saveNow) throws IOException {
+    private static AntProjectHelper createProject(FileObject dirFO, final ProjectParameters prjParams, boolean saveNow) throws IOException {
         String name = prjParams.getProjectName();
         String makefileName = prjParams.getMakefileName();
         Configuration[] confs = prjParams.getConfigurations();
+        if (prjParams.getFullRemote()) {
+            RemoteSyncFactory factory = RemoteSyncFactory.fromID(RemoteProject.FULL_REMOTE_SYNC_ID);
+            CndUtils.assertNotNull(factory, "Can not find sync factory for full remote"); //NOI18N
+            for (Configuration conf : confs) {
+                MakeConfiguration mk = (MakeConfiguration) conf;
+                mk.setFixedRemoteSyncFactory(factory);
+                mk.setRemoteMode(RemoteProject.Mode.REMOTE_SOURCES);
+            }
+        }
         final Iterator<SourceFolderInfo> sourceFolders = prjParams.getSourceFolders();
         final String sourceFoldersFilter = prjParams.getSourceFoldersFilter();
         final Iterator<SourceFolderInfo> testFolders = prjParams.getTestFolders();
@@ -215,6 +245,18 @@ public class MakeProjectGenerator {
         Element nativeProjectType = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, "make-project-type"); // NOI18N
         nativeProjectType.appendChild(doc.createTextNode("" + 0)); // NOI18N
         data.appendChild(nativeProjectType);
+
+        if (prjParams.getFullRemote()) {
+            // mode
+            Element fullRemoteNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_MODE); // NOI18N
+            fullRemoteNode.appendChild(doc.createTextNode(prjParams.getRemoteMode().name())); // NOI18N
+            data.appendChild(fullRemoteNode);
+            // host
+            Element rfsHostNode = doc.createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, MakeProject.REMOTE_FILESYSTEM_HOST); // NOI18N
+            rfsHostNode.appendChild(doc.createTextNode(prjParams.getHostUID())); // NOI18N
+            data.appendChild(rfsHostNode);
+        }
+
         h.putPrimaryConfigurationData(data, true);
 
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -225,7 +267,7 @@ public class MakeProjectGenerator {
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         // Create new project descriptor with default configurations and save it to disk.
-        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
+        final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(dirFO);
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         projectDescriptor.setState(State.READY);
@@ -235,7 +277,7 @@ public class MakeProjectGenerator {
         // create main source file
         final String mainFilePath;
         if (mainFile.length() > 0) {
-            mainFilePath = createMain(mainFile, dirFO);
+            mainFilePath = createMain(mainFile, dirFO, prjParams.getTemplateParams());
         } else {
             mainFilePath = null;
         }
@@ -246,7 +288,7 @@ public class MakeProjectGenerator {
 
             @Override
             public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath); // FIXUP: need a better check whether logical folder should be ccreated or not.
+                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders, importantItems, mainFilePath, prjParams.getFullRemote()); // FIXUP: need a better check whether logical folder should be ccreated or not.
                 projectDescriptor.save();
                 projectDescriptor.closed();
                 projectDescriptor.clean();
@@ -258,9 +300,11 @@ public class MakeProjectGenerator {
         } else {
             task.run();
         }
-        // create Makefile
-        copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
-                projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+        if (!prjParams.getFullRemote()) {
+            // create Makefile
+            copyURLFile("nbresloc:/org/netbeans/modules/cnd/makeproject/resources/MasterMakefile", // NOI18N
+                    projectDescriptor.getBaseDir() + File.separator + projectDescriptor.getProjectMakefileName());
+        }
         return h;
     }
 
@@ -299,8 +343,9 @@ public class MakeProjectGenerator {
         bw.flush();
     }
 
-    private static FileObject createProjectDir(File dir) throws IOException {
+    private static FileObject createProjectDir(ProjectParameters prjParams) throws IOException {
         FileObject dirFO;
+        File dir = prjParams.getProjectFolder();
         if (!dir.exists()) {
             //Refresh before mkdir not to depend on window focus
             // refreshFileSystem (dir); // See 136445
@@ -309,13 +354,14 @@ public class MakeProjectGenerator {
             }
             // refreshFileSystem (dir); // See 136445
         }
-        dirFO = FileUtil.toFileObject(dir);
+        dirFO = CndFileUtils.toFileObject(dir);
         assert dirFO != null : "No such dir on disk: " + dir; // NOI18N
+        assert dirFO.isValid() : "No such dir on disk: " + dir; // NOI18N
         assert dirFO.isFolder() : "Not really a dir: " + dir; // NOI18N
         return dirFO;
     }
 
-    private static String createMain(String mainFile, FileObject srcFolder) throws IOException {
+    private static String createMain(String mainFile, FileObject srcFolder, Map<String, Object> templateParams) throws IOException {
         String mainName = mainFile.substring(0, mainFile.indexOf('|'));
         String template = mainFile.substring(mainFile.indexOf('|') + 1);
 
@@ -337,7 +383,12 @@ public class MakeProjectGenerator {
 
         DataObject mt = DataObject.find(mainTemplate);
         DataFolder pDf = DataFolder.findFolder(srcFolder);
-        mt.createFromTemplate(pDf, createdMainName);
+
+        Map<String, Object> params = new HashMap<String, Object>();
+        params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
+        params.putAll(templateParams);
+
+        mt.createFromTemplate(pDf, createdMainName, params);
 
         return mainName;
     }

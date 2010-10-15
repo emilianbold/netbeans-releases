@@ -66,7 +66,6 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.actions.CMakeAction;
@@ -88,7 +87,6 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.wizard.ConsolidationStrategyPanel;
@@ -103,12 +101,14 @@ import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -136,7 +136,8 @@ public class ImportProject implements PropertyChangeListener {
     private static boolean TRACE = Boolean.getBoolean("cnd.discovery.trace.projectimport"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ImportProject.class.getName(), 2);
-    private File nativeProjectFolder;
+    private String nativeProjectPath;
+    private FileObject nativeProjectFO;
     private File projectFolder;
     private String projectName;
     private String makefileName = "Makefile";  // NOI18N
@@ -147,7 +148,10 @@ public class ImportProject implements PropertyChangeListener {
     private boolean manualCA = false;
     private boolean buildArifactWasAnalyzed = false;
     private boolean setAsMain;
-    private String hostUID;
+    private final String hostUID;
+    private final ExecutionEnvironment executionEnvironment;
+    private final boolean fullRemote;
+    private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
     private String workingDir;
     private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
@@ -169,49 +173,61 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.setLevel(Level.ALL);
         }
-        if (Boolean.TRUE.equals(wizard.getProperty("simpleMode"))) { // NOI18N
+        Boolean b = (Boolean) wizard.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
+        fullRemote = (b == null) ? false : b.booleanValue();
+        pathMode = fullRemote ? MakeProjectOptions.PathMode.ABS : MakeProjectOptions.getPathMode();
+        if (Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))) { // NOI18N
             simpleSetup(wizard);
         } else {
             customSetup(wizard);
         }
+        hostUID = (String) wizard.getProperty(WizardConstants.PROPERTY_HOST_UID); // NOI18N
+        if (hostUID == null) {
+            executionEnvironment = ServerList.getDefaultRecord().getExecutionEnvironment();
+        } else {
+            executionEnvironment = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+        }
+        assert nativeProjectPath != null;
     }
 
     private void simpleSetup(WizardDescriptor wizard) {
-        String path = (String) wizard.getProperty("path");  // NOI18N
-        projectFolder = new File(path);
-        nativeProjectFolder = projectFolder;
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
+        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);  // NOI18N
+        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);  // NOI18N
         projectName = projectFolder.getName();
-        makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
-        workingDir = path;
-        configurePath = (String) wizard.getProperty("configureName");  // NOI18N
+        workingDir = nativeProjectPath;
+        configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH);  // NOI18N
         if (configurePath != null) {
             configureArguments = (String) wizard.getProperty("realFlags");  // NOI18N
             runConfigure = true;
             // the best guess
-            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
             if (makefilePath == null) {
-                File file = new File(path + "/Makefile"); // NOI18N
-                makefilePath = file.getAbsolutePath();
+                makefilePath = nativeProjectPath + "/Makefile"; // NOI18N;
             }
         } else {
-            makefilePath = (String) wizard.getProperty("makefileName");  // NOI18N
+            makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH);  // NOI18N
+        }
+        if (fullRemote) {
+            makefileName = (makefilePath == null) ? "Makefile" : CndPathUtilitities.getBaseName(makefilePath); //NOI18N
+        } else {
+            makefileName = "Makefile-" + projectName + ".mk"; // NOI18N
         }
         runMake = Boolean.TRUE.equals(wizard.getProperty("buildProject"));  // NOI18N
         setAsMain = Boolean.TRUE.equals(wizard.getProperty("setMain"));  // NOI18N
-        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
-        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
         
         List<SourceFolderInfo> list = new ArrayList<SourceFolderInfo>();
         list.add(new SourceFolderInfo() {
 
             @Override
-            public File getFile() {
-                return projectFolder;
+            public FileObject getFileObject() {
+                return nativeProjectFO;
             }
 
             @Override
             public String getFolderName() {
-                return projectFolder.getName();
+                return nativeProjectFO.getNameExt();
             }
 
             @Override
@@ -219,48 +235,53 @@ public class ImportProject implements PropertyChangeListener {
                 return true;
             }
 
-            @Override
-            public FileFilter getFileFilter() {
-                return FileFilterFactory.getAllSourceFileFilter();
-            }
+//            @Override
+//            public FileFilter getFileFilter() {
+//                return FileFilterFactory.getAllSourceFileFilter();
+//            }
         });
         sources = list.iterator();
+        sourceFoldersFilter = MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT;
     }
 
     private void customSetup(WizardDescriptor wizard) {
-        String path = (String) wizard.getProperty("simpleModeFolder");  // NOI18N
-        nativeProjectFolder = new File(path);
-        projectFolder = (File) wizard.getProperty("projdir"); // NOI18N
-        projectName = (String) wizard.getProperty("name"); // NOI18N
-        makefileName = (String) wizard.getProperty("makefilename"); // NOI18N
-        workingDir = (String) wizard.getProperty("buildCommandWorkingDirTextField"); // NOI18N
-        buildCommand = (String) wizard.getProperty("buildCommandTextField"); // NOI18N
-        cleanCommand = (String) wizard.getProperty("cleanCommandTextField"); // NOI18N
-        buildResult = (String) wizard.getProperty("outputTextField"); // NOI18N
-        includeDirectories = (String) wizard.getProperty("includeTextField"); // NOI18N
-        macros = (String) wizard.getProperty("macroTextField"); // NOI18N
-        makefilePath = (String) wizard.getProperty("makefileName"); // NOI18N
-        configurePath = (String) wizard.getProperty("configureName"); // NOI18N
-        configureArguments = (String) wizard.getProperty("configureArguments"); // NOI18N
-        runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
-        consolidationStrategy = (String) wizard.getProperty("consolidationLevel"); // NOI18N
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER);  // NOI18N;
+        nativeProjectPath = (String) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);  // NOI18N
+        nativeProjectFO = (FileObject) wizard.getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO);  // NOI18N
+        projectFolder = (File) wizard.getProperty(WizardConstants.PROPERTY_PROJECT_FOLDER); // NOI18N
+        projectName = (String) wizard.getProperty(WizardConstants.PROPERTY_NAME); // NOI18N
+        workingDir = (String) wizard.getProperty(WizardConstants.PROPERTY_WORKING_DIR); // NOI18N
+        buildCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_COMMAND); // NOI18N
+        cleanCommand = (String) wizard.getProperty(WizardConstants.PROPERTY_CLEAN_COMMAND); // NOI18N
+        buildResult = (String) wizard.getProperty(WizardConstants.PROPERTY_BUILD_RESULT); // NOI18N
+        includeDirectories = (String) wizard.getProperty(WizardConstants.PROPERTY_INCLUDES); // NOI18N
+        macros = (String) wizard.getProperty(WizardConstants.PROPERTY_MACROS); // NOI18N
+        makefilePath = (String) wizard.getProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH); // NOI18N
+        if (fullRemote) {
+            makefileName = (makefilePath == null) ? "Makefile" : CndPathUtilitities.getBaseName(makefilePath); //NOI18N
+        } else {
+            makefileName = (String) wizard.getProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME); // NOI18N
+        }
+        configurePath = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH); // NOI18N
+        configureArguments = (String) wizard.getProperty(WizardConstants.PROPERTY_CONFIGURE_SCRIPT_ARGS); // NOI18N
+        runConfigure = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)); // NOI18N
+        consolidationStrategy = (String) wizard.getProperty(WizardConstants.PROPERTY_CONSOLIDATION_LEVEL); // NOI18N
         @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty("sourceFolders"); // NOI18N
+        Iterator<SourceFolderInfo> it = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS); // NOI18N
         sources = it;
         @SuppressWarnings("unchecked")
-        Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty("testFolders"); // NOI18N
+        Iterator<SourceFolderInfo> it2 = (Iterator<SourceFolderInfo>) wizard.getProperty(WizardConstants.PROPERTY_TEST_FOLDERS); // NOI18N
         tests = it2;
-        sourceFoldersFilter = (String) wizard.getProperty("sourceFoldersFilter"); // NOI18N
-        runConfigure = "true".equals(wizard.getProperty("runConfigure")); // NOI18N
+        sourceFoldersFilter = (String) wizard.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER); // NOI18N
+        runConfigure = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_CONFIGURE)); // NOI18N
         if (runConfigure) {
             runMake = true;
         } else {
-            runMake = "true".equals(wizard.getProperty("makeProject")); // NOI18N
+            runMake = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_RUN_REBUILD)); // NOI18N
         }
-        manualCA = "true".equals(wizard.getProperty("manualCA")); // NOI18N
-        setAsMain = Boolean.TRUE.equals(wizard.getProperty("setAsMain"));  // NOI18N
-        hostUID = (String) wizard.getProperty("hostUID"); // NOI18N
-        toolchain = (CompilerSet)wizard.getProperty("toolchain"); // NOI18N
+        manualCA = "true".equals(wizard.getProperty(WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE)); // NOI18N
+        setAsMain = Boolean.TRUE.equals(wizard.getProperty(WizardConstants.PROPERTY_SET_AS_MAIN));  // NOI18N
+        toolchain = (CompilerSet)wizard.getProperty(WizardConstants.PROPERTY_TOOLCHAIN); // NOI18N
     }
 
     public Set<FileObject> create() throws IOException {
@@ -268,12 +289,10 @@ public class ImportProject implements PropertyChangeListener {
         projectFolder = CndFileUtils.normalizeFile(projectFolder);
         MakeConfiguration extConf = new MakeConfiguration(projectFolder.getPath(), "Default", MakeConfiguration.TYPE_MAKEFILE, hostUID, toolchain); // NOI18N
         String workingDirRel;
-        if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-            workingDirRel = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
-        } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-            workingDirRel = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
+        if (fullRemote) { //XXX:fullRemote {
+            workingDirRel = nativeProjectFO.getPath();
         } else {
-            workingDirRel = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir));
+            workingDirRel = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(workingDir), pathMode);
         }
         workingDirRel = CndPathUtilitities.normalize(workingDirRel);
         extConf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
@@ -281,13 +300,7 @@ public class ImportProject implements PropertyChangeListener {
         extConf.getMakefileConfiguration().getCleanCommand().setValue(cleanCommand);
         // Build result
         if (buildResult != null && buildResult.length() > 0) {
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                buildResult = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                buildResult = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
-            } else {
-                buildResult = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult));
-            }
+            buildResult = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(buildResult), pathMode);
             buildResult = CndPathUtilitities.normalize(buildResult);
             extConf.getMakefileConfiguration().getOutput().setValue(buildResult);
         }
@@ -318,26 +331,14 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = CndFileUtils.normalizeFile(new File(makefilePath));
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                makefilePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                makefilePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            } else {
-                makefilePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath));
-            }
+            makefileFile = CndFileUtils.createLocalFile(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
+            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
             makefilePath = CndPathUtilitities.normalize(makefilePath);
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
             configureFile = CndFileUtils.normalizeFile(new File(configurePath));
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                configurePath = CndPathUtilitities.toAbsoluteOrRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                configurePath = CndPathUtilitities.toRelativePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
-            } else {
-                configurePath = CndPathUtilitities.toAbsolutePath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath));
-            }
+            configurePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(configurePath), pathMode);
             configurePath = CndPathUtilitities.normalize(configurePath);
             importantItems.add(configurePath);
         }
@@ -350,8 +351,11 @@ public class ImportProject implements PropertyChangeListener {
         prjParams.setSourceFolders(sources).setSourceFoldersFilter(sourceFoldersFilter);
         prjParams.setTestFolders(tests);
         prjParams.setImportantFiles(importantItemsIterator);
+        prjParams.setFullRemote(fullRemote);
+        prjParams.setHostUID(hostUID);
+
         makeProject = ProjectGenerator.createProject(prjParams);
-        FileObject dir = FileUtil.toFileObject(projectFolder);
+        FileObject dir = CndFileUtils.toFileObject(projectFolder);
         importResult.put(Step.Project, State.Successful);
         switchModel(false);
         resultSet.add(dir);
@@ -392,33 +396,32 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void doWork() {
-        //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-        //if (setAsMain) {
-        //    OpenProjects.getDefault().setMainProject(makeProject);
-        //}
-        if (makeProject instanceof Runnable) {
-            ((Runnable)makeProject).run();
-        }
-        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor();
-        if (pdp.gotDescriptor()) {
-            if (runConfigure && configurePath != null && configurePath.length() > 0 && configureFile != null && configureFile.exists()) {
-                postConfigure();
-            } else {
-                if (runMake) {
-                    makeProject(true, null);
-                } else {
-                    RP.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            discovery(0, null);
-                        }
-                    });
-                }
+        try {
+            //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
+            //if (setAsMain) {
+            //    OpenProjects.getDefault().setMainProject(makeProject);
+            //}
+            if (makeProject instanceof Runnable) {
+                ((Runnable)makeProject).run();
             }
-        } else {
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            pdp.getConfigurationDescriptor();
+            if (pdp.gotDescriptor()) {
+                if (runConfigure && configurePath != null && configurePath.length() > 0 && configureFile != null && configureFile.exists()) {
+                    postConfigure();
+                } else {
+                    if (runMake) {
+                        makeProject(true, null);
+                    } else {
+                        discovery(0, null);
+                    }
+                }
+            } else {
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
             isFinished = true;
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -464,7 +467,7 @@ public class ImportProject implements PropertyChangeListener {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            FileObject configureFileObject = FileUtil.toFileObject(configureFile);
+            FileObject configureFileObject = CndFileUtils.toFileObject(configureFile);
             DataObject dObj = DataObject.find(configureFileObject);
             Node node = dObj.getNodeDelegate();
             String mime = FileUtil.getMIMEType(configureFileObject);
@@ -539,11 +542,20 @@ public class ImportProject implements PropertyChangeListener {
                 logger.log(Level.INFO, "#{0} {1}", new Object[]{configureFile, configureArguments}); // NOI18N
             }
             if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
-                ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
+                Future<Integer> task = ShellRunAction.performAction(node, listener, outputListener, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute configure script"); // NOI18N
+                }
             } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                CMakeAction.performAction(node, listener, null, makeProject, null);
+                Future<Integer> task = CMakeAction.performAction(node, listener, null, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute cmake"); // NOI18N
+                }
             } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                QMakeAction.performAction(node, listener, null, makeProject, null);
+                Future<Integer> task = QMakeAction.performAction(node, listener, null, makeProject, null);
+                if (task == null) {
+                    throw new Exception("Cannot execute qmake"); // NOI18N
+                }
             } else {
                 if (TRACE) {
                     logger.log(Level.INFO, "#Configure script does not supported"); // NOI18N
@@ -554,22 +566,21 @@ public class ImportProject implements PropertyChangeListener {
                 postModelDiscovery(true);
             }
         } catch (DataObjectNotFoundException e) {
+            logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
+            isFinished = true;
+        } catch (Throwable e) {
+            logger.log(Level.INFO, "Cannot configure project", e); // NOI18N
             isFinished = true;
         }
     }
 
     private void downloadRemoteFile(File file){
         if (file != null && !file.exists()) {
-            ExecutionEnvironment env = null;
-            if (hostUID != null) {
-                env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            }
-            ExecutionEnvironment developmentHost = (env != null) ? env : ServerList.getDefaultRecord().getExecutionEnvironment();
-            if (developmentHost.isRemote()) {
-                String remoteFile = HostInfoProvider.getMapper(developmentHost).getRemotePath(file.getAbsolutePath());
+            if (executionEnvironment.isRemote()) {
+                String remoteFile = HostInfoProvider.getMapper(executionEnvironment).getRemotePath(file.getAbsolutePath());
                 try {
-                    if (HostInfoUtils.fileExists(developmentHost, remoteFile)){
-                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, developmentHost, file.getAbsolutePath(), null);
+                    if (HostInfoUtils.fileExists(executionEnvironment, remoteFile)){
+                        Future<Integer> task = CommonTasksSupport.downloadFile(remoteFile, executionEnvironment, file.getAbsolutePath(), null);
                         if (TRACE) {
                             logger.log(Level.INFO, "#download file {0}", file.getAbsolutePath()); // NOI18N
                         }
@@ -580,6 +591,8 @@ public class ImportProject implements PropertyChangeListener {
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (Throwable ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -601,7 +614,7 @@ public class ImportProject implements PropertyChangeListener {
                     if (i > 0) {
                         String f = line.substring(i+configureCteatePattern.length()).trim();
                         if (f.endsWith(".h")) { // NOI18N
-                            downloadRemoteFile(new File(projectFolder, f)); // NOI18N
+                            downloadRemoteFile(CndFileUtils.createLocalFile(projectFolder, f)); // NOI18N
                         }
                     }
                 }
@@ -627,7 +640,7 @@ public class ImportProject implements PropertyChangeListener {
         downloadRemoteFile(makefileFile);
         scanConfigureLog(logFile);
         if (makefileFile != null && makefileFile.exists()) {
-            FileObject makeFileObject = FileUtil.toFileObject(makefileFile);
+            FileObject makeFileObject = CndFileUtils.toFileObject(makefileFile); //XXX:fullRemote
             DataObject dObj;
             try {
                 dObj = DataObject.find(makeFileObject);
@@ -641,7 +654,7 @@ public class ImportProject implements PropertyChangeListener {
                 isFinished = true;
             }
         } else {
-            String path = nativeProjectFolder.getAbsolutePath();
+            String path = nativeProjectPath;
             File file = new File(path + "/Makefile"); // NOI18N
             if (file.exists() && file.isFile() && file.canRead()) {
                 makefilePath = file.getAbsolutePath();
@@ -687,7 +700,16 @@ public class ImportProject implements PropertyChangeListener {
         if (TRACE) {
             logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
         }
-        MakeAction.execute(node, arguments, listener, null, makeProject, null, null); // NOI18N
+        try {
+            Future<Integer> task = MakeAction.execute(node, arguments, listener, null, makeProject, null, null);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute make clean"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private void postMake(Node node) {
@@ -735,7 +757,19 @@ public class ImportProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
         }
-        MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null); // NOI18N
+        if (TRACE) {
+            logger.log(Level.INFO, "#make {0}", arguments); // NOI18N
+        }
+        try {
+            Future<Integer> task = MakeAction.execute(node, arguments, listener, outputListener, makeProject, vars, null);
+            if (task == null) {
+                logger.log(Level.INFO, "Cannot execute make"); // NOI18N
+                isFinished = true;
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private String getArguments(String command){
@@ -794,102 +828,107 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private void discovery(int rc, File makeLog) {
-        if (!isProjectOpened()) {
-            isFinished = true;
-            return;
-        }
-        waitConfigurationDescriptor();
-        boolean done = false;
-        if (!manualCA) {
-            final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
-            if (rc == 0) {
-                if (extension != null) {
-                    final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                    if (extension.canApply(map, makeProject)) {
-                        DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
-                        if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
-                            if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by log file {0}", provider.getProperty("make-log-file").getValue()); // NOI18N
+        try {
+            if (!isProjectOpened()) {
+                isFinished = true;
+                return;
+            }
+            waitConfigurationDescriptor();
+            boolean done = false;
+            if (!manualCA) {
+                final DiscoveryExtensionInterface extension = (DiscoveryExtensionInterface) Lookup.getDefault().lookup(IteratorExtension.class);
+                if (rc == 0) {
+                    if (extension != null) {
+                        final Map<String, Object> map = new HashMap<String, Object>();
+                        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
+                        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                        if (extension.canApply(map, makeProject)) {
+                            DiscoveryProvider provider = (DiscoveryProvider) map.get(DiscoveryWizardDescriptor.PROVIDER);
+                            if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
+                                if (TRACE) {
+                                    logger.log(Level.INFO, "#start discovery by log file {0}", provider.getProperty("make-log-file").getValue()); // NOI18N
+                                }
+                            } else {
+                                if (TRACE) {
+                                    logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                                }
+                            }
+                            try {
+                                done = true;
+                                extension.apply(map, makeProject);
+                                if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
+                                    importResult.put(Step.DiscoveryLog, State.Successful);
+                                } else {
+                                    importResult.put(Step.DiscoveryDwarf, State.Successful);
+                                }
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
                             }
                         } else {
                             if (TRACE) {
-                                logger.log(Level.INFO, "#start discovery by object files"); // NOI18N
+                                logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
                             }
                         }
-                        try {
-                            done = true;
-                            extension.apply(map, makeProject);
-                            if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
+                        buildArifactWasAnalyzed = true;
+                    }
+                }
+                if (!done && makeLog != null) {
+                    if (extension != null) {
+                        final Map<String, Object> map = new HashMap<String, Object>();
+                        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
+                        map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                        if (extension.canApply(map, makeProject)) {
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
+                            try {
+                                done = true;
+                                extension.apply(map, makeProject);
                                 importResult.put(Step.DiscoveryLog, State.Successful);
-                            } else {
-                                importResult.put(Step.DiscoveryDwarf, State.Successful);
+                            } catch (IOException ex) {
+                                ex.printStackTrace();
                             }
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    } else {
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#no dwarf information found in object files"); // NOI18N
+                        } else {
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#discovery cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
                         }
                     }
-                    buildArifactWasAnalyzed = true;
-                }
-            }
-            if (!done && makeLog != null) {
-                if (extension != null) {
-                    final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                    map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                    if (extension.canApply(map, makeProject)) {
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#start discovery by log file {0}", makeLog.getAbsolutePath()); // NOI18N
-                        }
-                        try {
-                            done = true;
-                            extension.apply(map, makeProject);
-                            importResult.put(Step.DiscoveryLog, State.Successful);
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    } else {
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#discovery cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
-                        }
+                } else if (done && makeLog != null) {
+                    if (!isProjectOpened()) {
+                        return;
                     }
-                }
-            } else if (done && makeLog != null) {
-                if (!isProjectOpened()) {
-                    return;
-                }
-                if (extension != null) {
-                    final Map<String, Object> map = new HashMap<String, Object>();
-                    map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
-                    map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
-                    map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
-                    if (extension.canApply(map, makeProject)) {
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
-                        }
-                        @SuppressWarnings("unchecked")
-                        List<ProjectConfiguration> confs = (List<ProjectConfiguration>) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
-                        fixMacros(confs);
-                        importResult.put(Step.FixMacros, State.Successful);
-                    } else {
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#fix macros cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
+                    if (extension != null) {
+                        final Map<String, Object> map = new HashMap<String, Object>();
+                        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
+                        map.put(DiscoveryWizardDescriptor.LOG_FILE, makeLog.getAbsolutePath());
+                        map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
+                        if (extension.canApply(map, makeProject)) {
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#start fix macros by log file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
+                            @SuppressWarnings("unchecked")
+                            List<ProjectConfiguration> confs = (List<ProjectConfiguration>) map.get(DiscoveryWizardDescriptor.CONFIGURATIONS);
+                            fixMacros(confs);
+                            importResult.put(Step.FixMacros, State.Successful);
+                        } else {
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#fix macros cannot be done by log file {0}", makeLog.getAbsolutePath()); // NOI18N
+                            }
                         }
                     }
                 }
             }
-        }
-        switchModel(true);
-        if (!done) {
-            postModelDiscovery(true);
-        } else {
-            postModelDiscovery(false);
+            switchModel(true);
+            if (!done) {
+                postModelDiscovery(true);
+            } else {
+                postModelDiscovery(false);
+            }
+        } catch (Throwable ex) {
+            isFinished = true;
+            Exceptions.printStackTrace(ex);
         }
     }
 
@@ -952,17 +991,22 @@ public class ImportProject implements PropertyChangeListener {
                 @Override
                 public void projectParsingFinished(CsmProject project) {
                     if (project.equals(p)) {
-                        ImportProject.listeners.remove(p);
-                        CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
-                        if (TRACE) {
-                            logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+                        try {
+                            ImportProject.listeners.remove(p);
+                            CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
+                            if (TRACE) {
+                                logger.log(Level.INFO, "#model ready, explore model"); // NOI18N
+                            }
+                            if (isFull) {
+                                modelDiscovery();
+                            } else {
+                                fixExcludedHeaderFiles();
+                            }
+                            showFollwUp(np);
+                        } catch (Throwable ex) {
+                            isFinished = true;
+                            Exceptions.printStackTrace(ex);
                         }
-                        if (isFull) {
-                            modelDiscovery();
-                        } else {
-                            fixExcludedHeaderFiles();
-                        }
-                        showFollwUp(np);
                     }
                 }
             };
@@ -1074,20 +1118,26 @@ public class ImportProject implements PropertyChangeListener {
     private Map<String,Item> normalizedItems;
     private Item findByNormalizedName(File file){
         if (normalizedItems == null) {
-            normalizedItems = new HashMap<String,Item>();
-            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if (pdp != null) {
-                MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                if (makeConfigurationDescriptor != null) {
-                    for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                        normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
-                    }
-                }
-            }
+            normalizedItems = initNormalizedNames(makeProject);
         }
         String path = CndFileUtils.normalizeFile(file).getAbsolutePath();
         return normalizedItems.get(path);
     }
+
+    static HashMap<String,Item> initNormalizedNames(Project makeProject) {
+        HashMap<String,Item> normalizedItems = new HashMap<String,Item>();
+        ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (pdp != null) {
+            MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+            if (makeConfigurationDescriptor != null) {
+                for(Item item : makeConfigurationDescriptor.getProjectItems()){
+                    normalizedItems.put(item.getNormalizedFile().getAbsolutePath(),item);
+                }
+            }
+        }
+        return normalizedItems;
+    }
+
 
     private void modelDiscovery() {
         if (!isProjectOpened()) {
@@ -1095,7 +1145,7 @@ public class ImportProject implements PropertyChangeListener {
             return;
         }
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+        map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
         map.put(DiscoveryWizardDescriptor.INVOKE_PROVIDER, Boolean.TRUE);
         map.put(DiscoveryWizardDescriptor.CONSOLIDATION_STRATEGY, consolidationStrategy);
         boolean does = false;
@@ -1128,9 +1178,9 @@ public class ImportProject implements PropertyChangeListener {
             if (TRACE) {
                 logger.log(Level.INFO, "#start discovery by model"); // NOI18N
             }
-            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectFolder.getAbsolutePath());
+            map.put(DiscoveryWizardDescriptor.ROOT_FOLDER, nativeProjectPath);
             DiscoveryProvider provider = getProvider("model-folder"); // NOI18N
-            provider.getProperty("folder").setValue(nativeProjectFolder.getAbsolutePath()); // NOI18N
+            provider.getProperty("folder").setValue(nativeProjectPath); // NOI18N
             if (manualCA) {
                 provider.getProperty("prefer-local").setValue(Boolean.TRUE); // NOI18N
             }

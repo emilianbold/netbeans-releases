@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import java.io.IOException;
+import java.io.SyncFailedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -64,6 +65,8 @@ import org.openide.util.NbPreferences;
  * @author Anuradha G
  */
 public final class RepositoryPreferences {
+
+    private static final Logger LOG = Logger.getLogger(RepositoryPreferences.class.getName());
 
     private static RepositoryPreferences instance;
     /**
@@ -104,7 +107,7 @@ public final class RepositoryPreferences {
     private FileObject getRepoFolder() {
         FileObject repo = FileUtil.getConfigFile(REPO_FOLDER);
         if (repo == null) {
-            Logger.getLogger(RepositoryPreferences.class.getName()).warning(
+            LOG.warning(
                     "Maven Repository root folder " + REPO_FOLDER + //NOI18N
                     " was deleted somehow, creating dummy (empty) one."); //NOI18N
             try {
@@ -196,6 +199,8 @@ public final class RepositoryPreferences {
                 fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
                 fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
             }
+        } catch (SyncFailedException x) {
+            LOG.log(Level.INFO, "#185147: possible race condition updating " + info.getId(), x);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -243,7 +248,7 @@ public final class RepositoryPreferences {
             try {
                 fo.delete();
             } catch (IOException x) {
-                Logger.getLogger(RepositoryPreferences.class.getName()).log(Level.FINE, "Cannot delete repository in system filesystem", x); //NOI18N
+                LOG.log(Level.FINE, "Cannot delete repository in system filesystem", x); //NOI18N
             }
         }
     }
@@ -288,12 +293,12 @@ public final class RepositoryPreferences {
             }
             Integer pos1 = (Integer)o1.getAttribute("position");
             if (pos1 == null) {
-                Logger.getLogger(RepositoryPreferences.class.getName()).warning("FileObject " + o1.getPath() + " doesn't have attribute 'position' defined.");
+                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
                 pos1 = o1.hashCode();
             }
             Integer pos2 = (Integer)o2.getAttribute("position");
             if (pos2 == null) {
-                Logger.getLogger(RepositoryPreferences.class.getName()).warning("FileObject " + o1.getPath() + " doesn't have attribute 'position' defined.");
+                LOG.log(Level.WARNING, "FileObject {0} doesn''t have attribute ''position'' defined.", o1.getPath());
                 pos2 = o1.hashCode();
             }
             if (pos2 > pos1) {

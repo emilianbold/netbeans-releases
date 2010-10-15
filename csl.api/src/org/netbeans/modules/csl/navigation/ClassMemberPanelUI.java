@@ -115,7 +115,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             new SortByNameAction( filters ),
             new SortBySourceAction( filters ),
             null,
-            new FilterSubmenuAction(filters.getInstance())            
+            new FilterSubmenuAction(filters)            
         };
 
         // See http://www.netbeans.org/issues/show_bug.cgi?id=186407
@@ -134,6 +134,11 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                         if (!includeFilters) {
                             //issue #132883 workaround
                             filters.disableFiltering = true;
+                        }
+                        if (!configuration.isSortable()) {
+                            actions = new Action[] {
+                                new FilterSubmenuAction(filters)
+                            };
                         }
                     }
                 }

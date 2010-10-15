@@ -150,6 +150,9 @@ public class JavaRefactoringsFactory implements RefactoringPluginFactory {
         }
         for (FileObject f:object.lookupAll(FileObject.class)) {
             a=true;
+            if (!f.isValid()) {
+                return false;
+            }
             if (!RetoucheUtils.isJavaFile(f) && !isPackage(f)) {
                 return false;
             }

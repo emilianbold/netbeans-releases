@@ -63,6 +63,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.xml.XMLUtil;
 
 
@@ -72,7 +74,12 @@ import org.openide.xml.XMLUtil;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+                        projectTypes={
+                            @ProjectType(id="org-netbeans-modules-apisupport-project"),
+                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite")
+                        }
+)
 public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
@@ -81,18 +88,6 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
     private static final String NBMODULE_PROJECT_NAMESPACE_2 = "http://www.netbeans.org/ns/nb-module-project/2"; // NOI18N
     private static final String NBMODULE_PROJECT_NAMESPACE_3 = "http://www.netbeans.org/ns/nb-module-project/3"; // NOI18N
     private static final String NBMODULE_SUITE_PROJECT_NAMESPACE = "http://www.netbeans.org/ns/nb-module-suite-project/1"; // NOI18N
-    private static final String PROJECT_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                       "NbModuleProjectTypeProfiler_ProjectCategory"); // NOI18N
-    private static final String LISTENERS_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                         "NbModuleProjectTypeProfiler_ListenersCategory"); // NOI18N
-    private static final String PAINTERS_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                        "NbModuleProjectTypeProfiler_PaintersCategory"); // NOI18N
-    private static final String IO_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                  "NbModuleProjectTypeProfiler_IoCategory"); // NOI18N
-    private static final String FILES_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                     "NbModuleProjectTypeProfiler_FilesCategory"); // NOI18N
-    private static final String SOCKETS_CATEGORY = NbBundle.getMessage(NbModuleProjectTypeProfiler.class,
-                                                                       "NbModuleProjectTypeProfiler_SocketsCategory"); // NOI18N
     // -----
 
     private static final String TEST_TYPE_UNIT = "unit"; // NOI18N
@@ -118,19 +113,7 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
 
     // --- ProjectTypeProfiler implementation ------------------------------------------------------------------------------
     public boolean isProfilingSupported(final Project project) {
-        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        Element e = aux.getConfigurationFragment("data", NBMODULE_PROJECT_NAMESPACE_2, true); // NOI18N
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("data", NBMODULE_PROJECT_NAMESPACE_3, true); // NOI18N
-        }
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("data", NBMODULE_SUITE_PROJECT_NAMESPACE, true); // NOI18N
-        }
-
-        return (e != null);
+        return true;
     }
 
     public FileObject getProjectBuildScript(Project project) {

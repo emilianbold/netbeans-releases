@@ -51,7 +51,6 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.profiler.AbstractProjectTypeProfiler;
 import org.netbeans.modules.profiler.ui.NBHTMLLabel;
 import org.netbeans.modules.profiler.ui.ProfilerDialogs;
-import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -72,6 +71,8 @@ import javax.swing.*;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
 import org.netbeans.modules.profiler.utils.ProjectUtilities;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.HelpCtx;
 
 /**
@@ -79,7 +80,8 @@ import org.openide.util.HelpCtx;
  *
  * @author Ian Formanek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class, 
+                        projectTypes={@ProjectType(id="org-netbeans-modules-ant-freeform", position=1210)})
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
     private static final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {
@@ -193,8 +195,6 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     private static final String TARGET_BOX_ACCESS_DESCR = NbBundle.getMessage(FreeFormProjectTypeProfiler.class,
             "FreeFormProjectTypeProfiler_TargetBoxAccessDescr"); // NOI18N
     // -----
-    private static final String FREEFORM_PROJECT_NAMESPACE_40 = "http://www.netbeans.org/ns/freeform-project/1"; // NOI18N
-    private static final String FREEFORM_PROJECT_NAMESPACE_41 = "http://www.netbeans.org/ns/freeform-project/2"; // NOI18N
     private static final String PROFILE_TARGET_ATTRIBUTE = "profile-target"; // NOI18N
     private static final String PROFILE_SINGLE_TARGET_ATTRIBUTE = "profile-file-target"; // NOI18N
     private static final String PROFILE_VERSION_ATTRIBUTE = "version"; // NOI18N
@@ -236,15 +236,7 @@ public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfil
     }
 
     public boolean isProfilingSupported(final Project project) {
-        final AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
-
-        Element e = aux.getConfigurationFragment("general-data", FREEFORM_PROJECT_NAMESPACE_40, true); // NOI18N
-
-        if (e == null) {
-            e = aux.getConfigurationFragment("general-data", FREEFORM_PROJECT_NAMESPACE_41, true); // NOI18N
-        }
-
-        return (e != null);
+        return true;
     }
 
     public FileObject getProjectBuildScript(Project project) {
