@@ -44,7 +44,6 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
@@ -60,7 +59,8 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.introduce.CopyFinder;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
+import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
@@ -74,7 +74,14 @@ import org.openide.util.NbBundle;
 @Hint(category="rules15")
 public class JoinCatches {
 
-    @TriggerTreeKind(Kind.TRY)
+    @TriggerPatterns({
+        @TriggerPattern(
+                "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$"
+        ),
+        @TriggerPattern(
+                "try ($resources$) { $trystmts$; } catch ($var1) { $catchstmts1$; } catch $inter$ catch ($var2) { $catchstmts2$; } catch $more$ finally {$finstmts$;}"
+        )
+    })
     public static ErrorDescription hint(HintContext ctx) {
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
         
