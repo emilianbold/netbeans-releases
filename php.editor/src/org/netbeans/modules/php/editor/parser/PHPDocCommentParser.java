@@ -59,6 +59,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
 public class PHPDocCommentParser {
 
     private static Pattern pattern = Pattern.compile("[\r\n][ \\t]*[*]?[ \\t]*");
+    
+    /**
+     * Tags that define a type / types
+     */
     private static final List<PHPDocTag.Type> PHPDocTypeTags = new ArrayList<PHPDocTag.Type>();
     static {
         PHPDocTypeTags.add(PHPDocTag.Type.RETURN);
@@ -67,6 +71,9 @@ public class PHPDocCommentParser {
         PHPDocTypeTags.add(PHPDocTag.Type.SEE);
     }
 
+    /**
+     * Tags that define something of a type
+     */
     private static final List<PHPDocTag.Type> PHPDocVarTypeTags = new ArrayList<PHPDocTag.Type>();
     static {
         PHPDocVarTypeTags.add(PHPDocTag.Type.PARAM);
@@ -81,7 +88,7 @@ public class PHPDocCommentParser {
 
     /**
      * 
-     * @param startOffset thi is offset of the comment in the document. It's used 
+     * @param startOffset this is offset of the comment in the document. It's used 
      * for creating ASTNodes.
      * @param comment
      * @return
