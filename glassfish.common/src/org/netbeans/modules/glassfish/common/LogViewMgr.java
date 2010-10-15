@@ -1161,8 +1161,10 @@ public class LogViewMgr {
                         state = result.get();
                         if (state == OperationState.COMPLETED) {
                             String s = fld.getLines();
-                            os.write(s.getBytes());
-                            os.flush();
+                            if (null != s && !"null\n".equals(s)) {
+                                os.write(s.getBytes());
+                                os.flush();
+                            }
                         } else {
                             break;
                         }
