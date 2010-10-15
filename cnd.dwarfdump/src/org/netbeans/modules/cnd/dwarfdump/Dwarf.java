@@ -385,6 +385,7 @@ public class Dwarf {
                     if (!currentIterator.hasNext()) {
                         continue;
                     }
+                    break;
                 } else {
                     currentIterator = null;
                     return;
