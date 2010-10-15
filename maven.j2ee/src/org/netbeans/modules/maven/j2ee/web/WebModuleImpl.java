@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileUtil;
@@ -144,7 +145,7 @@ public class WebModuleImpl implements WebModuleImplementation2, J2eeModuleImplem
             // project lookup construction loop, the reentrant call to the lookup
             // doesn't include the AuxProperties instances yet..
             // too bad.. Not sure how may people use this feature/workaround anyway..
-            String version = prop.get(Constants.HINT_J2EE_VERSION, true);
+            String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
             if (version != null) {
                 return Profile.fromPropertiesString(version);
             }

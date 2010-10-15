@@ -420,6 +420,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.javeleon.netbeans</friend>
                 <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.apisupport.installer.maven</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>

@@ -124,6 +124,7 @@ public class ExeLoader extends UniFileLoader {
                     MIMENames.ELF_EXE_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_CORE_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_SHOBJ_MIME_TYPE.equals(mime) ||
+		    MIMENames.ELF_STOBJ_MIME_TYPE.equals(mime) ||
 		    MIMENames.ELF_OBJECT_MIME_TYPE.equals(mime)) {
 	    lastMime = mime;
 	    lastFo = new WeakReference<FileObject>(fo);
@@ -161,6 +162,8 @@ public class ExeLoader extends UniFileLoader {
 	    return new CoreElfObject(primaryFile, this);
 	} else if (mime.equals(MIMENames.ELF_SHOBJ_MIME_TYPE)) {
 	    return new DllObject(primaryFile, this);
+	} else if (mime.equals(MIMENames.ELF_STOBJ_MIME_TYPE)) {
+	    return new StaticLibraryObject(primaryFile, this);
 	} else {
 	    return new OrphanedElfObject(primaryFile, this);
 	}

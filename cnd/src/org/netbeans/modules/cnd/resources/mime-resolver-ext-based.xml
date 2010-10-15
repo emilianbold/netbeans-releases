@@ -64,6 +64,14 @@ made subject to such option by the copyright holder.
         <resolver mime="application/x-shobj+elf"/>
     </file>    
     <file>
+        <ext name="dylib"/>
+        <resolver mime="application/x-shobj+elf"/>
+    </file>
+    <file>
+        <ext name="a"/>
+        <resolver mime="application/x-stobj+elf"/>
+    </file>
+    <file>
         <ext name="core"/>
         <resolver mime="application/x-core+elf"/>
     </file>

@@ -86,10 +86,6 @@ public class MavenSharabilityQueryImpl implements SharabilityQueryImplementation
                 // #98662
                 return SharabilityQuery.NOT_SHARABLE;
             }
-            if (file.getName().equals("profiles.xml")) { //NOI18N
-                //profiles.xml are not meant to be put in version control.
-                return SharabilityQuery.NOT_SHARABLE;
-            }
             if (file.getName().startsWith("nbactions")) { //NOI18N
                 //non shared custom configurations shall not be added to version control.
                 M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
