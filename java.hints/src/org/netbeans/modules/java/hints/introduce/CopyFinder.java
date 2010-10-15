@@ -717,6 +717,10 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             return true;
         }
 
+        if (patternOffset >= pattern.size()) {
+            return false;
+        }
+        
         if (Utilities.isMultistatementWildcardTree(pattern.get(patternOffset))) {
             if (patternOffset + 1 == pattern.size()) {
                 List<TreePath> tps = new LinkedList<TreePath>();
