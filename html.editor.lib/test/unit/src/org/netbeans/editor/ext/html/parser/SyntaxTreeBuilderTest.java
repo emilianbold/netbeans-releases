@@ -314,7 +314,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -393,7 +393,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
 
     public void testXhtmlNamespaceAttrs() throws Exception {
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
                 "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
                 "<title></title></head><body></body></html>",
                 "-//W3C//DTD XHTML 1.0 Strict//EN");

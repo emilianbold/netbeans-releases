@@ -53,10 +53,9 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.SetupProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -66,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerSetup {
 
-    private final Map<String, String> binarySetupMap;
+    private final Map<String, File> binarySetupMap;
     private final Map<ExecutionEnvironment, List<String>> updateMap;
     private final ExecutionEnvironment executionEnvironment;
     private boolean cancelled;
@@ -84,11 +83,11 @@ public class RemoteServerSetup {
             libDir += "/"; // NOI18N
         }
         // Binary setup map
-        binarySetupMap = new HashMap<String, String>();
+        binarySetupMap = new HashMap<String, File>();
         for (SetupProvider provider : providers) {
-            Map<String, String> map = provider.getBinaryFiles(executionEnvironment);
+            Map<String, File> map = provider.getBinaryFiles(executionEnvironment);
             if (map != null) {
-                for (Map.Entry<String, String> entry : map.entrySet()) {
+                for (Map.Entry<String, File> entry : map.entrySet()) {
                     binarySetupMap.put(libDir + entry.getKey(), entry.getValue());
                 }
             }
@@ -120,11 +119,8 @@ public class RemoteServerSetup {
         for (String path : list) {
             RemoteUtil.LOGGER.log(Level.FINE, "RSS.setup: Updating \"{0}\" on {1}", new Object[]{path, executionEnvironment}); //NO18N
             if (binarySetupMap.containsKey(path)) {
-                String localFileName = binarySetupMap.get(path);
-                File file = CndFileUtils.createLocalFile(localFileName);
-                if (!file.isAbsolute()) {
-                    file = InstalledFileLocator.getDefault().locate(localFileName, "org.netbeans.modules.cnd.remote", false); //NOI18N
-                }
+                File file = binarySetupMap.get(path);
+                CndUtils.assertAbsoluteFileInConsole(file);
                 //String remotePath = REMOTE_LIB_DIR + file.getName();
                 String remotePath = path;
                 try {

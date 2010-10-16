@@ -197,7 +197,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         if (res != null && res.size() > 0) {
                             return res;
                         }
-                        res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
+                        if (packageSearch != null) {
+                            res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
+                        }
                         if (res != null && res.size() > 0) {
                             return res;
                         }

@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.spi.HtmlSourceVersionController;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -63,14 +64,13 @@ import org.openide.util.lookup.ServiceProvider;
 public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVersionController {
 
     public static final String HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME = "default-public-id"; //NOI18N
-    private static final String HTML_ARTIFICIAL_PUBLIC_ID = "html5";
 
     @Override
-    public HtmlVersion getSourceCodeVersion(HtmlSource source, HtmlVersion detectedVersion) {
+    public HtmlVersion getSourceCodeVersion(SyntaxAnalyzerResult analyzerResult, HtmlVersion detectedVersion) {
         if (detectedVersion != null) {
             return null;
         }
-        FileObject file = source.getSourceFileObject();
+        FileObject file = analyzerResult.getSource().getSourceFileObject();
         if (file == null) {
             return null;
         }
@@ -79,25 +79,39 @@ public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVers
             return null;
         }
         
-        return getDefaultHtmlVersion(project);
+        return findHtmlVersion(project, analyzerResult);
     }
 
     public static HtmlVersion getDefaultHtmlVersion(Project project) {
+        return findHtmlVersion(project, null);
+    }
+
+    private static HtmlVersion findHtmlVersion(Project project, SyntaxAnalyzerResult analyzerResult) {
         Preferences prefs = ProjectUtils.getPreferences(project, HtmlSourceVersionController.class, true);
-        String ns = prefs.get(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, null);
-        if (ns == null) {
+        String publicId = prefs.get(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, null);
+        if (publicId == null) {
             return null;
         }
+        
+        String namespace = analyzerResult != null ? analyzerResult.getHtmlTagDefaultNamespace() : null;
 
-        if(ns.equals(HTML_ARTIFICIAL_PUBLIC_ID)) {
-            ns = null; //html5
+        //no-public id versions
+        if(publicId.equals(HtmlVersion.HTML5.name())) {
+            //TODO there should be a check if the file typically represents xhtml content,
+            //if so return XHTML5 instead. Test by file mimetype and some predefined types.
+            if(HtmlVersion.XHTML5.getDefaultNamespace().equals(namespace)) {
+                //if default is html5 but the fragment seems to be xhtml, return xhtml5
+                return HtmlVersion.XHTML5;
+            }
+            return HtmlVersion.HTML5;
+        } else if(publicId.equals(HtmlVersion.XHTML5.name())) {
+            return HtmlVersion.XHTML5;
         }
 
         try {
-            return HtmlVersion.findByPublicId(ns);
+            return HtmlVersion.find(publicId, analyzerResult != null ? analyzerResult.getHtmlTagDefaultNamespace() : null);
         } catch (IllegalArgumentException e) {
-//            Logger.getAnonymousLogger().log(Level.WARNING,
-//                    String.format("Invalid value of the auxiliary.org-netbeans-modules-html-editor-lib.htmlversion property: %s ", version)); //NOI18N
+            //no-op
         }
         return null;
     }
@@ -106,7 +120,7 @@ public class ProjectDefaultHtmlSourceVersionController implements HtmlSourceVers
         Preferences prefs = ProjectUtils.getPreferences(project, HtmlSourceVersionController.class, true);
         String publicId = version.getPublicID();
         if(publicId == null) {
-            publicId = HTML_ARTIFICIAL_PUBLIC_ID; //html5 has no public id
+            publicId = version.name(); //html5 has no public id
         }
         prefs.put(HTML_VERSION_PUBLIC_ID_AUX_PROPERTY_NAME, publicId);
     }

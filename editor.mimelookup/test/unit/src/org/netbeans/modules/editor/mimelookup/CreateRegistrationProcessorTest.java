@@ -40,36 +40,51 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.editor.ext.html.parser.api;
+package org.netbeans.modules.editor.mimelookup;
 
+import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author marekfukala
+ * @author lahvac
  */
-public class HtmlVersionTest extends NbTestCase {
+public class CreateRegistrationProcessorTest extends NbTestCase {
 
-    public HtmlVersionTest(String name) {
+    public CreateRegistrationProcessorTest(String name) {
         super(name);
     }
 
-    public static void setDefaultHtmlVersion(HtmlVersion version) {
-        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = version;
+    public void testRegistrationsCorrect() throws Exception {
+        Collection<? extends Runnable> mime1 = Lookups.forPath("Editors/test/mime1").lookupAll(Runnable.class);
+
+        assertEquals(1, mime1.size());
+        assertEquals(Service1.class, mime1.iterator().next().getClass());
+
+        Collection<? extends Runnable> mime2 = Lookups.forPath("Editors/test/mime2").lookupAll(Runnable.class);
+
+        assertEquals(1, mime2.size());
+        assertEquals(Service2.class, mime2.iterator().next().getClass());
+
+        Collection<? extends Runnable> mime3 = Lookups.forPath("Editors/test/mime3").lookupAll(Runnable.class);
+
+        assertEquals(1, mime3.size());
+        assertEquals(Service2.class, mime3.iterator().next().getClass());
     }
 
-    public void testDisplayName() {
-        HtmlVersion v = HtmlVersion.HTML41_TRANSATIONAL;
-
-        assertEquals("HTML 4.01 Transitional", v.getDisplayName());
-        assertEquals("-//W3C//DTD HTML 4.01 Transitional//EN", v.getPublicID());
-        assertNull(v.getDefaultNamespace());
-        assertFalse(v.isXhtml());
-        assertEquals("http://www.w3.org/TR/html4/loose.dtd", v.getSystemId());
-        assertEquals("<!doctype html public \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">", v.getDoctypeDeclaration());
+    @MimeRegistration(mimeType="test/mime1", service=Runnable.class)
+    public static final class Service1 implements Runnable {
+        public void run() {}
     }
 
-    public void testFinds() {
-        assertSame(HtmlVersion.HTML41_STRICT, HtmlVersion.find("-//W3C//DTD HTML 4.01//EN", null));
+    @MimeRegistrations({
+        @MimeRegistration(mimeType="test/mime2", service=Runnable.class),
+        @MimeRegistration(mimeType="test/mime3", service=Runnable.class)
+    })
+    public static final class Service2 implements Runnable {
+        public void run() {}
     }
 }

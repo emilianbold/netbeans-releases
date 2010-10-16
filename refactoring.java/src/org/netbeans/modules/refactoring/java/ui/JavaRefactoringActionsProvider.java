@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
@@ -467,7 +468,12 @@ public class JavaRefactoringActionsProvider extends JavaActionsImplementationPro
                         int endOffset,
                         CompilationInfo info) {
                     Element selected = selectedElement.resolveElement(info);
-                    return wrap(ChangeParametersUI.create(selectedElement, info));
+                    if (selected.getKind() == ElementKind.PACKAGE) {
+                        //TODO: can happen (see test190101 for an example) - is this correct or
+                        //should the TreePathHandle handle elements of kind PACKAGE?
+                        return null;
+                    }
+                    return wrap(ChangeParametersUI.create(TreePathHandle.create(selected, info), info));
                 }
             };
         } else {
