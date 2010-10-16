@@ -88,8 +88,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         instance = this;
     }
     
-    private VersioningSystem getOwner(File file) {
-        return file == null ? null : VersioningManager.getInstance().getOwner(file);
+    private VersioningSystem getOwner(File file, Boolean isFile) {
+        return file == null ? null : VersioningManager.getInstance().getOwner(file, isFile);
     }
 
     @Override
@@ -129,14 +129,14 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             if (file != null) {
 
                 // check if there is at least ine file managed by local hisotry
-                VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file);
+                VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file, !fo.isFolder());
                 if(localHistoryAction == null && localHistory != null && localHistory.getVCSAnnotator() != null) {
                     localHistoryAction = SystemAction.get(LocalHistoryActions.class);
                     localHistoryAction.setVersioningSystem(localHistory);
                     actions.add(localHistoryAction);
                 }
 
-                VersioningSystem owner = getOwner(file);
+                VersioningSystem owner = getOwner(file, !fo.isFolder());
                 if(owner != null) {
                     List<File> fileList = owners.get(owner);
                     if(fileList == null) {
@@ -639,7 +639,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
                     return initialValue;
                 }
                 FileObject fo = (FileObject) files.iterator().next();
-                VersioningSystem vs = getOwner(FileUtil.toFile(fo));
+                VersioningSystem vs = getOwner(FileUtil.toFile(fo), !fo.isFolder());
 
                 if (vs == null) {
                     return null;
