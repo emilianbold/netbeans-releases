@@ -70,13 +70,7 @@ import org.netbeans.modules.spellchecker.spi.language.support.MultiTokenList;
     @MimeRegistration(mimeType=MIMENames.CMAKE_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.QTPROJECT_MIME_TYPE, service=TokenListProvider.class, position=1000),
     @MimeRegistration(mimeType=MIMENames.SHELL_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.BAT_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.VISU_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.LEX_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.YACC_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.QT_UI_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.QT_RESOURCE_MIME_TYPE, service=TokenListProvider.class, position=1000),
-    @MimeRegistration(mimeType=MIMENames.QT_TRANSLATION_MIME_TYPE, service=TokenListProvider.class, position=1000)
+    @MimeRegistration(mimeType=MIMENames.BAT_MIME_TYPE, service=TokenListProvider.class, position=1000)
 })
 public class CndTokenListProvider implements TokenListProvider {
     static final Logger LOG = Logger.getLogger(CndTokenListProvider.class.getName());
