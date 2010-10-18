@@ -75,8 +75,8 @@ public class CndTokenList implements TokenList {
         currentOffsetInComment = (-1);
         this.startOffset = offset;
         this.nextBlockStart = offset;
-        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/CndComments");
-        Boolean b = (Boolean) fileObject.getAttribute("Hidden");
+        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/CndComments"); // NOI18N
+        Boolean b = (Boolean) fileObject.getAttribute("Hidden");// NOI18N
         hidden = Boolean.TRUE.equals(b);
     }
 
@@ -117,7 +117,10 @@ public class CndTokenList implements TokenList {
         while (ts.moveNext()) {
             String category = ts.token().id().primaryCategory();
             if (category != null) {
-                if (CppTokenId.COMMENT_CATEGORY.equals(category) || FortranTokenId.COMMENT_CATEGORY.equals(category)) {
+                if (CppTokenId.COMMENT_CATEGORY.equals(category) || 
+                    FortranTokenId.COMMENT_CATEGORY.equals(category) || 
+                    CppTokenId.STRING_CATEGORY.equals(category) ||
+                    FortranTokenId.STRING_CATEGORY.equals(category)) {
                     return new int[]{ts.offset(), ts.offset() + ts.token().length()};
                 }
             }
@@ -128,7 +131,7 @@ public class CndTokenList implements TokenList {
     }
 
     private void handleDoxygenTag(CharSequence tag) {
-        if ("@see".contentEquals(tag) || "@throws".contentEquals(tag)) {
+        if ("@see".contentEquals(tag) || "@throws".contentEquals(tag)) {// NOI18N
             //ignore next "word", possibly dotted and hashed
             Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, true);
 
@@ -136,7 +139,7 @@ public class CndTokenList implements TokenList {
             return;
         }
 
-        if ("@param".contentEquals(tag)) {
+        if ("@param".contentEquals(tag)) {// NOI18N
             //ignore next word
             Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
 
@@ -144,14 +147,14 @@ public class CndTokenList implements TokenList {
             return;
         }
 
-        if ("@author".contentEquals(tag)) {
+        if ("@author".contentEquals(tag)) {// NOI18N
             //ignore everything till the end of the line:
             Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
 
             while (data != null) {
                 currentOffsetInComment = data.b + data.a.length();
 
-                if ('\n' == data.a.charAt(0)) {
+                if ('\n' == data.a.charAt(0)) {// NOI18N
                     //continue
                     return;
                 }
@@ -195,22 +198,22 @@ public class CndTokenList implements TokenList {
                         }
 
                         switch (data.a.charAt(0)) {
-                            case '@':
+                            case '@':// NOI18N
                                 handleDoxygenTag(data.a);
                                 break;
-                            case '<':
-                                if (startsWith(data.a, "<a ")) {
-                                    pairTag = "</a>";
+                            case '<':// NOI18N
+                                if (startsWith(data.a, "<a ")) {// NOI18N
+                                    pairTag = "</a>";// NOI18N
                                 }
-                                if (startsWith(data.a, "<code>")) {
-                                    pairTag = "</code>";
+                                if (startsWith(data.a, "<code>")) {// NOI18N
+                                    pairTag = "</code>";// NOI18N
                                 }
-                                if (startsWith(data.a, "<pre>")) {
-                                    pairTag = "</pre>";
+                                if (startsWith(data.a, "<pre>")) {// NOI18N
+                                    pairTag = "</pre>";// NOI18N
                                 }
                                 break;
-                            case '{':
-                                pairTag = "}";
+                            case '{':// NOI18N
+                                pairTag = "}";// NOI18N
                                 break;
                         }
                     } else {
@@ -278,20 +281,20 @@ public class CndTokenList implements TokenList {
                         offsetStart = offset;
                         break;
                     }
-                    if (current == '@' || current == '#') {
+                    if (current == '@' || current == '#') {// NOI18N
                         state = 2;
                         offsetStart = offset;
                         break;
                     }
-                    if (current == '<') {
+                    if (current == '<') {// NOI18N
                         state = 3;
                         offsetStart = offset;
                         break;
                     }
-                    if (current == '\n' || current == '}') {
+                    if (current == '\n' || current == '}') {// NOI18N
                         return new Pair<CharSequence, Integer>(start.subSequence(offset, offset + 1), offset);
                     }
-                    if (current == '{') {
+                    if (current == '{') {// NOI18N
                         state = 4;
                         offsetStart = offset;
                         break;
@@ -299,7 +302,7 @@ public class CndTokenList implements TokenList {
                     break;
 
                 case 1:
-                    if (!isLetter(current) && ((current != '.' && current != '#') || !treatSpecialCharactersAsLetterInsideWords)) {
+                    if (!isLetter(current) && ((current != '.' && current != '#') || !treatSpecialCharactersAsLetterInsideWords)) {// NOI18N
                         return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset), offsetStart);
                     }
 
@@ -313,14 +316,14 @@ public class CndTokenList implements TokenList {
                     break;
 
                 case 3:
-                    if (current == '>') {
+                    if (current == '>') {// NOI18N
                         return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset + 1), offsetStart);
                     }
 
                     break;
 
                 case 4:
-                    if (current == '@') {
+                    if (current == '@') {// NOI18N
                         state = 2;
                         break;
                     }
