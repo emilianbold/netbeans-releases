@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**

@@ -42,9 +42,10 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
+import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
