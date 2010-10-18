@@ -931,6 +931,7 @@ public class TaskProcessor {
         
         Request getTaskToCancel (final int priority) {
             Request request = null;
+            Parser parser = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (CRR_LOCK) {
                     if (this.reference != null && priority<this.reference.task.getPriority()) {
@@ -939,8 +940,12 @@ public class TaskProcessor {
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
-                        this.cancelTime = System.currentTimeMillis();                        
+                        this.cancelTime = System.currentTimeMillis();
+                        parser = activeParser;
                     }
+                }
+                if (parser != null) {
+                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -950,7 +955,8 @@ public class TaskProcessor {
         Request getTaskToCancel (final Collection<? extends SchedulerTask> tasks) {
             assert tasks != null;
             Request request = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {
+            Parser parser = null;
+            if (!factory.isDispatchThread(Thread.currentThread())) {                
                 synchronized (CRR_LOCK) {
                     if (this.reference != null && tasks.contains(this.reference.task)) {
                         assert this.canceledReference == null;
@@ -958,7 +964,11 @@ public class TaskProcessor {
                         this.canceledReference = request;
                         this.reference = null;
                         this.canceled = true;
+                        parser = activeParser;
                     }
+                }
+                if (parser != null) {
+                    parser.cancel(Parser.CancelReason.PARSER_RESULT_TASK, null);
                 }
             }
             return request;
@@ -966,6 +976,7 @@ public class TaskProcessor {
         
         Request getTaskToCancel () {
             Request request = null;
+            Parser parser = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {                
                 synchronized (CRR_LOCK) {
                      request = this.reference;
@@ -975,7 +986,11 @@ public class TaskProcessor {
                         this.reference = null;
                         this.canceled = true;
                         this.cancelTime = System.currentTimeMillis();
+                        parser = activeParser;
                     }
+                }
+                if (parser != null) {
+                    parser.cancel(Parser.CancelReason.USER_TASK, null);
                 }
             }
             return request;
@@ -983,8 +998,8 @@ public class TaskProcessor {
         
         Request getTaskToCancel (final boolean mayCancelParser) {
             Request request = null;
-            if (!factory.isDispatchThread(Thread.currentThread())) {
-                Parser parser;
+            if (!factory.isDispatchThread(Thread.currentThread())) {    
+                Parser parser = null;
                 synchronized (CRR_LOCK) {
                     if (this.reference != null) {
                         assert this.canceledReference == null;
@@ -1003,8 +1018,20 @@ public class TaskProcessor {
                     }
                     parser = activeParser;
                 }
-                if (parser != null && mayCancelParser) {
-                    parser.cancel();
+                if (parser != null) {
+                    Source src = null;
+                    SourceCache sc;
+                    if (request != null && (sc = request.cache)!= null) {
+                        src = sc.getSnapshot().getSource();
+                    }
+                    if (src != null) {
+                        if (mayCancelParser) {
+                            parser.cancel();
+                        }
+                        parser.cancel(
+                            Parser.CancelReason.SOURCE_MODIFICATION_EVENT,
+                            SourceAccessor.getINSTANCE().getSourceModificationEvent(src));
+                    }
                 }
             }
             return request;
@@ -1014,6 +1041,7 @@ public class TaskProcessor {
             assert request != null;
             assert request.length == 1;
             boolean result = false;
+            Parser parser = null;
             if (!factory.isDispatchThread(Thread.currentThread())) {
                 synchronized (CRR_LOCK) {
                      request[0] = this.reference;
@@ -1026,7 +1054,11 @@ public class TaskProcessor {
                         }
                         this.canceled = result;
                         this.cancelTime = System.currentTimeMillis();
+                        parser = activeParser;
                     }
+                }
+                if (parser != null) {
+                    parser.cancel(Parser.CancelReason.USER_TASK, null);
                 }
             }
             return result;
