@@ -132,7 +132,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             if (lastChild instanceof CsmAST) {
                 endOffset = ((CsmAST) lastChild).getEndOffset();
             }
-            if (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            if (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                    node.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
                 AST next = node.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.ASSIGNEQUAL) {
                     int curlyLevel = 0;
@@ -226,7 +227,8 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             int start = 0;
             int end = 0;
             AST tok = AstUtil.findChildOfType(node, CPPTokenTypes.ASSIGNEQUAL);
-            if (tok == null && node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            if (tok == null && (node.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                    node.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION)) {
                 AST next = node.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.ASSIGNEQUAL) {
                     tok = next;
