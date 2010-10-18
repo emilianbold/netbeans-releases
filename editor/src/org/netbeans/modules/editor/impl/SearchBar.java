@@ -79,6 +79,7 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -332,13 +333,23 @@ public final class SearchBar extends JPanel {
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
         
-        // ENTER to find next
-        incrementalSearchTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                findNext();
-            }
-        });
+        // flatten the action map for the text field to allow removal
+        ActionMap origActionMap = incrementalSearchTextField.getActionMap();
+        ActionMap newActionMap = new ActionMap();
+        for (Object key : origActionMap.allKeys()) {
+            newActionMap.put(key, origActionMap.get(key));
+        }
+        incrementalSearchTextField.setActionMap(newActionMap);
 
+        // ENTER to find next
+        incrementalSearchTextField.getInputMap().put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+            "incremental-find-next"); // NOI18N
+        incrementalSearchTextField.getActionMap().put("incremental-find-next", // NOI18N
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    findNext();
+                }});
         // Shift+ENTER to find previous
         incrementalSearchTextField.getInputMap()
                                   .put(KeyStroke.getKeyStroke(
@@ -349,6 +360,7 @@ public final class SearchBar extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     findPrevious();
                 }});
+        incrementalSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
 
         // configure find next button
         findNextButton = new JButton(
