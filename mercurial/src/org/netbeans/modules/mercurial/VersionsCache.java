@@ -100,7 +100,7 @@ public class VersionsCache {
                         String relativePath = HgUtils.getRelativePath(base);
                         File cachedFile = cachedVersions.getContent(relativePath, base.getName(), changesetId);
                         if (cachedFile.length() == 0) { // not yet cached
-                            HgCommand.doCat(repository, base, tempFile, changesetId, null);
+                            HgCommand.doCat(repository, base, tempFile, revisionNumber, null);
                             if (tempFile.length() != 0) {
                                 cachedVersions.setContent(relativePath, changesetId, tempFile);
                             }
