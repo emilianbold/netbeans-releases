@@ -351,7 +351,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         break;
                     }
                 // nobreak;
-                case CONSTANT:
                 case METHOD:
                 case CONSTRUCTOR:
                 case ARRAY:
