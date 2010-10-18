@@ -767,6 +767,7 @@ public final class Source {
 
         @Override
         public String toString () {
+            //XXX: Never change the toString value, some tests depends on it!
             return "SourceModificationEvent " + startOffset + ":" + endOffset;
         }
     }
