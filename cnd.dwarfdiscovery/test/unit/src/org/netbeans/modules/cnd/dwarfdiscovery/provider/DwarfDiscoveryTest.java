@@ -83,7 +83,6 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     private void unzipTestData() throws Exception  {
         File dataDir = getDataDir();
         String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/data.zip";
-        new File(zip).exists();
         ZipInputStream in = new ZipInputStream(new FileInputStream(zip));
         while (true) {
             ZipEntry entry = in.getNextEntry();
@@ -93,7 +92,12 @@ public class DwarfDiscoveryTest  extends NbTestCase {
             String outFilename = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/"+entry.getName();
             if (entry.isDirectory()) {
                 File f = new File(outFilename);
-                f.mkdir();
+                if (!f.exists()) {
+                    f.mkdir();
+                }
+                continue;
+            }
+            if (new File(outFilename).exists()) {
                 continue;
             }
             OutputStream out = new FileOutputStream(outFilename);
@@ -272,7 +276,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         AnalyzeExecutable provider = new AnalyzeExecutable();
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
-        root = dataDir.getAbsolutePath()+root;
+        root = dataDir.getAbsolutePath().replace('\\', '/')+root;
         provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
         Applicable canAnalyze = provider.canAnalyze(new ProjectProxy() {
 
