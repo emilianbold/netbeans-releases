@@ -203,10 +203,12 @@ abstract class OperationValidator {
         }
     }
     private static class InstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() == null && containsElement (uElement, unit);
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
             List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, false));
@@ -229,6 +231,7 @@ abstract class OperationValidator {
     
     private static class UninstallValidator extends OperationValidator {
         
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -258,6 +261,7 @@ abstract class OperationValidator {
             return res;
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl  (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -298,10 +302,12 @@ abstract class OperationValidator {
     }
     
     private static class UpdateValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled() != null && containsElement (uElement, unit);
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             Set<Dependency> brokenDeps = new HashSet<Dependency> ();
             List<UpdateElement> res = new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos, brokenDeps, true));
@@ -319,6 +325,7 @@ abstract class OperationValidator {
     }
     
     private static class EnableValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -370,6 +377,7 @@ abstract class OperationValidator {
             return toEnable;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -396,6 +404,7 @@ abstract class OperationValidator {
     }
     
     private static class DisableValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl(UpdateUnit unit, UpdateElement uElement) {
             return unit.getInstalled () != null && isValidOperationImpl (Trampoline.API.impl (uElement));
         }
@@ -424,6 +433,7 @@ abstract class OperationValidator {
             return res;
         }
         
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             ModuleManager mm = null;
             final Set<Module> modules = new LinkedHashSet<Module>();
@@ -470,6 +480,7 @@ abstract class OperationValidator {
     }
     
     private static class CustomInstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
             boolean res = false;
             UpdateElementImpl impl = Trampoline.API.impl (uElement);
@@ -483,6 +494,7 @@ abstract class OperationValidator {
             return res;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
@@ -490,6 +502,7 @@ abstract class OperationValidator {
     }
 
     private static class CustomUninstallValidator extends OperationValidator {
+        @Override
         boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
             boolean res = false;
             UpdateElementImpl impl = Trampoline.API.impl (uElement);
@@ -501,6 +514,7 @@ abstract class OperationValidator {
             return res;
         }
 
+        @Override
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomUninstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
