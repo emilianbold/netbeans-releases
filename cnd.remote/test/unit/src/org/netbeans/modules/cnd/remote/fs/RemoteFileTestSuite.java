@@ -57,6 +57,8 @@ public class RemoteFileTestSuite extends CndBaseTestSuite {
        this("Remote File System test Suite", // NOI18N
            RemoteFileSupportTestCase.class,
            RemoteFileSystemTestCase.class,
+           RemoteURLTestCase.class,
+           CndFileUtilTestCase.class,
            RemotePathTestCase.class
        );
    }
