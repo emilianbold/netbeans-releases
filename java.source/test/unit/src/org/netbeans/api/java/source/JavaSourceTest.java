@@ -216,7 +216,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));
         suite.addTest(new JavaSourceTest("testNested2"));
         suite.addTest(new JavaSourceTest("testIndexCancel"));
-//        suite.addTest(new JavaSourceTest("testIndexCancel2"));
+        suite.addTest(new JavaSourceTest("testIndexCancel2"));
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
         suite.addTest(new JavaSourceTest("testIncrementalReparse"));
         suite.addTest(new JavaSourceTest("testCreateTaggedController"));
