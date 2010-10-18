@@ -100,20 +100,18 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
             list = new ArrayList<CsmStatement>();
             // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
             CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
-            if (!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode()) {
-                synchronized (this) {
-                    if (statements != null) {
-                        List<CsmStatement> refList = statements.get();
-                        if (refList != null) {
-                            return refList;
-                        }
+            synchronized (this) {
+                if (statements != null) {
+                    List<CsmStatement> refList = statements.get();
+                    if (refList != null) {
+                        return refList;
                     }
-                    if (renderStatements(list)) {
-                        statements = new SoftReference<List<CsmStatement>>(list);
-                        return list;
-                    } else {
-                        return Collections.emptyList();
-                    }
+                }
+                if (renderStatements(list)) {
+                    statements = new SoftReference<List<CsmStatement>>(list);
+                    return list;
+                } else {
+                    return Collections.emptyList();
                 }
             }
         }
