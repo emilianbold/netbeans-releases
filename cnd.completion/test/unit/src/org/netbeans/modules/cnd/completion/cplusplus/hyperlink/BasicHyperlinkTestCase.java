@@ -671,6 +671,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ155577.cc", 8, 12, "IZ155577.h", 2, 1);
     }
 
+    public void testBug190127() throws Exception {
+        // Bug 190127 - Extern declarations without return type are not supported
+        performTest("bug190127.cpp", 14, 40, "bug190127.cpp", 9, 13);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
