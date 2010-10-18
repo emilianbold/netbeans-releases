@@ -104,7 +104,7 @@ public class CndTokenList implements TokenList {
     private int[] findNextComment() throws BadLocationException {
         TokenHierarchy<Document> h = TokenHierarchy.get(doc);
 //        TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageCpp());
-        TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, true, true);
+        TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, nextBlockStart, true, false);
         if (ts == null) {
             ts = CndLexerUtilities.getFortranTokenSequence(doc, nextBlockStart);
             if (ts == null) {

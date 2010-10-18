@@ -51,14 +51,15 @@ import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
+import org.netbeans.modules.cnd.test.CndBaseTestCase;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 
 /**
  * based on JavaTokenListTest
  * @author Vladimir Voskresensky
  */
-public class CndTokenListTest extends NbTestCase {
+public class CndTokenListTest extends CndBaseTestCase {
     
     public CndTokenListTest(String testName) {
         super(testName);
@@ -66,12 +67,14 @@ public class CndTokenListTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        // Set-up testing environment
+        LexerTestUtilities.setTesting(true);        
     }
 
     public void testSimpleWordBroker() throws Exception {
         tokenListTest(
             "/**tes test*/ testt testtt /*testttt*//**testtttt*//**testttttt*/",
-            "tes", "test", "testtttt", "testttttt"
+            "tes", "test", "testttt", "testtttt","testttttt"
         );
     }
 
@@ -86,7 +89,7 @@ public class CndTokenListTest extends NbTestCase {
         tokenListTestWithWriting(
             "/**tes test*/ testt testtt /*testttt*//**testtttt*//**testttttt*/",
             14, "bflmpsvz", 13,
-            "testtttt", "testttttt"
+            "testttt", "testtttt", "testttttt"
         );
     }
 
