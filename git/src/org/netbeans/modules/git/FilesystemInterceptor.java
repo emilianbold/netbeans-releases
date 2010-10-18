@@ -271,6 +271,16 @@ class FilesystemInterceptor extends VCSInterceptor {
         }
     }
 
+    @Override
+    public void afterChange (final File file) {
+        if (file.isDirectory()) return;
+        LOG.log(Level.FINE, "afterChange {0}", new Object[] { file }); //NOI18N
+        // There is no point in refreshing the cache for ignored files.
+        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+            reScheduleRefresh(800, Collections.singleton(file));
+        }
+    }
+
     /**
      * Checks if administrative folder for a repository with the file is registered.
      * @param file

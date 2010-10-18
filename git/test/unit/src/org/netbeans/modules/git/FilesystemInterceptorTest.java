@@ -43,6 +43,7 @@ package org.netbeans.modules.git;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collections;
@@ -282,6 +283,27 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
         versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
         assertTrue(versioned);
+    }
+
+    public void testModifyVersionedFile () throws Exception {
+        // init
+        File file = new File(repositoryLocation, "file");
+        h.setFilesToRefresh(Collections.singleton(file));
+        file.createNewFile();
+        add();
+        commit();
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(file).getStatus());
+        assertTrue(h.waitForFilesToRefresh());
+
+        h.setFilesToRefresh(Collections.singleton(file));
+        PrintWriter pw = new PrintWriter(fo.getOutputStream());
+        pw.println("hello new file");
+        pw.close();
+        assertTrue(h.waitForFilesToRefresh());
+
+        // test
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE), getCache().getStatus(file).getStatus());
     }
 
     public void testDeleteUnversionedFile () throws Exception {
