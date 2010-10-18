@@ -136,30 +136,6 @@ public class CompilationUnit {
         return (cl == null) ? null : (String)cl;
     }
     
-    public String getSourceFileFullName() {
-        String result = null;
-        
-        try {
-            String dir = getCompilationDir();
-            String name = getSourceFileName();
-            if (name != null) {
-                if (dir != null) {
-                    if (name.startsWith("/")) { // NOI18N
-                        result = new File(name).getCanonicalPath();
-                    } else {
-                        result = new File(dir + File.separator + name).getCanonicalPath();
-                    }
-                } else {
-                    result = new File(name).getCanonicalPath();
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
-        return result;
-    }
-
     public String getSourceFileAbsolutePath() throws IOException {
         String result = null;
         
@@ -660,7 +636,7 @@ public class CompilationUnit {
             return;
         }
         
-        out.println("*** " + getSourceFileFullName() + " ***"); // NOI18N
+        out.println("*** " + getSourceFileAbsolutePath() + " ***"); // NOI18N
         out.println("  Compilation Unit @ offset " + Long.toHexString(unit_offset) + ":"); // NOI18N
         out.println("    Length: " + unit_length); // NOI18N
         out.println("    Version: " + version); // NOI18N
