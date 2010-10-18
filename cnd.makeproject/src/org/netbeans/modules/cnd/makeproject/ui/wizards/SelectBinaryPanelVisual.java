@@ -267,7 +267,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     private Map<String,String> checkDll(List<String> dlls, String root){
         Map<String,String> dllPaths = new TreeMap<String, String>();
-        if (validBinary()) {
+        if (validBinary() && dlls != null) {
             String ldLibPath = getLdLibraryPath();
             boolean search = false;
             for(String dll : dlls) {

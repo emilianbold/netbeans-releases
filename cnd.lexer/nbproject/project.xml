@@ -80,6 +80,7 @@
                 <friend>org.netbeans.modules.cnd.modelui</friend>
                 <friend>org.netbeans.modules.cnd.modelutil</friend>
                 <friend>org.netbeans.modules.cnd.refactoring</friend>
+                <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
                 <package>org.netbeans.cnd.api.lexer</package>
                 <package>org.netbeans.cnd.spi.lexer</package>
             </friend-packages>

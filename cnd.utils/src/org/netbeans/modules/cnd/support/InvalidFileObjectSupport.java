@@ -250,7 +250,9 @@ public class InvalidFileObjectSupport {
             return false;
         }
 
+        @SuppressWarnings("deprecation")
         @Override
+        @Deprecated
         public boolean isReadOnly() {
             return true;
         }
@@ -289,7 +291,9 @@ public class InvalidFileObjectSupport {
             throw new FileNotFoundException(fileNotFoundExceptionMessage());
         }
 
+        @SuppressWarnings("deprecation")
         @Override
+        @Deprecated
         public void setImportant(boolean b) {
         }
     }
