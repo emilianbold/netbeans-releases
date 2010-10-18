@@ -142,18 +142,29 @@ public class CompilationUnit {
         String dir = getCompilationDir();
         String name = getSourceFileName();
         if (dir != null) {
-            if (name.startsWith("/")) { // NOI18N
-                result = new File(name).getAbsolutePath();
+            if (isAbsolute(name)) {
+                result = name;
             } else {
-                result = new File(dir + File.separator + name).getAbsolutePath();
+                if (dir.endsWith("/") || dir.endsWith("\\")) {
+                    result = dir+name;
+                } else {
+                    result = dir+ File.separator + name;
+                }
             }
         } else {
-            result = new File(name).getAbsolutePath();
+            result = name;
         }
         
         return result;
     }
     
+    private boolean isAbsolute(String path) {
+        if (path.startsWith("/") || path.length() > 2 && path.charAt(1) == ':') { // NOI18N
+            return true;
+        }
+        return false;
+    }
+
     public String getSourceLanguage() throws IOException {
         if (root != null) {
             Object lang = root.getAttributeValue(ATTR.DW_AT_language);

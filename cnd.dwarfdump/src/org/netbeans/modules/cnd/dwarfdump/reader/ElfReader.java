@@ -423,14 +423,14 @@ public class ElfReader extends ByteStreamReader {
                 List<Integer> libs = new ArrayList<Integer>();
                 while( getFilePointer() < start+size) {
                     int tag = readInt();
-                    if (getAddressSize() == 8) {
+                    if (elfHeader.is64Bit()) {
                         readInt();
                     }
                     if (tag == 0) {
                         //break;
                     }
                     int ptr = readInt();
-                    if (getAddressSize() == 8) {
+                    if (elfHeader.is64Bit()) {
                         readInt();
                     }
                     //System.err.println("tag "+tag+" "+ptr);
