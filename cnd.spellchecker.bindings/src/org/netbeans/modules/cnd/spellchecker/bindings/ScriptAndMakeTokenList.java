@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.spellchecker.bindings;
 
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -73,8 +72,8 @@ public class ScriptAndMakeTokenList implements TokenList {
         currentOffsetInComment = (-1);
         this.startOffset = offset;
         this.nextBlockStart = offset;
-        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/ScriptComment");
-        Boolean b = (Boolean) fileObject.getAttribute("Hidden");
+        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/ScriptComment"); //NOI18N
+        Boolean b = (Boolean) fileObject.getAttribute("Hidden");//NOI18N
         hidden = Boolean.TRUE.equals(b);
     }
 
@@ -120,42 +119,6 @@ public class ScriptAndMakeTokenList implements TokenList {
         return new int[]{-1, -1};
     }
 
-    private void handleDoxygenTag(CharSequence tag) {
-        if ("@see".contentEquals(tag) || "@throws".contentEquals(tag)) {
-            //ignore next "word", possibly dotted and hashed
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, true);
-
-            currentOffsetInComment = data.b + data.a.length();
-            return;
-        }
-
-        if ("@param".contentEquals(tag)) {
-            //ignore next word
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
-
-            currentOffsetInComment = data.b + data.a.length();
-            return;
-        }
-
-        if ("@author".contentEquals(tag)) {
-            //ignore everything till the end of the line:
-            Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
-
-            while (data != null) {
-                currentOffsetInComment = data.b + data.a.length();
-
-                if ('\n' == data.a.charAt(0)) {
-                    //continue
-                    return;
-                }
-
-                data = wordBroker(currentBlockText, currentOffsetInComment, false);
-            }
-
-            return;
-        }
-    }
-
     private boolean nextWordImpl() {
         try {
             while (true) {
@@ -188,22 +151,8 @@ public class ScriptAndMakeTokenList implements TokenList {
                         }
 
                         switch (data.a.charAt(0)) {
-                            case '@':
-                                handleDoxygenTag(data.a);
-                                break;
-                            case '<':
-                                if (startsWith(data.a, "<a ")) {
-                                    pairTag = "</a>";
-                                }
-                                if (startsWith(data.a, "<code>")) {
-                                    pairTag = "</code>";
-                                }
-                                if (startsWith(data.a, "<pre>")) {
-                                    pairTag = "</pre>";
-                                }
-                                break;
                             case '{':
-                                pairTag = "}";
+                                pairTag = "}";//NOI18N
                                 break;
                         }
                     } else {
@@ -221,14 +170,6 @@ public class ScriptAndMakeTokenList implements TokenList {
             // skip
             return false;
         }
-    }
-
-    private static boolean startsWith(CharSequence where, String withWhat) {
-        if (where.length() >= withWhat.length()) {
-            return withWhat.contentEquals(where.subSequence(0, withWhat.length()));
-        }
-
-        return false;
     }
 
     static boolean isIdentifierLike(CharSequence s) {
@@ -250,8 +191,6 @@ public class ScriptAndMakeTokenList implements TokenList {
     private int currentWordOffset;
     private CharSequence currentWord;
     private int startOffset;
-    private static final Pattern commentPattern = Pattern.compile("/\\*\\*([^*]*(\\*[^/][^*]*)*)\\*/", Pattern.MULTILINE | Pattern.DOTALL); //NOI18N
-    private static final Pattern wordPattern = Pattern.compile("[A-Za-z]+"); //NOI18N
 
     private boolean isLetter(char c) {
         return Character.isLetter(c) || c == '\'';
