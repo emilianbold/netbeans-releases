@@ -198,7 +198,7 @@
             <friend-packages>
                 <friend>com.microchip.mdbcore</friend>
                 <friend>com.microchip.mplab.debugger.mdb</friend>
-		<friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
+                <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.debugger.common</friend>
@@ -216,6 +216,7 @@
                 <friend>com.sun.tools.swdev.advtools.actions.spi</friend>
                 <friend>com.sun.tools.swdev.projectimport</friend>
                 <friend>com.sun.tools.swdev.sunstudio</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.embedded.project</friend>
                 <friend>org.netbeans.libs.sunstudio</friend>
