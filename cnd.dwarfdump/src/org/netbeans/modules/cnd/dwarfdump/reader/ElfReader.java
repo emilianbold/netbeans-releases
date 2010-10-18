@@ -222,6 +222,14 @@ public class ElfReader extends ByteStreamReader {
         byte[] strings = new byte[stringTableLength];
         read(strings);
         stringTableSection = new StringTableSection(this, strings);
+        pubNames = new ArrayList<String>();
+        for(String string : stringTableSection.getStrings()){
+            //_libhello4lib_dll_iname
+            if (string.endsWith("_dll_iname") && string.startsWith("_")) { //NOI18N
+                String lib = string.substring(1,string.length()-10)+".dll"; //NOI18N
+                pubNames.add(lib);
+            }
+        }
         seek(pointer);
     }
     
@@ -405,7 +413,7 @@ public class ElfReader extends ByteStreamReader {
         }
         pubNames = new ArrayList<String>();
         long save = getFilePointer();
-        if (false) {
+        if (true) {
             // another way to find shared libraries
             Integer dynamic = sectionsMap.get(SECTIONS.DYNAMIC);
             if (dynamic != null) {
@@ -415,10 +423,16 @@ public class ElfReader extends ByteStreamReader {
                 List<Integer> libs = new ArrayList<Integer>();
                 while( getFilePointer() < start+size) {
                     int tag = readInt();
+                    if (elfHeader.is64Bit()) {
+                        readInt();
+                    }
                     if (tag == 0) {
                         //break;
                     }
                     int ptr = readInt();
+                    if (elfHeader.is64Bit()) {
+                        readInt();
+                    }
                     //System.err.println("tag "+tag+" "+ptr);
                     if (tag == 1) { //DT_NEEDED
                         libs.add(ptr);
@@ -433,38 +447,6 @@ public class ElfReader extends ByteStreamReader {
                     }
                 }
             }
-        }
-        seek(elfHeader.e_phoff);
-        for(int i = 0; i < elfHeader.e_phnum; i++) {
-            long p = getFilePointer();
-            int type = readInt();
-            if (type == 2) {
-                long addr = read3264();
-                seek(addr);
-                List<Integer> libs = new ArrayList<Integer>();
-                while(true) {
-                    int tag = readInt();
-                    if (tag == 0) {
-                        break;
-                    }
-                    int ptr = readInt();
-                    //System.err.println("tag "+tag+" "+ptr);
-                    if (tag == 1) { //DT_NEEDED
-                        libs.add(ptr);
-                    }
-                }
-                Integer idx = sectionsMap.get(SECTIONS.DYN_STR);
-                if (idx != null) {
-                    long start = sectionHeadersTable[idx].sh_offset;
-                    for(int l : libs){
-                        seek(start+l);
-                        pubNames.add(readString());
-                    }
-                }
-
-                break;
-            }
-            seek(p+elfHeader.e_phentsize);
         }
         seek(save);
         return pubNames;
