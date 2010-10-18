@@ -167,7 +167,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            if (new File(name).exists()) {
+            boolean exist = false;
+            if (!new File(name).exists()) {
+                  String fileFinder = fileFinder(file, name);
+                  if (fileFinder != null) {
+                      if (new File(fileFinder).exists()) {
+                          if (f instanceof DwarfSource) {
+                              ((DwarfSource)f).resetItemPath(fileFinder);
+                              name = fileFinder;
+                              exist = true;
+                          }
+                      }
+                  }
+            } else {
+                exist = true;
+            }
+
+            if (exist) {
                 SourceFileProperties existed = map.get(name);
                 if (existed == null) {
                     map.put(name, f);
@@ -191,6 +207,53 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return false;
     }
     
+    private String fileFinder(String objFileName, String path){
+        objFileName = objFileName.replace('\\', '/'); //NOI18N
+        if (objFileName.startsWith("/")) { //NOI18N
+            objFileName = objFileName.substring(1);
+        }
+        path = path.replace('\\', '/'); //NOI18N
+        if (path.startsWith("/")) { //NOI18N
+            path = path.substring(1);
+        }
+        String[] splitReal = objFileName.split("/"); //NOI18N
+        String[] splitVirtual = path.split("/"); //NOI18N
+        for(int i = 0; i < splitReal.length; i++) {
+            int startReal = -1;
+            int startVirtual = -1;
+            int len = -1;
+            for(int j = 0; j < splitVirtual.length; j++) {
+                if (splitReal[i].equals(splitVirtual[j])) {
+                    startReal = i;
+                    startVirtual = j;
+                    len = 1;
+                    while(true) {
+                        if (startReal+len < splitReal.length && startVirtual+len < splitVirtual.length) {
+                            if (splitReal[startReal+len].equals(splitVirtual[startVirtual+len])) {
+                                len++;
+                            } else {
+                                break;
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                    if (len > 1) {
+                        StringBuilder buf = new StringBuilder();
+                        for(int k = 0; k < startReal+len; k++) {
+                            buf.append('/').append(splitReal[k]); //NOI18N
+                        }
+                        for(int k = startVirtual+len; k < splitVirtual.length; k++) {
+                            buf.append('/').append(splitVirtual[k]); //NOI18N
+                        }
+                        return buf.toString();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
     protected ApplicableImpl sizeComilationUnit(String objFileName, Set<String> dlls){
         int res = 0;
         int sunStudio = 0;
@@ -214,7 +277,15 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     String path = cu.getSourceFileAbsolutePath();
                     File normalizeFile = CndFileUtils.normalizeFile(new File(path));
                     if (!normalizeFile.exists()) {
-                        continue;
+                        String fileFinder = fileFinder(objFileName, path);
+                        if (fileFinder != null) {
+                            normalizeFile = CndFileUtils.normalizeFile(new File(fileFinder));
+                            if (!normalizeFile.exists()) {
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
                     }
                     ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
