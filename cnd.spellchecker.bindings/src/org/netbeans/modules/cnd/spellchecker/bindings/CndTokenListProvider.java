@@ -45,9 +45,10 @@ package org.netbeans.modules.cnd.spellchecker.bindings;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
@@ -58,24 +59,30 @@ import org.netbeans.modules.spellchecker.spi.language.support.MultiTokenList;
  * based on JavaTokenListProvider
  * @author Vladimir Voskresensky
  */
+@MimeRegistrations({
+    // cnd source files
+    @MimeRegistration(mimeType=MIMENames.HEADER_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.CPLUSPLUS_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.C_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.FORTRAN_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    // scripts and make
+    @MimeRegistration(mimeType=MIMENames.MAKEFILE_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.CMAKE_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.QTPROJECT_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.SHELL_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.BAT_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.VISU_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.LEX_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.YACC_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.QT_UI_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.QT_RESOURCE_MIME_TYPE, service=TokenListProvider.class, position=1000),
+    @MimeRegistration(mimeType=MIMENames.QT_TRANSLATION_MIME_TYPE, service=TokenListProvider.class, position=1000)
+})
 public class CndTokenListProvider implements TokenListProvider {
     static final Logger LOG = Logger.getLogger(CndTokenListProvider.class.getName());
 
     public CndTokenListProvider() {
     }
-    
-//    @ServiceProvider(service=LocaleQueryImplementation.class, position=1500)
-//    public static final class LQImpl implements LocaleQueryImplementation {
-//
-//        public Locale findLocale(FileObject file) {
-//            String mime = file.getMIMEType();
-//            if (MIMENames.CND_SCRIPT_MIME_TYPES.contains(mime) ||
-//                MIMENames.CND_SOURCE_MIME_TYPES.contains(mime)) {
-//                return Locale.ENGLISH;
-//            }
-//            return null;
-//        }
-//    }
 
     public TokenList findTokenList(Document doc) {
 //        LOG.log(Level.INFO, "creating list for {0}", doc);
