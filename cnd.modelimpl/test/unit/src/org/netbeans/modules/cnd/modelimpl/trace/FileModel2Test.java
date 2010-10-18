@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ191085() throws Exception {
+        // #191085:Parser fails in sy_defined_(node) macro
+        performTest("iz191085.cc");
+    }
+    
     public void testIZ190821() throws Exception {
         // #190413:  wrong message SEVERE [org.netbeans.modules.cnd.apt]: # is not followed by a macro parameter
         performTest("iz190821.cc");
