@@ -48,76 +48,59 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-c++">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-c">
-                <folder name="text">
-                    <folder name="x-h">
-                        <folder name="TokenListProvider">
-                            <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                        </folder>
-
-                        <folder name="CompletionProviders">
-                            <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
-                        </folder>
-                    </folder>
-                </folder>
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-cpp+preprocessor">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>            
             <folder name="x-fortran">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="x-make">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
-            </folder>            
+            </folder>    
+            <folder name="x-cmake">
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
+                </folder>
+            </folder>             
             <folder name="x-sh">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>            
             <folder name="x-bat">
-                <folder name="TokenListProvider">
-                    <file name="org-netbeans-modules-cnd-spellchecker-bindings-CndTokenListProvider.instance"/>
-                </folder>
-
                 <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance"/>
+                    <file name="org-netbeans-modules-spellchecker-completion-WordCompletion.instance">                         
+                        <attr name="position" intvalue="3000"/>
+                    </file>
                 </folder>
             </folder>            
         </folder>
