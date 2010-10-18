@@ -5,7 +5,7 @@ set -x
 DIRNAME=`dirname $0`
 cd ${DIRNAME}
 TRUNK_NIGHTLY_DIRNAME=`pwd`
-export BUILD_DESC=6.9.1
+export BUILD_DESC=6.9.2
 source init.sh
 export JAVAFX_PATH=/net/smetiste.czech/space/${BASE_FOR_JAVAFX}
 
@@ -20,13 +20,13 @@ if [ ! -z $WORKSPACE ]; then
     #I'm under hudson and have sources here, I need to clone them
     #Clean obsolete sources first
     rm -rf $NB_ALL
-    hg clone $WORKSPACE $NB_ALL
+    hg clone -r release692 $WORKSPACE $NB_ALL
 fi
 
-#if [ $ML_BUILD == 1 ]; then
-#    cd $NB_ALL
-#    hg clone $ML_REPO $NB_ALL/l10n
-#fi
+if [ $ML_BUILD == 1 ]; then
+    cd $NB_ALL
+    hg clone -r release691 $ML_REPO $NB_ALL/l10n
+fi
 
 ###################################################################
 #
