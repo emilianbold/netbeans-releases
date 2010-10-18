@@ -77,34 +77,34 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        unzipTestData();
+        //unzipTestData();
     }
 
-    private void unzipTestData() throws Exception  {
-        File dataDir = getDataDir();
-        String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/data.zip";
-        new File(zip).exists();
-        ZipInputStream in = new ZipInputStream(new FileInputStream(zip));
-        while (true) {
-            ZipEntry entry = in.getNextEntry();
-            if (entry == null) {
-                break;
-            }
-            String outFilename = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/"+entry.getName();
-            if (entry.isDirectory()) {
-                File f = new File(outFilename);
-                f.mkdir();
-                continue;
-            }
-            OutputStream out = new FileOutputStream(outFilename);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.close();
-        }
-    }
+//    private void unzipTestData() throws Exception  {
+//        File dataDir = getDataDir();
+//        String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/data.zip";
+//        new File(zip).exists();
+//        ZipInputStream in = new ZipInputStream(new FileInputStream(zip));
+//        while (true) {
+//            ZipEntry entry = in.getNextEntry();
+//            if (entry == null) {
+//                break;
+//            }
+//            String outFilename = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/"+entry.getName();
+//            if (entry.isDirectory()) {
+//                File f = new File(outFilename);
+//                f.mkdir();
+//                continue;
+//            }
+//            OutputStream out = new FileOutputStream(outFilename);
+//            byte[] buf = new byte[1024];
+//            int len;
+//            while ((len = in.read(buf)) > 0) {
+//                out.write(buf, 0, len);
+//            }
+//            out.close();
+//        }
+//    }
 
     @Override
     protected int timeOut() {
