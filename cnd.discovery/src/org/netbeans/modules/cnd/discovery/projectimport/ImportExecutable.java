@@ -54,6 +54,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -528,7 +530,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 break;
                             }
                         }
-                        fixExcludedHeaderFiles(makeProject);
+                        fixExcludedHeaderFiles(makeProject, null);
                         if (cd != null) {
                             cd.create();
                         }
@@ -552,35 +554,7 @@ public class ImportExecutable implements PropertyChangeListener {
         }
     }
 
-    private static void postModelDiscovery(final Project makeProject) {
-        CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
-            final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            if (p == null) {
-                return;
-            }
-            CsmProgressListener listener = new CsmProgressAdapter() {
-
-                @Override
-                public void projectParsingFinished(CsmProject project) {
-                    if (project.equals(p)) {
-                        try {
-                            listeners.remove(this);
-                            CsmListeners.getDefault().removeProgressListener(this); // ignore java warning "usage of this in anonymous class"
-                            fixExcludedHeaderFiles(makeProject);
-                        } catch (Throwable ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            };
-            CsmListeners.getDefault().addProgressListener(listener);
-            listeners.add(listener);
-        }
-    }
-
-    private static void fixExcludedHeaderFiles(Project makeProject) {
+    static void fixExcludedHeaderFiles(Project makeProject, Logger logger) {
         CsmModel model = CsmModelAccessor.getModel();
         if (model instanceof ModelImpl && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
@@ -607,6 +581,9 @@ public class ImportExecutable implements PropertyChangeListener {
                         }
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
+                                if (logger != null) {
+                                    logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
+                                }
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
                                     needCheck.add(item.getFile().getAbsolutePath());
@@ -614,6 +591,9 @@ public class ImportExecutable implements PropertyChangeListener {
                             }
                         } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
                             if (item instanceof Item) {
+                                if (logger != null) {
+                                    logger.log(Level.FINE, "#fix included for file {0}", impl.getAbsolutePath()); // NOI18N
+                                }
                                 ProjectBridge.setExclude((Item) item, true);
                             }
                         } else if (item == null) {
