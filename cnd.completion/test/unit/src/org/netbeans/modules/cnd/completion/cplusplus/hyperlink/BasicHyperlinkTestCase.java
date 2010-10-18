@@ -676,6 +676,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug190127.cpp", 14, 40, "bug190127.cpp", 9, 13);
     }
 
+    public void testBug189838() throws Exception {
+        // Bug 189838 - C++ parser complains about function call on temporary object, if * is used in object constructor
+        performTest("bug189838.cpp", 12, 32, "bug189838.cpp", 6, 5);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
