@@ -597,12 +597,24 @@ public class ImportExecutable implements PropertyChangeListener {
                             String path = CndFileUtils.normalizeFile(impl.getFile()).getAbsolutePath();
                             item = normalizedItems.get(path);
                         }
+                        boolean isLineDirective = false;
+                        if (!file.isSourceFile() && (p instanceof ProjectBase)) {
+                            ProjectBase pb = (ProjectBase) p;
+                            Set<CsmFile> parentFiles = pb.getGraph().getParentFiles(file);
+                            if (parentFiles.isEmpty()) {
+                                isLineDirective = true;
+                            }
+                        }
                         if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
                             if (item instanceof Item) {
                                 ProjectBridge.setExclude((Item) item, false);
                                 if (file.isHeaderFile()) {
                                     needCheck.add(item.getFile().getAbsolutePath());
                                 }
+                            }
+                        } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
+                            if (item instanceof Item) {
+                                ProjectBridge.setExclude((Item) item, true);
                             }
                         } else if (item == null) {
                             // It should be in project?

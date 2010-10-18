@@ -340,6 +340,12 @@ public class ElfReader extends ByteStreamReader {
             // but this way would work 90% of times
             if (string.length() > 2 && ".o".equals(string.substring(string.length()-2))) { //NOI18N
                 linkedObjectFiles.add(string);
+            } else if (string.indexOf(".a(") > 0) { //NOI18N
+                // TODO: read onlu mentioned object files from static library
+                String lib = string.substring(0, string.lastIndexOf(".a(")+2); //NOI18N
+                if (!linkedObjectFiles.contains(lib)) {
+                    linkedObjectFiles.add(lib);
+                }
             }
             offset += string.length() + 1;
         }

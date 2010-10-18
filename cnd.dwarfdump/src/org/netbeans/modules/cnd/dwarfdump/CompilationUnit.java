@@ -145,7 +145,7 @@ public class CompilationUnit {
             if (isAbsolute(name)) {
                 result = name;
             } else {
-                if (dir.endsWith("/") || dir.endsWith("\\")) {
+                if (dir.endsWith("/") || dir.endsWith("\\")) { // NOI18N
                     result = dir+name;
                 } else {
                     result = dir+ File.separator + name;

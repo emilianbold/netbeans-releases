@@ -48,17 +48,17 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
+import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.openide.util.Exceptions;
@@ -77,34 +77,34 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        unzipTestData();
+        //unzipTestData();
     }
 
-    private void unzipTestData() throws Exception  {
-        File dataDir = getDataDir();
-        String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/data.zip";
-        new File(zip).exists();
-        ZipInputStream in = new ZipInputStream(new FileInputStream(zip));
-        while (true) {
-            ZipEntry entry = in.getNextEntry();
-            if (entry == null) {
-                break;
-            }
-            String outFilename = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/"+entry.getName();
-            if (entry.isDirectory()) {
-                File f = new File(outFilename);
-                f.mkdir();
-                continue;
-            }
-            OutputStream out = new FileOutputStream(outFilename);
-            byte[] buf = new byte[1024];
-            int len;
-            while ((len = in.read(buf)) > 0) {
-                out.write(buf, 0, len);
-            }
-            out.close();
-        }
-    }
+//    private void unzipTestData() throws Exception  {
+//        File dataDir = getDataDir();
+//        String zip = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/data.zip";
+//        new File(zip).exists();
+//        ZipInputStream in = new ZipInputStream(new FileInputStream(zip));
+//        while (true) {
+//            ZipEntry entry = in.getNextEntry();
+//            if (entry == null) {
+//                break;
+//            }
+//            String outFilename = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/projects/"+entry.getName();
+//            if (entry.isDirectory()) {
+//                File f = new File(outFilename);
+//                f.mkdir();
+//                continue;
+//            }
+//            OutputStream out = new FileOutputStream(outFilename);
+//            byte[] buf = new byte[1024];
+//            int len;
+//            while ((len = in.read(buf)) > 0) {
+//                out.write(buf, 0, len);
+//            }
+//            out.close();
+//        }
+//    }
 
     @Override
     protected int timeOut() {
@@ -142,42 +142,133 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testApplicable_RHEL55_x64_gcc() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.1.2 20080704 (Red Hat 4.1.2-48)",
                 "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/");
     }
 
     public void testApplicable_Ubuntu1010_x64_gcc() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.4.5",
                 "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/");
     }
 
     public void testApplicable_macosx32() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/dist/Debug/GNU-MacOSX/main",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/");
     }
 
     public void testApplicable_macosx64() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/dist/Debug/GNU-MacOSX/main",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/");
     }
 
     public void testApplicable_windows7_cygwin() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
                 "GNU C++ 3.4.4 (cygming special, gdc 0.12, using dmd 0.125)",
                 "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/");
     }
 
     public void testApplicable_windowsxp_mingw() {
-        dumpSources("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
+        applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "GNU C++ 3.4.5 (mingw-vista special r3)",
                 "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/");
     }
 
-    private void dumpSources(String path, String compiler, String root) {
+    public void testStatic_RHEL55_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/hello1lib/dist/Debug/GNU-Linux-x86/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testStatic_Ubuntu1010_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/hello1lib/dist/Debug/GNU-Linux-x86/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testStatic_macosx32() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/hello1lib/dist/Debug/GNU-MacOSX/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testStatic_macosx64() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/hello1lib/dist/Debug/GNU-MacOSX/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testStatic_windows7_cygwin() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/hello1lib/dist/Debug/Cygwin-Windows/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testStatic_windowsxp_mingw() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/hello1lib/dist/Debug/MinGW-Windows/libhello1lib.a",
+                "hello1.cc");
+    }
+
+    public void testShared_RHEL55_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/hello3lib/dist/Debug/GNU-Linux-x86/libhello3lib.so",
+                "hello3.cc");
+    }
+
+    public void testShared_Ubuntu1010_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/hello3lib/dist/Debug/GNU-Linux-x86/libhello3lib.so",
+                "hello3.cc");
+    }
+
+    public void testShared_macosx32() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/hello3lib/dist/Debug/GNU-MacOSX/libhello3lib.dylib",
+                "hello3.cc");
+    }
+
+    public void testShared_macosx64() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/hello3lib/dist/Debug/GNU-MacOSX/libhello3lib.dylib",
+                "hello3.cc");
+    }
+
+    public void testShared_windows7_cygwin() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/hello3lib/dist/Debug/Cygwin-Windows/libhello3lib.dll",
+                "hello3.cc");
+    }
+
+    public void testShared_windowsxp_mingw() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/hello3lib/dist/Debug/MinGW-Windows/libhello3lib.dll",
+                "hello3.cc");
+    }
+
+
+    public void testApplication_RHEL55_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    public void testApplication_Ubuntu1010_x64_gcc() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    public void testApplication_macosx32() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/dist/Debug/GNU-MacOSX/main",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    public void testApplication_macosx64() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/dist/Debug/GNU-MacOSX/main",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    public void testApplication_windows7_cygwin() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    public void testApplication_windowsxp_mingw() {
+        readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
+                "main.cc", "hello1.cc", "hello2.cc");
+    }
+
+    private void applicable(String path, String compiler, String root) {
         AnalyzeExecutable provider = new AnalyzeExecutable();
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
@@ -228,6 +319,59 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         assertTrue(canAnalyze.isApplicable());
         canAnalyze.getMainFunction().getFilePath();
         assertTrue(canAnalyze.getDependencies().size()>=2);
+    }
+
+
+    private void readBinary(String path, String ... sources) {
+        AnalyzeExecutable provider = new AnalyzeExecutable();
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+path;
+        provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
+        List<Configuration> analyze = provider.analyze(new ProjectProxy() {
+
+            @Override
+            public boolean createSubProjects() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public Project getProject() {
+                return null;
+            }
+
+            @Override
+            public String getMakefile() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public String getSourceRoot() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public String getExecutable() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public String getWorkingFolder() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        }, null);
+        assertEquals(1, analyze.size());
+        Configuration conf = analyze.get(0);
+        assertEquals(sources.length, conf.getSourcesConfiguration().size());
+        for (SourceFileProperties file : conf.getSourcesConfiguration()) {
+            System.err.println(file.getItemPath());
+            boolean match = false;
+            for(String x : sources) {
+                if (x.equals(file.getItemName())) {
+                    match = true;
+                }
+            }
+            assertTrue(match);
+        }
     }
 
     private void dumpDlls(String path, String...dlls) {
