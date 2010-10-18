@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -579,12 +579,14 @@ abstract class OperationValidator {
                 Set<Module> depends = Utilities.findDependingModules (depM, mm, module2depending);
                 if (! compactSet.containsAll (depends)) {
                     mustRemain.add (depM);
-                    mustRemain.addAll (Utilities.findRequiredModules (depM, mm, module2required));
+                    Set<Module> otherRequiredModules = Utilities.findRequiredModules(depM, mm, module2required);
+                    mustRemain.addAll (otherRequiredModules);
                     LOGGER.log (Level.FINE, "The module " + depM.getCodeNameBase () + " is shared and cannot be deactivated now.");
                     if (LOGGER.isLoggable (Level.FINER)) {
                         Set<Module> outsideModules = new HashSet<Module> (depends);
                         outsideModules.removeAll (compactSet);
                         LOGGER.log (Level.FINER, "On " + depM.getCodeNameBase () + " depending modules outside of set now deactivating modules: " + outsideModules);
+                        LOGGER.log (Level.FINER, "With " + depM.getCodeNameBase () + " must remain also these required modules: " + otherRequiredModules);
                     }
                 } else {
                     result.add (depM);
