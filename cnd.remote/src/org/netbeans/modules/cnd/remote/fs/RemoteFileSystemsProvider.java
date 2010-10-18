@@ -43,15 +43,12 @@
 package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
-import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.support.InvalidFileObjectSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
@@ -121,7 +118,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
             }
             FileObject fo = null;
             RemoteFileSystem fs = null;
-            ExecutionEnvironment env = getExecutionEnvironment(hostName.toString(), 0);
+            ExecutionEnvironment env = RemoteFileSystemUtils.getExecutionEnvironment(hostName.toString(), 0);
             if (env != null) {
                 fs = RemoteFileSystemManager.getInstance().get(env);
                 fo = fs.findResource(remotePath.toString());
@@ -192,7 +189,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
                 if (slashPos >= 0) {
                     String hostName = rest.subSequence(0, slashPos).toString();
                     CharSequence remotePath = rest.subSequence(slashPos + 1, rest.length());
-                    ExecutionEnvironment env = getExecutionEnvironment(hostName, 0);
+                    ExecutionEnvironment env = RemoteFileSystemUtils.getExecutionEnvironment(hostName, 0);
                     RemoteFileSystem fs = null;
                     FileObject fo = null;
                     if (env != null) {
@@ -228,21 +225,6 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
                     (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
         }
         return null;
-    }
-
-    private ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
-        ExecutionEnvironment result = null;
-        for(ExecutionEnvironment env : ServerList.getEnvironments()) {
-            if (hostName.equals(EnvUtils.toHostID(env))) {
-                if (port == 0 || port == env.getSSHPort()) {
-                    result = env;
-                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
-                        break;
-                    }
-                }
-            }
-        }
-        return result;
     }
 
     private static class FileSystemAndString {
