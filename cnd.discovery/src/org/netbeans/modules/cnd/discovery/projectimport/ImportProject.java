@@ -1073,46 +1073,11 @@ public class ImportProject implements PropertyChangeListener {
             isFinished = true;
             return;
         }
-        CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
-            NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            final CsmProject p = model.getProject(np);
-            if (p != null && np != null) {
-                if (TRACE) {
-                    logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
-                }
-                Set<String> needCheck = new HashSet<String>();
-                for (CsmFile file : p.getAllFiles()) {
-                    if (file instanceof FileImpl) {
-                        FileImpl impl = (FileImpl) file;
-                        NativeFileItem item = impl.getNativeFileItem();
-                        if (item == null) {
-                            //item = np.findFileItem(impl.getFile());
-                            item = findByNormalizedName(impl.getFile());
-                        }
-                        if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
-                            if (item instanceof Item) {
-                                if (TRACE) {
-                                    logger.log(Level.FINE, "#fix excluded header for file {0}", impl.getAbsolutePath()); // NOI18N
-                                }
-                                ProjectBridge.setExclude((Item) item, false);
-                                if (file.isHeaderFile()) {
-                                    needCheck.add(item.getFile().getAbsolutePath());
-                                }
-                            }
-                        }
-                    }
-                }
-                if (needCheck.size() > 0) {
-                    ProjectBridge bridge = new ProjectBridge(makeProject);
-                    if (bridge.isValid()) {
-                        bridge.checkForNewExtensions(needCheck);
-                    }
-                }
-                saveMakeConfigurationDescriptor((ProjectBase)p);
-                importResult.put(Step.FixExcluded, State.Successful);
-            }
+        if (TRACE) {
+            logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
+        ImportExecutable.fixExcludedHeaderFiles(makeProject, TRACE ? logger : null);
+        importResult.put(Step.FixExcluded, State.Successful);
     }
 
     private Map<String,Item> normalizedItems;

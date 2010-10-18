@@ -113,8 +113,8 @@ public class DwarfSource implements SourceFileProperties{
     private void countFileName(CompilationUnit cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
-        File file = new File(fullName);
-        fullName = CndFileUtils.normalizeAbsolutePath(file.getAbsolutePath());
+        //File file = new File(fullName);
+        fullName = CndFileUtils.normalizeAbsolutePath(fullName);
         fullName = linkSupport(fullName);
         if (fullName != null && normilizeProvider.isWindows()) {
             fullName = fullName.replace('/', '\\');
@@ -180,6 +180,10 @@ public class DwarfSource implements SourceFileProperties{
     @Override
     public String getItemPath() {
         return fullName;
+    }
+
+    void resetItemPath(String path) {
+        fullName = path;
     }
     
     @Override

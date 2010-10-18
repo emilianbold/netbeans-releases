@@ -231,8 +231,9 @@ public class BuildActionsProviderImpl extends BuildActionsProvider {
             return NbBundle.getBundle(BuildActionsProviderImpl.class).getString(key);
         }
 
-        private InstantiatingIterator getPanels() {
-            WizardDescriptor.Panel[] simple = new WizardDescriptor.Panel[] {
+        private InstantiatingIterator<WizardDescriptor> getPanels() {
+            @SuppressWarnings("unchecked")
+            WizardDescriptor.Panel<WizardDescriptor>[] simple = new WizardDescriptor.Panel[] {
                 new SimpleConfigurationWizard()
             };
             String[] steps = new String[simple.length];

@@ -167,7 +167,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            if (new File(name).exists()) {
+            boolean exist = false;
+            if (!new File(name).exists()) {
+                  String fileFinder = Dwarf.fileFinder(file, name);
+                  if (fileFinder != null) {
+                      if (new File(fileFinder).exists()) {
+                          if (f instanceof DwarfSource) {
+                              ((DwarfSource)f).resetItemPath(fileFinder);
+                              name = fileFinder;
+                              exist = true;
+                          }
+                      }
+                  }
+            } else {
+                exist = true;
+            }
+
+            if (exist) {
                 SourceFileProperties existed = map.get(name);
                 if (existed == null) {
                     map.put(name, f);
@@ -212,9 +228,19 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         continue;
                     }
                     String path = cu.getSourceFileAbsolutePath();
-                    File normalizeFile = CndFileUtils.normalizeFile(new File(path));
-                    if (!normalizeFile.exists()) {
-                        continue;
+                    path = CndFileUtils.normalizeAbsolutePath(path);
+                    if (!CndFileUtils.isExistingFile(path)) {
+                        String fileFinder = Dwarf.fileFinder(objFileName, path);
+                        if (fileFinder != null) {
+                            fileFinder = CndFileUtils.normalizeAbsolutePath(fileFinder);
+                            if (!CndFileUtils.isExistingFile(fileFinder)) {
+                                continue;
+                            } else {
+                                path = fileFinder;
+                            }
+                        } else {
+                            continue;
+                        }
                     }
                     ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
@@ -233,7 +259,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    path = normalizeFile.getAbsolutePath().replace('\\', '/');
+                    path = path.replace('\\', '/');
                     if (commonRoot == null) {
                         int i = path.lastIndexOf('/');
                         if (i >= 0) {
@@ -499,7 +525,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
 
         protected String normalizePath(String path){
-            path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+            path = CndFileUtils.normalizeAbsolutePath(path);
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
