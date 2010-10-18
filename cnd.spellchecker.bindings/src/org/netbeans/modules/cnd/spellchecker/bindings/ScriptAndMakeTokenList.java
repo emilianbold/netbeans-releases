@@ -137,7 +137,7 @@ public class ScriptAndMakeTokenList implements TokenList {
                 }
 
                 String pairTag = null;
-                Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment, false);
+                Pair<CharSequence, Integer> data = wordBroker(currentBlockText, currentOffsetInComment);
 
                 while (data != null) {
                     currentOffsetInComment = data.b + data.a.length();
@@ -161,7 +161,7 @@ public class ScriptAndMakeTokenList implements TokenList {
                         }
                     }
 
-                    data = wordBroker(currentBlockText, currentOffsetInComment, false);
+                    data = wordBroker(currentBlockText, currentOffsetInComment);
                 }
 
                 currentBlockText = null;
@@ -196,27 +196,28 @@ public class ScriptAndMakeTokenList implements TokenList {
         return Character.isLetter(c) || c == '\'';
     }
 
-    private Pair<CharSequence, Integer> wordBroker(CharSequence start, int offset, boolean treatSpecialCharactersAsLetterInsideWords) {
-        int state = 0;
+    private enum State {
+        INIT,
+        AFTER_LETTER,
+        AFTER_LESS,
+        AFTER_LCURLY,
+    }
+    private Pair<CharSequence, Integer> wordBroker(CharSequence start, int offset) {
+        State state = State.INIT;
         int offsetStart = offset;
 
         while (start.length() > offset) {
             char current = start.charAt(offset);
 
             switch (state) {
-                case 0:
+                case INIT:
                     if (isLetter(current)) {
-                        state = 1;
-                        offsetStart = offset;
-                        break;
-                    }
-                    if (current == '@' || current == '#') {
-                        state = 2;
+                        state = State.AFTER_LETTER;
                         offsetStart = offset;
                         break;
                     }
                     if (current == '<') {
-                        state = 3;
+                        state = State.AFTER_LESS;
                         offsetStart = offset;
                         break;
                     }
@@ -224,41 +225,27 @@ public class ScriptAndMakeTokenList implements TokenList {
                         return new Pair<CharSequence, Integer>(start.subSequence(offset, offset + 1), offset);
                     }
                     if (current == '{') {
-                        state = 4;
+                        state = State.AFTER_LCURLY;
                         offsetStart = offset;
                         break;
                     }
                     break;
 
-                case 1:
-                    if (!isLetter(current) && ((current != '.' && current != '#') || !treatSpecialCharactersAsLetterInsideWords)) {
-                        return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset), offsetStart);
-                    }
-
-                    break;
-
-                case 2:
+                case AFTER_LETTER:
                     if (!isLetter(current)) {
                         return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset), offsetStart);
                     }
-
                     break;
 
-                case 3:
+                case AFTER_LESS:
                     if (current == '>') {
                         return new Pair<CharSequence, Integer>(start.subSequence(offsetStart, offset + 1), offsetStart);
                     }
-
                     break;
 
-                case 4:
-                    if (current == '@') {
-                        state = 2;
-                        break;
-                    }
-
+                case AFTER_LCURLY:
                     offset--;
-                    state = 0;
+                    state = State.INIT;
                     break;
             }
 
