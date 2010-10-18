@@ -169,7 +169,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
             boolean exist = false;
             if (!new File(name).exists()) {
-                  String fileFinder = fileFinder(file, name);
+                  String fileFinder = Dwarf.fileFinder(file, name);
                   if (fileFinder != null) {
                       if (new File(fileFinder).exists()) {
                           if (f instanceof DwarfSource) {
@@ -277,7 +277,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     String path = cu.getSourceFileAbsolutePath();
                     File normalizeFile = CndFileUtils.normalizeFile(new File(path));
                     if (!normalizeFile.exists()) {
-                        String fileFinder = fileFinder(objFileName, path);
+                        String fileFinder = Dwarf.fileFinder(objFileName, path);
                         if (fileFinder != null) {
                             normalizeFile = CndFileUtils.normalizeFile(new File(fileFinder));
                             if (!normalizeFile.exists()) {
