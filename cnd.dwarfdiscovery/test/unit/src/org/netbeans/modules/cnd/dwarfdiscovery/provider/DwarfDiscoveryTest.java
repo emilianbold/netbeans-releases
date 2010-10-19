@@ -73,6 +73,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     public DwarfDiscoveryTest() {
         super("DwarfDiscoveryTest");
         Logger.getLogger("cnd.logger").setLevel(Level.SEVERE);
+        System.getProperties().put("cnd.dwarfdiscovery.trace.read.errors",Boolean.TRUE);
     }
 
     @Override
@@ -149,37 +150,37 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     public void testApplicable_RHEL55_x64_gcc() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.1.2 20080704 (Red Hat 4.1.2-48)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_RHEL55_x64_gcc/", 39);
     }
 
     public void testApplicable_Ubuntu1010_x64_gcc() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/main/dist/Debug/GNU-Linux-x86/main",
                 "GNU C++ 4.4.5",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_Ubuntu1010_x64_gcc/", 37);
     }
 
     public void testApplicable_macosx32() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx32/", 39);
     }
 
     public void testApplicable_macosx64() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/main/dist/Debug/GNU-MacOSX/main",
                 "GNU C++ 4.2.1 (Apple Inc. build 5664)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_macosx64/", 39);
     }
 
     public void testApplicable_windows7_cygwin() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
                 "GNU C++ 3.4.4 (cygming special, gdc 0.12, using dmd 0.125)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/", 39);
     }
 
     public void testApplicable_windowsxp_mingw() {
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "GNU C++ 3.4.5 (mingw-vista special r3)",
-                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/");
+                "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/", 39);
     }
 
     public void testStatic_RHEL55_x64_gcc() {
@@ -273,7 +274,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
                 "main.cc", "hello1.cc", "hello2.cc");
     }
 
-    private void applicable(String path, String compiler, String root) {
+    private void applicable(String path, String compiler, String root, int mainLine) {
         AnalyzeExecutable provider = new AnalyzeExecutable();
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
@@ -321,6 +322,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         assertEquals(root, sourceRoot);
         assertNotNull(mainFunctionPosition);
         assertTrue(mainFunctionPosition.getFilePath().startsWith(root));
+        assertEquals(mainLine, mainFunctionPosition.getLine());
         assertTrue(canAnalyze.isApplicable());
         assertTrue(canAnalyze.getDependencies().size()>=2);
     }
