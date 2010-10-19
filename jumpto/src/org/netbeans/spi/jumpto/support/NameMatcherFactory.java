@@ -182,6 +182,17 @@ public final class NameMatcherFactory {
     }
 
     private static String wildcards2regexp(String pattern) {
-        return pattern.replace("\\","").replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ).concat(".*"); //NOI18N
+        return pattern.
+                replace("{","").        //NOI18N
+                replace("}","").        //NOI18N
+                replace("[","").        //NOI18N
+                replace("]","").        //NOI18N
+                replace("(","").        //NOI18N
+                replace(")","").        //NOI18N
+                replace("\\","").       //NOI18N
+                replace(".", "\\.").    //NOI18N
+                replace( "*", ".*" ).   //NOI18N
+                replace( '?', '.' ).    //NOI18N
+                concat(".*"); //NOI18N
     }
 }
