@@ -45,6 +45,8 @@
 package org.netbeans.modules.java;
 
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -53,6 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
@@ -88,55 +91,65 @@ public final class ClassDataObject extends MultiDataObject {
 
     private final class OpenSourceCookie implements OpenCookie {
         
+        @Override
         public void open() {
-            try {
-                FileObject fo = getPrimaryFile();
-                FileObject binaryRoot = null;
-                String resourceName = null;
-                ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-                if (cp == null || (binaryRoot = cp.findOwnerRoot(fo))==null) {
-                    cp = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
-                    if (cp != null) {
-                        binaryRoot = cp.findOwnerRoot(fo);
-                        resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
-                    }
-                } else if (binaryRoot != null) {
-                    resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
-                }
-                ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
-                if (bootPath == null) {
-                    //No boot cp, try the default platform boot cp
-                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-                }
-                FileObject resource = null;
-                final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
-                final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
-                if (binaryRoot != null) {
-                    //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
-                    resource = SourceUtils.getFile(handle, cpInfo);
-                }
-                if (resource !=null ) {
-                    DataObject sourceFile = DataObject.find(resource);
-                    OpenCookie oc = sourceFile.getCookie(OpenCookie.class);
-                    if (oc != null) {
-                        oc.open();
-                    } else {
-                        Logger.getLogger(ClassDataObject.class.getName()).warning("SourceFile: "+FileUtil.getFileDisplayName (resource) +" has no OpenCookie"); //NOI18N
-                    }
-                } else {
-                    BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
-                    
-                    if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
-                        if (resourceName == null) {
-                            resourceName = fo.getName();
+            final AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        FileObject fo = getPrimaryFile();
+                        FileObject binaryRoot = null;
+                        String resourceName = null;
+                        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
+                        if (cp == null || (binaryRoot = cp.findOwnerRoot(fo))==null) {
+                            cp = ClassPath.getClassPath(fo, ClassPath.EXECUTE);
+                            if (cp != null) {
+                                binaryRoot = cp.findOwnerRoot(fo);
+                                resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
+                            }
+                        } else if (binaryRoot != null) {
+                            resourceName = cp.getResourceName(fo,'.',false);  //NOI18N
                         }
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
-                                resourceName.replace('/', '.'))); //NOI18N
+                        ClassPath bootPath = ClassPath.getClassPath(fo, ClassPath.BOOT);
+                        if (bootPath == null) {
+                            //No boot cp, try the default platform boot cp
+                            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                        }
+                        FileObject resource = null;
+                        final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
+                        final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
+                        if (binaryRoot != null) {
+                            //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
+                            resource = SourceUtils.getFile(handle, cpInfo);
+                        }
+                        if (resource !=null ) {
+                            DataObject sourceFile = DataObject.find(resource);
+                            OpenCookie oc = sourceFile.getCookie(OpenCookie.class);
+                            if (oc != null) {
+                                oc.open();
+                            } else {
+                                Logger.getLogger(ClassDataObject.class.getName()).log(Level.WARNING, "SourceFile: {0} has no OpenCookie", FileUtil.getFileDisplayName (resource)); //NOI18N
+                            }
+                        } else {
+                            BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+
+                            if (beo == null || handle == null || cpInfo == null || !beo.open(cpInfo, handle)) {
+                                if (resourceName == null) {
+                                    resourceName = fo.getName();
+                                }
+                                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ClassDataObject.class, "TXT_NoSources",
+                                        resourceName.replace('/', '.'))); //NOI18N
+                            }
+                        }
+                    } catch (DataObjectNotFoundException nf) {
+                        Exceptions.printStackTrace(nf);
                     }
                 }
-            } catch (DataObjectNotFoundException nf) {
-                Exceptions.printStackTrace(nf);
-            }
+            },
+            NbBundle.getMessage(ClassDataObject.class, "TXT_OpenClassFile"),
+            cancel,
+            true);
         }
     }
 }
