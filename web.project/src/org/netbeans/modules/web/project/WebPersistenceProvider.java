@@ -266,8 +266,8 @@ public class WebPersistenceProvider implements PersistenceLocationProvider, Pers
 
                         boolean changed = false;
                         //we need to workaround issue 187653 before we have stable jdk with fix and or fix in eclipselink
-                        if(approperties.indexOf("eclipselink.canonicalmodel.use_static_factory")==-1){
-                            String toadd = (approperties.length()>0 ? " " : "") + "-Aeclipselink.canonicalmodel.use_static_factory=false";
+                        if(approperties.indexOf("eclipselink.canonicalmodel.use_static_factory")==-1){//NOI18N
+                            String toadd = (approperties.length()>0 ? " " : "") + "-Aeclipselink.canonicalmodel.use_static_factory=false";//NOI18N
                             approperties = approperties + toadd;
                             prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, approperties);
                             changed = true;

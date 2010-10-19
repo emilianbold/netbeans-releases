@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -137,14 +136,14 @@ public class DwarfDiscoveryTest  extends NbTestCase {
                 "libhello3lib.dylib", "libhello4lib.dylib", "/usr/lib/libstdc++.6.dylib", "/usr/lib/libSystem.B.dylib");
     }
 
-    public void testDll_windows7_cygwin() {
-        dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
-                "libhello3lib.dll", "libhello4lib.dll", "cygwin1.dll");
-    }
-
     public void testDll_windowsxp_mingw() {
         dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "libhello3lib.dll", "libhello4lib.dll");
+    }
+
+    public void testDll_windows7_cygwin() {
+        dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windows7_cygwin/main/dist/Debug/Cygwin-Windows/main.exe",
+                "libhello3lib.dll", "libhello4lib.dll", "cygwin1.dll");
     }
 
     public void testApplicable_RHEL55_x64_gcc() {
@@ -279,6 +278,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
         root = dataDir.getAbsolutePath().replace('\\', '/')+root;
+        assertTrue(new File(objFileName).exists());
         provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
         Applicable canAnalyze = provider.canAnalyze(new ProjectProxy() {
 
@@ -332,6 +332,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         AnalyzeExecutable provider = new AnalyzeExecutable();
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
+        assertTrue(new File(objFileName).exists());
         provider.getProperty(AnalyzeExecutable.EXECUTABLE_KEY).setValue(objFileName);
         List<Configuration> analyze = provider.analyze(new ProjectProxy() {
 
@@ -383,17 +384,18 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     private void dumpDlls(String path, String...dlls) {
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+path;
+        assertTrue(new File(objFileName).exists());
         List<String> res =  null;
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);
             res = dump.readPubNames();
         } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         } catch (WrongFileFormatException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
         } finally {
             if (dump != null) {
                 dump.dispose();

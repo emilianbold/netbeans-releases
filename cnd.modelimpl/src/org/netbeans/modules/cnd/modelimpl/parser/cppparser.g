@@ -2021,13 +2021,13 @@ declarator[int kind, int level]
         {level < 5}? (ptr_operator)=> ptr_operator // AMPERSAND or STAR
         restrict_declarator[kind, level + 1]
     |
-        // type (var) = {...}
-        {level < 5}? (LPAREN declarator[kind, level + 1] RPAREN ASSIGNEQUAL LCURLY) =>
-        LPAREN declarator[kind, level + 1] RPAREN
-    |
         // typedef ((...));
         // int (i);
         {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level + 1] RPAREN
+    |
+        // type (var) = {...}
+        {level < 5}? (LPAREN declarator[kind, level + 1] RPAREN ASSIGNEQUAL LCURLY) =>
         LPAREN declarator[kind, level + 1] RPAREN
     |
         {level < 5}? direct_declarator[kind, level + 1]

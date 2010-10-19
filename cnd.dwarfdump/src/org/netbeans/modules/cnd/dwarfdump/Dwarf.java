@@ -439,12 +439,19 @@ public class Dwarf {
                     reader.seek(shiftIvArchive);
                     byte[] bytes = new byte[8];
                     reader.readFully(bytes);
-                    if (FileMagic.isElfMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
-                    } else if (FileMagic.isCoffMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
-                    } else if (FileMagic.isMachoMagic(bytes)) {
-                        dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                    try {
+                        if (FileMagic.isElfMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Elf, shiftIvArchive, length);
+                        } else if (FileMagic.isCoffMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Coff, shiftIvArchive, length);
+                        } else if (FileMagic.isMachoMagic(bytes)) {
+                            dwarfReader = new DwarfReader(fileName, reader, Magic.Macho, shiftIvArchive, length);
+                        }
+                    } catch (Exception e) {
+                        if (TraceDwarf.TRACED) {
+                            e.printStackTrace();
+                        }
+                        continue;
                     }
                     currentIterator = iteratorFileCompilationUnits();
                     if (!currentIterator.hasNext()) {

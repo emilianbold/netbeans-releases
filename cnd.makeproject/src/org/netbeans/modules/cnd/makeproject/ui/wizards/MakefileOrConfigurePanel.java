@@ -305,9 +305,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(infoLabel, gridBagConstraints);
 
-        makefileRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_RADIO_BUTTON_MN").charAt(0));
         makefileRadioButton.setSelected(true);
-        makefileRadioButton.setText(bundle.getString("MAKEFILE_RADIO_BUTTON_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(makefileRadioButton, bundle.getString("MAKEFILE_RADIO_BUTTON_TXT")); // NOI18N
         makefileRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         makefileRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -323,9 +322,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         add(makefileRadioButton, gridBagConstraints);
         makefileRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "MAKEFILE_RADIO_BUTTON_AD")); // NOI18N
 
-        makefileNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_NAME_MN").charAt(0));
         makefileNameLabel.setLabelFor(makefileNameTextField);
-        makefileNameLabel.setText(bundle.getString("MAKEFILE_NAME_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(makefileNameLabel, bundle.getString("MAKEFILE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -340,8 +338,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(makefileNameTextField, gridBagConstraints);
 
-        makefileBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("MAKEFILE_BROWSE_BUTTON_MN").charAt(0));
-        makefileBrowseButton.setText(bundle.getString("MAKEFILE_BROWSE_BUTTON")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(makefileBrowseButton, bundle.getString("MAKEFILE_BROWSE_BUTTON")); // NOI18N
         makefileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 makefileBrowseButtonActionPerformed(evt);
@@ -354,8 +351,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(makefileBrowseButton, gridBagConstraints);
 
-        configureRadioButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CONFIGURE_RADIO_BUTTON_MN").charAt(0));
-        configureRadioButton.setText(bundle.getString("CONFIGURE_RADIO_BUTTON_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configureRadioButton, bundle.getString("CONFIGURE_RADIO_BUTTON_TXT")); // NOI18N
         configureRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         configureRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -371,9 +367,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         add(configureRadioButton, gridBagConstraints);
         configureRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakefileOrConfigurePanel.class, "CONFIGURE_RADIO_BUTTON_AD")); // NOI18N
 
-        configureNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CONFIGURE_NAME_MN").charAt(0));
         configureNameLabel.setLabelFor(configureNameTextField);
-        configureNameLabel.setText(bundle.getString("CONFIGURE_NAME_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configureNameLabel, bundle.getString("CONFIGURE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -388,8 +383,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(configureNameTextField, gridBagConstraints);
 
-        configureBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CONFIGURE_BROWSE_BUTTON_MN").charAt(0));
-        configureBrowseButton.setText(bundle.getString("CONFIGURE_BROWSE_BUTTON")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configureBrowseButton, bundle.getString("CONFIGURE_BROWSE_BUTTON")); // NOI18N
         configureBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configureBrowseButtonActionPerformed(evt);
@@ -402,9 +396,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(configureBrowseButton, gridBagConstraints);
 
-        configureArgumentsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CONFIGURE_ARGUMENT_LABEL_MN").charAt(0));
         configureArgumentsLabel.setLabelFor(configureArgumentsTextField);
-        configureArgumentsLabel.setText(bundle.getString("CONFIGURE_ARGUMENT_LABEL_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configureArgumentsLabel, bundle.getString("CONFIGURE_ARGUMENT_LABEL_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -448,9 +441,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(instructionPanel, gridBagConstraints);
 
-        configureMakefileNameLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("CONFIGURE_MAKEFILE_NAME_MN").charAt(0));
         configureMakefileNameLabel.setLabelFor(configureMakefileNameTextField);
-        configureMakefileNameLabel.setText(bundle.getString("CONFIGURE_MAKEFILE_NAME_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(configureMakefileNameLabel, bundle.getString("CONFIGURE_MAKEFILE_NAME_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -468,9 +460,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         gridBagConstraints.insets = new java.awt.Insets(6, 4, 0, 0);
         add(configureMakefileNameTextField, gridBagConstraints);
 
-        runConfigureCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("RUN_CONFIGURE_CHECKBOX").charAt(0));
         runConfigureCheckBox.setSelected(true);
-        runConfigureCheckBox.setText(bundle.getString("RUN_CONFIGURE_CHECKBOX")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(runConfigureCheckBox, bundle.getString("RUN_CONFIGURE_CHECKBOX")); // NOI18N
         runConfigureCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
