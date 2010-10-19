@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.test;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectIterator;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;

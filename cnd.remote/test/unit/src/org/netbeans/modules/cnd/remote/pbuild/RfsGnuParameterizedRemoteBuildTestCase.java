@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.pbuild;
 
+import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;

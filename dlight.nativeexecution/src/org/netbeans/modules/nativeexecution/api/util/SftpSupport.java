@@ -289,7 +289,9 @@ class SftpSupport {
                 }
             }
             put(cftp);
-            cftp.chmod(mask, dstFileName);
+            if (mask >= 0) {
+                cftp.chmod(mask, dstFileName);
+            }
             uploadCount.incrementAndGet();
         }
 

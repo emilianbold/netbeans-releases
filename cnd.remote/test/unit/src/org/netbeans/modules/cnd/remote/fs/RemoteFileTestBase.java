@@ -49,7 +49,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 

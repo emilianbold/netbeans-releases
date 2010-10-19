@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.concurrent.CancellationException;
@@ -194,7 +193,7 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         public void flush() throws IOException {
             delegate.flush();
             StringWriter sw = new StringWriter();
-            Future<Integer> task = CommonTasksSupport.uploadFile(cache, execEnv, remotePath, 0777, sw);
+            Future<Integer> task = CommonTasksSupport.uploadFile(cache, execEnv, remotePath, -1, sw);
             try {
                 int rc = task.get().intValue();
                 if (rc != 0) {
