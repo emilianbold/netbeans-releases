@@ -112,7 +112,7 @@ abstract class MoveTreeCommand extends GitCommand {
                         DirCacheEntry copied = new DirCacheEntry(newPath);
                         copied.copyMetaData(e);
                         File newFile = new File(repository.getWorkTree().getAbsolutePath() + File.separator + newPath);
-                        listener.notifyFile(newFile);
+                        listener.notifyFile(newFile, treeWalk.getPathString());
                         builder.add(copied);
                         if (keepSourceTree) {
                             builder.add(e);

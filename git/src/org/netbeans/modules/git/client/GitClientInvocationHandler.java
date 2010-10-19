@@ -105,7 +105,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
 
     private Object invokeIntern (final Object proxy, final Method method, final Object[] args) throws Throwable {
         try {
-            Callable callable = new Callable() {
+            Callable<Object> callable = new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
                     boolean refreshIndexTimestamp = modifiesWorkingTree(method);

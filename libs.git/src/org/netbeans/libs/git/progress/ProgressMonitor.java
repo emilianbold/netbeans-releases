@@ -51,7 +51,7 @@ public interface ProgressMonitor {
     
     public boolean isCanceled ();
 
-    public void started();
+    public void started (String command);
 
     public void finished();
 
@@ -76,7 +76,7 @@ public interface ProgressMonitor {
         }
 
         @Override
-        public void started() {
+        public void started (String command) {
         }
 
         @Override

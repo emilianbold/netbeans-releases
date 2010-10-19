@@ -510,7 +510,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
                 FileListener list;
                 ms[0] = list = new FileListener () {
                     @Override
-                    public void notifyFile(File file) {
+                    public void notifyFile(File file, String relativePathToRoot) {
                         // barrier
                         flags[4] = true;
                         // wait for asserts
@@ -583,7 +583,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         private boolean barrierAccessed;
         private int count;
         @Override
-        public void notifyFile (File file) {
+        public void notifyFile (File file, String relativePathToRoot) {
             barrierAccessed = true;
             ++count;
             while (!cont) {

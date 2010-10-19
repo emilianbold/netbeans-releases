@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.nodes.Node;
@@ -58,7 +57,7 @@ import org.openide.nodes.Node;
  */
 public abstract class SingleRepositoryAction extends GitAction {
 
-    private static final Logger LOG = Logger.getLogger(StatusAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(SingleRepositoryAction.class.getName());
 
     @Override
     protected final void performContextAction (Node[] nodes) {

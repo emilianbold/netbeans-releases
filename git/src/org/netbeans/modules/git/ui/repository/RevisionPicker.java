@@ -40,46 +40,31 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.ui.repository;
 
-import java.awt.Color;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.io.File;
 
 /**
  *
  * @author ondra
  */
-public final class GitModuleConfig {
-    
-    private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    
-    public static GitModuleConfig getDefault () {
-        if (instance == null) {
-            instance = new GitModuleConfig();
-        }
-        return instance;
-    }
-    
-    private GitModuleConfig() {
-        
+public class RevisionPicker {
+    private final RevisionPickerDialog panel;
+
+    public RevisionPicker (File repository) {
+        panel = new RevisionPickerDialog();
     }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
+    public RevisionPickerDialog getPanel () {
+        return panel;
     }
 
-    public Color getColor(String colorName, Color defaultColor) {
-         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
-         return new Color(colorRGB);
+    public void setEnabled (boolean enabled) {
+        panel.btnSelectRevision.setEnabled(enabled);
+        panel.revisionField.setEnabled(enabled);
     }
 
-    public void setColor(String colorName, Color value) {
-         getPreferences().putInt(colorName, value.getRGB());
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(GitModuleConfig.class);
+    public String getRevision () {
+        return panel.revisionField.getText();
     }
 }

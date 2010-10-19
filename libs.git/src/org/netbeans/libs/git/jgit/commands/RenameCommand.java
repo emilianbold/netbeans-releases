@@ -85,4 +85,9 @@ public class RenameCommand extends MoveTreeCommand {
         }
         return retval;
     }
+
+    @Override
+    protected String getCommandDescription() {
+        return "move"; //NOI18N
+    }
 }

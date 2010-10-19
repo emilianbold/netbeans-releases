@@ -101,12 +101,12 @@ public class RemoveCommand extends GitCommand {
                             treeWalk.enterSubtree();
                             if (Utils.isUnderOrEqual(treeWalk, pathFilters)) {
                                 if (!cached) {
-                                    listener.notifyFile(path);
+                                    listener.notifyFile(path, treeWalk.getPathString());
                                 }
                                 edit.add(new DirCacheEditor.DeleteTree(treeWalk.getPathString()));
                             }
                         } else {
-                            listener.notifyFile(path);
+                            listener.notifyFile(path, treeWalk.getPathString());
                             edit.add(new DirCacheEditor.DeletePath(treeWalk.getPathString()));
                         }
                     }
@@ -126,5 +126,10 @@ public class RemoveCommand extends GitCommand {
         } catch (IOException ex) {
             throw new GitException(ex);
         }
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        return "rm"; //NOI18N
     }
 }

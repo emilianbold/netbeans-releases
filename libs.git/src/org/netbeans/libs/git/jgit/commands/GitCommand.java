@@ -60,13 +60,13 @@ public abstract class GitCommand {
     }
 
     public final void execute () throws GitException {
-        monitor.started();
-        try {
-            if (prepareCommand()) {
+        if (prepareCommand()) {
+            try {
+                monitor.started(getCommandDescription());
                 run();
+            } finally {
+                monitor.finished();
             }
-        } finally {
-            monitor.finished();
         }
     }
 
@@ -76,6 +76,7 @@ public abstract class GitCommand {
         boolean repositoryExists = repository.getDirectory().exists();
         if (!repositoryExists) {
             monitor.preparationsFailed("Git repository does not exist at " + repository.getWorkTree());
+            throw new GitException("Git repository does not exist at " + repository.getWorkTree());
         }
         return repositoryExists;
     }
@@ -83,4 +84,6 @@ public abstract class GitCommand {
     protected Repository getRepository () {
         return repository;
     }
+
+    protected abstract String getCommandDescription ();
 }

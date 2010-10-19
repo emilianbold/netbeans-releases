@@ -40,46 +40,62 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.ui.checkout;
 
-import java.awt.Color;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import javax.swing.JButton;
+import org.netbeans.modules.git.ui.repository.RevisionPicker;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public final class GitModuleConfig {
-    
-    private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    
-    public static GitModuleConfig getDefault () {
-        if (instance == null) {
-            instance = new GitModuleConfig();
+public class CheckoutPaths implements ActionListener {
+    private CheckoutPathsPanel panel;
+    private RevisionPicker revisionPicker;
+
+    CheckoutPaths (File repository, File[] roots) {
+        revisionPicker = new RevisionPicker(repository);
+        panel = new CheckoutPathsPanel(revisionPicker.getPanel());
+    }
+
+    String getRevision() {
+        String revision = null;
+        if (panel.cbUpdateIndex.isSelected()) {
+            revision = revisionPicker.getRevision();
         }
-        return instance;
+        return revision;
     }
-    
-    private GitModuleConfig() {
+
+    boolean show() {
+        panel.cbUpdateIndex.addActionListener(this);
+        enableRevisionPanel();
         
+        JButton okButton = new JButton(NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.OKButton.text")); //NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(okButton, okButton.getText());
+        DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CheckoutPaths.class, "LBL_CheckoutPaths.title"), true,  //NOI18N
+                new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CheckoutPaths.class), null);
+        Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+        d.setVisible(true);
+        return okButton == dd.getValue();
     }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
+    @Override
+    public void actionPerformed (ActionEvent e) {
+        if (panel.cbUpdateIndex == e.getSource()) {
+            enableRevisionPanel();
+        }
     }
 
-    public Color getColor(String colorName, Color defaultColor) {
-         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
-         return new Color(colorRGB);
+    private void enableRevisionPanel () {
+        revisionPicker.setEnabled(panel.cbUpdateIndex.isSelected());
     }
 
-    public void setColor(String colorName, Color value) {
-         getPreferences().putInt(colorName, value.getRGB());
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(GitModuleConfig.class);
-    }
 }

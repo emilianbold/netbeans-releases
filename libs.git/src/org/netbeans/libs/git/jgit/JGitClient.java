@@ -226,14 +226,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
 
     // <editor-fold defaultstate="collapsed" desc="listener methods">
     @Override
-    public void notifyFile(File file) {
+    public void notifyFile (File file, String relativePathToRoot) {
         List<NotificationListener> lists;
         synchronized (listeners) {
             lists = new LinkedList<NotificationListener>(listeners);
         }
         for (NotificationListener list : lists) {
             if (list instanceof FileListener) {
-                ((FileListener) list).notifyFile(file);
+                ((FileListener) list).notifyFile(file, relativePathToRoot);
             }
         }
     }

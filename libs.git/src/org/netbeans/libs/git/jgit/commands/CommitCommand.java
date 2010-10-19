@@ -191,4 +191,9 @@ public class CommitCommand extends GitCommand {
             cache.unlock();
         }
     }
+    
+    @Override
+    protected String getCommandDescription () {
+        return "commit"; //NOI18N
+    }
 }

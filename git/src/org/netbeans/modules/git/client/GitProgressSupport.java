@@ -43,14 +43,19 @@
 package org.netbeans.modules.git.client;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -66,11 +71,14 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
 
     private ProgressHandle progressHandle = null;
     private String displayName = ""; // NOI18N
+    private String originalDisplayName;
     private File repositoryRoot;
     private RequestProcessor.Task task;
     private GitClient gitClient;
+    private OutputLogger logger;
 
     public RequestProcessor.Task start (RequestProcessor rp, File repositoryRoot, String displayName) {
+        this.originalDisplayName = displayName;
         setDisplayName(displayName);
         this.repositoryRoot = repositoryRoot;
         startProgress();
@@ -87,14 +95,14 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
 
     protected void performIntern () {
         try {
-//            log("Start - " + displayName); // NOI18N
+            LOG.log(Level.FINE, "Start - {0}", originalDisplayName); //NOI18N
             if(!canceled) {
                 perform();
             }
         } finally {
-//            log("End - " + displayName); // NOI18N
+            LOG.log(Level.FINE, "End - {0}", originalDisplayName); //NOI18N
             finnishProgress();
-//            getLogger().closeLog();
+            getLogger().closeLog();
         }
     }
 
@@ -134,18 +142,29 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
     }
 
     protected ProgressHandle getProgressHandle () {
-        if(progressHandle==null) {
-            progressHandle = ProgressHandleFactory.createHandle(displayName, this);
+        if (progressHandle == null) {
+            Action openAction = getLogger().getOpenOutputAction();
+            if (openAction == null) {
+                progressHandle = ProgressHandleFactory.createHandle(displayName, this);
+            } else {
+                progressHandle = ProgressHandleFactory.createHandle(displayName, this, openAction);
+            }
         }
         return progressHandle;
     }
 
     protected void startProgress () {
         getProgressHandle().start();
+        getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName); // NOI18N
     }
 
     protected void finnishProgress () {
         getProgressHandle().finish();
+        if (isCanceled() == false) {
+            getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Finished")); // NOI18N
+        } else {
+            getLogger().output("==[IDE]== " + DateFormat.getDateTimeInstance().format(new Date()) + " " + originalDisplayName + " " + org.openide.util.NbBundle.getMessage(GitProgressSupport.class, "MSG_Progress_Canceled")); // NOI18N
+        }
     }
 
     protected File getRepositoryRoot () {
@@ -177,32 +196,84 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
     }
 
     @Override
-    public void started() {
-        
+    public void started (String command) {
+        LOG.log(Level.FINE, "command started: {0}", command); //NOI18N
+        getLogger().output(command);
     }
 
     @Override
     public void finished() {
-        
+        LOG.log(Level.FINE, "command finished"); //NOI18N
     }
 
     @Override
-    public void preparationsFailed(String message) {
-        
+    public void preparationsFailed (String message) {
+        LOG.log(Level.FINE, "command could not start: {0}", message); //NOI18N
+        getLogger().output("command could not start: " + message);
     }
 
     @Override
     public void notifyError(String message) {
-        
+        LOG.log(Level.FINE, "error: {0}", message); //NOI18N
+        getLogger().output("error: " + message);
     }
 
     @Override
     public void notifyWarning(String message) {
-        
+        LOG.log(Level.FINE, "warning: {0}", message); //NOI18N
+        getLogger().output("warning: " + message);
     }
 
     private void setProgressMessage (ProgressHandle progressHandle, String message) {
         LOG.log(Level.FINER, "New status of progress: {0}", message);
         progressHandle.progress(message);
+    }
+
+    private OutputLogger getLogger () {
+        if (logger == null) {
+            logger = OutputLogger.getLogger(repositoryRoot);
+        }
+        return logger;
+    }
+
+    public class DefaultFileListener implements FileListener {
+        String lastNotified;
+        private final File[] roots;
+
+        public DefaultFileListener (File[] roots) {
+            this.roots = roots;
+        }
+
+        @Override
+        public void notifyFile (File file, String relativePathToRoot) {
+            getLogger().outputFile(relativePathToRoot, file, 0);
+
+            String directChildPath = getDirectChildPath(file, relativePathToRoot, roots);
+            if (!directChildPath.isEmpty() && !directChildPath.equals(lastNotified)) {
+                setProgress(repositoryRoot.getName() + "/" + directChildPath); //NOI18N
+            }
+        }
+
+        private String getDirectChildPath (File file, String relativePath, File[] roots) {
+            File directChild = null;
+            String directChildPath = relativePath;
+            while (directChild == null && !directChildPath.isEmpty()) {
+                for (File root : roots) {
+                    directChild = getDirectChild(file, root);
+                    if (directChild != null) {
+                        break;
+                    }
+                }
+                if (directChild == null) {
+                    file = file.getParentFile();
+                    directChildPath = directChildPath.substring(0, directChildPath.lastIndexOf("/")); //NOI18N
+                }
+            }
+            return directChildPath;
+        }
+
+        private File getDirectChild (File file, File root) {
+            return (file.equals(root) || root.equals(file.getParentFile())) ? file : null;
+        }
     }
 }

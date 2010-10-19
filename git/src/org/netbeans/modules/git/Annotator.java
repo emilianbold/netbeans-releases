@@ -54,6 +54,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -102,12 +104,16 @@ public class Annotator extends VCSAnnotator {
         List<Action> actions = new LinkedList<Action>();
         if (destination.equals(ActionDestination.MainMenu)) {
             actions.add(SystemAction.get(StatusAction.class));
+            actions.add(SystemAction.get(CheckoutPathsAction.class));
+            actions.add(null);
+            actions.add(SystemAction.get(OpenOutputAction.class));
         } else {
             Lookup lkp = context.getElements();
             if (noneVersioned) {
 
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
             }
         }
 

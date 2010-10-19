@@ -40,46 +40,21 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.ui.output;
 
-import java.awt.Color;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 
 /**
  *
  * @author ondra
  */
-public final class GitModuleConfig {
-    
-    private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    
-    public static GitModuleConfig getDefault () {
-        if (instance == null) {
-            instance = new GitModuleConfig();
-        }
-        return instance;
-    }
-    
-    private GitModuleConfig() {
-        
+public class OpenOutputAction extends MultipleRepositoryAction {
+
+    @Override
+    protected void performAction (File repository, File[] roots) {
+        OutputLogger.getLogger(repository).getOpenOutputAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, repository.getAbsolutePath()));
     }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
-    }
-
-    public Color getColor(String colorName, Color defaultColor) {
-         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
-         return new Color(colorRGB);
-    }
-
-    public void setColor(String colorName, Color value) {
-         getPreferences().putInt(colorName, value.getRGB());
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(GitModuleConfig.class);
-    }
 }

@@ -49,5 +49,5 @@ import java.io.File;
  * @author ondra
  */
 public interface FileListener extends NotificationListener {
-    public void notifyFile (File file);
+    public void notifyFile (File file, String relativePathToRoot);
 }

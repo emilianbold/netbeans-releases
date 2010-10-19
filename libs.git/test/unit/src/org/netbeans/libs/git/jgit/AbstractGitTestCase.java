@@ -223,7 +223,7 @@ public class AbstractGitTestCase extends NbTestCase {
         }
 
         @Override
-        public void notifyFile (File file) {
+        public void notifyFile (File file, String relativePathToRoot) {
             notifiedFiles.add(file);
             barrierReached();
         }

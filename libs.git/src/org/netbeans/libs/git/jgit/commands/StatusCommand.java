@@ -93,6 +93,11 @@ public class StatusCommand extends GitCommand {
     }
 
     @Override
+    protected String getCommandDescription () {
+        return "status"; //NOI18N
+    }
+
+    @Override
     protected void run () throws GitException {
         Repository repository = getRepository();
         try {

@@ -56,4 +56,9 @@ public class CopyCommand extends MoveTreeCommand {
     public CopyCommand (Repository repository, File source, File target, ProgressMonitor monitor, FileListener listener) {
         super(repository, source, target, true, true, monitor, listener);
     }
+
+    @Override
+    protected String getCommandDescription() {
+        return "copy"; //NOI18N
+    }
 }

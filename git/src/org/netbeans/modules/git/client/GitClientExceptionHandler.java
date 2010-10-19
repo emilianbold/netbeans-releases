@@ -40,46 +40,60 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.client;
 
-import java.awt.Color;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.util.logging.Level;
+import javax.swing.JButton;
+import org.netbeans.modules.git.Git;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public final class GitModuleConfig {
-    
-    private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    
-    public static GitModuleConfig getDefault () {
-        if (instance == null) {
-            instance = new GitModuleConfig();
+public class GitClientExceptionHandler {
+
+    public static void notifyException (Exception ex, boolean annotate) {
+        if(isCancelledAction(ex)) {
+            return;
         }
-        return instance;
+        Git.LOG.log(Level.INFO, ex.getMessage(), ex);
+        if( annotate ) {
+            String msg = getMessage(ex);
+            annotate(msg);
+        }
+    }
+
+    public static void annotate (String msg) {
+        CommandReport report = new CommandReport(NbBundle.getMessage(GitClientExceptionHandler.class, "MSG_SubversionCommandError"), msg); //NOI18N
+        JButton ok = new JButton(NbBundle.getMessage(GitClientExceptionHandler.class, "CTL_CommandReport_OK")); //NOI18N
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                report,
+                NbBundle.getMessage(GitClientExceptionHandler.class, "MSG_CommandFailed_Title"), //NOI18N
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object [] { ok },
+                ok);
+        DialogDisplayer.getDefault().notify(descriptor);
     }
     
-    private GitModuleConfig() {
-        
+    private static boolean isCancelledAction (final Exception ex) {
+        Throwable sourceException = ex;
+        while (sourceException != null && !(sourceException instanceof GitCanceledException)) {
+            sourceException = sourceException.getCause();
+        }
+        return sourceException instanceof GitCanceledException;
     }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
-    }
-
-    public Color getColor(String colorName, Color defaultColor) {
-         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
-         return new Color(colorRGB);
-    }
-
-    public void setColor(String colorName, Color value) {
-         getPreferences().putInt(colorName, value.getRGB());
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(GitModuleConfig.class);
+    private static String getMessage (final Exception ex) {
+        Throwable cause = ex;
+        String message = cause.getLocalizedMessage();
+        while (message == null && cause != null) {
+            message = cause.getLocalizedMessage();
+            cause = cause.getCause();
+        }
+        return message == null ? "" : message; //NOI18N
     }
 }

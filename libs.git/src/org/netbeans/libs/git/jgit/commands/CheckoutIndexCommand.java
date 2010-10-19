@@ -102,7 +102,7 @@ public class CheckoutIndexCommand extends GitCommand {
                 FileTreeIterator fit = treeWalk.getTree(1, FileTreeIterator.class);
                 if (dit != null && (fit == null || fit.isModified(dit.getDirCacheEntry(), true, true, FS.DETECTED))) {
                     // update entry
-                    listener.notifyFile(path);
+                    listener.notifyFile(path, treeWalk.getPathString());
                     checkoutEntry(repository, path, dit.getDirCacheEntry());
                 }
             }
@@ -149,5 +149,10 @@ public class CheckoutIndexCommand extends GitCommand {
             monitor.notifyWarning("Replacing file " + predecessor.getAbsolutePath());
         }
         return parentFolder.mkdirs() || parentFolder.exists();
+    }
+
+    @Override
+    protected String getCommandDescription () {
+        return "checkout"; //NOI18N
     }
 }

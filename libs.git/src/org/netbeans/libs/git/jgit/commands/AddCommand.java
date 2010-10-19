@@ -81,6 +81,11 @@ public class AddCommand extends GitCommand {
     }
 
     @Override
+    protected String getCommandDescription () {
+        return "add"; //NOI18N
+    }
+
+    @Override
     protected void run() throws GitException {
         Repository repository = getRepository();
         try {
@@ -89,20 +94,20 @@ public class AddCommand extends GitCommand {
             try {
                 cache = repository.lockDirCache();
                 DirCacheBuilder builder = cache.builder();
-                TreeWalk treeeWalk = new TreeWalk(repository);
+                TreeWalk treeWalk = new TreeWalk(repository);
                 Collection<String> relativePaths = Utils.getRelativePaths(repository.getWorkTree(), roots);
                 if (!relativePaths.isEmpty()) {
-                    treeeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
+                    treeWalk.setFilter(PathFilterGroup.createFromStrings(relativePaths));
                 }
-                treeeWalk.setRecursive(true);
-                treeeWalk.reset();
-                treeeWalk.addTree(new DirCacheBuildIterator(builder));
-                treeeWalk.addTree(new FileTreeIterator(repository));
+                treeWalk.setRecursive(true);
+                treeWalk.reset();
+                treeWalk.addTree(new DirCacheBuildIterator(builder));
+                treeWalk.addTree(new FileTreeIterator(repository));
                 String lastAddedFile = null;
-                while (treeeWalk.next() && !monitor.isCanceled()) {
-                    String path = treeeWalk.getPathString();
-                    WorkingTreeIterator f = treeeWalk.getTree(1, WorkingTreeIterator.class);
-                    if (treeeWalk.getTree(0, DirCacheIterator.class) == null && f != null && f.isEntryIgnored()) {
+                while (treeWalk.next() && !monitor.isCanceled()) {
+                    String path = treeWalk.getPathString();
+                    WorkingTreeIterator f = treeWalk.getTree(1, WorkingTreeIterator.class);
+                    if (treeWalk.getTree(0, DirCacheIterator.class) == null && f != null && f.isEntryIgnored()) {
                         // file is not in index but is ignored, do nothing
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
@@ -118,14 +123,14 @@ public class AddCommand extends GitCommand {
                             } finally {
                                 in.close();
                             }
-                            DirCacheIterator it = treeeWalk.getTree(0, DirCacheIterator.class);
+                            DirCacheIterator it = treeWalk.getTree(0, DirCacheIterator.class);
                             if (it == null || !it.getDirCacheEntry().getObjectId().equals(entry.getObjectId())) {
-                                listener.notifyFile(file);
+                                listener.notifyFile(file, path);
                             }
                             builder.add(entry);
                             lastAddedFile = path;
                         } else {
-                            DirCacheIterator c = treeeWalk.getTree(0, DirCacheIterator.class);
+                            DirCacheIterator c = treeWalk.getTree(0, DirCacheIterator.class);
                             builder.add(c.getDirCacheEntry());
                         }
                     }

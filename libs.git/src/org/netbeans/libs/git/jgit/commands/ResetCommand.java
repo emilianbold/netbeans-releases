@@ -108,6 +108,11 @@ public class ResetCommand extends GitCommand {
     }
 
     @Override
+    protected String getCommandDescription () {
+        return "reset"; //NOI18N
+    }
+
+    @Override
     protected void run() throws GitException {
         Repository repository = getRepository();
         RevCommit commit = Utils.findCommit(repository, revisionStr);
@@ -148,12 +153,12 @@ public class ResetCommand extends GitCommand {
                                 }
                                 if (modeRev == FileMode.MISSING.getBits()) {
                                     // remove from index
-                                    listener.notifyFile(path);
+                                    listener.notifyFile(path, treeWalk.getPathString());
                                     toDelete.add(path);
                                 } else if (modeRev != FileMode.MISSING.getBits() && modeCache != FileMode.MISSING.getBits() && !objIdCache.equals(objIdRev)
                                         || modeCache == FileMode.MISSING.getBits()) {
                                     // add entry
-                                    listener.notifyFile(path);
+                                    listener.notifyFile(path, treeWalk.getPathString());
                                     DirCacheEntry e = new DirCacheEntry(treeWalk.getPathString());
                                     AbstractTreeIterator it = treeWalk.getTree(1, AbstractTreeIterator.class);
                                     e.setFileMode(it.getEntryFileMode());

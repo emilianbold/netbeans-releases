@@ -40,46 +40,46 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git;
+package org.netbeans.modules.git.ui.actions;
 
-import java.awt.Color;
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.io.File;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author ondra
  */
-public final class GitModuleConfig {
-    
-    private static GitModuleConfig instance;
-    private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
-    
-    public static GitModuleConfig getDefault () {
-        if (instance == null) {
-            instance = new GitModuleConfig();
+public abstract class MultipleRepositoryAction extends GitAction {
+
+    private static final Logger LOG = Logger.getLogger(MultipleRepositoryAction.class.getName());
+
+    @Override
+    protected final void performContextAction (Node[] nodes) {
+        final VCSContext context = getCurrentContext(nodes);
+        Git.getInstance().getRequestProcessor().post(new Runnable () {
+            @Override
+            public void run() {
+                performAction(context);
+            }
+        });
+    }
+
+    public final void performAction (VCSContext context) {
+        Set<File> repositories = GitUtils.getRepositoryRoots(context);
+        if (repositories.isEmpty()) {
+            LOG.log(Level.FINE, "No repository in the current context: {0}", context.getRootFiles()); //NOI18N
+            return;
         }
-        return instance;
-    }
-    
-    private GitModuleConfig() {
-        
+        for (File repository : repositories) {
+            performAction(repository, GitUtils.filterForRepository(context, repository));
+        }
     }
 
-    public boolean isExcludedFromCommit(String absolutePath) {
-        return false;
-    }
-
-    public Color getColor(String colorName, Color defaultColor) {
-         int colorRGB = getPreferences().getInt(colorName, defaultColor.getRGB());
-         return new Color(colorRGB);
-    }
-
-    public void setColor(String colorName, Color value) {
-         getPreferences().putInt(colorName, value.getRGB());
-    }
-
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(GitModuleConfig.class);
-    }
+    protected abstract void performAction (File repository, File[] roots);
 }
