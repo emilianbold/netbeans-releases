@@ -56,7 +56,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,7 +79,6 @@ import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
@@ -106,7 +104,7 @@ import org.openide.util.Utilities;
     private boolean isUrl = false;
     private Map<ToolKind,Boolean> lastValid = new ConcurrentHashMap<ToolKind, Boolean>();
 
-    private RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1);
+    private RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1); // NOI18N
 
     private final ToolsPanel manager;
 
