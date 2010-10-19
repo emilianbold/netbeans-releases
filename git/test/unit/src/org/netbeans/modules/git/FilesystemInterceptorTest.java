@@ -496,12 +496,11 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         // init
         File file = new File(repositoryLocation, "file");
 
-        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(repositoryLocation);
-        handler.setFilesToRefresh(Collections.singleton(file));
+        h.setFilesToRefresh(Collections.singleton(file));
         // create
         FileObject fo = FileUtil.toFileObject(repositoryLocation);
         fo.createData(file.getName());
-        handler.waitForFilesToRefresh();
+        assertTrue(h.waitForFilesToRefresh());
 
         // test
         assertTrue(file.exists());
@@ -517,34 +516,34 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
 
         // delete
-        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(repositoryLocation);
-        handler.setFilesToRefresh(Collections.singleton(fileA));
+        h.setFilesToRefresh(Collections.singleton(fileA));
         FileObject fo = FileUtil.toFileObject(fileA);
         fo.delete();
-        handler.waitForFilesToRefresh();
+        assertTrue(h.waitForFilesToRefresh());
 
         // test if deleted
         assertFalse(fileA.exists());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX), getCache().getStatus(fileA).getStatus());
 
         // create
-        handler.setFilesToRefresh(Collections.singleton(fileA));
+        h.setFilesToRefresh(Collections.singleton(fileA));
         fo.getParent().createData(fo.getName());
-        handler.waitForFilesToRefresh();
+        assertTrue(h.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
-        // actually should be uptodate, but we have no reset
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
     }
 
     public void testDeleteA_CreateA_RunAtomic() throws Exception {
         // init
         final File fileA = new File(repositoryLocation, "A");
+        h.setFilesToRefresh(Collections.singleton(fileA));
         fileA.createNewFile();
         add();
         commit();
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
+        assertTrue(h.waitForFilesToRefresh());
 
         final FileObject fo = FileUtil.toFileObject(fileA);
         AtomicAction a = new AtomicAction() {
@@ -554,15 +553,13 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
                 fo.getParent().createData(fo.getName());
             }
         };
-        StatusRefreshLogHandler handler = new StatusRefreshLogHandler(repositoryLocation);
-        handler.setFilesToRefresh(Collections.singleton(fileA));
+        h.setFilesToRefresh(Collections.singleton(fileA));
         fo.getFileSystem().runAtomicAction(a);
-        handler.waitForFilesToRefresh();
+        assertTrue(h.waitForFilesToRefresh());
 
         // test
         assertTrue(fileA.exists());
-        // actually should be uptodate, but we have no reset
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
     }
 
     public void testRenameVersionedFile_DO() throws Exception {
@@ -1101,6 +1098,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(fromFile).getStatus());
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), getCache().getStatus(toFile).getStatus());
     }
+
     public void testCopyA2B2C_DO() throws Exception {
         // init
         File fileA = new File(repositoryLocation, "A");
@@ -2125,12 +2123,9 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(fileB.exists());
         assertTrue(fileA.exists());
 
-        // reset needed, should be uptodate
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
         FileInformation info = getCache().getStatus(fileB);
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
-        assertTrue(info.isRenamed());
-        assertEquals(fileA, info.getOldFile());
     }
 
     public void testMoveA2B_CreateA_DO() throws Exception {
@@ -2156,12 +2151,9 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(fileB.exists());
         assertTrue(fileA.exists());
 
-        // reset needed, should be uptodate
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
         FileInformation info = getCache().getStatus(fileB);
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
-        assertTrue(info.isRenamed());
-        assertEquals(fileA, info.getOldFile());
     }
 
     public void testDeleteA_RenameB2A_DO_129805() throws Exception {
@@ -2184,7 +2176,6 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertFalse(fileB.exists());
         assertTrue(fileA.exists());
 
-        // reset needed, should be uptodate
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
     }
 
@@ -2778,7 +2769,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(fileA.exists());
 
         //should be uptodate
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
         FileInformation info = getCache().getStatus(fileB);
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
         assertEquals(fileA, info.getOldFile());
@@ -2811,7 +2802,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertTrue(fileA.exists());
 
         //should be uptodate
-        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), getCache().getStatus(fileA).getStatus());
+        assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(fileA).getStatus());
         FileInformation info = getCache().getStatus(fileB);
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX), info.getStatus());
         assertEquals(fileA, info.getOldFile());

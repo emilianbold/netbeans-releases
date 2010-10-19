@@ -68,8 +68,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * TODO: handle initial git scan
- * TODO: handle FS events
  * @author ondra
  */
 class FilesystemInterceptor extends VCSInterceptor {
@@ -108,20 +106,15 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "beforeCreate {0} - {1}", new Object[] { file, isDirectory }); //NOI18N
         if (GitUtils.isPartOfGitMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation info = cache.getStatus(file);
-            if (info.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_INDEX)) {
-                LOG.log(Level.FINE, "beforeCreate(): Deleted in index: {0}", file); // NOI18N
-                Git git = Git.getInstance();
-                final File root = git.getRepositoryRoot(file);
-                if (root == null) return false;
-                // TODO reset in API needed
-//                try {
-//                    git.getClient(root).reset(repository, file, MIXED);
-//                } catch (GitException ex) {
-//                    LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
-//                }
-                LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
+            Git git = Git.getInstance();
+            final File root = git.getRepositoryRoot(file);
+            if (root == null) return false;
+            try {
+                git.getClient(root).reset(new File[] { file }, "HEAD", ProgressMonitor.NULL_PROGRESS_MONITOR);
+            } catch (GitException ex) {
+                LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
             }
+            LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
         }
         return false;
     }
@@ -512,9 +505,6 @@ class FilesystemInterceptor extends VCSInterceptor {
             Git.STATUS_LOG.log(Level.FINEST, "GitFolderEventsHandler.initializeFiles: finished"); //NOI18N
         }
 
-        // TODO: unit test - automatic refresh following outside events
-        // TODO: unit test - NO automatic refresh after IDE events
-        // TODO: unit test - listen only for changes on INDEX file, not the whole .git folder (e.g. after fetch, push, etc.)
         private long refreshAdminFolder (File gitFolder) {
             long lastModified = 0;
             if (AUTOMATIC_REFRESH_ENABLED && !"false".equals(System.getProperty("versioning.git.handleExternalEvents", "true"))) { //NOI18N
