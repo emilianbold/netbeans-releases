@@ -221,8 +221,7 @@ public class RemoteFileSystemsProvider extends CndFileSystemProvider {
         if (pathStartsWith(path, prefix)) {
             CharSequence start = path.subSequence(0, prefix.length());
             CharSequence rest = path.subSequence(prefix.length(), path.length());
-            return start +
-                    (CndFileUtils.isSystemCaseSensitive() ? rest.toString() : RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString()));
+            return start + RemoteFileSupport.fixCaseSensitivePathIfNeeded(rest.toString());
         }
         return null;
     }

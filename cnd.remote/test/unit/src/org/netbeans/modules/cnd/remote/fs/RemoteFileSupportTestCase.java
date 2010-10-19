@@ -67,7 +67,7 @@ public class RemoteFileSupportTestCase extends CndBaseTestCase {
                                                             { "ccdir", "ccdir"}
                                                           };
         for (String[] pair : data) {
-            assertEquals(pair[1], RemoteFileSupport.fixCaseSensitivePathIfNeeded(pair[0]));
+            assertEquals(pair[1], RemoteFileSupport.testFixCaseSensitivePathIfNeeded(pair[0]));
             assertEquals(pair[0], RemoteFileSupport.fromFixedCaseSensitivePathIfNeeded(pair[1]));
         }
     }
