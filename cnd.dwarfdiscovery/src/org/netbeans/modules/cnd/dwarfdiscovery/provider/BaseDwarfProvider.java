@@ -324,12 +324,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (WrongFileFormatException ex) {
-            // Skip Exception
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (IOException ex) {
-            // Skip Exception
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName);  // NOI18N
+                ex.printStackTrace();
+            }
         } catch (Exception ex) {
-            // Skip Exception
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName);  // NOI18N
+                ex.printStackTrace();
+            }
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -603,7 +614,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
 
         @Override
         public String toString() {
-            return path+":"+line; //NOI18n
+            return path+":"+line; //NOI18N
         }
     }
 }
