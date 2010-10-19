@@ -232,8 +232,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         buttonGroup.add(rbExistent);
-        rbExistent.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbExistent.mnemonic").charAt(0));
-        rbExistent.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbExistent.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbExistent, org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbExistent.text")); // NOI18N
         rbExistent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 selectExistentHostActionPerformed(evt);
@@ -248,8 +247,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         add(rbExistent, gridBagConstraints);
 
         buttonGroup.add(rbNew);
-        rbNew.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/wizard/Bundle").getString("SelectHostVisualPanel.rbNew.mnemonic").charAt(0));
-        rbNew.setText(org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbNew.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rbNew, org.openide.util.NbBundle.getMessage(SelectHostVisualPanel.class, "SelectHostVisualPanel.rbNew.text")); // NOI18N
         rbNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 setupNewHostActionPerformed(evt);
@@ -330,7 +328,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
     private javax.swing.JPanel newHostPane;
     private javax.swing.JRadioButton rbExistent;
     private javax.swing.JRadioButton rbNew;
-    // End of variables declaration                   
+    // End of variables declaration//GEN-END:variables
 
     void enableControls(boolean enable) {
         rbExistent.setEnabled(enable);
@@ -338,7 +336,7 @@ public final class SelectHostVisualPanel extends javax.swing.JPanel {
         lstDevHosts.setEnabled(enable);
         createHostPanel.setEnabled(enable);
     }
-    // End of variables declaration//GEN-END:variables
+    // End of variables declaration
 
     private final class HostListCellRenderer extends DefaultListCellRenderer {
 
