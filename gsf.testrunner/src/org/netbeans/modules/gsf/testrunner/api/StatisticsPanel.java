@@ -73,9 +73,9 @@ final class StatisticsPanel extends JPanel {
     /** */
     private final ResultPanelTree treePanel;
     /** */
-    private JToggleButton btnFilterPassed;
-    private JToggleButton btnFilterFailed;
-    private JToggleButton btnFilterError;
+    private JToggleButton btnShowPassed;
+    private JToggleButton btnShowFailed;
+    private JToggleButton btnShowError;
 
     /**
      * Rerun button for running (all) tests again.
@@ -113,7 +113,7 @@ final class StatisticsPanel extends JPanel {
     /**
      */
     private JComponent createToolbar() {
-        createFilterButtons();
+        createShowButtons();
         createRerunButtons();
         createNextPrevFailureButtons();
 
@@ -121,9 +121,9 @@ final class StatisticsPanel extends JPanel {
         toolbar.add(rerunButton);
         toolbar.add(rerunFailedButton);
         toolbar.add(new JToolBar.Separator());
-        toolbar.add(btnFilterPassed);
-        toolbar.add(btnFilterFailed);
-        toolbar.add(btnFilterError);
+        toolbar.add(btnShowPassed);
+        toolbar.add(btnShowFailed);
+        toolbar.add(btnShowError);
         toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
@@ -151,16 +151,19 @@ final class StatisticsPanel extends JPanel {
         final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
         if (rerunHandler != null) {
             rerunButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun();
                 }
             });
             rerunFailedButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun(treePanel.getFailedTests());
                 }
             });
             rerunHandler.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     updateButtons();
                 }
@@ -178,25 +181,25 @@ final class StatisticsPanel extends JPanel {
                                      !treePanel.getFailedTests().isEmpty());
     }
 
-    private void createFilterButtons() {
-        btnFilterPassed = newFilterButton(
-               "org/netbeans/modules/gsf/testrunner/resources/filterPassed.png",
-               "StatisticsPanel.btnFilterPassed",
-               "ACSN_FilterPassedButton",
+    private void createShowButtons() {
+        btnShowPassed = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/ok_16.png",
+               "StatisticsPanel.btnShowPassed",
+               "ACSN_ShowPassedButton",
                Status.PASSED);
-        btnFilterFailed = newFilterButton(
-               "org/netbeans/modules/gsf/testrunner/resources/filterFailed.png",
-               "StatisticsPanel.btnFilterFailed",
-               "ACSN_FilterFailedButton",
+        btnShowFailed = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/warning_16.png",
+               "StatisticsPanel.btnShowFailed",
+               "ACSN_ShowFailedButton",
                Status.FAILED);
-        btnFilterError = newFilterButton(
-               "org/netbeans/modules/gsf/testrunner/resources/filterError.png",
-               "StatisticsPanel.btnFilterError",
-               "ACSN_FilterErrorButton",
+        btnShowError = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/error_16.png",
+               "StatisticsPanel.btnShowError",
+               "ACSN_ShowErrorButton",
                Status.ERROR);
     }
 
-    private JToggleButton newFilterButton(String iconId,
+    private JToggleButton newShowButton(String iconId,
                                           String tooltipId,
                                           String accessibleNameId,
                                           Status status) {
@@ -205,7 +208,7 @@ final class StatisticsPanel extends JPanel {
         btn.setToolTipText(NbBundle.getMessage(getClass(), tooltipId));
         final String acsn = NbBundle.getMessage(getClass(), accessibleNameId);
         btn.getAccessibleContext().setAccessibleName(acsn);
-        btn.setSelected((filterMask & status.getBitMask()) != 0);
+        btn.setSelected((filterMask & status.getBitMask()) == 0);
         btn.addItemListener(new FilterItemListener(status));
         return btn;
     }
@@ -215,6 +218,7 @@ final class StatisticsPanel extends JPanel {
         nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
         nextFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectNextFailure();
             }
@@ -225,6 +229,7 @@ final class StatisticsPanel extends JPanel {
         previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
         previousFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectPreviousFailure();
             }
@@ -286,12 +291,16 @@ final class StatisticsPanel extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == e.SELECTED) {
-                filterMask |= itemMask;
-            } else if (e.getStateChange() == e.DESELECTED) {
-                filterMask &= ~itemMask;
+            switch(e.getStateChange()) {
+                case ItemEvent.SELECTED:
+                    filterMask &= ~itemMask;
+                    treePanel.setFilterMask(filterMask);
+                    return;
+                case ItemEvent.DESELECTED:
+                    filterMask |= itemMask;
+                    treePanel.setFilterMask(filterMask);
+                    return;
             }
-            treePanel.setFilterMask(filterMask);
         }
     } // FilterItemListener
 
