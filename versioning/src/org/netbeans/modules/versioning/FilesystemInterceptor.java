@@ -201,7 +201,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
     public DeleteHandler getDeleteHandler(File file) {
         LOG.log(Level.FINE, "getDeleteHandler {0}", file);
         removeFromDeletedFiles(file);
-        DelegatingInterceptor dic = getInterceptor(file, false, "beforeDelete", "doDelete"); // NOI18N
+        DelegatingInterceptor dic = getInterceptor(file, (Boolean) null, "beforeDelete", "doDelete"); // NOI18N
         return dic.beforeDelete() ? dic : null;
     }
 
@@ -360,16 +360,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         LOG.log(Level.FINE, "fileLocked {0}", fo);
         getInterceptor(new FileEvent(fo), "beforeEdit").beforeEdit();           // NOI18N
     }
-
+    
     private DelegatingInterceptor getInterceptor(FileEvent fe, String... forMethods) {
         if (master == null) return nullDelegatingInterceptor;
         FileObject fo = fe.getFile();
         if (fo == null) return nullDelegatingInterceptor;
         File file = FileUtil.toFile(fo);
         if (file == null) return nullDelegatingInterceptor;
-
-        VersioningSystem lh = needsLH(forMethods) ? master.getLocalHistory(file) : null;
-        VersioningSystem vs = master.getOwner(file);
+        
+        VersioningSystem lh = needsLH(forMethods) ? master.getLocalHistory(file, !fo.isFolder()) : null;
+        VersioningSystem vs = master.getOwner(file, !fo.isFolder());
 
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : null;
         VCSInterceptor lhInterceptor = lh != null ? lh.getVCSInterceptor() : null;
@@ -394,13 +394,16 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
         }
     }
 
-    private DelegatingInterceptor getInterceptor(File file, boolean isDirectory, String... forMethods) {
+    private DelegatingInterceptor getInterceptor(File file, Boolean isDirectory, String... forMethods) {
         if (file == null || master == null) return nullDelegatingInterceptor;
 
-        VersioningSystem vs = master.getOwner(file);
+        Boolean isFile = isDirectory != null ? !isDirectory : null;
+        isDirectory = isDirectory != null ? isDirectory : false;
+        
+        VersioningSystem vs = master.getOwner(file, isFile);
         VCSInterceptor vsInterceptor = vs != null ? vs.getVCSInterceptor() : nullVCSInterceptor;
 
-        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file) : null;
+        VersioningSystem lhvs = needsLH(forMethods) ? master.getLocalHistory(file, isFile) : null;
         VCSInterceptor localHistoryInterceptor = lhvs != null ? lhvs.getVCSInterceptor() : nullVCSInterceptor;
 
         return new DelegatingInterceptor(vsInterceptor, localHistoryInterceptor, file, null, isDirectory);
