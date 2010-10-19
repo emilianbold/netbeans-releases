@@ -276,6 +276,25 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
     public VersioningSystem getOwner(File file) {
+        return getOwner(file, null);
+    }
+    
+    /**
+     * Determines the versioning system that manages given file.
+     * Owner of a file:
+     * - annotates its label in explorers, editor tab, etc.
+     * - provides menu actions for it
+     * - supplies "original" content of the file
+     * 
+     * Owner of a file may change over time (one common example is the Import command). In such case, the appropriate 
+     * Versioning System is expected to fire the PROP_VERSIONED_ROOTS property change. 
+     * 
+     * @param file a file
+     * @param isFile flag to avoid unnecessary disk access if information already available. Determines
+     *        whether the given file is a file or directory.
+     * @return VersioningSystem owner of the file or null if the file is not under version control
+     */
+    public VersioningSystem getOwner(File file, Boolean isFile) {
         LOG.log(Level.FINE, "looking for owner of {0}", file);
                 
         /**
@@ -302,7 +321,12 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
 
         File folder = file;
-        if (Utils.isFile(file)) {
+        
+        if(isFile == null) {
+            isFile = file.isFile();
+        }
+        
+        if (isFile) {
             folder = file.getParentFile();
             if (folder == null) {
                 LOG.log(Level.FINE, " null parent");
@@ -370,6 +394,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     VersioningSystem getLocalHistory(File file) {
+        return getLocalHistory(file, null);
+    }
+    
+    /**
+     * Returns local history module that handles the given file.
+     * 
+     * @param file the file to examine
+     * @param isFile flag to avoid unnecessary disk access if information already available. Determines
+     *        whether the given file is a file or directory.
+     * @return VersioningSystem local history versioning system or null if there is no local history for the file
+     */
+    VersioningSystem getLocalHistory(File file, Boolean isFile) {
         if (localHistory == null) return null;
 
         synchronized(localHistoryFiles) {
@@ -379,7 +415,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         File folder = file;
-        if (Utils.isFile(file)) {
+        if(isFile == null) {
+            isFile = file.isFile();
+        }
+        if (isFile) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
