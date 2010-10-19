@@ -671,6 +671,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ155577.cc", 8, 12, "IZ155577.h", 2, 1);
     }
 
+    public void testBug190127() throws Exception {
+        // Bug 190127 - Extern declarations without return type are not supported
+        performTest("bug190127.cpp", 14, 40, "bug190127.cpp", 9, 13);
+    }
+
+    public void testBug189838() throws Exception {
+        // Bug 189838 - C++ parser complains about function call on temporary object, if * is used in object constructor
+        performTest("bug189838.cpp", 12, 32, "bug189838.cpp", 6, 5);
+    }
+
+    public void testBug191083() throws Exception {
+        // Bug 191083 - Parser errors in fe_tab.h (ir2hf)
+        performTest("bug191083.cpp", 4, 20, "bug191083.cpp", 1, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
