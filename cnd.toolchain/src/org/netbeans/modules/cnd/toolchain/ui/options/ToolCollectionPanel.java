@@ -48,6 +48,8 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
 import java.awt.event.ItemEvent;
@@ -70,6 +72,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -564,7 +567,14 @@ import org.openide.util.Utilities;
             return false;
         }
         if (checkBaseFolder) {
-            if (!new File(new File(tfBaseDirectory.getText()), fileChooser.getSelectedFile().getName()).exists()) {
+            boolean exists = false;
+            try {
+                exists = HostInfoUtils.fileExists(manager.getExecutionEnvironment(), tfBaseDirectory.getText() + "/" + fileChooser.getSelectedFile().getName()); // NOI18N
+            } catch (ConnectException ex) {
+            } catch (IOException ex) {
+            } catch (InterruptedException ex) {
+            }
+            if (!exists) {
                 NotifyDescriptor nb = new NotifyDescriptor.Message(ToolsPanel.getString("COMPILER_BASE_ERROR"), NotifyDescriptor.ERROR_MESSAGE); // NOI18N
                 DialogDisplayer.getDefault().notify(nb);
                 return false;
