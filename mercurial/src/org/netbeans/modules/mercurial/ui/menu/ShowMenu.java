@@ -65,8 +65,8 @@ public class ShowMenu extends DynamicMenu {
     private boolean bShowAnnotationMenu;
     private boolean bShowAnnotation;
 
-    public ShowMenu(VCSContext ctx, boolean bShowAnnotationMenu,boolean bShowAnnotation) {
-        super(ctx, NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
+    public ShowMenu(boolean bShowAnnotationMenu,boolean bShowAnnotation) {
+        super(NbBundle.getMessage(ShowMenu.class, "CTL_MenuItem_ShowMenu"));
         this.bShowAnnotationMenu = bShowAnnotationMenu;
         this.bShowAnnotation = bShowAnnotation;
     }
