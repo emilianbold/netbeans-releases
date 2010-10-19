@@ -323,23 +323,23 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             actions.add(SystemAction.get(CloneExternalAction.class));
             actions.add(SystemAction.get(FetchAction.class));
-            actions.add(new ShareMenu(ctx));
-            actions.add(new MergeMenu(ctx, false));
+            actions.add(new ShareMenu());
+            actions.add(new MergeMenu(false));
             actions.add(null);
             actions.add(SystemAction.get(LogAction.class));
             if (!onlyProjects  && !onlyFolders) {
                 AnnotateAction tempA = SystemAction.get(AnnotateAction.class);
                 if (tempA.visible(nodes)) {
-                    actions.add(new ShowMenu(ctx, true, true));
+                    actions.add(new ShowMenu(true, true));
                 } else {
-                    actions.add(new ShowMenu(ctx, true, false));
+                    actions.add(new ShowMenu(true, false));
                 }
             }else{
-                actions.add(new ShowMenu(ctx, false, false));
+                actions.add(new ShowMenu(false, false));
             }
             actions.add(null);
             actions.add(SystemAction.get(RevertModificationsAction.class));
-            actions.add(new RecoverMenu(ctx));
+            actions.add(new RecoverMenu());
             if (!onlyProjects) {
                 actions.add(SystemAction.get(IgnoreAction.class));
             }
@@ -379,7 +379,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                             : loc.getString("CTL_PopupMenuItem_ExcludeFromCommit"), context)); //NOI18N
                 }
                 actions.add(null);
-                actions.add(new ShareMenu(context));
+                actions.add(new ShareMenu());
                 actions.add(null);
                 actions.add(SystemActionBridge.createAction(SystemAction.get(PropertiesAction.class), loc.getString("CTL_PopupMenuItem_Properties"), context)); //NOI18N
             }
