@@ -21,10 +21,6 @@ public final class ELElement {
 
     private ELElement(Node node, ELException error, String expression, OffsetRange embeddedOffset, ELParserResult parserResult) {
         assert node == null || error == null;
-        if (node != null) {
-//            assert embeddedOffset.getLength() == node.endOffset() - node.startOffset()
-//                    : "Offsets don't match: " + embeddedOffset + ", node: " + node.startOffset() + "-" + node.endOffset();
-        }
         this.node = node;
         this.embeddedOffset = embeddedOffset;
         this.parserResult = parserResult;
@@ -44,6 +40,15 @@ public final class ELElement {
         return new ELElement(null, error, expression, embeddedOffset, parserResult);
     }
 
+    /**
+     * Makes a copy of this, but with the given {@code node} and {@code expression}.
+     * Can't be invoked on valid elements, and the given {@code node} must represent
+     * a valid expression.
+     * 
+     * @param node 
+     * @param expression
+     * @return a copy of this but with the given {@code node} and {@code expression}.
+     */
     public ELElement makeValidCopy(Node node, String expression) {
         assert !isValid();
         return valid(node, expression, embeddedOffset, parserResult);
