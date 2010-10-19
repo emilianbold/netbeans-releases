@@ -129,11 +129,11 @@ public class RemoteFileSupport extends NamedRunnable {
     private static final String CC_STR = "cc"; // NOI18N
     /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
 
-    /** for TEST purposes ONLY */
     /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
         return _fixCaseSensitivePathIfNeeded(in, false);
     }
 
+    /** for TEST purposes ONLY */
     /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
         return _fixCaseSensitivePathIfNeeded(in, true);
     }
