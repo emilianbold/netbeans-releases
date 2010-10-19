@@ -300,6 +300,17 @@ public class J2SEPersistenceProvider implements PersistenceLocationProvider, Per
                         if (ap == null) {
                             ap = "";
                         }
+                        String approperties = prop.getProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS);
+                        if(approperties == null){
+                            approperties = "";
+                        }
+                        //we need to workaround issue 187653 before we have stable jdk with fix and or fix in eclipselink
+                        if(approperties.indexOf("eclipselink.canonicalmodel.use_static_factory")==-1){//NOI18N
+                            String toadd = (approperties.length()>0 ? " " : "") + "-Aeclipselink.canonicalmodel.use_static_factory=false";//NOI18N
+                            approperties = approperties + toadd;
+                            prop.setProperty(ProjectProperties.ANNOTATION_PROCESSING_PROCESSOR_OPTIONS, approperties);
+                            changed = true;
+                        }
                         //TODO: consider add dependency on j2ee.persistence and get class from persistence provider
                         if (ap.length()>0 && ap.indexOf("org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor") == -1) {//NOI18N
                             Sources sources = ProjectUtils.getSources(project);
