@@ -42,10 +42,8 @@
 package org.netbeans.modules.web.el;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -67,6 +65,11 @@ public final class ELIndex {
         this.querySupport = querySupport;
     }
 
+    /**
+     * Gets the EL index for the given file.
+     * @param file the context.
+     * @return {@code ELIndex} or {@code null}.
+     */
     public static ELIndex get(FileObject file) {
         Project project = FileOwnerQuery.getOwner(file);
         Collection<FileObject> sourceRoots = QuerySupport.findRoots(project,
@@ -86,29 +89,33 @@ public final class ELIndex {
         return null;
     }
 
+    /**
+     * Finds references to the given identifier (i.e. to nodes that the EL parser 
+     *  parses as {@code AstIdentifier}.
+     * @param identifierName the name of the identifier.
+     * @return
+     */
     public Collection<? extends IndexResult> findIdentifierReferences(String identifierName) {
         Collection<? extends IndexResult> queryResults = query(Fields.IDENTIFIER, identifierName, QuerySupport.Kind.EXACT);
         return queryResults;
     }
 
-    public List<IndexedProperty> findPropertyReferences(String propertyName, String managedBeanName) {
-        Collection<? extends IndexResult> queryResults = query(Fields.PROPERTY, propertyName, QuerySupport.Kind.PREFIX);
-        List<IndexedProperty> result = new ArrayList<IndexedProperty>();
-        for (IndexResult ir : queryResults) {
-            for (String value : ir.getValues(Fields.PROPERTY)) {
-                IndexedProperty property = IndexedProperty.decode(value, ir);
-                if (property.getIdentifier().equals(managedBeanName) && property.getProperty().equals(propertyName)) {
-                    result.add(property);
-                }
-            }
-        }
-        return result;
-    }
-
+    /**
+     * Finds references to the given property (i.e. to nodes that the EL parser
+     *  parses as {@code AstPropertySuffix}.
+     * @param propertyName the name of the property.
+     * @return
+     */
     public Collection<? extends IndexResult> findPropertyReferences(String propertyName) {
         return query(Fields.PROPERTY, propertyName, QuerySupport.Kind.EXACT);
     }
 
+    /**
+     * Finds references to the given method (i.e. to nodes that the EL parser
+     *  parses as {@code AstMethodSuffix}.
+     * @param methodName the name of the method.
+     * @return
+     */
     public Collection<? extends IndexResult> findMethodReferences(String methodName) {
         Collection<? extends IndexResult> queryResults = query(Fields.METHOD, methodName, QuerySupport.Kind.EXACT);
         return queryResults;

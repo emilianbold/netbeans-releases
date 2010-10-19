@@ -105,6 +105,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         if (prefixMatcher == null) {
             return CodeCompletionResult.NONE;
         }
+        // see if it is bundle key and if so complete them
         if (target instanceof AstString) {
             ResourceBundles bundle = ResourceBundles.get(getFileObject(context));
             String bundleIdentifier = bundle.findResourceBundleIdentifier(path);
@@ -122,6 +123,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 typeUtilities.resolveElement(element, nodeToResolve);
 
         if (ELTypeUtilities.isScopeObject(nodeToResolve)) {
+            // seems to be something like "sessionScope.^", so complete beans from the scope
             proposeBeansFromScope(context, prefixMatcher, element, nodeToResolve, typeUtilities, proposals);
         } else if(resolved == null) {
             // not yet working properly

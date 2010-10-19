@@ -148,6 +148,9 @@ class WSITRenamePackagePlugin implements RefactoringPlugin {
             return;
         }
         FileObject file = getJavaFile( classFqn , project);
+        if ( file == null ){
+            return;
+        }
         try {
             model = WSITModelSupport.getModelForServiceFromJava(file, 
                     project, false, null);

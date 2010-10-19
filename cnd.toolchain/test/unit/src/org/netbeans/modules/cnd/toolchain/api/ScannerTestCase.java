@@ -187,6 +187,23 @@ public class ScannerTestCase extends NbTestCase {
         }
     }
 
+    public void testGNUpatterns_06() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+	ScannerDescriptor scanner = toolchain.getScanner();
+        ArrayList<String> testPatterns = new ArrayList<String>();
+      	testPatterns.add("                 from ../ccutil/platform.h:9,");
+        String p = scanner.getStackNextPattern();
+        Pattern pattern = Pattern.compile(p);
+        for (String s : testPatterns) {
+            Matcher m = pattern.matcher(s);
+            if (m.find()){
+                assertEquals(trimQuotes(m.group(1)), "../ccutil/platform.h");
+            } else {
+                assertTrue("String "+s+" does not match pattern "+p, false);
+            }
+        }
+    }
+
     private String trimQuotes(String s){
         if (s.length()>2) {
             if (s.startsWith("\"") && s.endsWith("\"")) {

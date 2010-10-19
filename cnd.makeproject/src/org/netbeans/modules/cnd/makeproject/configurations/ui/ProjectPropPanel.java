@@ -214,9 +214,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 
         setLayout(new java.awt.GridBagLayout());
 
-        projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.projectLabel.mn").charAt(0));
         projectLabel.setLabelFor(projectTextField);
-        projectLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(projectLabel, gridBagConstraints);
@@ -248,9 +247,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 
         ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
 
-        ignoreFoldersLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersLabel.mn").charAt(0));
         ignoreFoldersLabel.setLabelFor(ignoreFoldersTextField);
-        ignoreFoldersLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreFoldersLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         ignoreFolderPanel.add(ignoreFoldersLabel, gridBagConstraints);
@@ -261,8 +259,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         gridBagConstraints.weightx = 1.0;
         ignoreFolderPanel.add(ignoreFoldersTextField, gridBagConstraints);
 
-        ignoreFoldersDefaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersDefaultButton.mn").charAt(0));
-        ignoreFoldersDefaultButton.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersDefaultButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreFoldersDefaultButton, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersDefaultButton.text")); // NOI18N
         ignoreFoldersDefaultButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreFoldersDefaultButtonActionPerformed(evt);
