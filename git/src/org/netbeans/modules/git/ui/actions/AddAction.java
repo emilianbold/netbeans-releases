@@ -51,6 +51,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.versioning.spi.VCSContext;
 
 /**
  *
@@ -81,7 +82,7 @@ public class AddAction extends SingleRepositoryAction {
             @Override
             public void finished() {
                 super.finished();
-                Git.getInstance().getFileStatusCache().refreshAllRoots(new HashSet<File>(Arrays.asList(roots)));
+                Git.getInstance().getFileStatusCache().refreshAllRoots(roots);
             }
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, "Git Add"); // NOI18N

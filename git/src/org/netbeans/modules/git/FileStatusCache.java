@@ -126,6 +126,14 @@ public class FileStatusCache {
      * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
      * @param files roots to refresh
      */
+    public void refreshAllRoots(File[] roots) {
+        refreshAllRoots(new HashSet<File>(Arrays.asList(roots)));
+    }
+    
+    /**
+     * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
+     * @param files roots to refresh
+     */
     public void refreshAllRoots (final Set<File> files) {
         long startTime = 0;
         if (LOG.isLoggable(Level.FINE)) {
