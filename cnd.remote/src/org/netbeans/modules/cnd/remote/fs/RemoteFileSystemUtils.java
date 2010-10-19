@@ -37,70 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
+public class RemoteFileSystemUtils {
 
-    public RemoteBuildMakefileTestCase(String testName) {
-        super(testName);
+    private RemoteFileSystemUtils() {
     }
-
-    public RemoteBuildMakefileTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
-    }
-
-    private void doTest(Sync sync, Toolchain toolchain) throws Exception {
-        final ExecutionEnvironment execEnv = getTestExecutionEnvironment();
-        MakeProject makeProject = openProject("makefile_proj_1_nbproject", execEnv, sync, toolchain);
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_rfs_gnu() throws Exception {
-        doTest(Sync.RFS, Toolchain.GNU);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_scp_gnu() throws Exception {
-        doTest(Sync.ZIP, Toolchain.GNU);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_ftp_gnu() throws Exception {
-        doTest(Sync.FTP, Toolchain.GNU);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_rfs_sunstudio() throws Exception {
-        doTest(Sync.RFS, Toolchain.SUN);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_scp_sunstudio() throws Exception {
-        doTest(Sync.ZIP, Toolchain.SUN);
-    }
-
-    @ForAllEnvironments
-    public void testBuildMakefileWithExt_ftp_sunstudio() throws Exception {
-        doTest(Sync.FTP, Toolchain.SUN);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RemoteBuildMakefileTestCase.class);
+    
+    public static ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
+        ExecutionEnvironment result = null;
+        for(ExecutionEnvironment env : ServerList.getEnvironments()) {
+            if (hostName.equals(EnvUtils.toHostID(env))) {
+                if (port == 0 || port == env.getSSHPort()) {
+                    result = env;
+                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

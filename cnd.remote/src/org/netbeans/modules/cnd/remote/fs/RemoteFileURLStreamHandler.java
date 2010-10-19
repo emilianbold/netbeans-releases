@@ -37,50 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import org.openide.util.URLStreamHandlerRegistration;
+
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RfsSunStudioRemoteBuildTestCase extends RemoteBuildTestBase {
+@URLStreamHandlerRegistration(protocol="rfs")
+public class RemoteFileURLStreamHandler extends URLStreamHandler {
 
-    public RfsSunStudioRemoteBuildTestCase(String testName) {
-        super(testName);
-    }
-
-    public RfsSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+    public static final String PROTOCOL = "rfs"; //NOI18N
+    
+    @Override
+    protected URLConnection openConnection(URL url) throws IOException {
+        return new RemoteFileURLConnection(url);
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        setDefaultCompilerSet("SunStudio");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RfsSunStudioRemoteBuildTestCase.class);
+    protected int getDefaultPort() {
+        return 22;
     }
 }

@@ -37,50 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.pbuild;
+package org.netbeans.modules.cnd.remote.fs;
 
-import org.netbeans.modules.cnd.remote.test.RemoteBuildTestBase;
-import java.util.concurrent.TimeUnit;
-import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
+import java.net.MalformedURLException;
+import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileObject;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+
 /**
  *
  * @author Vladimir Kvashin
  */
-public class RfsSunStudioRemoteBuildTestCase extends RemoteBuildTestBase {
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
+public class RemoteFileUrlMapper extends URLMapper {
 
-    public RfsSunStudioRemoteBuildTestCase(String testName) {
-        super(testName);
-    }
-
-    public RfsSunStudioRemoteBuildTestCase(String testName, ExecutionEnvironment execEnv) {
-        super(testName, execEnv);       
+    @Override
+    public FileObject[] getFileObjects(URL url) {
+        if (url.getProtocol().equals(RemoteFileURLStreamHandler.PROTOCOL)) {
+            ExecutionEnvironment env;
+            String user = url.getUserInfo();
+            if (user != null) {
+                env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
+            } else {
+                env = RemoteFileSystemUtils.getExecutionEnvironment(url.getHost(), url.getPort());
+                if (env == null) {
+                    user = System.getProperty("user.name");
+                    if (user != null) {
+                        env = ExecutionEnvironmentFactory.createNew(user, url.getHost(), url.getPort());
+                    }
+                }
+            }
+            if (env != null) {
+                RemoteFileSystem fs = RemoteFileSystemManager.getInstance().get(env);
+                FileObject fo = fs.findResource(url.getFile());
+                return new FileObject[] { fo };
+            }
+        }
+        return null;
     }
 
     @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        setupHost("rfs");
-    }
-
-    @ForAllEnvironments
-    public void testBuildRfsSampleArgsSunStudio() throws Exception {
-        setDefaultCompilerSet("SunStudio");
-        FileObject projectDirFO = prepareSampleProject("Arguments", "Args_SunStudio_01");
-        MakeProject makeProject = (MakeProject) ProjectManager.getDefault().findProject(projectDirFO);
-        buildProject(makeProject, ActionProvider.COMMAND_BUILD, getSampleBuildTimeout(), TimeUnit.SECONDS);
-    }
-
-    public static Test suite() {
-        return new RemoteDevelopmentTest(RfsSunStudioRemoteBuildTestCase.class);
+    public URL getURL(FileObject fo, int type) {
+        if (fo instanceof RemoteFileObjectBase) {
+            RemoteFileObjectBase rfo = (RemoteFileObjectBase) fo;
+            try {
+                ExecutionEnvironment env = rfo.getExecutionEnvironment();
+                String host = env.getUser() + '@' + env.getHost();
+                URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), rfo.getPath());
+                String ext = url.toExternalForm(); // is there a way to set authority?
+                return new URL(ext);
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
     }
 }

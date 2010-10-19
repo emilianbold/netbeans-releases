@@ -134,7 +134,8 @@ public final class CommonTasksSupport {
      * @param dstExecEnv execution environment that describes destination host
      * @param dstFileName destination filename on the host, specified by
      *        <tt>dstExecEnv</tt>
-     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal)
+     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal);
+     * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
      * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
@@ -162,7 +163,8 @@ public final class CommonTasksSupport {
      * @param dstExecEnv execution environment that describes destination host
      * @param dstFileName destination filename on the host, specified by
      *        <tt>dstExecEnv</tt>
-     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal)
+     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal);
+     * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
      * @param checkMd5 if true, then the source file will be copied to destination only if
@@ -192,7 +194,8 @@ public final class CommonTasksSupport {
      * @param dstExecEnv execution environment that describes destination host
      * @param dstFileName destination filename on the host, specified by
      *        <tt>dstExecEnv</tt>
-     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal)
+     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal);
+     * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
      * @return a <tt>Future&lt;Integer&gt;</tt> representing pending completion
@@ -220,7 +223,8 @@ public final class CommonTasksSupport {
      * @param dstExecEnv execution environment that describes destination host
      * @param dstFileName destination filename on the host, specified by
      *        <tt>dstExecEnv</tt>
-     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal)
+     * @param mask file mode creation mask (see uname(1), chmod(1)) (in octal);
+     * if it is less than zero, the default mask is used (for existent files, it stays the same it was, for new files as specified by umask command))
      * @param error if not <tt>NULL</tt> and some error occurs during upload,
      *        an error message will be written to this <tt>Writer</tt>.
      * @param checkMd5 if true, then the source file will be copied to destination only if

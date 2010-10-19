@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.util.Collection;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 
 /**
@@ -57,6 +57,8 @@ public class RemoteFileTestSuite extends CndBaseTestSuite {
        this("Remote File System test Suite", // NOI18N
            RemoteFileSupportTestCase.class,
            RemoteFileSystemTestCase.class,
+           RemoteURLTestCase.class,
+           CndFileUtilTestCase.class,
            RemotePathTestCase.class
        );
    }
