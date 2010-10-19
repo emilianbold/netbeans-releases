@@ -162,7 +162,9 @@ public class FileInformation {
         } else if (containsStatus(Status.STATUS_UNKNOWN)) {
             return 102;
         } else {
-            throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
+            // throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
+            Git.LOG.log(Level.WARNING, "Uncomparable status: {0}", getStatus());
+            return 0;
         }
     }
 
