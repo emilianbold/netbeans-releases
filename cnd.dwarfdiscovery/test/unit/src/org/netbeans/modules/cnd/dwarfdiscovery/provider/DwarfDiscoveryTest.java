@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Applicable;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -312,16 +313,15 @@ public class DwarfDiscoveryTest  extends NbTestCase {
         });
         String compilerName = canAnalyze.getCompilerName();
         String sourceRoot = canAnalyze.getSourceRoot();
-        String mainFunction = canAnalyze.getMainFunction().getFilePath();
+        Position mainFunctionPosition = canAnalyze.getMainFunction();
         System.err.println(compilerName);
         System.err.println(sourceRoot);
-        System.err.println(mainFunction);
+        System.err.println(mainFunctionPosition);
         assertEquals(compiler, compilerName);
         assertEquals(root, sourceRoot);
-        assertNotNull(mainFunction);
-        assertTrue(mainFunction.startsWith(root));
+        assertNotNull(mainFunctionPosition);
+        assertTrue(mainFunctionPosition.getFilePath().startsWith(root));
         assertTrue(canAnalyze.isApplicable());
-        canAnalyze.getMainFunction().getFilePath();
         assertTrue(canAnalyze.getDependencies().size()>=2);
     }
 
