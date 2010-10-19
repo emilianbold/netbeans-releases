@@ -228,6 +228,8 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
+                    if (text.indexOf('\n') < 0)
+                        continue;
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts == null)
                         continue;
