@@ -99,9 +99,8 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         setRequestFocusEnabled(false);
         setLayout(new java.awt.GridBagLayout());
 
-        entryLabel.setDisplayedMnemonic('n');
         entryLabel.setLabelFor(entryComboBox);
-        entryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(entryLabel, org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.entryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(16, 16, 0, 0);
@@ -142,9 +141,8 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 16, 16, 16);
         add(scrollPane, gridBagConstraints);
 
-        valueLabel.setDisplayedMnemonic('v');
         valueLabel.setLabelFor(entryValueTextArea);
-        valueLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(valueLabel, org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;

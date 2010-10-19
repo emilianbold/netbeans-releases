@@ -170,9 +170,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
         macros.setOpaque(false);
         macros.setLayout(new java.awt.BorderLayout());
 
-        resetButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("RESET_BUTTON_MN").charAt(0));
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
-        resetButton.setText(bundle.getString("RESET_BUTTON_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(resetButton, bundle.getString("RESET_BUTTON_TXT")); // NOI18N
         resetButton.setOpaque(false);
         resetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -190,7 +189,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
                 .addComponent(includes, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                 .addComponent(macros, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(resetButton)))
         );

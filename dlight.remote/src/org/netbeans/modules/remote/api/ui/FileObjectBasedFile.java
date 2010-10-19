@@ -51,7 +51,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
@@ -84,7 +83,7 @@ public class FileObjectBasedFile extends File {
     public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
         super(fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
-        this.path = fo.getPath();
+        this.path = super.getPath();
         this.env = env;
     }
 

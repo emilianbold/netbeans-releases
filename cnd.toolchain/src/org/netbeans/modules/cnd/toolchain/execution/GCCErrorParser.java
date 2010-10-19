@@ -107,7 +107,7 @@ public final class GCCErrorParser extends ErrorParser {
 	if (scanner.getStackHeaderPattern() != null && scanner.getStackHeaderPattern() != null) {
 	    GCC_STACK_HEADER = Pattern.compile(scanner.getStackHeaderPattern());
 	    patterns.add(GCC_STACK_HEADER);
-	    GCC_STACK_NEXT = Pattern.compile(scanner.getStackHeaderPattern());
+	    GCC_STACK_NEXT = Pattern.compile(scanner.getStackNextPattern());
 	    patterns.add(GCC_STACK_NEXT);
 	}
 	for(ScannerPattern s : scanner.getPatterns()){
@@ -168,7 +168,7 @@ public final class GCCErrorParser extends ErrorParser {
                     }
                 }
                 FileObject relativeDir = resolveFile(directory);
-                if (relativeDir != null) {
+                if (relativeDir != null && relativeDir.isValid()) {
                     relativesTo.push(relativeDir);
                 }
                 return ErrorParserProvider.NO_RESULT;
@@ -187,7 +187,7 @@ public final class GCCErrorParser extends ErrorParser {
                 }
             }
             FileObject relativeDir = resolveFile(directory);
-            if (relativeDir != null) {
+            if (relativeDir != null && relativeDir.isValid()) {
                 relativesTo.push(relativeDir);
             }
             return ErrorParserProvider.NO_RESULT;
@@ -203,7 +203,7 @@ public final class GCCErrorParser extends ErrorParser {
                 }
             }
             relativeDir = resolveFile(directory);
-            if (relativeDir != null) {
+            if (relativeDir != null && relativeDir.isValid()) {
                 relativesTo.push(relativeDir);
             }
             return ErrorParserProvider.NO_RESULT;
