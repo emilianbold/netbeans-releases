@@ -417,7 +417,7 @@ public final class PasteAction extends CallbackSystemAction {
                     actionToWorkWith[0] = a;
                 }
 
-                Object[] arr = a.getPasteTypes();
+                Object[] arr = a == null ? null : a.getPasteTypes();
 
                 if (arr != null) {
                     return arr;

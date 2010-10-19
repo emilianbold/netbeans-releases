@@ -82,6 +82,7 @@ public class ProjectFactorySupportTest extends NbTestCase {
         FileObject reg = FileUtil.getConfigFile("Services/AntBasedProjectTypes/org-netbeans-modules-java-j2seproject.instance");
         assertNotNull("j2seproject definition is registered", reg);
         Object abpt = reg.getAttribute("instanceCreate");
+        assertNotNull("j2seproject definition is well-formed", abpt); // NB-Core-Build #5317
         MockLookup.setInstances(abpt);
         FileObject offending = FileUtil.getConfigFile("org-netbeans-api-project-libraries/Libraries/CopyLibs.xml");
         if (offending != null) {
