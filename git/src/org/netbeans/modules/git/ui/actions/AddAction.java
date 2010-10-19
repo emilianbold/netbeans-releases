@@ -75,7 +75,7 @@ public class AddAction extends SingleRepositoryAction {
                 try {
                     client.add(roots, this);
                 } catch (GitException ex) {
-                    // notify in some way
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
             @Override
