@@ -600,5 +600,10 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         public int getLine() {
             return line;
         }
+
+        @Override
+        public String toString() {
+            return path+":"+line; //NOI18n
+        }
     }
 }

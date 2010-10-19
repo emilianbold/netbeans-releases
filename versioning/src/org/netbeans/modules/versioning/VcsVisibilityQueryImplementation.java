@@ -48,10 +48,12 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.versioning.spi.VCSVisibilityQuery;
@@ -76,6 +78,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
     private RequestProcessor.Task vsChangedTask = rp.create(new VisibilityChangedTask());
     private final HashMap<File, Boolean> refreshedFiles = new HashMap<File, Boolean>(20);
     private static final int MAX_CACHE_SIZE = 500;
+    private Map<File, FileObject> fileObjects = Collections.synchronizedMap(new HashMap<File, FileObject>(8));
 
     public VcsVisibilityQueryImplementation() {
         instance = this;
@@ -109,6 +112,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
         if(file == null) {
             return true;
         }
+        fileObjects.put(file, fileObject);
         return isVisible(file);
     }
 
@@ -143,7 +147,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
             fireVisibilityChanged();
         }
     }
-
+    
     private class RefreshTask implements Runnable {
         @Override
         public void run() {
@@ -163,7 +167,8 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
                 return; // no files to refresh, finish
             }
             boolean visible = true;
-            VersioningSystem system = VersioningManager.getInstance().getOwner(file);
+            FileObject fo = fileObjects.remove(file);
+            VersioningSystem system = VersioningManager.getInstance().getOwner(file, fo != null ? !fo.isFolder() : null);
             if (system != null) {
                 VCSVisibilityQuery vqi = system.getVisibilityQuery();
                 visible = vqi == null ? true : vqi.isVisible(file);
