@@ -73,7 +73,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Timer;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -163,7 +162,7 @@ public final class SearchBar extends JPanel {
     private boolean isPopupShown = false;
     
     @SuppressWarnings("unchecked")
-    public SearchBar(JTextComponent component) {
+    public SearchBar(final JTextComponent component) {
         this.component = component;
         component.addFocusListener(new FocusAdapter() {
             @Override
@@ -361,6 +360,38 @@ public final class SearchBar extends JPanel {
                     findPrevious();
                 }});
         incrementalSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
+
+        class JumpOutOfSearchAction extends AbstractAction {
+            private String actionName;
+            public JumpOutOfSearchAction(String n) {
+                actionName = n;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                looseFocus();
+                ActionEvent ev = new ActionEvent(component, e.getID(), e.getActionCommand(), e.getModifiers());
+                Action action = component.getActionMap().get(actionName);
+                action.actionPerformed(ev);
+            }
+        };
+        String actionName = "caret-begin-line"; // NOI18N
+        Action a1 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put(actionName, a1);
+        actionName = "caret-end-line"; // NOI18N
+        Action a2 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put(actionName, a2);
+
+        incrementalSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+            KeyEvent.VK_P, InputEvent.CTRL_MASK, false), "caret-up-alt"); // NOI18N
+        actionName = "caret-up"; // NOI18N
+        Action a3 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put("caret-up-alt", a3); // NOI18N
+        
+        incrementalSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+            KeyEvent.VK_N, InputEvent.CTRL_MASK, false), "caret-down-alt"); // NOI18N
+        actionName = "caret-down"; // NOI18N
+        Action a4 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put("caret-down-alt", a4); // NOI18N
 
         // configure find next button
         findNextButton = new JButton(
