@@ -42,8 +42,12 @@
 package org.netbeans.modules.git;
 
 import java.io.File;
+import java.text.MessageFormat;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.libs.git.GitStatus;
 
 /**
@@ -163,8 +167,32 @@ public class FileInformation {
     }
 
     public String getShortStatusText() {
-        // TODO implement
-        return "Nevim";
+        assert status.size() > 0 && status.size() <= 3 : "unexpected statuses" + status;
+        
+        String sIndex = "";
+        String sWorkingTree = "";
+                
+        if(containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+            sIndex = "A";
+        } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX)) {
+            sIndex = "M";
+        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_INDEX)) {
+            sIndex = "D";
+        }
+        
+        if(containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+            sWorkingTree = "A";
+        } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE)) {
+            sWorkingTree = "M";
+        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+            sWorkingTree = "D";
+        }
+        
+        if(!sIndex.isEmpty() || !sWorkingTree.isEmpty()) {
+            return new MessageFormat("{0}/{1}").format(new Object[] {sIndex, sWorkingTree}, new StringBuffer(), null).toString();
+        } else {
+            return "Nevim";            
+        }        
     }
 
     public String getStatusText () {
