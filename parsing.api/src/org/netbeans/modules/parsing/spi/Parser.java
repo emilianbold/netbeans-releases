@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.parsing.spi;
 
-import com.sun.istack.internal.NotNull;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.ParserManager;
 
@@ -110,7 +110,7 @@ public abstract class Parser {
      * @param event an additional info if the reason is SOURCE_MODIFICATION_EVENT, otherwise null
      * @since 
      */
-    public void cancel (@NotNull CancelReason reason, @NullAllowed SourceModificationEvent event) {}
+    public void cancel (@NonNull CancelReason reason, @NullAllowed SourceModificationEvent event) {}
     
     /**
      * Registers new listener.
