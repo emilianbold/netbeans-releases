@@ -126,7 +126,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 case REGEXP:
                     _kind = ClassIndex.NameKind.REGEXP;
                     _ident[0] = removeNonJavaChars(_ident[0]);
-                    _ident[0] = _ident[0].replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = Util.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = true;
                     break;
                 case CAMEL_CASE:
@@ -149,7 +149,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 case CASE_INSENSITIVE_REGEXP:
                     _kind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP;
                     _ident[0] = removeNonJavaChars(_ident[0]);            
-                    _ident[0] = _ident[0].replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = Util.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = false;
                     break;
                 default:
