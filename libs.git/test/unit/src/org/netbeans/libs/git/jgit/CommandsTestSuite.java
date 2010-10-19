@@ -46,6 +46,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.libs.git.jgit.commands.AddTest;
+import org.netbeans.libs.git.jgit.commands.CatTest;
 import org.netbeans.libs.git.jgit.commands.CheckoutTest;
 import org.netbeans.libs.git.jgit.commands.CommitTest;
 import org.netbeans.libs.git.jgit.commands.CopyTest;
@@ -67,6 +68,7 @@ public class CommandsTestSuite extends NbTestSuite {
     public static Test suite() throws Exception {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(AddTest.class);
+        suite.addTestSuite(CatTest.class);
         suite.addTestSuite(CheckoutTest.class);
         suite.addTestSuite(CommitTest.class);
         suite.addTestSuite(CopyTest.class);

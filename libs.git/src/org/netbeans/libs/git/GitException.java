@@ -60,4 +60,10 @@ public class GitException extends Exception {
         super(message, ex);
     }
 
+    public static class MissingFileException extends GitException {
+        public MissingFileException (String message) {
+            super(message);
+        }
+    }
+
 }

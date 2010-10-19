@@ -83,6 +83,15 @@ public interface GitClient {
     public void addNotificationListener (NotificationListener listener);
 
     /**
+     * Prints file's content in the given revision to output stream
+     * @param file
+     * @param revision git revision
+     * @param out output stream
+     * @throws GitException
+     */
+    public void catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingFileException, GitException;
+
+    /**
      * Checks out the index into the working copy root. Does not move HEAD.
      * @param revision if not null, index is updated with the revision content before checking out to WC
      * @param roots files/folders to checkout

@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.CatCommand;
+import java.io.OutputStream;
 import org.netbeans.libs.git.jgit.commands.ResetCommand;
 import org.netbeans.libs.git.jgit.commands.RenameCommand;
 import org.netbeans.libs.git.jgit.commands.CopyCommand;
@@ -98,6 +100,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         synchronized (listeners) {
             listeners.add(listener);
         }
+    }
+
+    @Override
+    public void catFile (File file, String revision, OutputStream out, ProgressMonitor monitor) throws GitException.MissingFileException, GitException {
+        Repository repository = gitRepository.getRepository();
+        CatCommand cmd = new CatCommand(repository, file, revision, out, monitor);
+        cmd.execute();
     }
 
     @Override
