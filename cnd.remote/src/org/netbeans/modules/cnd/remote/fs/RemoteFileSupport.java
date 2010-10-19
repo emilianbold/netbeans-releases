@@ -129,7 +129,19 @@ public class RemoteFileSupport extends NamedRunnable {
     private static final String CC_STR = "cc"; // NOI18N
     /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
 
+    /** for TEST purposes ONLY */
     /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
+        return _fixCaseSensitivePathIfNeeded(in, false);
+    }
+
+    /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
+        return _fixCaseSensitivePathIfNeeded(in, true);
+    }
+
+    private static String _fixCaseSensitivePathIfNeeded(String in, boolean force) {
+        if (!force && CndFileUtils.isSystemCaseSensitive()) {
+            return in;
+        }
         StringBuilder out = new StringBuilder(in);
         // now we support only cc replacement into cc.cnd
         int left = out.indexOf(CC_STR); // NOI18N

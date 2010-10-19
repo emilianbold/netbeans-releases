@@ -136,14 +136,7 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         CsmProject csmProject = model.getProject(makeProject);
         assertNotNull("Null CsmProject", csmProject);
         csmProject.waitParse();
-        boolean recursive;
-        if (HostInfoUtils.getHostInfo(execEnv).getOS().getFamily() == HostInfo.OSFamily.LINUX) {
-            // see #191039 -  Unresolved #include <stddef.h> in stdio.h on remote Linux with SolStudio toolchain
-            recursive = false;
-        } else {
-            recursive = true;
-        }
-        checkIncludes(csmProject, recursive);
+        checkIncludes(csmProject, true);
         if (testReconnect) {
             ConnectionManager.getInstance().connectTo(execEnv);
             assertTrue("Can not reconnect to host", ConnectionManager.getInstance().isConnectedTo(execEnv));
