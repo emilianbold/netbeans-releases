@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.dwarfdump;
 
 import org.netbeans.modules.cnd.dwarfdump.reader.MyRandomAccessFile;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 
 /**

@@ -305,8 +305,9 @@ public final class CndFileUtils {
         exists = files.get(absolutePath);
         if (exists == null) {
             file = (file == null) ? new File(absolutePath) : file;
-            String parent = changeStringCaseIfNeeded(file.getParent());
+            String parent = file.getParent();
             if (parent != null) {
+                parent = changeStringCaseIfNeeded(parent);
                 Flags parentDirFlags = files.get(parent);
                 if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {
                     File parentFile = file.getParentFile();
