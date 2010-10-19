@@ -95,7 +95,6 @@ public class TestsuiteNode extends AbstractNode {
     protected String suiteName;
     protected TestSuite suite;
     protected Report report;
-    protected boolean filtered;
     protected int filterMask = 0;
 
     /**
@@ -129,7 +128,6 @@ public class TestsuiteNode extends AbstractNode {
                              : Children.LEAF, lookup);
         this.report = report; 
         this.suiteName = (report != null) ? report.getSuiteClassName() : suiteName;
-        this.filtered = filtered;
         
         assert this.suiteName != null;
         
@@ -338,7 +336,6 @@ public class TestsuiteNode extends AbstractNode {
         if (filterMask == this.filterMask) {
             return;
         }
-        this.filtered = filterMask != 0;
         this.filterMask = filterMask;
         
         Children children = getChildren();
