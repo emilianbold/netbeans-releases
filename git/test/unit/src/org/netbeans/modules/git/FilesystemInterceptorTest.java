@@ -411,12 +411,21 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         assertEquals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), getCache().getStatus(file).getStatus());
     }
 
-    public void testDeleterepositoryLocationRoot() throws Exception {
+    public void testDeleteRepositoryLocationRoot() throws Exception {
         // delete
+        File f = new File(repositoryLocation, ".aaa");
+        f.createNewFile();
+        add(f);
+        commit(f);
+        f = new File(repositoryLocation, "aaa");
+        f.createNewFile();
+        add(f);
+        commit(f);
+
         delete(repositoryLocation);
 
         // test
-        assertTrue(!repositoryLocation.exists());
+        assertFalse(repositoryLocation.exists());
     }
 
     public void testDeleteVersionedFileTree() throws Exception {

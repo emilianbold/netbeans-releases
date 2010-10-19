@@ -145,9 +145,10 @@ class FilesystemInterceptor extends VCSInterceptor {
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(file);
         try {
-            git.getClient(root).remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
-            if (root.equals(file) && file.exists()) {
-                root.delete();
+            if (GitUtils.getGitFolderForRoot(root).exists()) {
+                git.getClient(root).remove(new File[] { file }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            } else if (file.exists()) {
+                file.delete();
             }
         } catch (GitException e) {
             IOException ex = new IOException();
@@ -272,6 +273,11 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
+    }
+
+    @Override
+    public boolean isMutable(File file) {
+        return GitUtils.isPartOfGitMetadata(file) || super.isMutable(file);
     }
 
     /**
