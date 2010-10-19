@@ -57,18 +57,23 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.toolchain.compilerset.APIAccessor;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
@@ -78,6 +83,7 @@ import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -96,6 +102,9 @@ import org.openide.util.Utilities;
     private final String CMAKE_NAME = "CMake"; // NOI18N
     private Color tfColor = null;
     private boolean isUrl = false;
+    private Map<ToolKind,Boolean> lastValid = new ConcurrentHashMap<ToolKind, Boolean>();
+
+    private RequestProcessor RP = new RequestProcessor("ToolCollectionPanel: check remote file", 1); // NOI18N
 
     private final ToolsPanel manager;
 
@@ -357,8 +366,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateMakePathField() {
-        setPathFieldValid(tfMakePath, isPathFieldValid(tfMakePath) && supportedMake(tfMakePath));
-        manager.dataValid();
+        postIsPathFieldValid(tfMakePath, PredefinedToolKind.MakeTool);
     }
 
     private void setGdbPathField(String path) {
@@ -366,8 +374,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateGdbPathField() {
-        setPathFieldValid(tfDebuggerPath, isPathFieldValid(tfDebuggerPath));
-        manager.dataValid();
+        postIsPathFieldValid(tfDebuggerPath, PredefinedToolKind.DebuggerTool);
     }
 
     private void setCPathField(String path) {
@@ -375,8 +382,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateCPathField() {
-        setPathFieldValid(tfCPath, isPathFieldValid(tfCPath));
-        manager.dataValid();
+        postIsPathFieldValid(tfCPath, PredefinedToolKind.CCompiler);
     }
 
     private void setCppPathField(String path) {
@@ -384,8 +390,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateCppPathField() {
-        setPathFieldValid(tfCppPath, isPathFieldValid(tfCppPath));
-        manager.dataValid();
+        postIsPathFieldValid(tfCppPath, PredefinedToolKind.CCCompiler);
     }
 
     private void setFortranPathField(String path) {
@@ -393,8 +398,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateFortranPathField() {
-        setPathFieldValid(tfFortranPath, isPathFieldValid(tfFortranPath));
-        manager.dataValid();
+        postIsPathFieldValid(tfFortranPath, PredefinedToolKind.FortranCompiler);
     }
 
     private void setAsPathField(String path) {
@@ -402,8 +406,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateAsPathField() {
-        setPathFieldValid(tfAsPath, isPathFieldValid(tfAsPath));
-        manager.dataValid();
+        postIsPathFieldValid(tfAsPath, PredefinedToolKind.Assembler);
     }
 
     private void setQMakePathField(String path) {
@@ -411,8 +414,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateQMakePathField() {
-        setPathFieldValid(tfQMakePath, isPathFieldValid(tfQMakePath));
-        manager.dataValid();
+        postIsPathFieldValid(tfQMakePath, PredefinedToolKind.QMakeTool);
     }
 
     private void setCMakePathField(String path) {
@@ -420,8 +422,7 @@ import org.openide.util.Utilities;
     }
 
     private void validateCMakePathField() {
-        setPathFieldValid(tfCMakePath, isPathFieldValid(tfCMakePath));
-        manager.dataValid();
+        postIsPathFieldValid(tfCMakePath, PredefinedToolKind.CMakeTool);
     }
 
     private void setPathFieldValid(JTextField field, boolean valid) {
@@ -440,30 +441,35 @@ import org.openide.util.Utilities;
         return !ToolsPanelSupport.isUnsupportedMake(txt);
     }
 
+    private boolean getLastToolValidation(ToolKind tool) {
+        Boolean get = lastValid.get(tool);
+        return get != null && get.booleanValue();
+    }
+
     boolean isToolsValid() {
-        boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) && supportedMake(tfMakePath) : true;
-        boolean debuggerValid = cbDebuggerRequired.isSelected() ? isPathFieldValid(tfDebuggerPath) : true;
-        boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
-        boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
-        boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
-        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
-        boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
+        boolean makeValid = cbMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.MakeTool) : true;
+        boolean debuggerValid = cbDebuggerRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.DebuggerTool) : true;
+        boolean cValid = cbCRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.CCompiler) : true;
+        boolean cppValid = cbCppRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.CCCompiler) : true;
+        boolean fortranValid = cbFortranRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.FortranCompiler) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.QMakeTool) : true;
+        boolean asValid = cbAsRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.Assembler) : true;
         return makeValid && debuggerValid && cValid && cppValid && fortranValid && asValid && qmakeValid;
     }
 
     void getErrors(List<String> errors) {
-        boolean makeValid = cbMakeRequired.isSelected() ? isPathFieldValid(tfMakePath) && supportedMake(tfMakePath) : true;
-        boolean debuggerValid = cbDebuggerRequired.isSelected() ? isPathFieldValid(tfDebuggerPath) : true;
-        boolean cValid = cbCRequired.isSelected() ? isPathFieldValid(tfCPath) : true;
-        boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
-        boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
-        boolean qmakeValid = cbQMakeRequired.isSelected() ? isPathFieldValid(tfQMakePath) : true;
-        boolean asValid = cbAsRequired.isSelected() ? isPathFieldValid(tfAsPath) : true;
+        boolean makeValid = cbMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.MakeTool) : true;
+        boolean debuggerValid = cbDebuggerRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.DebuggerTool) : true;
+        boolean cValid = cbCRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.CCompiler) : true;
+        boolean cppValid = cbCppRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.CCCompiler) : true;
+        boolean fortranValid = cbFortranRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.FortranCompiler) : true;
+        boolean qmakeValid = cbQMakeRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.QMakeTool) : true;
+        boolean asValid = cbAsRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.Assembler) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
-            if (!isPathFieldValid(tfMakePath)) {
-                errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
-            } else {
+            if (supportedMake(tfMakePath)) {
                 errors.add(ToolsPanel.getString("TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
+            } else {
+                errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
             }
         }
         if (cbCRequired.isSelected() && !cValid) {
@@ -505,48 +511,66 @@ import org.openide.util.Utilities;
         tf.setEditable(editable);
     }
 
-    private boolean isPathFieldValid(JTextField field) {
-        String txt = field.getText();
+    private void updateField(final JTextField field, final boolean valid){
+        SwingUtilities.invokeLater(new Runnable(){
+            @Override
+            public void run() {
+                setPathFieldValid(field, valid);
+                manager.dataValid();
+            }
+        });
+    }
+
+    void postIsPathFieldValid(final JTextField field, final ToolKind tool) {
+        final String txt = field.getText();
         if (txt.length() == 0) {
-            return false;
+            lastValid.put(tool, false);
+            updateField(field, false);
+            return;
+        } else if (tool == PredefinedToolKind.MakeTool && !supportedMake(tfMakePath)) {
+            lastValid.put(tool, false);
+            updateField(field, false);
+            return;
         }
 
         if (manager.getExecutionEnvironment().isLocal()) {
-            File file = new File(txt);
-            boolean ok = false;
-            if (Utilities.isWindows()) {
-                if (txt.endsWith(".lnk")) { // NOI18N
-                    ok = false;
-                } else {
-                    ok = (file.exists() || new File(txt + ".lnk").exists()) && !file.isDirectory(); // NOI18N
-                }
-            } else {
-                ok = file.exists() && !file.isDirectory();
-            }
-            if (!ok) {
-                // try users path
-                for (String p : Path.getPath()) {
-                    file = new File(p + File.separatorChar + txt);
-                    ok = file.exists() && !file.isDirectory();
-                    if (ok) {
-                        break;
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    File file = new File(txt);
+                    boolean ok = false;
+                    if (Utilities.isWindows()) {
+                        if (txt.endsWith(".lnk")) { // NOI18N
+                            ok = false;
+                        } else {
+                            ok = (file.exists() || new File(txt + ".lnk").exists()) && !file.isDirectory(); // NOI18N
+                        }
+                    } else {
+                        ok = file.exists() && !file.isDirectory();
                     }
+                    if (!ok) {
+                        // try users path
+                        for (String p : Path.getPath()) {
+                            file = new File(p + File.separatorChar + txt);
+                            ok = file.exists() && !file.isDirectory();
+                            if (ok) {
+                                break;
+                            }
+                        }
+                    }
+                    lastValid.put(tool, ok);
+                    updateField(field, ok);
                 }
-            }
-            return ok;
+            });
         } else {
-            // TODO this method must be called out of EDT, because it's time consuming
-            // we need to remember once calculated "valid" state and reuse it
-            // instead of check on each unrelated action
-            // with remote support it became even more visible in UI freezing
-            return true;
-//            if (SwingUtilities.isEventDispatchThread()) {
-//                log.fine("ToolsPanel.isPathFieldValid from EDT"); // NOI18N
-//                // always return true in remote mode, instead of call to very expensive operation
-//                return true;
-//            } else {
-//                return serverList.isValidExecutable(execEnv, txt);
-//            }
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    boolean exists = ServerList.isValidExecutable(manager.getExecutionEnvironment(), txt);
+                    lastValid.put(tool, exists);
+                    updateField(field, exists);
+                }
+            });
         }
     }
 
@@ -667,7 +691,7 @@ import org.openide.util.Utilities;
     private String getToolVersion(Tool tool, JTextField tf) {
         StringBuilder version = new StringBuilder();
         version.append(tool.getDisplayName()).append(": "); // NOI18N
-        if (isPathFieldValid(tf)) {
+        if (getLastToolValidation(tool.getKind())) {
             String path = tf.getText();
             if (!ToolUtils.isPathAbsolute(path)) {
                 path = Path.findCommand(path);

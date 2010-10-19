@@ -22,8 +22,8 @@
           </Group>
           <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="scrollPane" pref="396" max="32767" attributes="0"/>
-                  <Component id="excludePatternTextField" alignment="1" pref="396" max="32767" attributes="0"/>
+                  <Component id="scrollPane" pref="387" max="32767" attributes="0"/>
+                  <Component id="excludePatternTextField" alignment="1" pref="387" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -37,7 +37,7 @@
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="sourceFilesLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="152" max="32767" attributes="0"/>
+              <EmptySpace pref="143" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -68,9 +68,6 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="sourceFilesLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="SourceFileFoldersMN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="list"/>
         </Property>
@@ -78,6 +75,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="SourceFileFoldersLbl" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Container class="javax.swing.JScrollPane" name="scrollPane">
       <AuxValues>
@@ -97,9 +97,6 @@
     </Container>
     <Component class="javax.swing.JButton" name="addButton">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="AddButtonMN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="AddButtonTxt" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
@@ -107,12 +104,12 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addButtonActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="deleteButton">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="DeleteButtonMn" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="DeleteButtonTxt" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
@@ -120,12 +117,12 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteButtonActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="excludePatternLabel">
       <Properties>
-        <Property name="displayedMnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="SourceFilesPanel.excludePatternLabel.mn" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="excludePatternTextField"/>
         </Property>
@@ -133,6 +130,9 @@
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle.properties" key="SourceFilesPanel.excludePatternLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JTextField" name="excludePatternTextField">
     </Component>

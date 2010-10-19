@@ -221,10 +221,9 @@ public class ProjectOptionsPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        makeOptionsLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("MAKE_OPTIONS_MN").charAt(0));
         makeOptionsLabel.setLabelFor(makeOptionsTextField);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle"); // NOI18N
-        makeOptionsLabel.setText(bundle.getString("MAKE_OPTIONS")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(makeOptionsLabel, bundle.getString("MAKE_OPTIONS")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -251,9 +250,8 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 6, 0, 12);
         add(makeOptionsTxt, gridBagConstraints);
 
-        filePathLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("FILE_PATH_MN").charAt(0));
         filePathLabel.setLabelFor(filePathcomboBox);
-        filePathLabel.setText(bundle.getString("FILE_PATH")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filePathLabel, bundle.getString("FILE_PATH")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -285,8 +283,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(filePathTxt, gridBagConstraints);
 
-        saveCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SAVE_CHECKBOX_MN").charAt(0));
-        saveCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SAVE_CHECKBOX_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(saveCheckBox, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SAVE_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -296,8 +293,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 6, 6, 6);
         add(saveCheckBox, gridBagConstraints);
 
-        reuseCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REUSE_CHECKBOX_MN").charAt(0));
-        reuseCheckBox.setText(bundle.getString("REUSE_CHECKBOX_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(reuseCheckBox, bundle.getString("REUSE_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -307,8 +303,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(reuseCheckBox, gridBagConstraints);
 
-        dependencyCheckingCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DEPENDENCY_CHECKING_MN").charAt(0));
-        dependencyCheckingCheckBox.setText(bundle.getString("DEPENDENCY_CHECKING_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dependencyCheckingCheckBox, bundle.getString("DEPENDENCY_CHECKING_TXT")); // NOI18N
         dependencyCheckingCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dependencyCheckingCheckBoxActionPerformed(evt);
@@ -323,8 +318,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(dependencyCheckingCheckBox, gridBagConstraints);
 
-        viewBinaryFilesCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("DISPLAY_BINARY_FILES_MN").charAt(0));
-        viewBinaryFilesCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "DISPLAY_BINARY_FILES_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(viewBinaryFilesCheckBox, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "DISPLAY_BINARY_FILES_TXT")); // NOI18N
         viewBinaryFilesCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 viewBinaryFilesCheckBoxActionPerformed(evt);
@@ -339,8 +333,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(viewBinaryFilesCheckBox, gridBagConstraints);
 
-        showProfilerCheckBox.setMnemonic('j');
-        showProfilerCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_PROFILER_CHECKBOX_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showProfilerCheckBox, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_PROFILER_CHECKBOX_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -350,8 +343,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(showProfilerCheckBox, gridBagConstraints);
 
-        showConfigurationWarningCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.MN").charAt(0));
-        showConfigurationWarningCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(showConfigurationWarningCheckBox, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "SHOW_WARNING_ABOUT_MISMATCHED_CONFIGURATIONS.TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
@@ -381,8 +373,7 @@ public class ProjectOptionsPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 6);
         add(fixUnresolvedInclude, gridBagConstraints);
 
-        rebuildPropsChangedCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/options/Bundle").getString("REBUILD_PROP_CHANGED_MN").charAt(0));
-        rebuildPropsChangedCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(rebuildPropsChangedCheckBox, org.openide.util.NbBundle.getMessage(ProjectOptionsPanel.class, "REBUILD_PROP_CHANGED_TXT")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
