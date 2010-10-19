@@ -610,7 +610,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
         
         private String wildcards2regexp(String pattern) throws PatternSyntaxException {                        
-            final String result = pattern.replace("\\","").replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ).concat(".*"); //NOI18N
+            final String result = pattern.
+                    replace("{","").        //NOI18N
+                    replace("}","").        //NOI18N
+                    replace("[","").        //NOI18N
+                    replace("]","").        //NOI18N
+                    replace("(","").        //NOI18N
+                    replace(")","").        //NOI18N
+                    replace("\\","").       //NOI18N
+                    replace(".", "\\.").    //NOI18N
+                    replace( "*", ".*" ).   //NOI18N
+                    replace( '?', '.' ).    //NOI18N
+                    concat(".*"); //NOI18N
             Pattern.compile(result);
             return result;
         }
