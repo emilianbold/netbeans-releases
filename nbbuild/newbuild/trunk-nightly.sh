@@ -48,7 +48,8 @@ fi
 # Pack all the components
 #
 ###################################################################
-if [ -d $cp $JAVAFX_PATH/zip/moduleclusters ]; then
+if [ $RUNJAVAFX != 0 ]; then
+#if [ -d $cp $JAVAFX_PATH/zip/moduleclusters ]; then
    cd $NB_ALL/nbbuild/netbeans
    cp $JAVAFX_PATH/zip/moduleclusters/*.zip .
 

@@ -106,7 +106,10 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-bash ${SCRIPT_DIR}/pack-base.sh
+if [ $RUNJAVAFX !=0 ]; then
+    bash ${SCRIPT_DIR}/pack-base.sh
+fi
+
 cd $NB_ALL
 
 #Build JNLP
