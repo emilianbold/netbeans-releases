@@ -102,6 +102,11 @@ public class StatusCommand extends GitCommand {
     }
 
     @Override
+    protected boolean prepareCommand () throws GitException {
+        return getRepository().getDirectory().exists();
+    }
+
+    @Override
     protected void run () throws GitException {
         Repository repository = getRepository();
         try {
