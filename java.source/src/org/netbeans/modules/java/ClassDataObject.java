@@ -116,12 +116,18 @@ public final class ClassDataObject extends MultiDataObject {
                             //No boot cp, try the default platform boot cp
                             bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
                         }
+                        if (cancel.get()) {
+                            return;
+                        }
                         FileObject resource = null;
                         final ElementHandle<TypeElement> handle = resourceName != null ? ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, resourceName.replace('/', '.')) : null;
                         final ClasspathInfo cpInfo = cp != null && bootPath != null ? ClasspathInfo.create(bootPath, cp, ClassPathSupport.createClassPath(new URL[0])) : null;
                         if (binaryRoot != null) {
                             //Todo: Ideally it should do the same as ElementOpen.open () but it will require a copy of it because of the reverese module dep.
                             resource = SourceUtils.getFile(handle, cpInfo);
+                        }
+                        if (cancel.get()) {
+                            return;
                         }
                         if (resource !=null ) {
                             DataObject sourceFile = DataObject.find(resource);
