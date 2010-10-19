@@ -151,16 +151,19 @@ final class StatisticsPanel extends JPanel {
         final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
         if (rerunHandler != null) {
             rerunButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun();
                 }
             });
             rerunFailedButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun(treePanel.getFailedTests());
                 }
             });
             rerunHandler.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     updateButtons();
                 }
@@ -215,6 +218,7 @@ final class StatisticsPanel extends JPanel {
         nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
         nextFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectNextFailure();
             }
@@ -225,6 +229,7 @@ final class StatisticsPanel extends JPanel {
         previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
         previousFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectPreviousFailure();
             }
@@ -286,9 +291,9 @@ final class StatisticsPanel extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == e.SELECTED) {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
                 filterMask |= itemMask;
-            } else if (e.getStateChange() == e.DESELECTED) {
+            } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                 filterMask &= ~itemMask;
             }
             treePanel.setFilterMask(filterMask);
