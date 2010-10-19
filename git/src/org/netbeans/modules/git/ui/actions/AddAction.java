@@ -52,6 +52,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -85,7 +86,7 @@ public class AddAction extends SingleRepositoryAction {
                 Git.getInstance().getFileStatusCache().refreshAllRoots(roots);
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, "Git Add"); // NOI18N
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress")); 
     }
 
 }
