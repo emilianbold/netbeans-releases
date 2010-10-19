@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.remote.fs.CndFileUtilTestCase;
 import org.netbeans.modules.cnd.remote.fs.DirectoryAttributesTestCase;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSupportTestCase;
 import org.netbeans.modules.cnd.remote.fs.RemoteFileSystemTestCase;
+import org.netbeans.modules.cnd.remote.fs.RemoteURLTestCase;
 import org.netbeans.modules.cnd.remote.mapper.IncludeMappingsTestCase;
 import org.netbeans.modules.cnd.remote.mapper.MappingsTestCase;
 import org.netbeans.modules.cnd.remote.support.DownloadTestCase;
@@ -97,6 +98,7 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
            RemoteBuildUpdatesDownloadTestCase.class,
            RfsRemoteControllerDeathTestCase.class,
            RemoteCodeModelTestCase.class,
+           RemoteURLTestCase.class,
            CndFileUtilTestCase.class
        );
    }

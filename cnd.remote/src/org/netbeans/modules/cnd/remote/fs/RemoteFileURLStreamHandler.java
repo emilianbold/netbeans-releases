@@ -37,60 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import org.openide.util.URLStreamHandlerRegistration;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-public class RemoteFileTestSuite extends CndBaseTestSuite {
+@URLStreamHandlerRegistration(protocol="rfs")
+public class RemoteFileURLStreamHandler extends URLStreamHandler {
 
-   public RemoteFileTestSuite() {
-       this("Remote File System test Suite", // NOI18N
-           RemoteFileSupportTestCase.class,
-           RemoteFileSystemTestCase.class,
-           RemoteURLTestCase.class,
-           CndFileUtilTestCase.class,
-           RemotePathTestCase.class
-       );
-   }
-
-    public RemoteFileTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    public static final String PROTOCOL = "rfs"; //NOI18N
+    
+    @Override
+    protected URLConnection openConnection(URL url) throws IOException {
+        return new RemoteFileURLConnection(url);
     }
 
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteFileTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteFileTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    private RemoteFileTestSuite(String name, Class... testClasses) {
-        super(name, RemoteDevelopmentTest.PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RemoteFileTestSuite();
-        return suite;
+    @Override
+    protected int getDefaultPort() {
+        return 22;
     }
 }

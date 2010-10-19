@@ -37,60 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.remote.fs;
 
-import java.util.Collection;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
-import org.netbeans.modules.cnd.test.CndBaseTestSuite;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 
 /**
+ *
  * @author Vladimir Kvashin
  */
-public class RemoteFileTestSuite extends CndBaseTestSuite {
+public class RemoteFileSystemUtils {
 
-   public RemoteFileTestSuite() {
-       this("Remote File System test Suite", // NOI18N
-           RemoteFileSupportTestCase.class,
-           RemoteFileSystemTestCase.class,
-           RemoteURLTestCase.class,
-           CndFileUtilTestCase.class,
-           RemotePathTestCase.class
-       );
-   }
-
-    public RemoteFileTestSuite(Class testClass) {
-        this(testClass.getName(), testClass);
+    private RemoteFileSystemUtils() {
     }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteFileTestSuite(String name, Test... tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
+    
+    public static ExecutionEnvironment getExecutionEnvironment(String hostName, int port) {
+        ExecutionEnvironment result = null;
+        for(ExecutionEnvironment env : ServerList.getEnvironments()) {
+            if (hostName.equals(EnvUtils.toHostID(env))) {
+                if (port == 0 || port == env.getSSHPort()) {
+                    result = env;
+                    if (ConnectionManager.getInstance().isConnectedTo(env)) {
+                        break;
+                    }
+                }
+            }
         }
-    }
-
-    // Why are tests just Test, not NativeExecutionBaseTestCase?
-    // to allow add warnings (TestSuite.warning() returns test stub with warning)
-    public RemoteFileTestSuite(String name, Collection<Test> tests) {
-        setName(name);
-        for (Test test : tests) {
-            addTest(test);
-        }
-    }
-
-    private RemoteFileTestSuite(String name, Class... testClasses) {
-        super(name, RemoteDevelopmentTest.PLATFORMS_SECTION, testClasses);
-    }
-
-    public static Test suite() {
-        TestSuite suite = new RemoteFileTestSuite();
-        return suite;
+        return result;
     }
 }
