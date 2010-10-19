@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -127,14 +128,14 @@ public class FileStatusCache {
      * @param files roots to refresh
      */
     public void refreshAllRoots(File[] roots) {
-        refreshAllRoots(new HashSet<File>(Arrays.asList(roots)));
+        refreshAllRoots(Arrays.asList(roots));
     }
     
     /**
      * Prepares refresh candidates, sorts them under their repository roots and eventually calls the cache refresh
      * @param files roots to refresh
      */
-    public void refreshAllRoots (final Set<File> files) {
+    public void refreshAllRoots (final Collection<File> files) {
         long startTime = 0;
         if (LOG.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
@@ -143,7 +144,7 @@ public class FileStatusCache {
         if (files.isEmpty()) {
             return;
         }
-        HashMap<File, Set<File>> rootFiles = new HashMap<File, Set<File>>(5);
+        HashMap<File, Collection<File>> rootFiles = new HashMap<File, Collection<File>>(5);
 
         for (File file : files) {
             // go through all files and sort them under repository roots
@@ -153,7 +154,7 @@ public class FileStatusCache {
                 // we have an unversioned root, maybe the whole subtree should be removed from cache (VCS owners might have changed)
                 continue;
             }
-            Set<File> filesUnderRoot = rootFiles.get(repository);
+            Collection<File> filesUnderRoot = rootFiles.get(repository);
             if (filesUnderRoot == null) {
                 filesUnderRoot = new HashSet<File>();
                 rootFiles.put(repository, filesUnderRoot);
@@ -176,8 +177,8 @@ public class FileStatusCache {
      * Refreshes all files under given roots in the cache.
      * @param rootFiles root files to scan sorted under their repository roots
      */
-    public void refreshAllRoots (Map<File, Set<File>> rootFiles) {
-        for (Map.Entry<File, Set<File>> refreshEntry : rootFiles.entrySet()) {
+    public void refreshAllRoots (Map<File, Collection<File>> rootFiles) {
+        for (Map.Entry<File, Collection<File>> refreshEntry : rootFiles.entrySet()) {
             File repository = refreshEntry.getKey();
             if (repository == null) {
                 continue;
@@ -280,7 +281,7 @@ public class FileStatusCache {
         }
         return false;
     }
-
+        
     /**
      * Lists <b>interesting files</b> that are known to be inside given folders.
      * These are locally and remotely modified and ignored files.
@@ -289,7 +290,7 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
-    public File [] listFiles (Set<File> roots, EnumSet<Status> includeStatus) {
+    public File [] listFiles (Collection<File> roots, EnumSet<Status> includeStatus) {
         Set<File> set = new HashSet<File>();
 
         // get all files with given status underneath the roots files;
@@ -544,7 +545,7 @@ public class FileStatusCache {
         return false;
     }
 
-    private Set<File> listFilesIntern (Set<File> roots, EnumSet<Status> includeStatus, boolean recursively) {
+    private Set<File> listFilesIntern (Collection<File> roots, EnumSet<Status> includeStatus, boolean recursively) {
         if(roots == null || roots.isEmpty()) {
             return Collections.<File>emptySet();
         }

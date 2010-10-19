@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.utils;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -120,7 +121,7 @@ public final class GitUtils {
      * @param file file to add
      * @return false if the file was added or true if it was already contained
      */
-    public static boolean prepareRootFiles (File repository, Set<File> filesUnderRoot, File file) {
+    public static boolean prepareRootFiles (File repository, Collection<File> filesUnderRoot, File file) {
         boolean added = false;
         Set<File> filesToRemove = new HashSet<File>();
         for (File fileUnderRoot : filesUnderRoot) {
@@ -370,7 +371,7 @@ public final class GitUtils {
         }
         return files;
     }
-
+    
     public GitUtils() {
     }
 }

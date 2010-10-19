@@ -44,9 +44,9 @@ package org.netbeans.modules.git.ui.checkout;
 
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
@@ -56,6 +56,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,7 +77,7 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
                 protected void perform () {
                     try {
                         GitClient client = getClient();
-                        final Set<File> notifiedFiles = new HashSet<File>();
+                        final Collection<File> notifiedFiles = new HashSet<File>();
                         client.addNotificationListener(new FileListener() {
                             @Override
                             public void notifyFile (File file, String relativePathToRoot) {
