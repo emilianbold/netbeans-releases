@@ -348,6 +348,7 @@ public final class SearchBar extends JPanel {
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     findNext();
+                    looseFocus();
                 }});
         // Shift+ENTER to find previous
         incrementalSearchTextField.getInputMap()
@@ -358,6 +359,7 @@ public final class SearchBar extends JPanel {
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     findPrevious();
+                    looseFocus();
                 }});
         incrementalSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
 
