@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -94,7 +95,7 @@ public class StatusTest extends AbstractGitTestCase {
     public void testStatusDifferentTree () throws IOException {
         try {
             File folder = createFolder("folder");
-            getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folder)));
+            getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folder)));
             fail("different tree, exception should be thrown");
         } catch (IllegalArgumentException ex) {
             // OK
@@ -116,7 +117,7 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
 
-        cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(1, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
@@ -127,7 +128,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(2, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
@@ -139,7 +140,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(newFile)));
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
@@ -149,7 +150,7 @@ public class StatusTest extends AbstractGitTestCase {
         folder.mkdirs();
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
-        cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folder)));
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folder)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
@@ -161,7 +162,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
         assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        cache.refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(newFile)));
+        cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
         assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(4, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
@@ -271,7 +272,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "");
         handler.setFilesToRefresh(Collections.singleton(fileA1));
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(fileA1)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(fileA1)));
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
 
@@ -290,7 +291,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
 
         write(ignoreFile, "");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folderA)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folderA)));
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileA2);
@@ -298,7 +299,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         ignoreFile = new File(folderA, ".gitignore");
         write(ignoreFile, "file1");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folderA)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folderA)));
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
         status = getCache().getStatus(fileA2);
@@ -396,7 +397,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "ignored");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(file1)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(file1)));
         assertTrue(getCache().getStatus(file1).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
         file1.delete();
         assertFalse(file1.exists());
@@ -415,7 +416,7 @@ public class StatusTest extends AbstractGitTestCase {
             public void close() throws SecurityException {
             }
         });
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(folder)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folder)));
         assertTrue(cleaned[0]);
     }
 
@@ -440,7 +441,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.getInterestingFiles());
 
         handler.setFilesToRefresh(Collections.singleton(repositoryLocation));
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         handler.waitForFilesToRefresh();
         assertEquals(new HashSet(Arrays.asList(file.getAbsolutePath(), folder.getAbsolutePath(), ignoreFile.getAbsolutePath())), handler.getInterestingFiles());
     }
@@ -457,7 +458,7 @@ public class StatusTest extends AbstractGitTestCase {
         File file3 = new File(subFolder, "file3");
         file3.createNewFile();
 
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
         List<File> ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
@@ -467,7 +468,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "subfolder");
         getCache().getStatus(file3);
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         getCache().getStatus(file3);
         Thread.sleep(500);
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
@@ -478,7 +479,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(ignoredFiles.contains(file3));
 
         write(ignoreFile, "subfolder2");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
@@ -488,7 +489,7 @@ public class StatusTest extends AbstractGitTestCase {
         write(ignoreFile, "folder");
         getCache().getStatus(file2);
         getCache().getStatus(file3);
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         getCache().getStatus(file2);
         getCache().getStatus(file3);
         Thread.sleep(500);
@@ -501,7 +502,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(ignoredFiles.contains(file3));
 
         write(ignoreFile, "subfolder");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
@@ -511,7 +512,7 @@ public class StatusTest extends AbstractGitTestCase {
         assertTrue(ignoredFiles.contains(file3));
 
         write(ignoreFile, "");
-        getCache().refreshAllRoots(Collections.singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
+        getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
