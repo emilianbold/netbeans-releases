@@ -48,6 +48,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
@@ -123,6 +124,10 @@ public final class CommonTasksSupport {
         return SftpSupport.downloadFile(srcFileName, srcExecEnv, dstFile.getAbsolutePath(), error);
     }
 
+    public static Future<Integer> uploadFile(UploadParameters parameters) {
+        return SftpSupport.uploadFile(parameters.copy());
+    }
+
     /**
      * Starts <tt>srcFileName</tt> file upload from the localhost to the host,
      * specified by the <tt>dstExecEnv</tt> saving it in the
@@ -149,7 +154,8 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error) {
 
-        return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error, false);
+        return SftpSupport.uploadFile(new UploadParameters(
+                new File(srcFileName), dstExecEnv, dstFileName, mask, error, false, null));
     }
 
     /**
@@ -180,7 +186,8 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(srcFileName, dstExecEnv, dstFileName, mask, error, checkMd5);
+        return SftpSupport.uploadFile(new UploadParameters(
+                new File(srcFileName), dstExecEnv, dstFileName, mask, error, checkMd5, null));
     }
 
     /**
@@ -209,7 +216,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error) {
 
-        return SftpSupport.uploadFile(srcFile.getAbsolutePath(), dstExecEnv, dstFileName, mask, error, false);
+        return SftpSupport.uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, false, null));
     }
 
     /**
@@ -240,7 +247,8 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask, final Writer error, boolean checkMd5) {
 
-        return SftpSupport.uploadFile(srcFile.getAbsolutePath(), dstExecEnv, dstFileName, mask, error, checkMd5);
+        return SftpSupport.uploadFile(new UploadParameters(
+                srcFile, dstExecEnv, dstFileName, mask, error, checkMd5, null));
     }
 
     /**
@@ -404,6 +412,74 @@ public final class CommonTasksSupport {
                 return support.killgrp(signal, pid);
             }
         }, descr);
+    }
+
+    /**
+     * A class (an analog of C struct) that contains upload parameters.
+     */
+    public static class UploadParameters  {
+        
+        /**
+         * specifies full path to the source file on the local host
+         */
+        public final File srcFile;
+
+        /** */
+        public final ExecutionEnvironment dstExecEnv;
+
+        /**
+         * destination filename on the host, specified by <tt>dstExecEnv</tt>
+         */
+        public final String dstFileName;
+
+        /**
+         * File mode creation mask (see uname(1), chmod(1)), in octal.
+         * iIf it is less than zero (which is the default),
+         * then the default mask is used (for existent files, it stays the same it was,
+         * for new files as specified by umask command))
+         */
+        public int mask;
+
+        /**
+         * If not <tt>NULL</tt> and some error occurs during upload,
+         * an error message will be written to this <tt>Writer</tt>.
+         */
+        public Writer error;
+
+        /** */
+        public ChangeListener callback;
+
+        /**
+         * Of true, then the source file will be copied to destination only if
+         * destination does not exist or exists but its md5 sum differs from local one
+         */
+        public boolean checkMd5;
+
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName) {
+            this.srcFile = srcFile;
+            this.dstExecEnv = dstExecEnv;
+            this.dstFileName = dstFileName;
+            mask = -1;
+            error = null;
+            callback = null;
+            checkMd5 = false;
+        }
+
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, Writer error) {
+            this(srcFile, dstExecEnv, dstFileName, mask, error, false, null);
+        }
+
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, Writer error, boolean checkMd5, ChangeListener callback) {
+            this(srcFile, dstExecEnv, dstFileName);
+            this.mask = mask;
+            this.error = error;
+            this.checkMd5 = checkMd5;
+            this.callback = callback;
+        }
+
+        /*package*/ UploadParameters copy() {
+            return new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, error, checkMd5, callback);
+        }
     }
 
     /**

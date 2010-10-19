@@ -99,7 +99,7 @@ public class RemoteURLTestCase extends RemoteFileTestBase {
             assertEquals("mktemp failed", 0, res.exitCode);
             tempFile = res.output;
             FileObject fo = rootFO.getFileObject(tempFile);
-            assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
+            assertTrue("FileObject should be readable: " + fo.getPath(), fo.canRead());
             final String referenceText = "a quick brown fox...";
             writeFile(fo, referenceText);
             String readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
