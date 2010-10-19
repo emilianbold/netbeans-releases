@@ -51,7 +51,8 @@ import org.netbeans.modules.web.el.ELParser;
 import org.netbeans.modules.web.el.Pair;
 
 /**
- * Attempts to sanitize EL statements.
+ * Attempts to sanitize EL statements. Check the unit test
+ * for finding out what cases are currently handled.
  *
  * @author Erno Mononen
  */
@@ -71,11 +72,14 @@ final class ELSanitizer {
     public ELSanitizer(ELElement element) {
         this.element = element;
         this.expression = element.getExpression();
-
     }
 
     /**
-     * @return
+     * Attempts to sanitize the contained element.
+     * @return Returns a
+     * sanitized copy of the element if sanitization was successful, otherwise
+     * the element itself. In other words, the returned element is <strong>not</strong>
+     * guaranteed to be valid.
      */
     public ELElement sanitized() {
         try {
