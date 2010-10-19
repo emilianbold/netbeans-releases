@@ -287,6 +287,17 @@ public class FileStatusCache {
      * These are locally and remotely modified and ignored files.
      *
      * @param roots context to examine
+     * @return File [] array of interesting files
+     */
+    public File [] listFiles (File... roots) {
+        return listFiles(Arrays.asList(roots), FileInformation.STATUS_ALL);
+    }
+    
+    /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * @param roots context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */

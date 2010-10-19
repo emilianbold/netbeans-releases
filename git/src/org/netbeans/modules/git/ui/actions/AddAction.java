@@ -63,7 +63,7 @@ public class AddAction extends SingleRepositoryAction {
     private static final Logger LOG = Logger.getLogger(AddAction.class.getName());
 
     @Override
-    protected void performAction (File repository, final File[] roots) {
+    protected void performAction (File repository, final File[] roots, VCSContext context) {
         GitProgressSupport supp = new GitProgressSupport () {
             @Override
             protected void perform() {
@@ -86,7 +86,7 @@ public class AddAction extends SingleRepositoryAction {
                 Git.getInstance().getFileStatusCache().refreshAllRoots(roots);
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress")); 
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress"));
     }
 
 }

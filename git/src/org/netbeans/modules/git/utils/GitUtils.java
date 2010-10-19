@@ -54,6 +54,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -371,7 +374,45 @@ public final class GitUtils {
         }
         return files;
     }
+
+    /**
+     * Normalize flat files, Mercurial treats folder as normal file
+     * so it's necessary explicitly list direct descendants to
+     * get classical flat behaviour.
+     * <strong>Does not return up-to-date files</strong>
+     *
+     * <p> E.g. revert on package node means:
+     * <ul>
+     *   <li>revert package folder properties AND
+     *   <li>revert all modified (including deleted) files in the folder
+     * </ul>
+     *
+     * @return files with given status and direct descendants with given status.
+     */
+
+    public static File[] flatten(File[] files, Set<Status> statuses) {
+        LinkedList<File> ret = new LinkedList<File>();
+
+        FileStatusCache cache = Git.getInstance().getFileStatusCache();
+        for (int i = 0; i<files.length; i++) {
+            File dir = files[i];
+            FileInformation info = cache.getStatus(dir);
+            if (info.containsStatus(statuses)) {
+                ret.add(dir);
+            }
+            File[] entries = cache.listFiles(dir);  // comparing to dir.listFiles() lists already deleted too
+            for (int e = 0; e<entries.length; e++) {
+                File entry = entries[e];
+                info = cache.getStatus(entry);
+                if (info.containsStatus(statuses)) {
+                    ret.add(entry);
+                }
+            }
+        }
+
+        return ret.toArray(new File[ret.size()]);
+    }
     
-    public GitUtils() {
+    private GitUtils() {
     }
 }

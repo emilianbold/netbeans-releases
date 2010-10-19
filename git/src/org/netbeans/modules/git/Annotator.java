@@ -56,6 +56,7 @@ import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -105,8 +106,9 @@ public class Annotator extends VCSAnnotator {
         List<Action> actions = new LinkedList<Action>();
         if (destination.equals(ActionDestination.MainMenu)) {
             actions.add(SystemAction.get(StatusAction.class));
-            actions.add(SystemAction.get(AddAction.class));
             actions.add(SystemAction.get(CheckoutPathsAction.class));
+            actions.add(SystemAction.get(AddAction.class));
+            actions.add(SystemAction.get(CommitAction.class));
             actions.add(null);
             actions.add(SystemAction.get(OpenOutputAction.class));
         } else {
@@ -116,6 +118,7 @@ public class Annotator extends VCSAnnotator {
             } else {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), NbBundle.getMessage(StatusAction.class, "LBL_StatusAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
+                actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp));
             }
         }
@@ -173,7 +176,7 @@ public class Annotator extends VCSAnnotator {
     private void refresh () {
         // TODO: implement, [status repository branch tags? etc.]
     }
-    
+
     private static boolean isMoreImportant (FileInformation a, FileInformation b) {
         if (b == null) return true;
         if (a == null) return false;

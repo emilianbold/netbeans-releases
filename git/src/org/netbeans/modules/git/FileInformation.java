@@ -44,17 +44,16 @@ package org.netbeans.modules.git;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.libs.git.GitStatus;
+import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 
 /**
  *
  * @author ondra
  */
-public class FileInformation {
+public class FileInformation extends VCSFileInformation {
     private final EnumSet<Status> status;
     private boolean seenInUI;
     private final boolean directory;
@@ -108,13 +107,13 @@ public class FileInformation {
         }
     }
 
-    boolean containsStatus (Set<Status> includeStatus) {
+    public boolean containsStatus (Set<Status> includeStatus) {
         EnumSet<Status> intersection = status.clone();
         intersection.retainAll(includeStatus);
         return !intersection.isEmpty();
     }
 
-    boolean containsStatus (Status includeStatus) {
+    public boolean containsStatus (Status includeStatus) {
         return containsStatus(EnumSet.of(includeStatus));
     }
 

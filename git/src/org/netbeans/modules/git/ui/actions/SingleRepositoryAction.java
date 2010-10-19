@@ -80,8 +80,8 @@ public abstract class SingleRepositoryAction extends GitAction {
         if (repositories.size() > 1) {
             LOG.log(Level.FINE, "Multiple repositories in the current context: {0}, running only with {1}", new Object[] { context.getRootFiles(), repository }); //NOI18N
         }
-        performAction(repository, GitUtils.filterForRepository(context, repository));
+        performAction(repository, GitUtils.filterForRepository(context, repository), context);
     }
-
-    protected abstract void performAction (File repository, File[] roots);
+    
+    protected abstract void performAction (File repository, File[] roots, VCSContext context);
 }

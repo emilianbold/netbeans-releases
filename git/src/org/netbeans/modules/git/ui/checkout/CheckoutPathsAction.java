@@ -68,7 +68,7 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
     private static final Logger LOG = Logger.getLogger(CheckoutPathsAction.class.getName());
 
     @Override
-    protected void performAction (final File repository, final File[] roots) {
+    protected void performAction (final File repository, final File[] roots, VCSContext context) {
         final CheckoutPaths checkout = new CheckoutPaths(repository, roots);
         if (checkout.show()) {
             GitProgressSupport supp = new GitProgressSupport() {

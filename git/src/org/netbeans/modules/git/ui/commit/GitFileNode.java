@@ -40,58 +40,26 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.git.ui.commit;
 
 import java.io.File;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.StatusListener;
 import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.common.VCSFileInformation;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
  *
- * @author ondra
+ * @author Tomas Stupka
  */
-public class StatusAction extends SingleRepositoryAction {
+public class GitFileNode extends VCSFileNode {
 
-    private static final Logger LOG = Logger.getLogger(StatusAction.class.getName());
-    
+    public GitFileNode(File root, File file) {
+        super(root, file);
+    }
+
     @Override
-    protected void performAction (File repository, final File[] roots, VCSContext context) {
-        GitProgressSupport supp = new GitProgressSupport () {
-            @Override
-            protected void perform() {
-                GitClient client;
-                try {
-                    client = getClient();
-                } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                    return;
-                }
-                class StatusMonitor implements StatusListener {
-                    @Override
-                    public void notifyStatus (GitStatus status) {
-                        LOG.log(Level.INFO, "{0} - {1}", new Object[] { status.getFile(), status });
-                        setProgress(status.getRelativePath());
-                    }
-                }
-                StatusMonitor m = new StatusMonitor();
-                try {
-                    client.addNotificationListener(m);
-                    Map<File, GitStatus> statuses = client.getStatus(roots, this);
-                } catch (GitException ex) {
-                    // notify in some way
-                }
-            }
-        };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, "Git Status");
+    public VCSFileInformation getInformation() {
+        return Git.getInstance().getFileStatusCache().getStatus(getFile());
     }
 
 }

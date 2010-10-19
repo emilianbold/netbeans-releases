@@ -106,7 +106,7 @@ public final class Git {
         addPropertyChangeListener(gitVCS);
     }
 
-    VCSAnnotator getVCSAnnotator() {
+    public VCSAnnotator getVCSAnnotator() {
         return annotator;
     }
 
