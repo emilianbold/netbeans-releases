@@ -137,8 +137,8 @@ public class RemoteFileURLConnection extends URLConnection {
                 if (fileObject.canRead()) {
                     actions.append(SecurityConstants.FILE_READ_ACTION).append(' ');
                 }
-                if (fileObject.canRead()) {
-                    actions.append(SecurityConstants.FILE_READ_ACTION).append(' ');
+                if (fileObject.canWrite()) {
+                    actions.append(SecurityConstants.FILE_WRITE_ACTION).append(' ');
                 }
             }
         }
