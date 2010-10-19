@@ -290,6 +290,18 @@ public class FileStatusCache {
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files
      */
+    public File [] listFiles (File[] roots, EnumSet<Status> includeStatus) {
+        return listFiles(Arrays.asList(roots), includeStatus);
+    }
+    
+    /**
+     * Lists <b>interesting files</b> that are known to be inside given folders.
+     * These are locally and remotely modified and ignored files.
+     *
+     * @param roots context to examine
+     * @param includeStatus limit returned files to those having one of supplied statuses
+     * @return File [] array of interesting files
+     */
     public File [] listFiles (Collection<File> roots, EnumSet<Status> includeStatus) {
         Set<File> set = new HashSet<File>();
 
