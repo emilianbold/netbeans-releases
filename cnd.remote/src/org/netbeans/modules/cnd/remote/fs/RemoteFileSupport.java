@@ -313,10 +313,10 @@ public class RemoteFileSupport extends NamedRunnable {
         RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
                 new Object[]{dir.getAbsolutePath(), execEnv, ':', rdir});
 
-        scriptRunner.execute();
+        int rc = scriptRunner.execute();
 
         if (ex.get() != null) {
-            throw ex.get();
+            throw new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName(), ex.get()); //NOI18N
         }
 
         if (dirCreated.get()) {
@@ -330,8 +330,13 @@ public class RemoteFileSupport extends NamedRunnable {
             }
             dirSyncCount++;
         }
-        attrs.store();
-        return attrs;
+        if (rc == 0) {
+            CndUtils.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
+            attrs.store();
+            return attrs;
+        } else {
+            return null;
+        }
     }
 
     /*package-local test method*/ final void resetStatistic() {
