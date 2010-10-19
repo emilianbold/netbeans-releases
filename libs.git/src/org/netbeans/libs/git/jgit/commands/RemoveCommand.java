@@ -130,6 +130,13 @@ public class RemoveCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return "rm"; //NOI18N
+        StringBuilder sb = new StringBuilder("git rm"); //NOI18N
+        if (cached) {
+            sb.append(" --cached"); //NOI18N
+        }
+        for (File root : roots) {
+            sb.append(" ").append(root); //NOI18N
+        }
+        return sb.toString();
     }
 }

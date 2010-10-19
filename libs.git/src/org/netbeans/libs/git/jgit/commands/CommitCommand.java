@@ -194,6 +194,10 @@ public class CommitCommand extends GitCommand {
     
     @Override
     protected String getCommandDescription () {
-        return "commit"; //NOI18N
+        StringBuilder sb = new StringBuilder("git commit -m ").append(message); //NOI18N
+        for (File root : roots) {
+            sb.append(" ").append(root); //NOI18N
+        }
+        return sb.toString();
     }
 }

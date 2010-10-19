@@ -153,6 +153,10 @@ public class CheckoutIndexCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return "checkout"; //NOI18N
+        StringBuilder sb = new StringBuilder("git checkout -- "); //NOI18N
+        for (File root : roots) {
+            sb.append(" ").append(root); //NOI18N
+        }
+        return sb.toString();
     }
 }

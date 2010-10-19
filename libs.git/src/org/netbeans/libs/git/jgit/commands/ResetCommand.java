@@ -109,7 +109,16 @@ public class ResetCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return "reset"; //NOI18N
+        StringBuilder sb = new StringBuilder("git reset"); //NOI18N
+        if (moveHead) {
+            sb.append(resetType.toString()).append(" ").append(revisionStr); //NOI18N
+        } else {
+            sb.append(revisionStr);
+            for (File root : roots) {
+                sb.append(" ").append(root.getAbsolutePath()); //NOI18N
+            }
+        }
+        return sb.toString();
     }
 
     @Override

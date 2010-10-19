@@ -88,6 +88,6 @@ public class RenameCommand extends MoveTreeCommand {
 
     @Override
     protected String getCommandDescription() {
-        return "move"; //NOI18N
+        return new StringBuilder("git mv ").append(source).append(" ").append(target).toString(); //NOI18N
     }
 }

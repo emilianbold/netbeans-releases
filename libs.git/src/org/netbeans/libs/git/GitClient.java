@@ -54,7 +54,22 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public interface GitClient {
 
     public enum ResetType {
-        SOFT, MIXED, HARD
+        SOFT {
+            @Override
+            public String toString() {
+                return "--soft"; //NOI18N
+            }
+        }, MIXED {
+            @Override
+            public String toString() {
+                return "--mixed"; //NOI18N
+            }
+        }, HARD {
+            @Override
+            public String toString() {
+                return "--hard"; //NOI18N
+            }
+        }
     }
 
     /**

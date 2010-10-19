@@ -94,7 +94,11 @@ public class StatusCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return "status"; //NOI18N
+        StringBuilder sb = new StringBuilder("git status"); //NOI18N
+        for (File root : roots) {
+            sb.append(" ").append(root.getAbsolutePath());
+        }
+        return sb.toString();
     }
 
     @Override

@@ -82,7 +82,11 @@ public class AddCommand extends GitCommand {
 
     @Override
     protected String getCommandDescription () {
-        return "add"; //NOI18N
+        StringBuilder sb = new StringBuilder("git add"); //NOI18N
+        for (File root : roots) {
+            sb.append(" ").append(root); //NOI18N
+        }
+        return sb.toString();
     }
 
     @Override

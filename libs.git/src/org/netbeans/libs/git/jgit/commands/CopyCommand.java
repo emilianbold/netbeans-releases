@@ -52,13 +52,15 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
  * @author ondra
  */
 public class CopyCommand extends MoveTreeCommand {
+    private final String description;
 
     public CopyCommand (Repository repository, File source, File target, ProgressMonitor monitor, FileListener listener) {
         super(repository, source, target, true, true, monitor, listener);
+        this.description = new StringBuilder("git copy ").append("--after ").append(source).append(" ").append(target).toString(); //NOI18N
     }
 
     @Override
     protected String getCommandDescription() {
-        return "copy"; //NOI18N
+        return description;
     }
 }
