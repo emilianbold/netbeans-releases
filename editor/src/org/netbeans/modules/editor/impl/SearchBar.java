@@ -44,6 +44,7 @@
 package org.netbeans.modules.editor.impl;
 
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -65,6 +66,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -181,59 +183,70 @@ public final class SearchBar extends JPanel {
                              Math.max( 0, bgColor.getBlue() - 20 ) );        
         setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
-        
-        Keymap keymap = component.getKeymap();
-        
-        if (keymap instanceof MultiKeymap) {
-            MultiKeymap multiKeymap = (MultiKeymap) keymap;
 
-            Action[] actions = component.getActions();
-            for(Action action:actions) {
-                // Discover the keyStrokes for incremental-search-forward
-                String actionName = (String) action.getValue(Action.NAME);
-                if (actionName == null) {
-                    LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null || !"keymap".equals(evt.getPropertyName())) { // NOI18N
+                    return;
                 }
-                //keystroke for incremental search forward and
-                //keystroke to add standard search next navigation in search bar (by default F3 on win)
-                else if (actionName.equals(INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
-                    Action incrementalSearchForwardAction = action;
-                    KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
-                    if (keyStrokes != null) {
-                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-                        for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found forward search action, " + ks); //NOI18N
-                            inputMap.put(ks, actionName);
+
+                Keymap keymap = component.getKeymap();
+
+                if (keymap instanceof MultiKeymap) {
+                    MultiKeymap multiKeymap = (MultiKeymap) keymap;
+
+                    Action[] actions = component.getActions();
+                    for(Action action:actions) {
+                        // Discover the keyStrokes for incremental-search-forward
+                        String actionName = (String) action.getValue(Action.NAME);
+                        if (actionName == null) {
+                            LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
                         }
-                        getActionMap().put(actionName,
-                            new AbstractAction() {
-                                public void actionPerformed(ActionEvent e) {
-                                    findNext();
+                        //keystroke for incremental search forward and
+                        //keystroke to add standard search next navigation in search bar (by default F3 on win)
+                        else if (actionName.equals(INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
+                            Action incrementalSearchForwardAction = action;
+                            KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
+                            if (keyStrokes != null) {
+                                InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                                for(KeyStroke ks : keyStrokes) {
+                                    LOG.fine("found forward search action, " + ks); //NOI18N
+                                    inputMap.put(ks, actionName);
                                 }
-                            });
-                    }
-                }
-                // Discover the keyStrokes for incremental-search-backward
-                // Discover the keyStrokes for search-backward
-                else if (actionName.equals(INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
-                    Action incrementalSearchBackwardAction = action;
-                    KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
-                    if (keyStrokes != null) {
-                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-                        for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found backward search action, " + ks); //NOI18N
-                            inputMap.put(ks, actionName);
+                                getActionMap().put(actionName,
+                                    new AbstractAction() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            findNext();
+                                        }
+                                    });
+                            }
                         }
-                        getActionMap().put(actionName,
-                            new AbstractAction() {
-                                public void actionPerformed(ActionEvent e) {
-                                    findPrevious();
+                        // Discover the keyStrokes for incremental-search-backward
+                        // Discover the keyStrokes for search-backward
+                        else if (actionName.equals(INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
+                            Action incrementalSearchBackwardAction = action;
+                            KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
+                            if (keyStrokes != null) {
+                                InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                                for(KeyStroke ks : keyStrokes) {
+                                    LOG.fine("found backward search action, " + ks); //NOI18N
+                                    inputMap.put(ks, actionName);
                                 }
-                            });
+                                getActionMap().put(actionName,
+                                    new AbstractAction() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            findPrevious();
+                                        }
+                                    });
+                            }
+                        }
                     }
                 }
             }
-        }
+        };
+        component.addPropertyChangeListener(pcl);
+        pcl.propertyChange(new PropertyChangeEvent(this, "keymap", null, null));
 
         // ESCAPE to put focus back in the editor
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
