@@ -79,6 +79,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Responsible for copying files from remote host.
@@ -228,6 +229,7 @@ public class RemoteFileSupport extends NamedRunnable {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
     private DirectoryAttributes syncDirStruct(final File dir, final String remoteDir, final File flagFile) throws IOException, ConnectException {
+        Parameters.notNull("null remote dir", remoteDir);
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
@@ -318,7 +320,7 @@ public class RemoteFileSupport extends NamedRunnable {
         int rc = scriptRunner.execute();
 
         if (nonCriticalException.get() != null) {
-            IOException e = criticalException.get();
+            IOException e = nonCriticalException.get();
             IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
             Exceptions.printStackTrace(ioe);
         }
