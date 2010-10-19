@@ -185,6 +185,9 @@ public final class Utils {
     public static RevCommit findCommit (Repository repository, String revision) throws GitException {
         try {
             ObjectId commitId = parseObjectId(repository, revision);
+            if (commitId == null) {
+                throw new GitException("Commit with the given id [" + revision + "] does not exist.");
+            }
             return new RevWalk(repository).parseCommit(commitId);
         } catch (MissingObjectException ex) {
             throw new GitException("Commit with the given id [" + revision + "] does not exist.");
