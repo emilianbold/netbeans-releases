@@ -228,6 +228,16 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
                         }
                     }
+                    Object exported = b.getHeaders().get("Export-Package");
+                    if (exported instanceof String) {
+                        for (String p : exported.toString().split(",")) { // NOI18N
+                            int semic = p.indexOf(';');
+                            if (semic >= 0) {
+                                p = p.substring(0, semic);
+                            }
+                            pkgs.add(p);
+                        }
+                    }
                 } finally {
                     SELF_QUERY.set(false);
                 }
