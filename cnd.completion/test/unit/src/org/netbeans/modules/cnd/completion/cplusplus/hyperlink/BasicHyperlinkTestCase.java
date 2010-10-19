@@ -681,6 +681,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug189838.cpp", 12, 32, "bug189838.cpp", 6, 5);
     }
 
+    public void testBug191083() throws Exception {
+        // Bug 191083 - Parser errors in fe_tab.h (ir2hf)
+        performTest("bug191083.cpp", 4, 20, "bug191083.cpp", 1, 1);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
