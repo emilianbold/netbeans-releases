@@ -77,6 +77,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -239,7 +240,8 @@ public class RemoteFileSupport extends NamedRunnable {
                 "for D in `/bin/ls`; do " + // NOI18N
                 "if [ -d \"$D\" ]; then echo D \"$D\"; else if [ -w \"$D\" ]; then echo w \"$D\"; else echo r \"$D\"; fi; fi; done"; // NOI18N
 
-        final AtomicReference<IOException> ex = new AtomicReference<IOException>();
+        final AtomicReference<IOException> criticalException = new AtomicReference<IOException>();
+        final AtomicReference<IOException> nonCriticalException = new AtomicReference<IOException>();
         final AtomicBoolean dirCreated = new AtomicBoolean(false);
         final DirectoryAttributes attrs = new DirectoryAttributes(flagFile);
 
@@ -249,7 +251,7 @@ public class RemoteFileSupport extends NamedRunnable {
                 if (!dirCreated.get()) {
                     dirCreated.set(true);
                     if (!dir.mkdirs() && !dir.exists()) {
-                        ex.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
+                        criticalException.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
                         return;
                     }
                 }
@@ -276,7 +278,7 @@ public class RemoteFileSupport extends NamedRunnable {
                     RemoteUtil.LOGGER.log(Level.WARNING,
                             "Error creating {0}{1}{2}: {3}", // NOI18N
                             new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ioex.getMessage()}); // NOI18N
-                    ex.set(ioex);
+                    nonCriticalException.set(ioex);
                 }
             }
 
@@ -315,8 +317,15 @@ public class RemoteFileSupport extends NamedRunnable {
 
         int rc = scriptRunner.execute();
 
-        if (ex.get() != null) {
-            throw new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName(), ex.get()); //NOI18N
+        if (nonCriticalException.get() != null) {
+            IOException e = criticalException.get();
+            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
+            Exceptions.printStackTrace(ioe);
+        }
+        if (criticalException.get() != null) {
+            IOException e = criticalException.get();
+            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
+            throw ioe;
         }
 
         if (dirCreated.get()) {
@@ -326,7 +335,7 @@ public class RemoteFileSupport extends NamedRunnable {
                 flag.createNewFile(); // TODO: error processing
             } catch (IOException ie) {
                 RemoteUtil.LOGGER.log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
-                ex.set(ie);
+                criticalException.set(ie);
             }
             dirSyncCount++;
         }
