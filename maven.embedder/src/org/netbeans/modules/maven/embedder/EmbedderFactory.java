@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -74,10 +73,6 @@ import org.codehaus.plexus.DefaultPlexusContainer;
 import org.codehaus.plexus.component.repository.ComponentDescriptor;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -391,11 +386,8 @@ public final class EmbedderFactory {
     public static Properties fillEnvVars(Properties properties) {
         try
         {
-            Properties envVars = CommandLineUtils.getSystemEnvVars();
-            Iterator i = envVars.entrySet().iterator();
-            while ( i.hasNext() )
-            {
-                Map.Entry e = (Map.Entry) i.next();
+            Properties envVars = CommandLineUtils.getSystemEnvVars(); // XXX what is wrong with System.getenv()?
+            for (Map.Entry<Object,Object> e : envVars.entrySet()) {
                 properties.setProperty( "env." + e.getKey().toString(), e.getValue().toString() );
             }
         }
@@ -404,62 +396,5 @@ public final class EmbedderFactory {
             Exceptions.printStackTrace(e);
         }
         return properties;
-    }
-    
-
-    private static class SettingsFileListener extends FileChangeAdapter {
-
-        private FileObject dir;
-
-        public SettingsFileListener() {
-            File userLoc = FileUtil.normalizeFile(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE.getParentFile());
-            try {
-                dir = FileUtil.toFileObject(userLoc);
-                if (dir == null) {
-                    dir = FileUtil.createFolder(userLoc);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (dir != null) {
-                dir.addFileChangeListener(this);
-                FileObject settings = dir.getFileObject("settings.xml"); //NOI18N
-                if (settings != null) {
-                    settings.addFileChangeListener(this);
-                }
-            }
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            if ("settings.xml".equals(fe.getFile().getNameExt())) { //NOI18N
-                fe.getFile().removeFileChangeListener(this);
-                synchronized (EmbedderFactory.class) {
-                    online = null;
-                    project = null;
-                }
-            }
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            if ("settings.xml".equals(fe.getFile().getNameExt())) { //NOI18N
-                fe.getFile().addFileChangeListener(this);
-                synchronized (EmbedderFactory.class) {
-                    online = null;
-                    project = null;
-                }
-            }
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            if ("settings.xml".equals(fe.getFile().getNameExt())) { //NOI18N
-                synchronized (EmbedderFactory.class) {
-                    online = null;
-                    project = null;
-                }
-            }
-        }
     }
 }
