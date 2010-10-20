@@ -103,7 +103,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public boolean catFile (File file, String revision, OutputStream out, ProgressMonitor monitor) throws GitException {
+    public boolean catFile (File file, String revision, OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         CatCommand cmd = new CatCommand(repository, file, revision, out, monitor);
         cmd.execute();
@@ -111,7 +111,7 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public void checkout (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
+    public void checkout (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         if (revision != null) {
             ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
@@ -221,14 +221,14 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException {
+    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         ResetCommand cmd = new ResetCommand(repository, revision, roots, monitor, this);
         cmd.execute();
     }
 
     @Override
-    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException {
+    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException {
         Repository repository = gitRepository.getRepository();
         ResetCommand cmd = new ResetCommand(repository, revision, resetType, monitor, this);
         cmd.execute();

@@ -46,8 +46,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -71,14 +74,23 @@ public class CatTest extends AbstractGitTestCase {
     }
 
     public void testCat () throws Exception {
-        File f = new File(workDir, "testcat1");
+        File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File f = new File(folder, "testcat1");
         copyFile(getGoldenFile(), f);
         assertFile(getGoldenFile(), f);
         add(f);
+        GitClient client = getClient(workDir);
+        try {
+            client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail();
+        } catch (GitException.MissingObjectException ex) {
+            assertEquals(GitObjectType.COMMIT, ex.getObjectType());
+            assertEquals(Constants.HEAD, ex.getObjectName());
+        }
         commit(f);
 
-        GitClient client = getClient(workDir);
-        assertTrue(client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertTrue(client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
         String revision = new Git(repository).log().call().iterator().next().getId().getName();
@@ -108,6 +120,6 @@ public class CatTest extends AbstractGitTestCase {
         assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
-        assertFalse(client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertFalse(client.catFile(f, Constants.HEAD, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
     }
 }

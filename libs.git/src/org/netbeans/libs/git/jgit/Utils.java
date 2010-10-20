@@ -63,6 +63,7 @@ import org.eclipse.jgit.treewalk.filter.OrTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitObjectType;
 
 /**
  *
@@ -186,11 +187,11 @@ public final class Utils {
         try {
             ObjectId commitId = parseObjectId(repository, revision);
             if (commitId == null) {
-                throw new GitException("Commit with the given id [" + revision + "] does not exist.");
+                throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
             }
             return new RevWalk(repository).parseCommit(commitId);
         } catch (MissingObjectException ex) {
-            throw new GitException("Commit with the given id [" + revision + "] does not exist.");
+            throw new GitException.MissingObjectException(revision, GitObjectType.COMMIT);
         } catch (IncorrectObjectTypeException ex) {
             throw new GitException("The given id [" + revision + "] is not a commit or an annotated tag.");
         } catch (IOException ex) {

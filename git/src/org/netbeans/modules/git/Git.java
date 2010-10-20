@@ -47,6 +47,7 @@ import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -113,7 +115,20 @@ public final class Git {
     }
 
     void getOriginalFile (File workingCopy, File originalFile) {
-        
+        File repository = getRepositoryRoot(workingCopy);
+        if (repository != null) {
+            try {
+                GitClient client = getClient(repository);
+                client.catFile(workingCopy, GitUtils.HEAD, new FileOutputStream(originalFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+            } catch (java.io.FileNotFoundException ex) {
+                LOG.log(Level.SEVERE, "Parent folder [{0}] does not exist", originalFile.getParentFile()); //NOI18N
+                LOG.log(Level.SEVERE, null, ex);
+            } catch (GitException.MissingObjectException ex) {
+                LOG.log(Level.FINE, null, ex); //NOI18N
+            } catch (GitException ex) {
+                LOG.log(Level.INFO, "Error retrieving file", ex); //NOI18N
+            }
+        }
     }
 
     /**

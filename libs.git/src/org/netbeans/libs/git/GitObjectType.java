@@ -46,36 +46,11 @@ package org.netbeans.libs.git;
  *
  * @author ondra
  */
-public class GitException extends Exception {
-
-    public GitException (Throwable t) {
-        super(t);
-    }
-
-    public GitException (String message) {
-        super(message);
-    }
-
-    public GitException (String message, Throwable ex) {
-        super(message, ex);
-    }
-
-    public static class MissingObjectException extends GitException {
-        private final String objectName;
-        private final GitObjectType objectType;
-
-        public MissingObjectException (String objectName, GitObjectType objectType) {
-            super(objectType.toString() + "[" + objectName + "] does not exist");
-            this.objectName = objectName;
-            this.objectType = objectType;
-        }
-
-        public String getObjectName () {
-            return objectName;
-        }
-
-        public GitObjectType getObjectType () {
-            return objectType;
+public enum GitObjectType {
+    COMMIT {
+        @Override
+        public String toString() {
+            return "COMMIT"; //NOI18N
         }
     }
 }

@@ -71,6 +71,7 @@ public final class GitUtils {
     public static final String DOT_GIT = ".git"; //NOI18N
     private static final Pattern METADATA_PATTERN = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
     private static final String FILENAME_GITIGNORE = ".gitignore"; // NOI18N
+    public static final String HEAD = "HEAD"; //NOI18N
 
     /**
      * Checks file location to see if it is part of git metadata

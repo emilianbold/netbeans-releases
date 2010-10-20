@@ -97,6 +97,7 @@ public class CatCommand extends GitCommand {
             walk.reset();
             walk.addTree(commit.getTree());
             walk.setFilter(PathFilter.create(relativePath));
+            walk.setRecursive(true);
             found = false;
             while (!found && walk.next() && !monitor.isCanceled()) {
                 if (relativePath.equals(walk.getPathString())) {

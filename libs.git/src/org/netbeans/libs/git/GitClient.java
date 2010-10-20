@@ -90,7 +90,7 @@ public interface GitClient {
      * @return true if the file was found in the specified revision and printed to out, otherwise false
      * @throws GitException
      */
-    public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
+    public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
@@ -98,7 +98,7 @@ public interface GitClient {
      * @param roots files/folders to checkout
      * @throws GitException other error
      */
-    public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException;
+    public void checkout(File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Commits all changes made in the index to all files under the given roots
@@ -156,7 +156,7 @@ public interface GitClient {
      * @param roots files or folders to update in the index
      * @throws GitException
      */
-    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException;
+    public void reset (File[] roots, String revision, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 
     /**
      * Sets HEAD to the given revision and updates index and working copy accordingly to the given reset type
@@ -164,5 +164,5 @@ public interface GitClient {
      * @param resetType type of reset, see git help reset
      * @throws GitException
      */
-    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException;
+    public void reset (String revision, ResetType resetType, ProgressMonitor monitor) throws GitException.MissingObjectException, GitException;
 }

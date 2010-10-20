@@ -40,42 +40,45 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git;
+package org.netbeans.modules.git;
+
+import java.io.File;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author ondra
  */
-public class GitException extends Exception {
+public class HistoryTest extends AbstractGitTestCase {
 
-    public GitException (Throwable t) {
-        super(t);
+    public HistoryTest (String name) {
+        super(name);
     }
 
-    public GitException (String message) {
-        super(message);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
     }
 
-    public GitException (String message, Throwable ex) {
-        super(message, ex);
-    }
+    public void testOriginalFile () throws Exception {
+        File f = new File(repositoryLocation, "file");
+        File tmp = new File(repositoryLocation.getParentFile(), "tmp");
+        write(f, read(getGoldenFile()));
+        assertFile(getGoldenFile(), f);
+        GitVCS git = Lookup.getDefault().lookup(GitVCS.class);
 
-    public static class MissingObjectException extends GitException {
-        private final String objectName;
-        private final GitObjectType objectType;
+        git.getOriginalFile(f, tmp);
+        assertEquals(0, tmp.length());
+        add(f);
+        git.getOriginalFile(f, tmp);
+        assertEquals(0, tmp.length());
+        commit(f);
 
-        public MissingObjectException (String objectName, GitObjectType objectType) {
-            super(objectType.toString() + "[" + objectName + "] does not exist");
-            this.objectName = objectName;
-            this.objectType = objectType;
-        }
+        git.getOriginalFile(f, tmp);
+        assertFile(tmp, getGoldenFile());
 
-        public String getObjectName () {
-            return objectName;
-        }
-
-        public GitObjectType getObjectType () {
-            return objectType;
-        }
+        write(f, "blablabla");
+        git.getOriginalFile(f, tmp);
+        assertFile(tmp, getGoldenFile());
     }
 }
