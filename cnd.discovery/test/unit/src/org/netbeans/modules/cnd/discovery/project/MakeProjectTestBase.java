@@ -223,7 +223,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             }
             if (Utilities.isWindows()){
                 // cygwin does not allow test discovery in real time, so disable tests on windows
-                return;
+                //return;
             }
 
             // For simple configure-make projects store logs for reuse

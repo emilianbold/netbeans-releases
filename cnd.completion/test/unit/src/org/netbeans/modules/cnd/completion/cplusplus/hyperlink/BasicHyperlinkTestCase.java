@@ -686,6 +686,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191083.cpp", 4, 20, "bug191083.cpp", 1, 1);
     }
 
+    public void testBug191081() throws Exception {
+        // Bug 191081 - Parser errors in opt_set.c (CC)
+        performTest("bug191081.cpp", 8, 33, "bug191081.cpp", 2, 9);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
