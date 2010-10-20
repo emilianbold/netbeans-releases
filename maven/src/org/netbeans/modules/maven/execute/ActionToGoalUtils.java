@@ -282,7 +282,10 @@ public final class ActionToGoalUtils {
         }
     }
 
-    public static File resolveProjectEecutionBasedir(NetbeansActionMapping mapp, Project prj) {
+    /**
+     * Here for compatibility with old action mappings setting basedir, but unnecessary when reactor mode defined.
+     */
+    public static File resolveProjectExecutionBasedir(NetbeansActionMapping mapp, Project prj) {
         File base = FileUtil.toFile(prj.getProjectDirectory());
         if (mapp.getBasedir() != null) {
             base = FileUtilities.resolveFilePath(base, mapp.getBasedir());

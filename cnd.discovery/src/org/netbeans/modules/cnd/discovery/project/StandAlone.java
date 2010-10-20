@@ -41,11 +41,19 @@
  */
 package org.netbeans.modules.cnd.discovery.project;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -67,6 +75,27 @@ public class StandAlone {
         logger.setLevel(Level.SEVERE);
 
         Map<String,String> res = processArguments(args);
+
+        Lookup lookup = Lookup.getDefault();
+        try {
+            Method defaultLookup = lookup.getClass().getDeclaredMethod("register", Object.class); // NOI18N
+            Class<?> type = Class.forName("org.netbeans.modules.cnd.makeproject.MakeProjectType"); // NOI18N
+            Constructor<?> constructor = type.getConstructor();
+            Object makeType = constructor.newInstance();
+            // add make project in global lookup
+            defaultLookup.invoke(lookup, makeType);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        try {
+            // init service
+            HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
         if (KnownProject.getDefault().canCreate(res)){
             KnownProject.getDefault().create(res);
         } else {

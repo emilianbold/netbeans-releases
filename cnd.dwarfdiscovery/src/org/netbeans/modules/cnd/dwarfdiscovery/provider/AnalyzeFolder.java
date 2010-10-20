@@ -234,17 +234,20 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                         if (progress != null) {
                             progress.start();
                         }
-                        Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
-                        if (progress != null) {
-                            progress.start(set.size());
-                        }
-                        if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
-                        } else {
-                            myFileProperties = new ArrayList<SourceFileProperties>();
-                        }
-                        if (progress != null) {
-                            progress.done();
+                        try {
+                            Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                            if (progress != null) {
+                                progress.start(set.size());
+                            }
+                            if (set.size() > 0) {
+                                myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress, null, null);
+                            } else {
+                                myFileProperties = new ArrayList<SourceFileProperties>();
+                            }
+                        } finally {
+                            if (progress != null) {
+                                progress.done();
+                            }
                         }
                     }
                     return myFileProperties;
@@ -358,16 +361,18 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 set.add(path);
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
-                    try {
-                        String canPath = ff[i].getCanonicalPath();
-                        String absPath = ff[i].getAbsolutePath();
-                        if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
-                            continue;
+                    if (ff[i].isDirectory()) {
+                        try {
+                            String canPath = ff[i].getCanonicalPath();
+                            String absPath = ff[i].getAbsolutePath();
+                            if (!absPath.equals(canPath) && absPath.startsWith(canPath)) {
+                                continue;
+                            }
+                        } catch (IOException ex) {
+                            //Exceptions.printStackTrace(ex);
                         }
-                    } catch (IOException ex) {
-                        //Exceptions.printStackTrace(ex);
+                        gatherSubFolders(ff[i], set);
                     }
-                    gatherSubFolders(ff[i], set);
                 }
             }
         }

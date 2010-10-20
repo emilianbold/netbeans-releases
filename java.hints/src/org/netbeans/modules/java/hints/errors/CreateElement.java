@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
+import java.util.Collection;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -73,11 +74,13 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -138,7 +141,7 @@ public final class CreateElement implements ErrorRule<Void> {
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
 
-        TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        TreePath path = info.getTreeUtilities().pathFor(Math.max((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf()), offset) + 1);
 
         while(path != null) {
             Tree leaf = path.getLeaf();
@@ -148,12 +151,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
                 parent = path;
-            if (leafKind == Kind.CLASS && firstClass == null)
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && firstClass == null)
                 firstClass = path;
             if (leafKind == Kind.METHOD && firstMethod == null && firstClass == null)
                 firstMethod = path;
             //static/dynamic initializer:
-            if (   leafKind == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
+            if (   leafKind == Kind.BLOCK && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
 
@@ -333,15 +336,21 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror type = types.get(0);
+        final TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
 
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
         }
 
-        //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (Utilities.containsErrorsOrTypevarsRecursively(type)) {
+        //currently, we cannot handle error types:
+        if (Utilities.containsErrorsRecursively(type)) {
             return result;
+        }
+
+        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(type);
+
+        if (!Utilities.allTypeVarsAccessible(typeVars, target)) {
+            fixTypes.remove(ElementKind.FIELD);
         }
 
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
@@ -375,20 +384,18 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || types.contains(ElementKind.PARAMETER))) {
+        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || fixTypes.contains(ElementKind.PARAMETER))) {
             ExecutableElement ee = null;
 
             if (firstMethod != null) {
                 ee = (ExecutableElement) info.getTrees().getElement(firstMethod);
             }
 
-            if ((ee != null) && type != null) {
-                int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
-                if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
-                if (fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
-            }
+            int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
+            if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
+            if ((firstMethod != null || firstInitializer != null) && fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
         }
 
         return result;
@@ -396,14 +403,20 @@ public final class CreateElement implements ErrorRule<Void> {
 
     private static List<Fix> prepareCreateMethodFix(CompilationInfo info, TreePath invocation, Set<Modifier> modifiers, TypeElement target, String simpleName, List<? extends ExpressionTree> arguments, List<? extends TypeMirror> returnTypes) {
         //create method:
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = Utilities.resolveArguments(info, invocation, arguments, target);
 
         //return type:
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror returnType = returnTypes != null ? returnTypes.get(0) : null;
+        TypeMirror returnType = returnTypes != null ? Utilities.resolveCapturedType(info, returnTypes.get(0)) : null;
 
         //currently, we cannot handle error types, TYPEVARs and WILDCARDs:
-        if (formalArguments == null || returnType != null && Utilities.containsErrorsOrTypevarsRecursively(returnType)) {
+        if (formalArguments == null || returnType != null && Utilities.containsErrorsRecursively(returnType)) {
+            return Collections.<Fix>emptyList();
+        }
+
+        Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(returnType);
+
+        if (!Utilities.allTypeVarsAccessible(typeVars, target)) {
             return Collections.<Fix>emptyList();
         }
 
@@ -419,7 +432,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, TypeElement source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -439,7 +452,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, target) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -495,7 +508,8 @@ public final class CreateElement implements ErrorRule<Void> {
      * @return true if target's file is writable
      */
     private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
-	FileObject fo = SourceUtils.getFile(ElementHandle.create(target.getEnclosingElement()), info.getClasspathInfo());
+        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
+        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
 	if(fo != null && fo.canWrite())
 	    return true;
 	else

@@ -182,7 +182,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             if (Utilities.isWindows()) { //#153101
                 processIssue153101(x, ioput);
             } else {
-                LOGGER.log(Level.WARNING , x.getMessage(), x);
+                ioput.getErr().println(x.getMessage());
             }
         } catch (InterruptedException x) {
             //TODO
@@ -264,7 +264,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 toRet.add("-D" + key + "=" + (Utilities.isWindows() ? val.replace(quote, escaped) : val.replace(quote, "'")));
             }
         }
-        toRet.add("-Dnetbeans.execution=true"); //NOI18N
 
         String localRepo = MavenSettings.getDefault().getCustomLocalRepository();
         if (localRepo != null) {
@@ -302,7 +301,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
         if (react) {
             toRet.add("--projects");
-            // XXX might be better to supply relative path from executionDirectory, e.g. 'war'
             toRet.add(config.getMavenProject().getGroupId() + ":" + config.getMavenProject().getArtifactId());
         }
 
@@ -413,7 +411,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ProcessBuilder builder = new ProcessBuilder(cmdLine);
         builder.redirectErrorStream(true);
         builder.directory(clonedConfig.getExecutionDirectory());
-        StringBuilder display = new StringBuilder();
+        StringBuilder display = new StringBuilder("cd ").append(clonedConfig.getExecutionDirectory()).append("; "); // NOI18N
         for (Map.Entry<String, String> entry : envMap.entrySet()) {
             String env = entry.getKey();
             String val = entry.getValue();
@@ -470,7 +468,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
             });
         } else {
-            LOGGER.log(Level.WARNING, x.getMessage(), x);
+            ioput.getErr().println(x.getMessage());
         }
     }
     

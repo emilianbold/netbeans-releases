@@ -87,8 +87,7 @@ public class ConfigurationWarningPanel extends javax.swing.JPanel {
         messageTextarea.setBorder(null);
         jScrollPane1.setViewportView(messageTextarea);
 
-        doNotShowAginCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/Bundle").getString("ConfigurationWarningPanel.doNotShowAginCheckBox.mn").charAt(0));
-        doNotShowAginCheckBox.setText(org.openide.util.NbBundle.getMessage(ConfigurationWarningPanel.class, "ConfigurationWarningPanel.doNotShowAginCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(doNotShowAginCheckBox, org.openide.util.NbBundle.getMessage(ConfigurationWarningPanel.class, "ConfigurationWarningPanel.doNotShowAginCheckBox.text")); // NOI18N
         doNotShowAginCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 doNotShowAginCheckBoxActionPerformed(evt);

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.spi.model.UIDProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -61,17 +62,23 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.UIDProvider.class)
 public final class UIDProviderIml implements UIDProvider {
 
-    private static final Set<Class> nonIdentifiable = new HashSet<Class>();
+    private static final Set<Class<?>> nonIdentifiable = new HashSet<Class<?>>();
     private static final boolean debugMode = CndUtils.isDebugMode();
 
     public static boolean isSelfUID(CsmUID<?> uid) {
         return uid instanceof SelfUID<?>;
     }
 
+    public static boolean isPersistable(CsmUID<?> uid) {
+        // TODO: InstantiationUID is fake class which doesn't persist internal reference => we have to skip it
+        return uid != null && !(uid instanceof SelfUID<?>) && !(uid instanceof Instantiation.InstantiationUID);
+    }
+
     public UIDProviderIml() {
         // public constructor for service initialization
     }
 
+    @Override
     public <T> CsmUID<T> get(T obj) {
         return get(obj, true);
     }
@@ -118,6 +125,7 @@ public final class UIDProviderIml implements UIDProvider {
                 final Class<? extends Object> aClass = obj.getClass();
                 if (!aClass.equals(org.netbeans.modules.cnd.modelimpl.csm.deep.LabelImpl.class)) {
                     System.err.println("Not implementing CsmIdentifiable: " + obj.getClass()); // NOI18N
+                    new Exception().printStackTrace();
                 }
             }
             out = createSelfUID(obj);
@@ -138,6 +146,7 @@ public final class UIDProviderIml implements UIDProvider {
             this.element = element;
         }
 
+        @Override
         public T getObject() {
             return this.element;
         }

@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.remote.RemoteFile;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
@@ -63,13 +64,17 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Alexander Simon
  */
 public class PkgConfigImpl implements PkgConfig {
+
+    private static final boolean TRACE = false;
 
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, List<Pair>> seachBase;
@@ -78,7 +83,7 @@ public class PkgConfigImpl implements PkgConfig {
 
     public PkgConfigImpl(MakeConfiguration mc) {
         // TODO: need to support mc
-        if (false && mc != null) {
+        if (mc != null) {
             pi = mc.getPlatformInfo();
             CompilerSet set = mc.getCompilerSet().getCompilerSet();
             initPackagesFromSet(set);
@@ -96,16 +101,9 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     private List<String> envPaths(String folder){
-        // TODO: get from remote
-        String additionalPaths = System.getenv("PKG_CONFIG_PATH"); // NOI18N
+        String additionalPaths = pi.getEnv().get("PKG_CONFIG_PATH"); // NOI18N
         List<String> res = new ArrayList<String>();
-        String prefix = "";
-//        ExecutionEnvironment execEnv = pi.getExecutionEnvironment();
-//        if (execEnv.isRemote()) {
-//            // system files are in local cache
-//            prefix = BasicCompiler.getIncludeFilePrefix(execEnv);
-//        }
-        res.add(prefix + folder);
+        res.add(folder);
         if (additionalPaths != null && additionalPaths.length() > 0) {
             StringTokenizer st;
             if (pi.isWindows()){
@@ -114,7 +112,7 @@ public class PkgConfigImpl implements PkgConfig {
                 st = new StringTokenizer(additionalPaths, ":"); // NOI18N
             }
             while(st.hasMoreTokens()) {
-                res.add(prefix + st.nextToken());
+                res.add(st.nextToken());
             }
         }
         return res;
@@ -178,20 +176,26 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
     private void initPackages(List<String> folders, boolean isWindows) {
-        Set<File> done = new HashSet<File>();
+        Set<FileObject> done = new HashSet<FileObject>();
         for(String folder:folders) {
-            File file = RemoteFile.create(pi.getExecutionEnvironment(), folder);
+            FileObject file = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(folder), pi.getExecutionEnvironment());
+            if (file == null) {
+                continue;
+            }
             if (done.contains(file)) {
                 continue;
             }
             done.add(file);
-            if (file.exists() && file.isDirectory() && file.canRead()) {
-                for (File fpc : file.listFiles()) {
-                    String name = fpc.getName();
-                    if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
+            if (file.isValid() && file.isFolder() && file.canRead()) {
+                for (FileObject fpc : file.getChildren()) {
+                    String name = fpc.getNameExt();
+                    if (name.endsWith(".pc") && fpc.canRead() && fpc.isData()) { // NOI18N
                         String pkgName = name.substring(0, name.length()-3);
                         PackageConfigurationImpl pc = new PackageConfigurationImpl(pkgName);
                         readConfig(fpc, pc,  isWindows);
+                        if (TRACE) {
+                            System.err.println("read "+name+"\n"+pc.toString());
+                        }
                         configurations.put(pkgName, pc);
                     }
                 }
@@ -307,11 +311,8 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private Map<String, List<Pair>> getLibraryItems(){
-        Map<String, List<Pair>> res = null;
-        if (seachBase != null) {
-            res = seachBase;
-        }
+    private synchronized Map<String, List<Pair>> getLibraryItems(){
+        Map<String, List<Pair>> res = seachBase;
         if (res == null) {
             res = _getLibraryItems();
             seachBase = res;
@@ -345,31 +346,52 @@ public class PkgConfigImpl implements PkgConfig {
         Map<String, List<Pair>> res = new HashMap<String, List<Pair>>();
         for (Map.Entry<String, Set<PackageConfiguration>> entry : map.entrySet()) {
             Pair pair = new Pair(entry.getKey(), entry.getValue());
-            File dir = RemoteFile.create(pi.getExecutionEnvironment(), entry.getKey());
+            if (pi.isWindows()){
+                if (entry.getKey().length() < 2 || entry.getKey().charAt(1) != ':') {
+                    if (TRACE) {
+                        System.err.println("ignore relative path "+entry.getKey());
+                    }
+                    continue;
+                }
+            } else {
+                if (!entry.getKey().startsWith("/")) { // NOI18N
+                    if (TRACE) {
+                        System.err.println("ignore relative path "+entry.getKey());
+                    }
+                    continue;
+                }
+            }
+            FileObject dir = RemoteFileUtil.getFileObject(CndFileUtils.normalizeAbsolutePath(entry.getKey()), pi.getExecutionEnvironment());
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
+            if (TRACE) {
+                System.err.println("init search base for "+entry.getKey());
+            }
         }
         return res;
     }
 
-    private void addLibraryItem(Map<String, List<Pair>> res, Pair pkg, String prefix, File dir, int loop){
+    private void addLibraryItem(Map<String, List<Pair>> res, Pair pkg, String prefix, FileObject dir, int loop){
+        if (dir == null) {
+            return;
+        }
         if (loop>2) {
             return;
         }
-        if (dir.isDirectory() && dir.canRead()){
-            for(File f : dir.listFiles()){
+        if (dir.isFolder() && dir.canRead()){
+            for(FileObject f : dir.getChildren()){
                 if (f.canRead()) {
-                    if (f.isDirectory()) {
+                    if (f.isFolder()) {
                         if (loop == 0) {
-                            addLibraryItem(res, pkg, f.getName(), f, loop+1);// NOI18N
+                            addLibraryItem(res, pkg, f.getNameExt(), f, loop+1);// NOI18N
                         } else {
-                            addLibraryItem(res, pkg, prefix+"/"+f.getName(), f, loop+1); // NOI18N
+                            addLibraryItem(res, pkg, prefix+"/"+f.getNameExt(), f, loop+1); // NOI18N
                         }
-                    } else if (f.isFile()) {
+                    } else if (f.isData()) {
                         String key;
                         if (prefix.length()==0) {
-                            key = f.getName();
+                            key = f.getNameExt();
                         } else {
-                            key = prefix+"/"+f.getName(); // NOI18N
+                            key = prefix+"/"+f.getNameExt(); // NOI18N
                         }
                         List<Pair> list = res.get(key);
                         if (list == null){
@@ -406,13 +428,15 @@ public class PkgConfigImpl implements PkgConfig {
 //Libs: -L${libdir} -lgtk-${target}-2.0
 //Cflags: -I${includedir}/gtk-2.0
 
-    private void readConfig(File file, PackageConfigurationImpl pc, boolean isWindows) {
+    private void readConfig(FileObject file, PackageConfigurationImpl pc, boolean isWindows) {
         try {
             String rootName = null;
             String rootValue = null;
             Map<String, String> vars = new HashMap<String, String>();
-            vars.put("pcfiledir", file.getParent()); // NOI18N
-            BufferedReader in = new BufferedReader(RemoteFile.createReader(file));
+            if (file.getParent() != null) {
+                vars.put("pcfiledir", file.getParent().getPath()); // NOI18N
+            }
+            BufferedReader in = new BufferedReader(new InputStreamReader(file.getInputStream()));
             while (true) {
                 String line = in.readLine();
                 if (line == null) {
@@ -421,6 +445,10 @@ public class PkgConfigImpl implements PkgConfig {
                 line = line.trim();
                 if (line.startsWith("#")) { // NOI18N
                     continue;
+                }
+                int sharp = line.indexOf('#'); // NOI18N
+                if (sharp > 0) {
+                    line = line.substring(0,sharp).trim();
                 }
                 if (line.startsWith("Requires:")){ // NOI18N
                     String value = line.substring(9).trim();
@@ -502,7 +530,7 @@ public class PkgConfigImpl implements PkgConfig {
         }
     }
 
-    private String fixPrefixPath(String value, File file){
+    private String fixPrefixPath(String value, FileObject file){
         //prefix=c:/devel/target/e1cabcfbab6c7ee30ed3ffc781169bba
         StringTokenizer st = new StringTokenizer(value, "\\/"); // NOI18N
         while(st.hasMoreTokens()){
@@ -522,33 +550,33 @@ public class PkgConfigImpl implements PkgConfig {
                     }
                 }
                 if (isHashCode) {
-                    file = file.getParentFile();
+                    file = file.getParent();
                     if (file != null) {
-                        file = file.getParentFile();
+                        file = file.getParent();
                     }
                     if (file != null) {
-                        file = file.getParentFile();
+                        file = file.getParent();
                     }
                     if (file != null) {
-                        return file.getAbsolutePath();
+                        return file.getPath();
                     }
                 }
             }
         }
         if (value.startsWith("/")) { // NOI18N
             int i = value.indexOf('/', 1); // NOI18N
-            file = file.getParentFile();
+            file = file.getParent();
             if (file != null) {
-                file = file.getParentFile();
+                file = file.getParent();
             }
             if (file != null) {
-                file = file.getParentFile();
+                file = file.getParent();
             }
             if (file != null) {
                 if (i > 0) {
-                    return file.getAbsolutePath()+value.substring(i);
+                    return file.getPath()+value.substring(i);
                 } else {
-                    return file.getAbsolutePath();
+                    return file.getPath();
                 }
             }
         }
@@ -597,6 +625,11 @@ public class PkgConfigImpl implements PkgConfig {
         @Override
         public String getName() {
             return name;
+        }
+
+        @Override
+        public String toString() {
+            return name+" "+paths+" "+macros; // NOI18N
         }
     }
 

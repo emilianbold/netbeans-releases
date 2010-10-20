@@ -98,7 +98,7 @@ public class WsFromJavaWizardIterator implements TemplateWizard.Iterator /*, Ite
         } else {
             FileObject template = Templates.getTemplate( wiz );
             if (!((Boolean)wiz.getProperty(WizardProperties.PROP_GENERATE_SAMPLE_METHOD)).booleanValue()) {
-                template = template.getParent().getFileObject("EmptyWebService","java"); //NOI18N
+                template = template.getParent().getFileObject("AxisFromJavaEmpty","java"); //NOI18N
             }
             DataObject dTemplate = DataObject.find( template );
             org.openide.filesystems.FileObject dir = Templates.getTargetFolder( wiz );

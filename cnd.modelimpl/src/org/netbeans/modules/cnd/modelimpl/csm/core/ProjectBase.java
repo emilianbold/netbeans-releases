@@ -124,7 +124,9 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -154,7 +156,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/final void initFields() {
-        NamespaceImpl ns = new NamespaceImpl(this, false);
+        NamespaceImpl ns = NamespaceImpl.create(this, false);
         assert ns != null;
         this.globalNamespaceUID = UIDCsmConverter.namespaceToUID(ns);
         DeclarationContainerProject declarationContainer = new DeclarationContainerProject(this);
@@ -169,7 +171,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         GraphContainer graphContainer = new GraphContainer(this);
         CndUtils.assertTrue(graphStorageKey.equals(graphContainer.getKey()));
         weakGraphContainer.clear();
-        FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
+        FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 
     private void init(ModelImpl model, Object platformProject) {
@@ -341,7 +343,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             String qualifiedName = ProjectBase.getNestedNamespaceQualifiedName(name, parent, true);
             NamespaceImpl nsp = _getNamespace(qualifiedName);
             if (nsp == null) {
-                nsp = new NamespaceImpl(this, parent, name.toString(), qualifiedName);
+                nsp = NamespaceImpl.create(this, parent, name.toString(), qualifiedName);
             }
             return nsp;
         }
@@ -1056,9 +1058,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         List<String> origSysIncludePaths = nativeFile.getSystemIncludePaths();
         List<IncludeDirEntry> userIncludePaths = userPathStorage.get(origUserIncludePaths.toString(), origUserIncludePaths);
         List<IncludeDirEntry> sysIncludePaths = sysAPTData.getIncludes(origSysIncludePaths.toString(), origSysIncludePaths);
-        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(nativeFile.getFile(), true).toString(),
+        File file = nativeFile.getFile();
+        CndUtils.assertNotNull(file, "An item (" + nativeFile.getClass().getSimpleName() + ") returned null file"); //NOI18N
+        StartEntry startEntry = new StartEntry(FileContainer.getFileKey(file, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
-        APTFileSearch searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(getPlatformProject())));
+        APTFileSearch searcher = null;
+        Object aPlatformProject = getPlatformProject();
+        if (aPlatformProject != null){
+            searcher = APTFileSearch.get(KeyUtilities.createProjectKey(ProjectBase.getUniqueName(aPlatformProject)));
+        }
         return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
     }
 
@@ -1873,6 +1881,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getFileContainer().getFile(file, treatSymlinkAsSeparateFile);
     }
 
+    public final FileImpl getFile(FileObject file, boolean treatSymlinkAsSeparateFile) {
+        return getFileContainer().getFile(CndFileUtils.toFile(file), treatSymlinkAsSeparateFile); // XXX:FileObject conversion
+    }
+
     public final CsmUID<CsmFile> getFileUID(File file, boolean treatSymlinkAsSeparateFile) {
         return getFileContainer().getFileUID(file, treatSymlinkAsSeparateFile);
     }
@@ -2471,17 +2483,24 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private final static class DefaultFileItem implements NativeFileItem {
 
-        private NativeProject project;
-        private String absolutePath;
+        private final NativeProject project;
+        private final Object fileObjectOrAbsPath;
 
         public DefaultFileItem(NativeProject project, String absolutePath) {
+            Parameters.notNull("project", project);
+            Parameters.notNull("absolutePath", absolutePath);
             this.project = project;
-            this.absolutePath = absolutePath;
+            this.fileObjectOrAbsPath = CndFileUtils.normalizeAbsolutePath(absolutePath);
         }
 
         public DefaultFileItem(NativeFileItem nativeFile) {
+            Parameters.notNull("nativeFile", nativeFile);
             this.project = nativeFile.getNativeProject();
-            this.absolutePath = nativeFile.getFile().getAbsolutePath();
+            this.fileObjectOrAbsPath = nativeFile.getFileObject();
+//            if (fileObjectOrAbsPath == null || !((FileObject) fileObjectOrAbsPath).isValid()) {
+//                nativeFile.getFileObject();
+//            }
+            Parameters.notNull("nativeFile.getFileObject()", fileObjectOrAbsPath);
         }
 
         public static NativeFileItem toDefault(NativeFileItem nativeFile) {
@@ -2531,7 +2550,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public File getFile() {
-            return new File(absolutePath);
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return CndFileUtils.toFile((FileObject)fileObjectOrAbsPath);
+            } else {
+                return new File((String) fileObjectOrAbsPath);
+            }
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            if (fileObjectOrAbsPath instanceof FileObject) {
+                return (FileObject) fileObjectOrAbsPath;
+            } else {
+                return CndFileUtils.toFileObject((String) fileObjectOrAbsPath);
+            }
         }
 
         @Override
@@ -2541,7 +2573,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public LanguageFlavor getLanguageFlavor() {
-            return NativeFileItem.LanguageFlavor.GENERIC;
+            return NativeFileItem.LanguageFlavor.UNKNOWN;
         }
 
         @Override
@@ -2551,7 +2583,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public String toString() {
-            return absolutePath;
+            return (fileObjectOrAbsPath instanceof FileObject) ? ((FileObject)fileObjectOrAbsPath).getPath() : (String) fileObjectOrAbsPath;
         }
     }
 
@@ -2719,7 +2751,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         this.model = (ModelImpl) CsmModelAccessor.getModel();
 
-        this.FAKE_GLOBAL_NAMESPACE = new NamespaceImpl(this, true);
+        this.FAKE_GLOBAL_NAMESPACE = NamespaceImpl.create(this, true);
     }
 
     private final WeakContainer<DeclarationContainerProject> weakDeclarationContainer;

@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -187,8 +187,8 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.1.1</specification-version>
+                        <release-version>2</release-version>
+                        <specification-version>2.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -420,24 +420,19 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.javeleon.netbeans</friend>
                 <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.apisupport.installer.maven</friend>
-                <friend>org.netbeans.modules.gwt4nb</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
-                <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
                 <friend>org.netbeans.modules.maven.graph</friend>
-                <friend>org.netbeans.modules.maven.gsf</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
-                <friend>org.netbeans.modules.maven.killer</friend>
-                <friend>org.netbeans.modules.maven.kit</friend>
-                <friend>org.netbeans.modules.maven.maven.checkstyle.bridge</friend>
                 <friend>org.netbeans.modules.maven.osgi</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>

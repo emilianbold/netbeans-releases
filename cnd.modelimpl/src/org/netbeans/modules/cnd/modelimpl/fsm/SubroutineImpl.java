@@ -64,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author nk220367
  */
-public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
+public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         implements CsmFunctionDefinition, Disposable, RawNamable {
 
     private final CharSequence name;
@@ -73,7 +73,7 @@ public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
 
     private final DummyParametersListImpl parameterList;
 
-    public SubroutineImpl(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope,
+    private SubroutineImpl(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope,
             DummyParametersListImpl parameterList) {
         super(file, startOffset, endOffset);
 
@@ -89,42 +89,59 @@ public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    public static<T> SubroutineImpl<T> create(String name, CsmFile file, int startOffset, int endOffset, CsmType type, CsmScope scope,
+            DummyParametersListImpl parameterList) {
+        SubroutineImpl<T> subroutineImpl = new SubroutineImpl<T>(name, file, startOffset, endOffset, type, scope, parameterList);
+        postObjectCreateRegistration(true, subroutineImpl);
+        return subroutineImpl;
+    }
+
+    @Override
     public Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         return name;
     }
 
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CsmScope getScope() {
         return _getScope();
     }
 
+    @Override
     public CharSequence getDeclarationText() {
         return name;
     }
 
+    @Override
     public CsmFunctionDefinition getDefinition() {
         return this;
     }
 
+    @Override
     public CsmFunction getDeclaration() {
         return this;
     }
 
+    @Override
     public boolean isOperator() {
         return false;
     }
 
+    @Override
     public OperatorKind getOperatorKind() {
         return OperatorKind.NONE;
     }
 
+    @Override
     public boolean isInline() {
         return false;
     }
@@ -134,26 +151,32 @@ public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         return false;
     }
 
+    @Override
     public CsmType getReturnType() {
         return TypeFactory.createBuiltinType("int", (AST) null, 0,  null/*getAst().getFirstChild()*/, getContainingFile()); // NOI18N
     }
 
+    @Override
     public CsmFunctionParameterList getParameterList() {
         return null;
     }
 
+    @Override
     public Collection<CsmParameter> getParameters() {
         return (parameterList == null) ? Collections.<CsmParameter>emptyList() : parameterList.getParameters();
     }
 
+    @Override
     public CharSequence getSignature() {
         return ""; // NOI18N
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return Collections.<CsmScopeElement>emptyList();
     }
 
+    @Override
     public CharSequence[] getRawName() {
         return rawName;
     }
@@ -171,6 +194,7 @@ public class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         return scope;
     }
 
+    @Override
     public CsmCompoundStatement getBody() {
         return null;
     }

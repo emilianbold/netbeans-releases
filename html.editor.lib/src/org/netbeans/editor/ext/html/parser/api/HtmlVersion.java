@@ -39,10 +39,10 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.editor.ext.html.parser.api;
 
 import org.netbeans.editor.ext.html.dtd.DTD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,68 +50,150 @@ import org.netbeans.editor.ext.html.dtd.DTD;
  */
 public enum HtmlVersion {
 
-    HTML32("-//W3C//DTD HTML 3.2 Final//EN"), //NOI18N
+    HTML32(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_32"),
+        "-//W3C//DTD HTML 3.2 Final//EN", //NOI18N
+        null),
+    HTML40_STRICT(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_40_STRICT"),
+        "-//W3C//DTD HTML 4.0//EN",
+        "http://www.w3.org/TR/REC-html40/strict.dtd"), //NOI18N
 
-    HTML40_STRICT("-//W3C//DTD HTML 4.0//EN"), //NOI18N
-    HTML40_TRANSATIONAL("-//W3C//DTD HTML 4.0 Transitional//EN"), //NOI18N
-    HTML40_FRAMESET("-//W3C//DTD HTML 4.0 Frameset//EN"), //NOI18N
+    HTML40_TRANSATIONAL(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_40_TRAN"),
+        "-//W3C//DTD HTML 4.0 Transitional//EN",
+        "http://www.w3.org/TR/REC-html40/loose.dtd"), //NOI18N
 
-    HTML41_STRICT("-//W3C//DTD HTML 4.01//EN"), //NOI18N
-    HTML41_TRANSATIONAL("-//W3C//DTD HTML 4.01 Transitional//EN"), //NOI18N
-    HTML41_FRAMESET("-//W3C//DTD HTML 4.01 Frameset//EN"), //NOI18N
+    HTML40_FRAMESET(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_40_FRAM"),
+        "-//W3C//DTD HTML 4.0 Frameset//EN",
+        "http://www.w3.org/TR/REC-html40/frameset.dtd"), //NOI18N
 
-    HTML5(null), //no public id, just <!doctype html>
+    HTML41_STRICT(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_401_STRICT"),
+        "-//W3C//DTD HTML 4.01//EN",
+        "http://www.w3.org/TR/html4/strict.dtd"), //NOI18N
 
-    XHTML10_STICT("-//W3C//DTD XHTML 1.0 Strict//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
-    XHTML10_TRANSATIONAL("-//W3C//DTD XHTML 1.0 Transitional//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
-    XHTML10_FRAMESET("-//W3C//DTD XHTML 1.0 Frameset//EN", null, "http://www.w3.org/1999/xhtml", true), //NOI18N
+    HTML41_TRANSATIONAL(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_401_TRAN"),
+        "-//W3C//DTD HTML 4.01 Transitional//EN",
+        "http://www.w3.org/TR/html4/loose.dtd"), //NOI18N
+
+    HTML41_FRAMESET(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_401_FRAM"),
+        "-//W3C//DTD HTML 4.01 Frameset//EN",
+        "http://www.w3.org/TR/html4/frameset.dtd"), //NOI18N
+
+    HTML5(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_5"), null, null), //no public id nor system id, just <!doctype html>
+
+    XHTML5(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X5"),
+        null, //no public id nor system id, just <!doctype html>
+        null,
+        null,
+        "http://www.w3.org/1999/xhtml",
+        true),
+
+    XHTML10_STICT(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X10_STRICT"),
+        "-//W3C//DTD XHTML 1.0 Strict//EN",
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd",
+        null,
+        "http://www.w3.org/1999/xhtml",
+        true), //NOI18N
+
+    XHTML10_TRANSATIONAL(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X10_TRAN"),
+        "-//W3C//DTD XHTML 1.0 Transitional//EN",
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd",
+        null,
+        "http://www.w3.org/1999/xhtml",
+        true), //NOI18N
+
+    XHTML10_FRAMESET(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X10_FRAM"),
+        "-//W3C//DTD XHTML 1.0 Frameset//EN",
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd",
+        null,
+        "http://www.w3.org/1999/xhtml",
+        true), //NOI18N
 
     //XHTML 1.1 version fallbacks to XHTML 1.0 strict since the current SGML parser
     //cannot properly parse the XHTML1.1 dtd
-    XHTML11("-//W3C//DTD XHTML 1.1//EN", "-//W3C//DTD XHTML 1.0 Strict//EN", "http://www.w3.org/1999/xhtml", true); //NOI18N
+    XHTML11(NbBundle.getMessage(HtmlVersion.class, "MSG_HTML_VERSION_X11"),
+        "-//W3C//DTD XHTML 1.1//EN",
+        "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd",
+        "-//W3C//DTD XHTML 1.0 Strict//EN",
+        "http://www.w3.org/1999/xhtml",
+        true); //NOI18N
 
-    public static HtmlVersion findByPublicId(String publicId) {
-        for(HtmlVersion version : HtmlVersion.values()) {
-            if(publicId == null && publicId == version.publicID  //null check
-                    || publicId != null && publicId.equals(version.getPublicID())) {
-                return version;
+    private static final String DOCTYPE_PREFIX = "<!doctype html public \""; //NOI18N
+    private static final String HTML5_DOCTYPE = "<!doctype html>"; //NOI18N
+
+    public static HtmlVersion find(String publicId, String namespace) {
+        if(publicId == null) {
+            //x/html5
+            return XHTML5.getDefaultNamespace().equals(namespace) ? XHTML5 : HTML5;
+        } else {
+            for (HtmlVersion version : HtmlVersion.values()) {
+            if (publicId.equals(version.getPublicID())) {
+                    return version;
+                }
             }
         }
         return null;
     }
 
-    public static HtmlVersion findByNamespace(String namespace) {
-        for(HtmlVersion version : HtmlVersion.values()) {
-            if(namespace.equals(version.getDefaultNamespace())) {
-                return version;
-            }
-        }
-        return null;
-
+    /** The default html version. */
+    private static final HtmlVersion DEFAULT_VERSION = HTML5;
+    public static HtmlVersion DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = null;
+    
+    public static HtmlVersion getDefaultVersion() {
+        return DEFAULT_VERSION_UNIT_TESTS_OVERRIDE != null ? DEFAULT_VERSION_UNIT_TESTS_OVERRIDE : DEFAULT_VERSION;
     }
 
-    private final String publicID;
+    private final String displayName;
+    private final String publicID, systemID;
     private final String fallbackPublicID;
     private final String defaultNamespace;
     private boolean isXhtml;
 
-    private HtmlVersion(String publicID) {
-        this(publicID, null, null, false);
+    private HtmlVersion(String displayName, String publicID, String systemID) {
+        this(displayName, publicID, systemID, null, null, false);
     }
 
-    private HtmlVersion(String publicID, String fallbackPublicID, String defaultNamespace, boolean isXhtml) {
+    private HtmlVersion(String displayName, String publicID, String systemID, String fallbackPublicID, String defaultNamespace, boolean isXhtml) {
         this.publicID = publicID;
+        this.systemID = systemID;
         this.defaultNamespace = defaultNamespace;
         this.isXhtml = isXhtml;
         this.fallbackPublicID = fallbackPublicID;
+        this.displayName = displayName;
     }
 
     public String getPublicID() {
         return publicID;
     }
 
+    public String getSystemId() {
+        return systemID;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
     public String getDefaultNamespace() {
         return this.defaultNamespace;
+    }
+
+    public String getDoctypeDeclaration() {
+        if (getPublicID() == null) {
+            return HTML5_DOCTYPE;
+        } else {
+            StringBuilder b = new StringBuilder();
+            b.append(DOCTYPE_PREFIX);
+            b.append(getPublicID());
+            b.append('"');
+
+            if (getSystemId() != null) {
+                b.append(" \"");
+                b.append(getSystemId());
+                b.append('"');
+            }
+            b.append('>');
+
+            return b.toString();
+        }
     }
 
     public boolean isXhtml() {
@@ -126,8 +208,4 @@ public enum HtmlVersion {
 
         return org.netbeans.editor.ext.html.dtd.Registry.getDTD(publicid, null);
     }
-
-    
-
-
 }

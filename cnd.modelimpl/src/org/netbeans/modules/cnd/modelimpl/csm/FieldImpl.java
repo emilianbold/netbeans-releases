@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
 /**
@@ -58,16 +60,36 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
 
     private final CsmVisibility visibility;
 
-    public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility, boolean register) {
-        super(ast, file, type, name, /*cls*/ null, false, register);
+    private FieldImpl(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility) {
+        super(ast, file, type, name, cls, AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static), AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern));
         this.visibility = visibility;
-        setScope(cls, register);
     }
 
+    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean register) {
+        FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility);
+        postObjectCreateRegistration(register, fieldImpl);
+        name.addReference(file, fieldImpl);
+        return fieldImpl;
+    }
+
+    private FieldImpl(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern) {
+        super(ast, file, type, name, cls, _static, _extern);
+        this.visibility = visibility;
+    }
+
+    public static FieldImpl create(AST ast, CsmFile file, CsmType type, NameHolder name, ClassImpl cls, CsmVisibility visibility, boolean _static, boolean _extern, boolean register) {
+        FieldImpl fieldImpl = new FieldImpl(ast, file, type, name, cls, visibility, _static, _extern);
+        postObjectCreateRegistration(register, fieldImpl);
+        name.addReference(file, fieldImpl);
+        return fieldImpl;
+    }
+
+    @Override
     public CsmClass getContainingClass() {
         return (CsmClass) getScope();
     }
 
+    @Override
     public CsmVisibility getVisibility() {
         return visibility;
     }

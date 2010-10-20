@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
@@ -56,6 +57,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersionTest;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.openide.filesystems.FileObject;
@@ -71,6 +73,14 @@ public class SyntaxTreeBuilderTest extends TestBase {
     public SyntaxTreeBuilderTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+
+
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
@@ -304,7 +314,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -383,7 +393,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
 
     public void testXhtmlNamespaceAttrs() throws Exception {
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
                 "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
                 "<title></title></head><body></body></html>",
                 "-//W3C//DTD XHTML 1.0 Strict//EN");

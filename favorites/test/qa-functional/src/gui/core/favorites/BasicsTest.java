@@ -132,7 +132,7 @@ public class BasicsTest extends JellyTestCase {
         Node node = new Node(fo.tree(), f.getName());
         node.expand();
         node.collapse();
-        assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
+        assertEquals("items in favorites", 2, fo.tree().getChildCount(fo.tree().getRoot()));
      }
 
     public void testAddNonexistingFolder(){
@@ -149,7 +149,7 @@ public class BasicsTest extends JellyTestCase {
         String dialogName = Bundle.getString("org.netbeans.modules.favorites.Bundle", "ERR_FileDoesNotExistDlgTitle");
         NbDialogOperator dialog = new NbDialogOperator(dialogName);
         dialog.closeByButton();
-        assertEquals("items in favorites", 3, fo.tree().getChildCount(fo.tree().getRoot()));
+        assertEquals("items in favorites", 2, fo.tree().getChildCount(fo.tree().getRoot()));
     }
 
     public void testRemoveFromFavorites(){

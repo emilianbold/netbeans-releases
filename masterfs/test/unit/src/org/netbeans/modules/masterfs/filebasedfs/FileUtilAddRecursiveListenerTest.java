@@ -78,6 +78,7 @@ public class FileUtilAddRecursiveListenerTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.getProperties().put("org.netbeans.modules.masterfs.watcher.disable", "true");
         clearWorkDir();
     }
 

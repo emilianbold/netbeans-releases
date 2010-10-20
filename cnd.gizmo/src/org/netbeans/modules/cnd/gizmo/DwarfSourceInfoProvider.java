@@ -119,22 +119,29 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
 
         if (execEnv.isLocal()) {
             executable = serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE);
+            if (executable != null) {
+                return findSourceInfo(getSourceInfo(executable, serviceInfo.get(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE_ID)), functionQName, lineNumber, offset);
+            }
         } else {
             String remoteExecutable = serviceInfo.get(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE);
+            String remoteExecutableID = serviceInfo.get(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE_ID);
+            if (remoteExecutableID == null) {
+                remoteExecutableID = remoteExecutable;
+            }
             if (remoteExecutable != null) {
-                if (cache.containsKey(remoteExecutable)){
-                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutable);
+                if (cache.containsKey(remoteExecutableID)){
+                    Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(remoteExecutableID);
                     if (sourceInfoMap != null) {
                         return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
                     }
                 } else {
                     Map<String, AbstractFunctionToLine> sourceInfoMap = getOffsets(execEnv, remoteExecutable);
                     if (sourceInfoMap != null) {
-                        cache.put(remoteExecutable, sourceInfoMap.isEmpty()?
+                        cache.put(remoteExecutableID, sourceInfoMap.isEmpty()?
                             Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
                         return findSourceInfo(sourceInfoMap, functionQName, lineNumber, offset);
                     } else {
-                        cache.put(remoteExecutable, null);
+                        cache.put(remoteExecutableID, null);
                     }
                 }
             }
@@ -151,11 +158,11 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 } catch (ExecutionException ex) {
                 }
             }
+            if (executable != null) {
+                return findSourceInfo(getSourceInfo(executable, null), functionQName, lineNumber, offset);
+            }
         }
 
-        if (executable != null) {
-            return findSourceInfo(getSourceInfo(executable), functionQName, lineNumber, offset);
-        }
         return null;
     }
 
@@ -225,8 +232,11 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
         return null;
     }
 
-    private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable) {
-        Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executable);
+    private synchronized Map<String, AbstractFunctionToLine> getSourceInfo(String executable, String executableID) {
+        if (executableID == null) {
+            executableID = executable;
+        }
+        Map<String, AbstractFunctionToLine> sourceInfoMap = cache.get(executableID);
         if (sourceInfoMap == null) {
             try {
                 sourceInfoMap = Offset2LineService.getOffset2Line(executable);
@@ -241,7 +251,7 @@ public class DwarfSourceInfoProvider implements SourceFileInfoProvider {
                 DLightLogger.instance.log(Level.INFO, ex.getMessage(), ex);
                 sourceInfoMap = Collections.<String, AbstractFunctionToLine>emptyMap();
             }
-            cache.put(executable, sourceInfoMap.isEmpty()?
+            cache.put(executableID, sourceInfoMap.isEmpty()?
                 Collections.<String, AbstractFunctionToLine>emptyMap() : sourceInfoMap);
         }
         return sourceInfoMap;

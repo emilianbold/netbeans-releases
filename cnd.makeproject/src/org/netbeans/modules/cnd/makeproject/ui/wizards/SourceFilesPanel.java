@@ -45,24 +45,27 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Color;
 import java.io.File;
-import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import org.netbeans.modules.cnd.utils.ui.FileChooser;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.FileObjectFilter;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 public class SourceFilesPanel extends javax.swing.JPanel {
@@ -74,21 +77,27 @@ public class SourceFilesPanel extends javax.swing.JPanel {
     private SourceFileTable testFileTable = null;
     private String baseDir;
     private String wd;
-    private ChangeListener listener;
+    private final SourceFoldersDescriptorPanel controller;
+    private final Project project;
+
+    public SourceFilesPanel(Project project) {
+        this.controller = null;
+        this.project = project;
+        initComponents();
+        defaultTextFieldFg = excludePatternTextField.getForeground();
+        init();
+    }
 
     /** Creates new form SourceFilesPanel */
-    public SourceFilesPanel(ChangeListener listener, boolean showTestFolders) {
+    /*package*/ SourceFilesPanel(SourceFoldersDescriptorPanel controller) {
+        this.controller = controller;
+        this.project = null;
         initComponents();
-
         defaultTextFieldFg = excludePatternTextField.getForeground();
+        init();
+    }
 
-//        if (!showTestFolders) {
-//            addButton1.setVisible(false);
-//            deleteButton1.setVisible(false);
-//            jSeparator1.setVisible(false);
-//            scrollPane1.setVisible(false);
-//            sourceFilesLabel1.setVisible(false);
-//        }
+    private void init() {
 
         scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 
@@ -97,7 +106,6 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         deleteButton.getAccessibleContext().setAccessibleDescription(getString("DeleteButtonAD"));
         refresh();
         initFocus();
-        this.listener = listener;
         excludePatternTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -122,8 +130,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         } catch (PatternSyntaxException ex) {
             excludePatternTextField.setForeground(Color.RED);
         }
-        if (listener != null) {
-            listener.stateChanged(null);
+        if (controller != null) {
+            controller.stateChanged(null);
         }
     }
 
@@ -140,7 +148,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         return excludePatternTextField.getText();
     }
 
-    public FileFilter getFileFilter() {
+    public FileObjectFilter getFileFilter() {
         Pattern excludePattern = null;
 
         String excludeStr = excludePatternTextField.getText().trim();
@@ -207,7 +215,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         validateSelection();
     }
 
-    private static final class RegexpExcludeFileFilter implements FileFilter {
+    private static final class RegexpExcludeFileFilter implements FileObjectFilter {
 
         private final Pattern excludePattern;
 
@@ -216,8 +224,8 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public boolean accept(File pathname) {
-            return !excludePattern.matcher(pathname.getName()).find();
+        public boolean accept(FileObject pathname) {
+            return !excludePattern.matcher(pathname.getNameExt()).find();
         }
     }
 
@@ -303,32 +311,28 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         excludePatternTextField = new javax.swing.JTextField();
         seeAlsoLabel = new javax.swing.JLabel();
 
-        sourceFilesLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFileFoldersMN").charAt(0));
         sourceFilesLabel.setLabelFor(list);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle"); // NOI18N
-        sourceFilesLabel.setText(bundle.getString("SourceFileFoldersLbl")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sourceFilesLabel, bundle.getString("SourceFileFoldersLbl")); // NOI18N
 
         scrollPane.setViewportView(list);
 
-        addButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("AddButtonMN").charAt(0));
-        addButton.setText(bundle.getString("AddButtonTxt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, bundle.getString("AddButtonTxt")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        deleteButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("DeleteButtonMn").charAt(0));
-        deleteButton.setText(bundle.getString("DeleteButtonTxt")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, bundle.getString("DeleteButtonTxt")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
             }
         });
 
-        excludePatternLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/wizards/Bundle").getString("SourceFilesPanel.excludePatternLabel.mn").charAt(0));
         excludePatternLabel.setLabelFor(excludePatternTextField);
-        excludePatternLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.excludePatternLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(excludePatternLabel, org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.excludePatternLabel.text")); // NOI18N
 
         seeAlsoLabel.setText(org.openide.util.NbBundle.getMessage(SourceFilesPanel.class, "SourceFilesPanel.seeAlsoLabel.text")); // NOI18N
 
@@ -341,18 +345,18 @@ public class SourceFilesPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
-                    .addComponent(excludePatternTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
+                    .addComponent(scrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE)
+                    .addComponent(excludePatternTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 387, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(deleteButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(addButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(seeAlsoLabel)
-                .addContainerGap(130, Short.MAX_VALUE))
+                .addContainerGap(159, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(sourceFilesLabel)
-                .addContainerGap(133, Short.MAX_VALUE))
+                .addContainerGap(143, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -395,30 +399,44 @@ public class SourceFilesPanel extends javax.swing.JPanel {
        deleteFile(sourceData, sourceFileTable);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
+    private String lastSelectedPath;
+
     private void addFile(List<FolderEntry> data) {
         String seed = null;
-        if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        if (lastSelectedPath  != null) {
+            seed = lastSelectedPath;
         }
         if (seed == null) {
             if (wd != null && wd.length() > 0 && !CndPathUtilitities.isPathAbsolute(wd)) {
                 seed = baseDir + File.separator + wd;
             } else if (wd != null) {
                 seed = wd;
-            } else {
+            } else if (baseDir != null) {
                 seed = baseDir;
+            } else if (controller != null) {
+                seed = (String) controller.getWizardDescriptor().getProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR);
             }
         }
-        FileChooser fileChooser = new FileChooser(getString("FOLDER_CHOOSER_TITLE_TXT"), getString("FOLDER_CHOOSER_BUTTON_TXT"), FileChooser.DIRECTORIES_ONLY, null, seed, true);
+        //FileChooser fileChooser = new FileChooser(title, buttonText, FileChooser.DIRECTORIES_ONLY, null, seed, true);
+        String title = getString("FOLDER_CHOOSER_TITLE_TXT");
+        String buttonText = getString("FOLDER_CHOOSER_BUTTON_TXT");
+        JFileChooser fileChooser;
+        if (project != null) {
+            fileChooser = NewProjectWizardUtils.createFileChooser(project, title, buttonText, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+        } else {
+            fileChooser = NewProjectWizardUtils.createFileChooser(controller.getWizardDescriptor(), title, buttonText, JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+        }
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == FileChooser.CANCEL_OPTION) {
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
         }
         if (!fileChooser.getSelectedFile().exists() || !fileChooser.getSelectedFile().isDirectory()) {
             // FIXUP: error message
             return;
         }
-        data.add(new FolderEntry(fileChooser.getSelectedFile(), CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
+        lastSelectedPath = fileChooser.getSelectedFile().getAbsolutePath();
+        FileObject fo = /*XXX:fullRemote*/ CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(lastSelectedPath));
+        data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath())));
         refresh();
     }
 

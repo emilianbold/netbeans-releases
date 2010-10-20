@@ -86,6 +86,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
@@ -196,7 +197,7 @@ public class CompletionTestBase extends NbTestCase {
                 for (ClassPath.Entry entry : bootPath.entries()) {
                     final URL url = entry.getURL();
                     final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
-                    ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+                    ClassIndexManager.getDefault().writeLock(new Action<Void>() {
                         public Void run() throws IOException, InterruptedException {
                             BinaryAnalyser ba = cii.getBinaryAnalyser();
                             ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));

@@ -134,7 +134,7 @@ class ProxyItemConfiguration extends ItemConfiguration {
 
     @Override
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (getTool() == PredefinedToolKind.CustomTool) {
+        if (getTool() == PredefinedToolKind.CustomTool || isProCFile()) {
             return super.getCustomToolConfiguration();
         } else {
             if (customToolConfiguration == null) {

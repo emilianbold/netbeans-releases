@@ -138,7 +138,7 @@ final class StackDataProviderImpl implements StackDataProvider {
     @Override
     public SourceFileInfo getSourceFileInfo(FunctionCall functionCall) {
         //we should get here SourceFileInfoProvider
-        SourceFileInfo info = FunctionNameUtils.getSourceFileInfo(functionCall.getFunction().getName());
+        SourceFileInfo info = FunctionNameUtils.getSourceFileInfo(functionCall.getFunction().getSignature());
         if (info != null){
             return info;
         }

@@ -74,7 +74,7 @@ public final class MultipleLoggers {
     public MultipleLoggers() {
     }
 
-    @TriggerTreeKind(Tree.Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static Iterable<ErrorDescription> checkMultipleLoggers(HintContext ctx) {
         Element cls = ctx.getInfo().getTrees().getElement(ctx.getPath());
         if (cls == null || cls.getKind() != ElementKind.CLASS || cls.getModifiers().contains(Modifier.ABSTRACT) ||

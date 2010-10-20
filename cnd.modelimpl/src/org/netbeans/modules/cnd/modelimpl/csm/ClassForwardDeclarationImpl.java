@@ -75,12 +75,29 @@ public class ClassForwardDeclarationImpl extends OffsetableDeclarationBase<CsmCl
 
     private final TemplateDescriptor templateDescriptor;
     
-    public ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
+    protected ClassForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
         super(file, getClassForwardStartOffset(ast), getClassForwardEndOffset(ast));
         AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         name = (qid == null) ? CharSequences.empty() : QualifiedNameCache.getManager().getString(AstRenderer.getQualifiedName(qid));
         nameParts = initNameParts(qid);
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
+    }
+
+    public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
+        ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global);
+        if (container != null) {
+            container.addDeclaration(cfdi);
+        }
+        cfdi.init(ast, scope, global);
+        return cfdi;
+    }
+
+    public static ClassForwardDeclarationImpl create(AST ast, CsmFile file, boolean global) {
+         ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, global);
+         if (!global) {
+              Utils.setSelfUID(cfdi);
+         }
+        return cfdi;
     }
 
     private static int getClassForwardStartOffset(AST ast) {        

@@ -80,6 +80,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -495,7 +496,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         
         private ClassTree findInterface(CompilationInfo javac, String name) {
             for (Tree tree : javac.getCompilationUnit().getTypeDecls()) {
-                if (Tree.Kind.CLASS == tree.getKind()
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())
                         && javac.getTreeUtilities().isInterface((ClassTree) tree)
                         && name.contentEquals(((ClassTree) tree).getSimpleName())) {
                     return (ClassTree) tree;

@@ -67,7 +67,7 @@ import org.openide.util.CharSequences;
  *
  * @author Vladimir Kvasihn
  */
-public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass, CsmTemplate {
+public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> implements CsmFriendClass, CsmTemplate {
     private final CharSequence name;
     private final CharSequence[] nameParts;
     private final CsmUID<CsmClass> parentUID;
@@ -75,7 +75,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     private CsmUID<CsmClass> friendUID;
     private TemplateDescriptor templateDescriptor = null;
     
-    public FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
+    private FriendClassImpl(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
         super(ast, file);
         this.parentUID = UIDs.get(parent);
         qid = (qid != null) ? qid : AstUtil.findSiblingOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
@@ -91,32 +91,39 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
             String fullName = "<" + TemplateUtils.getClassSpecializationSuffix(templateParams, null) + ">"; // NOI18N
             setTemplateDescriptor(params, fullName, register);
         }
-        if (register) {
-            registerInProject();
-        } else {
-            Utils.setSelfUID(this);
-        }
     }
 
-    private void registerInProject() {
+    public static FriendClassImpl create(AST ast, AST qid, CsmClassForwardDeclaration cfd, FileImpl file, CsmClass parent, boolean register) throws AstRendererException {
+        FriendClassImpl friendClassImpl = new FriendClassImpl(ast, qid, cfd, file, parent, register);
+        postObjectCreateRegistration(register, friendClassImpl);
+        return friendClassImpl;
+    }
+
+    @Override
+    protected boolean registerInProject() {
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
-            ((ProjectBase) project).registerDeclaration(this);
+            return ((ProjectBase) project).registerDeclaration(this);
         }
+        return false;
     }
 
+    @Override
     public CsmClass getContainingClass() {
         return parentUID.getObject();
     }
 
+    @Override
     public CsmScope getScope() {
         return getContainingClass();
     }
 
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
         CsmClass cls = getContainingClass();
         CharSequence clsQName = cls.getQualifiedName();
@@ -126,10 +133,12 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         return getName();
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION;
     }
 
+    @Override
     public CsmClass getReferencedClass() {
         return getReferencedClass(null);
     }
@@ -192,14 +201,17 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
         templateDescriptor = new TemplateDescriptor(params, name, global);
     }
 
+    @Override
     public boolean isTemplate() {
         return templateDescriptor != null;
     }
 
+    @Override
     public List<CsmTemplateParameter> getTemplateParameters() {
         return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
     }
 
+    @Override
     public CharSequence getDisplayName() {
         return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
     }

@@ -141,4 +141,9 @@ public class StringConfiguration {
         clone.setModified(getModified());
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "{value=" + value + " modified=" + modified + '}'; // NOI18N
+    }
 }

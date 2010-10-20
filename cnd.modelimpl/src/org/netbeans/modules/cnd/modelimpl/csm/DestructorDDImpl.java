@@ -54,18 +54,21 @@ import java.io.IOException;
  */
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
-    public DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
+    private DestructorDDImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, nameHolder, global);
+    }
+
+    public static DestructorDDImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createDestructorName(ast);
+        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(ast, cls, visibility, nameHolder, register);
+        postObjectCreateRegistration(register, destructorDDImpl);
+        nameHolder.addReference(cls.getContainingFile(), destructorDDImpl);
+        return destructorDDImpl;
     }
 
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
-    }
-
-    @Override
-    protected String initName(AST ast) {
-        return "~" + super.initName(ast); // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////

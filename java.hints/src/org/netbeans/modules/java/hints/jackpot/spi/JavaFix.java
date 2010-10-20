@@ -88,6 +88,7 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -494,7 +495,7 @@ public abstract class JavaFix {
 
                     members = members.subList(1, members.size());
 
-                    assert parent.getLeaf().getKind() == Kind.CLASS;
+                    assert TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind());
                     
                     List<Tree> newMembers = new LinkedList<Tree>();
 
@@ -773,7 +774,7 @@ public abstract class JavaFix {
         OPERATOR_PRIORITIES.put(Kind.XOR_ASSIGNMENT, 15);
     }
 
-    private static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
+    protected static boolean requiresParenthesis(Tree inner, Tree original, Tree outter) {
         if (!ExpressionTree.class.isAssignableFrom(inner.getKind().asInterface())) return false;
         if (!ExpressionTree.class.isAssignableFrom(outter.getKind().asInterface())) return false;
 

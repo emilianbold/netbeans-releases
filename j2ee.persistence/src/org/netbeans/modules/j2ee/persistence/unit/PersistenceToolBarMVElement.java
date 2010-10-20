@@ -388,6 +388,11 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                     PersistenceUnitWizardPanelJdbc puJdbc = (PersistenceUnitWizardPanelJdbc) panel;
                     punit = ProviderUtil.buildPersistenceUnit(puJdbc.getPersistenceUnitName(), puJdbc.getSelectedProvider(), puJdbc.getPersistenceConnection(), version);
                     punit.setTransactionType("RESOURCE_LOCAL");
+                    // Explicitly add <exclude-unlisted-classes>false</exclude-unlisted-classes>
+                    // See issue 142575 - desc 10, and issue 180810
+                    if (!Util.isJavaSE(project)) {
+                        punit.setExcludeUnlistedClasses(false);
+                    }
                     Library lib = PersistenceLibrarySupport.getLibrary(puJdbc.getSelectedProvider());
                     if (lib != null){
                         Util.addLibraryToProject(project, lib);

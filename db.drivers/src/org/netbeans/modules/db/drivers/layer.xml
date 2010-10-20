@@ -47,6 +47,8 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Databases">
         <folder name="JDBCDrivers">
+            <file name="oracle_thin.xml" url="oracle_thin.xml"/>
+            <file name="oracle_oci.xml" url="oracle_oci.xml"/>
             <file name="mysql.xml" url="mysql.xml"/>
             <file name="postgresql.xml" url="postgresql.xml"/>
         </folder>

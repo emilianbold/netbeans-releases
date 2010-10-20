@@ -44,11 +44,13 @@
 package org.netbeans.modules.spellchecker.spi.language;
 
 import javax.swing.text.Document;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  *
  * @author Jan Lahoda
  */
+@MimeLocation(subfolderName="TokenListProvider")
 public interface TokenListProvider {
 
     public TokenList findTokenList(Document doc);

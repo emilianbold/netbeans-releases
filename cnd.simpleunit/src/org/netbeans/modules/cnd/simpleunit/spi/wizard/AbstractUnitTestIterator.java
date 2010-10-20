@@ -50,16 +50,16 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.ChangeSupport;
@@ -228,21 +228,14 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor(project);
 
         if (owner != null && owner.getProjectDirectory() == project.getProjectDirectory()) {
-            File ioFile = FileUtil.toFile(file);
+            File ioFile = CndFileUtils.toFile(file);
             if (ioFile.isDirectory()) {
                 return false;
             } // don't add directories.
             if (!makeConfigurationDescriptor.okToChange()) {
                 return false;
             }
-            String itemPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                itemPath = CndPathUtilitities.toRelativePath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath());
-            } else {
-                itemPath = ioFile.getPath();
-            }
+            String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
             itemPath = CndPathUtilitities.normalize(itemPath);
             Item item = new Item(itemPath);
 

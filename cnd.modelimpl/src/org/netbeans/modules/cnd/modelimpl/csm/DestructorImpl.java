@@ -54,18 +54,21 @@ import org.netbeans.modules.cnd.api.model.*;
  */
 public final class DestructorImpl extends MethodImpl<CsmMethod> {
 
-    public DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
-        super(ast, cls, visibility, register, register);
+    private DestructorImpl(AST ast, ClassImpl cls, CsmVisibility visibility, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls, visibility, nameHolder, global);
+    }
+
+    public static DestructorImpl createDestructor(AST ast, ClassImpl cls, CsmVisibility visibility, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createDestructorName(ast);
+        DestructorImpl destructorImpl = new DestructorImpl(ast, cls, visibility, nameHolder, register);
+        postObjectCreateRegistration(register, destructorImpl);
+        nameHolder.addReference(cls.getContainingFile(), destructorImpl);
+        return destructorImpl;
     }
 
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
-    }
-
-    @Override
-    protected String initName(AST ast) {
-        return "~" + super.initName(ast); // NOI18N
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -72,11 +72,14 @@ import org.netbeans.modules.cnd.remote.support.RemoteCodeModelUtils;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  * Responsible for copying files from remote host.
@@ -129,6 +132,18 @@ public class RemoteFileSupport extends NamedRunnable {
     /*package*/static final String POSTFIX = ".cnd.rfs.small"; // NOI18N
 
     /*package*/static String fixCaseSensitivePathIfNeeded(String in) {
+        return _fixCaseSensitivePathIfNeeded(in, false);
+    }
+
+    /** for TEST purposes ONLY */
+    /*package*/static String testFixCaseSensitivePathIfNeeded(String in) {
+        return _fixCaseSensitivePathIfNeeded(in, true);
+    }
+
+    private static String _fixCaseSensitivePathIfNeeded(String in, boolean force) {
+        if (!force && CndFileUtils.isSystemCaseSensitive()) {
+            return in;
+        }
         StringBuilder out = new StringBuilder(in);
         // now we support only cc replacement into cc.cnd
         int left = out.indexOf(CC_STR); // NOI18N
@@ -197,21 +212,24 @@ public class RemoteFileSupport extends NamedRunnable {
     /**
      * Ensured that the directory is synchronized
      */
-    public final void ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
-        // TODO: synchronization
-        if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
+    public final DirectoryAttributes ensureDirSync(File dir, String remoteDir) throws IOException, ConnectException {
+        DirectoryAttributes attrs = null;
+        if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
             synchronized (getLock(dir)) {
                 // dbl check is ok here since it's file-based
-                if( ! dir.exists() || ! new File(dir, FLAG_FILE_NAME).exists()) {
-                    syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir));
+                File flagFile = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
+                if( ! dir.exists() || ! CndFileUtils.isValidLocalFile(dir, FLAG_FILE_NAME)) {
+                    attrs = syncDirStruct(dir, fromFixedCaseSensitivePathIfNeeded(remoteDir), flagFile);
                     removeLock(dir);
                 }
             }
         }
+        return attrs;
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV") // it's ok to ignore File.createNewFile() return value
-    private void syncDirStruct(final File dir, final String remoteDir) throws IOException, ConnectException {
+    private DirectoryAttributes syncDirStruct(final File dir, final String remoteDir, final File flagFile) throws IOException, ConnectException {
+        Parameters.notNull("null remote dir", remoteDir);
         if (dir.exists()) {
             CndUtils.assertTrue(dir.isDirectory(), dir.getAbsolutePath() + " is not a directory"); //NOI18N
         }
@@ -222,10 +240,12 @@ public class RemoteFileSupport extends NamedRunnable {
         final String script = "test -d \"" + rdir + "\" && " + // NOI18N
                 "cd \"" + rdir + "\" &&" + // NOI18N
                 "for D in `/bin/ls`; do " + // NOI18N
-                "if [ -d \"$D\" ]; then echo D \"$D\"; else echo F \"$D\"; fi; done"; // NOI18N
+                "if [ -d \"$D\" ]; then echo D \"$D\"; else if [ -w \"$D\" ]; then echo w \"$D\"; else echo r \"$D\"; fi; fi; done"; // NOI18N
 
-        final AtomicReference<IOException> ex = new AtomicReference<IOException>();
+        final AtomicReference<IOException> criticalException = new AtomicReference<IOException>();
+        final AtomicReference<IOException> nonCriticalException = new AtomicReference<IOException>();
         final AtomicBoolean dirCreated = new AtomicBoolean(false);
+        final DirectoryAttributes attrs = new DirectoryAttributes(flagFile);
 
         LineProcessor outputProcessor = new LineProcessor() {
             @Override
@@ -233,17 +253,20 @@ public class RemoteFileSupport extends NamedRunnable {
                 if (!dirCreated.get()) {
                     dirCreated.set(true);
                     if (!dir.mkdirs() && !dir.exists()) {
-                        ex.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
+                        criticalException.set(new IOException("Can not create directory " + dir.getAbsolutePath())); //NOI18N
                         return;
                     }
                 }
                 CndUtils.assertTrueInConsole(inputLine.length() > 2, "unexpected file information " + inputLine); // NOI18N
-                boolean directory = inputLine.charAt(0) == 'D';
+                char mode = inputLine.charAt(0);
+                boolean directory = (mode == 'D');
                 String fileName = inputLine.substring(2);
                 if (directory) {
                     fileName = fixCaseSensitivePathIfNeeded(fileName);
+                } else {
+                    attrs.setWritable(fileName, mode == 'w');
                 }
-                File file = new File(dir, fileName);
+                File file = CndFileUtils.createLocalFile(dir, fileName);
                 try {
                     RemoteUtil.LOGGER.log(Level.FINEST, "\tcreating {0}", fileName); // NOI18N
                     if (directory) {
@@ -257,7 +280,7 @@ public class RemoteFileSupport extends NamedRunnable {
                     RemoteUtil.LOGGER.log(Level.WARNING,
                             "Error creating {0}{1}{2}: {3}", // NOI18N
                             new Object[]{directory ? "directory" : "file", ' ', file.getAbsolutePath(), ioex.getMessage()}); // NOI18N
-                    ex.set(ioex);
+                    nonCriticalException.set(ioex);
                 }
             }
 
@@ -294,22 +317,36 @@ public class RemoteFileSupport extends NamedRunnable {
         RemoteUtil.LOGGER.log(Level.FINEST, "Synchronizing dir {0} with {1}{2}{3}", // NOI18N
                 new Object[]{dir.getAbsolutePath(), execEnv, ':', rdir});
 
-        scriptRunner.execute();
+        int rc = scriptRunner.execute();
 
-        if (ex.get() != null) {
-            throw ex.get();
+        if (nonCriticalException.get() != null) {
+            IOException e = nonCriticalException.get();
+            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
+            Exceptions.printStackTrace(ioe);
+        }
+        if (criticalException.get() != null) {
+            IOException e = criticalException.get();
+            IOException ioe = new IOException("Error synchronizing " + rdir + " at " + execEnv.getDisplayName() + ": " + e.getMessage(), e); //NOI18N;
+            throw ioe;
         }
 
         if (dirCreated.get()) {
-            File flag = new File(dir, FLAG_FILE_NAME);
+            File flag = CndFileUtils.createLocalFile(dir, FLAG_FILE_NAME);
             RemoteUtil.LOGGER.log(Level.FINEST, "Creating Flag file {0}", flag.getAbsolutePath());
             try {
                 flag.createNewFile(); // TODO: error processing
             } catch (IOException ie) {
                 RemoteUtil.LOGGER.log(Level.FINEST, "FAILED creating Flag file {0}", flag.getAbsolutePath());
-                ex.set(ie);
+                criticalException.set(ie);
             }
             dirSyncCount++;
+        }
+        if (rc == 0) {
+            CndUtils.assertTrue(flagFile.getParentFile().exists(), "File " + flagFile.getParentFile().getAbsolutePath() + " should exist"); //NOI18N
+            attrs.store();
+            return attrs;
+        } else {
+            return null;
         }
     }
 

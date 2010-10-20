@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider;
 import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
 import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
@@ -201,7 +202,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 errConvertorFactory(lcf).
                 outConvertorFactory(lcf);

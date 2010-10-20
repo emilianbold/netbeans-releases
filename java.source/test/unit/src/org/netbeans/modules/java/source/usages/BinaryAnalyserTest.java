@@ -62,6 +62,8 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Result;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
+import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -81,25 +83,26 @@ public class BinaryAnalyserTest extends NbTestCase {
     }
 
     public void testAnnotationsIndexed() throws Exception {
-        ClassIndexManager.getDefault().writeLock(new ClassIndexManager.ExceptionAction<Void>() {
+        ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
+            @Override
             public Void run() throws IOException, InterruptedException {
                 FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
                 FileObject indexDir = workDir.createFolder("index");
                 File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
 
-                final Index index = LuceneIndex.create(FileUtil.toFile(indexDir));
+                final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
                 BinaryAnalyser a = new BinaryAnalyser(new ClassIndexImpl.Writer() {
                     @Override
                     public void clear() throws IOException {
                         index.clear();
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, List<Pair<String, String>> topLevels) throws IOException {
-                        index.store(refs, topLevels);
+                    public void deleteEnclosedAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> topLevels) throws IOException {
+                        index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(),true);
                     }
                     @Override
-                    public void store(Map<Pair<String, String>, Object[]> refs, Set<Pair<String, String>> toDelete) throws IOException {
-                        index.store(refs, toDelete);
+                    public void deleteAndStore(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+                        index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(),true);
                     }
                 }, getWorkDir());
 
@@ -180,10 +183,11 @@ public class BinaryAnalyserTest extends NbTestCase {
     private void assertReference(Index index, String refered, String... in) throws IOException, InterruptedException {
         final Set<String> result = new HashSet<String>();
         index.query(
-                new Query[] {QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD)},
-                DocumentUtil.declaredTypesFieldSelector(),
+                result,
                 DocumentUtil.binaryNameConvertor(),
-                result);
+                DocumentUtil.declaredTypesFieldSelector(),
+                null,
+                QueryUtil.createUsagesQuery(refered, EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         assertTrue(result.containsAll(Arrays.asList(in)));
     }
 

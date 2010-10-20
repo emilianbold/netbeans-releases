@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Implements CsmForStatement statements
  * @author Vladimir Kvashin
  */
-public class ForStatementImpl extends StatementBase implements CsmForStatement {
+public final class ForStatementImpl extends StatementBase implements CsmForStatement {
     
     private StatementBase init;
     private CsmCondition condition;
@@ -66,33 +66,43 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
     private StatementBase body;
     private boolean rendered = false;
     
-    public ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+
+    public static ForStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ForStatementImpl(ast, file, scope);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.FOR;
     }
 
+    @Override
     public boolean isPostCheck() {
         return true;
     }
 
+    @Override
     public CsmExpression getIterationExpression() {
         renderIfNeed();
         return iteration;
     }
 
+    @Override
     public CsmStatement getInitStatement() {
         renderIfNeed();
         return init;
     }
 
+    @Override
     public CsmCondition getCondition() {
         renderIfNeed();
         return condition;
     }
 
+    @Override
     public CsmStatement getBody() {
         renderIfNeed();
         return body;
@@ -140,12 +150,13 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
                         case CPPTokenTypes.LITERAL_struct:
                         case CPPTokenTypes.LITERAL_class:
                         case CPPTokenTypes.LITERAL_union:
+                        case CPPTokenTypes.LITERAL_enum:
                             //renderer.renderVariable(token, null, null);
-                            init = new DeclarationStatementImpl(token, getContainingFile(), ForStatementImpl.this);
+                            init = DeclarationStatementImpl.create(token, getContainingFile(), ForStatementImpl.this);
                             break;
                         default:
                             if( AstRenderer.isExpression(child) ) {
-                                init = new ExpressionStatementImpl(token, getContainingFile(), ForStatementImpl.this);
+                                init = ExpressionStatementImpl.create(token, getContainingFile(), ForStatementImpl.this);
                             }
                             break;
                     }
@@ -165,6 +176,7 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
         }
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         //return DeepUtil.merge(getInitStatement(), getCondition(), getBody());
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();

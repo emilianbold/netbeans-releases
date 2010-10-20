@@ -51,6 +51,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,10 +59,10 @@ import org.openide.filesystems.FileObject;
  * @author Vita Stejskal
  * @since 1.39
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class EditorActionsProvider extends ActionsList implements  Class2LayerFolder<EditorActionsProvider>, InstanceProvider<EditorActionsProvider> {
+@MimeLocation(subfolderName=EditorActionsProvider.EDITOR_ACTIONS_FOLDER_NAME, instanceProviderClass=EditorActionsProvider.class)
+public final class EditorActionsProvider extends ActionsList implements InstanceProvider<EditorActionsProvider> {
 
-    private static final String EDITOR_ACTIONS_FOLDER_NAME = "Actions"; //NOI18N
+    static final String EDITOR_ACTIONS_FOLDER_NAME = "Actions"; //NOI18N
     
     public static List<Action> getEditorActions(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
@@ -81,18 +82,6 @@ public final class EditorActionsProvider extends ActionsList implements  Class2L
 
     private EditorActionsProvider(List<FileObject> keys) {
         super(keys, false, true); // prohibit separators and action-names
-    }
-    
-    public Class<EditorActionsProvider> getClazz(){
-        return EditorActionsProvider.class;
-    }
-
-    public String getLayerFolderName(){
-        return EDITOR_ACTIONS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<EditorActionsProvider> getInstanceProvider() {
-        return new EditorActionsProvider();
     }
     
     public EditorActionsProvider createInstance(List<FileObject> fileObjectList) {

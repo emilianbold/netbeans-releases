@@ -102,6 +102,8 @@ public class ConnectionNode extends BaseNode {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
         lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
+        
+        // XXX: allow to add non-connection nodes for predefined templates
     }
 
     @Override

@@ -43,7 +43,14 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import java.util.HashSet;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.util.TreePathScanner;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -73,6 +80,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,18 +89,22 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -104,6 +116,8 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
@@ -336,6 +350,13 @@ public class Utilities {
      * @throws java.io.IOException
      */
     public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
+        if (!target.canWrite()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(Utilities.class, "ERR_ReadOnlyTargetFile", FileUtil.getFileDisplayName(target)), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            
+            return null;
+        }
+        
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
         
@@ -587,7 +608,11 @@ public class Utilities {
 
         switch (parentPath.getLeaf().getKind()) {
             case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
-            case CLASS: children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
             case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
             default:    children = Collections.singleton(leaf); break;
         }
@@ -731,7 +756,7 @@ public class Utilities {
     }
 
     public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
-        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
             from = from.getParentPath();
         }
 
@@ -750,7 +775,7 @@ public class Utilities {
                 enclosingMethodElement.getKind() == ElementKind.CONSTRUCTOR);
     }
 
-    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
+    public static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target) {
         List<TypeMirror> argumentTypes = new LinkedList<TypeMirror>();
         List<String> argumentNames = new LinkedList<String>();
         Set<String>      usedArgumentNames = new HashSet<String>();
@@ -761,7 +786,13 @@ public class Utilities {
             //anonymous class?
             tm = Utilities.convertIfAnonymous(tm);
 
-            if (tm == null || containsErrorsOrTypevarsRecursively(tm)) {
+            if (tm == null || containsErrorsRecursively(tm)) {
+                return null;
+            }
+
+            Collection<TypeVariable> typeVars = Utilities.containedTypevarsRecursively(tm);
+
+            if (!allTypeVarsAccessible(typeVars, target)) {
                 return null;
             }
 
@@ -804,26 +835,156 @@ public class Utilities {
     //=>
     //ArrayList<Unknown> xxx;
     //xxx = new ArrayList<Unknown>();
-    public static boolean containsErrorsOrTypevarsRecursively(TypeMirror tm) {
+    public static boolean containsErrorsRecursively(TypeMirror tm) {
         switch (tm.getKind()) {
-            case WILDCARD:
-            case TYPEVAR:
             case ERROR:
                 return true;
             case DECLARED:
                 DeclaredType type = (DeclaredType) tm;
 
                 for (TypeMirror t : type.getTypeArguments()) {
-                    if (containsErrorsOrTypevarsRecursively(t))
+                    if (containsErrorsRecursively(t))
                         return true;
                 }
 
                 return false;
             case ARRAY:
-                return containsErrorsOrTypevarsRecursively(((ArrayType) tm).getComponentType());
+                return containsErrorsRecursively(((ArrayType) tm).getComponentType());
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null && containsErrorsRecursively(((WildcardType) tm).getExtendsBound())) {
+                    return true;
+                }
+                if (((WildcardType) tm).getSuperBound() != null && containsErrorsRecursively(((WildcardType) tm).getSuperBound())) {
+                    return true;
+                }
+                return false;
             default:
                 return false;
         }
+    }
+
+    public static boolean exitsFromAllBranchers(CompilationInfo info, TreePath from) {
+        ExitsFromAllBranches efab = new ExitsFromAllBranches(info);
+
+        return efab.scan(from, null) == Boolean.TRUE;
+    }
+
+    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
+
+        private CompilationInfo info;
+        private Set<Tree> seenTrees = new HashSet<Tree>();
+
+        public ExitsFromAllBranches(CompilationInfo info) {
+            this.info = info;
+        }
+
+        @Override
+        public Boolean scan(Tree tree, Void p) {
+            seenTrees.add(tree);
+            return super.scan(tree, p);
+        }
+
+        @Override
+        public Boolean visitIf(IfTree node, Void p) {
+            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
+        }
+
+        @Override
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBreak(BreakTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitClass(ClassTree node, Void p) {
+            return false;
+        }
+    }
+
+    public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {
+        if (tm == null) {
+            return Collections.emptyList();
+        }
+
+        Collection<TypeVariable> typeVars = new LinkedList<TypeVariable>();
+
+        containedTypevarsRecursively(tm, typeVars);
+
+        return typeVars;
+    }
+
+    private static void containedTypevarsRecursively(@NonNull TypeMirror tm, @NonNull Collection<TypeVariable> typeVars) {
+        switch (tm.getKind()) {
+            case TYPEVAR:
+                typeVars.add((TypeVariable) tm);
+                break;
+            case DECLARED:
+                DeclaredType type = (DeclaredType) tm;
+                for (TypeMirror t : type.getTypeArguments()) {
+                    containedTypevarsRecursively(t, typeVars);
+                }
+
+                break;
+            case ARRAY:
+                containedTypevarsRecursively(((ArrayType) tm).getComponentType(), typeVars);
+                break;
+            case WILDCARD:
+                if (((WildcardType) tm).getExtendsBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getExtendsBound(), typeVars);
+                }
+                if (((WildcardType) tm).getSuperBound() != null) {
+                    containedTypevarsRecursively(((WildcardType) tm).getSuperBound(), typeVars);
+                }
+                break;
+        }
+    }
+
+    public static boolean allTypeVarsAccessible(Collection<TypeVariable> typeVars, Element target) {
+        if (target == null) {
+            return typeVars.isEmpty();
+        }
+        
+        Set<TypeVariable> targetTypeVars = new HashSet<TypeVariable>();
+
+        OUTER: while (target.getKind() != ElementKind.PACKAGE) {
+            Iterable<? extends TypeParameterElement> tpes;
+
+            switch (target.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    tpes = ((TypeElement) target).getTypeParameters();
+                    break;
+                case METHOD:
+                case CONSTRUCTOR:
+                    tpes = ((ExecutableElement) target).getTypeParameters();
+                    break;
+                default:
+                    break OUTER;
+            }
+
+            for (TypeParameterElement tpe : tpes) {
+                targetTypeVars.add((TypeVariable) tpe.asType());
+            }
+
+            if (target.getModifiers().contains(Modifier.STATIC)) {
+                break;
+            }
+
+            target = target.getEnclosingElement();
+        }
+
+        return targetTypeVars.containsAll(typeVars);
     }
 
 }

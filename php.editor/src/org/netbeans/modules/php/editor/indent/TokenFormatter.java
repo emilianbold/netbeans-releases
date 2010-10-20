@@ -52,12 +52,10 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -951,8 +949,13 @@ public class TokenFormatter {
                                                     ? suggestedLineIndents.get(lineNumber)
                                                     : new Integer(0);
                                                 if (suggestedIndent == null) {
-                                                    suggestedIndent = new Integer(0);
+                                                    // XXX this is a hack
+                                                    //sometimes the html formatter doesn't catch the first line. 
+                                                    suggestedIndent = suggestedLineIndents.get(lineNumber + 1) != null
+                                                            ? suggestedLineIndents.get(lineNumber + 1)
+                                                            : new Integer(0);
                                                 }
+                                                
                                                 int lineOffset = Utilities.getRowStart(doc, offset);
                                                 int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
                                                 if (firstNW == offset) {
@@ -961,19 +964,36 @@ public class TokenFormatter {
                                                     oldText = doc.getText(lineOffset, firstNW - lineOffset);
                                                     htmlIndent = suggestedIndent.intValue();
                                                     // the indentation is composed from html inden + php indent
-                                                    indent = suggestedIndent.intValue() + docOptions.initialIndent + lastPHPIndent;
-                                                    countSpaces = htmlIndent == 0 ? 0 : htmlIndent + lastPHPIndent;
+                                                    indent = htmlIndent + docOptions.initialIndent + lastPHPIndent;
+                                                    // is it the first php open file in the file? Than don't add
+                                                    // initial indent. There should be better
+                                                    // recognition of this.
+                                                    countSpaces = lastPHPIndent == 0 ? htmlIndent : indent;
                                                     
                                                     // try to find, whether there is no indend tag after open tag
                                                     int indentIndex = index;
+                                                    int helpSpaces = 0;
                                                     while (indentIndex < formatTokens.size()
-                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.INDENT
-                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.TEXT) {
+                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.TEXT
+                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.WHITESPACE_INDENT
+                                                            && formatTokens.get(indentIndex).getId() != FormatToken.Kind.CLOSE_TAG) {
+                                                        if (formatTokens.get(indentIndex).getId() == FormatToken.Kind.INDENT) {
+                                                            helpSpaces += ((FormatToken.IndentToken)formatTokens.get(indentIndex)).getDelta();
+                                                        }
                                                         indentIndex ++;
                                                     }
                                                     if (indentIndex < formatTokens.size()
-                                                            && formatTokens.get(indentIndex).getId() == FormatToken.Kind.INDENT) {
-                                                        countSpaces += ((FormatToken.IndentToken)formatTokens.get(indentIndex)).getDelta();
+                                                            && formatTokens.get(indentIndex).getId() == FormatToken.Kind.TEXT) {
+                                                        String text = formatTokens.get(indentIndex).getOldText();
+                                                        if ("}".equals(text) || "endif".equals(text)
+                                                                || "else".equals(text)
+                                                                || "elseif".equals(text)
+                                                                || "endfor".equals(text)
+                                                                || "endforeach".equals(text)
+                                                                || "endwhile".equals(text)
+                                                                || "endswitch".equals(text)) {
+                                                            countSpaces += helpSpaces;
+                                                        }
                                                     }
 
                                                     indentOfOpenTag = countSpaces;
@@ -991,6 +1011,14 @@ public class TokenFormatter {
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
                                                     : docOptions.blankLinesAfterOpenPHPTag + 1;
                                             countSpaces = indent;
+                                            helpIndex = index + 1;
+                                            while (helpIndex < formatTokens.size()
+                                                    &&  formatTokens.get(helpIndex).isWhitespace()) {
+                                                helpIndex ++;
+                                            }
+                                            if (helpIndex < formatTokens.size() && formatTokens.get(helpIndex).getId() == FormatToken.Kind.INDENT) {
+                                                countSpaces = countSpaces + ((FormatToken.IndentToken)formatTokens.get(helpIndex)).getDelta();
+                                            }
                                         }
                                         else {
                                             newLines = 0;
@@ -1009,7 +1037,7 @@ public class TokenFormatter {
                                                     int lineOffset = Utilities.getRowStart(doc, offset);
                                                     int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
                                                     if (firstNW == offset) {
-                                                        countSpaces = indentOfOpenTag;
+                                                        countSpaces = lastPHPIndent == 0 ? htmlIndent : lastPHPIndent + htmlIndent + docOptions.initialIndent;
                                                         newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
                                                     }
                                                     else {
@@ -1021,6 +1049,7 @@ public class TokenFormatter {
                                                         }
                                                         if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
                                                             newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
+                                                            countSpaces = lastPHPIndent == 0 ? htmlIndent : lastPHPIndent + htmlIndent + docOptions.initialIndent;
                                                         } else {
                                                             newLines = 0;
                                                         }
@@ -1029,7 +1058,7 @@ public class TokenFormatter {
                                                 } else {
                                                     if (!isCloseAndOpenTagOnOneLine(formatTokens, index)) {
                                                         newLines = docOptions.blankLinesBeforeClosePHPTag + 1;
-                                                        countSpaces = indentOfOpenTag;
+                                                        countSpaces = lastPHPIndent == 0 ? htmlIndent : indent;
                                                     } else {
                                                         newLines = 0;
                                                         countSpaces = docOptions.spaceBeforeClosePHPTag ? 1 : 0;

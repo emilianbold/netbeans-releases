@@ -52,17 +52,17 @@ import org.openide.util.NbBundle;
  */
 public class PanelConfigureProjectVisual extends JPanel {
 
-    private PanelConfigureProject panel;
-    private SettingsPanel projectLocationPanel;
+    private final PanelConfigureProject controller;
+    private final SettingsPanel projectLocationPanel;
 
     /** Creates new form PanelInitProject */
     public PanelConfigureProjectVisual(PanelConfigureProject panel, String name, String wizardTitle, String wizardACSD, boolean showMakefileTextField, int type) {
-        this.panel = panel;
+        this.controller = panel;
         initComponents();
 
         setName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NameAndLoc")); // NOI18N
 
-        projectLocationPanel = new PanelProjectLocationVisual(panel, name, showMakefileTextField, type);
+        projectLocationPanel = new PanelProjectLocationVisual(controller, name, showMakefileTextField, type);
         putClientProperty("NewProjectWizard_Title", wizardTitle); // NOI18N
         jSeparator1.setVisible(true);
         getAccessibleContext().setAccessibleName(wizardTitle); // NOI18N

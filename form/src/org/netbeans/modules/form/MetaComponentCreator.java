@@ -60,6 +60,7 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.*;
 import org.openide.nodes.Node;
@@ -1399,7 +1400,7 @@ public class MetaComponentCreator {
                 public void run(CompilationController controller) throws Exception {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS &&
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) &&
                                 fo.getName().equals(((ClassTree) t).getSimpleName().toString())) {
                             TreePath classTreePath = controller.getTrees().getPath(controller.getCompilationUnit(), t);
                             Element classElm = controller.getTrees().getElement(classTreePath);

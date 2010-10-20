@@ -79,28 +79,34 @@ public class BuiltinTypes {
             this.uid = new BuiltInUID(this);
         }
         
+        @Override
         public CharSequence getQualifiedName() {
             return getName();
         }
 
+        @Override
         public CharSequence getUniqueName() {
             return CharSequences.create(Utils.getCsmDeclarationKindkey(getKind()) + OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR +  getQualifiedName());
         }
         
+        @Override
         public CharSequence getName() {
             assert name != null && name.length() > 0;
             return name;
         }
 
+        @Override
         public CsmDeclaration.Kind getKind() {
             return CsmDeclaration.Kind.BUILT_IN;
         }
 
+        @Override
         public CsmScope getScope() {
             // TODO: builtins shouldn't be declarations! snd thus shouldn't be ScopeElements!
             return null;
         }
         
+        @Override
         public CsmUID<CsmBuiltIn> getUID() {
             return uid;
         }
@@ -127,6 +133,7 @@ public class BuiltinTypes {
             return "" + getKind() + " " +  getQualifiedName(); // NOI18N
         }
 
+        @Override
         public boolean isValid() {
             return true;
         }
@@ -157,12 +164,12 @@ public class BuiltinTypes {
         return builtIn;
     }
 
-    public static ObjectBasedUID readUID(DataInput aStream) throws IOException {
+    public static ObjectBasedUID<CsmBuiltIn> readUID(DataInput aStream) throws IOException {
         CharSequence name = PersistentUtils.readUTF(aStream, QualifiedNameCache.getManager()); // no need for text manager
         CsmBuiltIn builtIn = BuiltinTypes.getBuiltIn(name);
-        ObjectBasedUID anUID = (ObjectBasedUID) UIDs.get(builtIn);
+        CsmUID<CsmBuiltIn> anUID = UIDs.<CsmBuiltIn>get(builtIn);
         assert anUID != null;
-        return anUID;
+        return (ObjectBasedUID<CsmBuiltIn>) anUID;
     }
 
     /**

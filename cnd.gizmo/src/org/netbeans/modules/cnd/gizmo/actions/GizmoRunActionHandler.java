@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.gizmo.actions;
 
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Iterator;
@@ -55,8 +56,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
 import org.netbeans.modules.cnd.gizmo.GizmoServiceInfoAccessor;
@@ -83,6 +82,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.gizmo.CppSymbolDemanglerFactoryImpl;
 import org.netbeans.modules.cnd.gizmo.api.GizmoOptionsProvider;
 import org.netbeans.modules.cnd.gizmo.spi.GizmoOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.dlight.api.execution.DLightSessionConfiguration;
 import org.openide.awt.StatusDisplayer;
@@ -132,8 +132,7 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
 
         final boolean isSunStudio = configuration.getCollectorProviders().contains("SunStudio"); // NOI18N
         if (execEnv.isRemote()) {
-            PathMap mapper = HostInfoProvider.getMapper(execEnv);
-            runDirectory = mapper.getRemotePath(runDirectory, true);
+            runDirectory = ProjectSupport.convertWorkingDirToRemoteIfNeeded(pae, runDirectory);
 
             if (isSunStudio) {
                 // No need to upload executable as dwarf provider is not used in
@@ -143,9 +142,12 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
                 RemoteBinaryService.RemoteBinaryID executableID = RemoteBinaryService.getRemoteBinary(execEnv, executable);
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executableID.toIDString());
                 targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE, executable);
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_REMOTE_EXECUTABLE_ID, executable+";"+executableID.getTimeStamp()); // NOI18N
             }
         } else {
             targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE, executable);
+            File file = new File(executable);
+            targetConf.putInfo(GizmoServiceInfo.GIZMO_PROJECT_EXECUTABLE_ID, executable+";"+file.lastModified()); // NOI18N
         }
 
         targetConf.setExecutionEnvironment(execEnv);

@@ -165,14 +165,15 @@ public class MavenProjectRestSupport extends WebRestSupport {
     @Override
     public void ensureRestDevelopmentReady() throws IOException {
         String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        WebRestSupport.RestConfig restConfig = null;
         if (configType == null && getApplicationPathFromDD() == null) {
-            WebRestSupport.RestConfig restConfig = setApplicationConfigProperty(false);
+            restConfig = setApplicationConfigProperty(false);
             if (restConfig == WebRestSupport.RestConfig.DD) {
                 addResourceConfigToWebApp(restConfig.getResourcePath());
             }
         }
 
-        addSwdpLibrary();
+        addSwdpLibrary( restConfig );
     }
 
     @Override
@@ -208,13 +209,25 @@ public class MavenProjectRestSupport extends WebRestSupport {
         return false;
     }
 
-    private void addSwdpLibrary() throws IOException {
-        if (!hasSwdpLibrary()) { //platform does not have swdp library, so add defaults {restapi, restlib}
+    private void addSwdpLibrary( RestConfig config ) throws IOException {
+        if (!hasSwdpLibrary()) { //platform does not have rest-api library, so add defaults 
+            Library apiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+            if (apiLibrary != null) {
+                addSwdpLibrary(classPathTypes, apiLibrary);
+            }  
+        }
+        
+        boolean added = false;
+        if ( config.isServerJerseyLibSelected() ){
+            added = addDeployableServerJerseyLibrary();
+        }
+        if ( !added || config.isJerseyLibSelected() ){
             Library swdpLibrary = LibraryManager.getDefault().getLibrary(SWDP_LIBRARY);
             if (swdpLibrary != null) {
                 addSwdpLibrary(classPathTypes, swdpLibrary);
             }            
         }
+
     }
 
     private FileObject getApplicationContextXml() {

@@ -23,7 +23,7 @@
               <Component id="includes" alignment="0" pref="522" max="32767" attributes="0"/>
               <Component id="macros" alignment="1" pref="522" max="32767" attributes="0"/>
               <Group type="102" alignment="1" attributes="0">
-                  <Component id="jLabel1" pref="393" max="32767" attributes="0"/>
+                  <Component id="jLabel1" pref="384" max="32767" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="resetButton" min="-2" max="-2" attributes="0"/>
               </Group>
@@ -68,9 +68,6 @@
     </Container>
     <Component class="javax.swing.JButton" name="resetButton">
       <Properties>
-        <Property name="mnemonic" type="int" editor="org.netbeans.modules.i18n.form.FormI18nMnemonicEditor">
-          <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="RESET_BUTTON_MN" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
-        </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/cnd/makeproject/ui/options/Bundle.properties" key="RESET_BUTTON_TXT" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
         </Property>
@@ -79,6 +76,9 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="resetButtonActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>

@@ -65,6 +65,7 @@ import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
+import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.openide.util.RequestProcessor;
 
@@ -375,6 +376,7 @@ public abstract class AbstractModel<T extends Component<T>>
         }
     }
 
+    @CheckReturnValue
     @Override
     public boolean startTransaction() {
         return startTransaction(false, false);

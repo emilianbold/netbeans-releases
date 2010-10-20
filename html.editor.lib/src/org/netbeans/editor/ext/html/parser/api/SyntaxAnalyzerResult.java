@@ -104,11 +104,11 @@ public class SyntaxAnalyzerResult {
 
     public HtmlVersion getHtmlVersion() {
         HtmlVersion detected = getDetectedHtmlVersion();
-        HtmlVersion found = HtmlSourceVersionQuery.getSourceCodeVersion(analyzer.source(), detected);
+        HtmlVersion found = HtmlSourceVersionQuery.getSourceCodeVersion(this, detected);
         if (found != null) {
             return found;
         }
-        return detected != null ? detected : HtmlVersion.HTML41_TRANSATIONAL; //fallback if nothing can be determined
+        return detected != null ? detected : HtmlVersion.getDefaultVersion(); //fallback if nothing can be determined
     }
     
     public HtmlModel getHtmlModel() {
@@ -134,30 +134,13 @@ public class SyntaxAnalyzerResult {
         Declaration doctypeDeclaration = getDoctypeDeclaration();
         if (doctypeDeclaration == null) {
             //no doctype declaration at all
-
-            //is there an xhtml namespace declared in the file?
-            for (String ns : getDeclaredNamespaces().keySet()) {
-                HtmlVersion found = HtmlVersion.findByNamespace(ns);
-                if (found != null) {
-                    return found;
-                }
-            }
-
-            //no doctype, no namespace, try to dectect file type
-            FileObject fo = analyzer.source().getSourceFileObject();
-            if (fo != null) {
-                if ("text/xhtml".equals(fo.getMIMEType())) { //NOI18N
-                    return HtmlVersion.XHTML10_STICT;
-                }
-            }
-
+            return null;
         } else {
-            //found doctype declaration => SGML syntax
+            //found doctype declaration
             String publicId = getPublicID();
-            return HtmlVersion.findByPublicId(publicId);
+            String namespace = getHtmlTagDefaultNamespace();
+            return HtmlVersion.find(publicId, namespace);
         }
-
-        return null;
     }
 
     public Collection<ParseResult> getAllParseResults() throws ParseException {
@@ -495,6 +478,22 @@ public class SyntaxAnalyzerResult {
             all.addAll(prefixes);
         }
         return all;
+    }
+
+    public String getHtmlTagDefaultNamespace() {
+        for (SyntaxElement se : getElements().items()) {
+            if(se.type() == SyntaxElement.TYPE_TAG) {
+                SyntaxElement.Tag tag = (SyntaxElement.Tag)se;
+                if(tag.getName().equalsIgnoreCase("html")) { //NOI18N
+                    SyntaxElement.TagAttribute xmlns = tag.getAttribute("xmlns");
+                    return xmlns != null ? dequote(xmlns.getValue()) : null;
+                } else {
+                    //break -- first tag must be the 'html' one
+                    return null;
+                }
+            }
+        }
+        return null;
     }
 
     /**

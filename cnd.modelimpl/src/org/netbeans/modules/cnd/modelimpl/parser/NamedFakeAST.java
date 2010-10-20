@@ -73,6 +73,10 @@ public final class NamedFakeAST extends FakeAST implements Serializable {
         return text.toString();
     }
 
+    public CharSequence getTextID() {
+        return text;
+    }
+
     @Override
     public void initialize(int t, String txt) {
         setType(t);

@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.debugger.common.utils.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.common.breakpoints.AddressBreakpoint;
@@ -120,6 +121,7 @@ import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -271,7 +273,7 @@ public class GdbDebugger implements PropertyChangeListener {
         try {
             pae = lookupProvider.lookupFirst(null, ProjectActionEvent.class);
             execEnv = pae.getConfiguration().getDevelopmentHost().getExecutionEnvironment();
-            pathMap = HostInfoProvider.getMapper(execEnv);
+            pathMap = RemoteSyncSupport.getPathMap(pae.getProject());
             iotab = lookupProvider.lookupFirst(null, InputOutput.class);
             if (iotab != null) {
                 iotab.setErrSeparated(false);
@@ -2300,7 +2302,7 @@ public class GdbDebugger implements PropertyChangeListener {
         String path = conf.getAbsoluteOutputValue().replace("\\", "/"); // NOI18N
 
         final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
-        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+        PathMap mapper = RemoteSyncSupport.getPathMap(pinfo.getProject()); // HostInfoProvider.getMapper(execEnv);
         path = mapper.getRemotePath(path, true);
 
         if (path.length() == 0) {
@@ -2352,9 +2354,9 @@ public class GdbDebugger implements PropertyChangeListener {
                 }
                 // MIME type is checked only localy for now
                 if (execEnv.isLocal()) {
-                    File file = new File(path);
-                    assert file.exists(); // should be always true here
-                    String mime_type = FileUtil.getMIMEType(FileUtil.toFileObject(CndFileUtils.normalizeFile(file)));
+                    FileObject fileObject = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                    assert fileObject != null && fileObject.isValid(); // should be always true here
+                    String mime_type = FileUtil.getMIMEType(fileObject);
                     if (mime_type != null && mime_type.startsWith("application/x-exe")) { // NOI18N
                         return true;
                     }

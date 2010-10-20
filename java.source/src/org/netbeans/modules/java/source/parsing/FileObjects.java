@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1157,6 +1158,9 @@ public class FileObjects {
         public InputStream openInputStream () throws IOException {
             try {
                 return new BufferedInputStream (FastJar.getInputStream(archiveFile, offset));
+            } catch (FileNotFoundException fnf) {
+                //No need to delegate to super (file does not exist)
+                throw fnf;
             } catch (IOException e) {
                 return super.openInputStream();
             } catch (IndexOutOfBoundsException e) {

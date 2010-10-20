@@ -108,6 +108,15 @@ public abstract class NetigsoFramework {
     /** Deinitializes a classloader for given module */
     protected abstract void stopLoader(ModuleInfo m, ClassLoader loader);
 
+    /** Allows the OSGi support to identify the classloader that loads
+     * all OSGi framework classes.
+     * 
+     * @since 2.37
+     */
+    protected ClassLoader findFrameworkClassLoader() {
+        return getClass().getClassLoader();
+    }
+
     //
     // Access to Archive
     //
@@ -228,5 +237,26 @@ public abstract class NetigsoFramework {
         framework = null;
         toInit = new ArrayList<NetigsoModule>();
         toEnable.clear();
+    }
+    
+    static ClassLoader findFallbackLoader() {
+        NetigsoFramework f = framework;
+        if (f == null) {
+            return null;
+        }
+        
+        ClassLoader frameworkLoader = f.findFrameworkClassLoader();
+        
+        Class[] stack = TopSecurityManager.getStack();
+        for (int i = 0; i < stack.length; i++) {
+            ClassLoader sl = stack[i].getClassLoader();
+            if (sl == null) {
+                continue;
+            }
+            if (sl.getClass().getClassLoader() == frameworkLoader) {
+                return stack[i].getClassLoader();
+            }
+        }
+        return null;
     }
 }

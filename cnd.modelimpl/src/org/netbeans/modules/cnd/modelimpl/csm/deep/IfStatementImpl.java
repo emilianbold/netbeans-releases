@@ -49,7 +49,6 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 
-import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -59,30 +58,38 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * CsmIfStatement implementation
  * @author Vladimir Kvashin
  */
-public class IfStatementImpl extends StatementBase implements CsmIfStatement {
+public final class IfStatementImpl extends StatementBase implements CsmIfStatement {
     
     private CsmCondition condition;
     private CsmStatement thenStmt;
     private CsmStatement elseStmt;
     
-    public IfStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private IfStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+
+    public static IfStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new IfStatementImpl(ast, file, scope);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.IF;
     }
 
+    @Override
     public CsmCondition getCondition() {
         renderIfNeed(); // be lazy! ;-)
         return condition;
     }
 
+    @Override
     public CsmStatement getThen() {
         renderIfNeed(); // lazyness is good ;-)
         return thenStmt;
     }
 
+    @Override
     public CsmStatement getElse() {
         renderIfNeed(); // long live lazyness! ;-))
         return elseStmt;
@@ -135,6 +142,7 @@ public class IfStatementImpl extends StatementBase implements CsmIfStatement {
         }
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getThen(), getElse());
     }

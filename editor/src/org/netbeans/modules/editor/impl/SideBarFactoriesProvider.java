@@ -54,8 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.editor.SideBarFactory;
 import org.netbeans.modules.editor.impl.CustomizableSideBar.SideBarPosition;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -64,8 +64,8 @@ import org.openide.loaders.DataObject;
  *
  * @author Martin Roskanin
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBarFactoriesProvider>, InstanceProvider<SideBarFactoriesProvider> {
+@MimeLocation(subfolderName=SideBarFactoriesProvider.SIDEBAR_COMPONENTS_FOLDER_NAME, instanceProviderClass=SideBarFactoriesProvider.class)
+public final class SideBarFactoriesProvider implements InstanceProvider<SideBarFactoriesProvider> {
 
     private static final Logger LOG = Logger.getLogger(SideBarFactoriesProvider.class.getName());
     
@@ -74,7 +74,6 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBar
     private final List<FileObject> instanceFiles;
     private Map<CustomizableSideBar.SideBarPosition, List<SideBarFactory>> factories;
 
-    /** Creates a new instance of TestClass2LayerFolderInitializer */
     public SideBarFactoriesProvider() {
         this(Collections.<FileObject>emptyList());
     }
@@ -90,24 +89,6 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBar
         return factories;
     }
     
-    public Class<SideBarFactoriesProvider> getClazz(){
-        return SideBarFactoriesProvider.class;
-    }
-    
-    /** Gets layer folder name, where the class should be found.
-     *  Folder should be located in the appropriate mime type path, i.e.
-     *  Editors/text/x-java/@lt;desired-layer-folder-name@gt;
-     *  
-     *  @return layer folder name
-     */
-    public String getLayerFolderName(){
-        return SIDEBAR_COMPONENTS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<SideBarFactoriesProvider> getInstanceProvider() {
-        return new SideBarFactoriesProvider();
-    }
-
     public SideBarFactoriesProvider createInstance(List<FileObject> fileObjectList) {
         return new SideBarFactoriesProvider(fileObjectList);
     }
@@ -128,6 +109,9 @@ public final class SideBarFactoriesProvider implements Class2LayerFolder<SideBar
                 if (ic != null && SideBarFactory.class.isAssignableFrom(ic.instanceClass())) {
                     factory = (SideBarFactory) ic.instanceCreate();
                 }
+            } catch (ClassNotFoundException cnfe) {
+                LOG.log(Level.INFO, null, cnfe);
+                continue;
             } catch (Exception e) {
                 LOG.log(Level.WARNING, null, e);
                 continue;

@@ -58,13 +58,14 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.cnd.loaders.QtProjectDataObject;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.IOProvider;
@@ -131,7 +132,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         saveNode(node);
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File proFile = FileUtil.toFile(fileObject);
+        File proFile = CndFileUtils.toFile(fileObject);
         // Build directory
         String buildDir = getBuildDirectory(node,PredefinedToolKind.QMakeTool);
         // Executable
@@ -143,6 +144,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {
+            trace("Run folder folder is null"); //NOI18N
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -151,7 +153,6 @@ public class QMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(args[i]);
         }
-        traceExecutable(executable, buildDir, argsFlat, envMap);
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("QMAKE_LABEL", node.getName()) : getString("QMAKE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
@@ -167,9 +168,11 @@ public class QMakeAction extends AbstractExecutorRunAction {
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
+                trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
             }
         }
+        traceExecutable(executable, buildDir, argsFlat, envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
@@ -189,7 +192,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
                 inputVisible(true).
                 inputOutput(inputOutput).
                 outLineBased(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 postMessageDisplayer(new PostMessageDisplayer.Default("QMake")). // NOI18N
                 outConvertorFactory(processChangeListener);

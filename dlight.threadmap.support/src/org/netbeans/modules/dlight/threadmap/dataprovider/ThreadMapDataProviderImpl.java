@@ -74,7 +74,7 @@ import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataQuery
 import org.netbeans.modules.dlight.threadmap.api.ThreadMapData;
 import org.netbeans.modules.dlight.core.stack.dataprovider.StackDataProvider;
 import org.netbeans.modules.dlight.threadmap.spi.dataprovider.ThreadMapDataProvider;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.management.api.DLightManager;
 import org.netbeans.modules.dlight.management.api.DLightSession;
 import org.netbeans.modules.dlight.core.stack.api.ThreadDumpProvider;

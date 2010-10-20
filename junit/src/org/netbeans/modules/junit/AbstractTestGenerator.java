@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.junit;
 
+import org.netbeans.api.java.source.TreeUtilities;
+import org.openide.filesystems.FileObject;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
@@ -246,10 +248,24 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         if ((srcTopClassElems != null) && !srcTopClassElems.isEmpty()) {
 
-            final String className
-                    = workingCopy.getClasspathInfo()
-                      .getClassPath(ClasspathInfo.PathKind.SOURCE)
-                      .getResourceName(workingCopy.getFileObject(), '.', false);
+            final ClassPath classPath =
+                    workingCopy.getClasspathInfo()
+                      .getClassPath(ClasspathInfo.PathKind.SOURCE);
+            final FileObject fileObject = workingCopy.getFileObject();
+            final String className =
+                    classPath.getResourceName(fileObject, '.', false);
+
+            // #188060
+            assert className != null :
+                    "Unknown class name. Test can't be generated. Bug #188060."
+                    + "/nPlease, if possible, provide a sample project."
+                    + "/n workingCopy=" + workingCopy 
+                    + "/n workingCopy.getClasspathInfo()=" +
+                                          workingCopy.getClasspathInfo()
+                    + "/n classPath=" + classPath
+                    + "/n fileObject=" + fileObject
+                    + "/n classPath.findOwnerRoot(fileObject)=" +
+                        classPath.findOwnerRoot(fileObject);
 
             /* Create/update a test class for each testable source class: */
             for (TypeElement srcTopClass : srcTopClassElems) {
@@ -1814,7 +1830,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         Name firstFound = null;
         for (int index : tstClassMap.getNestedClassIndexes()) {
             Tree member = tstClassMembers.get(index);
-            assert member.getKind() == Tree.Kind.CLASS;
+            assert TreeUtilities.CLASS_TREE_KINDS.contains(member.getKind());
             ClassTree nestedClass = (ClassTree) member;
             if (nestedClass.getModifiers().getFlags().contains(ABSTRACT)) {
                 continue;

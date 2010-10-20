@@ -43,7 +43,9 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.Node;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.el.ELException;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
@@ -109,6 +111,30 @@ public final class ELVariableResolvers {
             }
         }
         return null;
+    }
+
+    public static List<ELVariableResolver.VariableInfo> getManagedBeans(FileObject context) {
+        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+        for (ELVariableResolver resolver : getResolvers()) {
+            result.addAll(resolver.getManagedBeans(context));
+        }
+        return result;
+    }
+
+    public static List<ELVariableResolver.VariableInfo> getVariables(Snapshot snapshot, int offset) {
+        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+        for (ELVariableResolver resolver : getResolvers()) {
+            result.addAll(resolver.getVariables(snapshot, offset));
+        }
+        return result;
+    }
+
+    public static List<ELVariableResolver.VariableInfo> getBeansInScope(String scope, FileObject context) {
+        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+        for (ELVariableResolver resolver : getResolvers()) {
+            result.addAll(resolver.getBeansInScope(scope, context));
+        }
+        return result;
     }
 
     private static Collection<? extends ELVariableResolver> getResolvers() {

@@ -44,7 +44,9 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.EnvUtils;
 import org.openide.filesystems.FileObject;
@@ -66,7 +68,7 @@ public class RemoteFileSystem extends FileSystem {
 
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
-    private final RemoteFileObjectBase root;
+    private final RootFileObject root;
     private final RemoteFileSupport remoteFileSupport;
     private final File cache;
 
@@ -77,7 +79,7 @@ public class RemoteFileSystem extends FileSystem {
         // FIXUP: it's better than asking a compiler instance... but still a fixup.
         // Should be moved to a proper place
         this.filePrefix = CndUtils.getIncludeFilePrefix(EnvUtils.toHostID(execEnv));
-        cache = new File(filePrefix);
+        cache = CndFileUtils.createLocalFile(filePrefix);
         if (! cache.exists() && ! cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); 
         }
@@ -101,8 +103,16 @@ public class RemoteFileSystem extends FileSystem {
     }
     
     @Override
-    public FileObject getRoot() {
+    public RemoteFileObjectBase getRoot() {
         return root;
+    }
+
+    public CndFileSystemProvider.FileInfo[] getChildInfo(String path) {
+        return root.getChildInfo(path);
+    }
+
+    public boolean exists(String path) {
+        return root.exists(path);
     }
 
     @Override

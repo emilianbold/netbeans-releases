@@ -139,7 +139,10 @@ final class ClassMap {
                 case VARIABLE:
                     signature = "- ";                                   //NOI18N
                     break;
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     ClassTree clazz = (ClassTree) member;
                     signature = "[ " + clazz.getSimpleName();           //NOI18N
                     if (map.getFirstNestedClassIndex() == -1) {

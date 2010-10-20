@@ -45,6 +45,7 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -128,6 +129,7 @@ implements Runnable, ExplorerManager.Provider {
         return new HelpCtx(Tab.class);
     }
     
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -223,6 +225,7 @@ implements Runnable, ExplorerManager.Provider {
     * Performs initialization of component's attributes
     * after deserialization (component's name, icon etc, 
     * according to the root context) */
+    @Override
     public void run() {
         if (!valid) {
             valid = true;
@@ -304,6 +307,7 @@ implements Runnable, ExplorerManager.Provider {
     * 1) Changes of name, icon, short description of root context.
     * 2) Changes of IDE settings, namely delete confirmation settings */
     private final class RootContextListener implements NodeListener {
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             Object source = evt.getSource();
@@ -320,13 +324,17 @@ implements Runnable, ExplorerManager.Provider {
             }
         }
 
+        @Override
         public void nodeDestroyed(NodeEvent nodeEvent) {
             //Tab.this.setCloseOperation(TopComponent.CLOSE_EACH);
             Tab.this.close();
         }            
 
+        @Override
         public void childrenRemoved(NodeMemberEvent e) {}
+        @Override
         public void childrenReordered(NodeReorderEvent e) {}
+        @Override
         public void childrenAdded(NodeMemberEvent e) {}
 
     } // end of RootContextListener inner class
@@ -497,28 +505,43 @@ implements Runnable, ExplorerManager.Provider {
         return check(node, obj);
     }
 
-    protected void doSelectNode (DataObject obj) {
+    protected void doSelectNode (final DataObject obj) {
         //#142155: For some selected nodes there is no corresponding dataobject
         if (obj == null) {
             return;
         }
-        Node root = getExplorerManager ().getRootContext ();
-        if (selectNode (obj, root)) {
-            requestActive();
-            StatusDisplayer.getDefault().setStatusText(""); // NOI18N
-        } else {
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
-            FileObject file = chooseFileObject(obj.getPrimaryFile());
-            if (file == null) {
-                return;
+        Node root = getExplorerManager().getRootContext();
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_SearchingForNode"));
+        final boolean selected = selectNode(obj, root);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (selected) {
+                    open();
+                    requestActive();
+                    StatusDisplayer.getDefault().setStatusText(""); // NOI18N
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
+                    FileObject file = chooseFileObject(obj.getPrimaryFile());
+                    if (file == null) {
+                        return;
+                    }
+                    open();
+                    requestActive();
+                    try {
+                        final DataObject dobj = DataObject.find(file);
+                        Actions.RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Actions.Add.addToFavorites(Collections.singletonList(dobj));
+                            }
+                        });
+                    } catch (DataObjectNotFoundException e) {
+                        LOG.log(Level.WARNING, null, e);
+                    }
+                }
             }
-
-            try {
-                Actions.Add.addToFavorites(Collections.singletonList(DataObject.find(file)));
-            } catch (DataObjectNotFoundException e) {
-                LOG.log(Level.WARNING, null, e);
-            }
-        }
+        });
     }
 
     /**

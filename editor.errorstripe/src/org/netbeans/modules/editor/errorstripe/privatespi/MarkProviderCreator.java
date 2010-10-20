@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.errorstripe.privatespi;
 import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 
 /**
  * A factory for <code>MarkProvider</code>s. Implementations of this interface should
@@ -52,6 +53,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Jan Lahoda
  */
+@MimeLocation(subfolderName="UpToDateStatusProvider")
 public interface MarkProviderCreator {
 
     /**

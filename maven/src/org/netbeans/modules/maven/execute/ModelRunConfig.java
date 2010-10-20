@@ -64,7 +64,7 @@ public final class ModelRunConfig extends BeanRunConfig {
         setTaskDisplayName(nbprj.getName());
         setProperties(model.getProperties());
         setGoals(model.getGoals());
-        setExecutionDirectory(ActionToGoalUtils.resolveProjectEecutionBasedir(mod, proj));
+        setExecutionDirectory(ActionToGoalUtils.resolveProjectExecutionBasedir(mod, proj));
         setRecursive(mod.isRecursive());
         setActivatedProfiles(mod.getActivatedProfiles());
         setActionName(actionName);

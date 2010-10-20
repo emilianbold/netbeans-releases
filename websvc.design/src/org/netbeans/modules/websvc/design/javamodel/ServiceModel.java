@@ -44,18 +44,25 @@
 
 package org.netbeans.modules.websvc.design.javamodel;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -226,8 +233,10 @@ public class ServiceModel {
         if (this.operations == null) {
             //this.operations = operations;
             this.operations = new ArrayList<MethodModel>();
-            for (MethodModel op:operations) {
+            if ( operations != null ){
+                for (MethodModel op:operations) {
                 addOperation(op);
+                }
             }
         } else {
             Map<String, MethodModel> op1 = new HashMap<String, MethodModel>();
@@ -235,8 +244,10 @@ public class ServiceModel {
             for (MethodModel model:this.operations) {
                 op1.put(model.getOperationName(), model);
             }
-            for (MethodModel model:operations) {
-                op2.put(model.getOperationName(), model);
+            if ( operations != null ){
+                for (MethodModel model:operations) {
+                    op2.put(model.getOperationName(), model);
+                }
             }
             // looking for common operations (operationName)
             Set<String> commonOperations = new HashSet<String>();
@@ -273,6 +284,16 @@ public class ServiceModel {
         if (serviceChangeListeners.size()==0) {
             fcl = new AnnotationChangeListener();
             implementationClass.addFileChangeListener(fcl);
+            if ( getEndpointInterface() != null ){
+                String endpoint = getEndpointInterface();
+                ClassPath sourceCP = ClassPath.getClassPath(implementationClass, 
+                        ClassPath.SOURCE);
+                FileObject endpointFo = sourceCP.findResource(
+                        endpoint.replace('.', '/')+".java"); //NOI18N
+                if ( endpointFo != null ){
+                    endpointFo.addFileChangeListener(fcl);
+                }
+            }
         }
         serviceChangeListeners.add(pcl);
     }
@@ -281,6 +302,16 @@ public class ServiceModel {
         serviceChangeListeners.remove(pcl);
         if (serviceChangeListeners.size()==0) {
             implementationClass.removeFileChangeListener(fcl);
+            if ( getEndpointInterface() != null ){
+                String endpoint = getEndpointInterface();
+                ClassPath sourceCP = ClassPath.getClassPath(implementationClass, 
+                        ClassPath.SOURCE);
+                FileObject endpointFo = sourceCP.findResource(
+                        endpoint.replace('.', '/')+".java"); //NOI18N
+                if ( endpointFo != null ){
+                    endpointFo.removeFileChangeListener(fcl);
+                }
+            }
         }
     }
     
