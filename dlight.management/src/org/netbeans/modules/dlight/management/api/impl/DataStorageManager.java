@@ -171,9 +171,6 @@ public final class DataStorageManager {
         Collection<DataStorage> result = new ArrayList<DataStorage>();
         if (uniqueStorages != null) {            
             for (DataStorage storage : uniqueStorages) {
-                DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
-                        "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "
-                        + "I have found storage in the list: no need to open again ={0} ", uniqueKey);
                 storage.createTables(tableMetadatas);
                 result.add(storage);
             }
@@ -181,8 +178,8 @@ public final class DataStorageManager {
         }
         
         DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
-                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "
-                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);
+                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) " //NOI18N
+                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);//NOI18N
         //if no storage was created - create the new one
         if (perstistentDataStorageFactories != null) {
             for (PersistentDataStorageFactory<?> persistentStorageFactory : perstistentDataStorageFactories) {
@@ -327,17 +324,14 @@ public final class DataStorageManager {
         if (uniqueStorages != null) {
             for (DataStorage storage : uniqueStorages) {
                 if (storage.supportsType(storageType)) {
-                    DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
-                            "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "
-                            + "I have found storage in the list: no need to open again ={0} ", uniqueKey);
                     storage.createTables(tableMetadatas);
                     return storage;
                 }
             }
         }
         DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
-                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "
-                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);
+                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "//NOI18N
+                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);//NOI18N
         //if no storage was created - create the new one
         if (perstistentDataStorageFactories != null) {
             for (PersistentDataStorageFactory<?> storage : perstistentDataStorageFactories) {
@@ -469,9 +463,6 @@ public final class DataStorageManager {
         }
         DLightSessionAccessor accessor = DLightSessionAccessor.getDefault();
         if (accessor.isUsingSharedStorage(session)) {
-            DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
-                    "DataStorageManager.getDataStorageFor(Session, DataStorageType, DataTableMetadat) invoke getDataStorage() for uniqueID={0} ",
-                    new String[]{accessor.getSharedStorageUniqueKey(session)});//NOI18N
             return getDataStorage(session, accessor.getSharedStorageUniqueKey(session), storageType, tableMetadatas);
         }
         List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
