@@ -64,7 +64,6 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Lookup;
 
 /**
@@ -211,13 +210,16 @@ public final class CsmContext {
     }
 
     private Iterator<? extends CsmObject> getInnerObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
-        Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
+        Iterator<? extends CsmObject> out;
         if (CsmKindUtilities.isFile(scope)) {
             out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
             out = CsmSelect.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
             out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
+        } else if (CsmKindUtilities.isCompoundStatement(scope)) {
+            // we stop on compound statement
+            out = Collections.<CsmObject>emptyList().iterator();
         } else {
             out = scope.getScopeElements().iterator();
         }
