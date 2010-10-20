@@ -62,6 +62,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRefactoringPlugin.AbstractRefactoringElement;
+import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRefactoringPlugin.AbstractRenameConfigElement;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileLock;
@@ -187,61 +188,17 @@ class WSITRenamePackagePlugin implements RefactoringPlugin {
         return null;
     }
     
-    private static class PackageRenameElement extends AbstractRefactoringElement{
+    private static class PackageRenameElement extends AbstractRenameConfigElement{
 
-        PackageRenameElement( String oldName, String newName,
+        PackageRenameElement( String oldPackageName, String newPackageName,
                 WSDLModel model )
         {
             super(model);
-            oldConfigName = getParentFile().getName();
-            newConfigName = oldConfigName.replace( oldName, newName);
+            String oldConfName = getParentFile().getName();
+            setOldConfigName( oldConfName );
+            setNewConfigName(oldConfName.replace( oldPackageName, newPackageName));
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.refactoring.spi.RefactoringElementImplementation#getDisplayText()
-         */
-        @Override
-        public String getDisplayText() {
-            return NbBundle.getMessage(WSITRenamePackagePlugin.class, 
-                    "TXT_WsitXmlClassRename" , oldConfigName, newConfigName );  // NOI18N
-        }
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.refactoring.spi.RefactoringElementImplementation#performChange()
-         */
-        @Override
-        public void performChange() {
-            FileLock lock = null;
-            FileObject parentFile = getParentFile();
-            try {
-                lock = parentFile.lock();
-                parentFile.rename(lock, newConfigName, getParentFile().getExt());
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (lock != null) lock.releaseLock();
-            }
-        }
-        
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation#undoChange()
-         */
-        @Override
-        public void undoChange() {
-            FileLock lock = null;
-            FileObject parentFile = getParentFile();
-            try {
-                lock = parentFile.lock();
-                parentFile.rename(lock, oldConfigName, getParentFile().getExt());
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } finally {
-                if (lock != null) lock.releaseLock();
-            }
-        }
-        
-        private String oldConfigName;
-        private String newConfigName;
     }
 
     private RenameRefactoring refactoring;

@@ -511,8 +511,12 @@ public class GdbDebugger implements PropertyChangeListener {
                         }
                     }
                 }
+                
+                // Set arguments
+                gdb.exec_arguments(pae.getProfile().getArgsFlat() + inRedir);
+
                 // Exit if run failed
-                CommandBuffer cb = gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
+                CommandBuffer cb = gdb.exec_run();
                 if (cb.isError()) {
                     throw new Exception(NbBundle.getMessage(GdbDebugger.class, "ERR_ApplicationFailed"));
                 }

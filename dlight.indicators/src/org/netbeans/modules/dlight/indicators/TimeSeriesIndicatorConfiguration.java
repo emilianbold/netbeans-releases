@@ -71,6 +71,7 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
     private ValueFormatter formatter;
     private boolean lastNonNull;
     private String persistencePrefix;
+    private boolean legendIsVisible;
 
     public TimeSeriesIndicatorConfiguration(IndicatorMetadata metadata, int position) {
         super(metadata, position, true);
@@ -82,6 +83,7 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.lastNonNull = true;
         this.granularity = TimeUnit.NANOSECONDS.convert(1, TimeUnit.SECONDS);
         this.extent = TimeUnit.NANOSECONDS.convert(20, TimeUnit.SECONDS);
+        this.legendIsVisible = true;
     }
 
     @Override
@@ -133,11 +135,20 @@ public final class TimeSeriesIndicatorConfiguration extends IndicatorConfigurati
         this.persistencePrefix = persistencePrefix;
     }
 
+    public void setLegendIsVisible(boolean legendIsVisible) {
+        this.legendIsVisible = legendIsVisible;
+    }
+
     private static class TimeSeriesIndicatorConfigurationAccessorImpl extends TimeSeriesIndicatorConfigurationAccessor {
 
         @Override
         public String getTitle(TimeSeriesIndicatorConfiguration conf) {
             return conf.title;
+        }
+
+        @Override
+        public boolean isLegendVisible(TimeSeriesIndicatorConfiguration conf) {
+            return conf.legendIsVisible;
         }
 
         @Override

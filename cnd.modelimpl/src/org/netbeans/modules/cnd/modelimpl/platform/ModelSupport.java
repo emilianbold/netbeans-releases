@@ -103,6 +103,7 @@ public class ModelSupport implements PropertyChangeListener {
     private FileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
+    private final RequestProcessor RP = new RequestProcessor("ModelSupport processor", 2); // NOI18N
 
     private ModelSupport() {
     }
@@ -167,7 +168,7 @@ public class ModelSupport implements PropertyChangeListener {
                             }
                         };
                         if (SwingUtilities.isEventDispatchThread()) {
-                            RequestProcessor.getDefault().post(task);
+                            RP.post(task);
                         } else {
                             task.run();
                         }
@@ -197,7 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {
