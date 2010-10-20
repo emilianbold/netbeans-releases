@@ -116,7 +116,8 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             LOGGER.log(Level.INFO, "Could not resolve Element for TPH: {0}", handle);
             return null;
         }
-        if (Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind()) {
+        if ((Kind.METHOD == handle.getKind() || Kind.MEMBER_SELECT == handle.getKind())
+                && element instanceof ExecutableElement) {
             return handleProperty(refactoringElementsBag, handle, (ExecutableElement) element);
         }
         if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
