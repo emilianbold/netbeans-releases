@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.File;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -62,13 +64,18 @@ import org.openide.util.Exceptions;
 /**
  * @author Vladimir Kvashin
  */
-public class WritingQueue implements ChangeListener {
+public class WritingQueue {
 
     private static final Map<ExecutionEnvironment, WritingQueue> instances = new HashMap<ExecutionEnvironment, WritingQueue>();
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.writing.queue.logger");
 
     private final ExecutionEnvironment execEnv;
-    private final Map<Future<Integer>, String> tasks = new HashMap<Future<Integer>, String>();
+    
+    /** maps remote file name to entry */
+    private final Map<String, Entry> entries = new HashMap<String, Entry>();
+
+    private final Object lock = new Object();
+
     private final Set<String> failed = new HashSet<String>();
     private final Object monitor = new Object();
 
@@ -89,63 +96,47 @@ public class WritingQueue implements ChangeListener {
     }
 
     public void add(File srcFile, String dstFileName, int mask, Writer error) {
-        CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                srcFile, execEnv, dstFileName, mask, error, false, this);
-        LOGGER.log(Level.FINEST, "WritingQueue: added file {0}:{2}", new Object[]{execEnv, dstFileName}); //NOI18N
-        Future<Integer> task = CommonTasksSupport.uploadFile(params);
-        // TODO: synchronizatin flaw
-        synchronized (this) {
-            // TODO: stop previous taks if any
-            tasks.put(task, dstFileName);
+        LOGGER.log(Level.FINEST, "WritingQueue: adding file {0}:{2}", new Object[]{execEnv, dstFileName}); //NOI18N
+        synchronized (lock) {
+            Entry entry = entries.get(dstFileName);
+            if (entry == null) {
+                entry = new Entry(dstFileName);
+                entries.put(dstFileName, entry);
+            }
+            entry.add(srcFile, mask, error);
         }
     }
 
     // TODO: persistence! - otherwise after IDE restart we can forget about not synchronized files
-
     // TODO: where should the storage be? probably somewhere in in rfs caches
+    // TODO: re-queue failed files?
+    // TODO: what if a file changed on remote host?
 
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        Object source = e.getSource();
-        if (!(source instanceof Future)) {
-            CndUtils.assertTrue(false, "Wrong class, should be Future<Integer>: " + (source == null ? "null" : source.getClass())); //NOI18N
-            return;
-        }
-        try {
-            Future<Integer> task = (Future<Integer>) e.getSource();
-            LOGGER.log(Level.FINEST, "WritingQueue: Task {0} at{1} finished", new Object[]{task, execEnv});
-            String dstFileName;
-            synchronized (this) {
-                dstFileName = tasks.remove(task);
-            }
-            if (dstFileName == null) {
-                LOGGER.warning("got null by upload task"); //NOI18N
+    private boolean entriesEmpty(List<String> failedFiles) {
+        synchronized (lock) {
+            if(entries.isEmpty()) {
+                failedFiles.clear();
+                failedFiles.addAll(failed);
+                return true;
             } else {
-                try {
-                    if (task.get().intValue() != 0) {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, dstFileName});
-                        failed.add(dstFileName);
-                    } else {
-                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} failed", new Object[] {execEnv, dstFileName});
-                        failed.remove(dstFileName);
-                    }
-                } catch (InterruptedException ex) {
-                    // don't report InterruptedException
-                } catch (ExecutionException ex) {
-                    Exceptions.printStackTrace(ex); // should never be the case - the task is done
-                }
-            }
-        } finally {
-            synchronized (monitor) {
-                monitor.notifyAll();
+                return false;
             }
         }
     }
 
-    public boolean waitFinished() throws InterruptedException {
+    public boolean isBusy() {
+        synchronized (lock) {
+            return ! entries.isEmpty();
+        }
+    }
+
+    public boolean waitFinished(List<String> failedFiles) throws InterruptedException {
+        if (failedFiles == null) {
+            failedFiles = new ArrayList<String>();
+        }
         while (true) {
-            synchronized (this) {
-                if (tasks.isEmpty()) {
+            if (entriesEmpty(failedFiles)) {
+                if (entries.isEmpty()) {
                     break;
                 }
             }
@@ -153,7 +144,71 @@ public class WritingQueue implements ChangeListener {
                 monitor.wait();
             }
         }
-        // TODO: how to report user which files failed?
-        return failed.isEmpty();
+        return failedFiles.isEmpty();
+    }
+
+    private class Entry implements ChangeListener {
+
+        private volatile Future<Integer> currentTask;
+        private final String dstFileName;
+
+        public Entry(String dstFileName) {
+            this.dstFileName = dstFileName;
+        }
+
+        public void add(File srcFile, int mask, Writer error) {
+            synchronized (lock) {
+                failed.remove(dstFileName);
+                if (currentTask != null) {
+                    currentTask.cancel(true);
+                    currentTask = null;
+                }
+                CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                        srcFile, execEnv, this.dstFileName, mask, error, false, this);            
+                currentTask = CommonTasksSupport.uploadFile(params);
+            }
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            Object source = e.getSource();
+            if (!(source instanceof Future)) {
+                CndUtils.assertTrue(false, "Wrong class, should be Future<Integer>: " + (source == null ? "null" : source.getClass())); //NOI18N
+                return;
+            }
+            try {
+                taskFinished((Future<Integer>) source);
+            } finally {
+                synchronized (monitor) {
+                    monitor.notifyAll();
+                }
+            }
+        }
+
+        private void taskFinished(Future<Integer> finishedTask) {
+            LOGGER.log(Level.FINEST, "WritingQueue: Task {0} at {1} finished", new Object[]{finishedTask, execEnv});
+            synchronized (lock) {
+                if (currentTask != null && currentTask != finishedTask) {
+                    // currentTask can contain either null or the last task
+                    // so the finishedTask is one of previous tasks - ignore
+                    return;
+                }
+                try {
+                    if (finishedTask.get().intValue() == 0) {
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} succeeded", new Object[] {execEnv, dstFileName});
+                        failed.remove(dstFileName); // paranoia
+                    } else {
+                        LOGGER.log(Level.FINEST, "WritingQueue: uploading {0}:{2} failed", new Object[] {execEnv, dstFileName});
+                        failed.add(dstFileName);
+                    }
+                } catch (InterruptedException ex) {
+                    // don't report InterruptedException
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex); // should never be the case - the task is done
+                } finally {
+                    entries.remove(dstFileName);
+                }
+            }
+        }
     }
 }
