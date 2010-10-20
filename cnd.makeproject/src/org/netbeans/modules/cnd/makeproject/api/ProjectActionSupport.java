@@ -334,7 +334,7 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-        
+
         private InputOutput getIOTab(String name, boolean reuse) {
             Action[] actions = getActions(name);
             InputOutput tab;
@@ -446,6 +446,8 @@ public class ProjectActionSupport {
                 io = getRunIO(pae, reuseTabs);
                 if (io == null) {
                     io = ioTab;
+                } else if (io != ioTab && ioTab != null) {
+                    ioTab.getOut().close();
                 }
             }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
