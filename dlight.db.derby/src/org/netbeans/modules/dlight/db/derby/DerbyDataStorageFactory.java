@@ -45,19 +45,25 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
+import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author masha
  */
-@ServiceProvider(service = org.netbeans.modules.dlight.spi.storage.DataStorageFactory.class, position = 100)
+@ServiceProviders({
+    @ServiceProvider(service = DataStorageFactory.class,  position = 100),
+    @ServiceProvider(service = PersistentDataStorageFactory.class,  position = 100)
+})
 public final class DerbyDataStorageFactory extends SQLDataStorageFactory<DerbyDataStorage> {
 
     static final String DERBY_DATA_STORAGE_TYPE = "db:sql:derby"; // NOI18N

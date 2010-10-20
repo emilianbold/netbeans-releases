@@ -49,9 +49,12 @@ import javax.swing.JComponent;
 import org.netbeans.modules.dlight.api.tool.DLightConfigurationManager;
 import org.netbeans.modules.dlight.api.tool.DLightConfiguration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -72,6 +75,7 @@ import org.netbeans.modules.dlight.management.api.impl.DLightSessionAccessor;
 import org.netbeans.modules.dlight.management.api.impl.DLightSessionsStorage;
 import org.netbeans.modules.dlight.management.api.impl.DataProvidersManager;
 import org.netbeans.modules.dlight.management.api.impl.DataStorageManager;
+import org.netbeans.modules.dlight.management.api.impl.SessionDataFiltersSupport;
 import org.netbeans.modules.dlight.management.api.impl.VisualizerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.EmptyVisualizerContainerProvider;
 import org.netbeans.modules.dlight.management.ui.spi.IndicatorsComponentProvider;
@@ -80,6 +84,7 @@ import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorActionListener;
+import org.netbeans.modules.dlight.spi.indicator.SharedIndicator;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.ServiceInfoDataStorage;
 import org.netbeans.modules.dlight.spi.visualizer.Visualizer;
@@ -104,7 +109,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     private DLightSession activeSession;
     private final DLightManagerSessionStateListener sessionStateListener = new DLightManagerSessionStateListener();
     //we should manage somehow sessions with the same shared storage
-
+    private Map<String, Map<String, Visualizer<?>>> visualizers = null;//storageID, visualizer
+    private final Map<String, SharedStorageDLightSession> sharedSessions ;//storageID, SharedSessionStorage
     /**
      *
      */
@@ -112,6 +118,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         for (DLightSessionListener l : IndicatorsComponentProvider.getInstance().getIndicatorComponentListeners()) {
             addDLightSessionListener(l);
         }
+        sharedSessions = new HashMap<String, SharedStorageDLightSession>();
         //this.addDLightSessionListener(IndicatorsComponentProvider.getInstance().getIndicatorComponentListener());
     }
 
@@ -119,6 +126,16 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return (DLightManager) Lookup.getDefault().lookup(DLightToolkitManager.class);
     }
 
+    
+    public SharedStorageDLightSession getSharedSession(String storageUniqueKey){
+        if (sharedSessions.containsKey(storageUniqueKey)){
+            return sharedSessions.get(storageUniqueKey);
+        }
+        SharedStorageDLightSession newSession = new SharedStorageDLightSession(storageUniqueKey);
+        sharedSessions.put(storageUniqueKey, newSession);
+        return newSession;
+    }
+    
     private DLightSession createNewSession(DLightTarget target, String configurationName) {
         return createNewSession(target, configurationName, null);
     }
@@ -189,21 +206,45 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    /**
+     * This method should be invoked when you want to close all Sessions 
+     * with the shared storage ID
+     * @param storageUniqueKey
+     */
+    public void closeSharedSession(String storageUniqueKey) {
+        //TODO: implement
+        Collection<DLightSession> sessionsToClose = getSessionsByStorageKey(storageUniqueKey);
+        for (DLightSession session : sessionsToClose) {
+            session.close();
+        }
+    }
+
     private void cleanupSession(DLightSession session) {
-        List<Visualizer<?>> visualizers = session.getVisualizers();
-        if (visualizers != null) {
-            for (Visualizer<?> v : visualizers) {
+        List<Visualizer<?>> sessionVisualizer = session.getVisualizers();
+        if (sessionVisualizer != null) {
+            for (Visualizer<?> v : sessionVisualizer) {
                 VisualizerContainer vc = (VisualizerContainer) SwingUtilities.getAncestorOfClass(VisualizerContainer.class, v.getComponent());
                 // TODO: It could be so, that Visualizer is already closed - in this case vc will be null
                 //       Should visualizer be removed from a session on it's closure?
                 if (vc != null) {
-                    vc.removeVisualizer(v);
+                    //if the visualizer is listed in the shared list: please do NOT DELETE IT!!!
+                    String storageUniqueID = DLightSessionAccessor.getDefault().getSharedStorageUniqueKey(session);
+                    if (storageUniqueID == null){
+                        vc.removeVisualizer(v);
+                    }else{
+                        //remove the visualizer from the list                        
+                        removeVisualizer(storageUniqueID, v);
+                        vc.removeVisualizer(v);
+                    }
                 }
             }
         }
+        //here we are in the situation when one Indicator is SHARED between ALL sessions
         List<Indicator<?>> indicators = session.getIndicators();
         for (Indicator<?> ind : indicators) {
-            IndicatorAccessor.getDefault().removeIndicatorActionListener(ind, this);
+            if (!(ind instanceof SharedIndicator)){
+                IndicatorAccessor.getDefault().removeIndicatorActionListener(ind, this);
+            }
         }
 
         sessions.remove(session);
@@ -236,13 +277,13 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
     public DLightSession getActiveSession() {
         return activeSession;
     }
-    
-    public Collection<DLightSession> getSessionsByStorageKey(String storageUniqueKey){
-        Collection<DLightSession> result= new ArrayList<DLightSession>();
-        for (DLightSession session : sessions){
+
+    public Collection<DLightSession> getSessionsByStorageKey(String storageUniqueKey) {
+        Collection<DLightSession> result = new ArrayList<DLightSession>();
+        for (DLightSession session : sessions) {
             DLightSessionAccessor accessor = DLightSessionAccessor.getDefault();
-            if (accessor.isUsingSharedStorage(session)){
-                if (storageUniqueKey.equals(accessor.getSharedStorageUniqueKey(session))){
+            if (accessor.isUsingSharedStorage(session)) {
+                if (storageUniqueKey.equals(accessor.getSharedStorageUniqueKey(session))) {
                     result.add(session);
                 }
             }
@@ -278,7 +319,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         // TODO: should priorities be setuped in case when several providerFactories/storages pairs found?
         //
 
-        final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getStorages(storageUniqueKey);
+        final Collection<DataStorage> availableStorages = DataStorageManager.getInstance().getDataStorage(storageUniqueKey, Arrays.asList(dataMetadata));
         for (DataProviderFactory providerFactory : providerFactories) {
             for (DataStorage storage : availableStorages) {
                 // Check that in case this dataProvider requires some Tables to be
@@ -302,8 +343,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
                 ServiceInfoDataStorage serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(storageUniqueKey);
                 provider.attachTo(serviceInfoDataStorage);
                 //what to to withe the filters???
-//                provider.dataFiltersChanged(this.dataFiltersSupport.getFilters(), false);
-//                addDataFilterListener(provider);
+                //get all sessions with the unique storage ID and add provider as listerer
+                SessionDataFiltersSupport sessionFilterSupport = DLightSession.sharedDataFilterSupports.get(storageUniqueKey);
+                if (sessionFilterSupport != null) {
+                    provider.dataFiltersChanged(sessionFilterSupport.getFilters(), false);
+                    sessionFilterSupport.addDataFilterListener(provider);
+                }
                 return provider;
             }
         }
@@ -387,7 +432,144 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
         return activeSession;
     }
+    
+    void removeVisualizer(String storageUniqueKey, Visualizer v){
+        if (visualizers == null || !visualizers.containsKey(storageUniqueKey)) {
+            return;
+        }
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(storageUniqueKey);
+        toolVisualizers.remove( v.getVisualizerConfiguration().getID());
+        if (toolVisualizers.isEmpty()){
+            visualizers.remove(storageUniqueKey);
+        }else{
+            visualizers.put(storageUniqueKey, toolVisualizers);
+        }
+    }
+    
+    Visualizer<?> getVisualizer(String storageUniqueKey, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(storageUniqueKey)) {
+            return null;
+        }
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(storageUniqueKey);
+        return toolVisualizers.get(visualizerID);
+    }
 
+    Visualizer<?> putVisualizer(String storageUniqueKey, String id, Visualizer<?> visualizer) {
+        if (visualizers == null) {
+            visualizers = new HashMap<String, Map<String, Visualizer<?>>>();
+        }
+
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(storageUniqueKey);
+        if (toolVisualizers == null) {
+            toolVisualizers = new HashMap<String, Visualizer<?>>();
+            visualizers.put(storageUniqueKey, toolVisualizers);
+        }
+        Visualizer<?> oldVis = toolVisualizers.put(id, visualizer);
+        return oldVis;
+
+    }    
+    
+    private Visualizer<?> openVisualizer(String toolID, final VisualizerConfiguration visualizerConfiguration, String storageUniqueKey) {
+        Visualizer<?> visualizer = null;
+
+        //Check if we have already instance in the session:
+
+        
+
+        /*
+         * Two conditions should be met in order to create and open visualizer:
+         *
+         * 1. registered factory that can create Visualizer with such a visualizerID
+         *    should exist;
+         *
+         * 2. there should be a DataProvider that:
+         *    a) hand can 'talk' to one of *already configured!* DataStorage (i.e. registered DataStorage
+         *    should support the same DataStorageScheme as provider does)
+         *
+         *    b) can serve Visualizer's needs (i.e. implements StackDataProvider for CallersCaleesVisualizer) and
+         *
+         * Scope: ExecutionContext
+         *
+         */
+        //Check if we have already instance in the session:
+
+        if (hasVisualizer(storageUniqueKey, visualizerConfiguration.getID())) {
+            visualizer = getVisualizer(storageUniqueKey, visualizerConfiguration.getID());
+            @SuppressWarnings("unchecked")
+            Visualizer<VisualizerConfiguration> v = (Visualizer<VisualizerConfiguration>) visualizer;
+            v.updateVisualizerConfiguration(visualizerConfiguration);
+
+            VisualizerContainer container = visualizer.getDefaultContainer();
+            DLightTool tool = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(toolID);
+            if (tool != null) {
+                container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
+            } else {
+                tool = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(toolID);
+                container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
+            }
+            container.showup();
+            visualizer.refresh();
+            return visualizer;
+        }        
+
+        DataProvider dataProvider = null;
+
+        DataModelScheme visualizerDataScheme = visualizerConfiguration.getSupportedDataScheme();
+        if (visualizerConfiguration instanceof TableBasedVisualizerConfiguration) {
+            TableBasedVisualizerConfiguration vc = (TableBasedVisualizerConfiguration) visualizerConfiguration;
+            DataTableMetadata tableMetadata = vc.getMetadata();
+
+            dataProvider = createDataProvider(storageUniqueKey, visualizerDataScheme, tableMetadata);
+
+        } else {
+            dataProvider = createDataProvider(storageUniqueKey, visualizerDataScheme, null);
+
+        }
+
+
+        if (dataProvider != null) {
+            // Found! Can create visualizer with this id for this dataProvider
+            visualizer = VisualizerProvider.getInstance().createVisualizer(visualizerConfiguration, dataProvider);
+        }
+
+        //there is one more changes to find VisualizerDataProvider without any storage attached
+
+        if (visualizer == null) {
+            VisualizerDataProvider visDataProvider = DataProvidersManager.getInstance().getDataProviderFor(visualizerConfiguration.getSupportedDataScheme());
+            if (visDataProvider != null && !(visDataProvider instanceof DataProvider)) {
+                visDataProvider.attachTo(DataStorageManager.getInstance().getServiceInfoDataStorageFor(storageUniqueKey));
+            } 
+            if (visDataProvider != null) {
+                visualizer = VisualizerProvider.getInstance().createVisualizer(visualizerConfiguration, visDataProvider);
+            }
+        }
+
+        if (visualizer == null) {
+            log.log(Level.FINE, "Unable to find factory to create Visualizer with ID == {0}", visualizerConfiguration.getID()); // NOI18N
+            return null;
+        }
+
+        VisualizerContainer container = visualizer.getDefaultContainer();
+        DLightTool tool = DLightConfigurationManager.getInstance().getDefaultConfiguration().getToolByID(toolID);
+        if (tool != null) {
+            container.addVisualizer(toolID, tool.getDetailedName(), visualizer);
+        } else {
+            container.addVisualizer(toolID, toolID, visualizer);
+        }
+        putVisualizer(storageUniqueKey, visualizerConfiguration.getID(), visualizer);
+        container.showup();
+        return visualizer;
+    }    
+
+    boolean hasVisualizer(String toolID, String visualizerID) {
+        if (visualizers == null || !visualizers.containsKey(toolID)) {
+            return false;
+        }
+        Map<String, Visualizer<?>> toolVisualizers = visualizers.get(toolID);
+        return toolVisualizers.containsKey(visualizerID);
+    }
+
+    
     private Visualizer<?> openVisualizer(String toolID, final VisualizerConfiguration visualizerConfiguration, DLightSession dlightSession) {
         Visualizer<?> visualizer = null;
 
@@ -434,14 +616,22 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         DataProvider dataProvider = null;
 
         DataModelScheme visualizerDataScheme = visualizerConfiguration.getSupportedDataScheme();
-
+        DLightSessionAccessor accessor = DLightSessionAccessor.getDefault();
         if (visualizerConfiguration instanceof TableBasedVisualizerConfiguration) {
             TableBasedVisualizerConfiguration vc = (TableBasedVisualizerConfiguration) visualizerConfiguration;
             DataTableMetadata tableMetadata = vc.getMetadata();
 
-            dataProvider = dlightSession.createDataProvider(visualizerDataScheme, tableMetadata);
+            if (accessor.isUsingSharedStorage(dlightSession)) {
+                dataProvider = createDataProvider(accessor.getSharedStorageUniqueKey(dlightSession), visualizerDataScheme, tableMetadata);
+            } else {
+                dataProvider = dlightSession.createDataProvider(visualizerDataScheme, tableMetadata);
+            }
         } else {
-            dataProvider = dlightSession.createDataProvider(visualizerDataScheme, null);
+            if (accessor.isUsingSharedStorage(dlightSession)) {
+                dataProvider = createDataProvider(accessor.getSharedStorageUniqueKey(dlightSession), visualizerDataScheme, null);
+            } else {
+                dataProvider = dlightSession.createDataProvider(visualizerDataScheme, null);
+            }
         }
 
 
@@ -644,6 +834,12 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     @Override
     public void mouseClickedOnIndicator(Indicator<?> source) {
+        String storageUniqueKey = null;
+        if (source instanceof SharedIndicator){//means it is shared between all sessions
+            //we should get the storage id somehow
+            storageUniqueKey = ((SharedIndicator)source).getCurrentStorageID();
+            
+        }
         DLightSession session = findIndicatorOwner(source);
         //set active session
         setActiveSession(session);
@@ -651,9 +847,16 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         boolean found = false;
         if (list != null) {
             for (VisualizerConfiguration vc : list) {
-                if (openVisualizer(IndicatorAccessor.getDefault().getToolID(source), vc, session) != null) {
-                    found = true;
-                    break;
+                if (storageUniqueKey == null){
+                    if (openVisualizer(IndicatorAccessor.getDefault().getToolID(source), vc, session) != null) {
+                        found = true;
+                        break;
+                    }
+                }else{
+                    if (openVisualizer(IndicatorAccessor.getDefault().getToolID(source), vc, storageUniqueKey) != null) {
+                        found = true;
+                        break;
+                    }                    
                 }
 
             }
