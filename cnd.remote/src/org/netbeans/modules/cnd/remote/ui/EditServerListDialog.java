@@ -92,6 +92,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private boolean buttonsEnabled;
     private final ToolsCacheManager cacheManager;
     private final AtomicReference<ExecutionEnvironment> selectedEnv;
+    private final boolean isRemoveAvaliable;
 
     private static final String CMD_ADD = "Add"; // NOI18N
     private static final String CMD_REMOVE = "Remove"; // NOI18N
@@ -101,6 +102,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static final String CMD_RETRY = "Retry"; // NOI18N
 
     public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
+        this(cacheManager,selectedEnv, true);
+    }
+
+    public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv, boolean removeAvaliable) {
         this.cacheManager = cacheManager;
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
@@ -109,20 +114,27 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
         this.selectedEnv = selectedEnv;
+        isRemoveAvaliable = removeAvaliable;
         initListeners();
     }
+
 
     private void initListeners() {
         lstDevHosts.addListSelectionListener(this);
         btAddServer.addActionListener(this);
-        btRemoveServer.addActionListener(this);
+        if (isRemoveAvaliable) {
+            btRemoveServer.addActionListener(this);
+            btRemoveServer.setActionCommand(CMD_REMOVE);
+        } else {
+            btRemoveServer.setEnabled(false);
+            btRemoveServer.setVisible(false);
+        }
         btSetAsDefault.addActionListener(this);
         btPathMapper.addActionListener(this);
         btProperties.addActionListener(this);
         btRetry.addActionListener(this);
 
         btAddServer.setActionCommand(CMD_ADD);
-        btRemoveServer.setActionCommand(CMD_REMOVE);
         btSetAsDefault.setActionCommand(CMD_DEFAULT);
         btPathMapper.setActionCommand(CMD_PATHMAPPER);
         btProperties.setActionCommand(CMD_PROPERTIES);
@@ -273,7 +285,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
         btAddServer.setEnabled(enable);
         btAddServer.setEnabled(enable);
-        btRemoveServer.setEnabled(enable);
+        if (isRemoveAvaliable) {
+            btRemoveServer.setEnabled(enable);
+        }
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
         btRetry.setEnabled(enable);
@@ -296,7 +310,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);            
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled && isRemoveAvaliable);
             checkDefaultButton(record);
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.getSyncFactory().isPathMappingCustomizable());
