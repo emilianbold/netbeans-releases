@@ -355,7 +355,7 @@ class SftpSupport {
                 parameters.srcFile.getAbsolutePath(), parameters.dstExecEnv,
                 parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
         final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
-        RequestProcessor.Task requestProcessorTask = requestProcessor.post(ftask);
+        RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
         if (parameters.callback != null) {
             final ChangeListener callback = parameters.callback;
             requestProcessorTask.addTaskListener(new TaskListener() {
@@ -365,6 +365,7 @@ class SftpSupport {
                 }
             });
         }
+        requestProcessorTask.schedule(0);
         LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());
         return ftask;
     }

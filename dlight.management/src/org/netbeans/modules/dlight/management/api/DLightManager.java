@@ -139,19 +139,19 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
             session.addSessionStateListener(sessionStateListener);//we should not remove it later, it will be removed automatically when session will be closed
         }
         return session;
-   }
+    }
 
-    public DLightSession createNewSession(DLightSessionConfiguration sessionConfiguration){
+    public DLightSession createNewSession(DLightSessionConfiguration sessionConfiguration) {
         //in case session need to be opened in read/only mode we should set its state to the Analyze
         DLightSessionConfigurationAccessor accessor = DLightSessionConfigurationAccessor.getDefault();
         DLightConfiguration configuration = accessor.getDLightConfiguration(sessionConfiguration);
-        if (configuration == null){
+        if (configuration == null) {
             configuration = DLightConfigurationManager.getInstance().getConfigurationByName(accessor.getDLightConfigurationName(sessionConfiguration));
         }
-        DLightSession session = 
+        DLightSession session =
                 newSession(accessor.getSharedStorageUniqueKey(sessionConfiguration), accessor.getDLightTarget(sessionConfiguration), configuration, accessor.getSessionName(sessionConfiguration));
         setActiveSession(session);
-        if (accessor.getSessionMode(sessionConfiguration) == DLightSessionConfiguration.Mode.ANALYZE){
+        if (accessor.getSessionMode(sessionConfiguration) == DLightSessionConfiguration.Mode.ANALYZE) {
             session.setState(SessionState.ANALYZE);
         }
         if (session != null) {
@@ -160,7 +160,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return session;
     }
 
-    public DLightSessionHandler createSession(DLightSessionConfiguration sessionConfiguration){
+    @Override
+    public DLightSessionHandler createSession(DLightSessionConfiguration sessionConfiguration) {
         return DLightSessionHandlerAccessor.getDefault().create(createNewSession(sessionConfiguration));
     }
 
@@ -179,7 +180,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 //    public DLightSessionHandler createSession(DLightTarget target, DLightConfiguration configuration, String sessionName) {
 //        return DLightSessionHandlerAccessor.getDefault().create(createNewSession(target, configuration, sessionName));
 //    }
-
     public void closeSessionOnExit(DLightSession session) {
         SessionState currentSessionState = session.getState();
         if (currentSessionState != SessionState.ANALYZE) {
@@ -254,8 +254,8 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return sessions;
     }
 
-    public Collection<DataStorage> getStorageByKey(String storageUniqueKey){
-        return DataStorageManager.getInstance().getStorages(storageUniqueKey);        
+    public Collection<DataStorage> getStorageByKey(String storageUniqueKey) {
+        return DataStorageManager.getInstance().getStorages(storageUniqueKey);
 
     }
 
@@ -577,6 +577,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         return NbBundle.getMessage(DLightManager.class, key, param1);
     }
 
+    @Override
     public void startSession(DLightSessionHandler handler) {
         DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
         if (!(reference instanceof DLightSession)) {
@@ -587,6 +588,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         startSession((DLightSession) reference);
     }
 
+    @Override
     public void stopSession(DLightSessionHandler handler) {
         DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
 
@@ -604,6 +606,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
+    @Override
     public void openVisualizerForIndicator(Indicator<?> source, VisualizerConfiguration vc) {
         DLightSession session = findIndicatorOwner(source);
         //set active session
@@ -614,7 +617,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
         }
     }
 
-    public final DataProvider getDataProviderFor(String storageUniqueKey, VisualizerConfiguration visualizerConfiguration){
+    public final DataProvider getDataProviderFor(String storageUniqueKey, VisualizerConfiguration visualizerConfiguration) {
         DataProvider dataProvider = null;
 
         DataModelScheme visualizerDataScheme = visualizerConfiguration.getSupportedDataScheme();
@@ -630,7 +633,6 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         return dataProvider;
     }
-
 
     public final void openVisualizer(DLightSession session, String toolID, VisualizerConfiguration vc) {
         setActiveSession(session);
@@ -666,12 +668,11 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
      * @param sessionID
      * @return
      */
+    @Override
     public DLightSessionHandler open(String filePath) {
         return DLightSessionHandlerAccessor.getDefault().create(DLightSessionsStorage.getInstance().openSession(filePath));
     }
 
-
-   
     @Override
     public void save(String sourceDir, String sessionName, DLightSessionHandler handler) {
         DLightSessionInternalReference reference = DLightSessionHandlerAccessor.getDefault().getSessionReferenceImpl(handler);
@@ -687,6 +688,7 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
     private class DLightManagerSessionStateListener implements SessionStateListener {
 
+        @Override
         public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
             if (newState == SessionState.CLOSED) {
                 cleanupSession(session);
@@ -706,9 +708,9 @@ public final class DLightManager implements DLightToolkitManager, IndicatorActio
 
         }
 
+        @Override
         public JComponent getEmptyView(DLightConfiguration configuration, DLightTool tool, DLightTarget targetToValidateWith) {
             return p;
-
         }
     }
 }
