@@ -74,8 +74,8 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.cloud.cnd</friend>
+                <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
@@ -84,10 +84,12 @@
                 <friend>com.sun.tools.dlight.spi.impl</friend>
                 <friend>com.sun.tools.dlight.targets</friend>
                 <friend>com.sun.tools.dlight.ui</friend>
+                <friend>com.sun.tools.swdev.sunstudio.server</friend>
+                <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
-                <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
+                <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
@@ -97,7 +99,6 @@
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
                 <friend>org.netbeans.modules.cnd.toolchain</friend>
-                <friend>org.netbeans.modules.cnd</friend>
                 <package>org.netbeans.modules.remote.api</package>
                 <package>org.netbeans.modules.remote.api.ui</package>
                 <package>org.netbeans.modules.remote.spi</package>

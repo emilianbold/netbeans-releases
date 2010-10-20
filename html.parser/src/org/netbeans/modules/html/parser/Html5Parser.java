@@ -142,7 +142,7 @@ public class Html5Parser implements HtmlParser {
     }
 
     public HtmlModel getModel(HtmlVersion version) {
-        assert version == HtmlVersion.HTML5;
+        assert version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5;
         return HTML5MODEL;
     }
 

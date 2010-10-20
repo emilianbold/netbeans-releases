@@ -186,28 +186,12 @@ public class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void close() throws IOException {
             delegate.close();
-            flush();
+            WritingQueue.getInstance(execEnv).add(cache, remotePath, -1, null);
         }
 
         @Override
         public void flush() throws IOException {
             delegate.flush();
-            StringWriter sw = new StringWriter();
-            Future<Integer> task = CommonTasksSupport.uploadFile(cache, execEnv, remotePath, -1, sw);
-            try {
-                int rc = task.get().intValue();
-                if (rc != 0) {
-                    throw new IOException("Error writing file " + cache.getAbsolutePath() //NOI18N
-                            +  " at " + execEnv.getDisplayName()  //NOI18N
-                            + ": " + sw.toString()); // NOI18N
-                }
-            } catch (InterruptedException ex) {
-                throw new IOException("Error writing file " + cache.getAbsolutePath()  //NOI18N
-                        + " at " + execEnv.getDisplayName(), ex); //NOI18N
-            } catch (ExecutionException ex) {
-                throw new IOException("Error writing file " + cache.getAbsolutePath() //NOI18N
-                        + " at " + execEnv.getDisplayName(), ex); //NOI18N
-            }
         }
     }
 }

@@ -111,9 +111,9 @@ public class DevelopmentHostCustomizer extends JPanel implements VetoableChangeL
         if (env == null) {
             throw new PropertyVetoException(NbBundle.getMessage(getClass(), "MSG_Null_Host"), evt);
         }
-        if (env.equals(oldExecEnv)) {
-            return;
-        }
+        //if (env.equals(oldExecEnv)) {
+        //    return;
+        //}
         ServerListUIEx.save(cacheManager, component);
         cacheManager.applyChanges();
         dhconf.setHost(env, true);

@@ -37,22 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.dlight.management.api;
-
-import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
+package org.netbeans.modules.dlight.spi.indicator;
 
 /**
- * Listen for {@link org.netbeans.modules.dlight.management.api.DLightSession} state changes
+ * Marker interface, in case your indicator will be shared between ALL DLight Sessions
+ * Please mark it with this interface
+ * @author mt154047
  */
-public interface SessionStateListener {
-  /**
-   * Invoked when session state changed
-   * @param session session state is changed
-   * @param oldState old state
-   * @param newState new state
-   */
-  public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState);
+public interface SharedIndicator {
+    String getCurrentStorageID();
 }
