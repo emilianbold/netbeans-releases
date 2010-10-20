@@ -48,7 +48,6 @@ import java.io.IOException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitException.MissingFileException;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 
@@ -79,17 +78,17 @@ public class CatTest extends AbstractGitTestCase {
         commit(f);
 
         GitClient client = getClient(workDir);
-        client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
         String revision = new Git(repository).log().call().iterator().next().getId().getName();
-        client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
         write(f, "blablabla");
         add(f);
         commit(f);
-        client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
     }
 
@@ -106,14 +105,9 @@ public class CatTest extends AbstractGitTestCase {
         // remove and commit
         client.remove(new File[] { f }, false, ProgressMonitor.NULL_PROGRESS_MONITOR);
         commit(f);
-        client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertTrue(client.catFile(f, revision, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
         assertFile(f, getGoldenFile());
 
-        try {
-            client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR);
-            fail();
-        } catch (MissingFileException ex) {
-            // OK
-        }
+        assertFalse(client.catFile(f, "HEAD", new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
     }
 }

@@ -45,13 +45,10 @@ package org.netbeans.libs.git.jgit.commands;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.netbeans.libs.git.GitException;
@@ -68,6 +65,7 @@ public class CatCommand extends GitCommand {
     private final OutputStream os;
     private final ProgressMonitor monitor;
     private String relativePath;
+    private boolean found;
 
     public CatCommand (Repository repository, File file, String revision, OutputStream out, ProgressMonitor monitor) {
         super(repository, monitor);
@@ -99,17 +97,14 @@ public class CatCommand extends GitCommand {
             walk.reset();
             walk.addTree(commit.getTree());
             walk.setFilter(PathFilter.create(relativePath));
-            boolean find = false;
-            while (walk.next() && !monitor.isCanceled()) {
+            found = false;
+            while (!found && walk.next() && !monitor.isCanceled()) {
                 if (relativePath.equals(walk.getPathString())) {
                     ObjectLoader loader = repository.getObjectDatabase().open(walk.getObjectId(0));
                     loader.copyTo(os);
                     os.close();
-                    find = true;
+                    found = true;
                 }
-            }
-            if (!find && !monitor.isCanceled()) {
-                throw new GitException.MissingFileException("No such file in revision");
             }
         } catch (MissingObjectException ex) {
             throw new GitException(ex);
@@ -121,6 +116,10 @@ public class CatCommand extends GitCommand {
     @Override
     protected String getCommandDescription () {
         return new StringBuilder("git show ").append(revision).append(" ").append(file).toString(); //NOI18N
+    }
+
+    public boolean foundInRevision () {
+        return found;
     }
 
 }

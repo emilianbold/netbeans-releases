@@ -103,10 +103,11 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
     }
 
     @Override
-    public void catFile (File file, String revision, OutputStream out, ProgressMonitor monitor) throws GitException.MissingFileException, GitException {
+    public boolean catFile (File file, String revision, OutputStream out, ProgressMonitor monitor) throws GitException {
         Repository repository = gitRepository.getRepository();
         CatCommand cmd = new CatCommand(repository, file, revision, out, monitor);
         cmd.execute();
+        return cmd.foundInRevision();
     }
 
     @Override

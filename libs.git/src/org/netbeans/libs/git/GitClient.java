@@ -87,9 +87,10 @@ public interface GitClient {
      * @param file
      * @param revision git revision
      * @param out output stream
+     * @return true if the file was found in the specified revision and printed to out, otherwise false
      * @throws GitException
      */
-    public void catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException.MissingFileException, GitException;
+    public boolean catFile (File file, String revision, java.io.OutputStream out, ProgressMonitor monitor) throws GitException;
 
     /**
      * Checks out the index into the working copy root. Does not move HEAD.
