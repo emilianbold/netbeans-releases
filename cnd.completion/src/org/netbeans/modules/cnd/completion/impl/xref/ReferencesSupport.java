@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
@@ -94,6 +95,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
@@ -108,7 +110,9 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -593,6 +597,7 @@ public final class ReferencesSupport {
     private final Object cacheLock = new CacheLock();
     private final static class CacheLock {};
     private Map<CsmFile, Map<Integer, CsmObject>> cache = new HashMap<CsmFile, Map<Integer, CsmObject>>();
+    private Map<CsmFile, Long> cachedFilesVersions = new HashMap<CsmFile, Long>();
     private static CsmObject UNRESOLVED = new CsmObject() {
 
         @Override
@@ -608,7 +613,9 @@ public final class ReferencesSupport {
             CsmObject out = null;
             if (map != null) {
                 out = map.get(offset);
-                if (out == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+                final long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+                cachedFilesVersions.put(file, fileVersion);
+                if (out == UNRESOLVED && fileVersion != oldVersion) {
                     // we don't beleive in such fake and put null instead
                     map.put(offset, null);
                     out = null;
@@ -620,7 +627,8 @@ public final class ReferencesSupport {
 
     private void putReferencedObject(CsmFile file, int offset, CsmObject object, long oldVersion) {
         synchronized (cacheLock) {
-            if (object == UNRESOLVED && CsmFileInfoQuery.getDefault().getFileVersion(file) != oldVersion) {
+            final long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
+            if (object == UNRESOLVED && fileVersion != oldVersion) {
                 // we don't beleive in such fake
 //                System.err.println("skip caching FAKE NULL at " + offset + " in " + file);
                 return;
@@ -629,10 +637,12 @@ public final class ReferencesSupport {
             if (map == null) {
                 if (cache.size() > MAX_CACHE_SIZE) {
                     cache.clear();
+                    cachedFilesVersions.clear();
                 }
                 map = new HashMap<Integer, CsmObject>();
                 cache.put(file, map);
             }
+            cachedFilesVersions.put(file, fileVersion);
             map.put(offset, object);
         }
     }
@@ -641,8 +651,10 @@ public final class ReferencesSupport {
         synchronized (cacheLock) {
             if (file == null) {
                 cache.clear();
+                cachedFilesVersions.clear();
             } else {
                 cache.remove(file);
+                cachedFilesVersions.remove(file);
             }
         }
     }
@@ -738,5 +750,39 @@ public final class ReferencesSupport {
         public CsmObject getClosestTopLevelObject() {
             throw new UnsupportedOperationException("Not supported.");// NOI18N 
         }
+    }
+    
+    @ServiceProvider(service=CndDiagnosticProvider.class, position=2000)
+    public static final class RefSupportDiagnostic implements CndDiagnosticProvider {
+
+        @Override
+        public String getDisplayName() {
+            return ReferencesSupport.class.getCanonicalName();
+        }
+
+        @Override
+        public void dumpInfo(Lookup context, PrintWriter printOut) {
+            ReferencesSupport inst = ReferencesSupport.instance;
+            synchronized (inst.cacheLock) {
+                printOut.printf("cache of size %d\n", inst.cache.size());// NOI18N 
+                for (Map.Entry<CsmFile, Map<Integer, CsmObject>> entry : inst.cache.entrySet()) {
+                    final CsmFile file = entry.getKey();
+                    printOut.printf("-----------------------\n");// NOI18N 
+                    printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), inst.cachedFilesVersions.get(file), file.getClass().getName());// NOI18N 
+                    boolean hasUnresolved = false;
+                    for (Map.Entry<Integer, CsmObject> entry1 : entry.getValue().entrySet()) {
+                        if (entry1.getValue() == UNRESOLVED) {
+                            hasUnresolved = true;
+                            printOut.printf("UNRESOLVED at offset %d\n", entry1.getKey());// NOI18N 
+                        }
+                    }
+                    if (!hasUnresolved) {
+                        printOut.printf("no UNRESOLVED \n");// NOI18N 
+                    }
+                }
+                printOut.printf("-----------------------\n");// NOI18N 
+            }
+        }
+        
     }
 }

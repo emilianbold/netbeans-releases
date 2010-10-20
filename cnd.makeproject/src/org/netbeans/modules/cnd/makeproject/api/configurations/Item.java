@@ -379,8 +379,12 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public FileObject getFileObject() {
+        return getFileObjectImpl(false);
+    }
+
+    private FileObject getFileObjectImpl(boolean retryInvalid) {
         synchronized (this) {
-            if (fileObject == null) {
+            if (fileObject == null || (retryInvalid && !fileObject.isValid())) {
                 File curFile = getNormalizedFile();
                 fileObject = CndFileUtils.toFileObject(curFile);
                 if (fileObject == null || !fileObject.isValid()) {
@@ -398,7 +402,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         DataObject dataObject = null;
-        FileObject fo = getFileObject();
+        FileObject fo = getFileObjectImpl(true);
         if (fo != null) {
             try {
                 dataObject = DataObject.find(fo);

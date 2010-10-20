@@ -228,6 +228,13 @@ public class Watcher extends AnnotationProvider {
                     LOG.log(Level.INFO, null, ie);
                 }
             }
+            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                try {
+                    return new FAMNotifier();
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, null, e);
+                }
+            }
         } catch (LinkageError x) {
             LOG.log(Level.INFO, null, x);
         }

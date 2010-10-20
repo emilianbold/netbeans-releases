@@ -42,6 +42,12 @@
 
 package org.netbeans.modules.cnd.modelui.actions;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,11 +59,16 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.spi.model.services.CsmDiagnosticProvider;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputWriter;
 
 /**
  *
@@ -102,15 +113,52 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         }
         if (activatedNodes != null) {
             lookupObjects.addAll(Arrays.asList(activatedNodes));
+            for (Node node : activatedNodes) {
+                final DataObject dob = node.getLookup().lookup(DataObject.class);
+                if (dob != null) {
+                    lookupObjects.add(dob);
+                }
+            }
         }
         lookupObjects.addAll(csmProjects);
         LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
         if (!lookupObjects.isEmpty()) {
-            Collection<? extends CsmDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CsmDiagnosticProvider.class);
+            Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
-            for (CsmDiagnosticProvider provider : providers) {
-                provider.dumpInfo(context, null, null);
+            String tmpDir = System.getProperty("java.io.tmp"); // NOI18N
+            if (tmpDir == null) {
+                tmpDir = "/var/tmp";// NOI18N
             }
+            try {
+                File tmpFile = File.createTempFile("cnd_diagnostics_", ".txt", new File(tmpDir));// NOI18N
+                PrintWriter pw = new PrintWriter(tmpFile);
+                String taskName = "Cnd Diagnostics - " + tmpFile.getName(); // NOI18N
+                InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
+                io.select();
+                final OutputWriter out = io.getOut();
+                final OutputWriter err = io.getErr();
+                err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
+                for (CndDiagnosticProvider provider : providers) {
+                    pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());// NOI18N 
+                    provider.dumpInfo(context, pw);
+                }
+                pw.close();
+                // copy all into output window
+                FileInputStream stream = new FileInputStream(tmpFile.getAbsolutePath());
+                BufferedReader das = new BufferedReader(new InputStreamReader(stream));
+                String line;
+                do {
+                    line = das.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    out.println(line);
+                } while (true);
+                err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N 
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
         }
     }    
 }
