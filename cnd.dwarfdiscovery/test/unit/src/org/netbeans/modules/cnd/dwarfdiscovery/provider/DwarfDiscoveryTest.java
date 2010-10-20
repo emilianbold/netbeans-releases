@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -137,6 +138,13 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testDll_windowsxp_mingw() {
+        if (Utilities.isMac()) {
+            /* TODO: Mac test mashine does not like executable compiled on windows by mingw.
+             * Not reproduced on other avaliable macs. Issue should be investigated.
+             * Test temporary disabled.
+             */
+            return;
+        }
         dumpDlls("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "libhello3lib.dll", "libhello4lib.dll");
     }
@@ -177,6 +185,13 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testApplicable_windowsxp_mingw() {
+        if (Utilities.isMac()) {
+            /* TODO: Mac test mashine does not like executable compiled on windows by mingw.
+             * Not reproduced on other avaliable macs. Issue should be investigated.
+             * Test temporary disabled.
+             */
+            return;
+        }
         applicable("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "GNU C++ 3.4.5 (mingw-vista special r3)",
                 "/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/", 39);
@@ -208,6 +223,13 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testStatic_windowsxp_mingw() {
+        if (Utilities.isMac()) {
+            /* TODO: Mac test mashine does not like executable compiled on windows by mingw.
+             * Not reproduced on other avaliable macs. Issue should be investigated.
+             * Test temporary disabled.
+             */
+            return;
+        }
         readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/hello1lib/dist/Debug/MinGW-Windows/libhello1lib.a",
                 "hello1.cc");
     }
@@ -238,6 +260,13 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testShared_windowsxp_mingw() {
+        if (Utilities.isMac()) {
+            /* TODO: Mac test mashine does not like executable compiled on windows by mingw.
+             * Not reproduced on other avaliable macs. Issue should be investigated.
+             * Test temporary disabled.
+             */
+            return;
+        }
         readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/hello3lib/dist/Debug/MinGW-Windows/libhello3lib.dll",
                 "hello3.cc");
     }
@@ -269,6 +298,13 @@ public class DwarfDiscoveryTest  extends NbTestCase {
     }
 
     public void testApplication_windowsxp_mingw() {
+        if (Utilities.isMac()) {
+            /* TODO: Mac test mashine does not like executable compiled on windows by mingw.
+             * Not reproduced on other avaliable macs. Issue should be investigated.
+             * Test temporary disabled.
+             */
+            return;
+        }
         readBinary("/org/netbeans/modules/cnd/dwarfdiscovery/projects/SubProjects_windowsxp_mingw/main/dist/Debug/MinGW-Windows/main.exe",
                 "main.cc", "hello1.cc", "hello2.cc");
     }
