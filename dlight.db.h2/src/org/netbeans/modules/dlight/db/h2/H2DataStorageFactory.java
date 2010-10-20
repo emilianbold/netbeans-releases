@@ -53,6 +53,7 @@ import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory.Mode
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
 import org.netbeans.modules.dlight.spi.support.SQLDataStorageFactory;
 import org.netbeans.modules.dlight.spi.storage.DataStorageFactory;
+import org.netbeans.modules.dlight.spi.storage.PersistentDataStorageFactory;
 import org.netbeans.modules.dlight.util.DLightLogger;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -63,7 +64,8 @@ import org.openide.util.lookup.ServiceProviders;
  * @author masha
  */
 @ServiceProviders({
-    @ServiceProvider(service = DataStorageFactory.class,  position = 10)
+    @ServiceProvider(service = DataStorageFactory.class,  position = 10),
+    @ServiceProvider(service = PersistentDataStorageFactory.class,  position = 10)
 })
 public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
 
@@ -151,6 +153,8 @@ public class H2DataStorageFactory extends SQLDataStorageFactory<H2DataStorage> {
             String dbURL = rcFile.get("h2.storages", uniqueKey);// NOI18N
             DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
                     "Trying to open storage with the uniqueID={0} and dbURL={1}", new String[]{uniqueKey, dbURL});//NOI18N
+            DLightLogger.getLogger(H2DataStorageFactory.class).log(Level.FINE, 
+                    "Stack Trace is ", Thread.currentThread().getStackTrace());//NOI18N                        
             if (dbURL != null) {
                 H2DataStorage result = new H2DataStorage(dbURL);
                 result.connect();
