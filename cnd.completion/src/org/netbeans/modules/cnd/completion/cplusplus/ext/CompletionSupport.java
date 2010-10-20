@@ -66,6 +66,9 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.deep.CsmReturnStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement.Kind;
 import org.netbeans.modules.cnd.api.model.services.CsmInheritanceUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -80,6 +83,7 @@ import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -515,6 +519,24 @@ public final class CompletionSupport implements DocumentListener {
                     }
                 }
                 return type;
+            }
+        }
+        if (var.length() == 0 && CsmKindUtilities.isStatement(context.getLastObject())) {
+            CsmStatement stmt = (CsmStatement)context.getLastObject();
+            if(stmt.getKind() == Kind.RETURN) {
+                CsmReturnStatement ret = (CsmReturnStatement) stmt;
+                // ret.getReturnExpression() is not implemented
+                // so here is a hack with regexp...
+                try {
+                    String e = getDocument().getText(ret.getStartOffset(), ret.getEndOffset() - ret.getStartOffset());
+                    String typeName = e.replaceAll("\\W*return\\W*\\((.*)\\)\\W*\\{.*\\}.*", "$1"); // NOI18N
+                    CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
+                    if (cls != null) {
+                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        return type;
+                    }
+                } catch (BadLocationException ex) {
+                }
             }
         }
         for (CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)) {
