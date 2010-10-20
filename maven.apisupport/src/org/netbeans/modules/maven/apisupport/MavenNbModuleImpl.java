@@ -71,6 +71,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
@@ -79,6 +81,7 @@ import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -409,7 +412,26 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 }
             }
         }
-        // XXX #190149: as in addDependency, look up artifact in repo with same version as some existing org.netbeans.api:* dep
+        // #190149: look up artifact in repo with same version as some existing org.netbeans.api:* dep
+        for (Artifact art : watch.getMavenProject().getArtifacts()) {
+            if (art.getGroupId().startsWith("org.netbeans")) { // NOI18N
+                Artifact art2 = EmbedderFactory.getProjectEmbedder().getLocalRepository().find(
+                        new DefaultArtifact("org.netbeans.api", artifactId, art.getVersion(), null, "jar", null, new DefaultArtifactHandler("jar"))); // NOI18N
+                File jar = art2.getFile();
+                if (jar != null && jar.isFile()) {
+                    ExamineManifest exa = new ExamineManifest();
+                    exa.setJarFile(jar);
+                    try {
+                        exa.checkFile();
+                    } catch (MojoExecutionException x) {
+                        throw new IOException(x);
+                    }
+                    if (exa.getSpecVersion() != null) {
+                        return new SpecificationVersion(exa.getSpecVersion());
+                    }
+                }
+            }
+        }
         File fil = lookForModuleInPlatform(artifactId);
         if (fil != null) {
             ExamineManifest exa = new ExamineManifest();
