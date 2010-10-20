@@ -40,16 +40,30 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debug;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.PrintWriter;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author vv159170
  */
-public interface CndDiagnosticProvider {
-    public String getDisplayName();
-    public void dumpInfo(Lookup context, PrintWriter printOut);
+@ServiceProvider(service=CndDiagnosticProvider.class, position=1000)
+public class CodeModelDiagnostic implements CndDiagnosticProvider {
+
+    @Override
+    public String getDisplayName() {
+        return "Code Model Impl"; // NOI18N
+    }
+
+    @Override
+    public void dumpInfo(Lookup context, PrintWriter printOut) {
+        int parseCount = FileImpl.getParseCount();
+        printOut.printf("parseCount=%d\n", parseCount);
+    }
+
 }
