@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.dlight.management.api;
 
 import java.util.ArrayList;
@@ -51,7 +50,8 @@ import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
  *
  * @author mt154047
  */
-public final class SharedStorageDLightSession implements SessionStateListener{
+public final class SharedStorageDLightSession implements SessionStateListener {
+
     private final String storageUniqueKey;
     private final List<DLightSession> sessions = new ArrayList<DLightSession>();
     private CountDownLatch latch;
@@ -64,6 +64,7 @@ public final class SharedStorageDLightSession implements SessionStateListener{
     //it has state
     //list of DLigthSessions
     //storageUniqueID
+
     public void addSessionStateListener(SharedSessionStateListener listener) {
         if (sessionStateListeners == null) {
             sessionStateListeners = new ArrayList<SharedSessionStateListener>();
@@ -81,7 +82,7 @@ public final class SharedStorageDLightSession implements SessionStateListener{
 
         sessionStateListeners.remove(listener);
     }
-    
+
     void setState(SessionState state) {
         SessionState oldState = this.state;
         this.state = state;
@@ -91,51 +92,47 @@ public final class SharedStorageDLightSession implements SessionStateListener{
                 l.sessionStateChanged(this, oldState, state);
             }
         }
-    }    
-    
-    
-    public SessionState getState(){
+    }
+
+    public SessionState getState() {
         return state;
     }
-    
-    public void addDLightSession(DLightSession session){
+
+    public void addDLightSession(DLightSession session) {
         session.addSessionStateListener(this);
         sessions.add(session);
     }
-    
-    public void run(){
+
+    public void run() {
         latch = new CountDownLatch(sessions.size());
         setState(SessionState.RUNNING);
-        for (DLightSession session: sessions){
+        for (DLightSession session : sessions) {
             session.start();
         }
     }
-    
-    public String getSorageUniqueKey(){
+
+    public String getSorageUniqueKey() {
         return storageUniqueKey;
     }
-    
-    public void closeSession(){
+
+    public void closeSession() {
         setState(SessionState.CLOSED);
-        for (DLightSession session : sessions){
+        for (DLightSession session : sessions) {
             session.close();
         }
-        
+
     }
 
     @Override
     public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState) {
-            switch (newState) {
+        switch (newState) {
             case ANALYZE:
             case CLOSED:
                 latch.countDown();
-                if (latch.getCount() == 0){
+                if (latch.getCount() == 0) {
                     //notify that it is 
                     setState(SessionState.ANALYZE);
                 }
         }
     }
-    
-    
-
 }

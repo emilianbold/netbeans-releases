@@ -173,7 +173,7 @@ public final class DLightSession implements
     @Override
     public void collectorStateChanged(DataCollector<?> source, CollectorState state) {
         if (collectors.contains(source) && (state == CollectorState.STOPPED || state == CollectorState.FAILED
-                || state == CollectorState.TERMINATED)) {
+                || state == CollectorState.TERMINATED || state == CollectorState.DONE)) {
             collectorsDoneFlag.countDown();
             if (collectorsDoneFlag.getCount() == 0) {
                 final DLightTarget target = contexts.get(0).getTarget();
