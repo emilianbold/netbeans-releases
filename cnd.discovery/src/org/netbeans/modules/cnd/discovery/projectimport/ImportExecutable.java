@@ -363,8 +363,8 @@ public class ImportExecutable implements PropertyChangeListener {
         }
         if (configure.makefile != null) {
             activeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(configure.makefile.getParentFile().getAbsolutePath());
-            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue("$(MAKE) -f "+configure.makefile.getName()); // NOI18N
-            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue("$(MAKE) -f "+configure.makefile.getName()+" clean"); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getBuildCommand().setValue("${MAKE} -f "+configure.makefile.getName()); // NOI18N
+            activeConfiguration.getMakefileConfiguration().getCleanCommand().setValue("${MAKE} -f "+configure.makefile.getName()+" clean"); // NOI18N
             Folder externalItemFolder = configurationDescriptor.getExternalItemFolder();
             for(Item item : externalItemFolder.getAllItemsAsArray()){
                 if (MIMENames.MAKEFILE_MIME_TYPE.equals(item.getMIMEType())) {
