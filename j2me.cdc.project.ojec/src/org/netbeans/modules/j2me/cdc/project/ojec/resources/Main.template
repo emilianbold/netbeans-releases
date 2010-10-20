@@ -7,17 +7,31 @@
 package ${package};
 
 </#if>
+import javax.microedition.xlet.*;
+
 /**
- *
  * @author ${user}
  */
-public class ${name} {
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        // TODO code application logic here
+/*  If you need to change execution model, e.g. using main method, 
+    change executable class and execution method using Project properties -> Running -> Main class
+*/
+// Create the ${name} class.
+public class ${name} implements Xlet {
+
+    // Initialize the xlet.
+    public void initXlet(XletContext context) {
     }
 
+    // Start the xlet.
+    public void startXlet() {
+    }
+
+    // Pause the xlet
+    public void pauseXlet() {
+    }
+
+    // Destroy the xlet
+    public void destroyXlet(boolean unconditional) {
+    }
 }
