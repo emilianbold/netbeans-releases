@@ -256,6 +256,9 @@ made subject to such option by the copyright holder.
                 <file name="Reformatter.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reformatter$Factory"/>
                 </file>
+                <file name="Reindenter.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reindenter$Factory"/>
+                </file>
                 <file name="JavacParser.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.JavacParserFactory"/>
                 </file>
@@ -265,6 +268,16 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="SourcePathCheck.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.classpath.SourcePathCheck$Factory"/>
+                </file>
+                <file name="AutoIndenter.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.editor.typinghooks.TypedTextInterceptor$Factory"/>
+                    <attr name="instanceCreate"
+                          methodvalue="org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting.createHotCharsIndenter"/>
+                    <attr name="regex1" stringvalue="\s*\{"/>
+                    <attr name="regex2" stringvalue="\s*\}"/>
+                    <attr name="regex3" stringvalue="\s*case\s"/>
+                    <attr name="regex4" stringvalue="\s*default[\s:]"/>
+                    <attr name="regex5" stringvalue="\s*else[\s\{]"/>
                 </file>
             </folder>
         </folder>

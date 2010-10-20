@@ -132,10 +132,10 @@ public class JavaKit extends NbEditorKit {
         return dob != null ? SourceLevelQuery.getSourceLevel(dob.getPrimaryFile()) : null;
     }
 
-    /** Create the formatter appropriate for this kit */
-    public Formatter createFormatter() {
-        return new JavaFormatter(this.getClass());
-    }
+//    /** Create the formatter appropriate for this kit */
+//    public Formatter createFormatter() {
+//        return new JavaFormatter(this.getClass());
+//    }
 
     protected void initDocument(BaseDocument doc) {
 //        doc.addLayer(new JavaDrawLayerFactory.JavaLayer(),
