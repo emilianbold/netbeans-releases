@@ -63,11 +63,14 @@ import org.osgi.framework.BundleContext;
  */
 public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     private static Module m1;
-    private Module m2;
+    private static Module m2;
     private static ModuleManager mgr;
-    private int cnt;
-    private File simpleBundle;
-    private File activate;
+    private static File simpleBundle;
+    private static File activate;
+    private static Bundle toEnable;
+    private static Class directBundle;
+    private static Class someModule;
+    private static Method loadClass;
 
     public NetigsoOSGiActivationVisibleTest(String name) {
         super(name);
@@ -78,6 +81,9 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     }
 
     protected @Override void setUp() throws Exception {
+        if (System.getProperty("netbeans.user") != null) {
+            return;
+        }
         Locale.setDefault(Locale.US);
         clearWorkDir();
         File ud = new File(getWorkDir(), "ud");
@@ -94,9 +100,7 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
             "Bundle-Version: 33.0.3\n" +
             "Bundle-ManifestVersion: 2\n";
         simpleBundle = NetigsoHid.changeManifest(getWorkDir(), simpleModule, mf);
-    }
-
-    public void testActivation() throws Exception {
+        
         ModuleSystem ms = Main.getModuleSystem();
         mgr = ms.getManager();
         mgr.mutexPrivileged().enterWriteAccess();
@@ -114,7 +118,7 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        Bundle toEnable = null;
+        toEnable = null;
         for (Bundle b : bc.getBundles()) {
             if (b.getSymbolicName().equals("org.snd.module")) {
                 toEnable = b;
@@ -125,23 +129,34 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
             
         assertFalse("not started yet", m2.isEnabled());
         toEnable.start();
-
-        Class<?> directBundle = toEnable.loadClass("org.foo.Something");
+    }
+    
+    public void testClassFromBundle() throws Exception {
+        directBundle = toEnable.loadClass("org.foo.Something");
         assertNotNull("Bundle knows how to load the class", directBundle);
-        
-        Class<?> someModule = m2.getClassLoader().loadClass("org.foo.Something");
+    }
+    public void testClassModuleM2() throws Exception {
+        someModule = m2.getClassLoader().loadClass("org.foo.Something");
         assertNotNull("Something loaded from module CL", someModule);
-        
-        Method loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
+    }
+    
+    public void testClassFromDirectBundle() throws Exception {
+        loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
         Class<?> directly = (Class<?>) loadClass.invoke(null, "org.foo.Something", null);
         assertNotNull("Bundle knows how to load the class from itself without problems", directly);
-        
+    }
+     
+    public void testClassFromBundleClassLoader() throws Exception {
         Class<?> someFromBundle = (Class<?>) loadClass.invoke(null, "org.foo.Something", someModule.getClassLoader());
         assertNotNull("Bundle knows how to load the class from its using own classloader", someFromBundle);
+    }
 
+    public void testClassFromContextClassLoader() throws Exception {
         Class<?> some = (Class<?>) loadClass.invoke(null, "org.foo.Something", Thread.currentThread().getContextClassLoader());
         assertNotNull("Context class loader loads from disabled module bundles too", some);
+    }
 
+    public void testM2RemainsDisabled() throws Exception {
         assertFalse("still disabled from NetBeans view point", m2.isEnabled());
     }
     private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
