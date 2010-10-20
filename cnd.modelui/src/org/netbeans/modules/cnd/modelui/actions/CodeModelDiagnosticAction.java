@@ -53,7 +53,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.spi.model.services.CsmDiagnosticProvider;
+import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -106,9 +106,9 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         lookupObjects.addAll(csmProjects);
         LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
         if (!lookupObjects.isEmpty()) {
-            Collection<? extends CsmDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CsmDiagnosticProvider.class);
+            Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
             Lookup context = Lookups.fixed(lookupObjects.toArray(new Object[lookupObjects.size()]));
-            for (CsmDiagnosticProvider provider : providers) {
+            for (CndDiagnosticProvider provider : providers) {
                 provider.dumpInfo(context, null, null);
             }
         }

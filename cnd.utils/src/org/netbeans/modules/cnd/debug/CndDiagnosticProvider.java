@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.spi.model.services;
+package org.netbeans.modules.cnd.debug;
 
 import java.io.PrintWriter;
 import org.openide.util.Lookup;
@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
  *
  * @author Vladimir Voskresensky
  */
-public interface CsmDiagnosticProvider {
+public interface CndDiagnosticProvider {
+    public String getDisplayName();
     public void dumpInfo(Lookup context, PrintWriter printOut, PrintWriter printErr);
 }
