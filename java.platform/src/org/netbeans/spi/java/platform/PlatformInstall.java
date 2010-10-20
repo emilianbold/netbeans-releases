@@ -63,7 +63,7 @@ public abstract class PlatformInstall extends GeneralPlatformInstall {
      * folder on the system filesystem.
      * @return TemplateWizard.Iterator instance responsible for instantiating
      * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the platform definition file.
+     * return the Set containing the platform.
      */
     public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder);
 
