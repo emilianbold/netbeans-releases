@@ -42,43 +42,39 @@
  */
 package org.netbeans.modules.websvc.wsitconf.refactoring;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
-import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRefactoringPlugin.AbstractRefactoringElement;
 import org.netbeans.modules.websvc.wsitconf.refactoring.WSITRefactoringPlugin.AbstractRenameConfigElement;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.WSITModelSupport;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileUtil;
 
 
 /**
  * @author ads
  *
  */
-class WSITRenamePackagePlugin implements RefactoringPlugin {
+class WSITMoveRefactoringPlugin implements RefactoringPlugin {
     
-    private static final Logger LOG = Logger.getLogger( WSITRenamePackagePlugin.class.getName()); 
+    private static final Logger LOG = Logger.getLogger( WSITMoveRefactoringPlugin.class.getName());
 
-    WSITRenamePackagePlugin( RenameRefactoring refactoring ) {
+    WSITMoveRefactoringPlugin( MoveRefactoring refactoring ) {
         this.refactoring = refactoring;
     }
 
@@ -118,89 +114,87 @@ class WSITRenamePackagePlugin implements RefactoringPlugin {
      */
     @Override
     public Problem prepare( RefactoringElementsBag refactoringElements ) {
-        FileObject pkg = refactoring.getRefactoringSource().lookup(
-                NonRecursiveFolder.class).getFolder();
-        String oldPackageName = JavaIdentifiers.getQualifiedName(pkg);
-        
-        JAXWSSupport support = JAXWSSupport.getJAXWSSupport( pkg );
-        if ( support == null ){
-            LOG.log( Level.FINE , "No JAX-WS support for project found");   // NOI18N
+        FileObject classFo = refactoring.getRefactoringSource().lookup(
+                FileObject.class);
+        if ( classFo == null || classFo.isFolder() ){
             return null;
         }
-        List</*Service*/?> services = support.getServices();
-        for (Object object : services) {
-            Service service = (Service) object;
-            String implementationClass = service.getImplementationClass();
-            if ( implementationClass!= null 
-                    && implementationClass.startsWith(oldPackageName))
-            {
-                doPrepare( pkg, implementationClass , refactoringElements);
-            }
+        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(classFo);
+        if (support == null) {
+            return null;
         }
-        return null;
-    }
-
-    private void doPrepare( FileObject pkg , String classFqn , 
-            RefactoringElementsBag refactoringElements) 
-    {
-        Project project = FileOwnerQuery.getOwner(pkg);
         WSDLModel model = null;
-        if (project == null) {
-            return;
-        }
-        FileObject file = getJavaFile( classFqn , project);
-        if ( file == null ){
-            return;
+        Project project = FileOwnerQuery.getOwner(classFo);
+        if ( project == null ){
+            return null;
         }
         try {
-            model = WSITModelSupport.getModelForServiceFromJava(file, 
-                    project, false, null);
+            model = WSITModelSupport.getModelForServiceFromJava(classFo, project, 
+                    false, null);
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log( Level.SEVERE , null , ex);
         } catch (Exception ex) {
-            LOG.log(Level.SEVERE, null, ex);
+            LOG.log( Level.SEVERE , null , ex);
         }
         if ( model == null ){
-            return;
+            return null;
         }
-        refactoringElements.addFileChange(refactoring, new PackageRenameElement(
-                JavaIdentifiers.getQualifiedName(pkg) , refactoring.getNewName(),
-                model )); 
-    }
-
-    private FileObject getJavaFile( String fqn, Project project ) {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project)
-                .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sourceGroups.length > 0) {
-            ClassPath classPath = null;
-            for (int i = 0; i < sourceGroups.length; i++) {
-                classPath = ClassPath.getClassPath(
-                        sourceGroups[i].getRootFolder(), ClassPath.SOURCE);
-                if (classPath != null) {
-                    FileObject javaClass = classPath.findResource(fqn.replace(
-                            '.', '/') + ".java"); // NOI18N
-                    if (javaClass != null) {
-                        return javaClass;
-                    }
-                }
-            }
-        }
+        String newPackageName = getPackageName(refactoring.getTarget().lookup(URL.class));
+        refactoringElements.addFileChange(refactoring, new MoveClassElement(model, 
+                classFo, newPackageName));
         return null;
     }
     
-    private static class PackageRenameElement extends AbstractRenameConfigElement{
+    public static String getPackageName(URL url) {
+        File file = null;
+        try {
+            file = FileUtil.normalizeFile(new File(url.toURI()));
+        } catch (URISyntaxException uRISyntaxException) {
+            throw new IllegalArgumentException(
+                    "Cannot create package name for url " + url);   // NOI18N
+        }
+        String suffix = "";
 
-        PackageRenameElement( String oldPackageName, String newPackageName,
-                WSDLModel model )
+        do {
+            FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                if ("".equals(suffix))
+                    return getPackageName(fo);
+                String prefix = getPackageName(fo);
+                return prefix + ("".equals(prefix)?"":".") + suffix;
+            }
+            if (!"".equals(suffix)) {
+                suffix = "." + suffix;
+            }
+            suffix = URLDecoder.decode(file.getPath().substring(
+                    file.getPath().lastIndexOf(File.separatorChar)+1)) + suffix;
+            file = file.getParentFile();
+        } 
+        while (file!=null);
+        throw new IllegalArgumentException(
+                "Cannot create package name for url " + url);       // NOI18N
+    }
+    
+    private static String getPackageName(FileObject folder) {
+        assert folder.isFolder() : "argument must be folder";       // NOI18N
+        return ClassPath.getClassPath(
+                folder, ClassPath.SOURCE)
+                .getResourceName(folder, '.', false);
+    }
+    
+    private static class MoveClassElement extends AbstractRenameConfigElement{
+
+        MoveClassElement( WSDLModel model , FileObject oldClass, 
+                String newPackageName) 
         {
             super(model);
+            String packageFqn = JavaIdentifiers.getQualifiedName(oldClass.getParent());
             String oldConfName = getParentFile().getName();
-            setOldConfigName( oldConfName );
-            setNewConfigName(oldConfName.replace( oldPackageName, newPackageName));
+            setOldConfigName(  oldConfName );
+            setNewConfigName(oldConfName.replace( packageFqn, newPackageName));
         }
-
+        
     }
 
-    private RenameRefactoring refactoring;
-
+    private MoveRefactoring refactoring;
 }
