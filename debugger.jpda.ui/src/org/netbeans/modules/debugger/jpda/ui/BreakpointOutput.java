@@ -78,16 +78,14 @@ PropertyChangeListener {
         ("\\$");
     private static final Pattern backslashEscapePattern = Pattern.compile
         ("\\\\");
-    private static final Pattern threadNamePattern = Pattern.compile
-        ("\\{threadName\\}");
-    private static final Pattern classNamePattern = Pattern.compile
-        ("\\{className\\}");
+    private static final String threadNamePattern = "{threadName}";
+    private static final String classNamePattern = "{className}";
     private static final Pattern methodNamePattern = Pattern.compile
         ("\\{methodName\\}");
     private static final Pattern lineNumberPattern = Pattern.compile
         ("\\{lineNumber\\}");
-    private static final Pattern exceptionClassNamePattern = Pattern.compile
-        ("\\{exceptionClassName\\}");
+    private static final String exceptionClassNamePattern = "{exceptionClassName}";
+    private static final String exceptionMessagePattern = "{exceptionMessage}";
     private static final Pattern expressionPattern = Pattern.compile
         ("\\{=(.*?)\\}");
     private static final String threadStartedCondition = "{? threadStarted}";
@@ -265,24 +263,16 @@ PropertyChangeListener {
         // 1) replace {threadName} by the name of current thread
         JPDAThread t = event.getThread ();
         if (t != null) {
-            // replace \ by \\
-            String name = backslashEscapePattern.matcher (t.getName ()).
-                replaceAll ("\\\\\\\\");
-            // replace $ by \$
-            name = dollarEscapePattern.matcher (name).replaceAll ("\\\\\\$");
-            printText = threadNamePattern.matcher (printText).replaceAll (name);
+            printText = printText.replace(threadNamePattern, t.getName ());
         }
         else
-            printText = threadNamePattern.matcher (printText).replaceAll ("?");
+            printText = printText.replace(threadNamePattern, "?");
         
         // 2) replace {className} by the name of current class
         if (event.getReferenceType () != null) {
-            // replace $ by \$
-            String name = dollarEscapePattern.matcher 
-                (event.getReferenceType ().name ()).replaceAll ("\\\\\\$");
-            printText = classNamePattern.matcher (printText).replaceAll (name);
+            printText = printText.replace(classNamePattern, event.getReferenceType().name());
         } else
-            printText = classNamePattern.matcher (printText).replaceAll ("?");
+            printText = printText.replace(classNamePattern, "?");
 
         // 3) replace {methodName} by the name of current method
         Session session = null;
@@ -316,8 +306,7 @@ PropertyChangeListener {
             if (exception != null) {
                 // replace {exceptionClassName}
                 String exceptionClassName = exception.getType();
-                printText = exceptionClassNamePattern.matcher (printText).replaceAll
-                    (exceptionClassName);
+                printText = printText.replace(exceptionClassNamePattern, exceptionClassName);
                 String exceptionMessage = "";
                 try {
                     // replace {exceptionMessage}
@@ -330,7 +319,7 @@ PropertyChangeListener {
                 } catch (InvalidExpressionException ex) {
                     exceptionMessage = "<"+ex.getLocalizedMessage()+">";
                 }
-                printText = printText.replace("{exceptionMessage}", exceptionMessage);  // NOI18N
+                printText = printText.replace(exceptionMessagePattern, exceptionMessage);  // NOI18N
             }
         }
         if (event.getSource() instanceof ThreadBreakpoint) {

@@ -37,39 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.hudson.kenai;
+package org.netbeans.modules.dlight.management.api;
 
-import java.net.PasswordAuthentication;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.hudson.spi.PasswordAuthorizer;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 
 /**
- * Logs in user on kenai.com automatically.
+ * Listen for {@link org.netbeans.modules.dlight.managemenet.api.SharedStorageDLightSession} state changes
  */
-@ServiceProvider(service=PasswordAuthorizer.class, position=100)
-public class KenaiAuthentication implements PasswordAuthorizer {
-
-    public String[] authorize(URL home) {
-        Matcher m = Pattern.compile("(https?://(test)?kenai\\.com)/hudson/[^/]+/").matcher(home.toString());
-        if (m.matches()) {
-            Kenai kenai = KenaiManager.getDefault().getKenai(m.group(1));
-            if (kenai != null) {
-                // could use UIUtils.tryLogin(), but this seems to get called automatically anyway
-                PasswordAuthentication auth = kenai.getPasswordAuthentication();
-                if (auth != null) {
-                    return new String[] {auth.getUserName(), new String(auth.getPassword())};
-                }
-            }
-        }
-        return null;
-    }
-
+public interface SharedSessionStateListener {
+  /**
+   * Invoked when session state changed
+   * @param session session state is changed
+   * @param oldState old state
+   * @param newState new state
+   */
+  public void sessionStateChanged(SharedStorageDLightSession session, SessionState oldState, SessionState newState);
 }

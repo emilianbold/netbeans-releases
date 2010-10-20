@@ -68,6 +68,9 @@ import java.util.Set;
 import java.io.PushbackReader;
 import java.io.StringReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -105,6 +108,8 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     // Cloneable for fixed watches
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI18N
+
+    private static final Map<ClassType, List> allInterfacesMap = new WeakHashMap<ClassType, List>();
 
     private String          genericType;
     private Field[]         fields;
@@ -316,6 +321,31 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             return null;
         }
     }
+
+    public boolean hasAllInterfaces() {
+        if (getInnerValue () == null)
+            return true;
+        ClassType ct;
+        try {
+            Type t = ValueWrapper.type(this.getInnerValue());
+            if (!(t instanceof ClassType))
+                return true;
+            ct = (ClassType) t;
+        } catch (Exception ex) {
+            return false;
+        }
+        List allInterfaces;
+        synchronized (allInterfacesMap) {
+            allInterfaces = allInterfacesMap.get(ct);
+        }
+        if (allInterfaces == null) {
+            return false;
+        } else {
+            synchronized (allInterfaces) {
+                return !allInterfaces.contains("computing");
+            }
+        }
+    }
     
     public List<JPDAClassType> getAllInterfaces() {
         if (getInnerValue () == null)
@@ -324,15 +354,51 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             Type t = ValueWrapper.type(this.getInnerValue());
             if (!(t instanceof ClassType))
                 return null;
-            List<InterfaceType> interfaces;
-            interfaces = ClassTypeWrapper.allInterfaces0((ClassType) t);
-            if (interfaces == null)
-                return null;
-            List<JPDAClassType> allInterfaces = new ArrayList<JPDAClassType>();
-            for (InterfaceType it : interfaces) {
-                allInterfaces.add(new JPDAClassTypeImpl(getDebugger(), it));
+            ClassType ct = (ClassType) t;
+            List allInterfaces;
+            boolean toCompute = false;
+            synchronized (allInterfacesMap) {
+                allInterfaces = allInterfacesMap.get(ct);
+                if (allInterfaces == null) {
+                    allInterfaces = new ArrayList();
+                    allInterfaces.add("computing");
+                    allInterfacesMap.put(ct, allInterfaces);
+                    toCompute = true;
+                }
             }
-            return allInterfaces;
+            if (toCompute) {
+                List<InterfaceType> interfaces = null;
+                try {
+                    //assert !javax.swing.SwingUtilities.isEventDispatchThread();
+                    interfaces = ClassTypeWrapper.allInterfaces0((ClassType) t);
+                } finally {
+                    if (interfaces == null) {
+                        synchronized (allInterfacesMap) {
+                            allInterfacesMap.remove(ct);
+                        }
+                    }
+                    synchronized (allInterfaces) {
+                        allInterfaces.clear();
+                        if (interfaces != null) {
+                            for (InterfaceType it : interfaces) {
+                                allInterfaces.add(new JPDAClassTypeImpl(getDebugger(), it));
+                            }
+                        }
+                        allInterfaces.notifyAll();
+                    }
+                }
+            } else {
+                synchronized (allInterfaces) {
+                    if (allInterfaces.contains("computing")) {
+                        try {
+                            allInterfaces.wait();
+                        } catch (InterruptedException ex) {
+                            return null;
+                        }
+                    }
+                }
+            }
+            return Collections.unmodifiableList(allInterfaces);
         } catch (ClassNotPreparedExceptionWrapper cnpex) {
             return null;
         } catch (ObjectCollectedExceptionWrapper ocex) {
