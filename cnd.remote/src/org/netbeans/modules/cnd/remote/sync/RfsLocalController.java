@@ -640,13 +640,11 @@ class RfsLocalController extends NamedRunnable {
             ex.printStackTrace();
         }
 
-// do we need to wait here?
-//        try {
-//            int rc = process.waitFor();
-//        } catch (InterruptedException ex) {
-//            // don't report InterruptedException
-//            return;
-//        }
+        try {
+            process.waitFor();
+        } catch (InterruptedException ex) {
+            // don't report InterruptedException
+        }
         return addedInfos;
     }
 
