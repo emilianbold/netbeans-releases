@@ -72,7 +72,7 @@ public class ScriptAndMakeTokenList implements TokenList {
         currentOffsetInComment = (-1);
         this.startOffset = offset;
         this.nextBlockStart = offset;
-        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/ScriptComment"); //NOI18N
+        FileObject fileObject = FileUtil.getConfigFile("Spellcheckers/ScriptComments"); //NOI18N
         Boolean b = (Boolean) fileObject.getAttribute("Hidden");//NOI18N
         hidden = Boolean.TRUE.equals(b);
     }
