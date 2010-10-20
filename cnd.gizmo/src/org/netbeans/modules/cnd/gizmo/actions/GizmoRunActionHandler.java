@@ -55,6 +55,7 @@ import org.netbeans.api.extexecution.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.gizmo.GizmoConfigurationOptions;
@@ -164,17 +165,23 @@ public class GizmoRunActionHandler implements ProjectActionHandler, DLightTarget
         targetConf.putInfo("sunstudio.datafilter.collectedobjects", System.getProperty("sunstudio.datafilter.collectedobjects", "")); // NOI18N
         targetConf.putInfo("sunstudio.hotspotfunctionsfilter", System.getProperty("sunstudio.hotspotfunctionsfilter", "")); //, "with-source-code-only")); // NOI18N
 
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-        String binDir = compilerSet.getDirectory();
-        String demangle_utility = SS_FAMILIY;
-        if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
-            demangle_utility = GNU_FAMILIY;
+        final CompilerSet2Configuration cset = conf.getCompilerSet();
+        if (cset != null) {
+            CompilerSet compilerSet = cset.getCompilerSet();
+            if (compilerSet != null) {
+                String binDir = compilerSet.getDirectory();
+                String demangle_utility = SS_FAMILIY;
+                if (compilerSet.getCompilerFlavor().isGnuCompiler()) {
+                    demangle_utility = GNU_FAMILIY;
+                }
+
+                String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
+                targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
+                targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
+                targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
+                targetConf.putInfo(Charset.class.getName(), compilerSet.getEncoding().name());
+            }
         }
-        String dem_util_path = binDir + "/" + demangle_utility; //NOI18N BTW: isn't it better to use File.Separator?
-        targetConf.putInfo(GizmoServiceInfo.GIZMO_DEMANGLE_UTILITY, dem_util_path);
-        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER, compilerSet.getCompilerFlavor().isGnuCompiler() ? CppSymbolDemanglerFactoryImpl.CPPCompiler.GNU.toString() : CppSymbolDemanglerFactoryImpl.CPPCompiler.SS.toString());
-        targetConf.putInfo(GizmoServiceInfo.CPP_COMPILER_BIN_PATH, binDir);
-        targetConf.putInfo(Charset.class.getName(), compilerSet.getEncoding().name());
         targetConf.setWorkingDirectory(runDirectory);
         int consoleType = pae.getProfile().getConsoleType().getValue();
         if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
