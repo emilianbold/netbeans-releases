@@ -48,6 +48,8 @@ import java.lang.reflect.Method;
 import org.netbeans.core.startup.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Locale;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -159,6 +161,58 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     public void testM2RemainsDisabled() throws Exception {
         assertFalse("still disabled from NetBeans view point", m2.isEnabled());
     }
+    
+    public void testResourceFromBundle() throws Exception {
+        URL res = toEnable.getResource("org/foo/Something.txt");
+        assertNotNull("Bundle knows how to own resource", res);
+    }
+
+    public void testResourceFromModule() throws Exception {
+        URL res = m2.getClassLoader().getResource("org/foo/Something.txt");
+        assertNotNull("Module knows how to own resource", res);
+    }
+
+    public void testResourceDirectFromBundle() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResource", String.class, ClassLoader.class);
+        URL res = (URL) loadResource.invoke(null, "org/foo/Something.txt", null);
+        assertNotNull("Bundle knows how to own resource from its classloader", res);
+    }
+
+    public void testResourceDirectViaModuleClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResource", String.class, ClassLoader.class);
+        URL res = (URL) loadResource.invoke(null, "org/foo/Something.txt", someModule.getClassLoader());
+        assertNotNull("Module knows how to own resource from its classloader", res);
+    }
+
+    public void testResourceFromContextClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResource", String.class, ClassLoader.class);
+        URL res = (URL) loadResource.invoke(null, "org/foo/Something.txt", Thread.currentThread().getContextClassLoader());
+        assertNotNull("Contxt class loader loads resource from disabled modules too", res);
+    }
+
+    public void testResourceAsStreamFromModule() throws Exception {
+        InputStream res = m2.getClassLoader().getResourceAsStream("org/foo/Something.txt");
+        assertNotNull("Module knows how to own resource", res);
+    }
+
+    public void testResourceAsStreamDirectFromBundle() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResourceAsStream", String.class, ClassLoader.class);
+        InputStream res = (InputStream) loadResource.invoke(null, "org/foo/Something.txt", null);
+        assertNotNull("Bundle knows how to own resource from its classloader", res);
+    }
+
+    public void testResourceAsStreamDirectViaModuleClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResourceAsStream", String.class, ClassLoader.class);
+        InputStream res = (InputStream) loadResource.invoke(null, "org/foo/Something.txt", someModule.getClassLoader());
+        assertNotNull("Module knows how to own resource from its classloader", res);
+    }
+
+    public void testResourceAsStreamFromContextClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResourceAsStream", String.class, ClassLoader.class);
+        InputStream res = (InputStream) loadResource.invoke(null, "org/foo/Something.txt", Thread.currentThread().getContextClassLoader());
+        assertNotNull("Contxt class loader loads resource from disabled modules too", res);
+    }
+    
     private File createTestJAR(String name, String srcdir, File... classpath) throws IOException {
         return createTestJAR(data, jars, name, srcdir, classpath);
     }

@@ -344,6 +344,10 @@ public class ProxyClassLoader extends ClassLoader {
      */
     @Override
     public final URL getResource(String name) {
+        return getResourceImpl(name);
+    }
+    
+    URL getResourceImpl(String name) {
         URL url = null;
         name = stripInitialSlash(name);
 

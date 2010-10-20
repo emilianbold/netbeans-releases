@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -465,9 +466,30 @@ public final class ModuleManager {
                 // #147082: use empty file rather than null (~ delegation to ClassLoader.systemClassLoader) to work around JAXP #6723276
                 return new ByteArrayInputStream(new byte[0]);
             } else {
-                return super.getResourceAsStream(name);
+                InputStream is = super.getResourceAsStream(name);
+                if (is == null) {
+                    ClassLoader l = NetigsoFramework.findFallbackLoader();
+                    if (l != null) {
+                        is = l.getResourceAsStream(name);
+                    }
+                }
+                return is;
             }
         }
+
+        @Override
+        final URL getResourceImpl(String name) {
+            URL u = super.getResourceImpl(name);
+            if (u == null) {
+                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                if (l != null) {
+                    u = l.getResource(name);
+                }
+            }
+            return u;
+        }
+        
+        
 
         protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
             ClassLoader trueParent = getParent();
