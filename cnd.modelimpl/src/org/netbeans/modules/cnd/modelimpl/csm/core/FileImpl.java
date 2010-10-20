@@ -1237,10 +1237,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public void addInclude(IncludeImpl includeImpl, boolean broken) {
-        getFileIncludes().addInclude(includeImpl, broken);
-        if (broken) {
-            hasBrokenIncludes.set(true);
-        }
+        // addInclude can remove added one from list of broken includes =>
+        // update hasBrokenIncludes marker accordingly
+        boolean hasBroken = getFileIncludes().addInclude(includeImpl, broken);
+        hasBrokenIncludes.set(hasBroken);
     }
 
     public static final Comparator<CsmOffsetable> START_OFFSET_COMPARATOR = new Comparator<CsmOffsetable>() {
