@@ -49,7 +49,7 @@
             <file name="ojec">
                 <!-- todo change the template -->
                 <attr name="templateName" stringvalue="Templates/CDC/Main.java"/>
-                <attr name="templateType" stringvalue="main"/>
+                <attr name="templateType" stringvalue="xlet"/>
             </file>
         </folder>
     </folder>    

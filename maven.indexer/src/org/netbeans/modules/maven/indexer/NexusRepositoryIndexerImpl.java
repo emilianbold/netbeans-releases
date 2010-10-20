@@ -420,6 +420,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     iur.setResourceFetcher(new JettyResourceFetcher() {
                         {
                             addTransferListener(listener);
+                            setConnectionTimeoutMillis(900000); // 15 minutes timeout for the index download
                         }
                         public @Override void retrieve(String name, File targetFile) throws IOException, FileNotFoundException {
                             try {
