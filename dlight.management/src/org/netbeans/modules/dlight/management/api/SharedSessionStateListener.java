@@ -45,14 +45,14 @@ package org.netbeans.modules.dlight.management.api;
 import org.netbeans.modules.dlight.management.api.DLightSession.SessionState;
 
 /**
- * Listen for {@link org.netbeans.modules.dlight.management.api.DLightSession} state changes
+ * Listen for {@link org.netbeans.modules.dlight.managemenet.api.SharedStorageDLightSession} state changes
  */
-public interface SessionStateListener {
+public interface SharedSessionStateListener {
   /**
    * Invoked when session state changed
    * @param session session state is changed
    * @param oldState old state
    * @param newState new state
    */
-  public void sessionStateChanged(DLightSession session, SessionState oldState, SessionState newState);
+  public void sessionStateChanged(SharedStorageDLightSession session, SessionState oldState, SessionState newState);
 }

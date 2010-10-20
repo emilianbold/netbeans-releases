@@ -131,9 +131,9 @@ public final class DLightSession implements
     private final String sharedStorageID;
     private final boolean useSharedStorage;
     private CountDownLatch collectorsDoneFlag;
-    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();
+    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();    
+    final static ConcurrentMap<String, SessionDataFiltersSupport> sharedDataFilterSupports = new ConcurrentHashMap<String, SessionDataFiltersSupport>();
     
-    private final static ConcurrentMap<String, SessionDataFiltersSupport> sharedDataFilterSupports = new ConcurrentHashMap<String, SessionDataFiltersSupport>();
 
     public static enum SessionState {
 
@@ -425,7 +425,7 @@ public final class DLightSession implements
                 }
                 //in case we are using the shared session we need to collect all info of
                 if (useSharedStorage) {//we should share this info
-                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
+                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);                    
                 } else {
                     serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
                 }
@@ -1048,5 +1048,12 @@ public final class DLightSession implements
         public String getSharedStorageUniqueKey(DLightSession session) {
             return session.sharedStorageID;
         }
+
+        @Override
+        public SessionDataFiltersSupport getSessionDataFiltersSupport(DLightSession session) {
+            return session.dataFiltersSupport;
+        }
+        
+        
     }
 }
