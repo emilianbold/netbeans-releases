@@ -151,14 +151,17 @@ public class GraphPanel<G extends JComponent, L extends JComponent> extends JLay
         c.insets = new Insets(PADDING / 2, vAxis == null ? PADDING : 0, hAxis == null ? PADDING : 0, 0);
         graphPanel.add(graph, c);
 
-        legend.setBackground(Color.WHITE);
-        legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
         c = new GridBagConstraints();
         c.fill = GridBagConstraints.BOTH;
         c.gridwidth = GridBagConstraints.REMAINDER;
         c.weighty = 1.0;
         c.insets = new Insets(PADDING / 2, -1, hAxis == null ? PADDING : 0, PADDING);
-        graphPanel.add(legend, c);
+
+        if (legend.isVisible()) {
+            legend.setBackground(Color.WHITE);
+            legend.setBorder(BorderFactory.createLineBorder(BORDER_COLOR));
+            graphPanel.add(legend, c);
+        }
 
         if (hAxis != null) {
             c = new GridBagConstraints();
