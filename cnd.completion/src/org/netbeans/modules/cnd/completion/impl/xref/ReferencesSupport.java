@@ -764,23 +764,23 @@ public final class ReferencesSupport {
         public void dumpInfo(Lookup context, PrintWriter printOut) {
             ReferencesSupport inst = ReferencesSupport.instance;
             synchronized (inst.cacheLock) {
-                printOut.printf("cache of size %d\n", inst.cache.size());
+                printOut.printf("cache of size %d\n", inst.cache.size());// NOI18N 
                 for (Map.Entry<CsmFile, Map<Integer, CsmObject>> entry : inst.cache.entrySet()) {
                     final CsmFile file = entry.getKey();
-                    printOut.printf("-----------------------\n");
-                    printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), inst.cachedFilesVersions.get(file), file.getClass().getName());
+                    printOut.printf("-----------------------\n");// NOI18N 
+                    printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), inst.cachedFilesVersions.get(file), file.getClass().getName());// NOI18N 
                     boolean hasUnresolved = false;
                     for (Map.Entry<Integer, CsmObject> entry1 : entry.getValue().entrySet()) {
                         if (entry1.getValue() == UNRESOLVED) {
                             hasUnresolved = true;
-                            printOut.printf("UNRESOLVED at offset %d\n", entry1.getKey());
+                            printOut.printf("UNRESOLVED at offset %d\n", entry1.getKey());// NOI18N 
                         }
                     }
                     if (!hasUnresolved) {
-                        printOut.printf("no UNRESOLVED \n");
+                        printOut.printf("no UNRESOLVED \n");// NOI18N 
                     }
                 }
-                printOut.printf("-----------------------\n");
+                printOut.printf("-----------------------\n");// NOI18N 
             }
         }
         

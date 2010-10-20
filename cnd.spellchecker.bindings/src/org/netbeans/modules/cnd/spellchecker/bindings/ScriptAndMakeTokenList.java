@@ -117,7 +117,7 @@ public class ScriptAndMakeTokenList implements TokenList {
 
         while (ts.moveNext()) {
             TokenId id = ts.token().id();
-            if ("comment".equals(id.primaryCategory())) {
+            if ("comment".equals(id.primaryCategory())) {// NOI18N 
                 return new int[]{ts.offset(), ts.offset() + ts.token().length()};
             }
         }

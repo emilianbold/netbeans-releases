@@ -63,7 +63,7 @@ public class CodeModelDiagnostic implements CndDiagnosticProvider {
     @Override
     public void dumpInfo(Lookup context, PrintWriter printOut) {
         int parseCount = FileImpl.getParseCount();
-        printOut.printf("parseCount=%d\n", parseCount);
+        printOut.printf("parseCount=%d\n", parseCount);// NOI18N 
     }
 
 }

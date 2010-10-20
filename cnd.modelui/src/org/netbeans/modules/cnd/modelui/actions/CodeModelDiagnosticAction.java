@@ -137,9 +137,9 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 io.select();
                 final OutputWriter out = io.getOut();
                 final OutputWriter err = io.getErr();
-                err.printf("dumping cnd diagnostics into %s\n", tmpFile);
+                err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
                 for (CndDiagnosticProvider provider : providers) {
-                    pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());
+                    pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());// NOI18N 
                     provider.dumpInfo(context, pw);
                 }
                 pw.close();
@@ -154,7 +154,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     }
                     out.println(line);
                 } while (true);
-                err.printf("Cnd diagnostics is saved in %s\n", tmpFile);
+                err.printf("Cnd diagnostics is saved in %s\n", tmpFile);// NOI18N 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
