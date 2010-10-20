@@ -48,7 +48,9 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.script.lexer.BatTokenId;
+import org.netbeans.modules.cnd.script.lexer.ShTokenId;
 import org.netbeans.modules.spellchecker.spi.language.TokenList;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -100,8 +102,13 @@ public class ScriptAndMakeTokenList implements TokenList {
 
     private int[] findNextComment() throws BadLocationException {
         TokenHierarchy<Document> h = TokenHierarchy.get(doc);
-        TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageCpp());
-
+        TokenSequence<?> ts = h.tokenSequence(MakefileTokenId.language());
+        if (ts == null) {
+            ts = h.tokenSequence(BatTokenId.language());
+        }
+        if (ts == null) {
+            ts = h.tokenSequence(ShTokenId.language());
+        }
         if (ts == null) {
             return new int[]{-1, -1};
         }
@@ -110,8 +117,7 @@ public class ScriptAndMakeTokenList implements TokenList {
 
         while (ts.moveNext()) {
             TokenId id = ts.token().id();
-            if (id == CppTokenId.DOXYGEN_COMMENT || id == CppTokenId.DOXYGEN_LINE_COMMENT
-                    || id == CppTokenId.BLOCK_COMMENT || id == CppTokenId.LINE_COMMENT) {
+            if ("comment".equals(id.primaryCategory())) {
                 return new int[]{ts.offset(), ts.offset() + ts.token().length()};
             }
         }
