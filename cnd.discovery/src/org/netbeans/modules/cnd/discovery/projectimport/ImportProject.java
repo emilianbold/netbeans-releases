@@ -154,8 +154,8 @@ public class ImportProject implements PropertyChangeListener {
     private final MakeProjectOptions.PathMode pathMode;
     private CompilerSet toolchain;
     private String workingDir;
-    private String buildCommand = "$(MAKE) -f Makefile";  // NOI18N
-    private String cleanCommand = "$(MAKE) -f Makefile clean";  // NOI18N
+    private String buildCommand = "${MAKE} -f Makefile";  // NOI18N
+    private String cleanCommand = "${MAKE} -f Makefile clean";  // NOI18N
     private String buildResult = "";  // NOI18N
     private Project makeProject;
     private boolean runMake;
