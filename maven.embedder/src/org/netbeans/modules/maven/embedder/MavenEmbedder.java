@@ -171,8 +171,6 @@ public final class MavenEmbedder {
         File pomFile = req.getPom();
         MavenExecutionResult result = new DefaultMavenExecutionResult();
         try {
-            populator.populateDefaults(req);
- 
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setResolveDependencies(true);
@@ -184,8 +182,6 @@ public final class MavenEmbedder {
             //don't add the exception here. this should come out as a build marker, not fill
             //the error logs with msgs
             return result.addException(ex);
-        } catch (MavenExecutionRequestPopulationException ex) {
-            return result.addException(ex);
         }
         return result;
     }
@@ -194,16 +190,12 @@ public final class MavenEmbedder {
     public MavenProject readProject(File fallback) {
         try {
             MavenExecutionRequest req = createMavenExecutionRequest();
-            populator.populateDefaults(req);
             req.setOffline(embedderConfiguration.isOffline());
             ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
             configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
             configuration.setRepositorySession(maven.newRepositorySession(req));
             return projectBuilder.build(fallback, configuration).getProject();
         } catch (ProjectBuildingException ex) {
-            return new MavenProject();
-        } catch (MavenExecutionRequestPopulationException ex) {
-            Exceptions.printStackTrace(ex);
             return new MavenProject();
         }
     }
@@ -299,6 +291,13 @@ public final class MavenEmbedder {
         
         req.setSystemProperties(embedderConfiguration.getSystemProperties());
         req.setOffline(embedderConfiguration.isOffline());
+        try {
+            populator.populateDefaults(req);
+            populator.populateFromSettings(req, getSettings());
+        } catch (MavenExecutionRequestPopulationException x) {
+            // XXX where to display this?
+            Exceptions.printStackTrace(x);
+        }
 
         return req;
     }
