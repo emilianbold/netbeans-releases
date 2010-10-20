@@ -42,25 +42,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.commit;
+package org.netbeans.modules.versioning.util.common;
 
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.util.NbBundle;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;
 import java.io.File;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
-import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 
 /**
  * Table model for the Commit dialog table.
  *
  * @author Tomas Stupka
  */
-public class CommitTableModel extends AbstractTableModel {
+public abstract class VCSCommitTableModel extends AbstractTableModel {
 
     public static final String COLUMN_NAME_COMMIT  = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
@@ -69,32 +64,7 @@ public class CommitTableModel extends AbstractTableModel {
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
-    private VCSCommitOptions[] createDefaultCommitOptions() {
-        VCSCommitOptions[] co = new VCSCommitOptions[nodes.length];
-        for (int i = 0; i < nodes.length; i++) {
-            co[i] = VCSCommitOptions.COMMIT;
-            
-            // XXX
-//            FileNode node = nodes[i];
-//            File file = node.getFile();
-//            if (GitModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
-//                commitOptions[i] = CommitOptions.EXCLUDE;
-//            } else {
-//                switch (node.getInformation().getStatus()) {
-//                case FileInformation.STATUS_VERSIONED_DELETEDLOCALLY:
-//                case FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY:
-//                    commitOptions[i] = CommitOptions.COMMIT_REMOVE;
-//                    break;
-//                case FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY:
-//                    commitOptions[i] = excludeNew ? CommitOptions.EXCLUDE : CommitOptions.COMMIT;
-//                    break;
-//                default:
-//                    commitOptions[i] = CommitOptions.COMMIT;
-//                }
-//            }
-        }
-        return co;
-    }
+    protected abstract VCSCommitOptions[] createDefaultCommitOptions();
 
     private class RootFile {
         String repositoryPath;
@@ -108,7 +78,7 @@ public class CommitTableModel extends AbstractTableModel {
     private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
 
     {
-        ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
+        ResourceBundle loc = NbBundle.getBundle(VCSCommitTableModel.class);
         columnLabels.put(COLUMN_NAME_COMMIT, new String [] {
                                           loc.getString("CTL_CommitTable_Column_Commit"),  // NOI18N
                                           loc.getString("CTL_CommitTable_Column_Description")}); // NOI18N
@@ -138,18 +108,18 @@ public class CommitTableModel extends AbstractTableModel {
      * Create stable with name, status, action and path columns
      * and empty nodes {@link #setNodes model}.
      */
-    public CommitTableModel(String[] columns) {
+    public VCSCommitTableModel(String[] columns) {
         setColumns(columns);
         setNodes(new VCSFileNode[0]);
     }
 
-    void setNodes(VCSFileNode [] nodes) {
+    protected void setNodes(VCSFileNode [] nodes) {
         this.nodes = nodes;
         commitOptions = createDefaultCommitOptions();
         fireTableDataChanged();
     }
     
-    void setColumns(String [] cols) {
+    protected void setColumns(String [] cols) {
         if (Arrays.equals(cols, columns)) return;
         columns = cols;
         fireTableStructureChanged();
@@ -227,7 +197,7 @@ public class CommitTableModel extends AbstractTableModel {
             } else {
                 shortPath = nodes[rowIndex].getRelativePath();
                 if (shortPath == null) {
-                    shortPath = org.openide.util.NbBundle.getMessage(CommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
+                    shortPath = org.openide.util.NbBundle.getMessage(VCSCommitTableModel.class, "CTL_CommitForm_NotInRepository"); // NOI18N
                 }
             }
             return shortPath;
@@ -248,34 +218,35 @@ public class CommitTableModel extends AbstractTableModel {
         fireTableRowsUpdated(rowIndex, rowIndex);
     }
 
+    protected VCSFileNode[] getNodes() {
+        return nodes;
+    }
+    
     public VCSFileNode getNode(int row) {
         return nodes[row];
     }
 
-    public VCSCommitOptions getOptions(int row) {
+    protected VCSCommitOptions[] getOptions() {
+        return commitOptions;
+    }
+    
+    public VCSCommitOptions getOption(int row) {
         return commitOptions[row];
     }
 
-    void setRootFile(String repositoryPath, String rootLocalPath) {
+    protected void setRootFile(String repositoryPath, String rootLocalPath) {
         rootFile = new RootFile();
         rootFile.repositoryPath = repositoryPath;
         rootFile.rootLocalPath = rootLocalPath;
     }
 
-    void setIncluded (int[] rows, boolean include) {
+    protected void setIncluded (int[] rows, boolean include) {
         for (int rowIndex : rows) {
             commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : VCSCommitOptions.EXCLUDE;
         }
         fireTableRowsUpdated(0, getRowCount() - 1);
     }
 
-    private VCSCommitOptions getCommitOptions (int rowIndex) {
-        VCSFileNode node = nodes[rowIndex];
-        FileInformation finfo =  (FileInformation) node.getInformation();
-        
-        return finfo.containsStatus(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
-                                               Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE))
-                ? VCSCommitOptions.COMMIT
-                : VCSCommitOptions.COMMIT_REMOVE;
-    }
+    protected abstract VCSCommitOptions getCommitOptions (int rowIndex);
+
 }

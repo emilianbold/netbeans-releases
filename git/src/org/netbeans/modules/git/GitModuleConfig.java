@@ -82,4 +82,9 @@ public final class GitModuleConfig {
     public Preferences getPreferences() {
         return NbPreferences.forModule(GitModuleConfig.class);
     }
+
+    public boolean getExludeNewFiles() {
+        // XXX
+        return false;
+    }
 }

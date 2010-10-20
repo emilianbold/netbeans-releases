@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.io.File;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
@@ -81,14 +82,14 @@ import org.openide.awt.Mnemonics;
 public class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 
     public static String [] COMMIT_COLUMNS = new String [] {
-                                            CommitTableModel.COLUMN_NAME_COMMIT,
-                                            CommitTableModel.COLUMN_NAME_NAME,
-                                            CommitTableModel.COLUMN_NAME_STATUS,
-                                            CommitTableModel.COLUMN_NAME_ACTION,
-                                            CommitTableModel.COLUMN_NAME_PATH
+                                            VCSCommitTableModel.COLUMN_NAME_COMMIT,
+                                            VCSCommitTableModel.COLUMN_NAME_NAME,
+                                            VCSCommitTableModel.COLUMN_NAME_STATUS,
+                                            VCSCommitTableModel.COLUMN_NAME_ACTION,
+                                            VCSCommitTableModel.COLUMN_NAME_PATH
                                         };
     
-    private CommitTableModel    tableModel;
+    private GitCommitTableModel    tableModel;
     private JTable              table;
     private JComponent          component;
     
@@ -110,7 +111,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
     
     private void init(JLabel label, String[] columns, TableSorter sorter) {
-        tableModel = new CommitTableModel(columns);
+        tableModel = new GitCommitTableModel(columns);
         tableModel.addTableModelListener(this);
         if(sorter == null) {
             sorter = new TableSorter(tableModel);
@@ -156,13 +157,13 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];                                
                 sorter.setColumnComparator(i, null);                    
-                if (col.equals(CommitTableModel.COLUMN_NAME_COMMIT)) {
+                if (col.equals(VCSCommitTableModel.COLUMN_NAME_COMMIT)) {
                     columnModel.getColumn(i).setMinWidth(new JCheckBox().getMinimumSize().width);
                     columnModel.getColumn(i).setPreferredWidth(new JCheckBox().getPreferredSize().width);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_ACTION)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_ACTION)) {
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else {
                     columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
@@ -172,16 +173,16 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];                                
                 sorter.setColumnComparator(i, null);                    
-                if (col.equals(CommitTableModel.COLUMN_NAME_COMMIT)) {
+                if (col.equals(VCSCommitTableModel.COLUMN_NAME_COMMIT)) {
                     columnModel.getColumn(i).setMinWidth(new JCheckBox().getMinimumSize().width);
                     columnModel.getColumn(i).setPreferredWidth(new JCheckBox().getPreferredSize().width);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_STATUS)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_STATUS)) {
                     // XXX sorter.setColumnComparator(i, new StatusComparator());                    
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_ACTION)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_ACTION)) {
                     columnModel.getColumn(i).setPreferredWidth(width * 20 / 100);
                 } else {
                     columnModel.getColumn(i).setPreferredWidth(width * 40 / 100);
@@ -191,17 +192,17 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             for (int i = 0; i < columns.length; i++) {
                 String col = columns[i];
                 sorter.setColumnComparator(i, null);                
-                if (col.equals(CommitTableModel.COLUMN_NAME_COMMIT)) {
+                if (col.equals(VCSCommitTableModel.COLUMN_NAME_COMMIT)) {
                     columnModel.getColumn(i).setMinWidth(new JCheckBox().getMinimumSize().width);
                     columnModel.getColumn(i).setPreferredWidth(new JCheckBox().getPreferredSize().width);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_NAME)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_NAME)) {
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_STATUS)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_STATUS)) {
                     // XXX sorter.setColumnComparator(i, new StatusComparator());
                     sorter.setSortingStatus(i, TableSorter.ASCENDING);
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
-                } else if (col.equals(CommitTableModel.COLUMN_NAME_ACTION)) {
+                } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_ACTION)) {
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else {
                     columnModel.getColumn(i).setPreferredWidth(width * 30 / 100);
@@ -238,12 +239,12 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     void setColumns(String[] cols) {
         if (Arrays.equals(columns, cols)) return;
         columns = cols;
-        tableModel.setColumns(cols);
+        tableModel.setModelColumns(cols);
         setDefaultColumnSizes();
     }
 
     public void setNodes(VCSFileNode[] nodes) {
-        tableModel.setNodes(nodes);
+        tableModel.setModelNodes(nodes);
     }
 
     /**
@@ -277,7 +278,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
 
     public void setRootFile(String repositoryPath, String rootLocalPath) {
-        tableModel.setRootFile(repositoryPath, rootLocalPath);
+        tableModel.setModelRootFile(repositoryPath, rootLocalPath);
     }
 
     private void showPopup(final MouseEvent e) {
@@ -333,7 +334,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
         boolean onlyIncluded = true;
         for (int rowIndex : table.getSelectedRows()) {
-            if (VCSCommitOptions.EXCLUDE.equals(tableModel.getOptions(sorter.modelIndex(rowIndex)))) {
+            if (VCSCommitOptions.EXCLUDE.equals(tableModel.getOption(sorter.modelIndex(rowIndex)))) {
                 onlyIncluded = false;
                 break;
             }
@@ -347,7 +348,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 for (int i = 0; i < rows.length; ++i) {
                     rows[i] = sorter.modelIndex(rows[i]);
                 }
-                tableModel.setIncluded(rows, include);
+                tableModel.setIncludedRows(rows, include);
                 // WA for table sorter, keep the selection
                 if (rowCount == table.getRowCount()) {
                     for (int i = 0; i < rows.length; ++i) {
@@ -415,11 +416,11 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             int col = table.convertColumnIndexToModel(column);
-            if (CommitTableModel.COLUMN_NAME_NAME.equals(columns[col])) {
+            if (VCSCommitTableModel.COLUMN_NAME_NAME.equals(columns[col])) {
                 TableSorter sorter = (TableSorter) table.getModel();
-                CommitTableModel model = (CommitTableModel) sorter.getTableModel();
+                VCSCommitTableModel model = (VCSCommitTableModel) sorter.getTableModel();
                 VCSFileNode node = model.getNode(sorter.modelIndex(row));
-                VCSCommitOptions options = model.getOptions(sorter.modelIndex(row));
+                VCSCommitOptions options = model.getOption(sorter.modelIndex(row));
                 if (!isSelected) {
                     value = ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(node.getFile().getName(), (FileInformation) node.getInformation(), null);
                 }
@@ -431,7 +432,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 }
                 value = "<html>" + value + "</html>"; //NOI18N
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } else if (CommitTableModel.COLUMN_NAME_PATH.equals(columns[col])) {
+            } else if (VCSCommitTableModel.COLUMN_NAME_PATH.equals(columns[col])) {
                 return pathRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
                 return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

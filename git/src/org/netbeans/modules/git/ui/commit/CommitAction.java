@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.awt.Dialog;
 import java.awt.EventQueue;
@@ -100,7 +101,7 @@ public class CommitAction extends SingleRepositoryAction {
         final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
         panel.setHooks(hooks, new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {CommitTableModel.COLUMN_NAME_PATH });
+        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {VCSCommitTableModel.COLUMN_NAME_PATH });
 
         panel.setCommitTable(data);
         data.setCommitPanel(panel);

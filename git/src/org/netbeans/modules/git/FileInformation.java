@@ -276,6 +276,8 @@ public class FileInformation extends VCSFileInformation {
     public static final EnumSet<Status> STATUS_MODIFIED = EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
             Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
             Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
+                                                                    Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE);
     public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
             Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
             Status.STATUS_VERSIONED_CONFLICT,
