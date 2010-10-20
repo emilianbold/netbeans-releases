@@ -41,206 +41,33 @@
  * Version 2 license, then the option applies only if the new code is 
  * made subject to such option by the copyright holder. 
  */ 
-package org.openide.actions; 
+
+package org.openide.actions;
  
-import java.awt.Component; 
-import java.awt.Image; 
-import java.awt.datatransfer.Transferable; 
-import java.io.IOException; 
-import junit.framework.Test; 
-import junit.framework.TestSuite; 
 import org.netbeans.junit.NbTestCase; 
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children; 
 import org.openide.nodes.Node; 
-import org.openide.util.HelpCtx; 
-import org.openide.util.datatransfer.NewType; 
-import org.openide.util.datatransfer.PasteType; 
  
-/** 
- * A JUnit test for CustomizeAction. 
- * 
- * @author Manfred Riem 
- * @version $Revision$ 
- */ 
 public class CustomizeActionTest extends NbTestCase { 
-    /** 
-     * Stores our single instance. 
-     */ 
-    private static CustomizeAction instance = new CustomizeAction(); 
      
-    /** 
-     * Constructor. 
-     * 
-     * @param testName the name of the test. 
-     */ 
     public CustomizeActionTest(String testName) { 
         super(testName); 
     } 
      
-    /** 
-     * Setup for testing. 
-     */ 
-    protected void setUp() throws Exception { 
-    } 
-     
-    /** 
-     * Cleanup after testing. 
-     */ 
-    protected void tearDown() throws Exception { 
-    } 
-     
-    /** 
-     * Suite method./ 
-     */ 
-    public static Test suite() { 
-        TestSuite suite = new TestSuite(CustomizeActionTest.class); 
-         
-        return suite; 
-    } 
-     
-    /** 
-     * Test performAction method. 
-     */ 
-    public void testPerformAction() { 
-        Node[] nodes = new Node[1]; 
-         
-        nodes[0] = new CustomizeActionTestNode(); 
-          
-        instance.performAction(nodes); 
-    } 
-     
-    /** 
-     * Test asynchronous method. 
-     */ 
-    public void testAsynchronous() { 
-        boolean expected = false; 
-        boolean result   = instance.asynchronous(); 
-         
-        assertEquals(expected, result); 
-    } 
-     
-    /** 
-     * Test enable method. 
-     */ 
     public void testEnable() { 
-        Node[]  nodes    = null; 
-        boolean expected = false; 
-        boolean result   = instance.enable(nodes); 
-         
-        assertEquals(expected, result); 
-         
-        nodes    = new Node[2]; 
-        expected = false; 
-        result   = instance.enable(nodes); 
-         
-        assertEquals(expected, result); 
-         
-        nodes    = new Node[1]; 
-        nodes[0] = new CustomizeActionTestNode(); 
-        expected = true; 
-        result   = instance.enable(nodes); 
-         
-        assertEquals(expected, result); 
+        CustomizeAction action = new CustomizeAction();
+        Node customizable = new AbstractNode(Children.LEAF) {
+            public @Override boolean hasCustomizer() {
+                return true;
+            }
+        };
+        Node not = new AbstractNode(Children.LEAF);
+        assertFalse(action.enable(null));
+        assertFalse(action.enable(new Node[0]));
+        assertTrue(action.enable(new Node[] {customizable}));
+        assertFalse(action.enable(new Node[] {not}));
+        assertFalse(action.enable(new Node[] {customizable, customizable}));
     } 
      
-    /** 
-     * Test getName method. 
-     */ 
-    public void testGetName() { 
-        String expected = "Customize"; 
-        String result   = instance.getName(); 
-         
-        assertEquals(expected, result); 
-    } 
-     
-    /** 
-     * Test getHelpCtx method. 
-     */ 
-    public void testGetHelpCtx() { 
-        HelpCtx expected = new HelpCtx(CustomizeAction.class);; 
-        HelpCtx result   = instance.getHelpCtx(); 
-         
-        assertEquals(expected, result); 
-    } 
-     
-    /** 
-     * An inner class that models a Node we need for testing. 
-     */ 
-    public class CustomizeActionTestNode extends Node { 
-        public CustomizeActionTestNode() { 
-            super(Children.LEAF, null); 
-        } 
-         
-        public Node cloneNode() { 
-            return null; 
-        } 
-         
-        public Image getIcon(int type) { 
-            return null; 
-        } 
-         
-        public Image getOpenedIcon(int type) { 
-            return null; 
-        } 
-         
-        public HelpCtx getHelpCtx() { 
-            return null; 
-        } 
-         
-        public boolean canRename() { 
-            return false; 
-        } 
-         
-        public boolean canDestroy() { 
-            return false; 
-        } 
-         
-        public Node.PropertySet[] getPropertySets() { 
-            return null; 
-        } 
-         
-        public Transferable clipboardCopy() throws IOException { 
-            return null; 
-        } 
-         
-        public Transferable clipboardCut() throws IOException { 
-            return null; 
-        } 
-         
-        public Transferable drag() throws IOException { 
-            return null; 
-        } 
-         
-        public boolean canCopy() { 
-            return false; 
-        } 
-         
-        public boolean canCut() { 
-            return false; 
-        } 
-         
-        public PasteType[] getPasteTypes(Transferable t) { 
-            return null; 
-        } 
-         
-        public PasteType getDropType(Transferable t, int action, int index) { 
-            return null; 
-        } 
-         
-        public NewType[] getNewTypes() { 
-            return null; 
-        } 
-         
-        public boolean hasCustomizer() { 
-            return true; 
-        } 
-         
-        public Component getCustomizer() { 
-            return null; 
-        } 
-         
-        public Node.Handle getHandle() { 
-            return null; 
-        } 
-    } 
 } 
