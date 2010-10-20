@@ -56,6 +56,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
@@ -95,6 +96,10 @@ public class WSITRefactoringFactory implements RefactoringPluginFactory {
         if ( javaPackage && (refactoring instanceof RenameRefactoring) ){
             LOGGER.log(Level.FINE, "Rename package refactoring");           // NOI18N
             return new WSITRenamePackagePlugin((RenameRefactoring) refactoring);
+        }
+        
+        if ( refactoring instanceof MoveRefactoring ){
+            return new WSITMoveRefactoringPlugin((MoveRefactoring)refactoring);
         }
         
         TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);

@@ -102,7 +102,7 @@ public class Legend extends JPanel {
         setBorder(BorderFactory.createLineBorder(DLightUIPrefs.getColor(DLightUIPrefs.INDICATOR_BORDER_COLOR)));
         Dimension size = new Dimension(
                 DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH),
-                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_WIDTH));
+                DLightUIPrefs.getInt(DLightUIPrefs.INDICATOR_LEGEND_HEIGHT));
         setSize(size);
         setMinimumSize(size);
         setPreferredSize(size);

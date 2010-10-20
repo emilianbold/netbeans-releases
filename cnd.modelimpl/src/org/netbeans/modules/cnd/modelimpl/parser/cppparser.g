@@ -3105,8 +3105,10 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                expression
-		)?	
+                (   (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
+                |   expression
+                )
+	)?	
         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);}
 	)
