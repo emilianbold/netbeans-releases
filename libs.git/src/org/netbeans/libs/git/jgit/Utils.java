@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
@@ -62,7 +63,7 @@ private Utils () {
     }
 
     public static Repository getRepositoryForWorkingDir (File workDir) throws IOException {
-         return new Repository(getMetadataFolder(workDir), workDir);
+         return new FileRepositoryBuilder().setGitDir(getMetadataFolder(workDir)).readEnvironment().findGitDir().build();
     }
 
     public static File getMetadataFolder (File workDir) {

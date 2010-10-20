@@ -45,23 +45,8 @@ package org.netbeans.libs.git.jgit;
 import org.netbeans.libs.git.jgit.commands.StatusCommand;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import org.eclipse.jgit.dircache.DirCache;
-import org.eclipse.jgit.dircache.DirCacheEntry;
-import org.eclipse.jgit.dircache.DirCacheIterator;
-import org.eclipse.jgit.errors.CorruptObjectException;
-import org.eclipse.jgit.lib.Constants;
-import org.eclipse.jgit.lib.FileMode;
-import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.treewalk.EmptyTreeIterator;
-import org.eclipse.jgit.treewalk.FileTreeIterator;
-import org.eclipse.jgit.treewalk.TreeWalk;
-import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
-import org.eclipse.jgit.util.FS;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -102,7 +87,7 @@ public class JGitClient extends GitClient {
     public void init () throws GitException {
         try {
             Repository repository = gitRepository.getRepository();
-            File workDir = repository.getWorkDir();
+            File workDir = repository.getWorkTree();
             if (!(workDir.exists() || workDir.mkdirs())) {
                 throw new GitException("Cannot create local folder at " + workDir.getAbsolutePath());
             }

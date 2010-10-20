@@ -73,9 +73,9 @@ public abstract class GitCommand {
     protected abstract void run () throws GitException;
 
     protected boolean prepareCommand () {
-        boolean repositoryExists = repository.getConfig().getFile().exists();
+        boolean repositoryExists = repository.getDirectory().exists();
         if (!repositoryExists) {
-            monitor.preparationsFailed("Git repository does not exist at " + repository.getWorkDir());
+            monitor.preparationsFailed("Git repository does not exist at " + repository.getWorkTree());
         }
         return repositoryExists;
     }

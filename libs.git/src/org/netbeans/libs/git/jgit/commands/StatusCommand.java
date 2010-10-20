@@ -87,10 +87,10 @@ public class StatusCommand extends GitCommand {
     protected void run () throws GitException {
         Repository repository = getRepository();
         try {
-            DirCache cache = DirCache.lock(repository);
+            DirCache cache = repository.lockDirCache();
             try {
                 TreeWalk treeWalk = new TreeWalk(repository);
-                Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkDir(), roots);
+                Collection<PathFilter> pathFilters = Utils.getPathFilters(repository.getWorkTree(), roots);
                 if (!pathFilters.isEmpty()) {
                     treeWalk.setFilter(PathFilterGroup.create(pathFilters));
                 }
@@ -105,13 +105,13 @@ public class StatusCommand extends GitCommand {
                 // Index
                 treeWalk.addTree(new DirCacheIterator(cache));
                 // Working directory
-                treeWalk.addTree(new FileTreeIterator(repository.getWorkDir(), FS.DETECTED));
+                treeWalk.addTree(new FileTreeIterator(repository));
                 final int T_HEAD = 0;
                 final int T_INDEX = 1;
                 final int T_WORKSPACE = 2;
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
-                    File file = new File(repository.getWorkDir().getAbsolutePath() + File.separator + path);
+                    File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);
                     int mHead = treeWalk.getRawMode(T_HEAD);
                     int mIndex = treeWalk.getRawMode(T_INDEX);
                     int mWorking = treeWalk.getRawMode(T_WORKSPACE);

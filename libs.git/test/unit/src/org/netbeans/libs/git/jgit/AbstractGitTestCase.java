@@ -49,8 +49,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Map;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -102,7 +102,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected Repository getRepositoryForWC(File wc) throws IOException {
-        return new Repository(new File(wc, Constants.DOT_GIT), wc);
+        return new FileRepositoryBuilder().setGitDir(Utils.getMetadataFolder(workDir)).readEnvironment().findGitDir().build();
     }
 
     protected void write(File file, String str) throws IOException {
@@ -160,7 +160,7 @@ public class AbstractGitTestCase extends NbTestCase {
 //    }
 
     private void initializeRepository() throws Exception {
-        repository = new Repository(repositoryLocation);
+        repository = new FileRepositoryBuilder().setGitDir(Utils.getMetadataFolder(repositoryLocation)).readEnvironment().findGitDir().build();
         repository.create(true);
 
         if (createLocalClone()) {
