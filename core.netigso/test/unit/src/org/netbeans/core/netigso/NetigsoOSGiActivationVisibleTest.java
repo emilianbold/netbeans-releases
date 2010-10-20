@@ -54,6 +54,7 @@ import java.util.Locale;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
+import org.netbeans.Util;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -140,6 +141,13 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     public void testClassModuleM2() throws Exception {
         someModule = m2.getClassLoader().loadClass("org.foo.Something");
         assertNotNull("Something loaded from module CL", someModule);
+    }
+    
+    public void testClassLoaderImplementsUtilModuleProvider() {
+        final ClassLoader l = m2.getClassLoader();
+        assertTrue("ModuleProvider interface implemented: " + l, l instanceof Util.ModuleProvider);
+        Util.ModuleProvider mp = (Util.ModuleProvider)l;
+        assertEquals("Module is returned", m2, mp.getModule());
     }
     
     public void testClassFromDirectBundle() throws Exception {
