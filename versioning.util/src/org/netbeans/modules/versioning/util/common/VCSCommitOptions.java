@@ -49,31 +49,31 @@ import org.openide.util.NbBundle;
 /**
  * @author Maros Sandor
  */
-public abstract class CommitOptions {
+public abstract class VCSCommitOptions {
 
-    public static final CommitOptions COMMIT = new Commit("CTL_CommitOption_Commit"); // NOI18N
-    public static final CommitOptions COMMIT_REMOVE = new Commit("CTL_CommitOption_CommitRemove"); // NOI18N
-    public static final CommitOptions EXCLUDE = new Commit("CTL_CommitOption_Exclude"); // NOI18N
+    public static final VCSCommitOptions COMMIT = new Commit("CTL_CommitOption_Commit"); // NOI18N
+    public static final VCSCommitOptions COMMIT_REMOVE = new Commit("CTL_CommitOption_CommitRemove"); // NOI18N
+    public static final VCSCommitOptions EXCLUDE = new Commit("CTL_CommitOption_Exclude"); // NOI18N
     
     private final String bundleKey;
 
-    private CommitOptions(String bundleKey) {
+    private VCSCommitOptions(String bundleKey) {
         this.bundleKey = bundleKey;
     }
 
     @Override
     public String toString() {
-        return NbBundle.getMessage(CommitOptions.class, bundleKey);
+        return NbBundle.getMessage(VCSCommitOptions.class, bundleKey);
     }
     
-    static class Add extends CommitOptions {
+    static class Add extends VCSCommitOptions {
         
         public Add(String bundleKey) {
             super(bundleKey);
         }
     }
 
-    static class Commit extends CommitOptions {
+    static class Commit extends VCSCommitOptions {
         
         public Commit(String bundleKey) {
             super(bundleKey);

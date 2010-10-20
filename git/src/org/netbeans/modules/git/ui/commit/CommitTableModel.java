@@ -52,7 +52,7 @@ import java.util.*;
 import java.io.File;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
-import org.netbeans.modules.versioning.util.common.CommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 
 /**
@@ -69,10 +69,10 @@ public class CommitTableModel extends AbstractTableModel {
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
-    private CommitOptions[] createDefaultCommitOptions() {
-        CommitOptions[] co = new CommitOptions[nodes.length];
+    private VCSCommitOptions[] createDefaultCommitOptions() {
+        VCSCommitOptions[] co = new VCSCommitOptions[nodes.length];
         for (int i = 0; i < nodes.length; i++) {
-            co[i] = CommitOptions.COMMIT;
+            co[i] = VCSCommitOptions.COMMIT;
             
             // XXX
 //            FileNode node = nodes[i];
@@ -129,7 +129,7 @@ public class CommitTableModel extends AbstractTableModel {
                                           loc.getString("CTL_CommitTable_Column_Folder")}); // NOI18N
     }
     
-    private CommitOptions []    commitOptions;
+    private VCSCommitOptions []    commitOptions;
     private VCSFileNode []      nodes;
     
     private String [] columns;
@@ -158,8 +158,8 @@ public class CommitTableModel extends AbstractTableModel {
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<VCSFileNode, CommitOptions> getCommitFiles() {
-        Map<VCSFileNode, CommitOptions> ret = new HashMap<VCSFileNode, CommitOptions>(nodes.length);
+    public Map<VCSFileNode, VCSCommitOptions> getCommitFiles() {
+        Map<VCSFileNode, VCSCommitOptions> ret = new HashMap<VCSFileNode, VCSCommitOptions>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             ret.put(nodes[i], commitOptions[i]);
         }
@@ -187,7 +187,7 @@ public class CommitTableModel extends AbstractTableModel {
         if (col.equals(COLUMN_NAME_COMMIT)) {
             return Boolean.class;
         } else if (col.equals(COLUMN_NAME_ACTION)) {
-            return CommitOptions.class;
+            return VCSCommitOptions.class;
         } else {
             return String.class;
         }
@@ -204,7 +204,7 @@ public class CommitTableModel extends AbstractTableModel {
         VCSFileNode node;
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_COMMIT)) {
-            return commitOptions[rowIndex] != CommitOptions.EXCLUDE;
+            return commitOptions[rowIndex] != VCSCommitOptions.EXCLUDE;
         } else if (col.equals(COLUMN_NAME_NAME)) {
             return nodes[rowIndex].getName();
         // TODO deal with branch?
@@ -239,9 +239,9 @@ public class CommitTableModel extends AbstractTableModel {
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         String col = columns[columnIndex];
         if (col.equals(COLUMN_NAME_ACTION)) {
-            commitOptions[rowIndex] = (CommitOptions) aValue;
+            commitOptions[rowIndex] = (VCSCommitOptions) aValue;
         } else if (col.equals(COLUMN_NAME_COMMIT)) {
-            commitOptions[rowIndex] = ((Boolean) aValue) ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+            commitOptions[rowIndex] = ((Boolean) aValue) ? getCommitOptions(rowIndex) : VCSCommitOptions.EXCLUDE;
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
@@ -252,7 +252,7 @@ public class CommitTableModel extends AbstractTableModel {
         return nodes[row];
     }
 
-    public CommitOptions getOptions(int row) {
+    public VCSCommitOptions getOptions(int row) {
         return commitOptions[row];
     }
 
@@ -264,18 +264,18 @@ public class CommitTableModel extends AbstractTableModel {
 
     void setIncluded (int[] rows, boolean include) {
         for (int rowIndex : rows) {
-            commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : CommitOptions.EXCLUDE;
+            commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : VCSCommitOptions.EXCLUDE;
         }
         fireTableRowsUpdated(0, getRowCount() - 1);
     }
 
-    private CommitOptions getCommitOptions (int rowIndex) {
+    private VCSCommitOptions getCommitOptions (int rowIndex) {
         VCSFileNode node = nodes[rowIndex];
         FileInformation finfo =  (FileInformation) node.getInformation();
         
         return finfo.containsStatus(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
                                                Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE))
-                ? CommitOptions.COMMIT
-                : CommitOptions.COMMIT_REMOVE;
+                ? VCSCommitOptions.COMMIT
+                : VCSCommitOptions.COMMIT_REMOVE;
     }
 }

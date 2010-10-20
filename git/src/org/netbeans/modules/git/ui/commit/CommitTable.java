@@ -70,7 +70,7 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.Git;
-import org.netbeans.modules.versioning.util.common.CommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.awt.Mnemonics;
 
 /**
@@ -249,7 +249,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     /**
      * @return Map&lt;HgFileNode, CommitOptions>
      */
-    public Map<VCSFileNode, CommitOptions> getCommitFiles() {
+    public Map<VCSFileNode, VCSCommitOptions> getCommitFiles() {
         return tableModel.getCommitFiles();
     }
 
@@ -333,7 +333,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
 
         boolean onlyIncluded = true;
         for (int rowIndex : table.getSelectedRows()) {
-            if (CommitOptions.EXCLUDE.equals(tableModel.getOptions(sorter.modelIndex(rowIndex)))) {
+            if (VCSCommitOptions.EXCLUDE.equals(tableModel.getOptions(sorter.modelIndex(rowIndex)))) {
                 onlyIncluded = false;
                 break;
             }
@@ -419,11 +419,11 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 TableSorter sorter = (TableSorter) table.getModel();
                 CommitTableModel model = (CommitTableModel) sorter.getTableModel();
                 VCSFileNode node = model.getNode(sorter.modelIndex(row));
-                CommitOptions options = model.getOptions(sorter.modelIndex(row));
+                VCSCommitOptions options = model.getOptions(sorter.modelIndex(row));
                 if (!isSelected) {
                     value = ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(node.getFile().getName(), (FileInformation) node.getInformation(), null);
                 }
-                if (options == CommitOptions.EXCLUDE) {
+                if (options == VCSCommitOptions.EXCLUDE) {
                     value = "<s>" + value + "</s>"; // NOI18N
                 }
                 if (modifiedFiles.contains(node.getFile())) {

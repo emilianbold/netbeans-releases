@@ -72,7 +72,7 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.common.CommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -266,9 +266,9 @@ public class CommitAction extends SingleRepositoryAction {
     }
 
     private static boolean containsCommitable(CommitTable data) {
-        Map<VCSFileNode, CommitOptions> map = data.getCommitFiles();
-        for(CommitOptions co : map.values()) {
-            if(co != CommitOptions.EXCLUDE) {
+        Map<VCSFileNode, VCSCommitOptions> map = data.getCommitFiles();
+        for(VCSCommitOptions co : map.values()) {
+            if(co != VCSCommitOptions.EXCLUDE) {
                 return true;
             }
         }
