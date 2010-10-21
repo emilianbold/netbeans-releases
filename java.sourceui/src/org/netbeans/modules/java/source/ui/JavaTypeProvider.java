@@ -73,6 +73,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
@@ -293,7 +294,7 @@ public class JavaTypeProvider implements TypeProvider {
             case REGEXP:
             case CASE_INSENSITIVE_REGEXP:
                 text = removeNonJavaChars(text);
-                textForQuery = Util.wildcardsToRegexp(text, searchType != SearchType.CASE_INSENSITIVE_EXACT_NAME);
+                textForQuery = NameMatcherFactory.wildcardsToRegexp(text, searchType != SearchType.CASE_INSENSITIVE_EXACT_NAME);
                 break;
             default:
                 textForQuery = text;

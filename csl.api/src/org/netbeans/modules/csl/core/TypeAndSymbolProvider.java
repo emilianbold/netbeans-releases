@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -262,31 +263,16 @@ public class TypeAndSymbolProvider {
             case CASE_INSENSITIVE_PREFIX:
                 return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_PREFIX, text };
             case REGEXP:
-                return new Object [] { QuerySupport.Kind.REGEXP, wildcards2regexp(text) };
+                return new Object [] { QuerySupport.Kind.REGEXP, NameMatcherFactory.wildcardsToRegexp(text,true) };
             case CASE_INSENSITIVE_REGEXP:
-                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, wildcards2regexp(text) };
+                return new Object [] { QuerySupport.Kind.CASE_INSENSITIVE_REGEXP, NameMatcherFactory.wildcardsToRegexp(text,true) };
             case CAMEL_CASE:
                 return new Object [] { QuerySupport.Kind.CAMEL_CASE, text };
             default:
                 throw new IllegalStateException("Can't translate " + searchType + " to QuerySupport.Kind"); //NOI18N
         }
     }
-
-    private static String wildcards2regexp(String pattern) {
-        return pattern.
-                replace("{","").
-                replace("}","").
-                replace("[","").
-                replace("]","").
-                replace("(","").
-                replace(")","").
-                replace("\\","").
-                replace(".", "\\.").
-                replace( "*", ".*" ).
-                replace( '?', '.' ).
-                concat(".*"); //NOI18N
-    }
-
+    
     private static final class TypeWrapper extends TypeDescriptor {
 
         private final IndexSearcher.Descriptor delegated;

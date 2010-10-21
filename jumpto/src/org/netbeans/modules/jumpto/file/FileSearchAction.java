@@ -487,11 +487,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         break;
                     case CASE_INSENSITIVE_REGEXP:
                         searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
-                        indexQueryText = wildcards2regexp(text);
+                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
+                        Pattern.compile(indexQueryText);    //Verify the pattern
                         break;
                     case REGEXP:                        
                         searchField = FileIndexer.FIELD_NAME;
-                        indexQueryText = wildcards2regexp(text);
+                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
+                        Pattern.compile(indexQueryText);    //Verify the pattern
                         break;
                     default:
                         searchField = FileIndexer.FIELD_NAME;
@@ -607,24 +609,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 LOGGER.log(Level.WARNING, null, ioe);
                 return Collections.<FileDescriptor>emptyList();
             }
-        }
-        
-        private String wildcards2regexp(String pattern) throws PatternSyntaxException {                        
-            final String result = pattern.
-                    replace("{","").        //NOI18N
-                    replace("}","").        //NOI18N
-                    replace("[","").        //NOI18N
-                    replace("]","").        //NOI18N
-                    replace("(","").        //NOI18N
-                    replace(")","").        //NOI18N
-                    replace("\\","").       //NOI18N
-                    replace(".", "\\.").    //NOI18N
-                    replace( "*", ".*" ).   //NOI18N
-                    replace( '?', '.' ).    //NOI18N
-                    concat(".*"); //NOI18N
-            Pattern.compile(result);
-            return result;
-        }
+        }                
         
         private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
             switch (searchType) {
