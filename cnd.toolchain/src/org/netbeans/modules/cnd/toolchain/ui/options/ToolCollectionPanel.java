@@ -266,6 +266,8 @@ import org.openide.util.Utilities;
         btInstall.setVisible(isUrl);
 
         lbFamily.setVisible(!isUrl);
+        lbEncoding.setVisible(!isUrl);
+        encodingComboBox.setVisible(!isUrl);
         lbFamilyValue.setVisible(!isUrl);
         lbAsCommand.setVisible(!isUrl);
         lbBaseDirectory.setVisible(!isUrl);
@@ -467,9 +469,9 @@ import org.openide.util.Utilities;
         boolean asValid = cbAsRequired.isSelected() ? getLastToolValidation(PredefinedToolKind.Assembler) : true;
         if (cbMakeRequired.isSelected() && !makeValid) {
             if (supportedMake(tfMakePath)) {
-                errors.add(ToolsPanel.getString("TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
-            } else {
                 errors.add(ToolsPanel.getString("TP_ErrorMessage_MissedMake")); // NOI18N
+            } else {
+                errors.add(ToolsPanel.getString("TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
             }
         }
         if (cbCRequired.isSelected() && !cValid) {
@@ -830,11 +832,11 @@ import org.openide.util.Utilities;
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         lbFamilyValue = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        lbEncoding = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
 
-        setMinimumSize(new java.awt.Dimension(300, 300));
-        setPreferredSize(new java.awt.Dimension(300, 300));
+        setMinimumSize(new java.awt.Dimension(200, 200));
+        setPreferredSize(new java.awt.Dimension(200, 200));
         setLayout(new java.awt.GridBagLayout());
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
@@ -842,13 +844,13 @@ import org.openide.util.Utilities;
         lbMakeCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbMakeCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 0);
         add(lbMakeCommand, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 2, 0, 0);
@@ -862,23 +864,23 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(btMakeBrowse, gridBagConstraints);
 
         lbDebuggerCommand.setText(bundle.getString("ToolCollectionPanel.lbDebuggerCommand.text")); // NOI18N
         lbDebuggerCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbDebuggerCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbDebuggerCommand, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -892,17 +894,17 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btDebuggerBrowse, gridBagConstraints);
 
         lbCCommand.setText(bundle.getString("ToolCollectionPanel.lbCCommand.text")); // NOI18N
         lbCCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbCCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCCommand, gridBagConstraints);
@@ -910,7 +912,7 @@ import org.openide.util.Utilities;
         tfCPath.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -924,17 +926,17 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btCBrowse, gridBagConstraints);
 
         lbCppCommand.setText(bundle.getString("ToolCollectionPanel.lbCppCommand.text")); // NOI18N
         lbCppCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbCppCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCppCommand, gridBagConstraints);
@@ -942,7 +944,7 @@ import org.openide.util.Utilities;
         tfCppPath.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -956,17 +958,17 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btCppBrowse, gridBagConstraints);
 
         lbFortranCommand.setText(bundle.getString("ToolCollectionPanel.lbFortranCommand.text")); // NOI18N
         lbFortranCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbFortranCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbFortranCommand, gridBagConstraints);
@@ -974,7 +976,7 @@ import org.openide.util.Utilities;
         tfFortranPath.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -988,10 +990,10 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btFortranBrowse, gridBagConstraints);
 
         lbFamily.setText(bundle.getString("ToolCollectionPanel.lbFamily.text")); // NOI18N
@@ -1006,11 +1008,13 @@ import org.openide.util.Utilities;
         requiredToolsLabel.setText(bundle.getString("ToolCollectionPanel.requiredToolsLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 10, 0, 0);
         add(requiredToolsLabel, gridBagConstraints);
 
+        requiredToolsPanel.setMinimumSize(new java.awt.Dimension(400, 51));
+        requiredToolsPanel.setPreferredSize(new java.awt.Dimension(400, 51));
         requiredToolsPanel.setLayout(new java.awt.GridBagLayout());
 
         cbMakeRequired.setSelected(true);
@@ -1051,6 +1055,7 @@ import org.openide.util.Utilities;
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 0, 0);
         requiredToolsPanel.add(cbFortranRequired, gridBagConstraints);
@@ -1073,16 +1078,16 @@ import org.openide.util.Utilities;
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(requiredToolsPanel, gridBagConstraints);
 
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbBaseDirectory.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbBaseDirectory, gridBagConstraints);
@@ -1090,7 +1095,7 @@ import org.openide.util.Utilities;
         tfBaseDirectory.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -1101,7 +1106,7 @@ import org.openide.util.Utilities;
         lbAsCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbAsCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbAsCommand, gridBagConstraints);
@@ -1109,7 +1114,7 @@ import org.openide.util.Utilities;
         tfAsPath.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -1123,16 +1128,16 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btAsBrowse, gridBagConstraints);
 
         lbQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbQMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbQMakePath, gridBagConstraints);
@@ -1140,7 +1145,7 @@ import org.openide.util.Utilities;
         lbCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbCMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbCMakePath, gridBagConstraints);
@@ -1148,7 +1153,7 @@ import org.openide.util.Utilities;
         tfQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.tfQMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -1157,7 +1162,7 @@ import org.openide.util.Utilities;
         tfCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.tfCMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
@@ -1171,10 +1176,10 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btQMakeBrowse, gridBagConstraints);
 
         btCMakeBrowse.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.btCMakeBrowse.text")); // NOI18N
@@ -1185,10 +1190,10 @@ import org.openide.util.Utilities;
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btCMakeBrowse, gridBagConstraints);
 
         btInstall.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolsPanel.UpdateCenterInstallButton")); // NOI18N
@@ -1198,31 +1203,33 @@ import org.openide.util.Utilities;
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
         add(btInstall, gridBagConstraints);
 
         scrollPane.setBorder(null);
-        scrollPane.setMinimumSize(new java.awt.Dimension(200, 200));
+        scrollPane.setMinimumSize(new java.awt.Dimension(0, 0));
         scrollPane.setPreferredSize(new java.awt.Dimension(200, 200));
         scrollPane.setViewportView(tpInstall);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 21;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 0);
         add(scrollPane, gridBagConstraints);
+
+        jPanel1.setMinimumSize(new java.awt.Dimension(0, 0));
+        jPanel1.setPreferredSize(new java.awt.Dimension(0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 30;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.1;
         add(jPanel1, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
@@ -1237,14 +1244,14 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(lbFamilyValue, gridBagConstraints);
 
-        jLabel1.setLabelFor(encodingComboBox);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "EncodingLabelText")); // NOI18N
+        lbEncoding.setLabelFor(encodingComboBox);
+        lbEncoding.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "EncodingLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
-        jPanel2.add(jLabel1, gridBagConstraints);
+        jPanel2.add(lbEncoding, gridBagConstraints);
 
         encodingComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1255,7 +1262,7 @@ import org.openide.util.Utilities;
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 0);
         jPanel2.add(encodingComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1326,7 +1333,6 @@ import org.openide.util.Utilities;
     private javax.swing.JCheckBox cbMakeRequired;
     private javax.swing.JCheckBox cbQMakeRequired;
     private javax.swing.JComboBox encodingComboBox;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lbAsCommand;
@@ -1335,6 +1341,7 @@ import org.openide.util.Utilities;
     private javax.swing.JLabel lbCMakePath;
     private javax.swing.JLabel lbCppCommand;
     private javax.swing.JLabel lbDebuggerCommand;
+    private javax.swing.JLabel lbEncoding;
     private javax.swing.JLabel lbFamily;
     private javax.swing.JLabel lbFamilyValue;
     private javax.swing.JLabel lbFortranCommand;

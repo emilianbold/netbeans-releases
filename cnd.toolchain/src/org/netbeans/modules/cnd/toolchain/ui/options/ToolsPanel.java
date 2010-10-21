@@ -703,7 +703,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        lbToolCollections = new javax.swing.JLabel();
         buttomPanel = new javax.swing.JPanel();
         lblErrors = new javax.swing.JLabel();
         btVersions = new javax.swing.JButton();
@@ -711,6 +710,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         ToolSetPanel = new javax.swing.JPanel();
         spDirlist = new JScrollPane(lstDirlist);
         lstDirlist = new javax.swing.JList();
+        lbToolCollections = new javax.swing.JLabel();
         buttonPanel = new javax.swing.JPanel();
         btAdd = new javax.swing.JButton();
         btAdd.addActionListener(this);
@@ -729,24 +729,13 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         loadingToolCollectionPanel = new javax.swing.JPanel();
         lblLoadToolsProgress = new javax.swing.JLabel();
 
-        setMinimumSize(new java.awt.Dimension(640, 480));
-        setPreferredSize(new java.awt.Dimension(640, 480));
+        setMinimumSize(new java.awt.Dimension(400, 400));
+        setPreferredSize(new java.awt.Dimension(400, 400));
         setLayout(new java.awt.GridBagLayout());
 
-        lbToolCollections.setLabelFor(spDirlist);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(lbToolCollections, bundle.getString("LBL_DirlistLabel")); // NOI18N
-        lbToolCollections.setToolTipText(bundle.getString("HINT_DirListLabel")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 4);
-        add(lbToolCollections, gridBagConstraints);
-        lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
-        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
-
+        buttomPanel.setMinimumSize(new java.awt.Dimension(150, 26));
         buttomPanel.setOpaque(false);
+        buttomPanel.setPreferredSize(new java.awt.Dimension(150, 26));
         buttomPanel.setLayout(new java.awt.GridBagLayout());
 
         lblErrors.setForeground(new java.awt.Color(255, 51, 51));
@@ -754,7 +743,11 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
         lblErrors.setEnabled(false);
         lblErrors.setFocusable(false);
+        lblErrors.setMinimumSize(new java.awt.Dimension(0, 16));
+        lblErrors.setPreferredSize(new java.awt.Dimension(0, 16));
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -771,7 +764,6 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.weightx = 1.0;
         buttomPanel.add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -783,15 +775,17 @@ public final class ToolsPanel extends JPanel implements ActionListener,
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         buttomPanel.add(btRestore, gridBagConstraints);
         btRestore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         add(buttomPanel, gridBagConstraints);
@@ -811,11 +805,24 @@ public final class ToolsPanel extends JPanel implements ActionListener,
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weighty = 1.0;
         ToolSetPanel.add(spDirlist, gridBagConstraints);
+
+        lbToolCollections.setLabelFor(spDirlist);
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbToolCollections, bundle.getString("LBL_DirlistLabel")); // NOI18N
+        lbToolCollections.setToolTipText(bundle.getString("HINT_DirListLabel")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 4);
+        ToolSetPanel.add(lbToolCollections, gridBagConstraints);
+        lbToolCollections.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_DirlistLabel")); // NOI18N
+        lbToolCollections.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_DirlistLabel")); // NOI18N
 
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new java.awt.GridBagLayout());
@@ -874,16 +881,15 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         ToolSetPanel.add(buttonPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(ToolSetPanel, gridBagConstraints);
 
@@ -894,7 +900,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         add(lbDevHost, gridBagConstraints);
 
         cbDevHost.setEnabled(false);
@@ -904,7 +910,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 6);
         add(cbDevHost, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(btEditDevHost, org.openide.util.NbBundle.getMessage(ToolsPanel.class, "Lbl_AddDevHost")); // NOI18N
@@ -912,21 +918,21 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         add(btEditDevHost, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.5;
         add(toolCollectionPanel, gridBagConstraints);
 
         loadingToolCollectionPanel.setEnabled(false);
         loadingToolCollectionPanel.setFocusable(false);
+        loadingToolCollectionPanel.setMinimumSize(new java.awt.Dimension(0, 0));
         loadingToolCollectionPanel.setRequestFocusEnabled(false);
         loadingToolCollectionPanel.setVerifyInputWhenFocusTarget(false);
         loadingToolCollectionPanel.setLayout(new java.awt.BorderLayout());
@@ -939,11 +945,9 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         add(loadingToolCollectionPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
