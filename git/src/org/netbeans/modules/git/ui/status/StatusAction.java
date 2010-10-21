@@ -43,55 +43,60 @@
 package org.netbeans.modules.git.ui.status;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitStatus;
-import org.netbeans.libs.git.progress.StatusListener;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
+import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-public class StatusAction extends SingleRepositoryAction {
+public class StatusAction extends GitAction {
 
-    private static final Logger LOG = Logger.getLogger(StatusAction.class.getName());
-    
     @Override
-    protected void performAction (File repository, final File[] roots, VCSContext context) {
-        GitProgressSupport supp = new GitProgressSupport () {
-            @Override
-            protected void perform() {
-                GitClient client;
-                try {
-                    client = getClient();
-                } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                    return;
-                }
-                class StatusMonitor implements StatusListener {
-                    @Override
-                    public void notifyStatus (GitStatus status) {
-                        LOG.log(Level.INFO, "{0} - {1}", new Object[] { status.getFile(), status });
-                        setProgress(status.getRelativePath());
+    protected final void performContextAction (Node[] nodes) {
+        final VCSContext context = getCurrentContext(nodes);
+        GitVersioningTopComponent stc = GitVersioningTopComponent.findInstance();
+        stc.setContentTitle(Utils.getContextDisplayName(context));
+        stc.setContext(context);
+        stc.open();
+        stc.requestActive();
+    }
+
+    public final void scanStatus (final VCSContext context) {
+        Set<File> repositories = GitUtils.getRepositoryRoots(context);
+        if (!repositories.isEmpty()) {
+            final Map<File, Collection<File>> toRefresh = new HashMap<File, Collection<File>>(repositories.size());
+            for (File repository : repositories) {
+                toRefresh.put(repository, Arrays.asList(GitUtils.filterForRepository(context, repository)));
+            }
+            GitProgressSupport supp = new GitProgressSupport() {
+                @Override
+                protected void perform () {
+                    long t = 0;
+                    if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
+                        t = System.currentTimeMillis();
+                        Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): started for {0}", toRefresh.keySet()); //NOI18N
+                    }
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh);
+                    if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
+                        Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): lasted {0}", System.currentTimeMillis() - t); //NOI18N
                     }
                 }
-                StatusMonitor m = new StatusMonitor();
-                try {
-                    client.addNotificationListener(m);
-                    Map<File, GitStatus> statuses = client.getStatus(roots, this);
-                } catch (GitException ex) {
-                    // notify in some way
-                }
-            }
-        };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, "Git Status");
+            };
+            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")); //NOI18N
+        }
     }
 
 }
