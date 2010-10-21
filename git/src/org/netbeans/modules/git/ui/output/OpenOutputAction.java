@@ -45,6 +45,8 @@ package org.netbeans.modules.git.ui.output;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -53,8 +55,9 @@ import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 public class OpenOutputAction extends MultipleRepositoryAction {
 
     @Override
-    protected void performAction (File repository, File[] roots) {
+    protected Task performAction (File repository, File[] roots, VCSContext context) {
         OutputLogger.getLogger(repository).getOpenOutputAction().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, repository.getAbsolutePath()));
+        return null;
     }
 
 }

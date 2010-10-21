@@ -46,10 +46,11 @@ import java.io.File;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -62,12 +63,12 @@ public abstract class MultipleRepositoryAction extends GitAction {
     @Override
     protected final void performContextAction (Node[] nodes) {
         final VCSContext context = getCurrentContext(nodes);
-        Git.getInstance().getRequestProcessor().post(new Runnable () {
+        Utils.postParallel(new Runnable () {
             @Override
             public void run() {
                 performAction(context);
             }
-        });
+        }, 0);
     }
 
     public final void performAction (VCSContext context) {
@@ -77,9 +78,12 @@ public abstract class MultipleRepositoryAction extends GitAction {
             return;
         }
         for (File repository : repositories) {
-            performAction(repository, GitUtils.filterForRepository(context, repository));
+            Task runningTask = performAction(repository, GitUtils.filterForRepository(context, repository), context);
+            if (runningTask != null) {
+                runningTask.waitFinished();
+            }
         }
     }
 
-    protected abstract void performAction (File repository, File[] roots);
+    protected abstract Task performAction (File repository, File[] roots, VCSContext context);
 }

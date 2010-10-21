@@ -73,7 +73,7 @@ public abstract class GitAction extends NodeAction {
     }
 
     @Override
-    protected void performAction(final Node[] nodes) {
+    protected final void performAction(final Node[] nodes) {
         LifecycleManager.getDefault().saveAll();
         Utils.logVCSActionEvent("Git"); //NOI18N
         performContextAction(nodes);
@@ -91,10 +91,15 @@ public abstract class GitAction extends NodeAction {
         return new HelpCtx(getClass());
     }
 
-    protected VCSContext getCurrentContext (Node[] nodes) {
+    protected final VCSContext getCurrentContext (Node[] nodes) {
         if (nodes == null) {
             nodes = TopComponent.getRegistry().getActivatedNodes();
         }
         return VCSContext.forNodes(nodes);
+    }
+
+    @Override
+    protected final boolean asynchronous () {
+        return false;
     }
 }

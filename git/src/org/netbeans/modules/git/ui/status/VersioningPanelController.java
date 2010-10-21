@@ -42,61 +42,65 @@
 
 package org.netbeans.modules.git.ui.status;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.git.utils.GitUtils;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JPanel;
+import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
+import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
  * @author ondra
  */
-public class StatusAction extends GitAction {
+class VersioningPanelController implements ActionListener {
+    private final GitVersioningTopComponent tc;
+    private final VersioningPanel panel;
+    private VCSContext context;
+
+    VersioningPanelController (GitVersioningTopComponent tc) {
+        this.tc = tc;
+        this.panel = new VersioningPanel();
+        attachListeners();
+    }
+
+    void focus () {
+    }
+
+    JPanel getPanel () {
+        return panel;
+    }
+
+    void setContext (VCSContext context) {
+        this.context = context;
+    }
+
+    void cancelRefresh() {
+    }
+
+    private void attachListeners() {
+        panel.tgbHeadVsWorking.addActionListener(this);
+        panel.tgbHeadVsIndex.addActionListener(this);
+        panel.tgbIndexVsWorking.addActionListener(this);
+        panel.btnCommit.addActionListener(this);
+        panel.btnCheckout.addActionListener(this);
+        panel.btnDiff.addActionListener(this);
+        panel.btnRefresh.addActionListener(this);
+    }
 
     @Override
-    protected final void performContextAction (Node[] nodes) {
-        final VCSContext context = getCurrentContext(nodes);
-        GitVersioningTopComponent stc = GitVersioningTopComponent.findInstance();
-        stc.setContentTitle(Utils.getContextDisplayName(context));
-        stc.setContext(context);
-        stc.open();
-        stc.requestActive();
-    }
-
-    public final void scanStatus (final VCSContext context) {
-        Set<File> repositories = GitUtils.getRepositoryRoots(context);
-        if (!repositories.isEmpty()) {
-            final Map<File, Collection<File>> toRefresh = new HashMap<File, Collection<File>>(repositories.size());
-            for (File repository : repositories) {
-                toRefresh.put(repository, Arrays.asList(GitUtils.filterForRepository(context, repository)));
-            }
-            GitProgressSupport supp = new GitProgressSupport() {
-                @Override
-                protected void perform () {
-                    long t = 0;
-                    if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
-                        t = System.currentTimeMillis();
-                        Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): started for {0}", toRefresh.keySet()); //NOI18N
-                    }
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh);
-                    if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
-                        Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): lasted {0}", System.currentTimeMillis() - t); //NOI18N
-                    }
+    public void actionPerformed (final ActionEvent e) {
+        Utils.postParallel(new Runnable () {
+            @Override
+            public void run() {
+                if (e.getSource() == panel.btnCheckout) {
+                    SystemAction.get(CheckoutPathsAction.class).performAction(context);
+                } else if (e.getSource() == panel.btnCommit) {
+                    SystemAction.get(CommitAction.class).performAction(context);
                 }
-            };
-            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")); //NOI18N
-        }
+            }
+        }, 0);
     }
-
 }

@@ -46,9 +46,9 @@ import java.io.File;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.Node;
 
 /**
@@ -62,12 +62,12 @@ public abstract class SingleRepositoryAction extends GitAction {
     @Override
     protected final void performContextAction (Node[] nodes) {
         final VCSContext context = getCurrentContext(nodes);
-        Git.getInstance().getRequestProcessor().post(new Runnable () {
+        Utils.postParallel(new Runnable () {
             @Override
             public void run() {
                 performAction(context);
             }
-        });
+        }, 0);
     }
 
     public final void performAction (VCSContext context) {
