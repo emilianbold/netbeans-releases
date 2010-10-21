@@ -44,73 +44,54 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Color;
+import java.awt.font.TextLayout;
+
+
 /**
- * Information about a single visual line in a wrapped paragraph.
+ * Text layout wrapper for possibly several consecutive highlights views.
  * 
  * @author Miloslav Metelka
  */
 
-final class WrapLine {
+final class TextLayoutWrapper {
+    
+    private final TextLayout textLayout; // 8(super) + 4 = 12 bytes
+    
+    private final int viewCount; // 12 + 4 = 16 bytes
+    
+    private final Color foreground; // 16 + 4 = 20 bytes
 
-    /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
-     */
-    EditorView startViewPart;
+    private final Color background; // 20 + 4 = 24 bytes
 
-    /**
-     * Ending view of this line that was obtained by breaking a view
-     * at endViewIndex.
-     * It may be null if the line ends at view boundary.
-     */
-    EditorView endViewPart;
-
-    /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float startViewX;
-
-    /**
-     * Index of a first view located at this line.
-     * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
-     */
-    int startViewIndex;
-
-    /**
-     * Index that follows last view located at this line.
-     * <br/>
-     * It should be >= startViewIndex.
-     */
-    int endViewIndex;
-
-    WrapLine() {
-        resetFullViews();
-    }
-
-    boolean isInited() {
-        return (startViewIndex != -1);
-    }
-
-    boolean hasFullViews() {
-        return startViewIndex != endViewIndex;
+    public TextLayoutWrapper(TextLayout textLayout, int viewCount,
+            Color foreground, Color background)
+    {
+        this.textLayout = textLayout;
+        this.viewCount = viewCount;
+        this.foreground = foreground;
+        this.background = background;
     }
     
-    void resetFullViews() {
-        startViewIndex = endViewIndex = -1;
+    TextLayout textLayout() {
+        return textLayout;
+    }
+    
+    int viewCount() {
+        return viewCount;
+    }
+    
+    Color foreground() {
+        return foreground;
+    }
+    
+    Color background() {
+        return background;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startViewPart); // NOI18N
-        sb.append(" [").append(startViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endViewPart); // NOI18N
-        return sb.toString();
+        return "vCount=" + viewCount + "; " + TextLayoutUtils.toString(textLayout); // NOI18N
     }
 
 }

@@ -68,6 +68,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.BadLocationException;
@@ -129,6 +130,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     // -J-Dorg.netbeans.editor.BaseDocument.listener.level=FINE
     private static final Logger LOG_LISTENER = Logger.getLogger(BaseDocument.class.getName() + ".listener");
+
+    // -J-Dorg.netbeans.editor.BaseDocument.EDT.level=FINE - check that insert/remove only in EDT
+    private static final Logger LOG_EDT = Logger.getLogger(BaseDocument.class.getName() + ".EDT");
 
     /**
      * Mime type of the document. This property can be used for determining
@@ -713,6 +717,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Inserts string into document */
     public @Override void insertString(int offset, String text, AttributeSet a)
     throws BadLocationException {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
+                        offset + ", text=" + org.netbeans.lib.editor.util.CharSequenceUtilities.debugText(text)); // NOI18N
+            }
+        }
+        
         if (text == null || text.length() == 0) {
             return;
         }
@@ -878,6 +889,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     /** Removes portion of a document */
     public @Override void remove(int offset, int len) throws BadLocationException {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseDocument.insertString not in EDT: offset=" + // NOI18N
+                        offset + ", len=" + len); // NOI18N
+            }
+        }
+
         if (len > 0) {
             if (offset < 0) {
                 throw new BadLocationException("Wrong remove position " + offset, offset); // NOI18N

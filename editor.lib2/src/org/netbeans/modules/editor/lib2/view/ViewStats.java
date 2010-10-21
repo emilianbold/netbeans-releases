@@ -44,73 +44,53 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
- * Information about a single visual line in a wrapped paragraph.
+ * Various statistics about view creation and maintaining.
  * 
  * @author Miloslav Metelka
  */
 
-final class WrapLine {
+public final class ViewStats {
 
-    /**
-     * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
-     * with a view at viewIndex.
-     */
-    EditorView startViewPart;
+    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewStatistics.level=FINE
+    private static final Logger LOG = Logger.getLogger(ViewStats.class.getName());
+    
+    private static final int TEXT_LAYOUT_CREATED_THRESHOLD = 200;
+    
+    private static final int INIT_TEXT_LAYOUTS_THRESHOLD = 10;
+    
+    private static int textLayoutCreatedCount;
+    
+    private static int textLayoutCharCount;
+    
+    private static int initTextLayoutsCount;
 
-    /**
-     * Ending view of this line that was obtained by breaking a view
-     * at endViewIndex.
-     * It may be null if the line ends at view boundary.
-     */
-    EditorView endViewPart;
-
-    /*
-     * X corresponding to the start view on the line (right next to startViewPart).
-     * If there's an existing startViewPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float startViewX;
-
-    /**
-     * Index of a first view located at this line.
-     * <br/>
-     * Logically if there's a non-null startViewPart then it comes from view
-     * at (startViewIndex - 1).
-     */
-    int startViewIndex;
-
-    /**
-     * Index that follows last view located at this line.
-     * <br/>
-     * It should be >= startViewIndex.
-     */
-    int endViewIndex;
-
-    WrapLine() {
-        resetFullViews();
-    }
-
-    boolean isInited() {
-        return (startViewIndex != -1);
-    }
-
-    boolean hasFullViews() {
-        return startViewIndex != endViewIndex;
+    private ViewStats() { // No instances
     }
     
-    void resetFullViews() {
-        startViewIndex = endViewIndex = -1;
+    public static void incrementTextLayoutCreated(int charCount) {
+        textLayoutCreatedCount++;
+        textLayoutCharCount += charCount;
+        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % TEXT_LAYOUT_CREATED_THRESHOLD) == 0) {
+            LOG.fine(stats());
+        }
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("startPart=").append(startViewPart); // NOI18N
-        sb.append(" [").append(startViewIndex).append(",").append(endViewIndex).append("]"); // NOI18N
-        sb.append(" endPart=").append(endViewPart); // NOI18N
-        return sb.toString();
+    public static void incrementInitTextLayouts() {
+        initTextLayoutsCount++;
+        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % INIT_TEXT_LAYOUTS_THRESHOLD) == 0) {
+            LOG.fine(stats());
+        }
+    }
+
+    public static String stats() {
+        return "TextLayouts:\n  created-count: " + textLayoutCreatedCount + // NOI18N
+                "\n  char-count: " + textLayoutCharCount + // NOI18N
+                "\nInitTextLayouts: " + initTextLayoutsCount + // NOI18N
+                "\n"; // NOI18N
     }
 
 }
