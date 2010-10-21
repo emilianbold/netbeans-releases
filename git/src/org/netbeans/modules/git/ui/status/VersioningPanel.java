@@ -45,7 +45,21 @@
 package org.netbeans.modules.git.ui.status;
 
 
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.LayoutManager;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
 
 /**
  * The main class of the Synchronize view, shows and acts on set of file roots. 
@@ -61,6 +75,193 @@ class VersioningPanel extends JPanel {
      */ 
     public VersioningPanel () {
         initComponents();
+
+        jPanel2.setFloatable(false);
+        jPanel2.putClientProperty("JToolBar.isRollover", Boolean.TRUE);  // NOI18N
+        jPanel2.setLayout(new ToolbarLayout());
+    }
+
+    /**
+     * Hardcoded toolbar layout. It eliminates need
+     * for nested panels their look is hardly maintanable
+     * accross several look and feels
+     * (e.g. strange layouting panel borders on GTK+).
+     *
+     * <p>It sets authoritatively component height and takes
+     * "prefered" width from components itself.
+     *
+     */
+    private class ToolbarLayout implements LayoutManager {
+
+        /** Expected border height */
+        private int TOOLBAR_HEIGHT_ADJUSTMENT = 4;
+
+        private int TOOLBAR_SEPARATOR_MIN_WIDTH = 12;
+
+        /** Cached toolbar height */
+        private int toolbarHeight = -1;
+
+        /** Guard for above cache. */
+        private Dimension parentSize;
+
+        private Set<JComponent> adjusted = new HashSet<JComponent>();
+
+        @Override
+        public void removeLayoutComponent(Component comp) {
+        }
+
+        @Override
+        public void layoutContainer(Container parent) {
+            Dimension dim = VersioningPanel.this.getSize();
+            Dimension max = parent.getSize();
+
+            int reminder = max.width - minimumLayoutSize(parent).width;
+
+            int components = parent.getComponentCount();
+            int horizont = 0;
+            for (int i = 0; i<components; i++) {
+                JComponent comp = (JComponent) parent.getComponent(i);
+                if (comp.isVisible() == false) continue;
+                comp.setLocation(horizont, 0);
+                Dimension pref = comp.getPreferredSize();
+                int width = pref.width;
+                if (comp instanceof JSeparator && ((dim.height - dim.width) <= 0)) {
+                    width = Math.max(width, TOOLBAR_SEPARATOR_MIN_WIDTH);
+                }
+                if (comp instanceof JProgressBar && reminder > 0) {
+                    width += reminder;
+                }
+
+                // in column layout use taller toolbar
+                int height = getToolbarHeight(dim) -1;
+                comp.setSize(width, height);  // 1 verySoftBevel compensation
+                horizont += width;
+            }
+        }
+
+        @Override
+        public void addLayoutComponent(String name, Component comp) {
+        }
+
+        @Override
+        public Dimension minimumLayoutSize(Container parent) {
+            // in column layout use taller toolbar
+            Dimension dim = VersioningPanel.this.getSize();
+            int height = getToolbarHeight(dim);
+
+            int components = parent.getComponentCount();
+            int horizont = 0;
+            for (int i = 0; i<components; i++) {
+                Component comp = parent.getComponent(i);
+                if (comp.isVisible() == false) continue;
+                if (comp instanceof AbstractButton) {
+                    adjustToobarButton((AbstractButton)comp);
+                } else {
+                    adjustToolbarComponentSize((JComponent)comp);
+                }
+                Dimension pref = comp.getPreferredSize();
+                int width = pref.width;
+                if (comp instanceof JSeparator && ((dim.height - dim.width) <= 0)) {
+                    width = Math.max(width, TOOLBAR_SEPARATOR_MIN_WIDTH);
+                }
+                horizont += width;
+            }
+
+            return new Dimension(horizont, height);
+        }
+
+        @Override
+        public Dimension preferredLayoutSize(Container parent) {
+            // Eliminates double height toolbar problem
+            Dimension dim = VersioningPanel.this.getSize();
+            int height = getToolbarHeight(dim);
+
+            return new Dimension(Integer.MAX_VALUE, height);
+        }
+
+        /**
+         * Computes vertical toolbar components height that can used for layout manager hinting.
+         * @return size based on font size and expected border.
+         */
+        private int getToolbarHeight(Dimension parent) {
+
+            if (parentSize == null || (parentSize.equals(parent) == false)) {
+                parentSize = parent;
+                toolbarHeight = -1;
+            }
+
+            if (toolbarHeight == -1) {
+                Graphics g = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                                                .getDefaultScreenDevice()
+                                                .getDefaultConfiguration()
+                                                .createCompatibleImage(1, 1)
+                                                .getGraphics();
+                UIDefaults def = UIManager.getLookAndFeelDefaults();
+
+                int height = 0;
+                String[] fonts = {"Label.font", "Button.font", "ToggleButton.font"};      // NOI18N
+                for (int i=0; i<fonts.length; i++) {
+                    Font f = def.getFont(fonts[i]);
+                    FontMetrics fm = g.getFontMetrics(f);
+                    height = Math.max(height, fm.getHeight());
+                }
+                toolbarHeight = height + TOOLBAR_HEIGHT_ADJUSTMENT;
+                if ((parent.height - parent.width) > 0) {
+                    toolbarHeight += TOOLBAR_HEIGHT_ADJUSTMENT;
+                }
+            }
+
+            return toolbarHeight;
+        }
+
+
+        /** Toolbar controls must be smaller and should be transparent*/
+        private void adjustToobarButton(final AbstractButton button) {
+
+            if (adjusted.contains(button)) return;
+
+            // workaround for Ocean L&F clutter - toolbars use gradient.
+            // To make the gradient visible under buttons the content area must not
+            // be filled. To support rollover it must be temporarily filled
+            if (button instanceof JToggleButton == false) {
+                button.setContentAreaFilled(false);
+                button.setMargin(new Insets(0, 3, 0, 3));
+                button.setBorderPainted(false);
+                button.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseEntered(MouseEvent e) {
+                        button.setContentAreaFilled(true);
+                        button.setBorderPainted(true);
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        button.setContentAreaFilled(false);
+                        button.setBorderPainted(false);
+                    }
+                });
+            }
+
+            adjustToolbarComponentSize(button);
+        }
+
+        private void adjustToolbarComponentSize(JComponent button) {
+
+            if (adjusted.contains(button)) return;
+
+            // as we cannot get the button small enough using the margin and border...
+            if (button.getBorder() instanceof CompoundBorder) { // from BasicLookAndFeel
+                Dimension pref = button.getPreferredSize();
+
+                // XXX #41827 workaround w2k, that adds eclipsis (...) instead of actual text
+                if ("Windows".equals(UIManager.getLookAndFeel().getID())) {  // NOI18N
+                    pref.width += 9;
+                }
+                button.setPreferredSize(pref);
+            }
+
+            adjusted.add(button);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -70,13 +271,13 @@ class VersioningPanel extends JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         btnGroupModes = new javax.swing.ButtonGroup();
-        jPanel2 = new javax.swing.JToolBar();
         jSeparator1 = new javax.swing.JSeparator();
         jPanel3 = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout());
+        setLayout(new java.awt.GridBagLayout());
 
         btnGroupModes.add(tgbHeadVsWorking);
         tgbHeadVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png"))); // NOI18N
@@ -136,7 +337,15 @@ class VersioningPanel extends JPanel {
         jPanel2.add(btnCommit);
         btnCommit.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Synchronize_Action_Commit_Text")); // NOI18N
 
-        add(jPanel2, java.awt.BorderLayout.NORTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 3, 0);
+        add(jPanel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -145,7 +354,7 @@ class VersioningPanel extends JPanel {
     final javax.swing.JButton btnDiff = new javax.swing.JButton();
     private javax.swing.ButtonGroup btnGroupModes;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
-    private javax.swing.JToolBar jPanel2;
+    final javax.swing.JToolBar jPanel2 = new javax.swing.JToolBar();
     private javax.swing.JPanel jPanel3;
     private javax.swing.JSeparator jSeparator1;
     final javax.swing.JToggleButton tgbHeadVsIndex = new javax.swing.JToggleButton();
