@@ -568,7 +568,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write(firstLine);
             out.newLine();
-            out.write("cat " + file.getAbsolutePath() + LOG_POSTFIX);
+            out.write("cat \"" + file.getAbsolutePath() + LOG_POSTFIX + "\"");
             out.close();
         } catch (IOException e) {
         }
@@ -579,7 +579,7 @@ public abstract class MakeProjectTestBase extends CndBaseTestCase { //extends Nb
             BufferedWriter out = new BufferedWriter(new FileWriter(file));
             out.write("all:");
             out.newLine();
-            out.write("\tcat " + file.getAbsolutePath() + LOG_POSTFIX);
+            out.write("\tcat \"" + file.getAbsolutePath() + LOG_POSTFIX + "\"");
             out.close();
         } catch (IOException e) {
         }
