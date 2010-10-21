@@ -1865,8 +1865,7 @@ init_declarator[int kind]
 	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
-                        ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
-			initializer
+                        (cast_initializer_head) => initializer
 		|	
 			LPAREN expression_list RPAREN
 		)?
@@ -1874,7 +1873,7 @@ init_declarator[int kind]
 
 initializer
     : 
-        ((AMPERSAND)? balanceParensInExpression LCURLY) => (AMPERSAND)? balanceParensInExpression initializer
+        (cast_initializer_head) => cast_initializer
     | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
@@ -1900,6 +1899,14 @@ initializer
         | RCURLY )
     ;
 
+cast_initializer:
+    (AMPERSAND)? balanceParensInExpression initializer
+    ;
+
+// only for predicates
+cast_initializer_head:
+    (AMPERSAND)? balanceParensInExpression LCURLY
+    ;
 
 // so far this one is used in predicates only
 class_head     
@@ -3105,7 +3112,7 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                (   (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
+                (   (cast_initializer_head) => cast_initializer
                 |   expression
                 )
 	)?	
@@ -3235,6 +3242,7 @@ assignment_expression
             )
             (
                 // IZ#152872: parser error in VLC on cast expression
+                // TODO: is it possible to change the next line to (cast_initializer_head)=>cast_initializer 
                 (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
             |
                 assignment_expression
