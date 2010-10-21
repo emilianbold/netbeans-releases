@@ -42,6 +42,7 @@ package org.netbeans.modules.websvc.rest.wizard.fromdb;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
@@ -60,15 +61,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.ElementFilter;
+
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -79,8 +86,10 @@ import org.netbeans.modules.j2ee.persistence.action.GenerationOptions;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.ContainerManagedJTAInjectableInEJB;
+import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategy;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -229,6 +238,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         for (GenerationOptions each : methodOptions){
             generator.generate(each, ContainerManagedJTAInjectableInEJB.class);
         }
+        modifyEntityManager( methodOptions, facade);
 
         // create the interfaces
         final String localInterfaceFQN = pkg + "." + getUniqueClassName(entitySimpleName + FACADE_LOCAL_SUFFIX, targetFolder);
@@ -290,6 +300,12 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                                 maker.addModifiersAnnotation(modifiersTree,
                                 genUtils.createAnnotation(RestConstants.PATH, Collections.<ExpressionTree>singletonList(annArgument)));
 
+                    }
+                    
+                    if ( option.getOperation().overrides() ){
+                        modifiersTree =
+                            maker.addModifiersAnnotation(modifiersTree,
+                            genUtils.createAnnotation(Override.class.getCanonicalName()));
                     }
                     // add @Produces annotation
                     String[] produces = option.getProduces();
@@ -398,6 +414,56 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
 
         return createdFiles;
+    }
+
+    private void modifyEntityManager( List<GenerationOptions> methodOptions ,
+            FileObject fileObject)  throws IOException 
+    {
+        final Set<String> methodNames = new HashSet<String>();
+        for( GenerationOptions opt : methodOptions ){
+            methodNames.add( opt.getMethodName());
+        }
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            
+            public void run(WorkingCopy workingCopy) throws Exception {
+                
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                
+                for (Tree typeDeclaration : cut.getTypeDecls()){
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDeclaration
+                            .getKind()))
+                    {
+                        ClassTree clazz = (ClassTree) typeDeclaration;
+                        TreePath path = workingCopy.getTrees().getPath(cut,
+                                clazz);
+                        Element element = workingCopy.getTrees().getElement(
+                                path);
+                        List<ExecutableElement> methods = ElementFilter
+                                .methodsIn(element.getEnclosedElements());
+                        for (ExecutableElement method : methods) {
+                            if ( methodNames.contains(method.getSimpleName().
+                                    toString()) )
+                            {
+                                MethodTree methodTree = workingCopy.getTrees().getTree( method );
+                                Set<Modifier> modifiers = method.getModifiers();
+                                AnnotationTree annotation = make.Annotation(
+                                        make.Identifier(Override.class.getCanonicalName()),
+                                        Collections.<ExpressionTree>emptyList());
+                                ModifiersTree newModifs = make.Modifiers(
+                                        modifiers, 
+                                        Collections.singletonList(annotation));
+                                workingCopy.rewrite(methodTree.getModifiers(), 
+                                        newModifs);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        
+        JavaSource.forFileObject(fileObject).runModificationTask(task).commit();
     }
 
     private List<GenerationOptions> getAbstractFacadeMethodOptions(Map<String, String> entityNames, String entityFQN, String variableName){

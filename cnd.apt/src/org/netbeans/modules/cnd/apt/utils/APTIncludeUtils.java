@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.utils;
 import java.io.File;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -94,9 +95,10 @@ public class APTIncludeUtils {
         if (Utilities.isWindows()){
             includedFile = includedFile.replace('/', File.separatorChar); // File - sic!
         }
+        SupportAPIAccessor accessor = SupportAPIAccessor.get();
         while( searchPaths.hasNext() ) {
             IncludeDirEntry dirPrefix = searchPaths.next();
-            if (dirPrefix.isExistingDirectory()) {
+            if (accessor.isExistingDirectory(dirPrefix)) {
                 String prefix = dirPrefix.getPath();
                 int len = prefix.length();
                 String absolutePath;

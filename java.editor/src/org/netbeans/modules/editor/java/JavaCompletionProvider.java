@@ -656,6 +656,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case CASE:
                     insideCase(env);
                     break;
+                case LABELED_STATEMENT:
+                    localResult(env);
+                    addKeywordsForStatement(env);
+                    break;
                 case PARENTHESIZED:
                     insideParens(env);
                     break;

@@ -84,6 +84,10 @@ public final class ASTService {
      * is not resolved.
      */
     public Element getElement(Tree tree) {
+        return getElementImpl(tree);
+    }
+
+    public static Element getElementImpl(Tree tree) {
         if (tree == null)
             return null;
         switch (tree.getKind()) {

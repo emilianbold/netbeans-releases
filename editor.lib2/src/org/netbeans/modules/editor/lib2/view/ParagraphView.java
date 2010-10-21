@@ -44,10 +44,12 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.font.TextLayout;
+import java.awt.Shape;
 import java.util.logging.Logger;
+import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.View;
 
 
@@ -102,9 +104,8 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     }
 
     @Override
-    public boolean setLength(int length, int modOffset, int modLength) {
+    public void setLength(int length) {
         this.length = length;
-        return true; // ParagraphView may grow
     }
 
     @Override
@@ -116,7 +117,7 @@ public class ParagraphView extends EditorBoxView<EditorView> {
     public void setRawOffset(int rawOffset) {
         throw new IllegalStateException("setRawOffset() must not be called on ParagraphView."); // NOI18N
     }
-
+    
     @Override
     protected EditorBoxViewChildren<EditorView> createChildren(int capacity) {
         return new ParagraphViewChildren(capacity);
@@ -139,29 +140,86 @@ public class ParagraphView extends EditorBoxView<EditorView> {
             }
         }
     }
+    
+    /**
+     * Find next visual position in Y direction.
+     * In case of no line-wrap the method should return -1 for a given valid offset.
+     * and a valid offset when -1 is given as parameter.
+     * @param offset offset inside line or -1 to "enter" a line at the given x.
+     * @param x x-position corresponding to magic caret position.
+     */
+    int getNextVisualPositionY(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet, double x) {
+        return ((ParagraphViewChildren)children).getNextVisualPositionY(this, offset, bias, alloc, direction, biasRet, x);
+    }
+    
+    /**
+     * Find next visual position in Y direction.
+     * In case of no line-wrap the method should return -1 for a given valid offset.
+     * and a valid offset when -1 is given as parameter.
+     * @param offset offset inside line or -1 to "enter" a line at the given x.
+     */
+    int getNextVisualPositionX(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
+        switch (direction) {
+            case SwingConstants.EAST:
+            case SwingConstants.WEST:
+                int index = getViewIndex(offset);
+                int viewCount = getViewCount(); // Should always be >0
+                int increment = (direction == SwingConstants.EAST) ? 1 : -1;
+                int retOffset = -1;
+                for (; retOffset == -1 && index >= 0 && index < viewCount; index += increment) {
+                    EditorView view = getEditorViewChildrenValid(index); // Ensure valid children
+                    Shape viewAlloc = getChildAllocation(index, alloc);
+                    retOffset = view.getNextVisualPositionFromChecked(offset, bias, viewAlloc, direction, biasRet);
+                    if (retOffset == -1) {
+                        offset = -1; // Continue by entering the paragraph from outside
+                    }
+                }
+                return retOffset;
 
-    @Override
-    public TextLayout getTextLayout(TextLayoutView textLayoutView) {
-        DocumentView documentView = getDocumentView();
-        return (documentView != null) ? documentView.getTextLayoutCache().get(this, textLayoutView) : null;
+            case SwingConstants.NORTH: // Should be handled elsewhere
+            case SwingConstants.SOUTH: // Should be handled elsewhere
+                throw new IllegalStateException("Not intended to handle EAST and WEST directions"); // NOI18N
+            default:
+                throw new IllegalArgumentException("Bad direction: " + direction); // NOI18N
+        }
     }
 
-    void recomputeSpans() {
+    @Override
+    protected void releaseChildren() {
+        super.releaseChildren();
+        getDocumentView().getTextLayoutCache().remove(this);
+    }
+    
+    void releaseTextLayouts() {
+        // [TODO] Implement
+    }
+    
+    void initTextLayouts() {
+        // Init text layouts in children
+        assert (children != null) : "Null children"; // NOI18N
+        ViewStats.incrementInitTextLayouts();
+        updateViews(0, getViewCount(), null);
+    }
+
+    void recomputeLayout() {
         if (children != null) {
-            ((ParagraphViewChildren) children).recomputeSpans(this);
+            ((ParagraphViewChildren) children).recomputeLayout(this);
         }
     }
 
     @Override
     public String findIntegrityError() {
         String err = super.findIntegrityError();
-        if (err == null) {
-            if (children != null) {
-                int childrenLength = children.getLength();
-                if (getLength() != childrenLength) {
-                    err = "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
-                }
+        if (err != null) {
+            return err;
+        }
+        if (children != null) {
+            int childrenLength = children.getLength();
+            if (getLength() != childrenLength) {
+                return "length=" + getLength() + " != childrenLength=" + childrenLength; // NOI18N
             }
+            // Check layouts integrity
+            err = HighlightsViewUtils.findLayoutIntegrityError(this);
         }
         return err;
     }

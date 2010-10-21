@@ -72,12 +72,13 @@ import org.netbeans.api.java.platform.JavaPlatform;
  *     MyPlatform p = new MyPlatform();
  *     p.setDisplayName(theName);
  *     p.setVendor(theVendor);
- *     return Collections.singleton(<a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html">InstanceDataObject.create</a>(
+ *     <a href="@org-openide-loaders@/org/openide/loaders/InstanceDataObject.html">InstanceDataObject.create</a>(
  *         <a href="@org-openide-loaders@/org/openide/loaders/DataFolder.html">DataFolder.findFolder</a>(FileUtil.getConfigFile("Services/Platforms/org-netbeans-api-java-Platform")),
  *         theName,
  *         p,
  *         null,
- *         true));
+ *         true);
+ *     return Collections.singleton(p);
  * }
  * </pre>
  * <p>

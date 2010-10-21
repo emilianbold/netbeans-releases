@@ -909,7 +909,7 @@ public class FormatVisitor extends DefaultVisitor {
                     ? formatTokens.get(formatTokens.size() - 1)
                     : null;
             while (ts.moveNext()) {
-                if (lastToken == null || lastToken.getOffset() > ts.offset()) {
+                if (lastToken == null || lastToken.isWhitespace() || lastToken.getOffset() > ts.offset()) {
                     addFormatToken(formatTokens);
                     lastToken = formatTokens.get(formatTokens.size() - 1);
                 }

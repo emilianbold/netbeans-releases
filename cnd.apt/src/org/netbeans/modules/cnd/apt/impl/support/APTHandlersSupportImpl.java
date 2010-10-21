@@ -87,8 +87,9 @@ public class APTHandlersSupportImpl {
     public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
         // user paths could contain "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
+        SupportAPIAccessor accessor = SupportAPIAccessor.get();
         for (IncludeDirEntry includeDirEntry : userIncludePaths) {
-            if (!includeDirEntry.isExistingDirectory()) {
+            if (!accessor.isExistingDirectory(includeDirEntry)) {
                 // check if this is file
                 if (CndFileUtils.isExistingFile(includeDirEntry.getAsSharedCharSequence().toString())) {
                     fileEntries.add(includeDirEntry);

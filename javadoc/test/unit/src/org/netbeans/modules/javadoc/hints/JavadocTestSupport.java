@@ -38,6 +38,7 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.List;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -49,6 +50,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.modules.java.source.save.Reindenter;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
@@ -87,6 +89,7 @@ public abstract class JavadocTestSupport extends NbTestCase {
             new Pool(),
             new MockMimeLookup(),
         });
+        MockMimeLookup.setInstances(MimePath.parse("text/x-java"), new Reindenter.Factory());
         FileUtil.setMIMEType("java", "text/x-java");
         
         if (cache == null) {

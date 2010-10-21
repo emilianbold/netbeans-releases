@@ -78,6 +78,10 @@ final class WrapInfo extends GapList<WrapLine> {
         this.childrenWidth = childrenWidth;
         this.childrenHeight = childrenHeight;
     }
+    
+    int wrapLineCount() {
+        return size();
+    }
 
     float preferredHeight() {
         return size() * childrenHeight;
@@ -108,19 +112,15 @@ final class WrapInfo extends GapList<WrapLine> {
                 allocBounds.x += width;
             }
             if (wrapLine.hasFullViews()) { // Render the views
-                int j = wrapLine.startViewIndex;
-                double nextVisualOffset = paragraphView.getViewVisualOffset(j);
+                double visualOffset = paragraphView.getViewVisualOffset(wrapLine.startViewIndex);
                 assert (wrapLine.endViewIndex <= children.size()) : "Invalid for endViewIndex=" + // NOI18N
                         wrapLine.endViewIndex + ", wrapInfo:\n" + // NOI18N
                         this.toString(paragraphView) + "\nParagraphView:\n" + paragraphView; // NOI18N
-                for (;j < wrapLine.endViewIndex; j++) {
-                    EditorView childView = children.get(j);
-                    double visualOffset = nextVisualOffset;
-                    nextVisualOffset = paragraphView.getViewVisualOffset(j + 1);
-                    allocBounds.width = nextVisualOffset - visualOffset;
-                    childView.paint(g, allocBounds, clipBounds);
-                    allocBounds.x += allocBounds.width;
-                }
+                // Simulate start x for children rendering
+                allocBounds.x -= visualOffset;
+                children.paintChildren(paragraphView, g, allocBounds, clipBounds,
+                        wrapLine.startViewIndex, wrapLine.endViewIndex);
+                allocBounds.x += paragraphView.getViewVisualOffset(wrapLine.endViewIndex);
             }
             EditorView endViewPart = wrapLine.endViewPart;
             if (endViewPart != null) {
@@ -134,8 +134,8 @@ final class WrapInfo extends GapList<WrapLine> {
             if (i != lastWrapLineIndex) { // but not on last wrap line
                 PaintState paintState = PaintState.save(g);
                 try {
-                    HighlightsView.paintForeground(g, allocBounds, docView, lineContinuationTextLayout,
-                            paragraphView.getAttributes());
+                    HighlightsViewUtils.paintForeground(g, allocBounds, lineContinuationTextLayout,
+                            paragraphView.getAttributes(), docView);
                 } finally {
                     paintState.restore();
                 }

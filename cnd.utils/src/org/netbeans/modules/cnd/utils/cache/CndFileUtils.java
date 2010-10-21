@@ -49,10 +49,12 @@ import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -62,6 +64,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -101,6 +104,9 @@ public final class CndFileUtils {
 
     public static void clearFileExistenceCache() {
         mapRef.clear();
+        for (CndFileExistSensitiveCache cache : getCaches()) {
+            cache.invalidateAll();
+        }
     }
 
     /**
@@ -523,7 +529,17 @@ public final class CndFileUtils {
                 System.err.println("clean cache for " + file);
             }
             getFilesMap().remove(file);
+            for (CndFileExistSensitiveCache cache : getCaches()) {
+                cache.invalidateFile(file);
+            }
         }
     }
     private static final boolean TRACE_EXTERNAL_CHANGES = Boolean.getBoolean("cnd.modelimpl.trace.external.changes"); // NOI18N
+    private static volatile Collection<? extends CndFileExistSensitiveCache> listeners;
+    private static Collection<? extends CndFileExistSensitiveCache> getCaches() {
+        if (listeners == null) {
+             listeners = Lookup.getDefault().lookupAll(CndFileExistSensitiveCache.class);
+        }
+        return listeners;
+    }
 }

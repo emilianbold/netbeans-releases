@@ -87,6 +87,14 @@ public class HintsTask extends ParserResultTask<ParserResult> {
         try {
             ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
                 public @Override void run(ResultIterator resultIterator) throws ParseException {
+                    if (resultIterator == null) {
+                        return;
+                    }
+                    
+                    for(Embedding e : resultIterator.getEmbeddings()) {
+                        run(resultIterator.getResultIterator(e));
+                    }
+                    
                     Language language = LanguageRegistry.getInstance().getLanguageByMimeType(resultIterator.getSnapshot().getMimeType());
                     if (language == null) {
                         return;
@@ -125,10 +133,6 @@ public class HintsTask extends ParserResultTask<ParserResult> {
                         Hint hint = hints.get(i);
                         ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
                         descriptions.add(desc);
-                    }
-
-                    for(Embedding e : resultIterator.getEmbeddings()) {
-                        run(resultIterator.getResultIterator(e));
                     }
                 }
             });
