@@ -55,21 +55,27 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.io.*;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Top component of the Versioning view.
  * 
  * @author Maros Sandor
  */
-public class GitVersioningTopComponent extends TopComponent {
+public class GitVersioningTopComponent extends TopComponent implements Externalizable {
    
     private static final long serialVersionUID = 1L;    
     
-    private VersioningPanel         syncPanel;
+    private VersioningPanelController         controller;
     private VCSContext              context;
     private String                  contentTitle;
     private String                  branchTitle;
@@ -85,8 +91,8 @@ public class GitVersioningTopComponent extends TopComponent {
         setIcon(ImageUtilities.loadImage("org/netbeans/modules/git/resources/icons/versioning-view.png"));  // NOI18N
         setLayout(new BorderLayout());
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title")); // NOI18N
-        syncPanel = new VersioningPanel(this);
-        add(syncPanel);
+        controller = new VersioningPanelController(this);
+        add(controller.getPanel());
     }
 
     @Override
@@ -97,7 +103,7 @@ public class GitVersioningTopComponent extends TopComponent {
     @Override
     protected void componentActivated () {
         updateTitle();
-        syncPanel.focus();
+        controller.focus();
     }
 
     @Override
@@ -111,13 +117,33 @@ public class GitVersioningTopComponent extends TopComponent {
         super.componentClosed();
     }
 
-    private void refreshContent () {
-        if (syncPanel == null) return;  // the component is not showing => nothing to refresh
-        updateTitle();
-        syncPanel.setContext(context);        
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        super.writeExternal(out);
+        out.writeObject(this.contentTitle);
+        out.writeObject(context.getRootFiles().toArray(new File[context.getRootFiles().size()]));
     }
 
-    void setBranchTitle (String branchTitle) {
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        super.readExternal(in);
+        contentTitle = (String) in.readObject();
+        File[] files = (File[]) in.readObject();
+        List<Node> nodes = new LinkedList<Node>();
+        for (File file : files) {
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)));
+        }
+        VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
+        setContext(ctx);
+    }
+
+    private void refreshContent () {
+        if (controller == null) return;  // the component is not showing => nothing to refresh
+        updateTitle();
+        controller.setContext(context);
+    }
+
+    private void setBranchTitle (String branchTitle) {
         this.branchTitle = branchTitle;
         updateTitle();
     }
@@ -180,25 +206,12 @@ public class GitVersioningTopComponent extends TopComponent {
     @Override
     public int getPersistenceType () {
         // #129268: Need VCSContext to be persistable for this to be set to PERSISTENCE_ALWAYS
-        return TopComponent.PERSISTENCE_NEVER; 
-    }
-    
-    /** replaces this in object stream */
-    @Override
-    public Object writeReplace () {
-        return new ResolvableHelper();
+        return TopComponent.PERSISTENCE_ALWAYS;
     }
     
     @Override
     protected String preferredID () {
         return PREFERRED_ID;
-    }
-
-    final static class ResolvableHelper implements Serializable {
-        private static final long serialVersionUID = 1L;
-        public Object readResolve () {
-            return GitVersioningTopComponent.getDefault();
-        }
     }
 
     /**
@@ -208,24 +221,19 @@ public class GitVersioningTopComponent extends TopComponent {
      */
     public void setContext (VCSContext ctx) {
         assert EventQueue.isDispatchThread();
-        syncPanel.cancelRefresh();
-        if (ctx == null) {
-            setName(NbBundle.getMessage(GitVersioningTopComponent.class, "MSG_Preparing")); // NOI18N
-            setEnabled(false);
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        assert ctx != null;
+        controller.cancelRefresh();
+        setEnabled(true);
+        setCursor(Cursor.getDefaultCursor());
+        context = ctx;
+        controller.setContext(ctx);
+        Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
+        if (repositoryRoots.size() == 1) {
+            setBranchTitle(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
         } else {
-            setEnabled(true);
-            setCursor(Cursor.getDefaultCursor());
-            context = ctx;
-            syncPanel.setContext(ctx);
-            Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
-            if (repositoryRoots.size() == 1) {
-                setBranchTitle(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
-            } else {
-                setBranchTitle(null);
-            }
-            refreshContent();
+            setBranchTitle(null);
         }
+        refreshContent();
         setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            
     }
 
