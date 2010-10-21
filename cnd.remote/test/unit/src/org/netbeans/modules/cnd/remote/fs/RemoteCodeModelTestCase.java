@@ -60,9 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -72,6 +70,7 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
 
     private boolean testReconnect = false;
+    private boolean trace = Boolean.getBoolean("cnd.test.remote.code.model.trace");
 
     public RemoteCodeModelTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
@@ -93,11 +92,17 @@ public class RemoteCodeModelTestCase extends RemoteBuildTestBase {
         RepositoryUtils.cleanCashes();
     }
 
+    private void trace(String pattern, Object... args) {
+        if (trace) {
+            System.err.printf(pattern, args);
+        }
+    }
+
     protected void checkIncludes(CsmFile csmFile, boolean recursive) throws Exception {
-        //System.err.printf("Checking %s\n", csmFile.getAbsolutePath());
+        trace("Checking %s\n", csmFile.getAbsolutePath());
         for (CsmInclude incl : csmFile.getIncludes()) {
             CsmFile includedFile = incl.getIncludeFile();
-            //System.err.printf("\t%s -> %s\n", incl.getIncludeName(), includedFile);
+            trace("\t%s -> %s\n", incl.getIncludeName(), includedFile);
             assertNotNull("Unresolved include: " + incl.getIncludeName() + " in " + csmFile.getAbsolutePath(), includedFile);
             if (recursive) {
                 checkIncludes(includedFile, true);
