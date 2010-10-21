@@ -691,6 +691,30 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191081.cpp", 8, 33, "bug191081.cpp", 2, 9);
     }
 
+    public void testIZ191198() throws Exception {
+        // #191198 -  Parser error in buf.c
+        performTest("bug191198.c", 9, 35, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 9, 45, "bug191198.c", 3, 9);
+        performTest("bug191198.c", 15, 35, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);
+    }
+    
+    public void testIZ191200() throws Exception {
+        // #191200 -  Parser errors in val_tables.c
+        performTest("bug191200.c", 14, 25, "bug191200.c", 8, 5);
+        performTest("bug191200.c", 16, 25, "bug191200.c", 8, 5);
+        performTest("bug191200.c", 23, 25, "bug191200.c", 8, 5);
+        performTest("bug191200.c", 15, 25, "bug191200.c", 7, 5);
+        performTest("bug191200.c", 22, 25, "bug191200.c", 7, 5);
+        performTest("bug191200.c", 24, 25, "bug191200.c", 7, 5);
+        performTest("bug191200.c", 24, 15, "bug191200.c", 6, 5);
+        performTest("bug191200.c", 17, 15, "bug191200.c", 6, 5);
+        performTest("bug191200.c", 15, 40, "bug191200.c", 3, 3);
+        performTest("bug191200.c", 16, 40, "bug191200.c", 3, 3);
+        performTest("bug191200.c", 23, 40, "bug191200.c", 3, 3);
+        performTest("bug191200.c", 24, 40, "bug191200.c", 3, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

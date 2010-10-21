@@ -905,8 +905,14 @@ public class FormatVisitor extends DefaultVisitor {
             ts.movePrevious();
             addFormatToken(formatTokens);
             super.visit(program);
+            FormatToken lastToken = formatTokens.size() > 0 
+                    ? formatTokens.get(formatTokens.size() - 1)
+                    : null;
             while (ts.moveNext()) {
-                addFormatToken(formatTokens);
+                if (lastToken == null || lastToken.getOffset() > ts.offset()) {
+                    addFormatToken(formatTokens);
+                    lastToken = formatTokens.get(formatTokens.size() - 1);
+                }
             }
             path.removeFirst();
         }
