@@ -88,17 +88,21 @@ public class FileInformation extends VCSFileInformation {
             } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadIndex)) {
                 s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX);
             } else if (GitStatus.Status.STATUS_REMOVED.equals(statusHeadIndex)) {
-                s.add(Status.STATUS_VERSIONED_REMOVED_IN_INDEX);
+                s.add(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX);
             }
             if (GitStatus.Status.STATUS_ADDED.equals(statusIndexWC)) {
                 s.add(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusIndexWC)) {
                 s.add(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC)) {
-                s.add(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE);
+                s.add(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE);
             }
             if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadWC)) {
                 s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+            }
+            // file is removed in the WT, but is NOT in HEAD yet
+            if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC) && !GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)) {
+                s.add(Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE);
             }
             if (s.isEmpty()) {
                 s.add(Status.STATUS_VERSIONED_UPTODATE);
@@ -144,7 +148,7 @@ public class FileInformation extends VCSFileInformation {
             return 0;
         } else if (containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
             return 1;
-        } else if (containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+        } else if (containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             return 10;
         } else if (containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
             return 11;
@@ -177,7 +181,7 @@ public class FileInformation extends VCSFileInformation {
             sIndex = "A";
         } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX)) {
             sIndex = "M";
-        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_INDEX)) {
+        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX)) {
             sIndex = "D";
         }
         
@@ -185,7 +189,7 @@ public class FileInformation extends VCSFileInformation {
             sWorkingTree = "A";
         } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE)) {
             sWorkingTree = "M";
-        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             sWorkingTree = "D";
         }
         
@@ -261,11 +265,15 @@ public class FileInformation extends VCSFileInformation {
         /**
          * The file does NOT exist in index but does in HEAD, it has beed removed from index, waits for commit.
          */
-        STATUS_VERSIONED_REMOVED_IN_INDEX,
+        STATUS_VERSIONED_REMOVED_HEAD_INDEX,
         /**
          * The file has been removed in the working tree
          */
-        STATUS_VERSIONED_REMOVED_IN_WORKING_TREE,
+        STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
+        /**
+         * The file does NOT exist in the working tree but does in HEAD.
+         */
+        STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE
     }
     public static final EnumSet<Status> STATUS_ALL = EnumSet.allOf(Status.class);
     public static final EnumSet<Status> STATUS_MANAGED = EnumSet.complementOf(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED));
@@ -276,14 +284,27 @@ public class FileInformation extends VCSFileInformation {
     public static final EnumSet<Status> STATUS_MODIFIED = EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
             Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
             Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
-                                                                    Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
+                                                                    Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE);
     public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
             Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
             Status.STATUS_VERSIONED_CONFLICT,
-            Status.STATUS_VERSIONED_REMOVED_IN_INDEX,
-            Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
+            Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
             Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
             Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_WORKING = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_CONFLICT,
+            Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_INDEX = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
+            Status.STATUS_VERSIONED_CONFLICT,
+            Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
+            Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX);
+    public static final EnumSet<Status> STATUS_MODIFIED_INDEX_VS_WORKING = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.STATUS_VERSIONED_CONFLICT,
+            Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
             Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
 }

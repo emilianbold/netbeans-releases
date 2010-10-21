@@ -178,7 +178,19 @@ public class FileStatusCache {
      * @param rootFiles root files to scan sorted under their repository roots
      */
     public void refreshAllRoots (Map<File, Collection<File>> rootFiles) {
+        refreshAllRoots(rootFiles, ProgressMonitor.NULL_PROGRESS_MONITOR);
+    }
+
+    /**
+     * Refreshes all files under given roots in the cache.
+     * @param rootFiles root files to scan sorted under their repository roots
+     * @param pm progress monitor capable of interrupting the status scan
+     */
+    public void refreshAllRoots (Map<File, Collection<File>> rootFiles, ProgressMonitor pm) {
         for (Map.Entry<File, Collection<File>> refreshEntry : rootFiles.entrySet()) {
+            if (pm.isCanceled()) {
+                return;
+            }
             File repository = refreshEntry.getKey();
             if (repository == null) {
                 continue;
@@ -189,7 +201,10 @@ public class FileStatusCache {
             Map<File, GitStatus> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
+                if (pm.isCanceled()) {
+                    return;
+                }
                 for (File root : refreshEntry.getValue()) {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
                     for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)))) {

@@ -42,13 +42,28 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import java.awt.Component;
+import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.EnumSet;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -59,11 +74,37 @@ class VersioningPanelController implements ActionListener {
     private final GitVersioningTopComponent tc;
     private final VersioningPanel panel;
     private VCSContext context;
+    private EnumSet<Status> displayStatuses;
+    private final NoContentPanel noContentComponent = new NoContentPanel();
+    private static final RequestProcessor RP = new RequestProcessor("GitVersioningWindow", 1, true); //NOI18N
+    private RequestProcessor.Task refreshNodesTak = RP.create(new RefreshNodesTask());
 
     VersioningPanelController (GitVersioningTopComponent tc) {
         this.tc = tc;
         this.panel = new VersioningPanel();
+
+        initDisplayStatus();
+        onDisplayedStatusChanged();
+        setVersioningComponent(noContentComponent);
+        
         attachListeners();
+        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
+        tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+        tc.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "nextInnerView"); // NOI18N
+
+        panel.getActionMap().put("prevInnerView", new AbstractAction("") { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onNextInnerView();
+            }
+        });
+        panel.getActionMap().put("nextInnerView", new AbstractAction("") { // NOI18N
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onPrevInnerView();
+            }
+        });
     }
 
     void focus () {
@@ -74,7 +115,9 @@ class VersioningPanelController implements ActionListener {
     }
 
     void setContext (VCSContext context) {
-        this.context = context;
+        if (context != this.context) {
+            this.context = context;
+        }
     }
 
     void cancelRefresh() {
@@ -90,17 +133,116 @@ class VersioningPanelController implements ActionListener {
         panel.btnRefresh.addActionListener(this);
     }
 
+    private void onPrevInnerView() {
+        if (panel.tgbHeadVsWorking.isSelected()) {
+            panel.tgbHeadVsIndex.setSelected(true);
+        } else if (panel.tgbHeadVsIndex.isSelected()) {
+            panel.tgbIndexVsWorking.setSelected(true);
+        } else {
+            panel.tgbHeadVsWorking.setSelected(true);
+        }
+        onDisplayedStatusChanged();
+    }
+
+    private void onNextInnerView() {
+        if (panel.tgbHeadVsWorking.isSelected()) {
+            panel.tgbIndexVsWorking.setSelected(true);
+        } else if (panel.tgbIndexVsWorking.isSelected()) {
+            panel.tgbHeadVsIndex.setSelected(true);
+        } else {
+            panel.tgbHeadVsWorking.setSelected(true);
+        }
+        onDisplayedStatusChanged();
+    }
+
+    private void onDisplayedStatusChanged () {
+        // TODO persist selection
+        if (panel.tgbHeadVsWorking.isSelected()) {
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
+//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadWorking")); // NOI18N
+        } else if (panel.tgbHeadVsIndex.isSelected()) {
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
+//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadIndex")); // NOI18N
+        } else {
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
+//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
+            noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_IndexWorking")); // NOI18N
+        }
+    }
+
+    private void setDisplayStatuses (EnumSet<Status> displayStatuses) {
+        this.displayStatuses = displayStatuses;
+        refreshNodes();
+    }
+
     @Override
     public void actionPerformed (final ActionEvent e) {
-        Utils.postParallel(new Runnable () {
+        if (e.getSource() == panel.tgbHeadVsIndex || e.getSource() == panel.tgbHeadVsWorking 
+                || e.getSource() == panel.tgbIndexVsWorking) {
+            onDisplayedStatusChanged();
+            return;
+        }
+        Utils.postParallel(new Runnable() {
             @Override
             public void run() {
                 if (e.getSource() == panel.btnCheckout) {
                     SystemAction.get(CheckoutPathsAction.class).performAction(context);
                 } else if (e.getSource() == panel.btnCommit) {
                     SystemAction.get(CommitAction.class).performAction(context);
+                } else if (e.getSource() == panel.btnRefresh) {
+                    GitProgressSupport supp = SystemAction.get(StatusAction.class).scanStatus(context);
+                    if (!(supp == null || supp.isCanceled())) {
+                        refreshNodes();
+                    }
                 }
             }
         }, 0);
+    }
+
+    private void initDisplayStatus () {
+        // TODO read from preferences
+        panel.tgbHeadVsWorking.setSelected(true);
+        displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+    }
+
+    private void setVersioningComponent (final JComponent component)  {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                Component [] children = panel.getComponents();
+                for (int i = 0; i < children.length; i++) {
+                    Component child = children[i];
+                    if (child != panel.jPanel2) {
+                        if (child == component) {
+                            return;
+                        } else {
+                            panel.remove(child);
+                            break;
+                        }
+                    }
+                }
+                GridBagConstraints gbc = new GridBagConstraints();
+                gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = GridBagConstraints.REMAINDER; gbc.gridheight = 1;
+                gbc.anchor = GridBagConstraints.FIRST_LINE_START; gbc.fill = GridBagConstraints.BOTH;
+                gbc.weightx = 1; gbc.weighty = 1;
+
+                panel.add(component, gbc);
+                panel.revalidate();
+                panel.repaint();
+            }
+        });
+    }
+
+    private void refreshNodes () {
+        refreshNodesTak.schedule(0);
+    }
+
+    private class RefreshNodesTask implements Runnable {
+        @Override
+        public void run() {
+            setVersioningComponent(noContentComponent);
+        }
     }
 }

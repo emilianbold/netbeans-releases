@@ -600,7 +600,7 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
         assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
         assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
         assertTrue(file2.exists());
 
         commit();
@@ -610,7 +610,7 @@ public class StatusTest extends AbstractGitTestCase {
         delete(false, file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
         assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_IN_INDEX)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX)));
         assertFalse(file.exists());
 
         commit();

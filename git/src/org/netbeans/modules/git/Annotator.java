@@ -201,7 +201,7 @@ public class Annotator extends VCSAnnotator {
         String statusText = null;
         if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
             statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
         } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
@@ -289,7 +289,7 @@ public class Annotator extends VCSAnnotator {
 
         if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_IN_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });

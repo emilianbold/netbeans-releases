@@ -74,9 +74,11 @@ public class StatusAction extends GitAction {
         stc.requestActive();
     }
 
-    public final void scanStatus (final VCSContext context) {
+    public final GitProgressSupport scanStatus (final VCSContext context) {
         Set<File> repositories = GitUtils.getRepositoryRoots(context);
-        if (!repositories.isEmpty()) {
+        if (repositories.isEmpty()) {
+            return null;
+        } else {
             final Map<File, Collection<File>> toRefresh = new HashMap<File, Collection<File>>(repositories.size());
             for (File repository : repositories) {
                 toRefresh.put(repository, Arrays.asList(GitUtils.filterForRepository(context, repository)));
@@ -89,13 +91,14 @@ public class StatusAction extends GitAction {
                         t = System.currentTimeMillis();
                         Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): started for {0}", toRefresh.keySet()); //NOI18N
                     }
-                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh);
+                    Git.getInstance().getFileStatusCache().refreshAllRoots(toRefresh, this);
                     if (Git.STATUS_LOG.isLoggable(Level.FINE)) {
                         Git.STATUS_LOG.log(Level.FINE, "StatusAction.scanStatus(): lasted {0}", System.currentTimeMillis() - t); //NOI18N
                     }
                 }
             };
             supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")); //NOI18N
+            return supp;
         }
     }
 
