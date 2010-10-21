@@ -233,6 +233,8 @@ public class Watcher extends AnnotationProvider {
                     return new FAMNotifier();
                 } catch (Exception e) {
                     LOG.log(Level.INFO, null, e);
+                } catch (LinkageError x) {
+                    //this is normal not to have fam in the system, do not report
                 }
             }
         } catch (LinkageError x) {
