@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -185,22 +185,6 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/maven/nexus-indexer-artifact-1.0.1.jar</runtime-relative-path>
                 <binary-origin>external/nexus-indexer-artifact-1.0.1.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/maven/jetty-client-7.0.0.RC6.jar</runtime-relative-path>
-                <binary-origin>external/jetty-client-7.0.0.RC6.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/maven/jetty-http-7.0.0.RC6.jar</runtime-relative-path>
-                <binary-origin>external/jetty-http-7.0.0.RC6.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/maven/jetty-io-7.0.0.RC6.jar</runtime-relative-path>
-                <binary-origin>external/jetty-io-7.0.0.RC6.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/maven/jetty-util-7.0.0.RC6.jar</runtime-relative-path>
-                <binary-origin>external/jetty-util-7.0.0.RC6.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

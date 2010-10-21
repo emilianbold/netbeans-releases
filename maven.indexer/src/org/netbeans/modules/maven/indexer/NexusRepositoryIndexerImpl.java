@@ -85,6 +85,13 @@ import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.ProjectBuildingResult;
+import org.apache.maven.repository.legacy.WagonManager;
+import org.apache.maven.wagon.ConnectionException;
+import org.apache.maven.wagon.ResourceDoesNotExistException;
+import org.apache.maven.wagon.Wagon;
+import org.apache.maven.wagon.WagonException;
+import org.apache.maven.wagon.events.TransferListener;
+import org.apache.maven.wagon.repository.Repository;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.ArchetypeQueries;
@@ -115,6 +122,7 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 import org.sonatype.nexus.index.ArtifactAvailablility;
 import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactContextProducer;
@@ -132,15 +140,15 @@ import org.sonatype.nexus.index.context.IndexingContext;
 import org.sonatype.nexus.index.creator.AbstractIndexCreator;
 import org.sonatype.nexus.index.SearchEngine;
 import org.sonatype.nexus.index.context.IndexCreator;
+import org.sonatype.nexus.index.updater.AbstractResourceFetcher;
 import org.sonatype.nexus.index.updater.IndexUpdateRequest;
 import org.sonatype.nexus.index.updater.IndexUpdater;
-import org.sonatype.nexus.index.updater.jetty.JettyResourceFetcher;
 
 /**
  *
  * @author Anuradha G
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation.class)
+@ServiceProvider(service=RepositoryIndexerImplementation.class)
 public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, GenericFindQuery, ContextLoadedQuery {
@@ -152,6 +160,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
     private ArtifactContextProducer contextProducer;
+    private WagonManager wagonManager;
     private boolean inited = false;
     /*Indexer Keys*/
     private static final String NB_DEPENDENCY_GROUP = "nbdg"; //NOI18N
@@ -163,7 +172,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
      * any reads, writes from/to index shal be done under mutex access.
      */
     private static final HashMap<String,Mutex> repoMutexMap = new HashMap<String, Mutex>(4);
-    
+
     private Mutex getRepoMutex(RepositoryInfo repo) {
         return getRepoMutex(repo.getId());
     }
@@ -226,6 +235,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
+                wagonManager = embedder.lookup(WagonManager.class);
                 contextProducer = embedder.lookup(ArtifactContextProducer.class);
                 inited = true;
             } catch (DuplicateRealmException ex) {
@@ -414,26 +424,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     IndexUpdateRequest iur = new IndexUpdateRequest(indexingContext);
-                    /* XXX NEXUS-3812: JettyResourceFetcher throws IOE not FNFE, so cannot use:
-                    iur.setTransferListener(listener);
-                     */
-                    iur.setResourceFetcher(new JettyResourceFetcher() {
-                        {
-                            addTransferListener(listener);
-                            setConnectionTimeoutMillis(900000); // 15 minutes timeout for the index download
-                        }
-                        public @Override void retrieve(String name, File targetFile) throws IOException, FileNotFoundException {
-                            try {
-                                super.retrieve(name, targetFile);
-                            } catch (IOException x) {
-                                if (x.toString().endsWith(" does not exist")) {
-                                    throw (FileNotFoundException) new FileNotFoundException(x.toString()).initCause(x);
-                                } else {
-                                    throw x;
-                                }
-                            }
-                        }
-                    });
+                    iur.setResourceFetcher(new WagonFetcher(listener));
                     remoteIndexUpdater.fetchAndUpdateIndex(iur);
                 } finally {
                     listener.close();
@@ -1222,6 +1213,44 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         @Override
         public boolean updateArtifactInfo(Document arg0, ArtifactInfo arg1) {
             return false;
+        }
+    }
+
+    /** Adapted from a class formerly in DefaultIndexUpdater, but seems to work better than default JettyFetcher. */
+    private class WagonFetcher extends AbstractResourceFetcher {
+        private final TransferListener listener;
+        private Wagon wagon = null;
+        WagonFetcher(TransferListener listener) {
+            this.listener = listener;
+        }
+        @SuppressWarnings("deprecation") // XXX what is best replacement for getWagon? getRemoteFile does not hold open a connection
+        public @Override void connect(final String id, final String url) throws IOException {
+            Repository repository = new Repository(id, url);
+            try {
+                wagon = wagonManager.getWagon(repository);
+                wagon.addTransferListener(listener);
+                wagon.connect(repository);
+            } catch (WagonException x) {
+                throw new IOException(url + ": " + x, x);
+            }
+        }
+        public @Override void disconnect() {
+            if (wagon != null) {
+                try {
+                    wagon.disconnect();
+                } catch (ConnectionException x) {
+                    listener.debug(x.toString());
+                }
+            }
+        }
+        public @Override void retrieve(final String name, final File targetFile) throws IOException {
+            try {
+                wagon.get(name, targetFile);
+            } catch (ResourceDoesNotExistException x) {
+                throw (FileNotFoundException) new FileNotFoundException(name + ": " + x).initCause(x);
+            } catch (WagonException x) {
+                throw new IOException(name + ": " + x, x);
+            }
         }
     }
 
