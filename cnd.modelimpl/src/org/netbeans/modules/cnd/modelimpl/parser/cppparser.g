@@ -1874,7 +1874,7 @@ init_declarator[int kind]
 
 initializer
     : 
-        (balanceParensInExpression LCURLY) => balanceParensInExpression initializer
+        ((AMPERSAND)? balanceParensInExpression LCURLY) => (AMPERSAND)? balanceParensInExpression initializer
     | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
