@@ -46,7 +46,15 @@ package org.netbeans.modules.cnd.spi.utils;
  * service which is sensitive to file existence cache
  * @author Vladimir Voskresensky
  */
-public interface CndFileExistsSensitiveCache {
+public interface CndFileExistSensitiveCache {
+    /**
+     * notification that all information about file existence is invalid
+     */
     public void invalidateAll();
+    
+    /**
+     * notification that information about file existence of input file is no more invalid
+     * @param file invalidated file
+     */
     public void invalidateFile(String file);
 }

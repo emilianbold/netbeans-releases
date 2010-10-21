@@ -42,15 +42,15 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.spi.utils.CndFileExistsSensitiveCache;
+import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-@ServiceProvider(service=CndFileExistsSensitiveCache.class)
-public class FileExistsSensitiveCacheDriver implements CndFileExistsSensitiveCache {
+@ServiceProvider(service=CndFileExistSensitiveCache.class)
+public class FileExistsSensitiveCacheDriver implements CndFileExistSensitiveCache {
 
     @Override
     public void invalidateAll() {
