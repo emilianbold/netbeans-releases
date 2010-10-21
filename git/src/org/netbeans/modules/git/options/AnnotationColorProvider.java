@@ -50,6 +50,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitVCS;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -124,12 +125,12 @@ public class AnnotationColorProvider extends OptionsPanelColorProvider {
                 GitModuleConfig.getDefault().setColor(getColorKey(af.getKey()), af.getActualColor());
             }
         }
-        Git.getInstance().getRequestProcessor().post(new Runnable() {
+        Utils.postParallel(new Runnable() {
             @Override
             public void run() {
                 Git.getInstance().refreshAllAnnotations();
             }
-        });
+        }, 0);
     }
 
     private void initColors() {
