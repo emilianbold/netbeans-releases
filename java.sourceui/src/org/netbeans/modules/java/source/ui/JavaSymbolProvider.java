@@ -82,6 +82,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
@@ -126,7 +127,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 case REGEXP:
                     _kind = ClassIndex.NameKind.REGEXP;
                     _ident[0] = removeNonJavaChars(_ident[0]);
-                    _ident[0] = _ident[0].replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = true;
                     break;
                 case CAMEL_CASE:
@@ -149,7 +150,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 case CASE_INSENSITIVE_REGEXP:
                     _kind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP;
                     _ident[0] = removeNonJavaChars(_ident[0]);            
-                    _ident[0] = _ident[0].replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = false;
                     break;
                 default:

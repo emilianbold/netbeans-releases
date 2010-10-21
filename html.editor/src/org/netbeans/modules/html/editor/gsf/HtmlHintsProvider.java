@@ -171,7 +171,7 @@ public class HtmlHintsProvider implements HintsProvider {
                     assert e.getDescription() != null;
                     List<HintFix> fixes = new ArrayList<HintFix>(3);
 
-                    if(isErrorCheckingEnabledForFile(fo)) {
+                    if(!isErrorCheckingDisabledForFile(fo)) {
                         fixes.add(new DisableErrorChecksFix(snapshot));
                     }
 
@@ -210,7 +210,7 @@ public class HtmlHintsProvider implements HintsProvider {
         } else {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);
-            if(!isErrorCheckingEnabledForFile(fo)) {
+            if(isErrorCheckingDisabledForFile(fo)) {
                 fixes.add(new EnableErrorChecksFix(snapshot));
             }
             if(!isErrorCheckingEnabledForMimetype(fo)) {
@@ -388,20 +388,19 @@ public class HtmlHintsProvider implements HintsProvider {
     static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
 
     public static boolean isErrorCheckingEnabled(FileObject fo) {
-        return isErrorCheckingEnabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
+        return !isErrorCheckingDisabledForFile(fo) && isErrorCheckingEnabledForMimetype(fo);
     }
 
-    public static boolean isErrorCheckingEnabledForFile(FileObject fo) {
-        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) == null;
+    public static boolean isErrorCheckingDisabledForFile(FileObject fo) {
+        return fo.getAttribute(DISABLE_ERROR_CHECKS_KEY) != null;
     }
 
     public static boolean isErrorCheckingEnabledForMimetype(FileObject fo) {
-        return !HtmlPreferences.isHtmlErrorCheckingDisabledForMimetype(fo.getMIMEType());
+        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(fo.getMIMEType());
     }
 
     private static final class DisableErrorChecksFix implements HintFix {
 
-        private static String VALUE = "true"; //NOI18N
         private Snapshot snapshot;
 
         public DisableErrorChecksFix(Snapshot snapshot) {
@@ -417,7 +416,7 @@ public class HtmlHintsProvider implements HintsProvider {
         public void implement() throws Exception {
             FileObject fo = snapshot.getSource().getFileObject();
             if (fo != null) {
-                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, VALUE);
+                fo.setAttribute(DISABLE_ERROR_CHECKS_KEY, Boolean.TRUE);
             }
 
             //force reparse => hints update

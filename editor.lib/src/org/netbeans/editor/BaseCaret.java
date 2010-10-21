@@ -119,6 +119,7 @@ import org.openide.util.WeakListeners;
 * @version 1.00
 */
 
+@SuppressWarnings("ClassWithMultipleLoggers")
 public class BaseCaret implements Caret,
 MouseListener, MouseMotionListener, PropertyChangeListener,
 DocumentListener, ActionListener, 
@@ -139,6 +140,9 @@ AtomicLockListener, FoldHierarchyListener {
     // -J-Dorg.netbeans.editor.BaseCaret.level=FINEST
     private static final Logger LOG = Logger.getLogger(BaseCaret.class.getName());
     
+    // -J-Dorg.netbeans.editor.BaseCaret.EDT.level=FINE - check that setDot() and other operations in EDT only
+    private static final Logger LOG_EDT = Logger.getLogger(BaseCaret.class.getName() + ".EDT");
+
     static {
         // Compatibility debugging flags mapping to logger levels
         if (Boolean.getBoolean("netbeans.debug.editor.caret.focus") && LOG.getLevel().intValue() < Level.FINE.intValue())
@@ -1054,6 +1058,12 @@ AtomicLockListener, FoldHierarchyListener {
      */
     
     public void setDot(int offset, Rectangle scrollRect, int scrollPolicy, boolean expandFold) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseCaret.setDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("setDot: offset=" + offset); //NOI18N
             if (LOG.isLoggable(Level.FINEST)) {
@@ -1146,6 +1156,12 @@ AtomicLockListener, FoldHierarchyListener {
      * @deprecated use #setDot(int) preceded by <code>JComponent.scrollRectToVisible()</code>.
      */
     public void moveDot(int offset, Rectangle scrollRect, int scrollPolicy) {
+        if (LOG_EDT.isLoggable(Level.FINE)) { // Only permit operations in EDT
+            if (!SwingUtilities.isEventDispatchThread()) {
+                throw new IllegalStateException("BaseCaret.moveDot() not in EDT: offset=" + offset); // NOI18N
+            }
+        }
+
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine("moveDot: offset=" + offset); //NOI18N
         }

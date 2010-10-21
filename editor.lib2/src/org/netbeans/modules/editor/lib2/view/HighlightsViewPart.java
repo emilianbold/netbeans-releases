@@ -125,11 +125,6 @@ public final class HighlightsViewPart extends EditorView {
     }
 
     @Override
-    public boolean setLength(int length, int modOffset, int modLength) {
-        throw new IllegalStateException();
-    }
-
-    @Override
     public int getStartOffset() {
         return fullView.getStartOffset() + shift;
     }
@@ -160,35 +155,39 @@ public final class HighlightsViewPart extends EditorView {
 
     TextLayout getTextLayout() {
         if (partTextLayout == null) {
-            partTextLayout = fullView.createTextLayout(shift, getLength());
+            partTextLayout = fullView.createPartTextLayout(shift, getLength());
         }
         return partTextLayout;
     }
 
     @Override
     public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
-        return HighlightsView.modelToViewChecked(offset, alloc, bias, getTextLayout(), getStartOffset(), getLength());
+        return HighlightsViewUtils.indexToView(getTextLayout(), null, offset - getStartOffset(),
+                bias, getLength(), alloc);
     }
 
     @Override
     public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
-        return HighlightsView.viewToModelChecked(x, y, alloc, biasReturn, getTextLayout(), getStartOffset());
+        return HighlightsViewUtils.viewToIndex(getTextLayout(), x, alloc, biasReturn)
+                + getStartOffset();
     }
 
     @Override
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
-        return HighlightsView.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet,
-                getTextLayout(), getStartOffset(), getLength(), getDocumentView());
+        int startOffset = getStartOffset();
+        return HighlightsViewUtils.getNextVisualPosition(offset, bias, alloc, direction, biasRet,
+                getTextLayout(), startOffset, startOffset, getLength(), getDocumentView());
     }
 
     @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
-        HighlightsView.paint(g, alloc, clipBounds, fullView, getTextLayout(), shift, getLength());
+        HighlightsViewUtils.paint(g, alloc, clipBounds, fullView, getTextLayout(), shift, getLength());
     }
 
     @Override
     public View breakView(int axis, int offset, float x, float len) {
-        View part = HighlightsView.breakView(axis, offset, x, len, fullView, shift, getLength(), getTextLayout());
+        View part = HighlightsViewUtils.breakView(axis, offset, x, len, fullView,
+                shift, getLength(), getTextLayout(), 0);
         return (part != null) ? part : this;
     }
 
