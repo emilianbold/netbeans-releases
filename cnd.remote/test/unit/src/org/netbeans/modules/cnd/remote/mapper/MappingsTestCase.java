@@ -44,11 +44,18 @@ package org.netbeans.modules.cnd.remote.mapper;
 
 import java.io.StringReader;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
+import org.netbeans.modules.nativeexecution.test.RcFile;
 
 /**
  *
@@ -56,21 +63,57 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
  */
 public class MappingsTestCase extends RemoteTestBase {
 
-//    public void testHMPW() throws Exception {
-//        new HostMappingProviderWindows().findMappings("localhost", "randomguy@eaglet-sr");
-//    }
-
-//    public void testHMPS() throws Exception {
-//        Map<String, String> mappings = new HostMappingProviderSamba().findMappings("tester@eaglet-sr", "");
-//        assert mappings != null && "/export/pub".equals(mappings.get("pub"));
-//    }
 
     @ForAllEnvironments
     public void testAnalyzer() throws Exception {
-        HostMappingsAnalyzer ham = new HostMappingsAnalyzer(getTestExecutionEnvironment()); //sg155630@elif
+        ExecutionEnvironment execEnv = getTestExecutionEnvironment();
+        HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv); //sg155630@elif
         final Map<String, String> mappings = ham.getMappings();
         assert mappings != null;
-        System.err.println(mappings);
+        String sortedMappings = toSortedString(mappings);        
+        String referenceMappings = getReferenceMappingSortedString();
+        if (referenceMappings != null && !referenceMappings.isEmpty()) {
+            System.err.printf("\nMappings for %s differ.\nReference mappins are:%s\nActual mappings are:%s\n",
+                    execEnv, referenceMappings, sortedMappings);
+            if (!referenceMappings.equals(sortedMappings)) {
+                assertTrue("Mappings differ", false);
+            }
+        } else {
+            System.err.printf("Mappings for %s:%s\n", execEnv, sortedMappings);
+        }
+    }
+
+    private String getReferenceMappingSortedString() throws Exception {
+        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
+        String mspec = NativeExecutionTestSupport.getMspec(getTestExecutionEnvironment());
+            String section = "remote." + mspec + ".pathMappings";
+        SortedSet<String> sortedKeySet = new TreeSet<String>(rcFile.getKeys(section));
+        if (sortedKeySet.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String key : sortedKeySet) {
+            String value = rcFile.get(section, key);
+            key = expandMacro(key);
+            value = expandMacro(value);
+            sb.append("\n\t").append(key).append('=').append(value);
+        }
+        return sb.toString();
+    }
+
+    private String expandMacro(String text) throws Exception {
+        String localHostName = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname();
+        return text.replace("${LOCALHOST}", localHostName);
+    }
+
+    private String toSortedString(Map<String, String> mappings) {
+        TreeMap<String, String> sortedMap = new TreeMap<String, String>();
+        sortedMap.putAll(mappings);
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
+            sb.append("\n\t").append(entry.getKey()).append('=').append(entry.getValue());
+        }
+        return sb.toString();
     }
 
     public void testHostMappingProviderWindows_English() throws Exception {
