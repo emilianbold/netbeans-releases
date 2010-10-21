@@ -43,6 +43,7 @@
 package org.netbeans.modules.html.editor.indent;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.spi.HtmlModel;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
@@ -54,9 +55,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
+import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;
 import org.netbeans.modules.css.formatting.api.support.IndenterContextData;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
@@ -66,8 +69,10 @@ public class HtmlIndenter extends MarkupAbstractIndenter<HTMLTokenId> {
     public HtmlIndenter(Context context) {
         super(HTMLTokenId.language(), context);
         try {
-            CharSequence code = getDocument().getText(0, getDocument().getLength());
-            HtmlSource source = new HtmlSource(code);
+            Document doc = context.document();
+            FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
+            CharSequence code = doc.getText(0, doc.getLength());
+            HtmlSource source = new HtmlSource(code, null, file);
             SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
             model = result.getHtmlModel();
         } catch (BadLocationException ex) {
