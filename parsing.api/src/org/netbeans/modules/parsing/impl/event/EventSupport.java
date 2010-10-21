@@ -300,7 +300,7 @@ public final class EventSupport {
         }
         
         private void handleInvalidDataObject(final DataObject invalidDO) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     handleInvalidDataObjectImpl(invalidDO);
                 }
