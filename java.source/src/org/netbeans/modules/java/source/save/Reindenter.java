@@ -390,13 +390,19 @@ public class Reindenter implements IndentTask {
                 nextTokenId = token != null ? token.token().id() : null;
                 if (nextTokenId == null || nextTokenId != JavaTokenId.RBRACE) {
                     t = null;
-                    for (StatementTree st : ((BlockTree)last).getStatements()) {
+                    boolean isNextLabeledStatement = false;
+                    Iterator<? extends StatementTree> it = ((BlockTree)last).getStatements().iterator();
+                    while(it.hasNext()) {
+                        StatementTree st = it.next();
                         if (sp.getEndPosition(cut, st) > startOffset) {
+                            isNextLabeledStatement = st.getKind() == Kind.LABELED_STATEMENT;
                             break;
                         }
                         t = st;
                     }
-                    if (t != null) {
+                    if (isNextLabeledStatement && cs.absoluteLabelIndent()) {
+                        currentIndent = 0;
+                    } else if (t != null) {
                         currentIndent = getCurrentIndent(t);
                     } else if (isLeftBraceOnNewLine(lastPos, startOffset)) {
                         switch (path.get(1).getKind() == Kind.METHOD ? cs.getMethodDeclBracePlacement() : cs.getOtherBracePlacement()) {
@@ -507,6 +513,28 @@ public class Reindenter implements IndentTask {
                     currentIndent = getMultilineIndent(((AnnotationTree)last).getArguments(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineAnnotationArgs(), true);
                 } else {
                     currentIndent = getContinuationIndent(path, currentIndent);
+                }
+                break;
+            case LABELED_STATEMENT:
+                token = findFirstNonWhitespaceToken(startOffset, lastPos);
+                if (token == null || token.token().id() != JavaTokenId.COLON) {
+                    currentIndent = getContinuationIndent(path, currentIndent);
+                } else if (cs.absoluteLabelIndent()) {
+                    Tree parent = path.get(1);
+                    if (parent.getKind() == Kind.BLOCK) {
+                        t = null;
+                        for (StatementTree st : ((BlockTree)parent).getStatements()) {
+                            if (sp.getEndPosition(cut, st) > startOffset) {
+                                break;
+                            }
+                            t = st;
+                        }
+                        if (t != null) {
+                            currentIndent = getCurrentIndent(t);
+                        } else {
+                            currentIndent = getCurrentIndent(parent) + cs.getIndentSize();
+                        }
+                    }
                 }
                 break;
             default:

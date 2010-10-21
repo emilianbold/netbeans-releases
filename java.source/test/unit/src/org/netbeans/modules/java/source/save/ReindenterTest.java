@@ -1342,6 +1342,70 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        System.arraycopy(arr,\n                         1,\n                         );\n    }\n}\n");
     }
 
+    public void testNewLineIndentationBeforeLabeledStatement() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {|mylabel:\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        mylabel:\n    }\n}\n");
+    }
+
+    public void testLineIndentationBeforeLabeledStatement() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n|mylabel:\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        mylabel:\n    }\n}\n");
+    }
+
+    public void testNewLineIndentationInsideLabeledStatement() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        mylabel:|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        mylabel:\n        \n    }\n}\n");
+    }
+
+    public void testLineIndentationInsideLabeledStatement() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        mylabel:\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        mylabel:\n        \n    }\n}\n");
+    }
+
+    public void testNewLineIndentationBeforeAbsolutLabeledStatement() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("absoluteLabelIndent", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {|mylabel:\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\nmylabel:\n    }\n}\n");
+        } finally {
+            preferences.remove("absoluteLabelIndent");
+        }
+    }
+
+    public void testLineIndentationBeforeAbsolutLabeledStatement() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("absoluteLabelIndent", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n|        mylabel:\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\nmylabel:\n    }\n}\n");
+        } finally {
+            preferences.remove("absoluteLabelIndent");
+        }
+    }
+
+    public void testNewLineIndentationInsideAbsolutLabeledStatement() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("absoluteLabelIndent", true);
+        try {
+            performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\nmylabel:|\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\nmylabel:\n        \n    }\n}\n");
+        } finally {
+            preferences.remove("absoluteLabelIndent");
+        }
+    }
+
+    public void testLineIndentationInsideAbsolutLabeledStatement() throws Exception {
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("absoluteLabelIndent", true);
+        try {
+            performLineIndentationTest("package t;\npublic class T {\n    public void op() {\nmylabel:\n|\n    }\n}\n",
+                    "package t;\npublic class T {\n    public void op() {\nmylabel:\n        \n    }\n}\n");
+        } finally {
+            preferences.remove("absoluteLabelIndent");
+        }
+    }
+
 //    public void testSpanIndentation() throws Exception {
 //        performSpanIndentationTest("package t;\npublic class T {\n|private void t() {\nSystem.err.println(1);\n}\n|}\n",
 //                "package t;\npublic class T {\n    private void t() {\n        System.err.println(1);\n    }\n}\n");
