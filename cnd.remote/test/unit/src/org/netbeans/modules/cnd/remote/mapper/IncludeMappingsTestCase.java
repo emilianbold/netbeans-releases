@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
-import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
