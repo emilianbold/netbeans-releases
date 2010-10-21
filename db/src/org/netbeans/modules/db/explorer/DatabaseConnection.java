@@ -62,6 +62,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -223,6 +224,11 @@ public final class DatabaseConnection implements DBConnection {
         this(driver, driverName, database, theschema, user, password, false);
     }
 
+    public DatabaseConnection(String driver, String driverName, String database, 
+            String theschema, String user) {
+        this(driver, driverName, database, theschema, user, null, false);
+    }
+
     public DatabaseConnection(String driver, String driverName, String database,
             String theschema, String user, String password,
             boolean rememberPassword) {
@@ -231,23 +237,10 @@ public final class DatabaseConnection implements DBConnection {
         drvname = driverName;
         db = database;
         usr = user;
-        schema = theschema;
         pwd = password;
-        name = getName();
         rpwd = Boolean.valueOf(rememberPassword);
-    }
-
-    public DatabaseConnection(String driver, String driverName, String database, 
-            String theschema, String user) {
-        this();
-        drv = driver;
-        drvname = driverName;
-        db = database;
-        usr = user;
         schema = theschema;
-        pwd = null;
         name = getName();
-        rpwd = null;
     }
 
     public JDBCDriver findJDBCDriver() {
@@ -365,7 +358,7 @@ public final class DatabaseConnection implements DBConnection {
                  }
              }
          } catch(Exception ex) {
-             Logger.getLogger("global").log(Level.INFO, null, ex);
+             LOGGER.log(Level.INFO, null, ex);
          }
          return openConnection;
      }
@@ -524,6 +517,10 @@ public final class DatabaseConnection implements DBConnection {
             schema = "";
         }
 
+        if (schema.length() == 0) {
+            return defaultSchema == null ? "" : defaultSchema;
+        }
+
         return schema;
     }
 
@@ -537,16 +534,18 @@ public final class DatabaseConnection implements DBConnection {
             return;
         }
 
+        String oldName = getName();
+        name = null;
         String oldschema = schema;
         schema = schema_name;
-        name = null;
         name = getName();
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_SCHEMA, oldschema, schema);
+            propertySupport.firePropertyChange(PROP_NAME, oldName, name);
         }
     }
 
-    public void setDefaultCatalog(String val) throws Exception {
+    public void setDefaultCatalog(String val) throws CommandNotSupportedException, DDLException {
         DDLHelper.setDefaultDatabase(getConnector().getDatabaseSpecification(), val);
         String oldVal = defaultCatalog;
         defaultCatalog = val;
@@ -560,13 +559,21 @@ public final class DatabaseConnection implements DBConnection {
         return defaultCatalog;
     }
 
-    public void setDefaultSchema(String val) throws Exception {
-        DDLHelper.setDefaultSchema(getConnector().getDatabaseSpecification(), val);
-        String oldVal = defaultSchema;
-        defaultSchema = val;
+    public void setDefaultSchema(String newDefaultSchema) throws Exception {
+        DDLHelper.setDefaultSchema(getConnector().getDatabaseSpecification(), newDefaultSchema);
+
+        String oldName = name;
+        name = null;
+
+        String oldDefaultSchema = defaultSchema;
+        defaultSchema = newDefaultSchema;
+        
+        name = getName();
 
         if (propertySupport != null) {
-            propertySupport.firePropertyChange(PROP_DEFSCHEMA, oldVal, defaultSchema);
+            propertySupport.firePropertyChange(PROP_DEFSCHEMA, oldDefaultSchema, defaultSchema);
+            propertySupport.firePropertyChange(PROP_SCHEMA, schema, getSchema());
+            propertySupport.firePropertyChange(PROP_NAME, oldName, name);
         }
     }
 
@@ -776,6 +783,15 @@ public final class DatabaseConnection implements DBConnection {
             DatabaseUILogger.logConnection(drv);
 
             propertySupport.firePropertyChange("connected", null, null);
+            if (getConnector().getDatabaseSpecification() != null) {
+                try {
+                    setDefaultSchema(getSchema());
+                } catch (DDLException x) {
+                    LOGGER.log(Level.INFO, x.getLocalizedMessage(), x);
+                } catch (CommandNotSupportedException x) {
+                    LOGGER.log(Level.INFO, x.getLocalizedMessage(), x);
+                }
+            }
         } catch (Exception e) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", // NOI18N
                         db, drv, e.getMessage());
@@ -803,7 +819,7 @@ public final class DatabaseConnection implements DBConnection {
                 try {
                     conn.close();
                 } catch (SQLException sqle) {
-                    Logger.getLogger("global").log(Level.WARNING, null, sqle); // NOI18N
+                    LOGGER.log(Level.WARNING, null, sqle); // NOI18N
                 }
             }
 

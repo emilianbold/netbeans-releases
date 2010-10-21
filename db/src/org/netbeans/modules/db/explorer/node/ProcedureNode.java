@@ -492,7 +492,7 @@ public class ProcedureNode extends BaseNode {
             try {
                 Statement stat = connection.getConnection().createStatement();
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "'" // NOI18N
+                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + connection.getSchema().toUpperCase() + "'" // NOI18N
                         + " ORDER BY LINE"; // NOI18N
                 ResultSet rs = stat.executeQuery(q);
                 while(rs.next()) {
