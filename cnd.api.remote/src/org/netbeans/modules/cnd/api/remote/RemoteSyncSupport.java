@@ -65,11 +65,13 @@ public final class RemoteSyncSupport {
     }
 
     public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
-        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-        if (remoteProject != null) {
-            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
-            if (syncFactory != null) {
-                return syncFactory.createNew(project, out, err);
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+                if (syncFactory != null) {
+                    return syncFactory.createNew(project, out, err);
+                }
             }
         }
         return null;
