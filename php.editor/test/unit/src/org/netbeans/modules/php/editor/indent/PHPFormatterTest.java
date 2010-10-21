@@ -49,6 +49,7 @@ import javax.swing.text.Caret;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
@@ -82,6 +83,7 @@ public class PHPFormatterTest extends PHPTestBase {
         } catch (IllegalStateException ise) {
             // Ignore -- we've already registered this either via layers or other means
         }
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
     }
     
       public void test174595() throws Exception {
@@ -1923,6 +1925,7 @@ public class PHPFormatterTest extends PHPTestBase {
     }
 
     public void testIssue175229() throws Exception {
+        
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
 	reformatFileContents("testfiles/formatting/html/issue175229.php", options);
     }
