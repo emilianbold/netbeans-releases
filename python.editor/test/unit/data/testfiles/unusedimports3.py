@@ -1,3 +1,0 @@
-import operator
-abs()
-

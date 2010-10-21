@@ -1,7 +1,0 @@
-x = 1
-
-HINT:Surround With...
-FIX:Surround With Try/Except
-FIX:Surround With Try/Except/Finally
-FIX:Surround With Try/Finally
-y = 2^

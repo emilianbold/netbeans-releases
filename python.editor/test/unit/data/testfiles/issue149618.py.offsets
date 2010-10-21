@@ -1,6 +1,0 @@
-
-<Module><FunctionDef>def loadstable(<Name>name</Name>,<Name>theglobals</Name>=<Name>None</Name>,<Name>thelocals</Name>=<Name>None</Name>,<Name>fromlist</Name>=<Name>None</Name>,<Name>level</Name>=<Num>-1</Num>):
-    <If>if <Compare><Subscript><Attribute><Name>name</Name>.split</Attribute><Call>(<Str>'.'</Str>)</Call>[<Index><Num>0</Num></Index>]</Subscript>!=<Str>"tools"</Str></Compare>
-        <Print>print <Str>"Python"</Str></Print>
-
-</If></FunctionDef></Module>

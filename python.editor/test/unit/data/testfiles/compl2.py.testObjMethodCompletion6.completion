@@ -1,5 +1,0 @@
-Code completion result for source line:
-print sys.getfile|systeme
-(QueryType=COMPLETION, NameKind=PREFIX)
-------------------------------------
-METHOD     getfile()                                  

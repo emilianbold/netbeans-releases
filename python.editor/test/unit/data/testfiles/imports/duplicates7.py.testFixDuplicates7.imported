@@ -1,5 +1,0 @@
-from definitions import DecimalException
-#from definitions import Unused
-#import unused1
-    
-x = DecimalException();
