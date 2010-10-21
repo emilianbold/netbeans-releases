@@ -175,15 +175,19 @@ made subject to such option by the copyright holder.
                 <package>org.apache.maven.project</package>
                 <package>org.apache.maven.project.path</package>
                 <package>org.apache.maven.repository</package>
+                <package>org.apache.maven.repository.legacy</package>
                 <package>org.apache.maven.settings</package>
                 <package>org.apache.maven.settings.building</package>
                 <package>org.apache.maven.settings.io.xpp3</package>
                 <package>org.apache.maven.shared.dependency.tree</package>
                 <package>org.apache.maven.shared.dependency.tree.traversal</package>
                 <package>org.apache.maven.wagon</package>
+                <package>org.apache.maven.wagon.authentication</package>
                 <package>org.apache.maven.wagon.authorization</package>
                 <package>org.apache.maven.wagon.events</package>
+                <package>org.apache.maven.wagon.providers.http</package>
                 <package>org.apache.maven.wagon.proxy</package>
+                <package>org.apache.maven.wagon.repository</package>
                 <package>org.apache.maven.wagon.resource</package>
                 <package>org.codehaus.plexus</package>
                 <package>org.codehaus.plexus.classworlds</package>
