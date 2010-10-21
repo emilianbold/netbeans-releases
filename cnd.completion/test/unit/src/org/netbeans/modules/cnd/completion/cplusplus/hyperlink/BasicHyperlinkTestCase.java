@@ -691,6 +691,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191081.cpp", 8, 33, "bug191081.cpp", 2, 9);
     }
 
+    public void testIZ191198() throws Exception {
+        // #191198 -  Parser error in buf.c
+        performTest("bug191198.c", 9, 35, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 9, 45, "bug191198.c", 3, 9);
+        performTest("bug191198.c", 15, 35, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
