@@ -180,8 +180,11 @@ public class JavacParser extends Parser {
 
     //Listener support
     private final ChangeSupport listeners = new ChangeSupport(this);
-    //Cancelling of parser & index
-    private final AtomicBoolean canceled = new AtomicBoolean();
+    //Cancelling of parser
+    private final AtomicBoolean parserCanceled = new AtomicBoolean();
+    //Cancelling of index
+    private final AtomicBoolean indexCanceled = new AtomicBoolean();
+    
     //When true the parser is a private copy not used by the parsing API, see JavaSourceAccessor.createCompilationController
     private final boolean privateParser;
     //File processed by this javac
@@ -323,7 +326,8 @@ public class JavacParser extends Parser {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
         parseId++;
-        canceled.set(false);
+        parserCanceled.set(false);
+        indexCanceled.set(false);
         LOGGER.log(Level.FINE, "parse: task: {0}\n{1}", new Object[]{   //NOI18N
             task.toString(),
             snapshot == null ? "null" : snapshot.getText()});      //NOI18N
@@ -437,7 +441,7 @@ public class JavacParser extends Parser {
                 }
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
-                ClassIndexImpl.cancel.set(canceled);
+                ClassIndexImpl.cancel.set(indexCanceled);
                 result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
             }
         }
@@ -466,8 +470,11 @@ public class JavacParser extends Parser {
     }
 
     @Override
-    public void cancel () {
-        canceled.set(true);
+    public void cancel (final @NonNull CancelReason reason, final @NonNull SourceModificationEvent event) {
+        indexCanceled.set(true);
+        if (reason == CancelReason.SOURCE_MODIFICATION_EVENT && event.sourceChanged()) {
+            parserCanceled.set(true);
+        }
     }
 
     public void resultFinished (boolean isCancelable) {
@@ -514,7 +521,7 @@ public class JavacParser extends Parser {
         Phase currentPhase = currentInfo.getPhase();
         try {
             if (currentPhase.compareTo(Phase.PARSED)<0 && phase.compareTo(Phase.PARSED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.get()) {
+                if (cancellable && parserCanceled.get()) {
                     //Keep the currentPhase unchanged, it may happen that an userActionTask
                     //runnig after the phace completion task may still use it.
                     return Phase.MODIFIED;
@@ -536,7 +543,7 @@ public class JavacParser extends Parser {
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
                 if (doc != null && supportsReparse) {
-                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.canceled);
+                    FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.parserCanceled);
                     v.visit(unit, null);
                     synchronized (positions) {
                         positions.clear();
@@ -552,7 +559,7 @@ public class JavacParser extends Parser {
                 logTime (currentFile,currentPhase,(end-start));
             }
             if (currentPhase == Phase.PARSED && phase.compareTo(Phase.ELEMENTS_RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.get()) {
+                if (cancellable && parserCanceled.get()) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis();
@@ -562,7 +569,7 @@ public class JavacParser extends Parser {
                 logTime(currentInfo.getFileObject(),currentPhase,(end-start));
            }
            if (currentPhase == Phase.ELEMENTS_RESOLVED && phase.compareTo(Phase.RESOLVED)>=0 && phase.compareTo(parserError)<=0) {
-                if (cancellable && canceled.get()) {
+                if (cancellable && parserCanceled.get()) {
                     return Phase.MODIFIED;
                 }
                 long start = System.currentTimeMillis ();
@@ -1030,7 +1037,7 @@ public class JavacParser extends Parser {
 
         @Override
         public boolean isCanceled() {
-            return mayCancel.get() && parser.canceled.get();
+            return mayCancel.get() && parser.parserCanceled.get();
         }
     }
 

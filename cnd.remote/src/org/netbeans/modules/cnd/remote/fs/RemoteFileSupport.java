@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -346,6 +348,10 @@ public class RemoteFileSupport extends NamedRunnable {
             attrs.store();
             return attrs;
         } else {
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
+                ExitStatus ls = ProcessUtils.execute(execEnv, "/bin/ls", rdir); // NOI18N
+                RemoteUtil.LOGGER.log(Level.FINE, "Content of directory {0}:\n{1}", new Object[]{rdir, ls.output});
+            }
             return null;
         }
     }

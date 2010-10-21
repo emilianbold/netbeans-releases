@@ -199,7 +199,7 @@ public final class TypedBreakInterceptorsManager {
                 interceptors = new HashSet<TypedBreakInterceptor>(factories.size());
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "TypedBreakInterceptor.Factory instances for {0} {" , mimePath.getPath()); //NOI18N
+                    LOG.log(Level.FINE, "TypedBreakInterceptor.Factory instances for {0}:" , mimePath.getPath()); //NOI18N
                 }
 
                 for(TypedBreakInterceptor.Factory f : factories) {
@@ -208,12 +208,12 @@ public final class TypedBreakInterceptorsManager {
                         interceptors.add(interceptor);
                     }
                     if (LOG.isLoggable(Level.FINE)) {
-                        LOG.log(Level.FINE, "{0} created: {1}", new Object[] { f, interceptor }); //NOI18N
+                        LOG.log(Level.FINE, "    {0} created: {1}", new Object[] { f, interceptor }); //NOI18N
                     }
                 }
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("}"); //NOI18N
+                    LOG.fine(""); //NOI18N
                 }
 
                 // XXX: this should really be a timed WeakReference

@@ -238,6 +238,12 @@ public class Utilities {
             List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
             if (!typeArguments.isEmpty()) {
                 designedType = typeArguments.get(0);
+            } else {
+                TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
+
+                if (jlObject != null) {
+                    designedType = jlObject.asType();
+                }
             }
         } else if (iterableType.getKind() == TypeKind.ARRAY) {
             designedType = ((ArrayType) iterableType).getComponentType();

@@ -271,7 +271,7 @@ public class DocumentBasedIndex implements IndexImpl {
             case PREFIX: return Queries.QueryKind.PREFIX;                
             case CASE_INSENSITIVE_PREFIX: return Queries.QueryKind.CASE_INSENSITIVE_PREFIX;
             case CAMEL_CASE: return Queries.QueryKind.CAMEL_CASE;
-            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_PREFIX;                
+            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_REGEXP;                
             case REGEXP: return Queries.QueryKind.REGEXP;
             case CASE_INSENSITIVE_CAMEL_CASE: return Queries.QueryKind.CASE_INSENSITIVE_CAMEL_CASE;
             default: throw new UnsupportedOperationException (kind.toString());
