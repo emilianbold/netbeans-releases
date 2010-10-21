@@ -86,6 +86,7 @@ public class ValidatorImpl implements Validator {
     public boolean canValidate(HtmlVersion version) {
         switch(version) {
             case HTML5:
+            case XHTML5:
                 return true;
             default:
                 return false;

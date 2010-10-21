@@ -48,6 +48,7 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.List;
 import java.util.WeakHashMap;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -71,8 +72,10 @@ import org.openide.util.NbBundle;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import java.io.FilenameFilter;
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -104,22 +107,32 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
     }
     
     public static class J2eePlatformImplImpl extends J2eePlatformImpl {
-        private static final String J2EE_API_DOC    = "docs/javaee6-doc-api.zip";    // NOI18N
-        private static final Set MODULE_TYPES = new HashSet();
+        
+        private static final Set<Type> MODULE_TYPES = new HashSet<Type>();
         static {
-            MODULE_TYPES.add(J2eeModule.EAR);
-            MODULE_TYPES.add(J2eeModule.WAR);
-            MODULE_TYPES.add(J2eeModule.EJB);
-            MODULE_TYPES.add(J2eeModule.CONN);
-            MODULE_TYPES.add(J2eeModule.CLIENT);
+            MODULE_TYPES.add(Type.EAR);
+            MODULE_TYPES.add(Type.WAR);
+            MODULE_TYPES.add(Type.EJB);
+            MODULE_TYPES.add(Type.RAR);
+            MODULE_TYPES.add(Type.CAR);
         }
 
-        private static final Set SPEC_VERSIONS = new HashSet();
-        private static final Set SPEC_VERSIONS_5 = new HashSet();
+        private static final Set<Profile> PROFILES_4_5 = new HashSet<Profile>();
+        private static final Set<Profile> PROFILES_4_5_6 = new HashSet<Profile>();
+        private static final Set<Profile> PROFILES_4_5_6Web = new HashSet<Profile>();
         static {
-            SPEC_VERSIONS.add(J2eeModule.J2EE_14);
-            SPEC_VERSIONS_5.add(J2eeModule.J2EE_14);
-            SPEC_VERSIONS_5.add(J2eeModule.JAVA_EE_5);
+            // FIXME optimize
+            PROFILES_4_5.add(Profile.J2EE_14);
+            PROFILES_4_5.add(Profile.JAVA_EE_5);
+            
+            PROFILES_4_5_6.add(Profile.J2EE_14);
+            PROFILES_4_5_6.add(Profile.JAVA_EE_5);
+            PROFILES_4_5_6.add(Profile.JAVA_EE_6_WEB);
+            PROFILES_4_5_6.add(Profile.JAVA_EE_6_FULL);
+            
+            PROFILES_4_5_6Web.add(Profile.J2EE_14);
+            PROFILES_4_5_6Web.add(Profile.JAVA_EE_5);
+            PROFILES_4_5_6Web.add(Profile.JAVA_EE_6_WEB);            
         }
 
         private LibraryImplementation[] libraries;
@@ -130,42 +143,56 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             this.properties = properties;
         }
 
-        public Set getSupportedSpecVersions() {
+        @Override
+        public Set<org.netbeans.api.j2ee.core.Profile> getSupportedProfiles() {
+            if (properties.supportsJavaEE6()) {
+                return PROFILES_4_5_6;
+            }
+            if (properties.supportsJavaEE6Web()) {
+                return PROFILES_4_5_6Web;
+            }
             if (properties.supportsJavaEE5ejb3() && properties.supportsJavaEE5web()) {
-                return SPEC_VERSIONS_5;
+                return PROFILES_4_5;
             } else {
-                return SPEC_VERSIONS;
+                return Collections.singleton(Profile.J2EE_14);
             }
         }
 
         @Override
-        public Set<String> getSupportedSpecVersions(Object moduleType) {
-            if (properties.supportsJavaEE5web() && J2eeModule.WAR.equals(moduleType)) {
-                return SPEC_VERSIONS_5;
+        public Set<org.netbeans.api.j2ee.core.Profile> getSupportedProfiles(Type moduleType) {
+            if (properties.supportsJavaEE6()) {
+                return PROFILES_4_5_6;
             }
-            if (properties.supportsJavaEE5ejb3() && J2eeModule.EJB.equals(moduleType)) {
-                return SPEC_VERSIONS_5;
+            if (properties.supportsJavaEE6Web() && Type.WAR.equals(moduleType)) {
+                return PROFILES_4_5_6Web;
             }
-            if (properties.supportsJavaEE5ear() && J2eeModule.EAR.equals(moduleType)) {
-                return SPEC_VERSIONS_5;
+            if (properties.supportsJavaEE5web() && Type.WAR.equals(moduleType)) {
+                return PROFILES_4_5;
+            }
+            if (properties.supportsJavaEE5ejb3() && Type.EJB.equals(moduleType)) {
+                return PROFILES_4_5;
+            }
+            if (properties.supportsJavaEE5ear() && Type.EAR.equals(moduleType)) {
+                return PROFILES_4_5;
             }
 
             // paranoid check
             if (properties.supportsJavaEE5ear() && properties.supportsJavaEE5ejb3()
-                    && properties.supportsJavaEE5web() && !J2eeModule.CLIENT.equals(moduleType)) {
-                return SPEC_VERSIONS_5;
+                    && properties.supportsJavaEE5web() && !Type.CAR.equals(moduleType)) {
+                return PROFILES_4_5;
             }
             // JavaEE5 ear, web and app client modules are not supported for JBoss 4.0
             if (properties.supportsJavaEE5ejb3()
-                    && !(J2eeModule.EAR.equals(moduleType)
-                        || J2eeModule.WAR.equals(moduleType) || J2eeModule.CLIENT.equals(moduleType))) {
-                return SPEC_VERSIONS_5;
+                    && !(Type.EAR.equals(moduleType)
+                        || Type.WAR.equals(moduleType) || Type.CAR.equals(moduleType))) {
+                return PROFILES_4_5;
             }
 
-            return SPEC_VERSIONS;
+            return Collections.singleton(Profile.J2EE_14);
         }
 
-        public Set getSupportedModuleTypes() {
+        @Override
+        public Set<Type> getSupportedTypes() {
             return MODULE_TYPES;
         }
         

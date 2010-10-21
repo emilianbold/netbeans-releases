@@ -90,6 +90,8 @@ public class JBPluginUtils {
     
     public static final Version JBOSS_5_0_1 = new Version("5.0.1"); // NOI18N
 
+    public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
     private static final Version DOM4J_SERVER = new Version("4.0.4"); // NOI18N
