@@ -153,8 +153,8 @@ public final class EventSupport {
         if (invalidate) {
             flags.add(SourceFlags.INVALID);
             flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            SourceAccessor.getINSTANCE().setSourceModification (source, startOffset, endOffset);
         }
+        SourceAccessor.getINSTANCE().setSourceModification (source, invalidate, startOffset, endOffset);
         SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
 

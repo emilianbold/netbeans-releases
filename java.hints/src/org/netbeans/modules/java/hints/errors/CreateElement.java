@@ -336,7 +336,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        final TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
+        final TypeMirror type = types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
 
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
             return result;

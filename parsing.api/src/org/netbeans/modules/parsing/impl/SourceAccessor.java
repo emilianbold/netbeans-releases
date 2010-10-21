@@ -130,7 +130,7 @@ public abstract class SourceAccessor {
 
     public abstract SourceModificationEvent getSourceModificationEvent (Source source);
 
-    public abstract void setSourceModification (Source source, int startOffset, int endOffset);
+    public abstract void setSourceModification (Source source, boolean sourceChanged, int startOffset, int endOffset);
 
     public abstract void parsed (Source source);
 

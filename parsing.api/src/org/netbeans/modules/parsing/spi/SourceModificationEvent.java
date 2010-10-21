@@ -50,15 +50,47 @@ import org.netbeans.modules.parsing.api.Source;
  * @author hanz
  */
 public class SourceModificationEvent extends EventObject {
+    
+    private final boolean sourceChanged;
 
+    
+    /**
+     * Creates a new {@link SourceModificationEvent}
+     * @param source the {@link Source} in which the event occurred
+     * @deprecated use {@link SourceModificationEvent#SourceModificationEvent(java.lang.Object, boolean)}
+     */
+    @Deprecated
     protected SourceModificationEvent (
         Object              source
     ) {
+        this(source, true);
+    }
+    
+    /**
+     * Creates a new {@link SourceModificationEvent}
+     * @param source the {@link Source} in which the event occurred
+     * @param sourceChanged true if the change caused a modification of the text being parsed.
+     * @since 1.36
+     */
+    protected SourceModificationEvent (
+        Object              source,
+        boolean             sourceChanged
+    ) {
         super (source);
+        this.sourceChanged = sourceChanged;
     }
 
     public Source getModifiedSource () {
         return (Source) getSource ();
+    }
+    
+    /**
+     * Returns true when the change causing this event affected the source.
+     * @return true if the source was changed
+     * @since 1.36
+     */
+    public boolean sourceChanged() {
+        return sourceChanged;
     }
 
     @Override

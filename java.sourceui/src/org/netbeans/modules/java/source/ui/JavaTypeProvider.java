@@ -293,9 +293,7 @@ public class JavaTypeProvider implements TypeProvider {
             case REGEXP:
             case CASE_INSENSITIVE_REGEXP:
                 text = removeNonJavaChars(text);
-                String pattern = searchType == SearchType.CASE_INSENSITIVE_EXACT_NAME ? text : text + "*"; // NOI18N
-                pattern = pattern.replace( "*", ".*" ).replace( '?', '.' );
-                textForQuery = pattern;
+                textForQuery = Util.wildcardsToRegexp(text, searchType != SearchType.CASE_INSENSITIVE_EXACT_NAME);
                 break;
             default:
                 textForQuery = text;

@@ -1716,7 +1716,7 @@ public class BaseKit extends DefaultEditorKit {
                     
                     try {
                         removedChar = nextChar ? 
-                        dot < doc.getLength() - 1 ? doc.getChars(dot, 1) : null : 
+                        dot < doc.getLength() ? doc.getChars(dot, 1) : null : 
                         dot > 0 ? doc.getChars(dot - 1, 1) : null;
                     } catch (BadLocationException ble) {
                         target.getToolkit().beep();
