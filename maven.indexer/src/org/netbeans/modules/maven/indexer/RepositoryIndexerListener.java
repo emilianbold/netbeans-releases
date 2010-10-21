@@ -44,6 +44,8 @@ package org.netbeans.modules.maven.indexer;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -78,6 +80,8 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     private final boolean DEBUG = false;
      private InputOutput io;
     private OutputWriter writer;
+    private final Set<File> expectedDirs = new HashSet<File>();
+    private final Set<File> encounteredDirs = new HashSet<File>();
 
     @SuppressWarnings("LeakingThisInConstructor")
     public RepositoryIndexerListener(IndexingContext indexingContext) {
@@ -101,10 +105,38 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         if (handle != null) {
             handle.finish();
         }
+        expectedDirs.clear();
+        encounteredDirs.clear();
+//        System.err.println("looking for indexable dirs...");
+        findIndexableDirs(ctx.getRepository());
+//        System.err.println("...done; found: " + expectedDirs.size());
         handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
-        handle.start();
-        handle.switchToIndeterminate();
+        handle.start(expectedDirs.size());
         tstart = System.currentTimeMillis();
+    }
+    private void findIndexableDirs(File d) {
+        // Try to guess what DefaultScanner might find. Hard to know for sure, so guess that nonempty leaf dirs will contain real artifacts.
+        if (d == null || d.getName().startsWith(".")) {
+            return;
+        }
+        File[] kids = d.listFiles();
+        if (kids == null) {
+            return;
+        }
+        boolean hasFiles = false;
+        boolean hasDirs = false;
+        for (File f : kids) {
+            if (f.isFile() && !f.getName().matches("maven-metadata.*[.]xml")) {
+                hasFiles = true;
+            }
+            if (f.isDirectory()) {
+                hasDirs = true;
+                findIndexableDirs(f);
+            }
+        }
+        if (hasFiles && !hasDirs) {
+            expectedDirs.add(d);
+        }
     }
 
     public @Override boolean cancel() {
@@ -136,7 +168,22 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
             writer.printf("  %6d %s\n", count, formatFile(ac.getPom()));//NOI18N
         }
         if (handle != null) {
-            handle.progress(ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version);
+            String label = ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version;
+            File art = ac.getArtifact();
+            if (art == null) {
+                art = ac.getPom();
+            }
+            if (art != null) {
+                File d = art.getParentFile();
+                if (expectedDirs.contains(d)) {
+                    encounteredDirs.add(d);
+                } else {
+//                    System.err.println("encountered unexpected artifact " + art);
+                }
+            } else {
+//                System.err.println("no artifact file for " + label);
+            }
+            handle.progress(label, encounteredDirs.size());
         }
     }
 
@@ -181,6 +228,12 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
 
             }
         }
+//        Set<File> unencountered = new TreeSet<File>(expectedDirs);
+//        unencountered.removeAll(encounteredDirs);
+//        System.err.println("did not encounter " + unencountered.size() + ":");
+//        for (File d : unencountered) {
+//            System.err.println("  " + d);
+//        }
     }
 
     void close() {
