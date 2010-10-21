@@ -45,6 +45,9 @@
 package org.netbeans.core.validation;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
@@ -54,6 +57,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.NbCollections;
 
@@ -63,7 +68,9 @@ import org.openide.util.NbCollections;
  */
 public class ValidateClassLinkageTest extends NbTestCase {
 
-    // XXX needs to be using NbModuleSuite to be meaningful
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ValidateClassLinkageTest.class).clusters("(?!extra$).*").enableModules(".*").gui(false).enableClasspathModules(false));
+    }
     
     public ValidateClassLinkageTest(String name) {
         super(name);
@@ -71,7 +78,7 @@ public class ValidateClassLinkageTest extends NbTestCase {
     
     /**
      * Try to load every class we can find.
-     * @see org.netbeans.core.modules.NbInstaller#preresolveClasses
+     * @see org.netbeans.core.startup.NbInstaller#preresolveClasses
      */
     public void testClassLinkage() throws Exception {
         ClassLoader l = Thread.currentThread().getContextClassLoader();
@@ -101,13 +108,21 @@ public class ValidateClassLinkageTest extends NbTestCase {
             try {
                 for (JarEntry entry : NbCollections.iterable(jarfile.entries())) {
                     String name = entry.getName();
-                    if (name.endsWith(".class")) {
-                        String clazz = name.substring(0, name.length() - 6).replace('/', '.');
-                        if (clazz.startsWith("javax.help.tagext.")) {
-                            // Servlet part of JavaHelp, which we don't use. Ignore.
-                            continue;
-                        }
-                        //System.err.println("class: " + clazz);
+                    if (!name.endsWith(".class")) {
+                        continue;
+                    }
+                    String clazz = name.substring(0, name.length() - 6).replace('/', '.');
+                    // Only check classes developed on nb.org; there will be numerous linkage errors among 3rd-party libraries, since we do not attempt to bundle every dependency.
+                    // XXX also include e.g. com.sun.collablet, com.sun.javacard, ...
+                    if (!clazz.matches("org[.](netbeans|openide)[.].+")) {
+                        continue;
+                    }
+                    if (clazz.matches("org[.]netbeans[.]core[.]osgi[.].+")) {
+                        continue; // links against OSGi core which is not in CP for whatever reason
+                    }
+                    if (clazz.matches("org[.]netbeans[.]modules[.]s2banttask[.].+")) {
+                        continue; // links against ant.jar
+                    }
                         Throwable t = null;
                         try {
                             Class.forName(clazz, false, l);
@@ -122,12 +137,15 @@ public class ValidateClassLinkageTest extends NbTestCase {
                             errorsByClazz.put(clazz, t);
                             locationsByClass.put(clazz, jar);
                         }
-                    }
                 }
             } finally {
                 jarfile.close();
             }
         }
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        MemoryUsage usage = memoryBean.getNonHeapMemoryUsage();
+        // Note MaxPermSize in project.properties:
+        System.err.println("Non-heap memory usage: " + (usage.getUsed() / 1024 / 1024) + "/" + (usage.getMax() / 1024 / 1024) + "M");
         if (!errorsByClazz.isEmpty()) {
             for (Map.Entry<String,Throwable> entry : errorsByClazz.entrySet()) {
                 String clazz = entry.getKey();
