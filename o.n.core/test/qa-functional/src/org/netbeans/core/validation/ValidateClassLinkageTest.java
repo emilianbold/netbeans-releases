@@ -120,8 +120,14 @@ public class ValidateClassLinkageTest extends NbTestCase {
                     if (clazz.matches("org[.]netbeans[.]core[.]osgi[.].+")) {
                         continue; // links against OSGi core which is not in CP for whatever reason
                     }
-                    if (clazz.matches("org[.]netbeans[.]modules[.]s2banttask[.].+")) {
+                    if (clazz.matches("org[.]netbeans[.](modules[.](s2banttask|ide[.]ergonomics[.]ant)|mobility[.]antext)[.].+")) {
                         continue; // links against ant.jar
+                    }
+                    if (clazz.equals("org.netbeans.modules.identity.server.manager.ui.NodeExtensionImpl")) {
+                        continue; // seems to be loaded specially w/ link against appsrvbridge.jar
+                    }
+                    if (clazz.equals("org.netbeans.modules.javacard.source.JavaCardErrorProcessor")) {
+                        continue; // seems to link against JDK 7 javac's AbstractTypeProcessor
                     }
                         Throwable t = null;
                         try {
