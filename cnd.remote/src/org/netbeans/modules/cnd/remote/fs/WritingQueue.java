@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
 public class WritingQueue {
 
     private static final Map<ExecutionEnvironment, WritingQueue> instances = new HashMap<ExecutionEnvironment, WritingQueue>();
-    private static final Logger LOGGER = Logger.getLogger("cnd.remote.writing.queue.logger");
+    private static final Logger LOGGER = Logger.getLogger("cnd.remote.writing.queue.logger"); // NOI18N
 
     private final ExecutionEnvironment execEnv;
     
