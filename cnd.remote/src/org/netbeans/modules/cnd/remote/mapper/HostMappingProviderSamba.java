@@ -47,8 +47,8 @@ import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  *
@@ -56,15 +56,17 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class HostMappingProviderSamba implements HostMappingProvider {
 
+    @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
         Map<String, String> mappings = new HashMap<String, String>();
-        RunFacade runner = RunFacade.getInstance(execEnv);
-        if (runner.run("cat /etc/sfw/smb.conf")) { //NOI18N
-            mappings.putAll(parseOutput(new StringReader(runner.getOutput())));
+        ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, "cat", "/etc/sfw/smb.conf"); //NOI18N
+        if (exit.isOK()) {
+            mappings.putAll(parseOutput(new StringReader(exit.output)));
         }
         return mappings;
     }
 
+    @Override
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
         return otherPlatform.isWindows() && hostPlatform.isUnix();
     }

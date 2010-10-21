@@ -60,9 +60,9 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -82,9 +82,9 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
         String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
         log.log(Level.FINE, "Find Mappings for {0}", execEnv);
         if (hostName != null) {
-            RunFacade runner = RunFacade.getInstance(execEnv);
-            if (runner.run(getShareCommand())) { //NOI18N
-                List<String> paths = parseOutput(execEnv, new StringReader(runner.getOutput()));
+            ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, getShareCommand());
+            if (exit.isOK()) { //NOI18N
+                List<String> paths = parseOutput(execEnv, new StringReader(exit.output));
                 for (String path : paths) {
                     log.log(Level.FINE, "Path {0}", path);
                     assert path != null && path.length() > 0 && path.charAt(0) == '/';
