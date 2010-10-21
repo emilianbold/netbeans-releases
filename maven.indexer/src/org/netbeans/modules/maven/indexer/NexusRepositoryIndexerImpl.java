@@ -431,7 +431,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             } else {
                 LOGGER.finer("Indexing Local Repository :" + repo.getId());//NOI18N
-                RepositoryIndexerListener listener = new RepositoryIndexerListener(indexer, indexingContext);
+                RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
                 try {
                     indexer.scan(indexingContext, listener, updateLocal);
                 } finally {

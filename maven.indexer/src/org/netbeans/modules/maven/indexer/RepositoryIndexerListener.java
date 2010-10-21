@@ -57,7 +57,6 @@ import org.openide.windows.OutputWriter;
 import org.sonatype.nexus.index.ArtifactContext;
 import org.sonatype.nexus.index.ArtifactInfo;
 import org.sonatype.nexus.index.ArtifactScanningListener;
-import org.sonatype.nexus.index.NexusIndexer;
 import org.sonatype.nexus.index.ScanningResult;
 import org.sonatype.nexus.index.context.IndexingContext;
 
@@ -68,7 +67,6 @@ import org.sonatype.nexus.index.context.IndexingContext;
 public class RepositoryIndexerListener implements ArtifactScanningListener, Cancellable {
 
     private final IndexingContext indexingContext;
-    private final NexusIndexer nexusIndexer;
     private long tstart;
     
     private int count;
@@ -82,9 +80,8 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     private OutputWriter writer;
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public RepositoryIndexerListener(NexusIndexer nexusIndexer, IndexingContext indexingContext) {
+    public RepositoryIndexerListener(IndexingContext indexingContext) {
         this.indexingContext = indexingContext;
-        this.nexusIndexer = nexusIndexer;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
         Cancellation.register(this);
 
