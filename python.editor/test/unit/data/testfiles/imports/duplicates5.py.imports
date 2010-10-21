@@ -1,8 +1,0 @@
-Requires user interaction: No
-Unused imports:
-    unused1
-Duplicate imports:
-    definitions:DecimalException
-Unresolved Symbols:
-    otherMethodInClass
-        *definitions

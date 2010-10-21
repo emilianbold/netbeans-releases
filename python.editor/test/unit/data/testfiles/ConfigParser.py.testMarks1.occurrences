@@ -1,3 +1,0 @@
-    def __init__(self, |>MARK_OCCURRENCES:m^sg<|=''):
-        self.message = |>MARK_OCCURRENCES:msg<|
-        Exception.__init__(self, |>MARK_OCCURRENCES:msg<|)
