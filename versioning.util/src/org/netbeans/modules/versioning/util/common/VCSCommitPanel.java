@@ -42,13 +42,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.commit;
+package org.netbeans.modules.versioning.util.common;
 
+import org.netbeans.modules.versioning.util.TemplateSelector;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import org.openide.cookies.EditorCookie;
-import org.netbeans.modules.spellchecker.api.Spellchecker;
-import org.netbeans.modules.versioning.util.TemplateSelector;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import javax.swing.LayoutStyle;
 import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import javax.swing.event.ChangeEvent;
@@ -57,8 +58,6 @@ import java.awt.Container;
 import javax.swing.Box;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.Exceptions;
@@ -70,9 +69,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.GridLayout;
 import java.io.File;
 import java.util.Collection;
@@ -80,20 +77,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTree;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
@@ -101,7 +94,6 @@ import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import static java.awt.Component.BOTTOM_ALIGNMENT;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
 import static javax.swing.BorderFactory.createEmptyBorder;
@@ -109,6 +101,7 @@ import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
+import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
@@ -116,7 +109,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  pk97937
  * @author  Marian Petras
  */
-public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
     static final Object EVENT_SETTINGS_CHANGED = new Object();
@@ -125,65 +118,55 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     final JLabel filesLabel = new JLabel();
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
+
     private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
     private final JLabel filesSectionButton = new JLabel();
     private final JPanel filesSectionPanel2 = new JPanel();
     private final PlaceholderPanel hookSectionPanel = new PlaceholderPanel();
     private final JLabel hooksSectionButton = new JLabel();
-    private final JLabel jLabel1 = new JLabel();
-    private final JLabel jLabel2 = new JLabel();
-    private final JScrollPane jScrollPane1 = new JScrollPane();
-    private final JTextArea messageTextArea = new JTextArea();
-    private final JLabel recentLink = new JLabel();
-    private final JLabel templateLink = new JLabel();
+    private final JLabel errorLabel = new JLabel();
+        
+    private final JPanel parametersPane1 = new JPanel();
+
     private Icon expandedIcon, collapsedIcon;
     
-    private CommitTable commitTable;
+    private VCSCommitTable commitTable;
     private Collection<HgHook> hooks = Collections.emptyList();
     private HgHookContext hookContext;
     private JTabbedPane tabbedPane;
 //    private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
-    private UndoRedoSupport um;
+    private final Preferences preferences;
+    private final VCSCommitParameters parameters;
 
     /** Creates new form CommitPanel */
-    public CommitPanel() {
+    public VCSCommitPanel(VCSCommitParameters parameters, VCSCommitTable commitTable, Preferences preferences) {
+        this.parameters = parameters;
+        this.commitTable = commitTable;
+
         initComponents();
-        initInteraction();
+
+        commitTable.setCommitPanel(this);
+        filesLabel.setLabelFor(commitTable.getTable());
+        this.preferences = preferences;
     }
 
-    void setCommitTable(CommitTable commitTable) {
-        this.commitTable = commitTable;
+    public PlaceholderPanel getProgressPanel() {
+        return progressPanel;
     }
     
-    void setErrorLabel(String htmlErrorLabel) {
-        jLabel2.setText(htmlErrorLabel);
+    public void setErrorLabel(String htmlErrorLabel) {
+        errorLabel.setText(htmlErrorLabel);
     }    
 
     @Override
     public void addNotify() {
         super.addNotify();
-
-        GitModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+        
+        preferences.addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
         initCollapsibleSections();
-        TemplateSelector ts = new TemplateSelector(GitModuleConfig.getDefault().getPreferences());
-        if (ts.isAutofill()) {
-            messageTextArea.setText(ts.getTemplate());
-        } else {
-            // XXX
-            String lastCommitMessage = "";
-//            String lastCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
-//            if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(GitModuleConfig.getDefault().getPreferences()).isAutoFill()) {
-//                List<String> messages = Utils.getStringList(GitModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES);
-//                if (messages.size() > 0) {
-//                    lastCommitMessage = messages.get(0);
-//                }
-//            }
-            messageTextArea.setText(lastCommitMessage);
-        }
-        messageTextArea.selectAll();
-        um = UndoRedoSupport.register(messageTextArea);
+        
     }
 
     private void initCollapsibleSections() {
@@ -258,7 +241,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         /* this method is called using reflection from 'invokeInitPanelMethod()' */
 
         filesPanel.add(commitTable.getComponent());
-        filesPanel.setPreferredSize(new Dimension(0, 2 * messageTextArea.getPreferredSize().height));
+        filesPanel.setPreferredSize(new Dimension(0, 2 * parameters.getPanel().getPreferredSize().height));
 
         filesSectionPanel2.setLayout(new BoxLayout(filesSectionPanel2, Y_AXIS));
         filesSectionPanel2.add(filesLabel);
@@ -287,22 +270,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         }
     }
 
-    String getCommitMessage() {
-        return messageTextArea.getText();
+    public VCSCommitParameters getParameters() {
+        return parameters;
     }
 
     @Override
     public void removeNotify() {
         commitTable.getTableModel().removeTableModelListener(this);
-        GitModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
-        if (um != null) {
-            um.unregister();
-            um = null;
-        }
+        preferences.removePreferenceChangeListener(this);
         super.removeNotify();
     }
 
-    void setHooks(Collection<HgHook> hooks, HgHookContext context) {
+    public void setHooks(Collection<HgHook> hooks, HgHookContext context) {
         if (hooks == null) {
             hooks = Collections.emptyList();
         }
@@ -310,23 +289,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         this.hookContext = context;
     }
 
-    private void onBrowseRecentMessages() {
-        StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(GitModuleConfig.getDefault().getPreferences());
-        // XXX
-//        String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),  // NOI18N
-//                                               getMessage("CTL_CommitForm_RecentPrompt"),  // NOI18N
-//            Utils.getStringList(GitModuleConfig.getDefault().getPreferences(), CommitAction.RECENT_COMMIT_MESSAGES));
-//        if (message != null) {
-//            messageTextArea.replaceSelection(message);
-//        }
-    }
-
-    private void onTemplate() {
-        TemplateSelector ts = new TemplateSelector(GitModuleConfig.getDefault().getPreferences());
-        if(ts.show()) {
-            messageTextArea.setText(ts.getTemplate());
-        }
-    }
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
@@ -358,57 +320,28 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
     private void initComponents() {
-
-        jLabel1.setLabelFor(messageTextArea);
-        Mnemonics.setLocalizedText(jLabel1, getMessage("CTL_CommitForm_Message")); // NOI18N
-
-        recentLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/recent_messages.png"))); // NOI18N
-        recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N
-
-        templateLink.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/load_template.png"))); // NOI18N
-        templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N
-
-        messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
-        messageTextArea.setLineWrap(true);
-        messageTextArea.setRows(4);
-        messageTextArea.setTabSize(4);
-        messageTextArea.setWrapStyleWord(true);
-        messageTextArea.setMinimumSize(new Dimension(100, 18));
-        jScrollPane1.setViewportView(messageTextArea);
-        messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
-        messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
+        parametersPane1.setLayout(new BorderLayout());
+        parametersPane1.add(parameters.getPanel());
 
         Mnemonics.setLocalizedText(filesSectionButton, getMessage("LBL_CommitDialog_FilesToCommit")); // NOI18N
         Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit")); // NOI18N
 
         Mnemonics.setLocalizedText(hooksSectionButton, getMessage("LBL_Advanced")); // NOI18N
 
-        Mnemonics.setLocalizedText(jLabel2, "jLabel2");
-
-        JPanel topPanel = new VerticallyNonResizingPanel();
-        topPanel.setLayout(new BoxLayout(topPanel, X_AXIS));
-        topPanel.add(jLabel1);
-        topPanel.add(Box.createHorizontalGlue());
-        topPanel.add(recentLink);
-        topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED));
-        topPanel.add(templateLink);
-        jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
-        recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
-        templateLink.setAlignmentY(BOTTOM_ALIGNMENT);
-
+        Mnemonics.setLocalizedText(errorLabel, "jLabel2");
+        
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
-        bottomPanel.add(jLabel2);
+        bottomPanel.add(errorLabel);
         bottomPanel.add(makeFlexibleHorizontalStrut(15, 90, Short.MAX_VALUE));
         bottomPanel.add(progressPanel);
-        jLabel2.setAlignmentY(CENTER_ALIGNMENT);
+        errorLabel.setAlignmentY(CENTER_ALIGNMENT);        
+        errorLabel.setText("");
         progressPanel.setAlignmentY(CENTER_ALIGNMENT);
-
+        
         basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
-        basePanel.add(topPanel);
-        basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, RELATED));
-        basePanel.add(jScrollPane1);
-        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, RELATED));
+        basePanel.add(parametersPane1);
+        basePanel.add(makeVerticalStrut(parametersPane1, filesSectionButton, RELATED));
         basePanel.add(filesSectionButton);
         basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
         basePanel.add(filesSectionPanel2);
@@ -416,44 +349,26 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         basePanel.add(hooksSectionButton);
         basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
         basePanel.add(hookSectionPanel);
-        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, RELATED));
+        basePanel.add(makeVerticalStrut(hookSectionPanel, errorLabel, RELATED));
         basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
         add(basePanel);
-        topPanel.setAlignmentX(LEFT_ALIGNMENT);
-        jScrollPane1.setAlignmentX(LEFT_ALIGNMENT);
+        
+        parametersPane1.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionPanel2.setAlignmentX(LEFT_ALIGNMENT);
         hooksSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         hookSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        basePanel.setBorder(createEmptyBorder(26,                       //top
+        basePanel.setBorder(createEmptyBorder(10,             //top
                                     getContainerGap(WEST),    //left
                                     0,                        //bottom
-                                    15));                     //right
+                                    getContainerGap(EAST)));  //right
 
         getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
         getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
     }// </editor-fold>
-
-    private void initInteraction() {
-        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        recentLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                onBrowseRecentMessages();
-            }
-        });
-        templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        templateLink.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                onTemplate();
-            }
-        });
-        Spellchecker.register (messageTextArea);
-    }
 
     private Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,
@@ -465,18 +380,6 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
                             SOUTH,
                             this);
         return Box.createVerticalStrut(height);
-    }
-
-    private Component makeHorizontalStrut(JComponent compA,
-                                          JComponent compB,
-                                          ComponentPlacement relatedUnrelated) {
-        int width = LayoutStyle.getInstance().getPreferredGap(
-                            compA,
-                            compB,
-                            relatedUnrelated,
-                            WEST,
-                            this);
-        return Box.createHorizontalStrut(width);
     }
 
     private Component makeFlexibleHorizontalStrut(int minWidth,
@@ -494,7 +397,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private static String getMessage(String msgKey) {
-        return NbBundle.getMessage(CommitPanel.class, msgKey);
+        return NbBundle.getMessage(VCSCommitPanel.class, msgKey);
     }
     
     ListenersSupport listenerSupport = new ListenersSupport(this);
@@ -563,8 +466,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     boolean canCommit() {
         boolean result = true;
         if (tabbedPane != null && tabbedPane.getSelectedComponent() != basePanel) {
-            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(CommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
-                    NbBundle.getMessage(CommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor(NbBundle.getMessage(VCSCommitPanel.class, "MSG_CommitDialog_CommitFromDiff"), //NOI18N
+                    NbBundle.getMessage(VCSCommitPanel.class, "LBL_CommitDialog_CommitFromDiff"), //NOI18N
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
@@ -573,7 +476,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 
     private void initializeTabs () {
          tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-         tabbedPane.addTab(NbBundle.getMessage(CommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+         tabbedPane.addTab(NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
          tabbedPane.setPreferredSize(basePanel.getPreferredSize());
          add(tabbedPane);
          tabbedPane.addChangeListener(this);
@@ -590,4 +493,5 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
 //        }
         return modifiedFiles;
     }
+    
 }

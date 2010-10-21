@@ -42,10 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.commit;
+package org.netbeans.modules.versioning.util.common;
 
-import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.io.File;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SortedTable;
@@ -68,10 +66,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.git.Annotator;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.awt.Mnemonics;
 
 /**
@@ -79,44 +73,29 @@ import org.openide.awt.Mnemonics;
  * 
  * @author Maros Sandor
  */
-public class CommitTable implements AncestorListener, TableModelListener, MouseListener {
-
-    public static String [] COMMIT_COLUMNS = new String [] {
-                                            VCSCommitTableModel.COLUMN_NAME_COMMIT,
-                                            VCSCommitTableModel.COLUMN_NAME_NAME,
-                                            VCSCommitTableModel.COLUMN_NAME_STATUS,
-                                            VCSCommitTableModel.COLUMN_NAME_ACTION,
-                                            VCSCommitTableModel.COLUMN_NAME_PATH
-                                        };
+public class VCSCommitTable implements AncestorListener, TableModelListener, MouseListener {    
     
-    private GitCommitTableModel    tableModel;
+    private VCSCommitTableModel tableModel;
     private JTable              table;
     private JComponent          component;
     
     private TableSorter         sorter;
     private String[]            columns;
     private String[]            sortByColumns;
-    private CommitPanel commitPanel;
     private Set<File> modifiedFiles = Collections.<File>emptySet();
+    private VCSCommitPanel commitPanel;
     
-    
-    public CommitTable(JLabel label, String[] columns, String[] sortByColumns) {
-        init(label, columns, null);
-        this.sortByColumns = sortByColumns;        
+    public VCSCommitTable(VCSCommitTableModel tableModel) {
+        init(tableModel);
+        this.sortByColumns = new String[] { VCSCommitTableModel.COLUMN_NAME_PATH };        
         setSortingStatus();            
     }
 
-    public CommitTable(JLabel label, String[] columns, TableSorter sorter) {
-        init(label, columns, sorter);        
-    }
-    
-    private void init(JLabel label, String[] columns, TableSorter sorter) {
-        tableModel = new GitCommitTableModel(columns);
+    private void init(VCSCommitTableModel tableModel) {
+        this.tableModel = tableModel;
         tableModel.addTableModelListener(this);
-        if(sorter == null) {
-            sorter = new TableSorter(tableModel);
-        } 
-        this.sorter = sorter;
+        sorter = new TableSorter(tableModel);
+        
         table = new SortedTable(this.sorter);
         table.getTableHeader().setReorderingAllowed(false);
         table.setDefaultRenderer(String.class, new CommitStringsCellRenderer());
@@ -126,8 +105,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addAncestorListener(this);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        label.setLabelFor(table);
-        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommitTable.class, "ACSD_CommitTable")); // NOI18N        
+        table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(VCSCommitTable.class, "ACSD_CommitTable")); // NOI18N        
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); // NOI18N
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { // NOI18N
@@ -137,7 +115,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             }
         });
         table.addMouseListener(this);
-        setColumns(columns);
+        setColumns(VCSCommitTableModel.COMMIT_COLUMNS);
     }
 
     @Override
@@ -180,7 +158,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
                 } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_STATUS)) {
-                    // XXX sorter.setColumnComparator(i, new StatusComparator());                    
+                    sorter.setColumnComparator(i, new StatusComparator());                    
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_ACTION)) {
                     columnModel.getColumn(i).setPreferredWidth(width * 20 / 100);
@@ -199,7 +177,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                     sorter.setColumnComparator(i, new FileNameComparator());
                     columnModel.getColumn(i).setPreferredWidth(width * 25 / 100);
                 } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_STATUS)) {
-                    // XXX sorter.setColumnComparator(i, new StatusComparator());
+                    sorter.setColumnComparator(i, new StatusComparator());
                     sorter.setSortingStatus(i, TableSorter.ASCENDING);
                     columnModel.getColumn(i).setPreferredWidth(width * 15 / 100);
                 } else if (col.equals(VCSCommitTableModel.COLUMN_NAME_ACTION)) {
@@ -239,12 +217,12 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     void setColumns(String[] cols) {
         if (Arrays.equals(columns, cols)) return;
         columns = cols;
-        tableModel.setModelColumns(cols);
+        tableModel.setColumns(cols);
         setDefaultColumnSizes();
     }
 
     public void setNodes(VCSFileNode[] nodes) {
-        tableModel.setModelNodes(nodes);
+        tableModel.setNodes(nodes);
     }
 
     /**
@@ -261,13 +239,17 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         return component;
     }
 
+    JTable getTable() {
+        return table;
+    }
+    
     void dataChanged() {
         int idx = table.getSelectedRow();
         tableModel.fireTableDataChanged();
         if (idx != -1) table.getSelectionModel().addSelectionInterval(idx, idx);
     }
 
-    TableModel getTableModel() {
+    public TableModel getTableModel() {
         return tableModel;
     }
 
@@ -278,7 +260,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
 
     public void setRootFile(String repositoryPath, String rootLocalPath) {
-        tableModel.setModelRootFile(repositoryPath, rootLocalPath);
+        tableModel.setRootFile(repositoryPath, rootLocalPath);
     }
 
     private void showPopup(final MouseEvent e) {
@@ -340,7 +322,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             }
         }
         final boolean include = !onlyIncluded;
-        item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, include ? "CTL_CommitTable_IncludeAction" : "CTL_CommitTable_ExcludeAction")) { // NOI18N
+        item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, include ? "CTL_CommitTable_IncludeAction" : "CTL_CommitTable_ExcludeAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 int[] rows = table.getSelectedRows();
@@ -348,7 +330,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 for (int i = 0; i < rows.length; ++i) {
                     rows[i] = sorter.modelIndex(rows[i]);
                 }
-                tableModel.setIncludedRows(rows, include);
+                tableModel.setIncluded(rows, include);
                 // WA for table sorter, keep the selection
                 if (rowCount == table.getRowCount()) {
                     for (int i = 0; i < rows.length; ++i) {
@@ -358,7 +340,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             }
         });
         Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new AbstractAction(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
+        item = menu.add(new AbstractAction(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_DiffAction")) { // NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 int[] rows = table.getSelectedRows();
@@ -401,11 +383,11 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         // not interested
     }
 
-    void setCommitPanel(CommitPanel panel) {
+    public void setCommitPanel(VCSCommitPanel panel) {
         this.commitPanel = panel;
     }
 
-    void setModifiedFiles(Set<File> modifiedFiles) {
+    public void setModifiedFiles(Set<File> modifiedFiles) {
         this.modifiedFiles = modifiedFiles;
     }
 
@@ -422,7 +404,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                 VCSFileNode node = model.getNode(sorter.modelIndex(row));
                 VCSCommitOptions options = model.getOption(sorter.modelIndex(row));
                 if (!isSelected) {
-                    value = ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(node.getFile().getName(), (FileInformation) node.getInformation(), null);
+                    value = node.getInformation().annotateNameHtml(node.getFile().getName()); 
                 }
                 if (options == VCSCommitOptions.EXCLUDE) {
                     value = "<s>" + value + "</s>"; // NOI18N
@@ -443,7 +425,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     private class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
 
         public CheckboxCellRenderer() {
-            setToolTipText(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_Column_Description")); //NOI18N
+            setToolTipText(NbBundle.getMessage(VCSCommitTable.class, "CTL_CommitTable_Column_Description")); //NOI18N
         }
 
         @Override
@@ -470,15 +452,14 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         }
     }
     
-// XXX    
-//    private class StatusComparator extends HgUtils.ByImportanceComparator {
-//        public int compare(Object o1, Object o2) {
-//            Integer row1 = (Integer) o1;
-//            Integer row2 = (Integer) o2;
-//            return super.compare(tableModel.getNode(row1.intValue()).getInformation(),
-//                                 tableModel.getNode(row2.intValue()).getInformation());
-//        }
-//    }
+    private class StatusComparator extends VCSFileInformation.ByImportanceComparator {
+        public int compare(Object o1, Object o2) {
+            Integer row1 = (Integer) o1;
+            Integer row2 = (Integer) o2;
+            return super.compare(tableModel.getNode(row1.intValue()).getInformation(),
+                                 tableModel.getNode(row2.intValue()).getInformation());
+        }
+    }
     
     private class FileNameComparator implements Comparator {
         @Override
@@ -488,7 +469,6 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
             return tableModel.getNode(row1.intValue()).getName().compareToIgnoreCase(
                     tableModel.getNode(row2.intValue()).getName());
         }
-    }
-
+    }    
 
 }

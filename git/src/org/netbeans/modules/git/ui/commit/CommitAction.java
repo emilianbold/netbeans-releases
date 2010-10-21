@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
+import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import java.awt.Dialog;
@@ -95,16 +97,13 @@ public class CommitAction extends SingleRepositoryAction {
 
     public static void commit(File repository, File[] roots, VCSContext context) {
         // show commit dialog
-        final CommitPanel panel = new CommitPanel();
         String contentTitle = Utils.getContextDisplayName(context);
 
         final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
+        final VCSCommitTable data = new VCSCommitTable(new VCSCommitTableModel());
+        final VCSCommitPanel panel = new VCSCommitPanel(new CommitParameters(), data, GitModuleConfig.getDefault().getPreferences());
         panel.setHooks(hooks, new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
-        final CommitTable data = new CommitTable(panel.filesLabel, CommitTable.COMMIT_COLUMNS, new String[] {VCSCommitTableModel.COLUMN_NAME_PATH });
-
-        panel.setCommitTable(data);
-        data.setCommitPanel(panel);
 
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
@@ -176,7 +175,7 @@ public class CommitAction extends SingleRepositoryAction {
         dialog.pack();
         dialog.setVisible(true);
 
-        final String message = panel.getCommitMessage().trim();
+        final String message = ((CommitParameters) panel.getParameters()).getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
 //      XXX      GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }
@@ -200,13 +199,13 @@ public class CommitAction extends SingleRepositoryAction {
         }
     }
 
-    private static void computeNodes(final CommitTable table, final CommitPanel panel, final File[] roots, final File repository, JButton cancel) {
+    private static void computeNodes(final VCSCommitTable table, final VCSCommitPanel panel, final File[] roots, final File repository, JButton cancel) {
         RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
         final GitProgressSupport support = new GitProgressSupport( /*, cancel*/) {
             @Override
             public void perform() {
                 try {
-                    panel.progressPanel.setVisible(true);
+                    panel.getProgressPanel().setVisible(true);
                     // Ensure that cache is uptodate
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
                     cache.refreshAllRoots(roots);
@@ -257,16 +256,16 @@ public class CommitAction extends SingleRepositoryAction {
                         }
                     });
                 } finally {
-                    panel.progressPanel.setVisible(false);
+                    panel.getProgressPanel().setVisible(false);
                 }
             }
         };
 //      XXX  panel.progressPanel.add(support.getProgressComponent());
-        panel.progressPanel.setVisible(true);
+        panel.getProgressPanel().setVisible(true);
         support.start(rp, repository, NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"));
     }
 
-    private static boolean containsCommitable(CommitTable data) {
+    private static boolean containsCommitable(VCSCommitTable data) {
         Map<VCSFileNode, VCSCommitOptions> map = data.getCommitFiles();
         for(VCSCommitOptions co : map.values()) {
             if(co != VCSCommitOptions.EXCLUDE) {
