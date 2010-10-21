@@ -59,6 +59,7 @@ public class WrongStringComparisonCustomizer extends javax.swing.JPanel {
         initComponents();
         this.p = p;
         ternaryNullCheck.setSelected(WrongStringComparison.getTernaryNullCheck(p));
+        stringLiteralsFirst.setSelected(WrongStringComparison.getStringLiteralsFirst(p));
     }
 
     /** This method is called from within the constructor to
@@ -70,6 +71,9 @@ public class WrongStringComparisonCustomizer extends javax.swing.JPanel {
     private void initComponents() {
 
         ternaryNullCheck = new javax.swing.JCheckBox();
+        stringLiteralsFirst = new javax.swing.JCheckBox();
+
+        setPreferredSize(new java.awt.Dimension(346, 60));
 
         ternaryNullCheck.setText(org.openide.util.NbBundle.getMessage(WrongStringComparisonCustomizer.class, "WrongStringComparisonCustomizer.ternaryNullCheck.text")); // NOI18N
         ternaryNullCheck.addActionListener(new java.awt.event.ActionListener() {
@@ -78,31 +82,49 @@ public class WrongStringComparisonCustomizer extends javax.swing.JPanel {
             }
         });
 
+        stringLiteralsFirst.setText(org.openide.util.NbBundle.getMessage(WrongStringComparisonCustomizer.class, "WrongStringComparisonCustomizer.stringLiteralFirst.text")); // NOI18N
+        stringLiteralsFirst.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stringLiteralsFirstActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(ternaryNullCheck, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(ternaryNullCheck, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(stringLiteralsFirst, javax.swing.GroupLayout.PREFERRED_SIZE, 346, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(ternaryNullCheck)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addComponent(ternaryNullCheck, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(stringLiteralsFirst, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         ternaryNullCheck.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WrongStringComparisonCustomizer.class, "ACSD_Ternary_Null_Check")); // NOI18N
+        stringLiteralsFirst.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WrongStringComparisonCustomizer.class, "ACSD_String_Literals_First")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void ternaryNullCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ternaryNullCheckActionPerformed
         WrongStringComparison.setTernaryNullCheck(p, ternaryNullCheck.isSelected());
     }//GEN-LAST:event_ternaryNullCheckActionPerformed
 
+    private void stringLiteralsFirstActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stringLiteralsFirstActionPerformed
+        WrongStringComparison.setStringLiteralsFirst(p, stringLiteralsFirst.isSelected());
+    }//GEN-LAST:event_stringLiteralsFirstActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox stringLiteralsFirst;
     private javax.swing.JCheckBox ternaryNullCheck;
     // End of variables declaration//GEN-END:variables
 
