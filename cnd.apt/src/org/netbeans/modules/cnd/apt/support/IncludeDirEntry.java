@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -55,6 +56,10 @@ import org.netbeans.modules.cnd.utils.cache.FilePathCache;
  * @author Vladimir Voskresensky
  */
 public final class IncludeDirEntry {
+    static {
+        SupportAPIAccessor.register(new AccessorImpl());
+    }
+    
     private static final int MANAGER_DEFAULT_CAPACITY;
     private static final int MANAGER_DEFAULT_SLICED_NUMBER;
     static {
@@ -69,7 +74,7 @@ public final class IncludeDirEntry {
     }
     private static final IncludeDirStorage storage = new IncludeDirStorage(MANAGER_DEFAULT_SLICED_NUMBER, MANAGER_DEFAULT_CAPACITY);
 
-    private final boolean exists;
+    private volatile Boolean exists;
     private final boolean isFramework;
     private final CharSequence asCharSeq;
 
@@ -104,7 +109,10 @@ public final class IncludeDirEntry {
         return isFramework;
     }
 
-    public boolean isExistingDirectory() {
+    /*package*/ boolean isExistingDirectory() {
+        if (exists == null) {
+            exists = CndFileUtils.isExistingDirectory(getPath());
+        }
         return exists;
     }
 
@@ -114,13 +122,39 @@ public final class IncludeDirEntry {
 
     @Override
     public String toString() {
-        return (exists ? "" : "NOT EXISTING ") + asCharSeq; // NOI18N
+        Boolean val = exists;
+        return (val == null ? "Not Initialized exist flag" : (val.booleanValue() ? "" : "NOT EXISTING ")) + asCharSeq; // NOI18N
     }
 
+    private void invalidateDirExistence() {
+        exists = null;
+    }
+    
     /*package*/static void disposeCache() {
         storage.dispose();
     }
 
+    /*package*/static void invalidateCache() {
+        for (Map<CharSequence, IncludeDirEntry> map : storage.instances) {
+            synchronized (map) {
+                for (IncludeDirEntry includeDirEntry : map.values()) {
+                    includeDirEntry.invalidateDirExistence();
+                }
+            }
+        }
+    }
+    
+    /*package*/static void invalidateFileBasedCache(String file) {
+        final CharSequence key = FilePathCache.getManager().getString(file);
+        Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
+        synchronized (delegate) {
+            IncludeDirEntry prev = delegate.remove(key);
+            if (prev != null) {
+                prev.invalidateDirExistence();
+            }
+        }
+    }
+    
     private static final class IncludeDirStorage {
 
         private final WeakHashMap<CharSequence, IncludeDirEntry>[] instances;
