@@ -49,7 +49,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.logging.Level;
 import junit.framework.Test;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -63,6 +65,11 @@ import org.openide.filesystems.URLMapper;
  * @author Vladimir Kvashin
  */
 public class RemoteURLTestCase extends RemoteFileTestBase {
+
+    static {
+        RemoteUtil.LOGGER.setLevel(Level.FINEST);
+        System.setProperty("cnd.nativeexecution.logger.level", "0");
+    }
 
     public RemoteURLTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
