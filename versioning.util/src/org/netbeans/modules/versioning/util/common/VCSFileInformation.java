@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.io.File;
+import java.util.Comparator;
+
 /**
  *
  * @author Tomas Stupka
@@ -49,5 +52,18 @@ package org.netbeans.modules.versioning.util.common;
 public abstract class VCSFileInformation {
 
     public abstract String getStatusText();
+    public abstract int getComparableStatus();
+    public abstract String annotateNameHtml(String name);
+    public abstract VCSCommitOptions getCommitOptions(File file);
+    public abstract VCSCommitOptions getDefaultCommitOption(File file);
 
+    /**
+     * Compares two {@link FileInformation} objects by importance of statuses they represent.
+     */
+    static class ByImportanceComparator<T> implements Comparator<VCSFileInformation> {
+        @Override
+        public int compare(VCSFileInformation i1, VCSFileInformation i2) {
+            return i1.getComparableStatus() - i2.getComparableStatus();
+}
+    }    
 }
