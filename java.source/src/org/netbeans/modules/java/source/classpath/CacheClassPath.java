@@ -50,8 +50,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -76,7 +78,7 @@ import org.openide.util.WeakListeners;
 public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener {
     
     public static final boolean KEEP_JARS = Boolean.getBoolean("CacheClassPath.keepJars");     //NOI18N
-    private static Logger log = Logger.getLogger(CacheClassPath.class.getName());
+    private static final Logger LOG = Logger.getLogger(CacheClassPath.class.getName());
     
     private final ClassPath cp;    
     private final boolean translate;
@@ -85,6 +87,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     private long eventId;
     
     /** Creates a new instance of CacheClassPath */
+    @SuppressWarnings("LeakingThisInConstructor")
     private CacheClassPath (ClassPath cp, boolean translate) {
         this.listeners = new PropertyChangeSupport (this);
         this.cp = cp;
@@ -92,14 +95,17 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         this.cp.addPropertyChangeListener (WeakListeners.propertyChange(this,cp));
     }
 
+    @Override
     public void removePropertyChangeListener(final PropertyChangeListener listener) {
         this.listeners.removePropertyChangeListener(listener);
     }
 
+    @Override
     public void addPropertyChangeListener(final PropertyChangeListener listener) {
         this.listeners.addPropertyChangeListener(listener);
     }
     
+    @Override
     public void propertyChange (final PropertyChangeEvent event) {
         if (ClassPath.PROP_ENTRIES.equals(event.getPropertyName())) {
             synchronized (this) {
@@ -110,6 +116,7 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         }
     }
 
+    @Override
     public List<? extends PathResourceImplementation> getResources() {
         long currentEventId;
         synchronized (this) {
@@ -117,9 +124,9 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                 return this.cache;
             }
             currentEventId = this.eventId;
-        }        
+        }
         final List<ClassPath.Entry> entries = this.cp.entries();
-        final List<PathResourceImplementation> _cache = new LinkedList<PathResourceImplementation> ();            
+        final Set<PathResourceImplementation> _cache = new LinkedHashSet<PathResourceImplementation> ();
         final PathRegistry preg = PathRegistry.getDefault();
         for (ClassPath.Entry entry : entries) {
             URL url = entry.getURL();
@@ -137,8 +144,8 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                         URL cacheUrl = FileUtil.urlForArchiveOrDir(cacheFolder);
                         _cache.add(ClassPathSupport.createResource(cacheUrl));
                     } catch (IOException ioe) {
-                        if (log.isLoggable(Level.SEVERE))
-                            log.log(Level.SEVERE, ioe.getMessage(), ioe);
+                        if (LOG.isLoggable(Level.SEVERE))
+                            LOG.log(Level.SEVERE, ioe.getMessage(), ioe);
                     }
                 }
                 if (KEEP_JARS && translate) {
@@ -170,28 +177,26 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     File sigs = JavaIndex.getClassFolder(url);
                     URL orl = FileUtil.urlForArchiveOrDir(sigs);
                     if (orl != null) {
-                        _cache.add (ClassPathSupport.createResource(orl));
+                        _cache.add (ClassPathSupport.createResource(orl));                            
                     }
                     else {
-                        log.warning("Invalid cache root: " + sigs.getAbsolutePath() + " exists: " + sigs.exists() +" dir: " + sigs.isDirectory() + " retry: " + FileUtil.urlForArchiveOrDir(sigs));  //NOI18N
+                        LOG.log(Level.WARNING, "Invalid cache root: {0} exists: {1} dir: {2} retry: {3}", new Object[]{sigs.getAbsolutePath(), sigs.exists(), sigs.isDirectory(), FileUtil.urlForArchiveOrDir(sigs)});  //NOI18N
                     }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-                _cache.add (ClassPathSupport.createResource(url));
+                _cache.add (ClassPathSupport.createResource(url));                
             }
         }
         List<? extends PathResourceImplementation> res;
         synchronized (this) {
-            if (currentEventId == this.eventId) {
-                if (this.cache == null) {
-                    this.cache = _cache;
-                }
+            if (currentEventId == this.eventId) {                
+                this.cache = new ArrayList<PathResourceImplementation>(_cache);
                 res = this.cache;
             }
             else {
-                res = _cache;
-            }            
+                res = new ArrayList<PathResourceImplementation>(_cache);
+            }
         }
         assert res != null;
         return res;

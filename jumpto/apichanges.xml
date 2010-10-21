@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="Wildcard-to-Regexp">
+            <api name="general"/>
+            <summary>Added a method converting Go To Type (File) wildcards into regexp</summary>
+            <version major="1" minor="20"/>
+            <date day="21" month="10" year="2010"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added a method converting Go To Type (File) wildcards into string accepted by java.util.regex.Pattern
+            </description>
+            <class package="org.netbeans.spi.jumpto.support" name="NameMatcherFactory"/>
+            <issue number="191145"/>
+        </change>
         <change id="Support">
             <api name="general"/>
             <summary>Added support SPI to implement name filters</summary>

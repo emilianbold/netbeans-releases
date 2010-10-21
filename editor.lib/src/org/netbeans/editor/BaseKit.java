@@ -1347,6 +1347,8 @@ public class BaseKit extends DefaultEditorKit {
             BaseDocument doc = (BaseDocument) target.getDocument();
             DocumentUtilities.setTypingModification(doc, true);
             try {
+                String selectedText = target.getSelectedText();
+                int origDot = target.getCaretPosition();
                 target.replaceSelection(""); // NOI18N
                 Caret caret = target.getCaret();
                 Object cookie = beforeBreak(target, doc, caret);
@@ -1356,7 +1358,7 @@ public class BaseKit extends DefaultEditorKit {
                 assert cookie instanceof Integer || dotPos == insertionOffset :
                             "dotPos=" + dotPos + " != " +          //NOI18N
                             "insertionOffset=" + insertionOffset + //NOI18N
-                            "cookie=" + cookie;                    //NOI18N
+                            " cookie=" + cookie + " selectedText='" + selectedText + "' origDot=" + origDot;                    //NOI18N
                 doc.insertString(dotPos, insertionText, null);
                 dotPos += caretPosition != -1 ? caretPosition :
                           breakInsertPosition != -1 ? breakInsertPosition + 1 :
@@ -1384,11 +1386,8 @@ public class BaseKit extends DefaultEditorKit {
         }
         
         private int computeInsertionOffset(Caret caret) {
-            if (Utilities.isSelectionShowing(caret)) {
-                return Math.min(caret.getMark(), caret.getDot());
-            } else {
-                return caret.getDot();
-            }
+            // If selection is present return begining of selection
+            return Math.min(caret.getMark(), caret.getDot());
         }
         
     } // End of InsertBreakAction class
@@ -1716,7 +1715,7 @@ public class BaseKit extends DefaultEditorKit {
                     
                     try {
                         removedChar = nextChar ? 
-                        dot < doc.getLength() - 1 ? doc.getChars(dot, 1) : null : 
+                        dot < doc.getLength() ? doc.getChars(dot, 1) : null : 
                         dot > 0 ? doc.getChars(dot - 1, 1) : null;
                     } catch (BadLocationException ble) {
                         target.getToolkit().beep();

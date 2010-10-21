@@ -103,11 +103,6 @@ public final class NewlineView extends EditorView {
     }
 
     @Override
-    public boolean setLength(int length, int modOffset, int modLength) {
-        return false;
-    }
-
-    @Override
     public AttributeSet getAttributes() {
         return attributes;
     }
@@ -143,6 +138,16 @@ public final class NewlineView extends EditorView {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         mutableBounds.width = getPreferredSpan(X_AXIS);
         return mutableBounds;
+    }
+
+    @Override
+    public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
+        return getStartOffset();
+    }
+
+    @Override
+    public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
+        return -1; // Always skip in all directions
     }
 
     @Override
@@ -183,18 +188,13 @@ public final class NewlineView extends EditorView {
                     // Possibly paint pilcrow sign
                     TextLayout textLayout;
                     if (docView.isShowNonprintingCharacters() && (textLayout = docView.getNewlineCharTextLayout()) != null) {
-                        HighlightsView.paintForeground(g, mutableBounds, docView, textLayout, getAttributes());
+                        HighlightsViewUtils.paintForeground(g, mutableBounds, textLayout, getAttributes(), docView);
                     }
                 } finally {
                     paintState.restore();
                 }
             }
         }
-    }
-
-    @Override
-    public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
-        return getStartOffset();
     }
 
     @Override

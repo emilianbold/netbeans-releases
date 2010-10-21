@@ -42,38 +42,55 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.spi.java.platform;
+package org.netbeans.modules.editor.lib2.view;
 
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Defines an API for registering custom Java platform installer. The Installer
- * is responsible for recognizing the platform, through its {@link #accept} method,
- * and for instantiation itself, through the provided wizard iterator.
- * Consult the {@link GeneralPlatformInstall} javadoc about the {@link PlatformInstall} registration.
- *
- * @author Svata Dedic, Tomas Zezula
+ * Various statistics about view creation and maintaining.
+ * 
+ * @author Miloslav Metelka
  */
-public abstract class PlatformInstall extends GeneralPlatformInstall {
-    /**
-     * Creates a {@link WizardDescriptor.InstantiatingIterator} for an accepted
-     * folder. The platform definition file returned by the instantiate method
-     * should be created in the Services/Platforms/org-netbeans-api-java-Platform
-     * folder on the system filesystem.
-     * @return TemplateWizard.Iterator instance responsible for instantiating
-     * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the platform.
-     */
-    public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder);
 
-    /**
-     * Checks whether a given folder contains a platform of the supported type.
-     * The check done by this method should be quick and should not involve launching the virtual machine,
-     * the expensive check, if needed, should be done in the wizard panel.
-     * @param baseFolder folder which may be an installation root of a platform
-     * @return true if the folder is recognized
-     */
-    public abstract boolean accept(FileObject baseFolder);    
+public final class ViewStats {
+
+    // -J-Dorg.netbeans.modules.editor.lib2.view.ViewStatistics.level=FINE
+    private static final Logger LOG = Logger.getLogger(ViewStats.class.getName());
+    
+    private static final int TEXT_LAYOUT_CREATED_THRESHOLD = 200;
+    
+    private static final int INIT_TEXT_LAYOUTS_THRESHOLD = 10;
+    
+    private static int textLayoutCreatedCount;
+    
+    private static int textLayoutCharCount;
+    
+    private static int initTextLayoutsCount;
+
+    private ViewStats() { // No instances
+    }
+    
+    public static void incrementTextLayoutCreated(int charCount) {
+        textLayoutCreatedCount++;
+        textLayoutCharCount += charCount;
+        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % TEXT_LAYOUT_CREATED_THRESHOLD) == 0) {
+            LOG.fine(stats());
+        }
+    }
+
+    public static void incrementInitTextLayouts() {
+        initTextLayoutsCount++;
+        if (LOG.isLoggable(Level.FINE) && (textLayoutCreatedCount % INIT_TEXT_LAYOUTS_THRESHOLD) == 0) {
+            LOG.fine(stats());
+        }
+    }
+
+    public static String stats() {
+        return "TextLayouts:\n  created-count: " + textLayoutCreatedCount + // NOI18N
+                "\n  char-count: " + textLayoutCharCount + // NOI18N
+                "\nInitTextLayouts: " + initTextLayoutsCount + // NOI18N
+                "\n"; // NOI18N
+    }
 
 }

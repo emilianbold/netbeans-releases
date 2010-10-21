@@ -165,9 +165,9 @@ public final class NameMatcherFactory {
                 case PREFIX:
                     return new PrefixNameMatcher(text);
                 case REGEXP:
-                    return new RegExpNameMatcher(wildcards2regexp(text), true);
+                    return new RegExpNameMatcher(wildcardsToRegexp(text, true), true);
                 case CASE_INSENSITIVE_REGEXP:
-                    return new RegExpNameMatcher(wildcards2regexp(text), false);
+                    return new RegExpNameMatcher(wildcardsToRegexp(text, true), false);
                 case CASE_INSENSITIVE_PREFIX:
                      return new CaseInsensitivePrefixNameMatcher(text);
                 case CAMEL_CASE:
@@ -181,7 +181,28 @@ public final class NameMatcherFactory {
         }
     }
 
-    private static String wildcards2regexp(String pattern) {
-        return pattern.replace("\\","").replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ); //NOI18N
+    /**
+     * Translates the wildcard pattern into regexp
+     * @param pattern the wildcard pattern to be translated into regexp
+     * @param prefix if true the pattern is extended by *
+     * @return the regular expression
+     * @since 1.20
+     */
+    public static String wildcardsToRegexp(final String pattern, boolean prefix) {
+        String result = pattern.
+                replace("{","").        //NOI18N
+                replace("}","").        //NOI18N
+                replace("[","").        //NOI18N
+                replace("]","").        //NOI18N
+                replace("(","").        //NOI18N
+                replace(")","").        //NOI18N
+                replace("\\","").       //NOI18N
+                replace(".", "\\.").    //NOI18N
+                replace( "*", ".*" ).   //NOI18N
+                replace( '?', '.' );    //NOI18N
+        if (prefix) {
+            result = result.concat(".*");   //NOI18N
+        }
+        return result;
     }
 }

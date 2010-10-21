@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -619,8 +620,8 @@ public final class PathRegistry implements Runnable {
                     assert !newSR.containsKey(binRoot);
                     newSR.put(binRoot,sr);
                     LOGGER.log(Level.FINE, "{0}: preferSources={1}", new Object[] { binRoot, sr.preferSources() }); //NOI18N
-                    final List<URL> cacheURLs = new ArrayList<URL> ();
-                    Collection<URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
+                    final Set<URL> cacheURLs = new LinkedHashSet<URL> (); //LinkedSet to protect against wrong SFBQ but keep ordering
+                    final Collection<? extends URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
                     if (srcRoots.isEmpty()) {
                         binaryLibraryResult.add(binRoot);
                     } else {
@@ -656,7 +657,7 @@ public final class PathRegistry implements Runnable {
                 newCps, newSR, translatedRoots, request.unknownRoots, pathIdsResult, pathIdToRootsResult);
     }
 
-    private static Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
+    private static Collection <? extends URL> getSources (final SourceForBinaryQuery.Result2 sr, final Collection<? super URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
         assert sr != null;
         if (sr.preferSources()) {
             final FileObject[] roots = sr.getRoots();
@@ -704,7 +705,7 @@ public final class PathRegistry implements Runnable {
         LOGGER.log(Level.FINE, "Root {0} associated with {1}", new Object [] { root, tcp.getPathIds() });
     }
 
-    private static void updateTranslatedPathIds(Collection<URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
+    private static void updateTranslatedPathIds(Collection<? extends URL> roots, TaggedClassPath tcp, Map<URL, PathIds> pathIdsResult, Map<String, Set<URL>> pathIdToRootsResult) {
         Set<String> sids = new HashSet<String>();
         Set<String> mimeTypes = new HashSet<String>();
         for(String blid : tcp.getPathIds().getBlids()) {

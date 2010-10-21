@@ -116,6 +116,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private SearchType nameKind;
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);
+    private static final RequestProcessor PROFILE_RP = new RequestProcessor("GoToTypeAction-Profile",1);
     private Worker running;
     private RequestProcessor.Task task;
     GoToPanel panel;
@@ -713,20 +714,25 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         if (profiler == null) {
             return null;
         }
-        return new Profile(profiler);
+        return new Profile(profiler).start();
     }
 
     private class Profile implements Runnable {
-        Object profiler;
-        boolean profiling;
         private final long time;
+        private volatile  Object profiler;
+        private volatile boolean profiling;
 
         public Profile(Object profiler) {
             time = System.currentTimeMillis();
             this.profiler = profiler;
-            RequestProcessor.getDefault().post(this, 3000); // 3s
+        }
+        
+        Profile start() {
+            PROFILE_RP.post(this, 3000); // 3s
+            return this;
         }
 
+        @Override
         public synchronized void run() {
             profiling = true;
             if (profiler instanceof Runnable) {

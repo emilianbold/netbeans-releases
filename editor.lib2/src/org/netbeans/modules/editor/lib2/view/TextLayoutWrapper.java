@@ -42,38 +42,56 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.spi.java.platform;
+package org.netbeans.modules.editor.lib2.view;
 
-import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileObject;
+import java.awt.Color;
+import java.awt.font.TextLayout;
+
 
 /**
- * Defines an API for registering custom Java platform installer. The Installer
- * is responsible for recognizing the platform, through its {@link #accept} method,
- * and for instantiation itself, through the provided wizard iterator.
- * Consult the {@link GeneralPlatformInstall} javadoc about the {@link PlatformInstall} registration.
- *
- * @author Svata Dedic, Tomas Zezula
+ * Text layout wrapper for possibly several consecutive highlights views.
+ * 
+ * @author Miloslav Metelka
  */
-public abstract class PlatformInstall extends GeneralPlatformInstall {
-    /**
-     * Creates a {@link WizardDescriptor.InstantiatingIterator} for an accepted
-     * folder. The platform definition file returned by the instantiate method
-     * should be created in the Services/Platforms/org-netbeans-api-java-Platform
-     * folder on the system filesystem.
-     * @return TemplateWizard.Iterator instance responsible for instantiating
-     * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the platform.
-     */
-    public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder);
 
-    /**
-     * Checks whether a given folder contains a platform of the supported type.
-     * The check done by this method should be quick and should not involve launching the virtual machine,
-     * the expensive check, if needed, should be done in the wizard panel.
-     * @param baseFolder folder which may be an installation root of a platform
-     * @return true if the folder is recognized
-     */
-    public abstract boolean accept(FileObject baseFolder);    
+final class TextLayoutWrapper {
+    
+    private final TextLayout textLayout; // 8(super) + 4 = 12 bytes
+    
+    private final int viewCount; // 12 + 4 = 16 bytes
+    
+    private final Color foreground; // 16 + 4 = 20 bytes
+
+    private final Color background; // 20 + 4 = 24 bytes
+
+    public TextLayoutWrapper(TextLayout textLayout, int viewCount,
+            Color foreground, Color background)
+    {
+        this.textLayout = textLayout;
+        this.viewCount = viewCount;
+        this.foreground = foreground;
+        this.background = background;
+    }
+    
+    TextLayout textLayout() {
+        return textLayout;
+    }
+    
+    int viewCount() {
+        return viewCount;
+    }
+    
+    Color foreground() {
+        return foreground;
+    }
+    
+    Color background() {
+        return background;
+    }
+
+    @Override
+    public String toString() {
+        return "vCount=" + viewCount + "; " + TextLayoutUtils.toString(textLayout); // NOI18N
+    }
 
 }
