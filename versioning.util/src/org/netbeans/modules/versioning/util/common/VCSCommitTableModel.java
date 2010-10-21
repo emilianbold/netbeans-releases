@@ -55,7 +55,7 @@ import java.io.File;
  *
  * @author Tomas Stupka
  */
-public abstract class VCSCommitTableModel extends AbstractTableModel {
+public class VCSCommitTableModel extends AbstractTableModel {
 
     public static final String COLUMN_NAME_COMMIT  = "commit"; // NOI18N
     public static final String COLUMN_NAME_NAME    = "name"; // NOI18N
@@ -64,7 +64,26 @@ public abstract class VCSCommitTableModel extends AbstractTableModel {
     public static final String COLUMN_NAME_PATH    = "path"; // NOI18N
     public static final String COLUMN_NAME_BRANCH  = "branch"; // NOI18N
 
-    protected abstract VCSCommitOptions[] createDefaultCommitOptions();
+    public static String [] COMMIT_COLUMNS = new String [] {
+                                            VCSCommitTableModel.COLUMN_NAME_COMMIT,
+                                            VCSCommitTableModel.COLUMN_NAME_NAME,
+                                            VCSCommitTableModel.COLUMN_NAME_STATUS,
+                                            VCSCommitTableModel.COLUMN_NAME_ACTION,
+                                            VCSCommitTableModel.COLUMN_NAME_PATH
+                                        };
+
+    private VCSCommitOptions[] createDefaultCommitOptions() {
+        VCSCommitOptions[] co = new VCSCommitOptions[getNodes().length];
+        for (int i = 0; i < getNodes().length; i++) {
+            co[i] = VCSCommitOptions.COMMIT;
+            
+            VCSFileNode node = getNode(i);
+            File file = node.getFile();
+            VCSFileInformation info = (VCSFileInformation) node.getInformation();
+            co[i] = info.getDefaultCommitOption(file);            
+        }
+        return co;
+    }
 
     private class RootFile {
         String repositoryPath;
@@ -108,8 +127,8 @@ public abstract class VCSCommitTableModel extends AbstractTableModel {
      * Create stable with name, status, action and path columns
      * and empty nodes {@link #setNodes model}.
      */
-    public VCSCommitTableModel(String[] columns) {
-        setColumns(columns);
+    public VCSCommitTableModel() {
+        setColumns(COMMIT_COLUMNS);
         setNodes(new VCSFileNode[0]);
     }
 
@@ -211,7 +230,9 @@ public abstract class VCSCommitTableModel extends AbstractTableModel {
         if (col.equals(COLUMN_NAME_ACTION)) {
             commitOptions[rowIndex] = (VCSCommitOptions) aValue;
         } else if (col.equals(COLUMN_NAME_COMMIT)) {
-            commitOptions[rowIndex] = ((Boolean) aValue) ? getCommitOptions(rowIndex) : VCSCommitOptions.EXCLUDE;
+            VCSFileNode node = nodes[rowIndex];
+            VCSCommitOptions options = node.getInformation().getCommitOptions(node.getFile());
+            commitOptions[rowIndex] = ((Boolean) aValue) ? options : VCSCommitOptions.EXCLUDE;
         } else {
             throw new IllegalArgumentException("Column index out of range: " + columnIndex); // NOI18N
         }
@@ -226,10 +247,6 @@ public abstract class VCSCommitTableModel extends AbstractTableModel {
         return nodes[row];
     }
 
-    protected VCSCommitOptions[] getOptions() {
-        return commitOptions;
-    }
-    
     public VCSCommitOptions getOption(int row) {
         return commitOptions[row];
     }
@@ -242,11 +259,11 @@ public abstract class VCSCommitTableModel extends AbstractTableModel {
 
     protected void setIncluded (int[] rows, boolean include) {
         for (int rowIndex : rows) {
-            commitOptions[rowIndex] = include ? getCommitOptions(rowIndex) : VCSCommitOptions.EXCLUDE;
+            VCSFileNode node = nodes[rowIndex];
+            VCSCommitOptions options = node.getInformation().getCommitOptions(node.getFile());
+            commitOptions[rowIndex] = include ? options : VCSCommitOptions.EXCLUDE;
         }
         fireTableRowsUpdated(0, getRowCount() - 1);
     }
-
-    protected abstract VCSCommitOptions getCommitOptions (int rowIndex);
 
 }
