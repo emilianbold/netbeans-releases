@@ -53,6 +53,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RunFacade;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -162,18 +164,12 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     private static String getLocalHostName() {
         String hostName = null;
-        RunFacade runner = RunFacade.getInstance(ExecutionEnvironmentFactory.getLocal());
-        if (runner.run("uname -a")) { //NOI18N
-            String result = runner.getOutput();
-            if (result != null) {
-                String[] values = result.split(" +"); // NOI18N
-                if (values.length > 1) {
-                    hostName = values[1];
-                    //TODO: validation?
-                    //TODO: add smth for Windows and move to HostInfoProv or RemoteUtils?
-                    //TODO: should ExecutionEnvironment be responsible for this?
-                }
-            }
+        try {
+            hostName = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal()).getHostname();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (CancellationException ex) {
+            // don't report cancellation exception
         }
         return hostName;
     }
