@@ -535,11 +535,7 @@ No.
         </question>
 -->
 <answer id="exec-reflection">
-yes. 
-It's retrieving value of a setting property (visibility of toolbar in editor) and is 
-listening on changes.
-That's an undeclared dependency on editor(org.netbeans.editor.Settings).
-A test is included in commit validation that checks the editor code changes.
+No.
 </answer>
 
 

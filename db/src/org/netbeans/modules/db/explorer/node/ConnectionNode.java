@@ -37,7 +37,7 @@
  *  
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -102,8 +102,6 @@ public class ConnectionNode extends BaseNode {
         super(new ChildNodeFactory(lookup), lookup, FOLDER, provider);
         connection = getLookup().lookup(DatabaseConnection.class);
         lookup.add(DatabaseConnectionAccessor.DEFAULT.createDatabaseConnection(connection));
-        
-        // XXX: allow to add non-connection nodes for predefined templates
     }
 
     @Override
@@ -115,6 +113,8 @@ public class ConnectionNode extends BaseNode {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals("connectionComplete") || // NOI18N
                             evt.getPropertyName().equals("disconnected")) { // NOI18N
+                        updateModel();
+                    } else if (evt.getPropertyName().equals(DatabaseConnection.PROP_NAME)) {
                         updateModel();
                     }
                 }

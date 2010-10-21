@@ -89,20 +89,6 @@ public class EditorSanityTest extends NbTestCase {
         }
     }
 
-    /**
-     * test for reflection used in multiview module that retrieves a setting value from editor.
-     *
-     * @author mkleint
-     */
-    public void testMultiviewEditorReflection() throws Exception {
-        ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-        Class<?> settingsClass = Class.forName("org.netbeans.editor.Settings", false, loader);
-        Class listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader);
-        settingsClass.getMethod("addSettingsChangeListener", listenerClass);
-        settingsClass.getMethod("removeSettingsChangeListener", listenerClass);
-    }
-
-    
     public void testHTMLEditorKits() {
         JEditorPane pane = new JEditorPane();
         setContentTypeInAwt(pane, "text/html");

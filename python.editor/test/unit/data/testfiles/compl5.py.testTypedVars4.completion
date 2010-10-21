@@ -1,6 +1,0 @@
-Code completion result for source line:
-os5.xhd|
-(QueryType=COMPLETION, NameKind=PREFIX)
-OTHER      Specify type of <code>os5</cod             
-------------------------------------
-METHOD     xhdr(hdr, str, file)                       
