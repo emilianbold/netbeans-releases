@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.node;
@@ -90,11 +90,13 @@ public class SchemaNode extends BaseNode {
         schemaHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
+    @Override
     protected void initialize() {
         setupNames();
 
         connection.addPropertyChangeListener(
             new PropertyChangeListener() {
+            @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFSCHEMA)) {
                         updateProperties();
@@ -111,6 +113,7 @@ public class SchemaNode extends BaseNode {
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+                    @Override
                         public void run(Metadata metaData) {
                             Schema schema = schemaHandle.resolve(metaData);
                             renderNames(schema);
