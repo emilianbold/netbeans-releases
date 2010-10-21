@@ -3112,7 +3112,7 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                (   (cast_initializer_head) => cast_initializer
+                (   (cast_initializer_head) => initializer
                 |   expression
                 )
 	)?	
