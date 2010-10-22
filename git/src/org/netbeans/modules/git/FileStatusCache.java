@@ -93,11 +93,11 @@ public class FileStatusCache {
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
-    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), false);
-    private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), false);
-    private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), false);
-    private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE), false);
-    private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.STATUS_UNKNOWN), false);
+    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.VERSIONED_UPTODATE), false);
+    private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED), false);
+    private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), false);
+    private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE), false);
+    private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
 
     public FileStatusCache() {
         cachedFiles = new HashMap<File, FileInformation>();
@@ -207,9 +207,9 @@ public class FileStatusCache {
                 }
                 for (File root : refreshEntry.getValue()) {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
-                    for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)))) {
+                    for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.VERSIONED_UPTODATE)))) {
                         FileInformation fi = getInfo(file);
-                        if (fi == null || fi.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+                        if (fi == null || fi.containsStatus(Status.VERSIONED_UPTODATE)) {
                             // XXX debug section
                             LOG.log(Level.WARNING, "refreshAllRoots(): possibly concurrent refresh: {0}:{1}", new Object[] { file, fi });
                             boolean ea = false;
@@ -218,7 +218,7 @@ public class FileStatusCache {
                                 try {
                                     Thread.sleep(100);
                                 } catch (InterruptedException ex) { }
-                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE))))).contains(file)) {
+                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.VERSIONED_UPTODATE))))).contains(file)) {
                                     LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
                                     assert false : "index seems to be broken " + file.getAbsolutePath();
                                 }
@@ -229,9 +229,9 @@ public class FileStatusCache {
                         File filesOwner = null;
                         boolean correctRepository = true;
                         if (!interestingFiles.containsKey(file) // file no longer has an interesting status
-                                && (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
+                                && (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
                                 fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
-                                !fi.isDirectory() && !fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
+                                !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
                                 && (correctRepository = repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for nested repositories
                             LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                             refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
@@ -447,11 +447,11 @@ public class FileStatusCache {
                     info = getInfo(file);
                 }
                 if (file.isDirectory()) {
-                    setInfo(file, info = (info != null && info.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)
-                            ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true)
-                            : new FileInformation(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE), true)));
+                    setInfo(file, info = (info != null && info.containsStatus(Status.NOTVERSIONED_EXCLUDED)
+                            ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true)
+                            : new FileInformation(EnumSet.of(Status.VERSIONED_UPTODATE), true)));
                 } else {
-                    if (info == null || info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+                    if (info == null || info.containsStatus(Status.VERSIONED_UPTODATE)) {
                         info = FILE_INFORMATION_UPTODATE;
                         addUpToDate(file);
                         // XXX delete later
@@ -463,19 +463,19 @@ public class FileStatusCache {
                                 }
                             }
                         }
-                    } else if (info.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+                    } else if (info.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                         addAsExcluded = true;
                     }
                 }
             } else {
                 // unmanaged files
-                info = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED), true) : FILE_INFORMATION_NOTMANAGED;
+                info = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED), true) : FILE_INFORMATION_NOTMANAGED;
             }
             LOG.log(Level.FINER, "getCachedStatus: default for file {0}: {1}", new Object[] {file, info}); //NOI18N
         } else {
             // an u-t-d file may be actually ignored. This needs to be checked since we skip ignored folders in the status scan
             // so ignored files appear as up-to-date after the scan finishes
-            if (info.containsStatus(Status.STATUS_VERSIONED_UPTODATE) && checkForIgnoredFile(file) != null) {
+            if (info.containsStatus(Status.VERSIONED_UPTODATE) && checkForIgnoredFile(file) != null) {
                 info = FILE_INFORMATION_EXCLUDED;
                 addAsExcluded = true;
             }
@@ -488,7 +488,7 @@ public class FileStatusCache {
                 public void run() {
                     synchronized (FileStatusCache.this) {
                         FileInformation info = getInfo(file);
-                        if (info == null || info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+                        if (info == null || info.containsStatus(Status.VERSIONED_UPTODATE)) {
                             refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
                         }
                     }
@@ -524,10 +524,10 @@ public class FileStatusCache {
         FileInformation current;
         synchronized (this) {
             if (equivalent(FILE_INFORMATION_NEWLOCALLY, fi) && (GitUtils.isIgnored(file, true)
-                    || getStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED))) {
+                    || getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED))) {
                 // file lies under an excluded parent
                 LOG.log(Level.FINE, "refreshFileStatus() file: {0} was LocallyNew but is NotSharable", file.getAbsolutePath()); // NOI18N
-                fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
+                fi = file.isDirectory() ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED;
             }
             file = FileUtil.normalizeFile(file);
             current = getInfo(file);
@@ -536,9 +536,9 @@ public class FileStatusCache {
                 return;
             }
             boolean addToIndex = false;
-            if (fi.getStatus().equals(EnumSet.of(Status.STATUS_UNKNOWN))) {
+            if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
                 removeInfo(file);
-            } else if (fi.getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)) && file.isFile()) {
+            } else if (fi.getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)) && file.isFile()) {
                 removeInfo(file);
                 addUpToDate(file);
             } else {
@@ -613,11 +613,11 @@ public class FileStatusCache {
     private Set<File> getIndexValues (File root, Set<Status> includeStatus) {
         File[] modified = new File[0];
         File[] ignored = new File[0];
-        if (includeStatus.contains(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (includeStatus.contains(Status.NOTVERSIONED_EXCLUDED)) {
             ignored = ignoredFiles.get(root);
         }
         if (FileInformation.STATUS_LOCAL_CHANGES.clone().removeAll(includeStatus)) {
-            if (includeStatus.equals(EnumSet.of(Status.STATUS_VERSIONED_CONFLICT))) {
+            if (includeStatus.equals(EnumSet.of(Status.VERSIONED_CONFLICT))) {
                 modified = conflictedFiles.get(root);
             } else {
                 modified = modifiedFiles.get(root);
@@ -638,11 +638,11 @@ public class FileStatusCache {
             conflicted.remove(file);
             ignored.remove(file);
             if (addToIndex) {
-                if (fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+                if (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                     ignored.add(file);
                 } else {
                     modified.add(file);
-                    if (fi.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+                    if (fi.containsStatus(Status.VERSIONED_CONFLICT)) {
                         conflicted.add(file);
                     }
                 }
@@ -661,7 +661,7 @@ public class FileStatusCache {
      */
     private FileInformation checkForIgnoredFile (File file) {
         FileInformation fi = null;
-        if (file.getParentFile() != null && getStatus(file.getParentFile(), false).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (file.getParentFile() != null && getStatus(file.getParentFile(), false).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             fi = FILE_INFORMATION_EXCLUDED;
         } else {
             // run the full test with the SQ
@@ -689,7 +689,7 @@ public class FileStatusCache {
                             refreshFileStatus(f, FILE_INFORMATION_UNKNOWN);
                         } else {
                             // add to cache as ignored
-                            refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
+                            refreshFileStatus(f, isDirectory ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true) : FILE_INFORMATION_EXCLUDED);
                         }
                     }
                 }

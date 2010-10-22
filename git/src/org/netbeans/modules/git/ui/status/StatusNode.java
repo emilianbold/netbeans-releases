@@ -74,7 +74,7 @@ public class StatusNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction () {
-        if (node.getInformation().containsStatus(FileInformation.Status.STATUS_VERSIONED_CONFLICT)) {
+        if (node.getInformation().containsStatus(FileInformation.Status.VERSIONED_CONFLICT)) {
             return new OpenInEditorAction(new File[] { getFile() });
         } else {
             // Diff

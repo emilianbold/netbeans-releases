@@ -76,11 +76,11 @@ import org.openide.util.actions.SystemAction;
  */
 public class Annotator extends VCSAnnotator {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
-    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.STATUS_VERSIONED_UPTODATE, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.VERSIONED_UPTODATE, Status.NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE);
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
-        STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.STATUS_VERSIONED_UPTODATE, FileInformation.Status.STATUS_NOTVERSIONED_EXCLUDED));
+        STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.VERSIONED_UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
     }
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
@@ -199,24 +199,24 @@ public class Annotator extends VCSAnnotator {
         }
         if(mostImportantInfo == null) return null;
         String statusText = null;
-        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_ADDED_TO_INDEX)) {
             // TODO: copy?
             statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
             statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_UPTODATE)) {
             statusText = null;
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_CONFLICT)) {
             statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
             statusText = null;
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_UNKNOWN)) {
+        } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
             statusText = null;
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
@@ -241,7 +241,7 @@ public class Annotator extends VCSAnnotator {
             return null;
         }
         Image badge = null;
-        if (cache.containsFiles(context, EnumSet.of(Status.STATUS_VERSIONED_CONFLICT), true)) {
+        if (cache.containsFiles(context, EnumSet.of(Status.VERSIONED_CONFLICT), true)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
         } else if (cache.containsFiles(context, FileInformation.STATUS_LOCAL_CHANGES, true)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified);
@@ -255,7 +255,7 @@ public class Annotator extends VCSAnnotator {
 
     private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, File mostImportantFile) {
         String nameHtml = htmlEncode(name);
-        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
@@ -287,24 +287,24 @@ public class Annotator extends VCSAnnotator {
             textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); // NOI18N
         }
 
-        if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_ADDED_TO_INDEX)) {
             // what about copy?
             return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
             return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_UPTODATE)) {
             return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_CONFLICT)) {
             return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
             return name;
-        } else if (mostImportantInfo.containsStatus(Status.STATUS_UNKNOWN)) {
+        } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
             return name;
         } else {
             throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
@@ -322,7 +322,7 @@ public class Annotator extends VCSAnnotator {
 
     private String formatAnnotation(FileInformation info, File file) {
         String statusString = "";  // NOI18N
-        if (info.containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+        if (info.containsStatus(Status.VERSIONED_UPTODATE)) {
             statusString = info.getShortStatusText();
         }
 

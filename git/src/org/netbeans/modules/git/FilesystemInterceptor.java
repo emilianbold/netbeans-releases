@@ -123,7 +123,7 @@ class FilesystemInterceptor extends VCSInterceptor {
     public void afterCreate (final File file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); //NOI18N
         // There is no point in refreshing the cache for ignored files.
-        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
     }
@@ -135,7 +135,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (GitUtils.isPartOfGitMetadata(file)) return false;
 
         // do not handle delete for ignored files
-        return !cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED);
+        return !cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED);
     }
 
     @Override
@@ -163,7 +163,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterDelete {0}", file); //NOI18N
         if (file == null) return;
         // we don't care about ignored files
-        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
     }
@@ -209,11 +209,11 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (from == null || to == null || !to.exists()) return;
 
         // There is no point in refreshing the cache for ignored files.
-        if (!cache.getStatus(from).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(from).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(from));
         }
         // There is no point in refreshing the cache for ignored files.
-        if (!cache.getStatus(to).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
         }
     }
@@ -260,7 +260,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (to == null) return;
 
         // There is no point in refreshing the cache for ignored files.
-        if (!cache.getStatus(to).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(to));
         }
     }
@@ -270,7 +270,7 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (file.isDirectory()) return;
         LOG.log(Level.FINE, "afterChange {0}", new Object[] { file }); //NOI18N
         // There is no point in refreshing the cache for ignored files.
-        if (!cache.getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        if (!cache.getStatus(file).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(file));
         }
     }

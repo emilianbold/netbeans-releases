@@ -113,23 +113,23 @@ public class StatusTest extends AbstractGitTestCase {
         newFiles.add(newFile = new File(repositoryLocation, "file"));
         newFile.createNewFile();
         Thread.sleep(500);
-        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
 
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(1, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
         newFiles.add(newFile = new File(repositoryLocation, "file2"));
         newFile.createNewFile();
         Thread.sleep(500);
-        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(2, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -137,11 +137,11 @@ public class StatusTest extends AbstractGitTestCase {
         newFiles.add(newFile = new File(repositoryLocation, "file3"));
         newFile.createNewFile();
         Thread.sleep(500);
-        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
-        assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -149,9 +149,9 @@ public class StatusTest extends AbstractGitTestCase {
         File folder = new File(repositoryLocation, "folder");
         folder.mkdirs();
         Thread.sleep(500);
-        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folder)));
-        assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -159,11 +159,11 @@ public class StatusTest extends AbstractGitTestCase {
         newFiles.add(newFile = new File(folder, "file4"));
         newFile.createNewFile();
         Thread.sleep(500);
-        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED)));
+        assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
-        assertSameStatus(newFiles, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         assertEquals(4, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
     }
@@ -192,54 +192,54 @@ public class StatusTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(folderA));
         FileInformation status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(fileA2));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         assertFalse(handler.waitForFilesToRefresh());
         assertFalse(handler.getFilesRefreshed());
 
         handler.setFilesToRefresh(Collections.singleton(fileB1));
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(fileB2));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderC));
         status = getCache().getStatus(folderC);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(folderC);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         status = getCache().getStatus(fileC1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileC2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderB));
         status = getCache().getStatus(folderB);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderB));
         status = getCache().getStatus(folderB);
@@ -265,45 +265,45 @@ public class StatusTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(fileA1));
         FileInformation status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
 
         write(ignoreFile, "");
         handler.setFilesToRefresh(Collections.singleton(fileA1));
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(fileA1)));
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         write(ignoreFile, "folderA");
         handler.setFilesToRefresh(Collections.singleton(fileA2));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.setFilesToRefresh(Collections.singleton(folderA));
         status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE)); // should be excluded actually
+        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE)); // should be excluded actually
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
 
         write(ignoreFile, "");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folderA)));
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         ignoreFile = new File(folderA, ".gitignore");
         write(ignoreFile, "file1");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folderA)));
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
     }
 
     public void testIgnoredBySharability () throws Exception {
@@ -348,13 +348,13 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(file1));
         FileInformation status = getCache().getStatus(file1);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
-            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(file1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
 
         File newFolder = new File(repositoryLocation, "notSharable");
         folder.renameTo(newFolder);
@@ -363,13 +363,13 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(file2));
         status = getCache().getStatus(file2);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
-            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(file2);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
 
         folder = new File(repositoryLocation, "notSharableFolder");
         folder.mkdirs();
@@ -378,15 +378,15 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(folder));
         status = getCache().getStatus(folder);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.STATUS_VERSIONED_UPTODATE) || status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
-            assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(folder);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         status = getCache().getStatus(file1);
-        assertTrue(status.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
     }
 
     public void testPurgeRemovedIgnoredFiles () throws Exception {
@@ -398,7 +398,7 @@ public class StatusTest extends AbstractGitTestCase {
         File ignoreFile = new File(repositoryLocation, ".gitignore");
         write(ignoreFile, "ignored");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(file1)));
-        assertTrue(getCache().getStatus(file1).containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(getCache().getStatus(file1).containsStatus(Status.NOTVERSIONED_EXCLUDED));
         file1.delete();
         assertFalse(file1.exists());
         final boolean[] cleaned = new boolean[1];
@@ -459,8 +459,8 @@ public class StatusTest extends AbstractGitTestCase {
         file3.createNewFile();
 
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        List<File> ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        List<File> ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
         assertTrue(ignoredFiles.isEmpty());
@@ -471,8 +471,8 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         getCache().getStatus(file3);
         Thread.sleep(500);
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertFalse(newFiles.contains(file3));
         assertTrue(ignoredFiles.contains(subFolder));
@@ -480,8 +480,8 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "subfolder2");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
         assertTrue(ignoredFiles.isEmpty());
@@ -493,8 +493,8 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().getStatus(file2);
         getCache().getStatus(file3);
         Thread.sleep(500);
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.isEmpty());
         assertTrue(ignoredFiles.contains(folder));
         assertTrue(ignoredFiles.contains(subFolder));
@@ -503,8 +503,8 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "subfolder");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertFalse(newFiles.contains(file3));
         assertFalse(ignoredFiles.contains(folder));
@@ -513,8 +513,8 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
-        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
         assertTrue(ignoredFiles.isEmpty());
@@ -541,11 +541,11 @@ public class StatusTest extends AbstractGitTestCase {
 
         FileInformation fi;
         fi = new FileInformation(statuses.get(file));
-        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(fi.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         fi = new FileInformation(statuses.get(folder));
-        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(fi.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         fi = new FileInformation(statuses.get(folder2));
-        assertTrue(fi.containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED));
+        assertTrue(fi.containsStatus(Status.NOTVERSIONED_EXCLUDED));
     }
 
     public void testStatusAddFiles () throws Exception {
@@ -557,23 +557,23 @@ public class StatusTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         add(file, folder);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
 
         write(file2, "i am modified");
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
-                Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE,
-                Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX,
+                Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE,
+                Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)));
     }
 
     public void testStatusRemoveFiles () throws Exception {
@@ -585,37 +585,37 @@ public class StatusTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
 
         add();
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
 
         delete(true, file2);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX, Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_REMOVED_HEAD_INDEX, Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
         assertTrue(file2.exists());
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
 
         delete(false, file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX, Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_REMOVED_HEAD_INDEX, Status.VERSIONED_REMOVED_HEAD_WORKING_TREE)));
         assertFalse(file.exists());
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
     }
 
     public void testStatusModifyFiles () throws Exception {
@@ -629,24 +629,24 @@ public class StatusTest extends AbstractGitTestCase {
         add();
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
 
         write(file, "hello");
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
 
         add(file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.VERSIONED_MODIFIED_HEAD_INDEX)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
     }
 
     // TODO add more tests when exclusions are supported

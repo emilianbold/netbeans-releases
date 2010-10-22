@@ -80,7 +80,7 @@ public class GitFileNode extends VCSFileNode {
         } else {
             if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
                 return VCSCommitOptions.COMMIT_REMOVE;
-            } else if(getInformation().containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+            } else if(getInformation().containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
                 return GitModuleConfig.getDefault().getExludeNewFiles() ? 
                                     VCSCommitOptions.EXCLUDE : 
                                     VCSCommitOptions.COMMIT;

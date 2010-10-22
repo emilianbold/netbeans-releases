@@ -75,40 +75,40 @@ public class FileInformation extends VCSFileInformation {
         copied = status.isCopied();
         oldFile = status.getOldPath();
         if (!status.isTracked()) {
-            this.status = GitStatus.Status.STATUS_IGNORED.equals(status.getStatusIndexWC()) ? EnumSet.of(Status.STATUS_NOTVERSIONED_EXCLUDED)
-                    : EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+            this.status = GitStatus.Status.STATUS_IGNORED.equals(status.getStatusIndexWC()) ? EnumSet.of(Status.NOTVERSIONED_EXCLUDED)
+                    : EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
         } else if (status.isConflict()) {
-            this.status = EnumSet.of(Status.STATUS_VERSIONED_CONFLICT);
+            this.status = EnumSet.of(Status.VERSIONED_CONFLICT);
         } else {
             GitStatus.Status statusHeadIndex = status.getStatusHeadIndex();
             GitStatus.Status statusIndexWC = status.getStatusIndexWC();
             GitStatus.Status statusHeadWC = status.getStatusHeadWC();
             EnumSet<Status> s = EnumSet.noneOf(Status.class);
             if (GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)) {
-                s.add(Status.STATUS_VERSIONED_ADDED_TO_INDEX);
+                s.add(Status.VERSIONED_ADDED_TO_INDEX);
             } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadIndex)) {
-                s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX);
+                s.add(Status.VERSIONED_MODIFIED_HEAD_INDEX);
             } else if (GitStatus.Status.STATUS_REMOVED.equals(statusHeadIndex)) {
-                s.add(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX);
+                s.add(Status.VERSIONED_REMOVED_HEAD_INDEX);
             }
             if (GitStatus.Status.STATUS_ADDED.equals(statusIndexWC)) {
-                s.add(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE);
+                s.add(Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_MODIFIED.equals(statusIndexWC)) {
-                s.add(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+                s.add(Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE);
             } else if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC)) {
-                s.add(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE);
+                s.add(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE);
             }
             if (GitStatus.Status.STATUS_MODIFIED.equals(statusHeadWC)) {
-                s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+                s.add(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE);
             }
             // file is removed in the WT, but is NOT in HEAD yet
             // or is removed both in WT and index
             if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC) && !GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)
                     || GitStatus.Status.STATUS_REMOVED.equals(statusHeadIndex) && GitStatus.Status.STATUS_NORMAL.equals(statusIndexWC)) {
-                s.add(Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE);
+                s.add(Status.VERSIONED_REMOVED_HEAD_WORKING_TREE);
             }
             if (s.isEmpty()) {
-                s.add(Status.STATUS_VERSIONED_UPTODATE);
+                s.add(Status.VERSIONED_UPTODATE);
             }
             this.status = s;
         }
@@ -148,25 +148,25 @@ public class FileInformation extends VCSFileInformation {
      */
     @Override
     public int getComparableStatus () {
-        if (containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+        if (containsStatus(Status.VERSIONED_CONFLICT)) {
             return 0;
-        } else if (containsStatus(Status.STATUS_VERSIONED_CONFLICT)) {
+        } else if (containsStatus(Status.VERSIONED_CONFLICT)) {
             return 1;
-        } else if (containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
+        } else if (containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             return 10;
-        } else if (containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+        } else if (containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
             return 11;
-        } else if (containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+        } else if (containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             return 12;
-        } else if (containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
+        } else if (containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
             return 13;
-        } else if (containsStatus(Status.STATUS_VERSIONED_UPTODATE)) {
+        } else if (containsStatus(Status.VERSIONED_UPTODATE)) {
             return 50;
-        } else if (containsStatus(Status.STATUS_NOTVERSIONED_EXCLUDED)) {
+        } else if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return 100;
-        } else if (containsStatus(Status.STATUS_NOTVERSIONED_NOTMANAGED)) {
+        } else if (containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
             return 101;
-        } else if (containsStatus(Status.STATUS_UNKNOWN)) {
+        } else if (containsStatus(Status.UNKNOWN)) {
             return 102;
         } else {
             // throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
@@ -183,19 +183,19 @@ public class FileInformation extends VCSFileInformation {
         String sIndex = "";
         String sWorkingTree = "";
                 
-        if(containsStatus(Status.STATUS_VERSIONED_ADDED_TO_INDEX)) {
+        if(containsStatus(Status.VERSIONED_ADDED_TO_INDEX)) {
             sIndex = "A";
-        } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX)) {
+        } else if(containsStatus(Status.VERSIONED_MODIFIED_HEAD_INDEX)) {
             sIndex = "M";
-        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX)) {
+        } else if(containsStatus(Status.VERSIONED_REMOVED_HEAD_INDEX)) {
             sIndex = "D";
         }
         
-        if(containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+        if(containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
             sWorkingTree = "A";
-        } else if(containsStatus(Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE)) {
+        } else if(containsStatus(Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE)) {
             sWorkingTree = "M";
-        } else if(containsStatus(Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
+        } else if(containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
             sWorkingTree = "D";
         }
         
@@ -233,89 +233,89 @@ public class FileInformation extends VCSFileInformation {
         /**
          * There is nothing known about the file, it may not even exist.
          */
-        STATUS_UNKNOWN,
+        UNKNOWN,
         /**
          * The file is not managed by the module, i.e. the user does not wish it to be under control of this
          * versioning system module. All files except files under versioned roots have this status.
          */
-        STATUS_NOTVERSIONED_NOTMANAGED,
+        NOTVERSIONED_NOTMANAGED,
         /**
          * The file exists locally but is NOT under version control because it should not be (i.e. is ignored or resides under an excluded folder).
          * The file itself IS under a versioned root.
          */
-        STATUS_NOTVERSIONED_EXCLUDED,
+        NOTVERSIONED_EXCLUDED,
         /**
          * The file has been added to index but does not exist in repository yet.
          */
-        STATUS_VERSIONED_ADDED_TO_INDEX,
+        VERSIONED_ADDED_TO_INDEX,
         /**
          * The file exists locally but is NOT under version control, mostly because it has not been added
          * to the repository yet.
          */
-        STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
+        NOTVERSIONED_NEW_IN_WORKING_TREE,
         /**
          * The file is under version control and is in sync with repository.
          */
-        STATUS_VERSIONED_UPTODATE,
+        VERSIONED_UPTODATE,
         /**
          * There's a modification between HEAD and index versions of the file
          */
-        STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
+        VERSIONED_MODIFIED_HEAD_INDEX,
         /**
          * There's a modification between HEAD and working tree versions of the file
          */
-        STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+        VERSIONED_MODIFIED_HEAD_WORKING_TREE,
         /**
          * There's a modification between index and working tree versions of the file
          */
-        STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE,
+        VERSIONED_MODIFIED_INDEX_WORKING_TREE,
         /**
          * Merging during update resulted in merge conflict. Conflicts in the local copy must be resolved before the file can be commited.
          */
-        STATUS_VERSIONED_CONFLICT,
+        VERSIONED_CONFLICT,
         /**
          * The file does NOT exist in index but does in HEAD, it has beed removed from index, waits for commit.
          */
-        STATUS_VERSIONED_REMOVED_HEAD_INDEX,
+        VERSIONED_REMOVED_HEAD_INDEX,
         /**
          * The file has been removed in the working tree
          */
-        STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
+        VERSIONED_REMOVED_INDEX_WORKING_TREE,
         /**
          * The file does NOT exist in the working tree but does in HEAD.
          */
-        STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE
+        VERSIONED_REMOVED_HEAD_WORKING_TREE
     }
     public static final EnumSet<Status> STATUS_ALL = EnumSet.allOf(Status.class);
-    public static final EnumSet<Status> STATUS_MANAGED = EnumSet.complementOf(EnumSet.of(Status.STATUS_NOTVERSIONED_NOTMANAGED));
-    public static final EnumSet<Status> STATUS_VERSIONED = EnumSet.complementOf(EnumSet.of(Status.STATUS_UNKNOWN,
-            Status.STATUS_NOTVERSIONED_NOTMANAGED,
-            Status.STATUS_NOTVERSIONED_EXCLUDED,
-            Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE));
-    public static final EnumSet<Status> STATUS_MODIFIED = EnumSet.of(Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
-                                                                    Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
-            Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
-            Status.STATUS_VERSIONED_CONFLICT,
-            Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
-            Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_MANAGED = EnumSet.complementOf(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED));
+    public static final EnumSet<Status> STATUS_VERSIONED = EnumSet.complementOf(EnumSet.of(Status.UNKNOWN,
+            Status.NOTVERSIONED_NOTMANAGED,
+            Status.NOTVERSIONED_EXCLUDED,
+            Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+    public static final EnumSet<Status> STATUS_MODIFIED = EnumSet.of(Status.VERSIONED_MODIFIED_HEAD_INDEX,
+            Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.VERSIONED_REMOVED_HEAD_INDEX,
+                                                                    Status.VERSIONED_REMOVED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX,
+            Status.NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.VERSIONED_CONFLICT,
+            Status.VERSIONED_REMOVED_HEAD_INDEX,
+            Status.VERSIONED_REMOVED_INDEX_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_HEAD_INDEX,
+            Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE);
 
-    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_WORKING = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
-            Status.STATUS_VERSIONED_CONFLICT,
-            Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_INDEX = EnumSet.of(Status.STATUS_VERSIONED_ADDED_TO_INDEX,
-            Status.STATUS_VERSIONED_CONFLICT,
-            Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX,
-            Status.STATUS_VERSIONED_MODIFIED_HEAD_INDEX);
-    public static final EnumSet<Status> STATUS_MODIFIED_INDEX_VS_WORKING = EnumSet.of(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE,
-            Status.STATUS_VERSIONED_CONFLICT,
-            Status.STATUS_VERSIONED_REMOVED_INDEX_WORKING_TREE,
-            Status.STATUS_VERSIONED_MODIFIED_INDEX_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_WORKING = EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.VERSIONED_CONFLICT,
+            Status.VERSIONED_REMOVED_HEAD_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_INDEX = EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX,
+            Status.VERSIONED_CONFLICT,
+            Status.VERSIONED_REMOVED_HEAD_INDEX,
+            Status.VERSIONED_MODIFIED_HEAD_INDEX);
+    public static final EnumSet<Status> STATUS_MODIFIED_INDEX_VS_WORKING = EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE,
+            Status.VERSIONED_CONFLICT,
+            Status.VERSIONED_REMOVED_INDEX_WORKING_TREE,
+            Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE);
 }
