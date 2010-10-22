@@ -56,6 +56,7 @@ import java.awt.AWTKeyStroke;
 import java.awt.Dimension;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.io.FileNotFoundException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -85,7 +86,9 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
@@ -113,6 +116,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileUtil;
 import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -187,108 +191,202 @@ public class WatchPanel {
                 csf = d.getCurrentCallStackFrame();
             }
         }
+        boolean adjustContext = true;
+        Context c;
         if (csf != null) {
             Session session = en.lookupFirst(null, Session.class);
             String language = session.getCurrentLanguage();
             SourcePath sp = en.lookupFirst(null, SourcePath.class);
-            Context c = new Context();
+            c = new Context();
             c.url = sp.getURL(csf, language);
             c.line = csf.getLineNumber(language);
-            if (c.line == -1) {
-                c.line = 1;
-            }
             c.debugger = d;
-            return c;
+            if (c.line > 0) {
+                adjustContext = false;
+                c.line--;
+            }
         } else {
             EditorContext context = EditorContextBridge.getContext();
             String url = context.getCurrentURL();
             if (url != null && url.length() > 0) {
-                Context c = new Context();
+                c = new Context();
                 c.url = url;
                 c.line = context.getCurrentLineNumber();
-                if (c.line == -1) {
-                    c.line = 1;
-                }
                 c.debugger = d;
-                return c;
             } else {
                 url = EditorContextDispatcher.getDefault().getMostRecentURLAsString();
                 if (url != null && url.length() > 0) {
-                    Context c = new Context();
+                    c = new Context();
                     c.url = url;
                     c.line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
-                    if (c.line == -1) {
-                        c.line = 1;
-                    }
                     c.debugger = d;
-                    return c;
                 } else {
                     return null;
                 }
             }
         }
+        if (adjustContext) {
+            adjustLine(c);
+        }
+        return c;
+    }
+
+    private static void adjustLine(Context c) {
+        if (c.line == -1) {
+            c.line = 1;
+        }
+        URL url;
+        try {
+            url = new URL(c.url);
+        } catch (MalformedURLException ex) {
+            return ;
+        }
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo == null) {
+            return ;
+        }
+        if (!"java".equalsIgnoreCase(fo.getExt())) {
+            // we do not understand other languages
+            return ;
+        }
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+        } catch (FileNotFoundException ex) {
+            return ;
+        }
+        try {
+            int line = findClassLine(br);
+            line = findMethodLine(line, br);
+            if (c.line < line) {
+                c.line = line;
+            }
+        } catch (IOException ioex) {
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    private static int findClassLine(BufferedReader br) throws IOException {
+        int l = 1;
+        String line;
+        boolean comment = false;
+        boolean classDecl = false;
+        for (; (line = br.readLine()) != null; l++) {
+            if (classDecl) {
+                if (line.indexOf('{') >= 0) {
+                    return l + 1;
+                } else {
+                    continue;
+                }
+            }
+            boolean slash = false;
+            boolean asterix = false;
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (comment) {
+                    if (asterix && c == '/') {
+                        comment = false;
+                        asterix = false;
+                        continue;
+                    }
+                    asterix = c == '*';
+                    continue;
+                }
+                if (slash && c == '*') {
+                    comment = true;
+                    slash = false;
+                    continue;
+                }
+                if (c == '/') {
+                    if (slash) {
+                        // comment, ignore the rest of the line
+                        break;
+                    }
+                    slash = true;
+                }
+                if (c == 'c' && line.length() > (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
+                    // class declaration
+                    if (line.indexOf('{', i+5) > 0) {
+                        return l + 1;
+                    }
+                }
+            }
+        }
+        return 1; // Did not find anything interesting
     }
     
+    private static int findMethodLine(int l, BufferedReader br) throws IOException {
+        int origLine = l;
+        String line;
+        boolean isParenthesis = false;
+        boolean isThrows = false;
+        for (; (line = br.readLine()) != null; l++) {
+            int i = 0;
+            if (!isParenthesis && (i = line.indexOf(')')) >= 0 || isParenthesis) {
+                isParenthesis = true;
+                if (!isThrows) {
+                    for (i++; i < line.length() && Character.isWhitespace(line.charAt(i)); i++) ;
+                    if ((i+"throws".length()) < line.length() && "throws".equals(line.substring(i, i+"throws".length()))) {
+                        isThrows = true;
+                    }
+                }
+                if (isThrows) {
+                    i = line.indexOf("{", i);
+                    if (i < 0) i = line.length();
+                }
+                if (i < line.length()) {
+                    if (line.charAt(i) == '{') {
+                        return l;
+                    } else {
+                        isParenthesis = false;
+                    }
+                }
+            }
+        }
+        return origLine;
+    }
+
     public static void setupContext(final JEditorPane editorPane, String url, int line) {
         setupContext(editorPane, url, line, null);
     }
 
-    public static void setupContext(final JEditorPane editorPane, String url, int line, final JPDADebugger debugger) {
+    public static void setupContext(final JEditorPane editorPane, String url, final int line, final JPDADebugger debugger) {
         final FileObject file;
-        final StyledDocument doc;
         try {
             file = URLMapper.findFileObject (new URL (url));
             if (file == null) {
-                return;
-            }
-            try {
-                DataObject dobj = DataObject.find (file);
-                EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
-                if (ec == null) {
-                    return;
-                }
-                try {
-                    doc = ec.openDocument();
-                } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return;
-                }
-            } catch (DataObjectNotFoundException ex) {
-                // null dobj
                 return;
             }
         } catch (MalformedURLException e) {
             // null dobj
             return;
         }
-        try {
-            final int offset = NbDocument.findLineOffset(doc, line - 1);
-            //editorPane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-            //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
-            Runnable bindComponentToDocument = new Runnable() {
-                public void run() {
-                    String origText = editorPane.getText();
-                    DialogBinding.bindComponentToDocument(doc, offset, 0, editorPane);
-                    Document editPaneDoc = editorPane.getDocument();
-                    editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
-                    editPaneDoc.putProperty(WrapperFactory.class,
-                            debugger != null ? new MyWrapperFactory(debugger, file, doc) : null);
-                    editorPane.setText(origText);
-                }
-            };
-            if (EventQueue.isDispatchThread()) {
-                bindComponentToDocument.run();
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(bindComponentToDocument);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (InvocationTargetException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+        //System.err.println("WatchPanel.setupContext("+file+", "+line+", "+offset+")");
+        Runnable bindComponentToDocument = new Runnable() {
+            public void run() {
+                String origText = editorPane.getText();
+                DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
+                Document editPaneDoc = editorPane.getDocument();
+                editPaneDoc.putProperty("org.netbeans.modules.editor.java.JavaCompletionProvider.skipAccessibilityCheck", "true");
+                editPaneDoc.putProperty(WrapperFactory.class,
+                        debugger != null ? new MyWrapperFactory(debugger, file) : null);
+                editorPane.setText(origText);
             }
-        } catch (IndexOutOfBoundsException ioobex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioobex);
+        };
+        if (EventQueue.isDispatchThread()) {
+            bindComponentToDocument.run();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(bindComponentToDocument);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         setupUI(editorPane);
     }
@@ -497,7 +595,7 @@ public class WatchPanel {
         private WeakReference<JPDADebugger> debuggerRef;
         private FileObject fileObject;
 
-        public MyWrapperFactory(JPDADebugger debugger, FileObject file, StyledDocument doc) {
+        public MyWrapperFactory(JPDADebugger debugger, FileObject file) {
             debuggerRef = new WeakReference(debugger);
             this.fileObject = file;
         }

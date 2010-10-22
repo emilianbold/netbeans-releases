@@ -51,6 +51,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.CompoundBorder;
 import java.util.*;
 import java.awt.BorderLayout;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.Utilities;
@@ -93,6 +97,7 @@ public class WatchPanel {
         //Add JEditorPane and context
         JComponent [] editorComponents = Utilities.createSingleLineEditor(mimeType);
         editorPane = (JTextComponent) editorComponents[1];
+        line = adjustLine(file, line);
         if (file != null && line >= 0) {
             DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
         }
@@ -123,4 +128,118 @@ public class WatchPanel {
     public String getExpression() {
         return editorPane.getText().trim();
     }
+
+    public static int adjustLine(FileObject fo, int theLine) {
+        if (theLine == -1) {
+            theLine = 1;
+        }
+        if (fo == null) {
+            return theLine;
+        }
+        if (!"java".equalsIgnoreCase(fo.getExt())) {
+            // we do not understand other languages
+            return theLine;
+        }
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new InputStreamReader(fo.getInputStream()));
+        } catch (FileNotFoundException ex) {
+            return theLine;
+        }
+        try {
+            int line = findClassLine(br);
+            line = findMethodLine(line, br);
+            if (theLine < line) {
+                theLine = line;
+            }
+        } catch (IOException ioex) {
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+            }
+        }
+        return theLine;
+    }
+
+    private static int findClassLine(BufferedReader br) throws IOException {
+        int l = 1;
+        String line;
+        boolean comment = false;
+        boolean classDecl = false;
+        for (; (line = br.readLine()) != null; l++) {
+            if (classDecl) {
+                if (line.indexOf('{') >= 0) {
+                    return l + 1;
+                } else {
+                    continue;
+                }
+            }
+            boolean slash = false;
+            boolean asterix = false;
+            for (int i = 0; i < line.length(); i++) {
+                char c = line.charAt(i);
+                if (comment) {
+                    if (asterix && c == '/') {
+                        comment = false;
+                        asterix = false;
+                        continue;
+                    }
+                    asterix = c == '*';
+                    continue;
+                }
+                if (slash && c == '*') {
+                    comment = true;
+                    slash = false;
+                    continue;
+                }
+                if (c == '/') {
+                    if (slash) {
+                        // comment, ignore the rest of the line
+                        break;
+                    }
+                    slash = true;
+                }
+                if (c == 'c' && line.length() > (i+"class".length()) && "lass".equals(line.substring(i+1, i+5))) {
+                    // class declaration
+                    if (line.indexOf('{', i+5) > 0) {
+                        return l + 1;
+                    }
+                }
+            }
+        }
+        return 1; // Did not find anything interesting
+    }
+
+    private static int findMethodLine(int l, BufferedReader br) throws IOException {
+        int origLine = l;
+        String line;
+        boolean isParenthesis = false;
+        boolean isThrows = false;
+        for (; (line = br.readLine()) != null; l++) {
+            int i = 0;
+            if (!isParenthesis && (i = line.indexOf(')')) >= 0 || isParenthesis) {
+                isParenthesis = true;
+                if (!isThrows) {
+                    for (i++; i < line.length() && Character.isWhitespace(line.charAt(i)); i++) ;
+                    if ((i+"throws".length()) < line.length() && "throws".equals(line.substring(i, i+"throws".length()))) {
+                        isThrows = true;
+                    }
+                }
+                if (isThrows) {
+                    i = line.indexOf("{", i);
+                    if (i < 0) i = line.length();
+                }
+                if (i < line.length()) {
+                    if (line.charAt(i) == '{') {
+                        return l;
+                    } else {
+                        isParenthesis = false;
+                    }
+                }
+            }
+        }
+        return origLine;
+    }
+
 }
