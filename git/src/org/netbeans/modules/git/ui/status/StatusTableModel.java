@@ -40,26 +40,34 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.commit;
+package org.netbeans.modules.git.ui.status;
 
-import java.io.File;
-import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.Git;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import java.awt.EventQueue;
+import org.openide.explorer.view.NodeTableModel;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author Tomas Stupka
+ * @author ondra
  */
-public class GitFileNode extends VCSFileNode {
+public class StatusTableModel extends NodeTableModel {
 
-    public GitFileNode(File root, File file) {
-        super(root, file);
+    private StatusNode[] nodes;
+
+    public StatusTableModel () {
+        nodes = new StatusNode[0];
     }
 
     @Override
-    public FileInformation getInformation() {
-        return Git.getInstance().getFileStatusCache().getStatus(getFile());
+    public void setNodes (Node[] nodes) {
+        assert EventQueue.isDispatchThread();
+        assert nodes instanceof StatusNode[];
+        
+        this.nodes = (StatusNode[]) nodes;
+        super.setNodes(nodes);
     }
 
+    StatusNode getNode (int idx) {
+        return nodes[idx];
+    }
 }

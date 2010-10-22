@@ -63,8 +63,10 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.FileSelector;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.windows.TopComponent;
 
 /**
  *s
@@ -411,6 +413,22 @@ public final class GitUtils {
         }
 
         return ret.toArray(new File[ret.size()]);
+    }
+
+    /**
+     * Semantics is similar to {@link org.openide.windows.TopComponent#getActivatedNodes()} except that this
+     * method returns File objects instead of Nodes. Every node is examined for Files it represents. File and Folder
+     * nodes represent their underlying files or folders. Project nodes are represented by their source groups. Other
+     * logical nodes must provide FileObjects in their Lookup.
+     *
+     * @return File [] array of activated files
+     * @param nodes or null (then taken from windowsystem, it may be wrong on editor tabs #66700).
+     */
+    public static VCSContext getCurrentContext(Node[] nodes) {
+        if (nodes == null) {
+            nodes = TopComponent.getRegistry().getActivatedNodes();
+        }
+        return VCSContext.forNodes(nodes);
     }
     
     private GitUtils() {

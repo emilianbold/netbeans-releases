@@ -97,7 +97,7 @@ public class StatusAction extends GitAction {
                     }
                 }
             };
-            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")); //NOI18N
+            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")).waitFinished(); //NOI18N
             return supp;
         }
     }
