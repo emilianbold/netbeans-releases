@@ -70,6 +70,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
@@ -83,6 +84,7 @@ import org.w3c.dom.Document;
  */
 @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.CreateJob")
 @ActionRegistration(displayName="#CTL_CreateJob", iconInMenu=false)
+@ActionReference(path="Menu/Versioning", position=400)
 public class CreateJob extends AbstractAction {
 
     private final HudsonInstance instance;

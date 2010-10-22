@@ -168,7 +168,6 @@ derby\.log
 ^uml/Thumbs\.db$
 ^performance/uml/test/.*\.sh$
 ^performance/uml/test/qa-functional/src/gui/TempTest\.java$
-^python.editor/external/pythonstubs-.*\.egg$
 ^versioning/clearcase/JavaApplication21/\.hgignore$
 ^versioning/clearcase/JavaApplication21/\.hg$
 ^versioning/test/qa-functional/data/tck\.properties$

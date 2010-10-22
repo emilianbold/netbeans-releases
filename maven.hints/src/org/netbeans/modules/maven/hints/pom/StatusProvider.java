@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -81,6 +82,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
+@MimeRegistration(mimeType=/* #191234: cannot use real MIME type*/"text/xml", service=UpToDateStatusProviderFactory.class)
 public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
@@ -90,8 +92,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
     @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
         FileObject fo = NbEditorUtilities.getFileObject(document);
-        if (fo != null && "text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
-            //workaround for wrong mimetype registration.
+        if (fo != null && /* #191234 */"text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
             return new StatusProviderImpl(document);
         }
         return null;
