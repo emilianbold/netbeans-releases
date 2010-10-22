@@ -127,7 +127,7 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     /** Creates new form CommitPanel */
     public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
         this.parameters = parameters;
-        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());;
+        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
         
         if(hooks == null) {
             hooks = Collections.emptyList();
