@@ -262,7 +262,7 @@ public class NbMessageEmitter extends MessageEmitter {
         if(oneBasedFirstLine == -1) {
             //no position at all - use first line
             from = 0;
-            to = linesMapper.getLine(0).getEnd();
+            to = linesMapper.getLinesCount() > 0 ? linesMapper.getLine(0).getEnd() : 0;
 
         } else {
             int linefrom = -1, lineto = -1, columnfrom = -1, columnto = -1;
