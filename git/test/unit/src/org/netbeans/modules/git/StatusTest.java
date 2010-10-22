@@ -610,7 +610,7 @@ public class StatusTest extends AbstractGitTestCase {
         delete(false, file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
         assertTrue(getCache().getStatus(folder).containsStatus(Status.STATUS_VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.STATUS_VERSIONED_REMOVED_HEAD_INDEX, Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE)));
         assertFalse(file.exists());
 
         commit();

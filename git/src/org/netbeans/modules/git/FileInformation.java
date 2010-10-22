@@ -102,7 +102,9 @@ public class FileInformation extends VCSFileInformation {
                 s.add(Status.STATUS_VERSIONED_MODIFIED_HEAD_WORKING_TREE);
             }
             // file is removed in the WT, but is NOT in HEAD yet
-            if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC) && !GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)) {
+            // or is removed both in WT and index
+            if (GitStatus.Status.STATUS_REMOVED.equals(statusIndexWC) && !GitStatus.Status.STATUS_ADDED.equals(statusHeadIndex)
+                    || GitStatus.Status.STATUS_REMOVED.equals(statusHeadIndex) && GitStatus.Status.STATUS_NORMAL.equals(statusIndexWC)) {
                 s.add(Status.STATUS_VERSIONED_REMOVED_HEAD_WORKING_TREE);
             }
             if (s.isEmpty()) {
