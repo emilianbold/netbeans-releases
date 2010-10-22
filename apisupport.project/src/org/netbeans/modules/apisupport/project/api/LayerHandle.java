@@ -169,7 +169,7 @@ public final class LayerHandle {
                         } catch (IOException e) {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
                         }
-                        } else {
+                        } else if (ref != null) {
                             ref.handle = LayerHandle.this;
                         }
                     }
@@ -233,7 +233,9 @@ public final class LayerHandle {
             throw new IOException("Cannot save a nonexistent layer"); // NOI18N
         }
         cookie.save();
-        ref.handle = null;
+        if (ref != null) {
+            ref.handle = null;
+        }
     }
 
     /**
