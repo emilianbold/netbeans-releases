@@ -47,7 +47,6 @@ import org.netbeans.api.extexecution.ExecutionService;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.codecoverage.CodeCoverageTestHelper;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
