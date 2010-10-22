@@ -65,6 +65,7 @@ import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationType.Severity;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
@@ -162,7 +163,12 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
         
         // Collect mark providers
-        String mimeType = pane.getUI().getEditorKit(pane).getContentType();
+        String mimeType = DocumentUtilities.getMimeType(pane);
+
+        if (mimeType == null) {
+            mimeType = pane.getUI().getEditorKit(pane).getContentType();
+        }
+        
         Collection<? extends MarkProviderCreator> creators = 
             mime2Creators.get(mimeType);
 
