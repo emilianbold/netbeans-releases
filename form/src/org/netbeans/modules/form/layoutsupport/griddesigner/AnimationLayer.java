@@ -182,6 +182,7 @@ public class AnimationLayer implements ActionListener {
         Dimension oldSize = container.getSize();
         container.setSize(maxContDim);
         containerImage = container.createImage(maxContDim.width, maxContDim.height);
+        container.paint(containerImage.getGraphics());
         container.setSize(oldSize);
         for (Component comp : components) {
             comp.setVisible(map.get(comp));

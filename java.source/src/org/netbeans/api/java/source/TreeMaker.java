@@ -51,11 +51,13 @@ import static com.sun.source.tree.Tree.*;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
-import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.tools.JavaFileObject;
@@ -69,16 +71,13 @@ import org.netbeans.api.lexer.TokenSequence;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
 
-import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
-import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.modules.java.source.query.CommentHandler;
 
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.openide.util.Parameters;
-import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 
 /**
  * Factory interface for creating new com.sun.source.tree instances.  The
@@ -319,10 +318,29 @@ public final class TreeMaker {
      * @see com.sun.source.tree.CompilationUnitTree
      */
     public CompilationUnitTree CompilationUnit(ExpressionTree packageName,
+                                               List<? extends ImportTree> imports,
+                                               List<? extends Tree> typeDeclarations,
+                                               JavaFileObject sourceFile) {
+        return delegate.CompilationUnit(Collections.<AnnotationTree>emptyList(), packageName, imports, typeDeclarations, sourceFile);
+    }
+
+    /**
+     * Creates a new CompilationUnitTree.
+     *
+     * @param packageAnnotations package annotations
+     * @param packageName        a tree representing the package name.
+     * @param imports            a list of import statements.
+     * @param typeDeclarations   a list of type (class, interface or enum) declarations.
+     * @param sourceFile         the source file associated with this compilation unit.
+     * @see com.sun.source.tree.CompilationUnitTree
+     * @since 0.66
+     */
+    public CompilationUnitTree CompilationUnit(List<? extends AnnotationTree> packageAnnotations,
+                                        ExpressionTree packageName,
                                         List<? extends ImportTree> imports,
                                         List<? extends Tree> typeDeclarations,
                                         JavaFileObject sourceFile) {
-        return delegate.CompilationUnit(packageName, imports, typeDeclarations, sourceFile);
+        return delegate.CompilationUnit(packageAnnotations, packageName, imports, typeDeclarations, sourceFile);
     }
      
     
@@ -341,8 +359,29 @@ public final class TreeMaker {
         String[] nameComponent = FileObjects.getFolderAndBaseName(path,'/');        //NOI18N
         JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
         IdentifierTree pkg = nameComponent[0].length() == 0 ? null : Identifier(nameComponent[0].replace('/', '.'));
-        return delegate.CompilationUnit(pkg, imports, typeDeclarations, sourceFile);
-    }    
+        return delegate.CompilationUnit(Collections.<AnnotationTree>emptyList(), pkg, imports, typeDeclarations, sourceFile);
+    }
+
+    /**
+     * Creates a new CompilationUnitTree.
+     * @param packageAnnotations package annotations
+     * @param sourceRoot         a source root under which the new file is created
+     * @param path               a relative path to file separated by '/'
+     * @param imports            a list of import statements.
+     * @param typeDeclarations   a list of type (class, interface or enum) declarations.
+     * @see com.sun.source.tree.CompilationUnitTree
+     * @since 0.66
+     */
+    public CompilationUnitTree CompilationUnit(List<? extends AnnotationTree> packageAnnotations,
+                                        FileObject sourceRoot,
+                                        String path,
+                                        List<? extends ImportTree> imports,
+                                        List<? extends Tree> typeDeclarations) {
+        String[] nameComponent = FileObjects.getFolderAndBaseName(path,'/');        //NOI18N
+        JavaFileObject sourceFile = FileObjects.templateFileObject(sourceRoot, nameComponent[0], nameComponent[1]);
+        IdentifierTree pkg = nameComponent[0].length() == 0 ? null : Identifier(nameComponent[0].replace('/', '.'));
+        return delegate.CompilationUnit(packageAnnotations, pkg, imports, typeDeclarations, sourceFile);
+    }
     
     /**
      * Creates a new CompoundAssignmentTree.
@@ -418,6 +457,19 @@ public final class TreeMaker {
      */
     public ContinueTree Continue(CharSequence label) {
         return delegate.Continue(label);
+    }
+
+    /**
+     * Creates new DisjointTypeTree.
+     *
+     * @param typeComponents components from which the DisjointTypeTree should be created.
+     *                       The components should either be {@link ExpressionTree} (qualified or unqualified identifier),
+     *                       {@link PrimitiveTypeTree}, {@link WildcardTree}, {@link ParameterizedTypeTree} or {@link ArrayTypeTree}.
+     * @return newly created DisjointTypeTree
+     * @since 0.67
+     */
+    public DisjointTypeTree DisjointType(List<? extends Tree> typeComponents) {
+        return delegate.DisjointType(typeComponents);
     }
     
     /** Creates a new DoWhileLoopTree.
@@ -806,6 +858,17 @@ public final class TreeMaker {
         Parameters.notNull("element", element);
         return delegate.QualIdent(element);
     }
+
+    /**
+     * Creates a qualified identifier for a given String.
+     *
+     * @param name FQN for which to create the QualIdent
+     * @since 0.65
+     */
+    public @NonNull ExpressionTree QualIdent(@NonNull String name) {
+        Parameters.notNull("name", name);
+        return delegate.QualIdent(name);
+    }
     
     /**
      * Creates a new ReturnTree.
@@ -860,7 +923,25 @@ public final class TreeMaker {
     public TryTree Try(BlockTree tryBlock, 
                 List<? extends CatchTree> catches, 
                 BlockTree finallyBlock) {
-        return delegate.Try(tryBlock, catches, finallyBlock);
+        return Try(Collections.<Tree>emptyList(), tryBlock, catches, finallyBlock);
+    }
+
+    /**
+     * Creates a new TryTree.
+     *
+     * @param resource     the resources of the try clause. The elements of the list
+     *                     should either be {@link VariableTree}s or {@link ExpressionTree}s.
+     * @param tryBlock     the statement block in the try clause.
+     * @param catches      the list of catch clauses, or an empty list.
+     * @param finallyBlock the finally clause, or null.
+     * @see com.sun.source.tree.TryTree
+     * @since 0.67
+     */
+    public TryTree Try(List<? extends Tree> resources,
+                BlockTree tryBlock,
+                List<? extends CatchTree> catches,
+                BlockTree finallyBlock) {
+        return delegate.Try(resources, tryBlock, catches, finallyBlock);
     }
     
     /**
@@ -872,6 +953,35 @@ public final class TreeMaker {
     public @NonNull Tree Type(@NonNull TypeMirror type) {
         Parameters.notNull("type", type);
         return delegate.Type(type);
+    }
+
+    /**
+     * Creates a new Tree for a given String type specification.
+     *
+     * @param type       String type specification
+     * @see com.sun.source.tree.ExpressionTree
+     * @since 0.65
+     */
+    public @NonNull Tree Type(@NonNull String type) {
+        Parameters.notNull("type", type);
+
+        Tree typeTree = copy.getTreeUtilities().parseType(type);
+        final Map<Tree, Tree> translate = new HashMap<Tree, Tree>();
+
+        new TreeScanner<Void, Void>() {
+            @Override
+            public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                translate.put(node, QualIdent(node.toString()));
+                return null;
+            }
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Void p) {
+                translate.put(node, QualIdent(node.toString()));
+                return null;
+            }
+        }.scan(typeTree, null);
+
+        return copy.getTreeUtilities().translate(typeTree, translate);
     }
 
     /**
@@ -1446,6 +1556,66 @@ public final class TreeMaker {
         return delegate.removeCompUnitImport(compilationUnit, index);
     }
     
+    /**
+     * Appends specified element <tt>annotation</tt> to the end of package annotations
+     * list.
+     *
+     * @param  cut  compilation unit tree containing package annotations list.
+     * @param  annotation  element to be appended to annotations list.
+     * @return compilation unit tree with modified package annotations.
+     * @since 0.66
+     */
+    public CompilationUnitTree addPackageAnnotation(CompilationUnitTree cut, AnnotationTree annotation) {
+        return delegate.addPackageAnnotation(cut, annotation);
+    }
+
+    /**
+     * Inserts the specified element <tt>annotation</tt> at the specified
+     * position in package annotations list.
+     *
+     * @param  cut  compilation unit tree containing package annotations list.
+     * @param  index   index at which the specified element is to be inserted.
+     * @param  annotation element to be inserted to the package annotations list.
+     * @return compilation unit tree with modified package annotations.
+     *
+     * @throws    IndexOutOfBoundsException if the index is out of range
+     *		  (index &lt; 0 || index &gt; size()).
+     * @since 0.66
+     */
+    public CompilationUnitTree insertPackageAnnotation(CompilationUnitTree cut, int index, AnnotationTree annotation) {
+        return delegate.insertPackageAnnotation(cut, index, annotation);
+    }
+
+    /**
+     * Removes the first occurrence in package annotations list of the specified
+     * element. If this list does not contain the element, it is
+     * unchanged.
+     *
+     * @param   cut  compilation unit tree containing package annotations list.
+     * @param   annotation    element to be removed from this list, if present.
+     * @return compilation unit tree with modified package annotations.
+     * @since 0.66
+     */
+    public CompilationUnitTree removePackageAnnotation(CompilationUnitTree cut, AnnotationTree annotation) {
+        return delegate.removePackageAnnotation(cut, annotation);
+    }
+
+    /**
+     * Removes the element at the specified position in package annotations list.
+     * Returns the modified compilation unit tree.
+     *
+     * @param   cut  compilation unit tree containing package annotations list.
+     * @param   index   the index of the element to be removed.
+     * @return compilation unit tree with modified package annotations.
+     *
+     * @throws IndexOutOfBoundsException if the index is out of range (index
+     *            &lt; 0 || index &gt;= size()).
+     * @since 0.66
+     */
+    public CompilationUnitTree removePackageAnnotation(CompilationUnitTree cut, int index) {
+        return delegate.removePackageAnnotation(cut, index);
+    }
+
     /** ErroneousTree */
     
     // ForLoopInitializer

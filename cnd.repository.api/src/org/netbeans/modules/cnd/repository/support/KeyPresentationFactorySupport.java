@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.repository.support;
 
+import java.util.Collection;
+import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.netbeans.modules.cnd.repository.spi.KeyPresentationFactory;
 import org.openide.util.Lookup;
@@ -51,60 +53,19 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public final class KeyPresentationFactorySupport {
-    private static KeyPresentationFactory defaultFactory = Lookup.getDefault().lookup(KeyPresentationFactory.class);
+    private final static Collection<? extends KeyPresentationFactory> factories = Lookup.getDefault().lookupAll(KeyPresentationFactory.class);
+
+    public static Key create(KeyDataPresentation entry) {
+        Key out = null;
+        for (KeyPresentationFactory keyPresentationFactory : factories) {
+            out = keyPresentationFactory.create(entry);
+            if (out != null) {
+                break;
+            }
+        }
+        return out;
+    }
 
     private KeyPresentationFactorySupport() {
-    }
-
-    public static KeyPresentationFactory getDefaultFactory() {
-        return defaultFactory;
-    }
-
-    public static final class KeyDataPresentationImpl implements KeyDataPresentation {
-        private short unit;
-        private short kind;
-        private CharSequence name;
-        private int file;
-        private int start;
-        private int end;
-
-        public KeyDataPresentationImpl(short unit, short kind, CharSequence name, int file, int start, int end) {
-            this.unit = unit;
-            this.kind = kind;
-            this.name = name;
-            this.file = file;
-            this.start = start;
-            this.end = end;
-        }
-
-        @Override
-        public short getUnitPresentation() {
-            return unit;
-        }
-
-        @Override
-        public short getKindPresentation() {
-            return kind;
-        }
-
-        @Override
-        public CharSequence getNamePresentation() {
-            return name;
-        }
-
-        @Override
-        public int getFilePresentation() {
-            return file;
-        }
-
-        @Override
-        public int getStartPresentation() {
-            return start;
-        }
-
-        @Override
-        public int getEndPresentation() {
-            return end;
-        }
     }
 }

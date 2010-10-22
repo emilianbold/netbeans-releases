@@ -46,7 +46,6 @@ import com.sun.source.util.TreePath;
 
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -60,11 +59,22 @@ import org.openide.util.NbBundle;
 @Hint(category="code_maturity", suppressWarnings="UseOfObsoleteCollectionType")
 public class ObsoleteCollection {
 
-    @TriggerPatterns ({
-        @TriggerPattern (value="java.util.Vector"),
-        @TriggerPattern (value="java.util.Hashtable")
-    })
+    @TriggerPattern (value="java.util.Vector")
     public static ErrorDescription vector (HintContext ctx) {
+        return hint(ctx, "java.util.ArrayList");
+    }
+
+    @TriggerPattern (value="java.util.Hashtable")
+    public static ErrorDescription hashTable (HintContext ctx) {
+        return hint(ctx, "java.util.HashMap");
+    }
+
+    private static ErrorDescription hint(HintContext ctx, String toCheck) {
+        if (ctx.getInfo().getElements().getTypeElement(toCheck) == null) {
+            //If the non-obsolete collection is not available (e.g. on a J2ME platform), do not show the warning:
+            return null;
+        }
+        
         TreePath treePath = ctx.getPath ();
         return ErrorDescriptionFactory.forName (
             ctx,

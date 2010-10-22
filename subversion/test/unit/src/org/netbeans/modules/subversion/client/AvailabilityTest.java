@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.subversion.client;
 
-import org.netbeans.modules.subversion.AbstractSvnTest;
+import org.netbeans.modules.subversion.AbstractSvnTestCase;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.client.cli.CommandlineClient;
 import org.openide.util.Utilities;
@@ -52,7 +52,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
  *
  * @author tomas
  */
-public class AvailabilityTest extends AbstractSvnTest {
+public class AvailabilityTest extends AbstractSvnTestCase {
     private String exec = null;
     
     public AvailabilityTest(String testName) throws Exception {

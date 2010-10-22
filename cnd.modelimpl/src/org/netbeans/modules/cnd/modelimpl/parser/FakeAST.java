@@ -52,6 +52,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.openide.util.CharSequences;
 
 /**
  * Fake AST managing type
@@ -60,7 +61,27 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public class FakeAST extends BaseAST implements Serializable {
     private static final long serialVersionUID = -1975495157952844447L;
     
-    private final static String[] tokenText = new String[CPPTokenTypes.CSM_END + 1];
+    private final static CharSequence[] tokenText = new CharSequence[CPPTokenTypes.CSM_END + 1];
+
+    static {
+        Field[] fields = CPPTokenTypes.class.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++) {
+            int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+            Field field = fields[i];
+            if ((field.getModifiers() & flags) == flags &&
+                    int.class.isAssignableFrom(field.getType())) {
+                try {
+                    int value = field.getInt(null);
+                    String name = field.getName();
+                    tokenText[value]=CharSequences.create(name);
+                } catch (IllegalArgumentException ex) {
+                    DiagnosticExceptoins.register(ex);
+                } catch (IllegalAccessException ex) {
+                    DiagnosticExceptoins.register(ex);
+                }
+            }
+        }
+    }
     
     int ttype = Token.INVALID_TYPE;
     
@@ -68,58 +89,41 @@ public class FakeAST extends BaseAST implements Serializable {
     }
     
     /** Get the token type for this node */
+    @Override
     public int getType() {
         return ttype;
     }
     
+    @Override
     public void initialize(int t, String txt) {
         setType(t);
         setText(txt);
     }
     
+    @Override
     public void initialize(AST t) {
         setText(t.getText());
         setType(t.getType());
     }
     
+    @Override
     public void initialize(Token tok) {
         setText(tok.getText());
         setType(tok.getType());
     }
     
     /** Set the token type for this node */
+    @Override
     public void setType(int ttype_) {
         ttype = ttype_;
     }
     
+    @Override
     public String getText() {
-        init();
-        return  tokenText[getType()];
+        return tokenText[getType()].toString();
     }
-    
-    private static boolean initedText = false;
-    private synchronized void init() {
-        if (!initedText) {
-            // fill array by reflection
-            // used only for trace
-            Field[] fields = CPPTokenTypes.class.getDeclaredFields();
-            for (int i = 0; i < fields.length; i++) {
-                int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
-                Field field = fields[i];
-                if ((field.getModifiers() & flags) == flags &&
-                        int.class.isAssignableFrom(field.getType())) {
-                    try {
-                        int value = field.getInt(null);
-                        String name = field.getName();
-                        tokenText[value]=name;
-                    } catch (IllegalArgumentException ex) {
-                        DiagnosticExceptoins.register(ex);
-                    } catch (IllegalAccessException ex) {
-                        DiagnosticExceptoins.register(ex);
-                    }
-                }
-            }
-            initedText = true;
-        }
+
+    public CharSequence getTextID() {
+        return tokenText[getType()];
     }
 }

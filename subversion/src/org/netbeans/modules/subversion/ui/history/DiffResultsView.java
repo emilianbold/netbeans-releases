@@ -50,7 +50,6 @@ import org.openide.util.NbBundle;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
-import org.netbeans.api.diff.Diff;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.subversion.ui.diff.DiffSetupSource;
 import javax.swing.event.AncestorListener;
@@ -67,6 +66,7 @@ import java.util.logging.Level;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
+import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -199,7 +199,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
     }
 
     @Override
-    public Collection getSetups() {
+    public Collection<Setup> getSetups() {
         Node [] nodes = TopComponent.getRegistry().getActivatedNodes();
         if (nodes.length == 0) {
             return parent.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);

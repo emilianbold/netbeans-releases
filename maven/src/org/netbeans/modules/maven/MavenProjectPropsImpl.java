@@ -53,6 +53,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.LookupMerger;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Comment;
 import org.w3c.dom.Element;
@@ -119,8 +120,7 @@ public class MavenProjectPropsImpl {
         }
         if (transaction) {
             if (shared) {
-                transPropsShared.put(key, value);
-                sharedChanged = true;
+                sharedChanged |= !Utilities.compareObjects(value, transPropsShared.put(key, value));
             } else {
                 transPropsPrivate.put(key, value);
             }
@@ -252,11 +252,11 @@ public class MavenProjectPropsImpl {
             this.primary = primary;
         }
 
-        public Class<AuxiliaryProperties> getMergeableClass() {
+        public @Override Class<AuxiliaryProperties> getMergeableClass() {
             return AuxiliaryProperties.class;
         }
 
-        public AuxiliaryProperties merge(Lookup lookup) {
+        public @Override AuxiliaryProperties merge(Lookup lookup) {
             return new MergedAuxProperties(lookup, primary);
         }
 
@@ -271,7 +271,7 @@ public class MavenProjectPropsImpl {
         }
 
 
-        public String get(String key, boolean shared) {
+        public @Override String get(String key, boolean shared) {
             String toRet = primary.get(key, shared);
             if (toRet == null) {
                 for (AuxiliaryProperties prop : props.allInstances()) {
@@ -284,11 +284,11 @@ public class MavenProjectPropsImpl {
             return toRet;
         }
 
-        public void put(String key, String value, boolean shared) {
+        public @Override void put(String key, String value, boolean shared) {
             primary.put(key, value, shared);
         }
 
-        public Iterable<String> listKeys(boolean shared) {
+        public @Override Iterable<String> listKeys(boolean shared) {
             Set<String> toRet = new TreeSet<String>();
             Iterator<String> s = primary.listKeys(shared).iterator();
             while (s.hasNext()) {

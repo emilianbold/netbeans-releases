@@ -51,6 +51,6 @@ public class DllNode extends CndDataNode {
 
     public DllNode(DllObject obj) {
 	super(obj, Children.LEAF, obj.getLookup());
-	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/ShobjElfIcon.gif");	// NOI18N
+	setIconBaseWithExtension("org/netbeans/modules/cnd/loaders/DllIcon.gif");	// NOI18N
     }
 }

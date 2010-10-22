@@ -67,6 +67,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util.lookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -92,7 +100,19 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.validation</friend>
+                <package>nu.validator.htmlparser.annotation</package>
+                <package>nu.validator.htmlparser.common</package>
+                <package>nu.validator.htmlparser.dom</package>
+                <package>nu.validator.htmlparser.extra</package>
+                <package>nu.validator.htmlparser.impl</package>
+                <package>nu.validator.htmlparser.io</package>
+                <package>nu.validator.htmlparser.rewindable</package>
+                <package>nu.validator.htmlparser.sax</package>
+                <package>nu.validator.htmlparser.xom</package>
+                <package>nu.validator.saxtree</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/html5-parser.jar</runtime-relative-path>
                 <binary-origin>external/htmlparser-1.2.1.jar</binary-origin>

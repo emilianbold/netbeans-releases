@@ -63,7 +63,6 @@ import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.codehaus.plexus.util.IOUtil;
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -88,8 +87,6 @@ import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3R
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
-import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.problems.ProblemReporterImpl;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -119,13 +116,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private final NbMavenProjectImpl project;
     private ModelHandle handle;
     
-    public static final String PROFILES_SKELETON =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //NO18N
-"<profilesXml xmlns=\"http://maven.apache.org/PROFILES/1.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
-"  xsi:schemaLocation=\"http://maven.apache.org/PROFILES/1.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
-"</profilesXml>";//NO18N
-    // a copy is in maven.model's Utilities.
-
     private static final String BROKEN_NBACTIONS = "BROKENNBACTIONS";  //NOI18N
     
     public CustomizerProviderImpl(NbMavenProjectImpl project) {
@@ -155,20 +145,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                 DialogDisplayer.getDefault().notify(nd);
                 return;
             }
-            try {
-                handle.getProfileModel().sync();
-            } catch (IOException ex) {
-                Logger.getLogger(CustomizerProviderImpl.class.getName()).log(Level.INFO, "Error while syncing the editor document with model for profiles.xml file", ex); //NOI18N
-            }
-            if (!handle.getProfileModel().getState().equals(State.VALID)) {
-                NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(CustomizerProviderImpl.class, "ERR_MissingProfilesXml"), NotifyDescriptor.ERROR_MESSAGE);
-                DialogDisplayer.getDefault().notify(nd);
-                return;
-            }
             //#171958 end
 
             handle.getPOMModel().startTransaction();
-            handle.getProfileModel().startTransaction();
             project.getLookup().lookup(MavenProjectPropsImpl.class).startTransaction();
             OptionListener listener = new OptionListener();
             Lookup context = Lookups.fixed(new Object[] { project, handle});
@@ -202,16 +181,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
         ModelSource source = Utilities.createModelSource(pom);
         POMModel model = POMModelFactory.getDefault().getModel(source);
-        FileObject profilesFO = project.getProjectDirectory().getFileObject("profiles.xml");
-        if (profilesFO != null) {
-            source = Utilities.createModelSource(profilesFO);
-        } else {
-            //the file doesn't exist. what now?
-            File file = FileUtil.toFile(project.getProjectDirectory());
-            file = new File(file, "profiles.xml"); //NOI18N
-            source = Utilities.createModelSourceForMissingFile(file, true, PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
-        }
-        ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
         List<ModelHandle.Configuration> configs = new ArrayList<ModelHandle.Configuration>();
@@ -258,7 +227,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             active = configs.get(0); //default if current not found..
         }
 
-        handle = ACCESSOR.createHandle(model, profilesModel, 
+        handle = ACCESSOR.createHandle(model,
                 project.getOriginalMavenProject(), mapps, configs, active,
                 project.getAuxProps());
     }
@@ -279,7 +248,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static abstract class ModelAccessor {
         
-        public abstract ModelHandle createHandle(POMModel model, ProfilesModel prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
+        public abstract ModelHandle createHandle(POMModel model, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
                 List<ModelHandle.Configuration> configs, ModelHandle.Configuration active, MavenProjectPropsImpl auxProps);
         
     }
@@ -306,20 +275,18 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     weAreSaving = true;
 
                     //we need to finish transactions in the same thread we initiated them, doh..
-                    if (handle.getProfileModel().isIntransaction()) {
-                        if (handle.isModified(handle.getProfileModel())) {
-                            handle.getProfileModel().endTransaction();
-                        } else {
-                            handle.getProfileModel().rollbackTransaction();
+                    // but #189854: this cannot be while holding project mutex
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public @Override void run() {
+                            if (handle.getPOMModel().isIntransaction()) {
+                                if (handle.isModified(handle.getPOMModel())) {
+                                    handle.getPOMModel().endTransaction();
+                                } else {
+                                    handle.getPOMModel().rollbackTransaction();
+                                }
+                            }
                         }
-                    }
-                    if (handle.getPOMModel().isIntransaction()) {
-                        if (handle.isModified(handle.getPOMModel())) {
-                            handle.getPOMModel().endTransaction();
-                        } else {
-                            handle.getPOMModel().rollbackTransaction();
-                        }
-                    }
+                    });
                 }
             } else {
                 try {
@@ -347,10 +314,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     handle.getPOMModel().rollbackTransaction();
                 }
                 assert !handle.getPOMModel().isIntransaction();
-                if (handle.getProfileModel().isIntransaction()) {
-                    handle.getProfileModel().rollbackTransaction();
-                }
-                assert !handle.getProfileModel().isIntransaction();
             }
         }
         
@@ -392,10 +355,6 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         }
 
         Utilities.saveChanges(handle.getPOMModel());
-        if (handle.isModified(handle.getProfileModel())) {
-            performConfigsInvokedReload = false;
-            Utilities.saveChanges(handle.getProfileModel());
-        }
         if (handle.isModified(handle.getActionMappings())) {
             writeNbActionsModel(project, handle.getActionMappings(), M2Configuration.getFileNameExt(M2Configuration.DEFAULT));
         }

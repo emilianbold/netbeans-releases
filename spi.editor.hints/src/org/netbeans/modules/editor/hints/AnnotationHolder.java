@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -110,7 +110,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
+public final class AnnotationHolder implements ChangeListener, PropertyChangeListener, DocumentListener {
 
     private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
     
@@ -150,7 +150,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 if (editorCookie == null) {
                     LOG.log(Level.WARNING,
-                            "No EditorCookie.Observable for file: " + FileUtil.getFileDisplayName(file)); //NOI18N
+                            "No EditorCookie.Observable for file: {0}", FileUtil.getFileDisplayName(file)); //NOI18N
                 } else {
                     Document doc = editorCookie.getDocument();
 
@@ -167,6 +167,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         }
     }
 
+    @SuppressWarnings("LeakingThisInConstructor")
     private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc, EditorCookie.Observable editorCookie) {
         if (file == null)
             return ;
@@ -304,6 +305,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             if (line == null)
                 return ;
 
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset() + e.getLength());
+
+            if (endOffset < line.getOffset())
+                return;
+
             List<ErrorDescription> eds = getErrorsForLine(line, false);
 
             if (eds == null)
@@ -330,7 +336,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
                 getBag(doc).removeHighlights(rowStart, rowEnd, false);
             } catch (BadLocationException ex) {
-                throw (IOException) new IOException().initCause(ex);
+                throw new IOException(ex);
             }
 
             for (Position lineToken : modifiedLines) {
@@ -353,7 +359,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             while (current == null) {
                 index = findPositionGE(startOffset);
 
-                if (knownPositions.size() == 0) {
+                if (knownPositions.isEmpty()) {
                     break;
                 }
                 if (index == knownPositions.size()) {
@@ -366,6 +372,11 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 //nothing to do:
                 return;
             }
+
+            int endOffset = Utilities.getRowEnd(doc, e.getOffset());
+
+            if (endOffset < current.getOffset())
+                return;
 
             assert index != (-1);
 
@@ -488,7 +499,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
         doc.render(new Runnable() {
             public void run() {
-                synchronized (this) {
+                synchronized (AnnotationHolder.this) {
                     try {
                         if (doc.getLength() == 0) {
                             return ;
@@ -695,7 +706,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                 bag.addAllHighlights(computeHighlights(doc, errorDescriptions).getHighlights(rowHighlightStart, rowHighlightEnd));
             }
         } catch (BadLocationException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         }
     }
 
@@ -723,7 +734,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                     endOffset = beginOffset;
                     beginOffset = swap;
 
-                    LOG.warning("Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: " + e.toString()); //NOI18N
+                    LOG.log(Level.WARNING, "Incorrect highlight in ErrorDescription, attach your messages.log to issue #112566: {0}", e.toString()); //NOI18N
                 }
 
                 int[] h = new int[] {beginOffset, endOffset};
@@ -781,7 +792,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                         sb.append("]"); //NOI18N
                     }
 
-                    LOG.warning("Incorrect highlight computed, please reopen issue #112566 and attach the following output: " + sb.toString()); //NOI18N
+                    LOG.log(Level.WARNING, "Incorrect highlight computed, please reopen issue #112566 and attach the following output: {0}", sb.toString()); //NOI18N
                 }
             }
         }
@@ -905,7 +916,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             updateVisibleRanges();
         } catch (BadLocationException ex) {
-            throw (IOException) new IOException().initCause(ex);
+            throw new IOException(ex);
         } finally {
             long end = System.currentTimeMillis();
             Logger.getLogger("TIMER").log(Level.FINE, "Errors update for " + layer, //NOI18N
@@ -1052,7 +1063,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
             while (current == null) {
                 index = findPositionGE(startOffset);
 
-                if (knownPositions.size() == 0) {
+                if (knownPositions.isEmpty()) {
                     break;
                 }
                 if (index == knownPositions.size()) {
@@ -1137,8 +1148,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
         public int compare(Object o1, Object o2) {
             int left = -1;
 
-            if (o1 instanceof Reference) {
-                Position value = (Position) ((Reference) o1).get();
+            if (o1 instanceof Reference<?>) {
+                Position value = (Position) ((Reference<?>) o1).get();
 
                 if (value == null) {
                     //already collected...
@@ -1158,8 +1169,8 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
 
             int right = -1;
 
-            if (o2 instanceof Reference) {
-                Position value = (Position) ((Reference) o2).get();
+            if (o2 instanceof Reference<?>) {
+                Position value = (Position) ((Reference<?>) o2).get();
 
                 if (value == null) {
                     //already collected...
@@ -1201,12 +1212,12 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                             return;
                         }
 
-                        AnnotationHolder h = AnnotationHolder.getInstance(((DataObject) source).getPrimaryFile());
+                        FileObject file = ((DataObject) source).getPrimaryFile();
+                        AnnotationHolder h = AnnotationHolder.getInstance(file);
 
                         if (h == null) {
                             LOG.log(Level.INFO,
-                                    "File: " + ((DataObject) source).getPrimaryFile().getPath() + // NOI18N
-                                    "\nStartOffset: " + startOffset); // NOI18N
+                                    "File: {0}\nStartOffset: {1}", new Object[]{file.getPath(), startOffset}); // NOI18N
                             return;
                         }
 

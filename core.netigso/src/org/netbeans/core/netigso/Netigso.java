@@ -98,6 +98,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
     Framework getFramework() {
         return framework;
     }
+    @Override
+    protected ClassLoader findFrameworkClassLoader() {
+        Framework f = framework;
+        if (f != null) {
+            return f.getClass().getClassLoader();
+        }
+        return getClass().getClassLoader();
+    }
 
     @Override
     protected void prepare(Lookup lkp, Collection<? extends Module> preregister) {
@@ -224,6 +232,16 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                                 continue;
                             }
                             pkgs.add(url.getFile().substring(1).replaceFirst("/[^/]*$", "").replace('/', '.'));
+                        }
+                    }
+                    Object exported = b.getHeaders().get("Export-Package");
+                    if (exported instanceof String) {
+                        for (String p : exported.toString().split(",")) { // NOI18N
+                            int semic = p.indexOf(';');
+                            if (semic >= 0) {
+                                p = p.substring(0, semic);
+                            }
+                            pkgs.add(p);
                         }
                     }
                 } finally {

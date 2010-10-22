@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -140,7 +141,7 @@ public class ElementGripFactory {
                 long end = info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t);
                 Element current = info.getTrees().getElement(tp);
                 Tree.Kind kind = tp.getLeaf().getKind();
-                if (kind != Tree.Kind.CLASS && kind != Tree.Kind.METHOD) {
+                if (!TreeUtilities.CLASS_TREE_KINDS.contains(kind) && kind != Tree.Kind.METHOD) {
                     if (tp.getParentPath()==null || tp.getParentPath().getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
                         //xxx: rather workaround. should be fixed better.
                         return null;

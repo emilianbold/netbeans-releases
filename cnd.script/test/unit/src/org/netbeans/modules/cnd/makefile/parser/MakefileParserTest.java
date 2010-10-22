@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makefile.parser;
 
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -57,7 +58,6 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import static org.junit.Assert.*;
 
 /**
@@ -122,7 +122,7 @@ public class MakefileParserTest extends NbTestCase {
     }
 
     private MakefileParseResult parseFile(File file) throws ParseException {
-        FileObject fobj = FileUtil.toFileObject(file);
+        FileObject fobj = CndFileUtils.toFileObject(file);
         MakefileParser parser = new MakefileParser();
         parser.parse(Source.create(fobj).createSnapshot(), null, null);
         return parser.getResult(null);

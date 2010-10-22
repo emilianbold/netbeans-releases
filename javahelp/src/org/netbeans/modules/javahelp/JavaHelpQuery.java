@@ -73,6 +73,9 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
     private static JavaHelpQuery theInstance;
     private SearchEngine engine;
     
+    private static final Logger LOG =
+            Logger.getLogger(JavaHelpQuery.class.getName());
+
     private JavaHelpQuery() {
     }
     
@@ -82,91 +85,7 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         return theInstance;
     }
     
-    public List<SearchTOCItem> search( String searchString ) {
-        synchronized( this ) {
-            if( null == engine ) {
-                engine = createSearchEngine();
-            }
-            List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
-            Thread searchThread = new Thread( createSearch( searchString, res ) );
-            searchThread.start();
-            try {
-                //the first search can take a moment before all the helpsets are merged
-                searchThread.join(60*1000); 
-            } catch( InterruptedException iE ) {
-                //ignore
-            }
-            return res;
-        }
-    }
-    
-    private Runnable createSearch( final String searchString, final List<SearchTOCItem> items ) {
-        Runnable res = new Runnable() {
-
-            public void run() {
-                if( null == engine ) {
-                    return;
-                }
-                final Object SEARCH_DONE = new Object();
-                SearchQuery query = engine.createQuery();
-                query.addSearchListener( new SearchListener() {
-
-                    public void itemsFound(SearchEvent arg0) {
-                        addItemsToList( arg0.getSearchItems(), items );
-                    }
-
-                    public void searchStarted(SearchEvent arg0) {
-                    }
-
-                    public void searchFinished(SearchEvent arg0) {
-                        synchronized( SEARCH_DONE ) {
-                            SEARCH_DONE.notifyAll();
-                        }
-                    }
-                });
-                query.start(searchString, Locale.getDefault());
-                synchronized( SEARCH_DONE ) {
-                    try {
-                        SEARCH_DONE.wait();
-                    } catch (InterruptedException ex) {
-                        //ignore
-                    }
-                }
-                //sort the result by their relevance
-                Collections.sort( items, JavaHelpQuery.this );
-            }
-        };
-        return res;
-    }
-    
-    private void addItemsToList( Enumeration searchItems, List<SearchTOCItem> results ) {
-        if( null == searchItems )
-            return;
-        while( searchItems.hasMoreElements() ) {
-            SearchItem si = (SearchItem) searchItems.nextElement();
-            URL url;
-            try {
-                url = new URL(si.getBase(), si.getFilename());
-            } catch( MalformedURLException murlE ) {
-                Logger.getLogger(JavaHelpQuery.class.getName()).log(Level.FINE, "Invalid URL in SearchItem: " + si.getTitle(), murlE); //NOI18N
-                continue;
-            }
-            boolean foundToc = false;
-            for( SearchTOCItem toc : results ) {
-                URL testURL = toc.getURL();
-                if (testURL != null && url != null && url.sameFile(testURL)) {
-                    toc.addSearchHit( new SearchHit(si.getConfidence(), si.getBegin(), si.getEnd()) );
-                    foundToc = true;
-                    break;
-                }
-            }
-            if( !foundToc ) {
-                SearchTOCItem toc = new SearchTOCItem(si);
-                results.add( toc );
-            }
-        }
-    }
-
+    @Override
     public int compare(SearchTOCItem o1, SearchTOCItem o2) {
         int res = o2.hitCount() - o1.hitCount() ;
         if( 0 == res ) {
@@ -179,6 +98,53 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         }
         return res;
     }
+
+    public synchronized List<SearchTOCItem> search(String searchString) {
+        if( null == engine ) {
+            engine = createSearchEngine();
+        }
+        List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
+        Thread searchThread = new Thread(createSearch(searchString, res),
+                "JavaHelpQuery.search["+searchString+"]"); // NOI18N
+        searchThread.start();
+        try {
+            //the first search can take a moment before all the helpsets are merged
+            searchThread.join(60*1000);
+        } catch( InterruptedException iE ) {
+            //ignore
+        }
+        return res;
+    }
+    
+    private Runnable createSearch(final String searchString,
+                                  final List<SearchTOCItem> items) {
+        Runnable res = new Runnable() {
+
+            @Override
+            public void run() {
+                if( null == engine ) {
+                    return;
+                }
+                SynchronizedSearchListener ssl =
+                        new SynchronizedSearchListener(items);
+                SearchQuery query = engine.createQuery();
+                query.addSearchListener(ssl);
+                query.start(searchString, Locale.getDefault());
+                synchronized(ssl) {
+                    while(!ssl.isSearchDone()) { // #148850
+                        try {
+                            ssl.wait();
+                        } catch (InterruptedException ex) {
+                            //ignore
+                        }
+                    }
+                }
+                //sort the result by their relevance
+                Collections.sort( items, JavaHelpQuery.this );
+            }
+        };
+        return res;
+    }
     
     private SearchEngine createSearchEngine() {
         SearchEngine se = null;
@@ -187,8 +153,9 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
             JavaHelp jh = (JavaHelp)h;
             se = jh.createSearchEngine();
             if( null == se ) {
-                Logger.getLogger(JavaHelpQuery.class.getName()).log(Level.INFO, 
-                        NbBundle.getMessage(JavaHelpQuery.class, "Err_CreateJavaHelpSearchEngine")); //NOI18N
+                LOG.log(Level.INFO,
+                        NbBundle.getMessage(JavaHelpQuery.class,
+                        "Err_CreateJavaHelpSearchEngine")); //NOI18N
                 se = new DummySearchEngine();
             }
         }
@@ -200,7 +167,7 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         public SearchQuery createQuery() throws IllegalStateException {
             return new DummySearchQuery( this );
         }
-    }
+    } // DummySearchEngine
     
     private static class DummySearchQuery extends SearchQuery {
         
@@ -221,7 +188,8 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         }
 
         @Override
-        public void start(String arg0, Locale arg1) throws IllegalArgumentException, IllegalStateException {
+        public void start(String arg0, Locale arg1)
+                        throws IllegalArgumentException, IllegalStateException {
             SearchEvent se = new SearchEvent( this, "", false );
             for( SearchListener sl : listeners ) {
                 sl.searchStarted(se);
@@ -239,5 +207,71 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
             return false;
         }
         
-    }
+    } // DummySearchQuery
+
+    private class SynchronizedSearchListener implements SearchListener {
+
+        private final List<SearchTOCItem> items;
+        private boolean searchDone = false;
+
+        public SynchronizedSearchListener(final List<SearchTOCItem> items) {
+            this.items = items;
+        }
+
+        @Override
+        public void itemsFound(SearchEvent se) {
+            addItemsToList(se.getSearchItems(), items);
+        }
+
+        @Override
+        public void searchStarted(SearchEvent se) {
+        }
+
+        @Override
+        public void searchFinished(SearchEvent se) {
+            synchronized(this) {
+                searchDone = true;
+                notifyAll();
+            }
+        }
+
+        public boolean isSearchDone() {
+            return searchDone;
+        }
+
+        private void addItemsToList(Enumeration searchItems,
+                                    List<SearchTOCItem> results) {
+            if( null == searchItems )
+                return;
+            while( searchItems.hasMoreElements() ) {
+                SearchItem si = (SearchItem) searchItems.nextElement();
+                URL url;
+                try {
+                    url = new URL(si.getBase(), si.getFilename());
+                } catch( MalformedURLException murlE ) {
+                    LOG.log(Level.FINE,
+                            "Invalid URL in SearchItem: " + si.getTitle(),
+                            murlE); //NOI18N
+                    continue;
+                }
+                boolean foundToc = false;
+                for( SearchTOCItem toc : results ) {
+                    URL testURL = toc.getURL();
+                    if (testURL != null && url != null && url.sameFile(testURL)) {
+                        toc.addSearchHit( new SearchHit(si.getConfidence(),
+                                                        si.getBegin(),
+                                                        si.getEnd()) );
+                        foundToc = true;
+                        break;
+                    }
+                }
+                if( !foundToc ) {
+                    SearchTOCItem toc = new SearchTOCItem(si);
+                    results.add( toc );
+                }
+            }
+        }
+
+    } // SynchronizedSearchListener
+
 }

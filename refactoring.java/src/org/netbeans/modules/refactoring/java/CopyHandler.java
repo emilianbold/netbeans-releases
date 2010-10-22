@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -105,7 +106,7 @@ final class CopyHandler implements OperationListener {
                 // rename also the top level class...
                 if (originalName != null && !originalName.equals(newName)) {
                     for (Tree typeDecl : compilationUnitTree.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree clazz = (ClassTree) typeDecl;
                             if (originalName.contentEquals(clazz.getSimpleName())) {
                                 Tree copy = make.setLabel(typeDecl, newName);

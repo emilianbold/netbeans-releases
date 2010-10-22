@@ -53,10 +53,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.LanguageManager;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.openide.filesystems.FileObject;
 
@@ -64,25 +63,12 @@ import org.openide.filesystems.FileObject;
  *
  * @author vita
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider {
+@MimeLocation(subfolderName="languagesEmbeddingMap", instanceProviderClass=MimeLookupFolderInfo.class)
+public class MimeLookupFolderInfo implements InstanceProvider {
     
     private static final Logger LOG = Logger.getLogger(MimeLookupFolderInfo.class.getName());
     
-    /** Creates a new instance of MimeLookupFolderInfo */
     public MimeLookupFolderInfo() {
-    }
-
-    public Class getClazz() {
-        return LanguagesEmbeddingMap.class;
-    }
-
-    public String getLayerFolderName() {
-        return "languagesEmbeddingMap"; //NOI18N
-    }
-
-    public InstanceProvider getInstanceProvider() {
-        return this;
     }
 
     public Object createInstance(List fileObjectList) {

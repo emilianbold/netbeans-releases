@@ -103,6 +103,7 @@ public class ModelSupport implements PropertyChangeListener {
     private FileChangeListener fileChangeListener;
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
+    private final RequestProcessor RP = new RequestProcessor("ModelSupport processor", 2); // NOI18N
 
     private ModelSupport() {
     }
@@ -167,7 +168,7 @@ public class ModelSupport implements PropertyChangeListener {
                             }
                         };
                         if (SwingUtilities.isEventDispatchThread()) {
-                            RequestProcessor.getDefault().post(task);
+                            RP.post(task);
                         } else {
                             task.run();
                         }
@@ -197,7 +198,7 @@ public class ModelSupport implements PropertyChangeListener {
                     if (TRACE_STARTUP) {
                         System.out.println("Model support: Open projects on OpenProjects.PROPERTY_OPEN_PROJECTS"); // NOI18N
                     }
-                    RequestProcessor.getDefault().post(new Runnable() {
+                    RP.post(new Runnable() {
 
                         @Override
                         public void run() {
@@ -399,8 +400,8 @@ public class ModelSupport implements PropertyChangeListener {
 
     public static FileBuffer getFileBuffer(File file) {
         File normalizeFile = CndFileUtils.normalizeFile(file);
-        FileObject fo = FileUtil.toFileObject(normalizeFile);
-        if (fo != null) {
+        FileObject fo = CndFileUtils.toFileObject(normalizeFile);
+        if (fo != null && fo.isValid()) {
             try {
                 DataObject dao = DataObject.find(fo);
                 if (dao.isModified()) {
@@ -495,7 +496,8 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
-                    final FileBufferDoc buffer = new FileBufferDoc(file.getAbsolutePath(), doc);
+                    CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
+                    final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
@@ -518,16 +520,12 @@ public class ModelSupport implements PropertyChangeListener {
         private NativeFileItemSet findCanonicalSet(DataObject curObj) {
             FileObject fo = curObj.getPrimaryFile();
             if (fo != null && isCndDataObject(fo)) {
-                File file = FileUtil.toFile(fo);
-                // the file can null, for example, when we edit templates
-                if (file != null) {
-                    try {
-                        fo = FileUtil.toFileObject(file.getCanonicalFile());
-                        curObj = DataObject.find(fo);
-                        return curObj.getLookup().lookup(NativeFileItemSet.class);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                try {
+                    fo = CndFileUtils.getCanonicalFileObject(fo);
+                    curObj = DataObject.find(fo);
+                    return curObj.getLookup().lookup(NativeFileItemSet.class);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
             return null;

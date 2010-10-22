@@ -67,7 +67,7 @@ public class MavenSharabilityQueryImplTest extends NbTestCase {
         TestFileUtils.writeFile(new File(prj, "modules/mod/pom.xml"), "<project><modelVersion>4.0.0</modelVersion>"
                 + "<groupId>test</groupId><artifactId>mod</artifactId>"
                 + "<packaging>jar</packaging><version>1.0</version></project>");
-        // XXX check nbactions, profiles.xml
+        // XXX check nbactions*.xml
         /* Considered owned by NBM project, so skip this:
         assertSharability(SharabilityQuery.UNKNOWN, "");
          */

@@ -54,6 +54,9 @@ import org.openide.WizardDescriptor;
  * probably don't want to use this class, the {@link PlatformInstall} class
  * creates an platform chooser for you. You want to use this class if the
  * platform is not on the local disk, eg. you want to download it from the web.
+ * 
+ * Consult the {@link GeneralPlatformInstall} javadoc about the {@link CustomPlatformInstall} registration.
+ * 
  * @author Tomas Zezula
  * @since 1.5
  */
@@ -61,10 +64,12 @@ public abstract class CustomPlatformInstall extends GeneralPlatformInstall {
     
     /**
      * Returns the {@link WizardDescriptor#InstantiatingIterator} used to install
-     * the platform.
+     * the platform. The platform definition file returned by the instantiate method
+     * should be created in the Services/Platforms/org-netbeans-api-java-Platform
+     * folder on the system filesystem.
      * @return TemplateWizard.Iterator instance responsible for instantiating
      * the platform. The instantiate method of the returned iterator should
-     * return the Set containing the created JavaPlatform.
+     * return the Set containing the platform.
      */
     public abstract WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator();
     

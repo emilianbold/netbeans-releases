@@ -291,7 +291,7 @@ public class AddTagFixTest extends JavadocTestSupport {
                 "    /**\n" +
                 "     * @param prvniho \n" +
                 "     * @param druheho \n" +
-                "     * @param tretiho\n" +
+                "     * @param tretiho \n" +
                 "     * @return bla\n" +
                 "     */\n" +
                 "    int leden(int prvniho, int druheho, int tretiho) {\n" +
@@ -352,7 +352,7 @@ public class AddTagFixTest extends JavadocTestSupport {
                 "package test;\n" +
                 "/**\n" +
                 " * @param <P> \n" +
-                " * @param <Q>\n" +
+                " * @param <Q> \n" +
                 " */\n" +
                 "class Zima<P,Q> {\n" +
                 "}\n");        
@@ -401,7 +401,7 @@ public class AddTagFixTest extends JavadocTestSupport {
                 "class Zima {\n" +
                 "    /**\n" +
                 "     * @param <T> \n" +
-                "     * @param prvniho\n" +
+                "     * @param prvniho \n" +
                 "     * @param druheho \n" +
                 "     * @param tretiho \n" +
                 "     * @return bla\n" +

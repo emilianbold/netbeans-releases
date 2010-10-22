@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
@@ -196,7 +197,9 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                         if (res != null && res.size() > 0) {
                             return res;
                         }
-                        res = packageSearch.getPackageFileSearch().searchFile(project, fileName);
+                        if (packageSearch != null) {
+                            res = packageSearch.getPackageFileSearch(p).searchFile(project, fileName);
+                        }
                         if (res != null && res.size() > 0) {
                             return res;
                         }
@@ -455,7 +458,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         private DataObject getDataObject(){
             try {
                 FileObject fo = getFileObject();
-                if (fo != null) {
+                if (fo != null && fo.isValid()) {
                     return DataObject.find(fo);
                 }
             } catch (DataObjectNotFoundException e) {
@@ -466,8 +469,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         @Override
         public FileObject getFileObject() {
             String AbsRootPath = CndPathUtilitities.toAbsolutePath(baseDir, folder.getRootPath());
-            File file = new File(AbsRootPath, name);
-            return FileUtil.toFileObject(file);
+            return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
         }
     }
 }

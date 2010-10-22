@@ -77,6 +77,79 @@ public class ConvertToStringSwitchTest extends TestBase {
                        "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
+    public void testSimpleFlow() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public int test(int r) {" +
+                       "         String g = null;\n" +
+                       "         if (g == \"j\") {" +
+                       "             System.err.println(1);" +
+                       "             return 1;" +
+                       "         } else if (g == \"k\") {" +
+                       "             System.err.println(2);" +
+                       "             if (r >= 0) {" +
+                       "                 return 2;" +
+                       "             } else {" +
+                       "                 return 3;" +
+                       "             }" +
+                       "         } else if (g == \"l\") {" +
+                       "             System.err.println(3);" +
+                       "         }\n" +
+                       "         return 11;\n" +
+                       "     }" +
+                       "}",
+                       "1:9-1:11:verifier:Convert to switch",
+                       "FixImpl",
+                       ("package test;" +
+                       "public class Test {" +
+                       "     public int test(int r) {" +
+                       "         String g = null;" +
+                       "         switch (g) {\n" +
+                       "             case \"j\":\n" +
+                       "                 System.err.println(1);" +
+                       "                 return 1;" +
+                       "             case \"k\":\n" +
+                       "                 System.err.println(2);" +
+                       "                 if (r >= 0) {" +
+                       "                     return 2;" +
+                       "                 } else {" +
+                       "                     return 3;" +
+                       "                 }\n" +
+                       "             case \"l\":\n" +
+                       "                 System.err.println(3);" +
+                       "                 break;" +
+                       "         }\n" +
+                       "         return 11;\n" +
+                       "     }" +
+                       "}").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testOr() throws Exception {
+        setSourceLevel("1.7");
+        performFixTest("test/Test.java",
+                       "package test;" +
+                       "public class Test {" +
+                       "     public void test() {" +
+                       "         String g = null;" +
+                       "         if (g == \"j\" || g == \"m\") {" +
+                       "             System.err.println(1);" +
+                       "         } else if (g == \"k\") {" +
+                       "             System.err.println(2);" +
+                       "         } else if (g == \"l\" || g == \"n\") {" +
+                       "             System.err.println(3);" +
+                       "         } else {" +
+                       "             System.err.println(4);" +
+                       "             return;" +
+                       "         }" +
+                       "     }" +
+                       "}",
+                       "0:91-0:93:verifier:Convert to switch",
+                       "FixImpl",
+                       "package test;public class Test { public void test() { String g = null;switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return "FixImpl";

@@ -1,5 +1,0 @@
-class Datagram^RequestHandler(BaseRequestHandler):
-      ----------------------
-HINT:Create document comment
-FIX:Add a multi-line docstring
-FIX:Add a one-liner docstring

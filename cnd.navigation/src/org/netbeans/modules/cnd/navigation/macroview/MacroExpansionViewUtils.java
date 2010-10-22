@@ -76,7 +76,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
 
 /**
  * Utility methods for Macro Expansion view.
@@ -307,12 +306,7 @@ public final class MacroExpansionViewUtils {
         try {
             DataObject dob = DataObject.find(fo);
             EditorCookie ec = dob.getCookie(EditorCookie.class);
-            try {
-                doc = ec.openDocument();
-            } catch (UserQuestionException ex) {
-                ex.confirmed();
-                doc = ec.openDocument();
-            }
+            doc = CsmUtilities.openDocument(ec);
             if (doc != null) {
                 doc.putProperty(Document.StreamDescriptionProperty, dob);
             }

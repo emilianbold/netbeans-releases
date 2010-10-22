@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.j2ee.sunas;
 
-import java.util.ResourceBundle;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
@@ -58,9 +57,8 @@ public class SunAS8IntegrationProvider extends SunASAutoIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.sunas.Bundle"); // NOI18N
-    private static final String SUNAS_8PE_STRING = messages.getString("SunAS8IntegrationProvider_SunAs8PeString"); // NOI18N
-    private static final String PROFILED_SUNAS_CONSOLE_STRING = messages.getString("SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString"); // NOI18N
+    private static final String SUNAS_8PE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_SunAs8PeString"); // NOI18N
+    private static final String PROFILED_SUNAS_CONSOLE_STRING = NbBundle.getMessage(SunAS8IntegrationProvider.class, "SunAS8IntegrationProvider_ProfiledSunAs8PeConsoleString"); // NOI18N
 
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

@@ -85,13 +85,13 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         add(treeView);
         Action expandAll = new AbstractAction(NbBundle.getMessage(MultipleCallStackPanel.class, "ExpandAll")) {//NOI18N
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 MultipleCallStackPanel.this.treeView.expandAll();
             }
         };
         rootNode = new MultipleCallStackRootNode(expandAll);
         manager.setRootContext(rootNode);//NOI18N
-
         final JPopupMenu popup = new JPopupMenu();
         popup.add(expandAll);
         addMouseListener(new MouseAdapter() {
@@ -110,11 +110,11 @@ public final class MultipleCallStackPanel extends JPanel implements ExplorerMana
         treeView.setActionMap(map);
     }
 
-    public static final MultipleCallStackPanel createInstance() {
+    public static MultipleCallStackPanel createInstance() {
         return new MultipleCallStackPanel(null);
     }
 
-    public static final MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
+    public static MultipleCallStackPanel createInstance(SourceFileInfoDataProvider sourceFileInfoDataProvider) {
         return new MultipleCallStackPanel(sourceFileInfoDataProvider);
     }
 

@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
@@ -75,9 +74,8 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.maven.model.profile.Profile;
-import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -110,7 +108,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl && resultCode == 0) {
             if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
                 //dump the nb java support's timestamp fil in output directory..
@@ -118,8 +116,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             }
             String moduleUri = config.getProperties().getProperty(MODULEURI);
             String clientUrl = config.getProperties().getProperty(CLIENTURLPART, ""); //NOI18N
-            boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
-            boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
+            boolean redeploy = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_REDEPLOY, "true")); //NOI18N
+            boolean debugmode = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY_DEBUG_MODE)); //NOI18N
             boolean profilemode = Boolean.parseBoolean(config.getProperties().getProperty("netbeans.deploy.profilemode")); //NOI18N
 
             performDeploy(res, debugmode, profilemode, moduleUri, clientUrl, redeploy);
@@ -247,17 +245,16 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
             return false;
         }
-        return false;
+        return true;
     }
 
     @Override
     public boolean checkRunConfig(RunConfig config) {
-        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(Constants.ACTION_PROPERTY_DEPLOY));
+        boolean depl = Boolean.parseBoolean(config.getProperties().getProperty(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-
-
+                return showServerSelectionDialog(project, provider, config);
             }
         }
         return true;
@@ -303,7 +300,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             if (mapp != null) {
                 java.util.Properties props = mapp.getProperties();
                 if (props != null) {
-                    props.remove(Constants.ACTION_PROPERTY_DEPLOY);
+                    props.remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
                     ModelHandle.setUserActionMapping(mapp, handle.getActionMappings());
                     handle.markAsModified(handle.getActionMappings());
                     ModelHandleUtils.writeModelHandle(handle, project);
@@ -340,6 +337,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
+        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
         final ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
             public void performOperation(POMModel model) {
                 Properties props = model.getProject().getProperties();
@@ -347,48 +345,14 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     props = model.getFactory().createProperties();
                     model.getProject().setProperties(props);
                 }
-                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
             }
         };
-        final ModelOperation<ProfilesModel> profoperation = new ModelOperation<ProfilesModel>() {
-            public void performOperation(ProfilesModel model) {
-                Profile privateProfile = null;
-                List<org.netbeans.modules.maven.model.profile.Profile> lst = model.getProfilesRoot().getProfiles();
-                if (lst != null) {
-                    for (org.netbeans.modules.maven.model.profile.Profile profile : lst) {
-                        if (ModelHandle.PROFILE_PRIVATE.equals(profile.getId())) {
-                            privateProfile = profile;
-                            break;
-                        }
-                    }
-                }
-                if (privateProfile == null) {
-                    privateProfile = model.getFactory().createProfile();
-                    privateProfile.setId(ModelHandle.PROFILE_PRIVATE);
-                    org.netbeans.modules.maven.model.profile.Activation act = model.getFactory().createActivation();
-                    org.netbeans.modules.maven.model.profile.ActivationProperty prop = model.getFactory().createActivationProperty();
-                    prop.setName(ModelHandle.PROPERTY_PROFILE);
-                    prop.setValue("true"); //NOI18N
-                    act.setActivationProperty(prop);
-                    privateProfile.setActivation(act);
-                    model.getProfilesRoot().addProfile(privateProfile);
-                }
-                org.netbeans.modules.maven.model.profile.Properties props = privateProfile.getProperties();
-                if (props == null) {
-                    props = model.getFactory().createProperties();
-                    privateProfile.setProperties(props);
-                }
-                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
-            }
-        };
-
         final FileObject projDir = targetPrj.getProjectDirectory();
         final FileObject fo = projDir.getFileObject("pom.xml"); //NOI18N
         try {
             fo.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
-                    FileObject fo2 = FileUtil.createData(projDir, "profiles.xml");
-                    Utilities.performProfilesModelOperations(fo2, Collections.singletonList(profoperation));
                     Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
                 }
             });

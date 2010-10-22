@@ -372,6 +372,14 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>  
+            <folder name="x-stobj+elf">
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-object+elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">

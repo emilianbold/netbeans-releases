@@ -55,16 +55,22 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * CsmReturnStatement implementation
  * @author Vladimir Kvashin
  */
-public class ReturnStatementImpl extends StatementBase implements CsmReturnStatement {
+public final class ReturnStatementImpl extends StatementBase implements CsmReturnStatement {
 
-    public ReturnStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private ReturnStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
+
+    public static ReturnStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ReturnStatementImpl(ast, file, scope);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.RETURN;
     } 
 
+    @Override
     public CsmExpression getReturnExpression() {
         return null;
     }

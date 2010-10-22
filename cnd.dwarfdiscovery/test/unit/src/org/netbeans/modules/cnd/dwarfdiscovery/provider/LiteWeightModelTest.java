@@ -45,8 +45,10 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
@@ -60,6 +62,9 @@ import org.netbeans.modules.cnd.litemodel.api.Declaration;
  * @author Alexander Simon
  */
 public class LiteWeightModelTest extends NbTestCase {
+    private static final int FULL = 0;
+    private static final int TOP_LEVEL_DECLARATIONS = 1;
+    private static final int TOP_LEVEL_DECLARATIONS_IN_COMILATION_UNIT = 2;
 
     public LiteWeightModelTest() {
         super("LiteWeightModelTest");
@@ -70,37 +75,106 @@ public class LiteWeightModelTest extends NbTestCase {
         return 500000;
     }
 
-    //public void testMySQL(){
-    //    LWM("/export/home/as204739/Projects/sfbay/mysql-5.1.30/sql/mysqld");
-    //}
-
     public void testQuoteCpu(){
         File dataDir = getDataDir();
         String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o";
-        DwarfRenderer dwarfRenderer = LWM(objFileName);
-        dwarfRenderer.dumpModel(System.out);
+        DwarfRenderer dwarfRenderer = LWM(objFileName, TOP_LEVEL_DECLARATIONS);
+        //dwarfRenderer.dumpModel(System.out);
         Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
         Map<String, Declaration> cpuC = getFilename(map, "/cpu.cc");
-///export/home/av202691/NetBeansProjects/Quote_1/cpu.cc
-//        Cpu::ComputeSupportMetric() (subprogram) :17
-//        Cpu::Cpu(int, int, int) (subprogram) :6
-//        Cpu::GetCategory() (subprogram) const char :46
-//        Cpu::GetType() (subprogram) const char :33
         assertNotNull(cpuC);
         Map<String, Declaration> cpuH = getFilename(map, "/cpu.h");
-///export/home/av202691/NetBeansProjects/Quote_1/cpu.h
-//        Cpu (class_type) :35
-//        Cpu::Cpu(const Cpu&) (subprogram) :35
-//        Cpu::CpuArch (enumeration_type) :38
-//        Cpu::CpuArch::INTEL (enumerator) :38
-//        Cpu::CpuArch::OPTERON (enumerator) :38
-//        Cpu::CpuArch::SPARC (enumerator) :38
-//        Cpu::CpuType (enumeration_type) :37
-//        Cpu::CpuType::HIGH (enumerator) :37
-//        Cpu::CpuType::MEDIUM (enumerator) :37
-//        Cpu::~Cpu() (subprogram) :35
-//        Module (inheritance) :35
         assertNotNull(cpuH);
+    }
+
+    public void testQuoteCpuOnly(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/cpu.gentoo.4.3.o";
+        DwarfRenderer dwarfRenderer = LWM(objFileName, TOP_LEVEL_DECLARATIONS_IN_COMILATION_UNIT);
+        //dwarfRenderer.dumpModel(System.out);
+        Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
+        Map<String, Declaration> cpuC = getFilename(map, "/cpu.cc");
+        assertNotNull(cpuC);
+        Map<String, Declaration> cpuH = getFilename(map, "/cpu.h");
+        assertNull(cpuH);
+    }
+
+    public void testQuoteQuoteFullSun(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.solaris.o";
+        DwarfRenderer dwarfRenderer = LWM(objFileName, FULL);
+        //dwarfRenderer.dumpModel(System.out);
+        Set<String> templates = new HashSet<String>();
+        Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
+        for(Map.Entry<String, Map<String, Declaration>> entry : map.entrySet()) {
+            String templetePrefix = null;
+            String currentInstantiation = null;
+            for(Map.Entry<String, Declaration> declEntry: entry.getValue().entrySet()) {
+                String fqn = declEntry.getKey();
+                Declaration decl = declEntry.getValue();
+                if (decl.getKind() == Declaration.Kind.SUN_class_template) {
+                    templetePrefix= fqn;
+                    continue;
+                }
+                if (templetePrefix != null && fqn.startsWith(templetePrefix)) {
+                    String instantiation = extractTemplateParameters(fqn);
+                    if (instantiation != null) {
+                        if (currentInstantiation == null || !currentInstantiation.equals(instantiation)) {
+                            currentInstantiation = instantiation;
+                            templates.add(instantiation);
+                            //System.out.println(instantiation);
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(templates.contains("std::vector<Module*,std::allocator<Module*> >"));
+        assertTrue(templates.contains("std::list<Customer,std::allocator<Customer> >"));
+    }
+
+    public void testQuoteQuoteFullGnu(){
+        File dataDir = getDataDir();
+        String objFileName = dataDir.getAbsolutePath()+"/org/netbeans/modules/cnd/dwarfdiscovery/provider/quote.gnu.o";
+        DwarfRenderer dwarfRenderer = LWM(objFileName, FULL);
+        //dwarfRenderer.dumpModel(System.out);
+        Set<String> templates = new HashSet<String>();
+        Map<String, Map<String, Declaration>> map = dwarfRenderer.getLWM();
+        for(Map.Entry<String, Map<String, Declaration>> entry : map.entrySet()) {
+            String currentInstantiation = null;
+            for(Map.Entry<String, Declaration> declEntry: entry.getValue().entrySet()) {
+                String fqn = declEntry.getKey();
+                Declaration decl = declEntry.getValue();
+                if (decl.getKind() == Declaration.Kind.structure_type ||
+                    decl.getKind() == Declaration.Kind.class_type) {
+                    String instantiation = extractTemplateParameters(fqn);
+                    if (instantiation != null) {
+                        if (currentInstantiation == null || !currentInstantiation.equals(instantiation)) {
+                            currentInstantiation = instantiation;
+                            templates.add(instantiation);
+                            //System.out.println(instantiation);
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(templates.contains("std::vector<Module*,std::allocator<Module*> >"));
+        assertTrue(templates.contains("std::list<Customer,std::allocator<Customer> >"));
+    }
+
+    private String extractTemplateParameters(String fqn){
+        int level = 0;
+        for(int i = 0; i < fqn.length(); i++) {
+            char c = fqn.charAt(i);
+            if (c == '<') {
+                level++;
+            } else if (c == '>') {
+                level--;
+                if (level == 0) {
+                    return fqn.substring(0,i+1);
+                }
+            }
+        }
+        return null;
     }
 
     private Map<String, Declaration> getFilename(Map<String, Map<String, Declaration>> map, String fileName) {
@@ -112,9 +186,20 @@ public class LiteWeightModelTest extends NbTestCase {
         return null;
     }
 
-    private DwarfRenderer LWM(String objFileName){
+    private DwarfRenderer LWM(String objFileName, int limit){
         //long time = System.currentTimeMillis();
-        DwarfRenderer dwarfRenderer = new DwarfRenderer();
+        DwarfRenderer dwarfRenderer = null;
+        switch (limit) {
+            case FULL:
+                dwarfRenderer = DwarfRenderer.createFullRenderer();
+                break;
+            case TOP_LEVEL_DECLARATIONS:
+                dwarfRenderer = DwarfRenderer.createTopLevelDeclarationsRenderer();
+                break;
+            case TOP_LEVEL_DECLARATIONS_IN_COMILATION_UNIT:
+                dwarfRenderer = DwarfRenderer.createTopLevelDeclarationsCompilationUnitsRenderer();
+                break;
+        }
         Dwarf dump = null;
         try {
             dump = new Dwarf(objFileName);

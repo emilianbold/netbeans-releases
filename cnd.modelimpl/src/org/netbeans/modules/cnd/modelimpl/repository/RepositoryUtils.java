@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 
 /**
  *
@@ -82,7 +83,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 92;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 95;
 
     /** Creates a new instance of RepositoryUtils */
     private RepositoryUtils() {
@@ -128,7 +129,7 @@ public final class RepositoryUtils {
         return counter++;
     }
 
-    public static void remove(CsmUID uid, CsmObject obj) {
+    public static<T> void remove(CsmUID<T> uid, CsmObject obj) {
         Key key = UIDtoKey(uid);
         if (key != null) {
             try {
@@ -153,15 +154,15 @@ public final class RepositoryUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static void disposeUID(CsmUID uid, CsmObject obj) {
+    public static<T> void disposeUID(CsmUID<T> uid, CsmObject obj) {
         if (uid instanceof KeyBasedUID<?>) {
             ((KeyBasedUID<CsmObject>)uid).dispose(obj);
         }
     }
 
-    public static void remove(Collection<? extends CsmUID> uids) {
+    public static<T> void remove(Collection<? extends CsmUID<T>> uids) {
         if (uids != null) {
-            for (CsmUID uid : uids) {
+            for (CsmUID<T> uid : uids) {
                 remove(uid, null);
             }
         }
@@ -198,7 +199,7 @@ public final class RepositoryUtils {
     }
 
     public static void hang(Object csmObj) {
-        CsmUID uid = null;
+        CsmUID<?> uid = null;
         if (csmObj != null) {
             // during hang we suppress check for null
             uid = UIDProviderIml.get(csmObj, false);
@@ -241,12 +242,12 @@ public final class RepositoryUtils {
     public static <T extends CsmObject> void setSelfUIDs(Collection<T> decls) {
         assert decls != null;
         for (T decl : decls) {
-            org.netbeans.modules.cnd.modelimpl.csm.core.Utils.setSelfUID(decl);
+            Utils.setSelfUID(decl);
         }
     }
     ////////////////////////////////////////////////////////////////////////////
     //
-    public static Key UIDtoKey(CsmUID uid) {
+    public static<T> Key UIDtoKey(CsmUID<T> uid) {
         if (uid instanceof KeyHolder) {
             return ((KeyHolder) uid).getKey();
         } else {
@@ -254,7 +255,7 @@ public final class RepositoryUtils {
         }
     }
 
-    public static CharSequence getUnitName(CsmUID uid) {
+    public static<T> CharSequence getUnitName(CsmUID<T> uid) {
         Key key = UIDtoKey(uid);
         assert key != null;
         CharSequence unitName = key.getUnit();
@@ -290,7 +291,7 @@ public final class RepositoryUtils {
         repository.debugClear();
     }
 
-    public static void closeUnit(CsmUID uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
+    public static<T> void closeUnit(CsmUID<T> uid, Set<CharSequence> requiredUnits, boolean cleanRepository) {
         closeUnit(UIDtoKey(uid), requiredUnits, cleanRepository);
     }
 
@@ -327,7 +328,7 @@ public final class RepositoryUtils {
     }
 
     public static void openUnit(ProjectBase project) {
-        CsmUID uid = project.getUID();
+        CsmUID<?> uid = project.getUID();
         assert uid != null;
         Key key = UIDtoKey(uid);
         openUnit(key);

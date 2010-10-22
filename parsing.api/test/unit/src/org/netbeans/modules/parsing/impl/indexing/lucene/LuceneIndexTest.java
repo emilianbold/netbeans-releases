@@ -43,15 +43,11 @@
 package org.netbeans.modules.parsing.impl.indexing.lucene;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.BitSet;
 import java.util.Collection;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +66,7 @@ public class LuceneIndexTest extends NbTestCase {
 
     private static File wd;
     private File indexFolder;
-    private LuceneIndex index;
+    private DocumentBasedIndex index;
     
     public LuceneIndexTest(final String name) {
         super(name);
@@ -83,7 +79,7 @@ public class LuceneIndexTest extends NbTestCase {
         wd = getWorkDir();
         indexFolder = new File (wd, "index");   //NOI18N
         indexFolder.mkdirs();
-        index = new LuceneIndex(indexFolder.toURI().toURL());
+        index = new DocumentBasedIndex(indexFolder.toURI().toURL());
     }
 
     @After
@@ -110,57 +106,6 @@ public class LuceneIndexTest extends NbTestCase {
         }
         index.store(true, null);
         assertIndex(expected);
-    }
-
-    @Test
-    public void testIsValid() throws Exception {
-        //Empty index => valid
-        assertTrue(index.isValid());
-
-        clearValidityCache();
-        LuceneDocument docwrap = new LuceneDocument(SPIAccessor.getInstance().create(new FakeIndexableImpl(1)));
-        docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
-        docwrap.addPair("oct", Integer.toOctalString(1), true, true);
-        index.addDocument(docwrap);
-        index.store(true, null);
-        //Existing index => valid
-        assertTrue(index.isValid());
-        assertTrue(indexFolder.listFiles().length>0);
-
-        clearValidityCache();
-        createLock();
-        //Index with orphan lock => invalid
-        assertFalse(index.isValid());
-        assertTrue(indexFolder.listFiles().length==0);
-
-        clearValidityCache();
-        docwrap = new LuceneDocument(SPIAccessor.getInstance().create(new FakeIndexableImpl(1)));
-        docwrap.addPair("bin", Integer.toBinaryString(1), true, true);
-        docwrap.addPair("oct", Integer.toOctalString(1), true, true);
-        index.addDocument(docwrap);
-        index.store(true, null);
-        assertTrue(index.isValid());
-        assertTrue(indexFolder.listFiles().length>0);
-
-        //Broken index => invalid
-        clearValidityCache();
-        File bt = null;
-        for (File file : indexFolder.listFiles()) {
-            if (file.getName().endsWith(".cfs")) {
-                bt = file;
-                break;
-            }
-        }
-        assertNotNull(bt);
-        FileOutputStream out = new FileOutputStream(bt);
-        try {
-            out.write(new byte[] {0,0,0,0,0,0,0,0,0,0}, 0, 10);
-        } finally {
-            out.close();
-        }
-        assertFalse(index.isValid());
-        assertTrue(indexFolder.listFiles().length==0);
-        
     }
 
 // Commented out as it takes a long time
@@ -190,30 +135,9 @@ public class LuceneIndexTest extends NbTestCase {
 //        assertTrue(end < 3 * start);
 //    }
 
-    private void clearValidityCache() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-        final Class<LuceneIndex> li = LuceneIndex.class;
-        final Field valid = li.getDeclaredField("valid");   //NOI18N
-        valid.setAccessible(true);
-        valid.set(index, false);
-        final Field reader = li.getDeclaredField("reader");   //NOI18N
-        reader.setAccessible(true);
-        IndexReader r = (IndexReader) reader.get(index);
-        if (r != null) {
-            r.close();
-        }
-        reader.set(index,null);
-    }
-
-    private void createLock() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException {
-        final Class<LuceneIndex> li = LuceneIndex.class;
-        final Field directory = li.getDeclaredField("directory");   //NOI18N
-        directory.setAccessible(true);
-        Directory dir = (Directory) directory.get(index);
-        dir.makeLock("test").obtain();   //NOI18N
-    }
 
 
-    private void assertIndex(final BitSet expected) throws IOException {
+    private void assertIndex(final BitSet expected) throws IOException, InterruptedException {
         for (int i=0; i < expected.length(); i++) {
             final Collection<? extends IndexDocumentImpl> res = index.query("bin", Integer.toBinaryString(i), Kind.EXACT, "bin","oct");
             boolean should = expected.get(i);
@@ -234,10 +158,12 @@ public class LuceneIndexTest extends NbTestCase {
             this.id = id;
         }
 
+        @Override
         public String getRelativePath() {
             return Integer.toString(id);
         }
 
+        @Override
         public URL getURL() {
             try {
                 return new File(wd, getRelativePath()).toURI().toURL();
@@ -247,10 +173,12 @@ public class LuceneIndexTest extends NbTestCase {
             }
         }
 
+        @Override
         public String getMimeType() {
             return "text/test";
         }
 
+        @Override
         public boolean isTypeOf(String mimeType) {
             return true;
         }

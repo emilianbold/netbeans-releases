@@ -139,12 +139,21 @@ public final class JavaIndex {
     }
 
     public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue) throws IOException {
+        return ensureAttributeValue(root, attributeName, attributeValue, false);
+    }
+
+    public static boolean ensureAttributeValue(final URL root, final String attributeName, final String attributeValue, boolean checkOnly) throws IOException {
         Properties p = loadProperties(root);
         final String current = p.getProperty(attributeName);
         if (current == null) {
             if (attributeValue != null) {
-                p.setProperty(attributeName, attributeValue);
-                storeProperties(root, p);
+                if (!checkOnly) {
+                    p.setProperty(attributeName, attributeValue);
+                    storeProperties(root, p);
+                }
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue + " checkOnly: " + checkOnly); //NOI18N
+                }
                 return true;
             } else {
                 return false;
@@ -153,14 +162,16 @@ public final class JavaIndex {
         if (current.equals(attributeValue)) {
             return false;
         }
-        if (attributeValue != null) {
-            p.setProperty(attributeName, attributeValue);
-        } else {
-            p.remove(attributeName);
+        if (!checkOnly) {
+            if (attributeValue != null) {
+                p.setProperty(attributeName, attributeValue);
+            } else {
+                p.remove(attributeName);
+            }
+            storeProperties(root, p);
         }
-        storeProperties(root, p);
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue); //NOI18N
+            LOG.fine ("ensureAttributeValue attr: " + attributeName + " current: " + current + " new: " + attributeValue + " checkOnly: " + checkOnly); //NOI18N
         }
         return true;
     }

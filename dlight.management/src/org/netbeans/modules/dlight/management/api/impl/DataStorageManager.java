@@ -68,6 +68,8 @@ public final class DataStorageManager {
     private Map<DLightSession, List<DataStorage>> activeDataStorages = new HashMap<DLightSession, List<DataStorage>>();
     private Map<String, List<DataStorage>> activeStorages =
             new HashMap<String, List<DataStorage>>();//the list of storages - unique key is used as a key
+    private Map<String, List<DLightSession>> sharedStoragesSessions =
+            new HashMap<String, List<DLightSession>>();//the list of storages - unique key is used as a key    
     private Map<String, ServiceInfoDataStorage> serviceInfoStorages = new HashMap<String, ServiceInfoDataStorage>();//the key - is shared storage
     private static final Logger log = DLightLogger.getLogger(DataStorageManager.class);
     private static final DataStorageManager instance = new DataStorageManager();
@@ -75,9 +77,9 @@ public final class DataStorageManager {
 
     private DataStorageManager() {
         dataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
-        log.fine(dataStorageFactories.size() + " data storage(s) found!"); // NOI18N
+        log.log(Level.FINE, "{0} data storage(s) found!", dataStorageFactories.size()); // NOI18N
         perstistentDataStorageFactories = Lookup.getDefault().lookupAll(PersistentDataStorageFactory.class);
-        log.fine(dataStorageFactories.size() + " persistent data storage(s) found!"); // NOI18N
+        log.log(Level.FINE, "{0} persistent data storage(s) found!", dataStorageFactories.size()); // NOI18N
 
     }
 
@@ -85,21 +87,41 @@ public final class DataStorageManager {
         return instance;
     }
 
-    public List<DataStorage> closeSession(DLightSession session) {
+    public void closeSession(DLightSession session) {
         if (session == null) {
-            return null;
+            return;
         }
         List<DataStorage> storages = activeDataStorages.get(session);
         if (storages != null) {
             for (DataStorage storage : storages) {
                 if (!storage.shutdown()) {
-                    log.finest("DataStorage " + storage + " is not closed");//NOI18N
+                    log.log(Level.FINEST, "DataStorage {0} is not closed", storage);//NOI18N
                 } else {
-                    log.finest("DataStorage " + storage + " successfully closed");//NOI18N
+                    log.log(Level.FINEST, "DataStorage {0} successfully closed", storage);//NOI18N
                 }
             }
         }
-        return activeDataStorages.remove(session);
+        String storageUniqueKey = DLightSessionAccessor.getDefault().getSharedStorageUniqueKey(session);
+        if (storageUniqueKey != null) {
+            List<DLightSession> sessions = sharedStoragesSessions.get(storageUniqueKey);
+            if (sessions.contains(session)) {
+                sessions.remove(session);
+                if (sessions.isEmpty()) {
+                    //close all storages
+                    Collection<DataStorage> sharedStorages = activeStorages.get(storageUniqueKey);
+                    for (DataStorage storage : sharedStorages) {
+                        if (!storage.shutdown()) {
+                            log.log(Level.FINEST, "Shared storage with key {0} DataStorage {1} is not closed", new Object[]{storageUniqueKey, storage});//NOI18N
+                        } else {
+                            log.log(Level.FINEST, "DataStorage with key {0} {1} successfully closed", new Object[]{storageUniqueKey, storage});//NOI18N
+                        }
+                    }
+                    sharedStorages.remove(storageUniqueKey);
+                    activeStorages.remove(storageUniqueKey);
+                }
+            }
+        }
+        activeDataStorages.remove(session);
     }
 
     public void clearActiveStorages(DLightSession session) {
@@ -134,12 +156,102 @@ public final class DataStorageManager {
         return result;
     }
 
-    public synchronized Collection<DataStorage> getStorages(String uniqueKey) {
+    /**
+     * Gets the storage using the unique key, the method is synchronized as we
+     * should be sure we have created the only instance needed.
+     * @param uniqueKey
+     * @param tableMetadatas
+     * @return
+     */
+    public synchronized Collection<DataStorage> getDataStorage(String uniqueKey, List<DataTableMetadata> tableMetadatas) {
+        if (uniqueKey == null) {
+            return null;
+        }
+        List<DataStorage> uniqueStorages = activeStorages.get(uniqueKey);
+        Collection<DataStorage> result = new ArrayList<DataStorage>();
+        if (uniqueStorages != null) {            
+            for (DataStorage storage : uniqueStorages) {
+                storage.createTables(tableMetadatas);
+                result.add(storage);
+            }
+            return result;
+        }
+        
+        DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
+                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) " //NOI18N
+                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);//NOI18N
+        //if no storage was created - create the new one
+        if (perstistentDataStorageFactories != null) {
+            for (PersistentDataStorageFactory<?> persistentStorageFactory : perstistentDataStorageFactories) {
+                //we should open here the persistente storage
+                DataStorage newStorage = persistentStorageFactory.openStorage(uniqueKey);
+                if (newStorage != null) {
+                    if (newStorage instanceof ProxyDataStorage) {
+                        ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                        DataStorage backendStorage = getDataStorage(null, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                        proxyStorage.attachTo(backendStorage);
+                        uniqueStorages = activeStorages.get(uniqueKey);
+                    }
+                    newStorage.createTables(tableMetadatas);
+                    if (uniqueStorages == null) {
+                        uniqueStorages = new ArrayList<DataStorage>();
+                    }
+                    uniqueStorages.add(newStorage);
+                    activeStorages.put(uniqueKey, uniqueStorages);
+                } 
+            }
+        }
+        for (DataStorageFactory<?> storageFactory : dataStorageFactories) {
+
+            if (storageFactory instanceof PersistentDataStorageFactory<?> && !perstistentDataStorageFactories.contains((PersistentDataStorageFactory<?>)storageFactory)) {
+                //check if it was not opened already as PerstistentDataStorageFactory                
+                DataStorage newStorage = ((PersistentDataStorageFactory<?>) storageFactory).openStorage(uniqueKey);
+                if (newStorage == null){//it IS persistent but cannot open
+                    newStorage = storageFactory.createStorage();
+                }
+                if (newStorage != null && newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorage(null, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                    uniqueStorages = activeStorages.get(uniqueKey);
+                }
+                if (newStorage != null) {
+                    newStorage.createTables(tableMetadatas);
+                    if (uniqueStorages == null) {
+                        uniqueStorages = new ArrayList<DataStorage>();
+                    }
+                    uniqueStorages.add(newStorage);
+
+                    activeStorages.put(uniqueKey, uniqueStorages);
+                }
+            } else  if (!(storageFactory instanceof PersistentDataStorageFactory<?>)) {
+                DataStorage newStorage = storageFactory.createStorage();
+                if (newStorage!= null && newStorage instanceof ProxyDataStorage) {
+                    ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                    DataStorage backendStorage = getDataStorage(null, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    proxyStorage.attachTo(backendStorage);
+                    uniqueStorages = activeStorages.get(uniqueKey);
+                }
+                if (newStorage != null) {
+                    newStorage.createTables(tableMetadatas);
+                    if (uniqueStorages == null) {
+                        uniqueStorages = new ArrayList<DataStorage>();
+                    }
+                    uniqueStorages.add(newStorage);
+                    activeStorages.put(uniqueKey, uniqueStorages);
+                }
+            }
+        }
+
+        return activeStorages.get(uniqueKey);
+    }
+
+    public synchronized Collection<DataStorage> getStorages(String uniqueKey, DataTableMetadata dataMetadata) {
         if (uniqueKey == null) {
             return null;
         }
         //for each key we should keep several storages, including ServiceInfoDataStorage
-        Collection<DataStorage> result = activeStorages.get(uniqueKey);
+        List<DataStorage> result = activeStorages.get(uniqueKey);
         if (result != null) {
             return result;
         }
@@ -148,6 +260,8 @@ public final class DataStorageManager {
 
         for (PersistentDataStorageFactory<?> factory : perstistentDataStorageFactories) {
             try {
+                DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
+                        "Trying to open storage with the uniqueID={0} from the DataStorageManager", new String[]{uniqueKey});//NOI18N                
                 DataStorage storage = factory.openStorage(uniqueKey);
                 if (storage != null) {
                     result.add(storage);
@@ -155,6 +269,40 @@ public final class DataStorageManager {
             } catch (Throwable e) {
 //                log.log(Level.SEVERE, "Exception has beem occurred while trying to open storage with the key=" + uniqueKey, e);
             }
+        }
+        if (!result.isEmpty()) {
+            activeStorages.put(uniqueKey, result);
+        }
+        return result;
+
+    }
+
+    public synchronized Collection<DataStorage> getStorages(String uniqueKey) {
+        if (uniqueKey == null) {
+            return null;
+        }
+        //for each key we should keep several storages, including ServiceInfoDataStorage
+        List<DataStorage> result = activeStorages.get(uniqueKey);
+        if (result != null) {
+            return result;
+        }
+        result = new ArrayList<DataStorage>();
+        //PersistentDataStorageFactory<?> persistentDataStorageFactories = Lookup.getDefault().lookupAll(DataStorageFactory.class);
+
+        for (PersistentDataStorageFactory<?> factory : perstistentDataStorageFactories) {
+            try {
+                DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
+                        "Trying to open storage with the uniqueID={0} from the DataStorageManager", new String[]{uniqueKey});//NOI18N                
+                DataStorage storage = factory.openStorage(uniqueKey);
+                if (storage != null) {
+                    result.add(storage);
+                }
+            } catch (Throwable e) {
+//                log.log(Level.SEVERE, "Exception has beem occurred while trying to open storage with the key=" + uniqueKey, e);
+            }
+        }
+        if (!result.isEmpty()) {
+            activeStorages.put(uniqueKey, result);
         }
         return result;
 
@@ -168,7 +316,7 @@ public final class DataStorageManager {
      * @param tableMetadatas
      * @return
      */
-    private synchronized DataStorage getDataStorage(String uniqueKey, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
+    public synchronized DataStorage getDataStorage(DLightSession session, String uniqueKey, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (uniqueKey == null) {
             return null;
         }
@@ -181,6 +329,9 @@ public final class DataStorageManager {
                 }
             }
         }
+        DLightLogger.getLogger(DataStorageManager.class).log(Level.FINE,
+                "DataStorageManager.getDataStorage(Session, String, DataStorageType, DataTableMetadat) "//NOI18N
+                + "NO STORAGE  found  in the list: NEED TO OPEN again ={0} ", uniqueKey);//NOI18N
         //if no storage was created - create the new one
         if (perstistentDataStorageFactories != null) {
             for (PersistentDataStorageFactory<?> storage : perstistentDataStorageFactories) {
@@ -191,7 +342,7 @@ public final class DataStorageManager {
                     if (newStorage != null) {
                         if (newStorage instanceof ProxyDataStorage) {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                            DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                            DataStorage backendStorage = getDataStorage(session, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                             proxyStorage.attachTo(backendStorage);
                             uniqueStorages = activeStorages.get(uniqueKey);
                         }
@@ -200,13 +351,23 @@ public final class DataStorageManager {
                             uniqueStorages = new ArrayList<DataStorage>();
                         }
                         uniqueStorages.add(newStorage);
+                        if (session != null) {
+                            List<DLightSession> sessions = sharedStoragesSessions.get(uniqueKey);
+                            if (sessions == null) {
+                                sessions = new ArrayList<DLightSession>();
+                            }
+                            if (!sessions.contains(session)) {
+                                sessions.add(session);
+                                sharedStoragesSessions.put(uniqueKey, sessions);
+                            }
+                        }
                         activeStorages.put(uniqueKey, uniqueStorages);
                         return newStorage;
                     } else {
                         newStorage = storage.createStorage(uniqueKey);
                         if (newStorage instanceof ProxyDataStorage) {
                             ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                            DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                            DataStorage backendStorage = getDataStorage(session, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                             proxyStorage.attachTo(backendStorage);
                             uniqueStorages = activeStorages.get(uniqueKey);
                         }
@@ -215,6 +376,16 @@ public final class DataStorageManager {
                             uniqueStorages = new ArrayList<DataStorage>();
                         }
                         uniqueStorages.add(newStorage);
+                        if (session != null) {
+                            List<DLightSession> sessions = sharedStoragesSessions.get(uniqueKey);
+                            if (sessions == null) {
+                                sessions = new ArrayList<DLightSession>();
+                            }
+                            if (!sessions.contains(session)) {
+                                sessions.add(session);
+                                sharedStoragesSessions.put(uniqueKey, sessions);
+                            }
+                        }
                         activeStorages.put(uniqueKey, uniqueStorages);
                         return newStorage;
                     }
@@ -227,7 +398,7 @@ public final class DataStorageManager {
                 DataStorage newStorage = ((PersistentDataStorageFactory<?>) storage).openStorage(uniqueKey);
                 if (newStorage instanceof ProxyDataStorage) {
                     ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                    DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    DataStorage backendStorage = getDataStorage(session, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                     proxyStorage.attachTo(backendStorage);
                     uniqueStorages = activeStorages.get(uniqueKey);
                 }
@@ -237,14 +408,24 @@ public final class DataStorageManager {
                         uniqueStorages = new ArrayList<DataStorage>();
                     }
                     uniqueStorages.add(newStorage);
+                    if (session != null) {
+                        List<DLightSession> sessions = sharedStoragesSessions.get(uniqueKey);
+                        if (sessions == null) {
+                            sessions = new ArrayList<DLightSession>();
+                        }
+                        if (!sessions.contains(session)) {
+                            sessions.add(session);
+                            sharedStoragesSessions.put(uniqueKey, sessions);
+                        }
+                    }
                     activeStorages.put(uniqueKey, uniqueStorages);
                     return newStorage;
                 }
-            }else if  (storage.getStorageTypes().contains(storageType)) {
+            } else if (storage.getStorageTypes().contains(storageType)) {
                 DataStorage newStorage = storage.createStorage();
                 if (newStorage instanceof ProxyDataStorage) {
                     ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
-                    DataStorage backendStorage = getDataStorage(uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                    DataStorage backendStorage = getDataStorage(session, uniqueKey, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
                     proxyStorage.attachTo(backendStorage);
                     uniqueStorages = activeStorages.get(uniqueKey);
                 }
@@ -254,6 +435,16 @@ public final class DataStorageManager {
                         uniqueStorages = new ArrayList<DataStorage>();
                     }
                     uniqueStorages.add(newStorage);
+                    if (session != null) {
+                        List<DLightSession> sessions = sharedStoragesSessions.get(uniqueKey);
+                        if (sessions == null) {
+                            sessions = new ArrayList<DLightSession>();
+                        }
+                        if (!sessions.contains(session)) {
+                            sessions.add(session);
+                            sharedStoragesSessions.put(uniqueKey, sessions);
+                        }
+                    }
                     activeStorages.put(uniqueKey, uniqueStorages);
                     return newStorage;
                 }
@@ -266,13 +457,13 @@ public final class DataStorageManager {
 //    private DataStorage getDataStorage(DataStorageType storageType) {
 //        return getDataStorageFor(lastSession, storageType, Collections.<DataTableMetadata>emptyList());
 //    }
-    private DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
+    private synchronized  DataStorage getDataStorageFor(DLightSession session, DataStorageType storageType, List<DataTableMetadata> tableMetadatas) {
         if (session == null) {
             return null;
         }
         DLightSessionAccessor accessor = DLightSessionAccessor.getDefault();
         if (accessor.isUsingSharedStorage(session)) {
-            return getDataStorage(accessor.getSharedStorageUniqueKey(session), storageType, tableMetadatas);
+            return getDataStorage(session, accessor.getSharedStorageUniqueKey(session), storageType, tableMetadatas);
         }
         List<DataStorage> activeSessionStorages = activeDataStorages.get(session);
         if (activeSessionStorages != null) {
@@ -300,6 +491,25 @@ public final class DataStorageManager {
                     activeSessionStorages.add(newStorage);
                     activeDataStorages.put(session, activeSessionStorages);
                     return newStorage;
+                }
+            }
+        }
+        if (perstistentDataStorageFactories != null) {
+            for (PersistentDataStorageFactory<?> storage : perstistentDataStorageFactories) {
+                //we should open here the persistente storage
+
+                if (storage.getStorageTypes().contains(storageType)) {
+                    DataStorage newStorage = storage.createStorage();
+                    if (newStorage != null) {
+                        if (newStorage instanceof ProxyDataStorage) {
+                            ProxyDataStorage proxyStorage = (ProxyDataStorage) newStorage;
+                            DataStorage backendStorage = getDataStorageFor(session, proxyStorage.getBackendDataStorageType(), proxyStorage.getBackendTablesMetadata());
+                            proxyStorage.attachTo(backendStorage);
+                        }
+                        newStorage.createTables(tableMetadatas);
+
+                        return newStorage;
+                    }
                 }
             }
         }

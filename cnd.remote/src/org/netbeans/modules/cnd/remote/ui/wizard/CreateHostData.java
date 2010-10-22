@@ -79,4 +79,9 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
     public void setPort(int port) {
         this.port = port;
     }
+
+    @Override
+    public String toString() {
+        return "CreateHostData " + hostName + ':' + port; // NOI18N
+    }
 }

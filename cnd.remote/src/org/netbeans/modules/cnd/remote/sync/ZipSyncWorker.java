@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -136,7 +137,7 @@ import org.openide.util.NbBundle;
 
     private static File getTemp() {
         String tmpPath = System.getProperty("java.io.tmpdir");
-        File tmpFile = new File(tmpPath);
+        File tmpFile = CndFileUtils.createLocalFile(tmpPath);
         return tmpFile.exists() ? tmpFile : null;
     }
 

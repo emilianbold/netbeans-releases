@@ -243,8 +243,10 @@ public class TestOutputListenerProvider implements OutputProcessor {
                                 String testClassName = m.group(1).replace('.', File.separatorChar) + ".java"; //NOI18N
                                 File testClassFile = new File(testDir, testClassName);
                                 FileObject testFileObject = FileUtil.toFileObject(testClassFile);
-                                classPath = ClassPath.getClassPath(testFileObject, ClassPath.EXECUTE);
-                                project = FileOwnerQuery.getOwner(testFileObject);
+                                if (testFileObject != null) {
+                                    classPath = ClassPath.getClassPath(testFileObject, ClassPath.EXECUTE);
+                                    project = FileOwnerQuery.getOwner(testFileObject);
+                                }
                             }
                             // call observers
                             for (TestOutputObserver o : observers) {

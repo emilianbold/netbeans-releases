@@ -201,7 +201,8 @@ final class WadlPanel implements WizardDescriptor.FinishablePanel {
                 templateWizard.putProperty(
                         WizardNewWadlStep.TEMP_WADLFILE, tempWADLFile);
                 //TODO
-                mTempWADLModel = getModel(FileUtil.toFileObject(tempWADLFile));
+                mTempWADLModel = getModel(FileUtil.toFileObject(FileUtil.
+                        normalizeFile( tempWADLFile)));
                 wiz.putProperty(
                         WizardNewWadlStep.TEMP_WADLMODEL, mTempWADLModel);
             } else {

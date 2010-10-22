@@ -67,10 +67,12 @@ import org.netbeans.modules.vmd.midp.propertyeditors.MidpPropertiesCategories;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorComboBox;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorListSelectCommand;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.common.DocumentSupport;
 import org.netbeans.modules.vmd.api.screen.display.ScreenDisplayPresenter;
+import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.netbeans.modules.vmd.midp.propertyeditors.PropertyEditorBooleanUC;
 import org.netbeans.modules.vmd.midp.screen.display.ListDisplayPresenter;
 import org.openide.util.NbBundle;
@@ -182,6 +184,20 @@ public final class ListCD extends ComponentDescriptor {
                 createSetterPresenter(),
                 ListCode.createListActionCodeNamePresenter (),
                 ListCode.createListActionCodeClassLevelPresenter (),
+                new RootCode.CodeComponentDependencyPresenter() {
+                    protected void collectRequiredComponents(Collection<DesignComponent> requiredComponents) {
+                        PropertyValue selectCommand = getComponent ().readProperty (PROP_SELECT_COMMAND);
+                        if (selectCommand.getComponent() != null)
+                            requiredComponents.add (selectCommand.getComponent ());
+                        PropertyValue elements = getComponent().readProperty(PROP_ELEMENTS);
+                        final List<PropertyValue> array = elements.getArray();
+                        for (PropertyValue element : array) {
+                            DesignComponent component = element.getComponent();
+                            if (component != null)
+                                requiredComponents.add(component);
+                        }
+                    }
+                },
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SELECT_COMMAND),
                 // screen

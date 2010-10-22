@@ -161,6 +161,16 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
                             initializeWithDbConnections();
                             // notify user about result of server selection:
                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(DatabaseTablesPanel.class, "WRN_Server_Does_Not_Support_DS")));
+                        } else {
+                            // #190671 - because of hacks around server set in maven
+                            // listen and update data sources after server was set here again.
+                            // In theory this should not be necessary and
+                            // j2ee.common.DatasourceUIHelper.performServerSelection should have done
+                            // everything necessary but often at that time
+                            // PersistenceProviderSupplier.supportsDefaultProvider() is still false
+                            // (server change was not propagated there yet). In worst case combo model will be set twice:
+                            datasourceComboBox.setModel(new DefaultComboBoxModel());
+                            initializeWithDatasources();
                         }
                     }
             }

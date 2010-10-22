@@ -53,6 +53,7 @@ import org.netbeans.modules.web.core.syntax.spi.ImplicitObjectProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
+import static org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.Type.*;
 
 /**
  * @author ads
@@ -107,7 +108,7 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
         public ApplicationObject(){
             super("application");                         //NOI18N
             setType(OBJECT_TYPE);
-            setClazz( Object.class.getCanonicalName());
+            setClazz("javax.servlet.ServletContext");
         }
     }
     
@@ -139,7 +140,7 @@ public class JsfImplicitObjectProvider implements ImplicitObjectProvider {
         public SessionObject(){
             super("session");                                    //NOI18N
             setType(OBJECT_TYPE);
-            setClazz( Object.class.getCanonicalName() );
+            setClazz("javax.servlet.http.HttpSession");
         }
     }
     

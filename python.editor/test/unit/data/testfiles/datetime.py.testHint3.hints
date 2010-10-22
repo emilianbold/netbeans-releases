@@ -1,7 +1,0 @@
-    # Now compute how many 4-year cycles precede it.
-    
-HINT:Surround With...
-FIX:Surround With Try/Except
-FIX:Surround With Try/Except/Finally
-FIX:Surround With Try/Finally
-^    # And now how many single years.  Again n1 can be 4, and again meaning

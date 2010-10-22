@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -549,7 +550,7 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
                         parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
                         for (Tree t: trees) {
-                            if (t.getKind() == Tree.Kind.CLASS) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                                 if (((ClassTree) t).getSimpleName().toString().equals(filesToMove.get(j).getName())) {
                                     classes.put(filesToMove.get(j), ElementHandle.create(parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
                                     return ;

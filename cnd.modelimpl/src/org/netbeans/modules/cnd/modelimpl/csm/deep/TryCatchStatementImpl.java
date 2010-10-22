@@ -58,24 +58,31 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * CsmTryCatchStatement implementation
  * @author Vladimir Kvashin
  */
-public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement, CsmScope {
+public final class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement, CsmScope {
     
     private StatementBase tryStatement;
     private List<CsmExceptionHandler> handlers;
 
-    public TryCatchStatementImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
+    private TryCatchStatementImpl(AST ast, CsmFile file, CsmScope scope, boolean global) {
         super(ast, file, scope);
         render(ast, global);
     }
+
+    public static TryCatchStatementImpl create(AST ast, CsmFile file, CsmScope scope, boolean global) {
+        return new TryCatchStatementImpl(ast, file, scope, global);
+    }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.TRY_CATCH;
     }
 
+    @Override
     public CsmStatement getTryStatement() {
         return tryStatement;
     }
     
+    @Override
     public List<CsmExceptionHandler> getHandlers() {
         return handlers;
     }
@@ -99,12 +106,13 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
                     tryStatement = AstRenderer.renderStatement(token, getContainingFile(), this);
                     break;
                 case CPPTokenTypes.CSM_CATCH_CLAUSE:
-                    handlers.add(new ExceptionHandlerImpl(token, getContainingFile(), this, global));
+                    handlers.add(ExceptionHandlerImpl.create(token, getContainingFile(), this, global));
                     break;
             }
         }
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
 	Collection<CsmScopeElement> elements = new ArrayList<CsmScopeElement>();
         if (tryStatement != null) {

@@ -91,7 +91,7 @@ public final class JavaFileFilterQuery {
     }
     
     
-    void setTestFileFilter(JavaFileFilterImplementation testFilter) {
+    static void setTestFileFilter(JavaFileFilterImplementation testFilter) {
         unitTestFilter = testFilter;
     }
     

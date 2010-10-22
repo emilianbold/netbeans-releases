@@ -229,9 +229,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
 
         topFolderPanel.setLayout(new java.awt.GridBagLayout());
 
-        topDirectoryLabel.setDisplayedMnemonic('o');
         topDirectoryLabel.setLabelFor(topDirectoryTextField);
-        topDirectoryLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(topDirectoryLabel, org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.topDirectoryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -276,9 +275,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
 
         defaultsPanel.setLayout(new java.awt.GridBagLayout());
 
-        ownerLabel.setDisplayedMnemonic('w');
         ownerLabel.setLabelFor(ownerTextField);
-        ownerLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ownerLabel, org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 14;
         gridBagConstraints.gridy = 2;
@@ -300,9 +298,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         defaultsPanel.add(ownerTextField, gridBagConstraints);
         ownerTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
-        groupLabel.setDisplayedMnemonic('G');
         groupLabel.setLabelFor(groupTextField);
-        groupLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.groupLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(groupLabel, org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.groupLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 14;
         gridBagConstraints.gridy = 3;
@@ -342,9 +339,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(8, 16, 0, 0);
         defaultsPanel.add(jLabel4, gridBagConstraints);
 
-        filePermLabel.setDisplayedMnemonic('i');
         filePermLabel.setLabelFor(rWECheckBoxRegR1);
-        filePermLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filePermLabel, org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
@@ -352,9 +348,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 16, 0, 0);
         defaultsPanel.add(filePermLabel, gridBagConstraints);
 
-        exePermLabel.setDisplayedMnemonic('x');
         exePermLabel.setLabelFor(rWECheckBoxExeR1);
-        exePermLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(exePermLabel, org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;

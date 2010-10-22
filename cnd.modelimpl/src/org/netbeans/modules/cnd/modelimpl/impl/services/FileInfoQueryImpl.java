@@ -320,7 +320,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                 if (guard != null) {
                     if (guard instanceof APTToken) {
                         APTToken aptGuard = ((APTToken) guard);
-                        return new OffsetableBase(file, aptGuard.getOffset(), aptGuard.getEndOffset());
+                        return OffsetableBase.create(file, aptGuard.getOffset(), aptGuard.getEndOffset());
                     }
                 }
             } catch (FileNotFoundException ex) {

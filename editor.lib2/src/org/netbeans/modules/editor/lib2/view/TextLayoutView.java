@@ -44,17 +44,15 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
-import java.awt.font.TextLayout;
-
-
 /**
- * View capable of creating text layout used by {@link TextLayoutCache}.
+ * View capable of creating/dropping a text layout.
  * 
  * @author Miloslav Metelka
  */
-
 public interface TextLayoutView {
 
-    TextLayout createTextLayout();
+    void initTextLayout();
+    
+    void releaseTextLayout();
 
 }

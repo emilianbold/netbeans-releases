@@ -63,28 +63,35 @@ import org.openide.util.CharSequences;
  * @author Vladimir Kvasihn,
  *         Vladimir Voskresensky
  */
-public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
+public final class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implements CsmInclude {
     private final CharSequence name;
     private final boolean system;
     
     private CsmUID<CsmFile> includeFileUID;
     
-    public IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
+    private IncludeImpl(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
         super(containingFile, inclPos);
         this.name = FileNameCache.getManager().getString(name);
         this.system = system;
         this.includeFileUID = UIDCsmConverter.fileToUID(includeFile);
         assert (includeFileUID != null || includeFile == null) : "got " + includeFileUID + " for " + includeFile;
     }
+
+    public static IncludeImpl create(String name, boolean system, CsmFile includeFile, CsmFile containingFile, CsmOffsetable inclPos) {
+        return new IncludeImpl(name, system, includeFile, containingFile, inclPos);
+    }
     
+    @Override
     public CsmFile getIncludeFile() {
         return _getIncludeFile();
     }
 
+    @Override
     public CharSequence getIncludeName() {
         return name;
     }
 
+    @Override
     public boolean isSystem() {
         return system;
     }
@@ -114,7 +121,7 @@ public class IncludeImpl extends OffsetableIdentifiableBase<CsmInclude> implemen
         return retValue;
     }
     
-    private static final boolean equals(IncludeImpl one, IncludeImpl other) {
+    private static boolean equals(IncludeImpl one, IncludeImpl other) {
         // compare only name, type and start offset
         return (CharSequences.comparator().compare(one.getIncludeName(),other.getIncludeName()) == 0) &&
                 (one.system == other.system) && 

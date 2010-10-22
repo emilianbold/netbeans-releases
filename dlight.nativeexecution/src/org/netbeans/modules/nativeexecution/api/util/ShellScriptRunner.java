@@ -142,7 +142,7 @@ public final class ShellScriptRunner {
         shellProcess = pb.call();
 
         if (shellProcess.getState() == State.ERROR) {
-            throw new IOException("Cannot start process"); // NOI18N
+            throw new IOException("Cannot start " + info.getShell() + " -s"); // NOI18N
         }
 
         RequestProcessor rp = new RequestProcessor("Shell runner", 3); // NOI18N

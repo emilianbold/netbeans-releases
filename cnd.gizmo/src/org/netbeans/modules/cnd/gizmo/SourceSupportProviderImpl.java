@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.spi.SourceFileInfoProvider.SourceFileInfo;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
@@ -83,8 +84,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
     }
 
     public void showSource(SourceFileInfo lineInfo, boolean isReadOnly) {
-        File f = new File(lineInfo.getFileName());
-        FileObject fo = FileUtil.toFileObject(f);
+        FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(lineInfo.getFileName()));
         try {
             new ROEditor(fo).open();
         } catch (DataObjectNotFoundException e) {
@@ -138,16 +138,15 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
         }
         String fileName = lineInfo.getFileName();
         try {
-            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(fileName)));
-            if (fo == null) {
+            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
+            if (fo == null || ! fo.isValid()) {
                 InputStream inputStream = null;
                 try {
                     URI uri = new URI(lineInfo.getFileName());
                     if (uri.getScheme() != null && uri.getScheme().equals("file")) { // NOI18N
-
-                        fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(uri)));
+                        fo = CndFileUtils.toFileObject(FileUtil.normalizeFile(new File(uri))); // XXX:fullRemote
                     }
-                    if (fo == null) {
+                    if (fo == null || !fo.isValid()) {
                         String rowPath = uri.getRawPath();
                         int lastIndexOfSeparator = rowPath.lastIndexOf('/'); // NOI18N
                         if (lastIndexOfSeparator == -1) {
@@ -174,7 +173,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                         writer.write(buffer.toString());
                         writer.flush();
                         writer.close();
-                        fo = FileUtil.toFileObject(FileUtil.normalizeFile(tempFile));
+                        fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(tempFile));
                     }
                 } catch (Throwable e) {
                     //catch it and show message that it is impossible to open source file
@@ -185,7 +184,7 @@ public class SourceSupportProviderImpl implements SourceSupportProvider {
                 }
             }
 
-            if (fo == null) {
+            if (fo == null || !fo.isValid()) {
                 StatusDisplayer.getDefault().setStatusText(loc("SourceSupportProviderImpl.CannotOpenFile", fileName)); // NOI18N
                 return;
             }

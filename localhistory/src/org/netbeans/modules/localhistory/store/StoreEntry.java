@@ -162,10 +162,26 @@ public abstract class StoreEntry {
     }
 
     static OutputStream createStoreFileOutputStream(File storeFile) throws FileNotFoundException, IOException {
-        ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
-        ZipEntry entry = new ZipEntry(storeFile.getName());
-        zos.putNextEntry(entry);
-        return zos;
+        int retry = 0;
+        while (true) {
+            try {
+                ZipOutputStream zos = new ZipOutputStream(new BufferedOutputStream(new FileOutputStream(storeFile)));
+                ZipEntry entry = new ZipEntry(storeFile.getName());
+                zos.putNextEntry(entry);
+                return zos;
+            } catch (IOException ex) {
+                retry++;
+                if (retry > 7) {
+                    throw ex;
+                }
+                try {
+                    Thread.sleep(retry * 34);
+                } catch (InterruptedException iex) {
+                    throw ex;
+                }
+            }
+        }
+
     }
         
     abstract OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException;

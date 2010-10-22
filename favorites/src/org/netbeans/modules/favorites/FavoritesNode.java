@@ -45,9 +45,7 @@
 package org.netbeans.modules.favorites;
 
 import java.awt.Image;
-import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
-import java.awt.dnd.DnDConstants;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -121,6 +119,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
     
+    @Override
     public int getNodesCount() {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -130,6 +129,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
     
+    @Override
     public Node[] getNodes() {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -139,6 +139,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }        
     }
 
+    @Override
     public int indexOf(final Node node) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -155,6 +156,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }                
     }
 
+    @Override
     public void reorder() {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -162,6 +164,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void reorder(int[] perm) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -169,6 +172,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void move(int x, int y) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -176,6 +180,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void exchange(int x, int y) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -183,6 +188,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void moveUp(int x) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -190,6 +196,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void moveDown(int x) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -197,6 +204,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void addChangeListener(final ChangeListener chl) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -204,6 +212,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         }
     }
 
+    @Override
     public void removeChangeListener(final ChangeListener chl) {
         Index ind = getOriginal().getCookie(Index.class);
         if (ind != null) {
@@ -298,6 +307,7 @@ public final class FavoritesNode extends FilterNode implements Index {
 
         /** Return a node for the current project.
         */
+        @Override
         public Node getNode () {
             return FavoritesNode.getNode ();
         }
@@ -317,22 +327,27 @@ public final class FavoritesNode extends FilterNode implements Index {
             VisibilityQuery.getDefault().addChangeListener(weak);
         }
         
+        @Override
         public boolean acceptFileObject(FileObject fo) {
             return VisibilityQuery.getDefault().isVisible(fo);
         }
 
+        @Override
         public boolean acceptDataObject(DataObject obj) {
             return acceptFileObject(obj.getPrimaryFile());
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             support.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             support.removeChangeListener(listener);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             support.fireChange();
         }
@@ -621,7 +636,12 @@ public final class FavoritesNode extends FilterNode implements Index {
 
         @Override
         public Transferable paste() throws IOException {
-            Actions.Add.addToFavorites(Arrays.asList(dos));
+            Actions.RP.post(new Runnable () {
+                @Override
+                public void run() {
+                    Actions.Add.addToFavorites(Arrays.asList(dos));
+                }
+            });
             return null;
         }
 

@@ -90,12 +90,15 @@ import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.packaging.DummyPackager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -121,13 +124,15 @@ public class ConfigurationMakefileWriter {
 
     public void writeMissingMakefiles() {
         Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-        long xmlFileTimeStamp = new File(new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.CONFIGURATIONS_XML).lastModified();
+        long xmlFileTimeStamp = CndFileUtils.createLocalFile(
+                CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER),
+                MakeConfiguration.CONFIGURATIONS_XML).lastModified();
         for (MakeConfiguration conf : okConfs) {
-            File file = new File(getMakefilePath(conf));
+            File file = CndFileUtils.createLocalFile(getMakefilePath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writeMakefileConf(conf);
             }
-            file = new File(getPackageScriptPath(conf));
+            file = CndFileUtils.createLocalFile(getPackageScriptPath(conf));
             if (!file.exists() || file.lastModified() < xmlFileTimeStamp) {
                 writePackagingScript(conf);
             }
@@ -204,7 +209,7 @@ public class ConfigurationMakefileWriter {
             }
         }
 
-        File folder = new File(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
+        File folder = CndFileUtils.createLocalFile(projectDescriptor.getBaseDir(), MakeConfiguration.NBPROJECT_FOLDER);
         File[] children = folder.listFiles();
         if (children != null) {
             for (int i = 0; i < children.length; i++) {
@@ -405,6 +410,7 @@ public class ConfigurationMakefileWriter {
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
         bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
+        bw.write("PROC=proc\n"); // NOI18N
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
@@ -739,7 +745,19 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 boolean dMake = isDMake(compilerSet);
-                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
+                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                FileObject fileObject = items[i].getFileObject();
+                if(fileObject != null) {
+                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                        } else {
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        }
+                    }
+                }
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -769,7 +787,7 @@ public class ConfigurationMakefileWriter {
                         } else {
                             command += compiler.getDescriptor().getOutputObjectFileFlags() + target + " "; // NOI18N
                         }
-                        command += CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                        command += file;
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
@@ -812,6 +830,8 @@ public class ConfigurationMakefileWriter {
                 }
                 bw.write("\t" + command + "\n"); // NOI18N
             }
+
+            writeProCTargets(projectDescriptor, conf, bw);
         }
     }
 
@@ -841,7 +861,19 @@ public class ConfigurationMakefileWriter {
                             continue;
                         }
                         boolean dMake = isDMake(compilerSet);
-                        file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
+                        file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                        FileObject fileObject = items[i].getFileObject();
+                        if(fileObject != null) {
+                            if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                                    MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                    file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                                } else {
+                                    MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                    file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                                }
+                            }
+                        }
                         command = ""; // NOI18N
                         comment = null;
                         additionalDep = null;
@@ -865,7 +897,7 @@ public class ConfigurationMakefileWriter {
                                 } else {
                                     command += compiler.getDescriptor().getOutputObjectFileFlags() + target + " "; // NOI18N
                                 }
-                                command += CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                                command += file;
                             }
                             additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                         } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
@@ -907,6 +939,8 @@ public class ConfigurationMakefileWriter {
             }
 
             writeCompileTargetsWithoutMain(projectDescriptor, conf, bw);
+            
+            writeProCTargets(projectDescriptor, conf, bw);
         }
     }
 
@@ -933,7 +967,19 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 boolean dMake = isDMake(compilerSet);
-                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath()));
+                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                FileObject fileObject = items[i].getFileObject();
+                if(fileObject != null) {
+                    if("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                        if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                            MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                        } else {
+                            MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                            file = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                        }
+                    }
+                }
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -968,7 +1014,7 @@ public class ConfigurationMakefileWriter {
                         } else {
                             command += compiler.getDescriptor().getOutputObjectFileFlags() + nomainTarget + " "; // NOI18N
                         }
-                        command += CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                        command += file;
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
                 } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
@@ -1015,6 +1061,101 @@ public class ConfigurationMakefileWriter {
                 bw.write("\tfi\n"); // NOI18N
             }
             bw.write("\n"); // NOI18N
+        }
+    }
+
+    public static void writeProCTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
+        Item[] items = projectDescriptor.getProjectItems();
+        if (conf.isCompileConfiguration()) {
+            String target = null;
+            String folders = null;
+            String file = null;
+            String command = null;
+            String comment = null;
+            String additionalDep = null;
+            for (int i = 0; i < items.length; i++) {
+                Item item = items[i];
+                FileObject fileObject = item.getFileObject();
+                if(fileObject == null) {
+                    continue;
+                }
+                if(!"pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                    continue;
+                }
+                final Folder folder = item.getFolder();
+                if (folder.isTest() || folder.isTestLogicalFolder() || folder.isTestRootFolder()) {
+                    continue;
+                }
+                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
+                if (itemConfiguration.getExcluded().getValue()) {
+                    continue;
+                }
+                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if (compilerSet == null) {
+                    continue;
+                }
+                boolean dMake = isDMake(compilerSet);
+                file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, item.getPath(true)));
+                command = ""; // NOI18N
+                comment = null;
+                additionalDep = null;
+                if (itemConfiguration.isCompilerToolConfiguration()) {
+                    CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                    if(customToolConfiguration != null) {
+                        if (customToolConfiguration.getModified()) {
+                            //Fix for #180918: Multiple make targets incompatible with GNU make
+                            if (dMake) {
+                                target = customToolConfiguration.getOutputs().getValue(" + "); // NOI18N
+                            } else {
+                                target = customToolConfiguration.getOutputs().getValue();
+                            }
+                            command = customToolConfiguration.getCommandLine().getValue();
+                            comment = customToolConfiguration.getDescription().getValue();
+                            additionalDep = customToolConfiguration.getAdditionalDependencies().getValue();
+                        } else {
+                            comment = "Pro*C Preprocessor"; // NOI18N
+                            command = "${PROC} lines=yes iname="; // NOI18N
+                            command += file;
+                            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                                command += " code=cpp parse=partial"; // NOI18N
+                            }
+                            command += " sys_include=\\(${CND_SYSINCLUDES_C_${CND_CONF}}\\)"; // NOI18N
+                            command += " oname="; // NOI18N
+                            if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                                MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                            } else {
+                                MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                            }
+                            command += target;
+                        }
+                    }
+                } else {
+                    assert false;
+                }
+                folders = CndPathUtilitities.getDirName(target);
+                bw.write("\n"); // NOI18N
+
+                bw.write(target + ": "); // NOI18N
+                // See IZ #151465 for explanation why Makefile is listed as dependency.
+                if (conf.getRebuildPropChanged().getValue()) {
+                    bw.write("nbproject/Makefile-${CND_CONF}.mk "); // NOI18N
+                }
+                if (additionalDep != null) {
+                    bw.write(file + " " + additionalDep + "\n"); // NOI18N
+                } else {
+                    bw.write(file + "\n"); // NOI18N
+                }
+
+                if (folders != null) {
+                    bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N
+                }
+                if (comment != null) {
+                    bw.write("\t@echo " + comment + "\n"); // NOI18N
+                }
+                bw.write("\t" + command + "\n"); // NOI18N
+            }
         }
     }
 
@@ -1136,8 +1277,32 @@ public class ConfigurationMakefileWriter {
                 if (itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && itemConfiguration.getCustomToolConfiguration().getModified()) {
-                    bw.write("\t${RM} " + itemConfiguration.getCustomToolConfiguration().getOutputs().getValue() + "\n"); // NOI18N
+                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                    if(itemConfiguration.getCustomToolConfiguration().getModified()) {
+                        bw.write("\t${RM} " + itemConfiguration.getCustomToolConfiguration().getOutputs().getValue() + "\n"); // NOI18N
+                    }
+                } else if(itemConfiguration.isCompilerToolConfiguration()) {
+                    CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
+                    if (customToolConfiguration != null) {
+                        FileObject fileObject = items[i].getFileObject();
+                        if (fileObject != null) {
+                            if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                                CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                                if (compilerSet != null) {
+                                    String file = CndPathUtilitities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
+                                    String target;
+                                    if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                                        MIMEExtensions ccExtensions = MIMEExtensions.get("text/x-c++"); // NOI18N
+                                        target = file.substring(0, file.length() - 2) + ccExtensions.getDefaultExtension();
+                                    } else {
+                                        MIMEExtensions cExtensions = MIMEExtensions.get("text/x-c"); // NOI18N
+                                        target = file.substring(0, file.length() - 2) + cExtensions.getDefaultExtension();
+                                    }
+                                    bw.write("\t${RM} " + target + "\n"); // NOI18N
+                                }
+                            }
+                        }
+                    }
                 }
             }
         } else if (conf.isMakefileConfiguration()) {

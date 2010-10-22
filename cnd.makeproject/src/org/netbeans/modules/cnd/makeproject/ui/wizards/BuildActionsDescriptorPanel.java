@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel just asking for basic info.
  */
-final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMakeProjectWizardIterator.Name, ChangeListener {
+final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
 
     private WizardDescriptor wizardDescriptor;
     private BuildActionsPanel component;
@@ -68,7 +68,8 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
         name = NbBundle.getMessage(BuildActionsDescriptorPanel.class, "BuildActionsName"); // NOI18N
     }
 
-    public Component getComponent() {
+    @Override
+    public BuildActionsPanel getComponent() {
         if (component == null) {
             component = new BuildActionsPanel(this);
             component.setName(name);
@@ -76,6 +77,7 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
         return component;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -84,12 +86,14 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
         return wizardDescriptor;
     }
 
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP2"); // NOI18N
     }
 
+    @Override
     public boolean isValid() {
-        boolean valid = ((BuildActionsPanel) getComponent()).valid(wizardDescriptor);
+        boolean valid = getComponent().valid(wizardDescriptor);
         if (valid) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
@@ -97,12 +101,14 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
     }
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -110,28 +116,30 @@ final class BuildActionsDescriptorPanel implements WizardDescriptor.Panel, NewMa
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            it.next().stateChanged(ev);
         }
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
 
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        getComponent().read(wizardDescriptor);
         initialized = true;
     }
 
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 }

@@ -95,9 +95,8 @@ import org.openide.util.NbBundle;
 
         setLayout(new java.awt.GridBagLayout());
 
-        directoryLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/runprofiles/Bundle").getString("DirectoryChooserPanel.directoryLabel.mn").charAt(0));
         directoryLabel.setLabelFor(directoryTextField);
-        directoryLabel.setText(org.openide.util.NbBundle.getMessage(DirectoryChooserPanel.class, "DirectoryChooserPanel.directoryLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(directoryLabel, org.openide.util.NbBundle.getMessage(DirectoryChooserPanel.class, "DirectoryChooserPanel.directoryLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
@@ -113,8 +112,7 @@ import org.openide.util.NbBundle;
         gridBagConstraints.insets = new java.awt.Insets(8, 4, 8, 0);
         add(directoryTextField, gridBagConstraints);
 
-        browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/runprofiles/Bundle").getString("DirectoryChooserPanel.browseButton.mn").charAt(0));
-        browseButton.setText(org.openide.util.NbBundle.getMessage(DirectoryChooserPanel.class, "DirectoryChooserPanel.browseButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(DirectoryChooserPanel.class, "DirectoryChooserPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseButtonActionPerformed(evt);

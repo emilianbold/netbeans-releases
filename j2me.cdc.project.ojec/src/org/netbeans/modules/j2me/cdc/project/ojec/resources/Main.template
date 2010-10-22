@@ -1,0 +1,37 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import javax.microedition.xlet.*;
+
+/**
+ * @author ${user}
+ */
+
+/*  If you need to change execution model, e.g. using main method, 
+    change executable class and execution method using Project properties -> Running -> Main class
+*/
+// Create the ${name} class.
+public class ${name} implements Xlet {
+
+    // Initialize the xlet.
+    public void initXlet(XletContext context) {
+    }
+
+    // Start the xlet.
+    public void startXlet() {
+    }
+
+    // Pause the xlet
+    public void pauseXlet() {
+    }
+
+    // Destroy the xlet
+    public void destroyXlet(boolean unconditional) {
+    }
+}

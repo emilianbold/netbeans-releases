@@ -55,10 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
@@ -79,7 +79,7 @@ import org.openide.util.CharSequences;
  *
  * @author Sergey Grinev
  */
-public final class DiskRepositoryManager implements Repository, RepositoryWriter {
+public class DiskRepositoryManager implements Repository, RepositoryWriter {
 
     private final Map<Integer, Unit> units;
     private final RepositoryQueue queue;
@@ -101,13 +101,13 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
     }
 
     @Override
-    public SortedMap<?,?> getStorage(Key key, String storageID) {
+    public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
         try {
-            UnitImpl impl = (UnitImpl) getCreateUnit(key);
-            return impl.getDatabase().getMap(storageID);
+            UnitImpl impl = (UnitImpl) getCreateUnit(unitKey);
+            return impl.getDatabaseTable(tableID);
         } catch (Throwable ex) {
             RepositoryListenersManager.getInstance().fireAnException(
-                    getUnitNameSafe(key), new RepositoryException(ex));
+                    getUnitNameSafe(unitKey), new RepositoryException(ex));
         }
         return null;
     }
@@ -146,7 +146,7 @@ public final class DiskRepositoryManager implements Repository, RepositoryWriter
                 if (unit == null) {
                     if (RepositoryListenersManager.getInstance().fireUnitOpenedEvent(unitName)) {
                         RepositoryTranslatorImpl.loadUnitIndex(unitName);
-                        unit = new UnitImpl(unitName);
+                        unit = new UnitImpl(unitId, unitName);
                         units.put(unitId, unit);
                     }
                 }

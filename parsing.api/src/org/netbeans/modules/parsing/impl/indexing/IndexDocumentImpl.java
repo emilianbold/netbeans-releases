@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-
 /**
  *
  * @author Tomas Zezula

@@ -56,6 +56,13 @@ public class AstNodeTest extends TestBase {
         super(testName);
     }
 
+
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+    
     public static Test xsuite() {
         TestSuite suite = new TestSuite();
         suite.addTest(new AstNodeTest(""));

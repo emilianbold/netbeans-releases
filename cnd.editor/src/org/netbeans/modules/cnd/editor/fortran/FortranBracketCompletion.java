@@ -65,16 +65,14 @@ import org.netbeans.modules.cnd.utils.MIMENames;
  * The methods of the class are called from different actions as
  * KeyTyped, DeletePreviousChar.
  */
-public class FortranBracketCompletion {
-
-    private FortranBracketCompletion() {
-    }
+public enum FortranBracketCompletion {
+    INSTANCE;
 
     /**
      * A hook method called after a character was inserted into the
      * document. The function checks for special characters for
      * completion ()[]'"{} and other conditions and optionally performs
-     * changes to the doc and or caret (complets braces, moves caret,
+     * changes to the doc and or caret (completes braces, moves caret,
      * etc.)
      * @param doc the document where the change occurred
      * @param dotPos position of the character insertion
@@ -82,7 +80,7 @@ public class FortranBracketCompletion {
      * @param ch the character that was inserted
      * @throws BadLocationException if dotPos is not correct
      */
-    static void charInserted(BaseDocument doc,
+    void charInserted(BaseDocument doc,
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
@@ -107,7 +105,7 @@ public class FortranBracketCompletion {
         }
     }
 
-    private static Token<FortranTokenId> getToken(BaseDocument doc, int dotPos){
+    private Token<FortranTokenId> getToken(BaseDocument doc, int dotPos){
         FortranCodeStyle.get(doc).setupLexerAttributes(doc);
         TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, dotPos);
         if (ts == null) {
@@ -120,7 +118,7 @@ public class FortranBracketCompletion {
         return ts.token();
     }
 
-    private static TokenSequence<FortranTokenId> getTokenSequence(BaseDocument doc, int dotPos){
+    private TokenSequence<FortranTokenId> getTokenSequence(BaseDocument doc, int dotPos){
         FortranCodeStyle.get(doc).setupLexerAttributes(doc);
         TokenSequence<FortranTokenId> ts = CndLexerUtilities.getFortranTokenSequence(doc, dotPos);
         if (ts == null) {
@@ -134,102 +132,17 @@ public class FortranBracketCompletion {
     }
 
 
-//    /**
-//     * Hook called after a character *ch* was backspace-deleted from
-//     * *doc*. The function possibly removes bracket or quote pair if
-//     * appropriate.
-//     * @param doc the document
-//     * @param dotPos position of the change
-//     * @param caret caret
-//     * @param ch the character that was deleted
-//     */
-//    static void charBackspaced(BaseDocument doc,
-//            int dotPos,
-//            Caret caret,
-//            char ch) throws BadLocationException {
-//        if (completionSettingEnabled()) {
-//            if (ch == '(') {
-//                Token<FortranTokenId> token = getToken(doc, dotPos);
-//                if (token != null && token.id() == FortranTokenId.RPAREN && tokenBalance(doc, FortranTokenId.LPAREN, FortranTokenId.RPAREN, dotPos) != 0) {
-//                    doc.remove(dotPos, 1);
-//                }
-//            } else if (ch == '\"') {
-//                char match[] = doc.getChars(dotPos, 1);
-//                if (match != null && match[0] == '\"') {
-//                    doc.remove(dotPos, 1);
-//                }
-//            } else if (ch == '\'') {
-//                char match[] = doc.getChars(dotPos, 1);
-//                if (match != null && match[0] == '\'') {
-//                    doc.remove(dotPos, 1);
-//                }
-//            }
-//        }
-//    }
-
-//    /**
-//     * Returns position of the first unpaired closing paren/brace/bracket from the caretOffset
-//     * till the end of caret row. If there is no such element, position after the last non-white
-//     * character on the caret row is returned.
-//     */
-//    @SuppressWarnings("unchecked")
-//    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset) throws BadLocationException {
-//        int rowEnd = Utilities.getRowLastNonWhite(doc, caretOffset);
-//        if (rowEnd == -1 || caretOffset >= rowEnd) {
-//            return caretOffset;
-//        }
-//        rowEnd += 1;
-//        int parenBalance = 0;
-//
-//        TokenSequence<FortranTokenId> ts = getTokenSequence(doc, caretOffset);
-//        if (ts == null) {
-//            return caretOffset;
-//        }
-//        while (ts.moveNext() && ts.offset() < rowEnd) {
-//            switch (ts.token().id()) {
-//                case LPAREN:
-//                    parenBalance++;
-//                    break;
-//                case RPAREN:
-//                    if (parenBalance-- == 0) {
-//                        return ts.offset();
-//                    }
-//                    break;
-//            }
-//        }
-//        return rowEnd;
-//    }
-
-//    /**
-//     * Counts the number of braces starting at dotPos to the end of the
-//     * document. Every occurence of { increses the count by 1, every
-//     * occurrence of } decreses the count by 1. The result is returned.
-//     * @return The number of { - number of } (>0 more { than } ,<0 more } than {)
-//     */
-//    /**
-//     * The same as braceBalance but generalized to any pair of matching
-//     * tokens.
-//     * @param open the token that increses the count
-//     * @param close the token that decreses the count
-//     */
-//    private static int tokenBalance(BaseDocument doc, FortranTokenId open, FortranTokenId close, int caretOffset)
-//            throws BadLocationException {
-//        BalanceTokenProcessor tp = new BalanceTokenProcessor(open, close);
-//        CndTokenUtilities.processTokens(tp, doc, 0, doc.getLength());
-//        return tp.getBalance();
-//    }
-
     /**
      * A hook to be called after closing bracket ) or ] was inserted into
      * the document. The method checks if the bracket should stay there
-     * or be removed and some exisitng bracket just skipped.
+     * or be removed and some existing bracket just skipped.
      *
      * @param doc the document
      * @param dotPos position of the inserted bracket
      * @param caret caret
      * @param theBracket the bracket character ']' or ')'
      */
-    private static void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
+    private void skipClosingBracket(BaseDocument doc, Caret caret, char theBracket)
             throws BadLocationException {
         int caretOffset = caret.getDot();
         if (isSkipClosingBracket(doc, caretOffset, FortranTokenId.RPAREN)) {
@@ -247,7 +160,7 @@ public class FortranBracketCompletion {
      * @param doc document into which typing was done.
      * @param caretOffset
      */
-    static boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, FortranTokenId bracketId)
+    private boolean isSkipClosingBracket(BaseDocument doc, int caretOffset, FortranTokenId bracketId)
             throws BadLocationException {
         // First check whether the caret is not after the last char in the document
         // because no bracket would follow then so it could not be skipped.
@@ -372,7 +285,7 @@ public class FortranBracketCompletion {
      * @param caret caret
      * @param theBracket the bracket that was inserted
      */
-    private static void completeOpeningBracket(BaseDocument doc,
+    private void completeOpeningBracket(BaseDocument doc,
             int dotPos,
             Caret caret,
             char theBracket) throws BadLocationException {
@@ -383,7 +296,7 @@ public class FortranBracketCompletion {
         }
     }
 
-    private static boolean isEscapeSequence(BaseDocument doc, int dotPos) throws BadLocationException {
+    private boolean isEscapeSequence(BaseDocument doc, int dotPos) throws BadLocationException {
         if (dotPos <= 0) {
             return false;
         }
@@ -399,7 +312,7 @@ public class FortranBracketCompletion {
      * @param caret caret
      * @param theBracket the character that was inserted
      */
-    private static void completeQuote(BaseDocument doc, int dotPos, Caret caret,
+    private void completeQuote(BaseDocument doc, int dotPos, Caret caret,
             char theBracket)
             throws BadLocationException {
         if (isEscapeSequence(doc, dotPos)) {
@@ -428,7 +341,7 @@ public class FortranBracketCompletion {
      * @param doc the document
      * @param dotPos position to be tested
      */
-    private static boolean isCompletablePosition(BaseDocument doc, int dotPos)
+    private boolean isCompletablePosition(BaseDocument doc, int dotPos)
             throws BadLocationException {
         if (dotPos == doc.getLength()) {// there's no other character to test
             return true;
@@ -455,7 +368,7 @@ public class FortranBracketCompletion {
     /**
      * Returns true if bracket completion is enabled in options.
      */
-    private static boolean completionSettingEnabled() {
+    private boolean completionSettingEnabled() {
         Preferences prefs = MimeLookup.getLookup(MIMENames.FORTRAN_MIME_TYPE).lookup(Preferences.class);
         return prefs.getBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, true);
     }
@@ -464,7 +377,7 @@ public class FortranBracketCompletion {
      * Returns for an opening bracket or quote the appropriate closing
      * character.
      */
-    private static char matching(char theBracket) {
+    private char matching(char theBracket) {
         switch (theBracket) {
             case '(':
                 return ')';
@@ -475,16 +388,6 @@ public class FortranBracketCompletion {
         }
     }
 
-//    /**
-//     * posWithinString(doc, pos) iff position *pos* is within a string
-//     * literal in document doc.
-//     * @param doc the document
-//     * @param dotPos position to be tested
-//     */
-//    static boolean posWithinString(BaseDocument doc, int dotPos) {
-//        return posWithinQuotes(doc, dotPos, '\'', new FortranTokenId[]{FortranTokenId.STRING_LITERAL});
-//    }
-
     /**
      * Generalized posWithingString to any token and delimiting
      * character. It works for tokens are delimited by *quote* and
@@ -493,7 +396,7 @@ public class FortranBracketCompletion {
      * @param doc the document
      * @param dotPos position to be tested
      */
-    private static boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, FortranTokenId[] tokenIDs) {
+    private boolean posWithinQuotes(BaseDocument doc, int dotPos, char quote, FortranTokenId[] tokenIDs) {
         TokenSequence<FortranTokenId> cppTS = getTokenSequence(doc, dotPos);
         if (cppTS != null && matchIDs(cppTS.token().id(), tokenIDs)) {
             return (dotPos - cppTS.offset() == 1 || DocumentUtilities.getText(doc).charAt(dotPos - 1) != quote);
@@ -501,21 +404,7 @@ public class FortranBracketCompletion {
         return false;
     }
 
-//    static boolean posWithinAnyQuote(BaseDocument doc, int dotPos) {
-//        TokenSequence<FortranTokenId> cppTS = getTokenSequence(doc, dotPos - 1);
-//        if (cppTS != null) {
-//            switch (cppTS.token().id()) {
-//                case STRING_LITERAL:
-//                {
-//                    char ch = DocumentUtilities.getText(doc).charAt(dotPos - 1);
-//                    return (dotPos - cppTS.offset() == 1 || (ch != '\''));
-//                }
-//            }
-//        }
-//        return false;
-//    }
-
-    private static boolean isUnclosedStringAtLineEnd(BaseDocument doc, int dotPos, FortranTokenId[] tokenIDs) {
+    private boolean isUnclosedStringAtLineEnd(BaseDocument doc, int dotPos, FortranTokenId[] tokenIDs) {
         int lastNonWhiteOffset;
         try {
             lastNonWhiteOffset = Utilities.getRowLastNonWhite(doc, dotPos);
@@ -529,16 +418,7 @@ public class FortranBracketCompletion {
         return false;
     }
 
-//    static boolean matchIDs(TokenID toCheck, TokenID[] checkWith) {
-//        for (int i = checkWith.length - 1; i >= 0; i--) {
-//            if (toCheck == checkWith[i]) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-    static boolean matchIDs(FortranTokenId toCheck, FortranTokenId[] checkWith) {
+    private boolean matchIDs(FortranTokenId toCheck, FortranTokenId[] checkWith) {
         for (int i = checkWith.length - 1; i >= 0; i--) {
             if (toCheck == checkWith[i]) {
                 return true;
@@ -546,85 +426,4 @@ public class FortranBracketCompletion {
         }
         return false;
     }
-
-//    static boolean matchIDs(Token<FortranTokenId> toCheck, Token<FortranTokenId>[] checkWith) {
-//        for (int i = checkWith.length - 1; i >= 0; i--) {
-//            if (toCheck == checkWith[i]) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-//    /**
-//     * A token processor used to find out the length of a token.
-//     */
-//    static class MyTokenProcessor implements TokenProcessor {
-//
-//        public TokenID tokenID = null;
-//        public int tokenStart = -1;
-//
-//        public boolean token(TokenID tokenID, TokenContextPath tcp,
-//                int tokBuffOffset, int tokLength) {
-//            this.tokenStart = tokenBuffer2DocumentOffset(tokBuffOffset);
-//            this.tokenID = tokenID;
-//            return false;
-//        }
-//
-//        public int eot(int offset) {
-//            return 0;
-//        }
-//
-//        public void nextBuffer(char[] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
-//            this.bufferStartPos = startPos - offset;
-//        }
-//        private int bufferStartPos = 0;
-//
-//        private int tokenBuffer2DocumentOffset(int offs) {
-//            return offs + bufferStartPos;
-//        }
-//    }
-
-//    /**
-//     * Token processor for finding of balance of brackets and braces.
-//     */
-//    private static class BalanceTokenProcessor extends CndAbstractTokenProcessor<Token<FortranTokenId>> {
-//
-//        private FortranTokenId leftTokenID;
-//        private FortranTokenId rightTokenID;
-//        private Stack<Integer> stack = new Stack<Integer>();
-//        private int balance;
-//        private boolean isDefine;
-//
-//        BalanceTokenProcessor(FortranTokenId leftTokenID, FortranTokenId rightTokenID) {
-//            this.leftTokenID = leftTokenID;
-//            this.rightTokenID = rightTokenID;
-//        }
-//
-//        @Override
-//        public boolean token(Token<FortranTokenId> token, int tokenOffset) {
-//            if (token.id() == FortranTokenId.PREPROCESSOR_DIRECTIVE) {
-//                return true;
-//            }
-//            switch (token.id()) {
-//                case NEW_LINE:
-//                    isDefine = false;
-//                    break;
-//                default:
-//                    if (!isDefine) {
-//                        if (token.id() == leftTokenID) {
-//                            balance++;
-//                        } else if (token.id() == rightTokenID) {
-//                            balance--;
-//                        }
-//                    }
-//            }
-//            return false;
-//        }
-//
-//        private int getBalance() {
-//            return balance;
-//        }
-//    }
-
 }

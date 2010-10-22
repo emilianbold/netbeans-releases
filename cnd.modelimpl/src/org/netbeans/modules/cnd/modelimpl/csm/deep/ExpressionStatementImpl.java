@@ -55,10 +55,14 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
  * Implements CsmExpressionStatement
  * @author Vladimir Kvashin
  */
-public class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
+public final class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
     
-    public ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+    }
+
+    public static ExpressionStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new ExpressionStatementImpl(ast, file, scope);
     }
     
     @Override

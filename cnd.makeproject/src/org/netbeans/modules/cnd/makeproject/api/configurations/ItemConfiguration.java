@@ -49,6 +49,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -56,6 +57,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
@@ -69,8 +71,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     // General
     private BooleanConfiguration excluded;
     private PredefinedToolKind tool = PredefinedToolKind.UnknownTool;
+    private LanguageFlavor languageFlavor = LanguageFlavor.UNKNOWN;
     // Tools
     private ConfigurationBase lastConfiguration;
+    private CustomToolConfiguration customToolConfiguration;
 
     // cached id of item
 //    private String id;
@@ -93,7 +97,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         this.excluded = itemConfiguration.excluded;
         this.needSave = itemConfiguration.needSave;
         this.tool = itemConfiguration.tool;
+        this.languageFlavor = itemConfiguration.languageFlavor;
         this.lastConfiguration = itemConfiguration.lastConfiguration;
+        this.customToolConfiguration = itemConfiguration.customToolConfiguration;
     }
 
     public boolean isDefaultConfiguration() {
@@ -104,6 +110,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
             return false;
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
+            return false;
+        }
+        if (customToolConfiguration != null && customToolConfiguration.getModified()) {
             return false;
         }
         return true;
@@ -179,6 +188,14 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         return tool;
     }
 
+    public void setLanguageFlavor(LanguageFlavor flavor) {
+        this.languageFlavor = flavor;
+   }
+
+    public LanguageFlavor getLanguageFlavor() {
+        return languageFlavor;
+    }
+
     protected String[] getToolNames() {
         return new String[]{PredefinedToolKind.CCompiler.getDisplayName(), PredefinedToolKind.CCCompiler.getDisplayName(),
                             PredefinedToolKind.FortranCompiler.getDisplayName(), PredefinedToolKind.Assembler.getDisplayName(),
@@ -187,16 +204,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     // Custom Tool
     public void setCustomToolConfiguration(CustomToolConfiguration customToolConfiguration) {
-        this.lastConfiguration = customToolConfiguration;
+        this.customToolConfiguration = customToolConfiguration;
     }
 
     public synchronized CustomToolConfiguration getCustomToolConfiguration() {
-        if (getTool() == PredefinedToolKind.CustomTool) {
-            if (lastConfiguration == null) {
-                lastConfiguration = new CustomToolConfiguration();
+        if (getTool() == PredefinedToolKind.CustomTool || isProCFile()) {
+            if (customToolConfiguration == null) {
+                customToolConfiguration = new CustomToolConfiguration();
             }
-            assert lastConfiguration instanceof CustomToolConfiguration;
-            return  (CustomToolConfiguration) lastConfiguration;
+            return customToolConfiguration;
         }
         return null;
     }
@@ -335,9 +351,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                 break;
             case CCCompiler:
                 getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+                if(isProCFile()) {
+                    getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                }
                 break;
             case CCompiler:
                 getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
+                if(isProCFile()) {
+                    getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                }
                 break;
             case CustomTool:
                 getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
@@ -365,9 +387,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                 break;
             case CCCompiler:
                 getCCCompilerConfiguration().assign(i.getCCCompilerConfiguration());
+                if(isProCFile()) {
+                    getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                }
                 break;
             case CCompiler:
                 getCCompilerConfiguration().assign(i.getCCompilerConfiguration());
+                if(isProCFile()) {
+                    getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
+                }
                 break;
             case CustomTool:
                 getCustomToolConfiguration().assign(i.getCustomToolConfiguration());
@@ -400,9 +428,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                 break;
             case CCCompiler:
                 i.setCCCompilerConfiguration(getCCCompilerConfiguration().clone());
+                if(isProCFile()) {
+                    i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+                }
                 break;
             case CCompiler:
                 i.setCCompilerConfiguration(getCCompilerConfiguration().clone());
+                if(isProCFile()) {
+                    i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
+                }
                 break;
             case CustomTool:
                 i.setCustomToolConfiguration(getCustomToolConfiguration().clone());
@@ -467,6 +501,25 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         sheet.put(set);
 
         return sheet;
+    }
+
+    public boolean isProCFile() {
+        return isProCFile(item, tool);
+    }
+
+    public static boolean isProCFile(Item item, PredefinedToolKind tool) {
+        if (tool == PredefinedToolKind.CCompiler
+                || tool == PredefinedToolKind.CCCompiler) {
+            if (item != null) {
+                FileObject fileObject = item.getFileObject();
+                if (fileObject != null) {
+                    if ("pc".equalsIgnoreCase(fileObject.getExt())) { // NOI18N
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private class ToolNodeProp extends Node.Property<PredefinedToolKind> {

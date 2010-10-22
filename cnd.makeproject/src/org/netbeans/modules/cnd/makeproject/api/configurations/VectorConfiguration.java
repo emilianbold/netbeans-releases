@@ -176,4 +176,15 @@ public class VectorConfiguration<E> {
         String toString(E item);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (E e : value) {
+            if (sb.length() > 0) {
+                sb.append(',');
+            }
+            sb.append(e);
+        }
+        return "{value=[" + sb + "] dirty=" + dirty +'}'; // NOI18N
+    }
 }

@@ -206,7 +206,6 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.hudson.ant</friend>
-                <friend>org.netbeans.modules.hudson.kenai</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.hudson.mercurial</friend>
                 <friend>org.netbeans.modules.hudson.subversion</friend>

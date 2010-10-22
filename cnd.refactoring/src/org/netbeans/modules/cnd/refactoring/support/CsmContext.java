@@ -42,12 +42,10 @@
 
 package org.netbeans.modules.cnd.refactoring.support;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -67,7 +65,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
-import org.openide.util.UserQuestionException;
 
 /**
  *
@@ -125,19 +122,7 @@ public final class CsmContext {
         if (cookie == null) {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + "\") does not have EditorCookie."); // NOI18N
         }
-
-        Document doc = null;
-        try {
-            try {
-                doc = cookie.openDocument();
-            } catch (UserQuestionException ex) {
-                ex.confirmed();
-                doc = cookie.openDocument();
-            }
-        } catch (IOException ie) {
-            doc = null;
-        }
-
+        Document doc = CsmUtilities.openDocument(cookie);
         return doc;
     }
 
@@ -225,13 +210,16 @@ public final class CsmContext {
     }
 
     private Iterator<? extends CsmObject> getInnerObjectsIterator(CsmFilter offsetFilter, CsmScope scope) {
-        Iterator<? extends CsmObject> out = Collections.<CsmObject>emptyList().iterator();
+        Iterator<? extends CsmObject> out;
         if (CsmKindUtilities.isFile(scope)) {
             out = CsmSelect.getDeclarations((CsmFile)scope, offsetFilter);
         } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
             out = CsmSelect.getDeclarations(((CsmNamespaceDefinition)scope), offsetFilter);
         } else if (CsmKindUtilities.isClass(scope)) {
             out = CsmSelect.getClassMembers(((CsmClass)scope), offsetFilter);
+        } else if (CsmKindUtilities.isCompoundStatement(scope)) {
+            // we stop on compound statement
+            out = Collections.<CsmObject>emptyList().iterator();
         } else {
             out = scope.getScopeElements().iterator();
         }

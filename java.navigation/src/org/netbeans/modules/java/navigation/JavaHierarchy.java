@@ -47,6 +47,7 @@ package org.netbeans.modules.java.navigation;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
+import java.util.logging.Level;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -56,12 +57,14 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.swing.JDialog;
-
 import org.openide.awt.StatusDisplayer;
+
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -70,6 +73,8 @@ import org.openide.util.NbBundle;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class JavaHierarchy {
+    
+    private static final Logger LOG = Logger.getLogger(JavaHierarchy.class.getName());
 
     /**
      * Show the hierarchy of the types in the fileObject.
@@ -117,6 +122,7 @@ public final class JavaHierarchy {
 
     public static void show(FileObject fileObject, Element[] elements,
         CompilationController compilationController) {
+        LOG.log(Level.FINE, "Showing hierarchy for: {0}", fileObject == null ? null : FileUtil.getFileDisplayName(fileObject));   //NOI18N
         if (fileObject != null) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchy.class, "LBL_WaitNode"));
             JDialog dialog = ResizablePopup.getDialog(fileObject);
@@ -133,6 +139,7 @@ public final class JavaHierarchy {
             dialog.setTitle(title); // NOI18N
             dialog.setContentPane(new JavaHierarchyPanel(fileObject, elements));
             dialog.setVisible(true);
+            LOG.log(Level.FINE, "Opened hierarchy for: {0}", FileUtil.getFileDisplayName(fileObject));  //NOI18N
         }
     }    
 }

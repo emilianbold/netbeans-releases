@@ -57,7 +57,7 @@ import org.openide.loaders.DataObject;
     
 public final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
 
-    public static VisibilityQueryDataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
+    public static final VisibilityQueryDataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
 
     EventListenerList ell = new EventListenerList();        
     

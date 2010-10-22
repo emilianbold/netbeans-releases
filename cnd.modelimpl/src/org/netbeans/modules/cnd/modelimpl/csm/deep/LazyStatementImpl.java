@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Lazy statements
@@ -64,9 +66,9 @@ import java.io.IOException;
  */
 abstract public class LazyStatementImpl extends StatementBase implements CsmScope {
 
-    private SoftReference<List<CsmStatement>> statements = null;
+    private volatile SoftReference<List<CsmStatement>> statements = null;
 
-    public LazyStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
+    protected LazyStatementImpl(AST ast, CsmFile file, CsmFunction scope) {
         super(ast, file, scope);
         // we need to throw away the compound statement AST under this element
         ast.setFirstChild(null);
@@ -92,14 +94,28 @@ abstract public class LazyStatementImpl extends StatementBase implements CsmScop
      *	  and returns this list,
      *    otherwise just returns empty list
      */
-    public List<CsmStatement> createStatements() {
-        List<CsmStatement> list = new ArrayList<CsmStatement>();
-        if (renderStatements(list)) {
-            statements = new SoftReference<List<CsmStatement>>(list);
-            return list;
-        } else {
-            return Collections.emptyList();
+    private List<CsmStatement> createStatements() {
+        List<CsmStatement> list = statements == null ? null : statements.get();
+        if (list == null) {
+            list = new ArrayList<CsmStatement>();
+            // code completion tests do work in EDT because otherwise EDT thread is not started by test harness
+            CndUtils.assertTrueInConsole(!SwingUtilities.isEventDispatchThread() || CndUtils.isCodeCompletionUnitTestMode(), "Calling Parser in UI Thread");
+            synchronized (this) {
+                if (statements != null) {
+                    List<CsmStatement> refList = statements.get();
+                    if (refList != null) {
+                        return refList;
+                    }
+                }
+                if (renderStatements(list)) {
+                    statements = new SoftReference<List<CsmStatement>>(list);
+                    return list;
+                } else {
+                    return Collections.emptyList();
+                }
+            }
         }
+        return list;
     }
 
     private boolean renderStatements(List<CsmStatement> list) {

@@ -51,13 +51,11 @@ import java.awt.font.FontRenderContext;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.TabExpander;
-import javax.swing.text.TabableView;
 import javax.swing.text.View;
 import javax.swing.text.ViewFactory;
 
@@ -130,6 +128,13 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
      * @return either {@link View#X_AXIS} or {@link View#Y_AXIS).
      */
     public abstract int getMajorAxis();
+    
+    /**
+     * Set textual length of this view.
+     *
+     * @param length
+     */
+    public abstract void setLength(int length);
 
     @Override
     public float getPreferredSpan(int axis) {
@@ -202,6 +207,10 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         return children.get(index);
     }
 
+    public final V getEditorViewChildrenValid(int index) {
+        return children.getEditorViewChildrenValid(this, index);
+    }
+
     final double getViewVisualOffset(int index) {
         checkChildrenNotNull();
         return children.getViewVisualOffset(this, index);
@@ -221,12 +230,8 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         return new EditorBoxViewChildren<V>(capacity);
     }
 
-    protected void releaseChildren(boolean resetSpans) {
+    protected void releaseChildren() {
         children = null;
-        if (resetSpans) {
-            setMajorAxisSpan(0d);
-            setMinorAxisSpan(0f);
-        }
     }
 
     /*
@@ -238,7 +243,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
      */
     @Override
     public void replace(int index, int length, View[] views) {
-        replace(index, length, views, 0, null);
+        replace(index, length, views, 0);
     }
 
     /**
@@ -246,6 +251,9 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
      * at given range of indices.
      * <br/>
      * The view may increase the interval to be initialized.
+     * <br/>
+     * Implementation should re-check how large portion of the given index range
+     * is really necessary to initialize if any.
      *
      * @param startIndex index >= 0.
      * @param endIndex index >= startIndex.
@@ -267,11 +275,9 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
      * @param length the number of existing views to replace >= 0
      * @param views the child views to insert
      * @param offsetDelta offset delta to be applied to the views that follow the last removed view (and the added ones).
-     * @param alloc bounds assigned to this view in order to compute repaint bounds returned in ReplaceResult.
-     * @return ReplaceResult instance which contains preference changes and repaint bounds.
+     * @return visual update suitable for call to 
      */
-    public ReplaceResult replace(int index, int length, View[] views, int offsetDelta, Shape alloc)
-    {
+    public VisualUpdate<V> replace(int index, int length, View[] views, int offsetDelta) {
         if (children == null) {
             assert (length == 0) : "Attempt to remove from null children length=" + length; // NOI18N
             children = createChildren(views.length);
@@ -280,7 +286,32 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
             setMajorAxisSpan(0d);
             setMinorAxisSpan(0f);
         }
-        return children.replace(this, new ReplaceResult(), index, length, views, offsetDelta, alloc);
+        return children.replace(this, index, length, views, offsetDelta);
+    }
+
+    /**
+     * Update spans and layout after call to replace().
+     * This method should not be called directly - instead visualUpdate.updateSpansAndLayout()
+     * should be called.
+     * 
+     * @param visualUpdate visual update obtained from replace().
+     * @param alloc allocation for this view.
+     */
+    void updateSpansAndLayout(VisualUpdate<V> visualUpdate, Shape alloc) {
+        children.updateSpansAndLayout(this, visualUpdate, alloc);
+    }
+
+    /**
+     * Fix upper offsets above the index+count views and also
+     * visual spans of the requested views and possibly the ones that follow (for tabbed views).
+     * 
+     * @param index index of first view that was modified.
+     * @param count number of modified views.
+     * @param alloc allocation for this view.
+     */
+    VisualUpdate<V> updateViews(int index, int count, Shape alloc) {
+        checkChildrenNotNull();
+        return children.updateViews(this, index, count, alloc);
     }
 
     /**
@@ -323,20 +354,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
             minorSpanChange = width;
         }
         if (majorSpanChange) {
-            double origSpan = getViewMajorAxisSpan(childViewIndex);
-            float newSpan;
-            if (children.handleTabableViews() && childView instanceof TabableView) {
-                float visualOffset = (float) getViewVisualOffset(childViewIndex);
-                newSpan = ((TabableView)childView).getTabbedSpan(visualOffset, getTabExpander());
-            } else {
-                newSpan = childView.getPreferredSpan(majorAxis);
-            }
-            double delta = newSpan - origSpan;
-            if (delta != 0d) { // TODO (diff < epsilon) instead ?
-                children.fixOffsetsAndMajorSpan(this, childViewIndex + 1, 0, delta);
-            } else {
-                majorSpanChange = false; // No real change
-            }
+            updateViews(childViewIndex, 1, null);
         }
         if (minorSpanChange) {
             int minorAxis = ViewUtils.getOtherAxis(majorAxis);
@@ -382,7 +400,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
     @Override
     public int getViewIndex(int offset, Position.Bias b) {
 	if (b == Position.Bias.Backward) {
-	    offset -= 1;
+	    offset--;
 	}
         return getViewIndex(offset);
     }
@@ -430,77 +448,6 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
     }
 
     @Override
-    public int getNextVisualPositionFromChecked(int offset, Position.Bias bias, Shape alloc,
-            int direction, Position.Bias[] biasRet)
-    {
-        int viewCount = getViewCount();
-        if (viewCount == 0) {
-            return offset;
-        }
-        boolean topOrLeft = (direction == SwingConstants.NORTH
-                || direction == SwingConstants.WEST);
-        int retValue;
-        if (offset == -1) {
-            // Start from the first View.
-            int childIndex = (topOrLeft) ? viewCount - 1 : 0;
-            V child = getEditorView(childIndex);
-            Shape childAlloc = getChildAllocation(childIndex, alloc);
-            retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
-            if (retValue == -1 && !topOrLeft && viewCount > 1) {
-                // Special case that should ONLY happen if first view
-                // isn't valid (can happen when end position is put at
-                // beginning of line.
-                child = getEditorView(1);
-                childAlloc = getChildAllocation(1, alloc);
-                retValue = child.getNextVisualPositionFromChecked(-1, biasRet[0], alloc,
-                        direction, biasRet);
-            }
-        } else {
-            int increment = (topOrLeft) ? -1 : 1;
-            int childIndex;
-            if (bias == Position.Bias.Backward && offset > 0) {
-                childIndex = getViewIndex(offset - 1, Position.Bias.Forward);
-            } else {
-                childIndex = getViewIndex(offset, Position.Bias.Forward);
-            }
-            V child = getEditorView(childIndex);
-            Shape childAlloc = getChildAllocation(childIndex, alloc);
-            retValue = child.getNextVisualPositionFromChecked(offset, bias, childAlloc, direction, biasRet);
-            // [TODO] For RTL check direction == EAST | WEST && ((CompositeView)v).flipEastAndWestAtEnds(pos, b))
-            childIndex += increment;
-            if (retValue == -1 && childIndex >= 0 && childIndex < viewCount) {
-                child = getEditorView(childIndex);
-                childAlloc = getChildAllocation(childIndex, alloc);
-                retValue = child.getNextVisualPositionFromChecked(-1, bias, childAlloc, direction, biasRet);
-                // If there is a bias change, it is a fake position
-                // and we should skip it. This is usually the result
-                // of two elements side be side flowing the same way.
-                if (retValue == offset && biasRet[0] != bias) {
-                    return getNextVisualPositionFromChecked(offset, biasRet[0], alloc, direction, biasRet);
-                }
-            } else if (retValue != -1 && biasRet[0] != bias &&
-                    ((increment == 1 && child.getEndOffset() == retValue) ||
-                        (increment == -1 && child.getStartOffset() == retValue)) &&
-                    childIndex >= 0 && childIndex < viewCount)
-            {
-                // Reached the end of a view, make sure the next view
-                // is a different direction.
-                child = getEditorView(childIndex);
-                childAlloc = getChildAllocation(childIndex, alloc);
-                Position.Bias originalBias = biasRet[0];
-                int nextOffset = child.getNextVisualPositionFromChecked(
-                        -1, bias, childAlloc, direction, biasRet);
-                if (biasRet[0] == bias) {
-                    retValue = nextOffset;
-                } else {
-                    biasRet[0] = originalBias;
-                }
-            }
-        }
-        return retValue;
-    }
-
-    @Override
     public void paint(Graphics2D g, Shape alloc, Rectangle clipBounds) {
         // The background is already cleared by BasicTextUI.paintBackground() which uses component.getBackground()
         checkChildrenNotNull();
@@ -544,11 +491,6 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
         // Do nothing - parent EditorBoxView is expected to handle this
     }
 
-    final void fixSpans(int index, int offsetDelta, double visualDelta) {
-        checkChildrenNotNull();
-        children.fixOffsetsAndMajorSpan(this, index, offsetDelta, visualDelta);
-    }
-
     private void checkChildrenNotNull() {
         if (children == null) {
             throw new IllegalStateException("Null children in " + getDumpId()); // NOI18N
@@ -562,6 +504,10 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
 
     @Override
     public String findIntegrityError() {
+        String err = super.findIntegrityError();
+        if (err != null) {
+            return err;
+        }
         if (children != null) {
             if (children.size() == 0) {
                 return "children.size()==0";
@@ -573,7 +519,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
                 for (int i = 0; i < viewCount; i++) {
                     V child = getEditorView(i);
                     double childVisualOffset = getViewVisualOffset(child);
-                    String err = null;
+                    err = null;
                     // Do not examine child.getPreferredSpan() since it may be expensive (for HighlightsView calls getTextLayout())
                     if (childVisualOffset < 0) {
                         err = "childVisualOffset=" + childVisualOffset + " < 0"; // NOI18N
@@ -587,7 +533,7 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
                 }
             }
         } // Children == null permitted
-        return null;
+        return err;
     }
 
     @Override
@@ -619,32 +565,6 @@ public abstract class EditorBoxView<V extends EditorView> extends EditorView imp
 
     public String toStringDetail() { // Dump everything
         return appendViewInfo(new StringBuilder(200), 0, -2).toString();
-    }
-
-    public static final class ReplaceResult {
-
-        Rectangle repaintBounds;
-
-        boolean widthChanged;
-
-        boolean heightChanged;
-
-        public Rectangle getRepaintBounds() {
-            return repaintBounds;
-        }
-
-        public boolean isPreferenceChanged() {
-            return widthChanged || heightChanged;
-        }
-
-        public boolean isWidthChanged() {
-            return widthChanged;
-        }
-
-        public boolean isHeightChanged() {
-            return heightChanged;
-        }
-
     }
 
 }
