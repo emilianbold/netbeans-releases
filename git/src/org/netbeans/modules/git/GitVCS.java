@@ -89,7 +89,7 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
         LOG.log(Level.FINE, "getTopmostManagedParent {0}", new Object[] { file });
         File parent = getKnownParent(file);
         if(parent != null) {
-            LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent " + parent);
+            LOG.log(Level.FINE, "  getTopmostManagedParent returning known parent {0}", parent);
             return parent;
         }
 
