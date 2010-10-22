@@ -409,7 +409,7 @@ bool NbLauncher::parseConfigFile(const char* path) {
 }
 
 // Search if -Xmx is specified in existing arguments
-// If it isn't it adds it - 20% of available RAM but min is 96M and max 512M
+// If it isn't it adds it - 20% of available RAM but min is 96M and max 768M
 void NbLauncher::adjustHeapSize() {
     if (nbOptions.find("-J-Xmx") == string::npos) {
         // find how much memory we have and add -Xmx
@@ -419,8 +419,8 @@ void NbLauncher::adjustHeapSize() {
         if (memory < 96) {
             memory = 96;
         }
-        else if (memory > 512) {
-            memory = 512;
+        else if (memory > 768) {
+            memory = 768;
         }
         char tmp[32];
         snprintf(tmp, 32, " -J-Xmx%dm", memory);

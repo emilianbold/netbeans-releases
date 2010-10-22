@@ -258,6 +258,7 @@ public enum CppTokenId implements TokenId {
     
     ELLIPSIS("...", "special"), // NOI18N
     AT("@", "special"), // NOI18N
+    GRAVE_ACCENT("`", "special"), // NOI18N
     DOLLAR("$", "special"), // NOI18N
     SHARP("#", "special"), // NOI18N
     DBL_SHARP("##", "special"), // NOI18N

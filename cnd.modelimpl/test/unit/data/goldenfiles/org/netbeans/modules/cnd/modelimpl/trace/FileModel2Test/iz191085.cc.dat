@@ -2,9 +2,9 @@
 State of macro map:
 Own Map:
 MACROS (sorted 3):
-<U>#define '["SYMTAB",<89>,line=5,col=9],offset=60,file=null'='["Symtab",<89>,line=5,col=16],offset=67,file=null'
-<U>#define '["sy_",<89>,line=6,col=9],offset=82,file=null[["node",<89>,line=6,col=13],offset=86,file=null]'='["SYMTAB",<89>,line=6,col=41],offset=95,file=null ["[",<14>,line=6,col=47],offset=101,file=null ["node",<89>,line=6,col=48],offset=102,file=null ["]",<15>,line=6,col=52],offset=106,file=null'
-<U>#define '["sy_defined_",<89>,line=7,col=9],offset=116,file=null[["node",<89>,line=7,col=21],offset=128,file=null]'='["sy_",<89>,line=7,col=41],offset=136,file=null ["(",<12>,line=7,col=44],offset=139,file=null ["node",<89>,line=7,col=45],offset=140,file=null [")",<13>,line=7,col=49],offset=144,file=null [".",<5>,line=7,col=50],offset=145,file=null ["defined",<89>,line=7,col=51],offset=146,file=null'
+<U>#define '["SYMTAB",<ID>,line=5,col=9],offset=60,file=null'='["Symtab",<ID>,line=5,col=16],offset=67,file=null'
+<U>#define '["sy_",<ID>,line=6,col=9],offset=82,file=null[["node",<ID>,line=6,col=13],offset=86,file=null]'='["SYMTAB",<ID>,line=6,col=41],offset=95,file=null ["[",<LSQUARE>,line=6,col=47],offset=101,file=null ["node",<ID>,line=6,col=48],offset=102,file=null ["]",<RSQUARE>,line=6,col=52],offset=106,file=null'
+<U>#define '["sy_defined_",<ID>,line=7,col=9],offset=116,file=null[["node",<ID>,line=7,col=21],offset=128,file=null]'='["sy_",<ID>,line=7,col=41],offset=136,file=null ["(",<LPAREN>,line=7,col=44],offset=139,file=null ["node",<ID>,line=7,col=45],offset=140,file=null [")",<RPAREN>,line=7,col=49],offset=144,file=null [".",<DOT>,line=7,col=50],offset=145,file=null ["defined",<ID>,line=7,col=51],offset=146,file=null'
 System Map:
 MACROS (sorted 0):
 

@@ -115,7 +115,6 @@ public class AddBeanPanel {
                         ExpressionTree packageTree = cc.getCompilationUnit().getPackageName();
                         if (packageTree != null) {
                             TreePath path = cc.getTrees().getPath(cc.getCompilationUnit(), packageTree);
-                            cc.getTrees().getElement(path).getSimpleName();
                             Name qualifiedName = cc.getElements().getPackageOf(cc.getTrees().getElement(path)).getQualifiedName();
                             className[0] = qualifiedName.toString() + ".";
                         }

@@ -70,6 +70,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         constText[EOF]                  =""; // NOI18N
         
         // 1 symbol:
+        constText[GRAVE_ACCENT]          ="`"; // NOI18N
         constText[FUN_LIKE_MACRO_LPAREN]="("; // NOI18N
         constText[ASSIGNEQUAL]          ="="; // NOI18N
         constText[DIVIDE]               ="/"; // NOI18N

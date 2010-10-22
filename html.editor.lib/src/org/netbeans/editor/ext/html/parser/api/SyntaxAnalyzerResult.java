@@ -302,6 +302,13 @@ public class SyntaxAnalyzerResult {
 
                 if (filter.accepts(tag, tagNamePrefix)) {
                     filtered.add(e);
+                    //check for the xmlns attributes
+                    for(SyntaxElement.TagAttribute a : tag.getAttributes()) {
+                        if(a.getName().startsWith("xmlns:")) { //NOI18N
+                            ignoredAreas.add(new IgnoredArea(a.getNameOffset(), a.getValueOffset() + a.getValueLength()));
+                        }
+                    }
+
                 } else {
                     ignoredAreas.add(new IgnoredArea(e.offset(), e.offset() + e.length()));
                 }
