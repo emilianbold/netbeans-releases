@@ -81,9 +81,7 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("versioning.git.handleExternalEvents", "false");
-        if ("testDeleteRepositoryLocationRoot".equals(getName())) {
-            System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
-        }
+        System.setProperty("org.netbeans.modules.masterfs.watcher.disable", "true");
         Git.STATUS_LOG.setLevel(Level.ALL);
         h = new StatusRefreshLogHandler(repositoryLocation);
         Git.STATUS_LOG.addHandler(h);
