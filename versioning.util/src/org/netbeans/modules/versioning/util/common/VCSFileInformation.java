@@ -53,9 +53,7 @@ public abstract class VCSFileInformation {
 
     public abstract String getStatusText();
     public abstract int getComparableStatus();
-    public abstract String annotateNameHtml(String name);
-    public abstract VCSCommitOptions getCommitOptions(File file);
-    public abstract VCSCommitOptions getDefaultCommitOption(File file);
+    public abstract String annotateNameHtml(String name);    
 
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
@@ -64,6 +62,6 @@ public abstract class VCSFileInformation {
         @Override
         public int compare(VCSFileInformation i1, VCSFileInformation i2) {
             return i1.getComparableStatus() - i2.getComparableStatus();
-}
+        }
     }    
 }

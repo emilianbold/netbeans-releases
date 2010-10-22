@@ -44,7 +44,11 @@ package org.netbeans.modules.git.ui.commit;
 
 import java.io.File;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSFileInformation;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
@@ -60,6 +64,30 @@ public class GitFileNode extends VCSFileNode {
     @Override
     public FileInformation getInformation() {
         return Git.getInstance().getFileStatusCache().getStatus(getFile());
+    }
+    
+    @Override
+    public VCSCommitOptions getCommitOptions() {        
+        return getFileInformation().containsStatus(FileInformation.STATUS_REMOVED)
+                ? VCSCommitOptions.COMMIT
+                : VCSCommitOptions.COMMIT_REMOVE;
+    }
+
+    @Override
+    public VCSCommitOptions getDefaultCommitOption() {
+        if (GitModuleConfig.getDefault().isExcludedFromCommit(getFile().getAbsolutePath())) {
+            return VCSCommitOptions.EXCLUDE;
+        } else {
+            if(getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
+                return VCSCommitOptions.COMMIT_REMOVE;
+            } else if(getInformation().containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
+                return GitModuleConfig.getDefault().getExludeNewFiles() ? 
+                                    VCSCommitOptions.EXCLUDE : 
+                                    VCSCommitOptions.COMMIT;
+            } else {
+                return VCSCommitOptions.COMMIT;
+            }
+        }
     }
 
 }

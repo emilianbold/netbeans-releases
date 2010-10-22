@@ -226,31 +226,7 @@ public class FileInformation extends VCSFileInformation {
     @Override
     public String annotateNameHtml(String name) {
         return ((Annotator) Git.getInstance().getVCSAnnotator()).annotateNameHtml(name, this, null);
-    }
-
-    @Override
-    public VCSCommitOptions getCommitOptions(File file) {
-        return containsStatus(FileInformation.STATUS_REMOVED)
-                ? VCSCommitOptions.COMMIT
-                : VCSCommitOptions.COMMIT_REMOVE;
-    }
-
-    @Override
-    public VCSCommitOptions getDefaultCommitOption(File file) {
-        if (GitModuleConfig.getDefault().isExcludedFromCommit(file.getAbsolutePath())) {
-            return VCSCommitOptions.EXCLUDE;
-        } else {
-            if(containsStatus(FileInformation.STATUS_REMOVED)) {
-                return VCSCommitOptions.COMMIT_REMOVE;
-            } else if(containsStatus(Status.STATUS_NOTVERSIONED_NEW_IN_WORKING_TREE)) {
-                return GitModuleConfig.getDefault().getExludeNewFiles() ? 
-                                    VCSCommitOptions.EXCLUDE : 
-                                    VCSCommitOptions.COMMIT;
-            } else {
-                return VCSCommitOptions.COMMIT;
-            }
-        }
-    }
+    }    
     
     public static enum Status {
 
