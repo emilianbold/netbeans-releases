@@ -413,6 +413,7 @@ public class JpaControllerGenerator {
                             String relTypeReference = simpleRelType;
                             String mName = m.getSimpleName().toString();
                             String otherName = otherSide.getSimpleName().toString();
+                            String otherType = otherSide.getReturnType().toString();
                             String relFieldName = JpaControllerUtil.getPropNameFromMethod(mName);
                             String otherFieldName = JpaControllerUtil.getPropNameFromMethod(otherName);
                             
@@ -481,7 +482,11 @@ public class JpaControllerGenerator {
                                                             //if 1:1, be sure to orphan the related entity's current related entity
                             if (otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE){
                                 if (multiplicity != JpaControllerUtil.REL_TO_ONE || columnNullable) { //no need to declare relrelInstanceName if we have already examined it in the 1:1 orphan check
-                                    updateRelatedInCreate.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "." + relrelGetterName + "();\n");
+                                    String retType = simpleEntityName;
+                                    if(!otherType.equals(entityClass)){
+                                        retType = otherType;
+                                    }
+                                    updateRelatedInCreate.append(retType + " " + relrelInstanceName + " = " + scalarRelFieldName + "." + relrelGetterName + "();\n");
                                 }
                                 if (multiplicity == JpaControllerUtil.REL_TO_ONE) {
                                     if (columnNullable) {
@@ -603,7 +608,11 @@ public class JpaControllerGenerator {
                                 updateRelatedInEditPost.append(
                                     "if(" + scalarRelFieldName + "New != null && !" + scalarRelFieldName + "New.equals(" + scalarRelFieldName + "Old)) {\n");
                                 if (multiplicity == JpaControllerUtil.REL_TO_ONE && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE && columnNullable) {
-                                    updateRelatedInEditPost.append(simpleEntityName + " " + relrelInstanceName + " = " + scalarRelFieldName + "New." + relrelGetterName + "();\n" + 
+                                    String tmpType = simpleEntityName;
+                                    if(!otherType.equals(entityClass)){
+                                        tmpType = otherType;
+                                    }
+                                    updateRelatedInEditPost.append(tmpType + " " + relrelInstanceName + " = " + scalarRelFieldName + "New." + relrelGetterName + "();\n" +
                                             "if (" + relrelInstanceName + " != null) {\n" + 
                                             relrelInstanceName + ".s" + mName.substring(1) + "(null);\n" + 
                                             relrelInstanceName + " = em.merge(" + relrelInstanceName + ");\n" + 

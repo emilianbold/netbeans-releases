@@ -90,10 +90,6 @@
                 <binary-origin>external/js.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/icu4j-4_0.jar</runtime-relative-path>
-                <binary-origin>external/icu4j-4_0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.15.jar</runtime-relative-path>
                 <binary-origin>external/log4j-1.2.15.jar</binary-origin>
             </class-path-extension>
