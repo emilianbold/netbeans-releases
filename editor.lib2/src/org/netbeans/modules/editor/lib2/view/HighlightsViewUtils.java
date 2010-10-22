@@ -733,6 +733,9 @@ public class HighlightsViewUtils {
             TextLayoutPart textLayoutPart, Shape textLayoutAlloc,
             AttributeSet attrs, DocumentView docView)
     {
+        if (attrs == null) { // XXX #191257 hotfix
+            return;
+        }
         JTextComponent textComponent = docView.getTextComponent();
         Color origColor = null;
         try {

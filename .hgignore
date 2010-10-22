@@ -163,7 +163,6 @@ derby\.log
 ^o.jruby/patched_source$
 ^o.mozilla.rhino.patched/patched_source$
 ^j2ee.sun.appsrv81/\.keystore$
-^gsf.api/anttask/gsfanttask\.jar$
 ^tomcat5/\.swo$
 ^uml/Thumbs\.db$
 ^performance/uml/test/.*\.sh$
