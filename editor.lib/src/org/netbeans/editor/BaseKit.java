@@ -1462,69 +1462,60 @@ public class BaseKit extends DefaultEditorKit {
 
                 final Caret caret = target.getCaret();
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                doc.runAtomicAsUser (new Runnable () {
-                    public void run () {
-                        DocumentUtilities.setTypingModification(doc, true);
-                        try {
-                        if (Utilities.isSelectionShowing(caret)) { // block selected
+                final Indent indenter = Indent.get(doc);
+                indenter.lock();
+                try {
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
-                            } catch (GuardedException e) {
-                                target.getToolkit().beep();
-                            } catch (BadLocationException e) {
-                                e.printStackTrace();
-                            }
-                        } else { // no selected text
-                            int dotPos = caret.getDot();
-                            int caretCol;
-                            // find caret column
-                            try {
-                                caretCol = doc.getVisColFromPos(dotPos);
-                            } catch (BadLocationException e) {
-                                LOG.log(Level.WARNING, null, e);
-                                caretCol = 0;
-                            }
-
-                            try {
-                                // find indent of the first previous non-white row
-                                int upperCol = Utilities.getRowIndent(doc, dotPos, false);
-                                if (upperCol == -1) { // no prev line with  indent
-                                    upperCol = 0;
-                                }
-                                // is there any char on this line before cursor?
-                                int indent = Utilities.getRowIndent(doc, dotPos);
-                                // test whether we should indent
-                                if (indent == -1) {
-                                    if (upperCol > caretCol) { // upper indent is greater
-                                        indent = upperCol;
-                                    } else { // simulate insert tab by changing indent
-                                        indent = Utilities.getNextTabColumn(doc, dotPos);
+                                if (Utilities.isSelectionShowing(caret)) { // block selected
+                                    try {
+                                        changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                    } catch (GuardedException e) {
+                                        target.getToolkit().beep();
+                                    } catch (BadLocationException e) {
+                                        e.printStackTrace();
                                     }
+                                } else { // no selected text
+                                    int dotPos = caret.getDot();
+                                    try {
+                                        // is there any char on this line before cursor?
+                                        int indent = Utilities.getRowIndent(doc, dotPos);
+                                        // test whether we should indent
+                                        if (indent == -1) {
+                                            // find caret column
+                                            int caretCol = Utilities.getVisualColumn(doc, dotPos);
+                                            // find next tab column
+                                            int nextTabCol = Utilities.getNextTabColumn(doc, dotPos);                                        
 
-                                    // Fix of #32240 - #1 of 2
-                                    int rowStart = Utilities.getRowStart(doc, dotPos);
+                                            indenter.reindent(dotPos);                                        
 
-                                    changeRowIndent(doc, dotPos, indent);
-
-                                    // Fix of #32240 - #2 of 2
-                                    int newDotPos = doc.getOffsetFromVisCol(indent, rowStart);
-                                    if (newDotPos >= 0) {
-                                        caret.setDot(newDotPos);
+                                            dotPos = caret.getDot();
+                                            int newCaretCol = Utilities.getVisualColumn(doc, dotPos);
+                                            if (newCaretCol <= caretCol) {
+                                                // find indent of the first previous non-white row
+                                                int upperCol = Utilities.getRowIndent(doc, dotPos, false);
+                                                changeRowIndent(doc, dotPos, upperCol > nextTabCol ? upperCol : nextTabCol);
+                                                // Fix of #32240
+                                                caret.setDot(Utilities.getRowEnd(doc, dotPos));
+                                            }
+                                        } else { // already chars on the line
+                                            insertTabString(doc, dotPos);
+                                        }
+                                    } catch (BadLocationException e) {
+                                        // use the same pos
+                                        LOG.log(Level.WARNING, null, e);
                                     }
-
-                                } else { // already chars on the line
-                                    insertTabString(doc, dotPos);
-
                                 }
-                            } catch (BadLocationException e) {
-                                // use the same pos
+                            } finally {
+                                DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
-                        } finally {
-                            DocumentUtilities.setTypingModification(doc, false);
-                        }
-                    }
-                });
+                    });
+                } finally {
+                    indenter.unlock();
+                }
             }
         }
     }
