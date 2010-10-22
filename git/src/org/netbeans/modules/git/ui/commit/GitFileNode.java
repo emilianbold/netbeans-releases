@@ -68,7 +68,7 @@ public class GitFileNode extends VCSFileNode {
     
     @Override
     public VCSCommitOptions getCommitOptions() {        
-        return getFileInformation().containsStatus(FileInformation.STATUS_REMOVED)
+        return getInformation().containsStatus(FileInformation.STATUS_REMOVED)
                 ? VCSCommitOptions.COMMIT
                 : VCSCommitOptions.COMMIT_REMOVE;
     }
