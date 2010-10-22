@@ -42,10 +42,13 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -75,7 +78,6 @@ import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -102,8 +104,10 @@ public class CommitAction extends SingleRepositoryAction {
         final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
 
         final VCSCommitTable data = new VCSCommitTable(new VCSCommitTableModel());
-        final VCSCommitPanel panel = new VCSCommitPanel(new CommitParameters(), data, GitModuleConfig.getDefault().getPreferences());
-        panel.setHooks(hooks, new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {}));
+        
+        HgHookContext hooksCtx = new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {});
+        Preferences preferences = GitModuleConfig.getDefault().getPreferences();
+        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), data, preferences, hooks, hooksCtx);
 
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
@@ -175,7 +179,7 @@ public class CommitAction extends SingleRepositoryAction {
         dialog.pack();
         dialog.setVisible(true);
 
-        final String message = ((CommitParameters) panel.getParameters()).getCommitMessage().trim();
+        final String message = ((DefaultCommitParameters) panel.getParameters()).getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
 //      XXX      GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
         }

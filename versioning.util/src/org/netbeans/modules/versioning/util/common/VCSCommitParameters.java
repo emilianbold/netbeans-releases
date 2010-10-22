@@ -42,20 +42,31 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import org.netbeans.modules.spellchecker.api.Spellchecker;
+import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextArea;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.TemplateSelector;
+import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 
 /**
  *
@@ -74,7 +85,11 @@ public abstract class VCSCommitParameters {
         this.preferences = preferences;
     }        
     
-    public abstract JPanel getPanel();   
+    public abstract JPanel getPanel();
+
+    protected Preferences getPreferences() {
+        return preferences;
+    }
     
     protected JLabel createRecentMessagesLink(final JTextArea text) {
         if(recentLink == null) {
@@ -105,8 +120,7 @@ public abstract class VCSCommitParameters {
                 public void mouseClicked(MouseEvent e) {
                     onTemplate(text);
                 }
-            });
-//          XXX  Spellchecker.register (messageTextArea);            
+            });        
         }
         return templateLink;
     }
@@ -138,5 +152,121 @@ public abstract class VCSCommitParameters {
         
     protected List<String> getRecentCommitMessages() {
         return Utils.getStringList(preferences, RECENT_COMMIT_MESSAGES);
-    }    
+    }  
+    
+    protected Component makeVerticalStrut(JComponent compA,
+                                        JComponent compB,
+                                        ComponentPlacement relatedUnrelated, 
+                                        JPanel parent) {
+        return VCSCommitPanel.makeVerticalStrut(compA, compB, relatedUnrelated, parent);
+    }
+
+    protected static Component makeHorizontalStrut(JComponent compA,
+                                              JComponent compB,
+                                              ComponentPlacement relatedUnrelated,
+                                              JPanel parent) {
+        return VCSCommitPanel.makeHorizontalStrut(compA, compB, relatedUnrelated, parent);
+    }
+    
+    public static class DefaultCommitParameters extends VCSCommitParameters {
+        private ParametersPanel panel;
+
+        public DefaultCommitParameters(Preferences preferences) {
+            super(preferences);
+        }
+
+        @Override
+        public JPanel getPanel() {
+            if(panel == null) {
+                panel = new ParametersPanel();
+            }
+            return panel;
+        }
+
+        public String getCommitMessage() {
+            return ((ParametersPanel) getPanel()).messageTextArea.getText();
+        }
+
+        private class ParametersPanel extends JPanel {
+            private JScrollPane scrollpane = new JScrollPane();
+            private final JLabel messageLabel = new JLabel();        
+            private final JTextArea messageTextArea = new JTextArea();
+            private UndoRedoSupport um;                
+
+            public ParametersPanel() {
+                messageLabel.setLabelFor(messageTextArea);
+                Mnemonics.setLocalizedText(messageLabel, getMessage("CTL_CommitForm_Message")); // NOI18N
+
+                JLabel templateLink = createMessagesTemplateLink(messageTextArea);
+                JLabel recentLink = createRecentMessagesLink(messageTextArea);
+
+                messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
+                messageTextArea.setLineWrap(true);
+                messageTextArea.setRows(4);
+                messageTextArea.setTabSize(4);
+                messageTextArea.setWrapStyleWord(true);
+                messageTextArea.setMinimumSize(new Dimension(100, 18));
+                scrollpane.setViewportView(messageTextArea);
+
+                messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
+                messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
+
+                JPanel topPanel = new VerticallyNonResizingPanel();
+                topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+                topPanel.add(messageLabel);
+                topPanel.add(Box.createHorizontalGlue());
+                topPanel.add(recentLink);
+                topPanel.add(makeHorizontalStrut(recentLink, templateLink, RELATED, this));
+                topPanel.add(templateLink);            
+                messageLabel.setAlignmentX(LEFT_ALIGNMENT);
+                messageLabel.setAlignmentY(BOTTOM_ALIGNMENT); 
+                recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
+                templateLink.setAlignmentY(BOTTOM_ALIGNMENT);        
+
+                setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+                topPanel.setAlignmentY(BOTTOM_ALIGNMENT);        
+                add(topPanel);
+                add(makeVerticalStrut(messageLabel, scrollpane, RELATED, this));            
+                add(scrollpane);
+                
+                Spellchecker.register (messageTextArea);    
+            }
+
+            @Override
+            public void addNotify() {
+                super.addNotify();
+
+                TemplateSelector ts = new TemplateSelector(getPreferences());
+                if (ts.isAutofill()) {
+                    messageTextArea.setText(ts.getTemplate());
+                } else {
+                    String lastCommitMessage = getLastCanceledCommitMessage();
+                    if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(getPreferences()).isAutoFill()) {
+                        List<String> messages = getRecentCommitMessages();
+                        if (messages.size() > 0) {
+                            lastCommitMessage = messages.get(0);
+                        }
+                    }
+                    messageTextArea.setText(lastCommitMessage);
+                }
+                messageTextArea.selectAll();
+                um = UndoRedoSupport.register(messageTextArea);          
+            }
+
+            @Override
+            public void removeNotify() {
+                super.removeNotify();
+                if (um != null) {
+                    um.unregister();
+                    um = null;
+                }            
+            }
+
+            private String getMessage(String msgKey) {
+                return NbBundle.getMessage(ParametersPanel.class, msgKey);
+            }                     
+        }
+
+    }
+
 }

@@ -44,25 +44,19 @@
 
 package org.netbeans.modules.versioning.util.common;
 
-import org.netbeans.modules.versioning.util.TemplateSelector;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import org.openide.cookies.EditorCookie;
 import javax.swing.LayoutStyle;
-import org.netbeans.modules.versioning.util.UndoRedoSupport;
 import javax.swing.event.ChangeEvent;
 import java.awt.Component;
-import java.awt.Container;
 import javax.swing.Box;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 import org.openide.cookies.SaveCookie;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.util.prefs.PreferenceChangeEvent;
@@ -70,7 +64,6 @@ import java.util.prefs.PreferenceChangeListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -84,11 +77,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
-import org.netbeans.modules.versioning.hooks.HgHook;
-import org.netbeans.modules.versioning.hooks.HgHookContext;
+import org.netbeans.modules.versioning.hooks.VCSHook;
+import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
@@ -107,46 +99,37 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 /**
  *
  * @author  pk97937
+ * @author  Tomas Stupka
  * @author  Marian Petras
  */
 public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
-    static final Object EVENT_SETTINGS_CHANGED = new Object();
-    private static final boolean DEFAULT_DISPLAY_FILES = true;
-    private static final boolean DEFAULT_DISPLAY_HOOKS = false;
+    static final Object EVENT_SETTINGS_CHANGED = new Object();   
 
-    final JLabel filesLabel = new JLabel();
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
-
-    private final JPanel filesPanel = new JPanel(new GridLayout(1, 1));
-    private final JLabel filesSectionButton = new JLabel();
-    private final JPanel filesSectionPanel2 = new JPanel();
-    private final PlaceholderPanel hookSectionPanel = new PlaceholderPanel();
-    private final JLabel hooksSectionButton = new JLabel();
     private final JLabel errorLabel = new JLabel();
-        
     private final JPanel parametersPane1 = new JPanel();
-
-    private Icon expandedIcon, collapsedIcon;
     
     private VCSCommitTable commitTable;
-    private Collection<HgHook> hooks = Collections.emptyList();
-    private HgHookContext hookContext;
+    
     private JTabbedPane tabbedPane;
 //    private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
+        
     private final Preferences preferences;
     private final VCSCommitParameters parameters;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, VCSCommitTable commitTable, Preferences preferences) {
+    public VCSCommitPanel(VCSCommitParameters parameters, VCSCommitTable commitTable, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
         this.parameters = parameters;
         this.commitTable = commitTable;
-
-        initComponents();
+        
+        if(hooks == null) {
+            hooks = Collections.emptyList();
+        }
+        initComponents(hooks, hooksContext);
 
         commitTable.setCommitPanel(this);
-        filesLabel.setLabelFor(commitTable.getTable());
         this.preferences = preferences;
     }
 
@@ -164,110 +147,7 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         
         preferences.addPreferenceChangeListener(this);
         commitTable.getTableModel().addTableModelListener(this);
-        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-        initCollapsibleSections();
-        
-    }
-
-    private void initCollapsibleSections() {
-        JTree tv = new JTree();
-        BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-        expandedIcon = tvui.getExpandedIcon();
-        collapsedIcon = tvui.getCollapsedIcon();
-
-        initSectionButton(filesSectionButton, filesSectionPanel2,
-                          "initFilesPanel",                             //NOI18N
-                          DEFAULT_DISPLAY_FILES);
-        if (!hooks.isEmpty()) {
-            hooksSectionButton.setText((hooks.size() == 1)
-                                       ? hooks.iterator().next().getDisplayName()
-                                       : getMessage("LBL_Advanced"));   //NOI18N
-            initSectionButton(hooksSectionButton, hookSectionPanel,
-                              "initHooksPanel",                         //NOI18N
-                              DEFAULT_DISPLAY_HOOKS);
-        } else {
-            hooksSectionButton.setVisible(false);
-        }
-    }
-
-    private void initSectionButton(final JLabel label,
-                                   final JPanel panel,
-                                   final String initPanelMethodName,
-                                   final boolean defaultSectionDisplayed) {
-        if (defaultSectionDisplayed) {
-            displaySection(label, panel, initPanelMethodName);
-        } else {
-            hideSection(label, panel);
-        }
-        label.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (panel.isVisible()) {
-                    hideSection(label, panel);
-                } else {
-                    displaySection(label, panel, initPanelMethodName);
-                }
-            }
-        });
-    }
-
-    private void displaySection(JLabel sectionButton,
-                                Container sectionPanel,
-                                String initPanelMethodName) {
-        if (sectionPanel.getComponentCount() == 0) {
-            invokeInitPanelMethod(initPanelMethodName);
-        }
-        sectionPanel.setVisible(true);
-        sectionButton.setIcon(expandedIcon);
-        enlargeVerticallyAsNecessary();
-    }
-
-    private void hideSection(JLabel sectionButton,
-                             JPanel sectionPanel) {
-        sectionPanel.setVisible(false);
-        sectionButton.setIcon(collapsedIcon);
-    }
-
-    private void invokeInitPanelMethod(String methodName) {
-        try {
-            getClass().getDeclaredMethod(methodName).invoke(this);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private void initFilesPanel() {
-
-        /* this method is called using reflection from 'invokeInitPanelMethod()' */
-
-        filesPanel.add(commitTable.getComponent());
-        filesPanel.setPreferredSize(new Dimension(0, 2 * parameters.getPanel().getPreferredSize().height));
-
-        filesSectionPanel2.setLayout(new BoxLayout(filesSectionPanel2, Y_AXIS));
-        filesSectionPanel2.add(filesLabel);
-        filesSectionPanel2.add(makeVerticalStrut(filesLabel, filesPanel, RELATED));
-        filesSectionPanel2.add(filesPanel);
-
-        filesLabel.setAlignmentX(LEFT_ALIGNMENT);
-        filesPanel.setAlignmentX(LEFT_ALIGNMENT);
-    }
-
-    private void initHooksPanel() {
-
-        /* this method is called using reflection from 'invokeInitPanelMethod()' */
-
-        assert !hooks.isEmpty();
-
-        if (hooks.size() == 1) {
-            hookSectionPanel.add(hooks.iterator().next().createComponent(hookContext));
-        } else {
-            JTabbedPane hooksTabbedPane = new JTabbedPane();
-            for (HgHook hook : hooks) {
-                hooksTabbedPane.add(hook.createComponent(hookContext),
-                                    hook.getDisplayName());
-            }
-            hookSectionPanel.add(hooksTabbedPane);
-        }
+        listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);        
     }
 
     public VCSCommitParameters getParameters() {
@@ -280,15 +160,6 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         preferences.removePreferenceChangeListener(this);
         super.removeNotify();
     }
-
-    public void setHooks(Collection<HgHook> hooks, HgHookContext context) {
-        if (hooks == null) {
-            hooks = Collections.emptyList();
-        }
-        this.hooks = hooks;
-        this.hookContext = context;
-    }
-
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
@@ -319,70 +190,70 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
      * This method is called from within the constructor to initialize the form.
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
-    private void initComponents() {
-        parametersPane1.setLayout(new BorderLayout());
-        parametersPane1.add(parameters.getPanel());
-
-        Mnemonics.setLocalizedText(filesSectionButton, getMessage("LBL_CommitDialog_FilesToCommit")); // NOI18N
-        Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit")); // NOI18N
-
-        Mnemonics.setLocalizedText(hooksSectionButton, getMessage("LBL_Advanced")); // NOI18N
-
-        Mnemonics.setLocalizedText(errorLabel, "jLabel2");
+    private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
+        getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
         
+        basePanel.setBorder(createEmptyBorder(10,             // top
+                                    getContainerGap(WEST),    // left
+                                    0,                        // bottom
+                                    getContainerGap(EAST)));  // right
+        
+        basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
+        
+        // parameters panel -> holds all commit parameters specific 
+        // for the given VCS system - message, switches, etc.
+        parametersPane1.setLayout(new BorderLayout());
+        parametersPane1.add(parameters.getPanel());                
+        parametersPane1.setAlignmentX(LEFT_ALIGNMENT);        
+        basePanel.add(parametersPane1);
+        
+        // files table
+        FilesPanel filesPanel = new FilesPanel();
+        basePanel.add(makeVerticalStrut(parametersPane1, filesPanel, RELATED, this));        
+        basePanel.add(filesPanel);
+        
+        // hooks area
+        if(!hooks.isEmpty()) {            
+            HookPanel hooksPanel = new HookPanel(hooks, hooksContext);                                                              
+            basePanel.add(makeVerticalStrut(filesPanel, hooksPanel, RELATED, this));
+            hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
+            basePanel.add(hooksPanel);
+            basePanel.add(makeVerticalStrut(hooksPanel, errorLabel, RELATED, this));
+        } else {
+            basePanel.add(makeVerticalStrut(filesPanel, errorLabel, RELATED, this));            
+        }
+        
+        // bottom panel -> error label, progres, ...
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
         bottomPanel.add(errorLabel);
         bottomPanel.add(makeFlexibleHorizontalStrut(15, 90, Short.MAX_VALUE));
         bottomPanel.add(progressPanel);
-        errorLabel.setAlignmentY(CENTER_ALIGNMENT);        
+        errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
-        progressPanel.setAlignmentY(CENTER_ALIGNMENT);
-        
-        basePanel.setLayout(new BoxLayout(basePanel, Y_AXIS));
-        basePanel.add(parametersPane1);
-        basePanel.add(makeVerticalStrut(parametersPane1, filesSectionButton, RELATED));
-        basePanel.add(filesSectionButton);
-        basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, RELATED));
-        basePanel.add(filesSectionPanel2);
-        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, RELATED));
-        basePanel.add(hooksSectionButton);
-        basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, RELATED));
-        basePanel.add(hookSectionPanel);
-        basePanel.add(makeVerticalStrut(hookSectionPanel, errorLabel, RELATED));
-        basePanel.add(bottomPanel);
-        setLayout(new BoxLayout(this, Y_AXIS));
-        add(basePanel);
-        
-        parametersPane1.setAlignmentX(LEFT_ALIGNMENT);
-        filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
-        filesSectionPanel2.setAlignmentX(LEFT_ALIGNMENT);
-        hooksSectionButton.setAlignmentX(LEFT_ALIGNMENT);
-        hookSectionPanel.setAlignmentX(LEFT_ALIGNMENT);
+        progressPanel.setAlignmentY(CENTER_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
 
-        basePanel.setBorder(createEmptyBorder(10,             //top
-                                    getContainerGap(WEST),    //left
-                                    0,                        //bottom
-                                    getContainerGap(EAST)));  //right
-
-        getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
+        basePanel.add(bottomPanel);
+        setLayout(new BoxLayout(this, Y_AXIS));
+        add(basePanel);                
     }// </editor-fold>
 
-    private Component makeVerticalStrut(JComponent compA,
+    static Component makeVerticalStrut(JComponent compA,
                                         JComponent compB,
-                                        ComponentPlacement relatedUnrelated) {
+                                        ComponentPlacement relatedUnrelated, 
+                                        JPanel parent) {
         int height = LayoutStyle.getInstance().getPreferredGap(
                             compA,
                             compB,
                             relatedUnrelated,
                             SOUTH,
-                            this);
+                            parent);
         return Box.createVerticalStrut(height);
     }
 
-    private Component makeFlexibleHorizontalStrut(int minWidth,
+    private static Component makeFlexibleHorizontalStrut(int minWidth,
                                                   int prefWidth,
                                                   int maxWidth) {
         return new Box.Filler(new Dimension(minWidth,  0),
@@ -390,6 +261,19 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
                               new Dimension(maxWidth,  0));
     }
 
+    static Component makeHorizontalStrut(JComponent compA,
+                                              JComponent compB,
+                                              ComponentPlacement relatedUnrelated,
+                                              JPanel parent) {
+            int width = LayoutStyle.getInstance().getPreferredGap(
+                                compA,
+                                compB,
+                                relatedUnrelated,
+                                WEST,
+                                parent);
+            return Box.createHorizontalStrut(width);
+    }
+            
     private int getContainerGap(int direction) {
         return LayoutStyle.getInstance().getContainerGap(this,
                                                                direction,
@@ -492,6 +376,129 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
 //            }
 //        }
         return modifiedFiles;
+    }
+
+    private abstract class CollapsiblePanel extends JPanel {
+        private final Icon expandedIcon;
+        private final Icon collapsedIcon;
+        protected final JLabel sectionButton;
+        protected final JPanel sectionPanel;
+        private boolean defaultSectionDisplayed;
+        
+        protected static final boolean DEFAULT_DISPLAY_FILES = true;
+        protected static final boolean DEFAULT_DISPLAY_HOOKS = false;
+    
+        public CollapsiblePanel(boolean defaultSectionDisplayed) {
+            this.sectionButton = new JLabel();
+            this.sectionPanel = new JPanel();
+            this.defaultSectionDisplayed = defaultSectionDisplayed;
+            
+            JTree tv = new JTree();
+            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+            expandedIcon = tvui.getExpandedIcon();
+            collapsedIcon = tvui.getCollapsedIcon();            
+                                    
+            setLayout(new BoxLayout(this, Y_AXIS));
+            add(sectionButton);
+//            add(makeVerticalStrut(sectionButton, sectionPanel, RELATED, VCSCommitPanel.this));
+            add(sectionPanel);    
+         
+            sectionPanel.setBorder(createEmptyBorder(10,         // top
+                                    getContainerGap(WEST) * 2,   // left
+                                    0,                           // bottom
+                                    getContainerGap(EAST) * 2)); // right
+            
+            setAlignmentX(LEFT_ALIGNMENT);
+            sectionPanel.setLayout(new BoxLayout(sectionPanel, Y_AXIS));
+            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);            
+            sectionButton.setAlignmentX(LEFT_ALIGNMENT);
+        }
+        
+        protected void initSection() {
+            if (defaultSectionDisplayed) {
+                displaySection();
+            } else {
+                hideSection();
+            }
+            sectionButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (sectionPanel.isVisible()) {
+                        hideSection();
+                    } else {
+                        displaySection();
+                    }
+                }
+            });                   
+        }    
+        
+        private void displaySection() {
+            sectionPanel.setVisible(true);
+            sectionButton.setIcon(expandedIcon);
+            enlargeVerticallyAsNecessary();
+        }
+
+        private void hideSection() {
+            sectionPanel.setVisible(false);
+            sectionButton.setIcon(collapsedIcon);
+        }        
+    }
+    
+    private class FilesPanel extends CollapsiblePanel {
+        final JLabel filesLabel = new JLabel();        
+        
+        public FilesPanel() {
+            super(DEFAULT_DISPLAY_FILES);
+            
+            Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
+                        
+            JComponent table = commitTable.getComponent();
+            
+            filesLabel.setLabelFor(table);
+            Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
+            table.setPreferredSize(new Dimension(0, 2 * parameters.getPanel().getPreferredSize().height));
+            
+            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);
+            sectionPanel.add(filesLabel);
+            sectionPanel.add(makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
+            sectionPanel.add(table);
+                        
+            initSection();
+        }
+
+    }
+    
+    private class HookPanel extends CollapsiblePanel {
+            
+        private Collection<? extends VCSHook> hooks = Collections.emptyList();
+        private VCSHookContext hookContext;    
+
+        public HookPanel(Collection<? extends VCSHook> hooks, VCSHookContext hookContext) {            
+            super(DEFAULT_DISPLAY_HOOKS);
+            this.hooks = hooks;
+            this.hookContext = hookContext;
+            
+            sectionButton.setText((hooks.size() == 1)
+                                           ? hooks.iterator().next().getDisplayName()
+                                           : getMessage("LBL_Advanced"));   //NOI18N                        
+            initSection();
+        }
+
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            // need this to happen in addNotify() - depends on how 
+            // repositoryComboSupport in hook.createComponents works for bugzilla|jira
+            if (hooks.size() == 1) {                
+                sectionPanel.add(hooks.iterator().next().createComponent(hookContext));
+            } else {
+                JTabbedPane hooksTabbedPane = new JTabbedPane();
+                for (VCSHook hook : hooks) {
+                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName());
+                }
+                sectionPanel.add(hooksTabbedPane);
+            }                
+        }
     }
     
 }
