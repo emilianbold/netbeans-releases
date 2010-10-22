@@ -69,11 +69,14 @@ public abstract class VCSFileNode {
         this.root = root;
     }
 
+    public abstract VCSCommitOptions getCommitOptions();
+    public abstract VCSCommitOptions getDefaultCommitOption();
+    public abstract VCSFileInformation getInformation();
+    
     public String getName() {
         return file.getName();
     }
 
-    public abstract VCSFileInformation getInformation();
 
     public File getFile() {
         return file;
