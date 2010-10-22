@@ -409,6 +409,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         Token<?extends PHPTokenId> token = ts.token();
         TokenId id = token.id();
+        int tokenOffsetOnCaret = ts.offset();
 
         // Insert an end statement? Insert a } marker?
         int[] startOfContext = new int[1];
@@ -425,7 +426,8 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             // We've either encountered a further indented line, or a line that doesn't
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
-            if (offset > afterLastNonWhite || id == PHPTokenId.PHP_CLOSETAG) {
+            if (offset > afterLastNonWhite || id == PHPTokenId.PHP_CLOSETAG
+                    || (offset < afterLastNonWhite && "?>".equals(doc.getText(afterLastNonWhite - 1, 2)))) {
                 // don't put php close tag iside. see #167816
                 sb.append("\n"); //NOI18N
                 sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
@@ -441,7 +443,14 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             }
 
             if (completeIn == PHPTokenId.PHP_CURLY_OPEN || completeIn == PHPTokenId.PHP_CLASS || completeIn == PHPTokenId.PHP_FUNCTION) {
-                sb.append("}"); // NOI18N
+                if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
+                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_OPENTAG));
+                    String begin = token != null ? token.text().toString() : "<?php"; //NOI18N
+                    sb.append(begin);
+                    sb.append(" } ?>"); // NOI18N
+                } else {
+                    sb.append("}"); // NOI18N
+                }
             } else if (completeIn == PHPTokenId.PHP_IF || completeIn == PHPTokenId.PHP_ELSE || completeIn == PHPTokenId.PHP_ELSEIF) {
                 sb.append("endif;"); // NOI18N
             } else if (completeIn == PHPTokenId.PHP_FOR) {
