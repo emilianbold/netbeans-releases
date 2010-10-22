@@ -144,8 +144,10 @@ public class QuickSearchPopup extends javax.swing.JPanel
 
     public void maybeEvaluate (String text) {
         this.searchedText = text;
-        if (text.length()>0)
+        if (text.length()>0) {
             updateStatusPanel(true);
+            updatePopup(true);
+        }
 
         if (updateTimer == null) {
             updateTimer = new Timer(COALESCE_TIME, this);
@@ -302,21 +304,21 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
     /*** impl of reactions to results data change */
 
     public void intervalAdded(ListDataEvent e) {
-        updatePopup();
+        updatePopup(evalTask != null);
     }
 
     public void intervalRemoved(ListDataEvent e) {
-        updatePopup();
+        updatePopup(evalTask != null);
     }
 
     public void contentsChanged(ListDataEvent e) {
-        updatePopup();
+        updatePopup(evalTask != null);
     }
 
     /**
      * Updates size and visibility of this panel according to model content
      */
-    public void updatePopup () {
+    public void updatePopup (boolean isInProgress) {
         int modelSize = rModel.getSize();
 
         // plug this popup into layered pane if needed
@@ -329,7 +331,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             lPane.add(this, new Integer(JLayeredPane.POPUP_LAYER + 1) );
         }
 
-        boolean statusVisible = updateStatusPanel(evalTask != null);
+        boolean statusVisible = updateStatusPanel(isInProgress);
 
         computePopupBounds(popupBounds, lPane, modelSize);
         setBounds(popupBounds);
@@ -388,7 +390,7 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
 
     /** Runnable implementation, updates popup */
     public void run() {
-        updatePopup();
+        updatePopup(evalTask != null);
     }
 
     private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
