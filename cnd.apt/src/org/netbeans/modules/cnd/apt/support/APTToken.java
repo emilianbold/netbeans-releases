@@ -67,5 +67,5 @@ public interface APTToken extends Token, Serializable {
     @Override
     public String getText();
     public CharSequence getTextID();
-    public void setTextID(CharSequence id);
+    public void setTextID(CharSequence id);    
 }
