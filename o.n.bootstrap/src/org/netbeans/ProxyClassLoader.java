@@ -407,7 +407,11 @@ public class ProxyClassLoader extends ClassLoader {
     }
     
     @Override
-    public final synchronized Enumeration<URL> getResources(String name) throws IOException {
+    public final Enumeration<URL> getResources(String name) throws IOException {
+        return getResourcesImpl(name);
+    }
+    
+    synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         final String path = name.substring(0, slashIdx + 1);

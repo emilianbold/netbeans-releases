@@ -58,12 +58,14 @@ import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
@@ -71,6 +73,8 @@ import java.util.logging.Level;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -488,8 +492,19 @@ public final class ModuleManager {
             }
             return u;
         }
-        
-        
+
+        @Override
+        synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
+            Enumeration<URL> first = super.getResourcesImpl(name);
+            ClassLoader l = NetigsoFramework.findFallbackLoader();
+            if (l != null) {
+                return Enumerations.removeDuplicates(
+                    Enumerations.concat(first, l.getResources(name))
+                );
+            } else {
+                return first;
+            }
+        }
 
         protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
             ClassLoader trueParent = getParent();
