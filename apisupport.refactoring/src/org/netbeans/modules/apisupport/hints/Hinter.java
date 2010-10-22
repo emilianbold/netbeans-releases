@@ -236,7 +236,7 @@ public interface Hinter {
             /**
              * Modify the original declaration.
              * @param wc Java source information
-             * @param declaration the class or method that the instance attribute corresponds to
+             * @param declaration the {@link TypeElement} or {@link ExecutableElement} that the instance attribute corresponds to
              * @param modifiers modifiers of the declaration that you might wish to add annotations to
              * @throws Exception in case of problem
              */
