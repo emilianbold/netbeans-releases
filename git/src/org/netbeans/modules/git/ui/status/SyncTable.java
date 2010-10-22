@@ -142,11 +142,11 @@ class SyncTable implements MouseListener, ListSelectionListener {
 
     private void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(StatusNode.NameProperty.NAME, StatusNode.NameProperty.TYPE, StatusNode.NameProperty.DISPLAY_NAME, StatusNode.NameProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<String>(StatusNode.NameProperty.NAME, String.class, StatusNode.NameProperty.DISPLAY_NAME, StatusNode.NameProperty.DESCRIPTION);
         sorter.setColumnComparator(0, null);
-        properties[1] = new ColumnDescriptor<String>(StatusNode.StatusProperty.NAME, StatusNode.StatusProperty.TYPE, StatusNode.StatusProperty.DISPLAY_NAME, StatusNode.StatusProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<String>(StatusNode.StatusProperty.NAME, String.class, StatusNode.StatusProperty.DISPLAY_NAME, StatusNode.StatusProperty.DESCRIPTION);
         sorter.setColumnComparator(1, null);
-        properties[2] = new ColumnDescriptor<String>(StatusNode.PathProperty.NAME, StatusNode.PathProperty.TYPE, StatusNode.PathProperty.DISPLAY_NAME, StatusNode.PathProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<String>(StatusNode.PathProperty.NAME, String.class, StatusNode.PathProperty.DISPLAY_NAME, StatusNode.PathProperty.DESCRIPTION);
         sorter.setColumnComparator(2, null);
         tableModel.setProperties(properties);
     }

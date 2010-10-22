@@ -126,7 +126,6 @@ public class StatusNode extends AbstractNode {
         static final String NAME = "path"; //NOI18N
         static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Path.DisplayName"); //NOI18N
         static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Path.Description"); //NOI18N
-        static final Class TYPE = String.class;
 
         public PathProperty (StatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION); // NOI18N
@@ -145,7 +144,6 @@ public class StatusNode extends AbstractNode {
         static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_File.DisplayName"); //NOI18N
         static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_File.Description"); //NOI18N
         private final GitFileNode fileNode;
-        static final Class TYPE = String.class;
 
         public NameProperty (StatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION); // NOI18N
@@ -165,7 +163,6 @@ public class StatusNode extends AbstractNode {
         static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Status.DisplayName"); //NOI18N
         static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Status.Description"); //NOI18N
         private final GitFileNode fileNode;
-        static final Class TYPE = String.class;
 
         public StatusProperty (StatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION);
