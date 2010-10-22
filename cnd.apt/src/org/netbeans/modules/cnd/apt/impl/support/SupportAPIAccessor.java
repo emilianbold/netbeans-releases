@@ -37,55 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.cnd.apt.impl.support;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 
 /**
  *
- * @author Sergey Grinev
+ * @author vv159170
  */
-public class HostMappingProviderSamba implements HostMappingProvider {
+public abstract class SupportAPIAccessor {
+    private static SupportAPIAccessor INSTANCE;
 
-    @Override
-    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        Map<String, String> mappings = new HashMap<String, String>();
-        ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, "cat", "/etc/sfw/smb.conf"); //NOI18N
-        if (exit.isOK()) {
-            mappings.putAll(parseOutput(new StringReader(exit.output)));
-        }
-        return mappings;
-    }
-
-    @Override
-    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return otherPlatform.isWindows() && hostPlatform.isUnix();
-    }
-
-    private static final String GLOBAL = "global"; //NOI18N
-    private static final String PATH = "path"; //NOI18N
-
-    static Map<String, String> parseOutput(Reader outputReader) {
-        Map<String, String> mappings = new HashMap<String, String>();
-        SimpleConfigParser parser = new SimpleConfigParser();
-        parser.parse(outputReader);
-        for (String name : parser.getSections()) {
-            if (!GLOBAL.equals(name)) {
-                String path = parser.getAttributes(name).get(PATH); //TODO: investigate case-sensitivity
-                if (path != null) {
-                    mappings.put(name, path);
-                }
+    public static synchronized SupportAPIAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = IncludeDirEntry.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
             }
         }
-        return mappings;
+
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        return INSTANCE;
     }
+
+    /**
+     * Register the accessor. The method can only be called once
+     * - otherwise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(SupportAPIAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
+    }
+
+    public abstract void invalidateFileBasedCache(String file);
+    public abstract void invalidateCache();
+    public abstract boolean isExistingDirectory(IncludeDirEntry entry);
 }

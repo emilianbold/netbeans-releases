@@ -37,55 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.mapper;
+package org.netbeans.modules.cnd.apt.support;
 
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Vladimir Voskresensky
  */
-public class HostMappingProviderSamba implements HostMappingProvider {
+class AccessorImpl extends SupportAPIAccessor {
 
     @Override
-    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        Map<String, String> mappings = new HashMap<String, String>();
-        ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, "cat", "/etc/sfw/smb.conf"); //NOI18N
-        if (exit.isOK()) {
-            mappings.putAll(parseOutput(new StringReader(exit.output)));
-        }
-        return mappings;
+    public void invalidateFileBasedCache(String file) {
+        IncludeDirEntry.invalidateFileBasedCache(file);
     }
 
     @Override
-    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return otherPlatform.isWindows() && hostPlatform.isUnix();
+    public void invalidateCache() {
+        IncludeDirEntry.invalidateCache();
     }
 
-    private static final String GLOBAL = "global"; //NOI18N
-    private static final String PATH = "path"; //NOI18N
-
-    static Map<String, String> parseOutput(Reader outputReader) {
-        Map<String, String> mappings = new HashMap<String, String>();
-        SimpleConfigParser parser = new SimpleConfigParser();
-        parser.parse(outputReader);
-        for (String name : parser.getSections()) {
-            if (!GLOBAL.equals(name)) {
-                String path = parser.getAttributes(name).get(PATH); //TODO: investigate case-sensitivity
-                if (path != null) {
-                    mappings.put(name, path);
-                }
-            }
-        }
-        return mappings;
+    @Override
+    public boolean isExistingDirectory(IncludeDirEntry entry) {
+        return entry.isExistingDirectory();
     }
 }
