@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -83,7 +84,7 @@ public abstract class APTTokenAbstact implements APTToken {
     
     @Override
     public String toString() {
-        return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
+        return "[\"" + getText() + "\",<" + APTUtils.getAPTTokenName(getType()) + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
     @Override
