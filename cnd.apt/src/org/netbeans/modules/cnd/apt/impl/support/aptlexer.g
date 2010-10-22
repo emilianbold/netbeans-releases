@@ -131,6 +131,7 @@ tokens {
 	DBL_SHARP;
 	SHARP;
         FUN_LIKE_MACRO_LPAREN;
+        GRAVE_ACCENT;
 
         // marker for last const text token
         LAST_CONST_TEXT_TOKEN;
@@ -906,6 +907,8 @@ FIRST_LESS :
 DOLLAR options { constText=true; }  :  '$' ;
 
 AT  options { constText=true; }     :  '@' ;
+
+GRAVE_ACCENT options { constText=true; }:  '`';
 
 FIRST_GREATER options { constText=true; } : 
     '>' ( {$setType(GREATERTHAN);}                  //GREATERTHAN           : ">" ;

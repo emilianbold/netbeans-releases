@@ -82,7 +82,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
-@MimeRegistration(mimeType=/* #191234: cannot use real MIME type*/"text/xml", service=UpToDateStatusProviderFactory.class)
+@MimeRegistration(mimeType="text/x-maven-pom+xml", service=UpToDateStatusProviderFactory.class)
 public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
@@ -91,11 +91,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
-        FileObject fo = NbEditorUtilities.getFileObject(document);
-        if (fo != null && /* #191234 */"text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
-            return new StatusProviderImpl(document);
-        }
-        return null;
+        return new StatusProviderImpl(document);
     }
 
     static class StatusProviderImpl extends UpToDateStatusProvider {

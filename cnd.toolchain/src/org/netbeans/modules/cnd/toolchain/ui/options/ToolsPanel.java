@@ -729,8 +729,8 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         loadingToolCollectionPanel = new javax.swing.JPanel();
         lblLoadToolsProgress = new javax.swing.JLabel();
 
-        setMinimumSize(new java.awt.Dimension(400, 400));
-        setPreferredSize(new java.awt.Dimension(400, 400));
+        setMinimumSize(new java.awt.Dimension(600, 420));
+        setPreferredSize(new java.awt.Dimension(600, 420));
         setLayout(new java.awt.GridBagLayout());
 
         buttomPanel.setMinimumSize(new java.awt.Dimension(150, 26));
