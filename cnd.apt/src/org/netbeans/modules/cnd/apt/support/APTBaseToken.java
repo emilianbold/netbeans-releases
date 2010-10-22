@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 
@@ -179,7 +180,7 @@ public class APTBaseToken implements APTToken {
 
     @Override
     public String toString() {
-        return "[\"" + getTextID() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
+        return "[\"" + getTextID() + "\",<" + APTUtils.getAPTTokenName(getType()) + ">,line=" + getLine() + ",col=" + getColumn() + "]" + ",offset="+getOffset()+",file="+getFilename(); // NOI18N
     }
 
     @Override
