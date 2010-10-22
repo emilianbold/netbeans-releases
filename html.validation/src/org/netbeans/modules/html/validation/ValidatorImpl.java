@@ -63,7 +63,7 @@ public class ValidatorImpl implements Validator {
         
         try {
 
-            ValidationTransaction validatorTransaction = ValidationTransaction.getInstance();
+            ValidationTransaction validatorTransaction = ValidationTransaction.create(context.getVersion());
 
             String source = context.getSource();
             validatorTransaction.validateCode(source);
