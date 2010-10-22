@@ -101,14 +101,12 @@ public class CommitAction extends SingleRepositoryAction {
         // show commit dialog
         String contentTitle = Utils.getContextDisplayName(context);
 
-        final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
-
-        final VCSCommitTable data = new VCSCommitTable(new VCSCommitTableModel());
-        
+        final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);        
         HgHookContext hooksCtx = new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {});
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
-        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), data, preferences, hooks, hooksCtx);
-
+        
+        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), preferences, hooks, hooksCtx);        
+        
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
@@ -155,7 +153,10 @@ public class CommitAction extends SingleRepositoryAction {
 //                }
             }
         });
-        computeNodes(data, panel, roots, repository, cancelButton);
+        
+        VCSCommitTable table = panel.getCommitTable();
+        
+        computeNodes(table, panel, roots, repository, cancelButton);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
             @Override
@@ -163,13 +164,13 @@ public class CommitAction extends SingleRepositoryAction {
 //                refreshCommitDialog(panel, data, commitButton);
             }
         });
-        data.getTableModel().addTableModelListener(new TableModelListener() {
+        table.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
 //                refreshCommitDialog(panel, data, commitButton);
             }
         });
-        commitButton.setEnabled(containsCommitable(data));
+        commitButton.setEnabled(table.containsCommitable());
 
         panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
@@ -268,14 +269,5 @@ public class CommitAction extends SingleRepositoryAction {
         panel.getProgressPanel().setVisible(true);
         support.start(rp, repository, NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"));
     }
-
-    private static boolean containsCommitable(VCSCommitTable data) {
-        Map<VCSFileNode, VCSCommitOptions> map = data.getCommitFiles();
-        for(VCSCommitOptions co : map.values()) {
-            if(co != VCSCommitOptions.EXCLUDE) {
-                return true;
-            }
-        }
-        return false;
-    }
+    
 }

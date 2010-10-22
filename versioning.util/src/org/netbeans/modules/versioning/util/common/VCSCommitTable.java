@@ -123,6 +123,16 @@ public class VCSCommitTable implements AncestorListener, TableModelListener, Mou
         setDefaultColumnSizes();
     }
 
+    public boolean containsCommitable() {
+        Map<VCSFileNode, VCSCommitOptions> map = getCommitFiles();
+        for(VCSCommitOptions co : map.values()) {
+            if(co != VCSCommitOptions.EXCLUDE) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Sets sizes of Commit table columns, kind of hardcoded.
      */ 

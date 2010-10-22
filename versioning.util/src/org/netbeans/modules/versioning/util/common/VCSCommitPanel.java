@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.awt.EventQueue;
+import java.util.Map;
 import java.awt.BorderLayout;
 import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
@@ -104,8 +106,11 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  */
 public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
-    private final AutoResizingPanel basePanel = new AutoResizingPanel();
+    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOPI18N
+    
     static final Object EVENT_SETTINGS_CHANGED = new Object();   
+    
+    private final AutoResizingPanel basePanel = new AutoResizingPanel();
 
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
     private final JLabel errorLabel = new JLabel();
@@ -120,9 +125,9 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     private final VCSCommitParameters parameters;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, VCSCommitTable commitTable, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
+    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
         this.parameters = parameters;
-        this.commitTable = commitTable;
+        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());;
         
         if(hooks == null) {
             hooks = Collections.emptyList();
@@ -131,6 +136,10 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
 
         commitTable.setCommitPanel(this);
         this.preferences = preferences;
+    }
+
+    public VCSCommitTable getCommitTable() {
+        return commitTable;
     }
 
     public PlaceholderPanel getProgressPanel() {
@@ -162,23 +171,22 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     }
 
     @Override
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        // XXX
-//        if (evt.getKey().startsWith(GitModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
-//            Runnable inAWT = new Runnable() {
-//                @Override
-//                public void run() {
-//                    commitTable.dataChanged();
-//                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-//                }
-//            };
-//            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
-//            if (EventQueue.isDispatchThread()) {
-//                inAWT.run();
-//            } else {
-//                EventQueue.invokeLater(inAWT);
-//            }
-//        }
+    public void preferenceChange(PreferenceChangeEvent evt) {        
+        if (evt.getKey().startsWith(PROP_COMMIT_EXCLUSIONS)) { // XXX - need setting
+            Runnable inAWT = new Runnable() {
+                @Override
+                public void run() {
+                    commitTable.dataChanged();
+                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+                }
+            };
+            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
+        }
     }
 
     @Override
