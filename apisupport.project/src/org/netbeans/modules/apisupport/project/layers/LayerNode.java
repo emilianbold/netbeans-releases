@@ -67,18 +67,14 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.Environment;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -95,7 +91,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         this(getDataNode(handle), handle, true);
     }
     
-    private LayerNode(Node delegate, LayerHandle handle, boolean specialDisplayName) {
+    LayerNode(Node delegate, LayerHandle handle, boolean specialDisplayName) {
         super(delegate, new LayerChildren(handle));
         this.specialDisplayName = specialDisplayName;
     }
@@ -108,23 +104,6 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
             assert false : e;
             return Node.EMPTY;
         }
-    }
-    
-    public static Environment.Provider createProvider() {
-        class EP implements Environment.Provider {
-            public Lookup getEnvironment(DataObject obj) {
-                FileObject xml = obj.getPrimaryFile();
-                Project p = FileOwnerQuery.getOwner(xml);
-                if (p == null) {
-                    return Lookup.EMPTY;
-                }
-                DataNode dn = new DataNode(obj, Children.LEAF);
-                dn.setIconBaseWithExtension("org/netbeans/modules/apisupport/project/ui/resources/layerObject.gif"); // NOI18N
-                LayerNode ln = new LayerNode(dn, new LayerHandle(p, xml), false);
-                return Lookups.singleton(ln);
-            }
-        }
-        return new EP();
     }
     
     private static final class LayerChildren extends Children.Keys<LayerChildren.KeyType> {
