@@ -703,6 +703,7 @@ public class SemanticHighlighter extends JavaParserResultTask {
             if (decl != null && (decl.getKind().isClass() || decl.getKind().isInterface())) {
                 //class use make look like read variable access:
                 if (type.contains(UseTypes.READ)) {
+                    type = EnumSet.copyOf(type);
                     type.remove(UseTypes.READ);
                     type.add(UseTypes.CLASS_USE);
                 }
