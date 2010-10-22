@@ -249,7 +249,7 @@ public final class DocPositions {
                         if (anotherOpenBrace == 0) {
                             // real close brace
                             isClosed = true;
-                            endOffset = jdts.offset() + i;
+                            endOffset = jdts.offset() + i + 1;
                             break STOP;
                         } else {
                             --anotherOpenBrace;
