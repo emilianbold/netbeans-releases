@@ -294,7 +294,7 @@ public class HtmlCompletionQuery extends UserTask {
         //different approach - simply build a nesting tree of tag from the
         //actual position to the root by using the lexical syntax elements
         boolean useHtmlParseResult = true;
-        if(version == HtmlVersion.HTML5) {
+        if(version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5) {
             for(ProblemDescription pd : htmlResult.getProblems()) {
                 if(pd.getType() > ProblemDescription.WARNING) {
                     useHtmlParseResult = false;
