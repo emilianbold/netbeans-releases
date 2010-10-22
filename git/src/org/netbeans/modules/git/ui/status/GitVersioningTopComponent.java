@@ -226,7 +226,6 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         setEnabled(true);
         setCursor(Cursor.getDefaultCursor());
         context = ctx;
-        controller.setContext(ctx);
         Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
         if (repositoryRoots.size() == 1) {
             setBranchTitle(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N

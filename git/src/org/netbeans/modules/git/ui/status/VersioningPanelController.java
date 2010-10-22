@@ -48,16 +48,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
@@ -71,13 +77,16 @@ import org.openide.util.actions.SystemAction;
  * @author ondra
  */
 class VersioningPanelController implements ActionListener {
+
     private final GitVersioningTopComponent tc;
     private final VersioningPanel panel;
     private VCSContext context;
     private EnumSet<Status> displayStatuses;
     private final NoContentPanel noContentComponent = new NoContentPanel();
     private static final RequestProcessor RP = new RequestProcessor("GitVersioningWindow", 1, true); //NOI18N
-    private RequestProcessor.Task refreshNodesTak = RP.create(new RefreshNodesTask());
+    private RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
+    static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
+    private final SyncTable syncTable;
 
     VersioningPanelController (GitVersioningTopComponent tc) {
         this.tc = tc;
@@ -85,7 +94,8 @@ class VersioningPanelController implements ActionListener {
 
         initDisplayStatus();
         onDisplayedStatusChanged();
-        setVersioningComponent(noContentComponent);
+        syncTable = new SyncTable(new StatusTableModel());
+        setVersioningComponent(syncTable.getComponent());
         
         attachListeners();
         tc.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.SHIFT_MASK | InputEvent.ALT_MASK), "prevInnerView"); // NOI18N
@@ -117,6 +127,7 @@ class VersioningPanelController implements ActionListener {
     void setContext (VCSContext context) {
         if (context != this.context) {
             this.context = context;
+            refreshNodes();
         }
     }
 
@@ -236,13 +247,38 @@ class VersioningPanelController implements ActionListener {
     }
 
     private void refreshNodes () {
-        refreshNodesTak.schedule(0);
+        if (context != null) {
+            refreshNodesTask.cancel();
+            refreshNodesTask.schedule(0);
+        }
     }
 
     private class RefreshNodesTask implements Runnable {
         @Override
         public void run() {
-            setVersioningComponent(noContentComponent);
+            final List<StatusNode> nodes = new LinkedList<StatusNode>();
+            try {
+                Git git = Git.getInstance();
+                File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
+                for (File f : interestingFiles) {
+                    File root = git.getRepositoryRoot(f);
+                    if (root != null) {
+                        nodes.add(new StatusNode(new GitFileNode(root, f)));
+                    }
+                }
+            } finally {
+                Mutex.EVENT.readAccess(new Runnable () {
+                    @Override
+                    public void run() {
+                        syncTable.getTableModel().setNodes(nodes.toArray(new StatusNode[nodes.size()]));
+                        if (nodes.isEmpty()) {
+                            setVersioningComponent(noContentComponent);
+                        } else {
+                            setVersioningComponent(syncTable.getComponent());
+                        }
+                    }
+                });
+            }
         }
     }
 }
