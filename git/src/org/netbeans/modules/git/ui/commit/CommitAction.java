@@ -42,12 +42,13 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.BorderLayout;
+import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
-import org.netbeans.modules.versioning.util.common.VCSCommitTableModel;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
-import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import java.awt.Dialog;
 import java.awt.EventQueue;
@@ -56,11 +57,15 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.modules.git.FileInformation;
@@ -80,6 +85,8 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -105,7 +112,7 @@ public class CommitAction extends SingleRepositoryAction {
         HgHookContext hooksCtx = new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {});
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         
-        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), preferences, hooks, hooksCtx);        
+        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), preferences, hooks, hooksCtx, new DiffProvider());        
         
         final JButton commitButton = new JButton();
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
@@ -270,4 +277,54 @@ public class CommitAction extends SingleRepositoryAction {
         support.start(rp, repository, NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"));
     }
     
+    private static class DiffProvider extends VCSCommitPanel.MultiDiffProvider {
+        
+        @Override
+        public Set<File> getModifiedFiles() {
+            // XXX implement me
+//            HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
+//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+//                SaveCookie[] cookies = e.getValue().getSaveCookies(false);
+//                if (cookies.length > 0) {
+//                    modifiedFiles.put(e.getKey(), cookies[0]);
+//                }
+//            }
+//            return modifiedFiles;
+            return Collections.emptySet();
+        }
+
+        @Override
+        public JComponent createDiffComponent(File file) {
+            JPanel p = new JPanel();
+            p.add(new JLabel("not yet implemented !!!"));
+            return p; // XXX implement me new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+        }
+        
+
+        /**
+         * Returns save cookies available for files in the commit table
+         * @return
+         */
+        SaveCookie[] getSaveCookies() {
+            return null; // XXX getModifiedFiles().values().toArray(new SaveCookie[0]);
+        }
+
+        /**
+         * Returns editor cookies available for modified and not open files in the commit table
+         * @return
+         */
+        EditorCookie[] getEditorCookies() {
+            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+            // XXX      
+//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
+//                EditorCookie[] cookies = e.getValue().getEditorCookies(true);
+//                if (cookies.length > 0) {
+//                    allCookies.add(cookies[0]);
+//                }
+//            }
+            return allCookies.toArray(new EditorCookie[allCookies.size()]);
+        }
+
+        
+    }
 }
