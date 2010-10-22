@@ -350,7 +350,8 @@ public class RemoteFileSupport extends NamedRunnable {
         } else {
             if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
                 ExitStatus ls = ProcessUtils.execute(execEnv, "/bin/ls", rdir); // NOI18N
-                RemoteUtil.LOGGER.log(Level.FINE, "Content of directory {0}:\n{1}", new Object[]{rdir, ls.output});
+                RemoteUtil.LOGGER.log(Level.FINE, "Error running script\n{0}\non {1}.\nContent of directory {2}:\n{3}\n",
+                        new Object[]{script, execEnv, rdir, ls.output});
             }
             return null;
         }
