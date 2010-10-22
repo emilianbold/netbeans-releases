@@ -753,8 +753,8 @@ public class HighlightsViewUtils {
             }
             // Text may have extra foreground color
 
-            Object strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough);
-            if (strikeThroughValue != null) {
+            Object strikeThroughValue;
+            if (attrs != null && (strikeThroughValue = attrs.getAttribute(StyleConstants.StrikeThrough)) != null) {
                 Color strikeThroughColor = null;
                 if (strikeThroughValue instanceof Boolean) { // Correct swing-way
                     if (Boolean.TRUE.equals(strikeThroughValue)) {
