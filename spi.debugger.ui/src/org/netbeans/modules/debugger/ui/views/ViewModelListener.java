@@ -197,19 +197,19 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         preferences.removePreferenceChangeListener(prefListener);
         boolean haveTreeModels = false;
         for (List tms : treeModels) {
-            if (tms.size() > 0) {
+            if (tms != null && tms.size() > 0) {
                 haveTreeModels = true;
                 break;
             }
         }
         boolean haveNodeModels = false;
         for (List nms : nodeModels) {
-            if (nms.size() > 0) {
+            if (nms != null && nms.size() > 0) {
                 haveNodeModels = true;
                 break;
             }
         }
-        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels.size() > 0;
+        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels != null && tableModels.size() > 0;
         if (haveModels && view.getComponentCount() > 0) {
             JComponent tree = (JComponent) view.getComponent(0);
             if (!(tree instanceof javax.swing.JTabbedPane)) {

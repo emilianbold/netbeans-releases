@@ -582,7 +582,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
                     errorString.append(errors.get(i));
                     if (i < errors.size() - 1) {
                         errorString.append("<br>"); // NOI18N
-                    } // NOI18N
+                    }
                 }
                 lblErrors.setText("<html>" + errorString.toString() + "</html>"); //NOI18N
 
@@ -743,8 +743,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         lblErrors.setText(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.lblErrors.text")); // NOI18N
         lblErrors.setEnabled(false);
         lblErrors.setFocusable(false);
-        lblErrors.setMinimumSize(new java.awt.Dimension(0, 16));
-        lblErrors.setPreferredSize(new java.awt.Dimension(0, 16));
+        lblErrors.setPreferredSize(new java.awt.Dimension(0, 26));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -763,7 +762,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         buttomPanel.add(btVersions, gridBagConstraints);
         btVersions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btVersions.AccessibleContext.accessibleDescription")); // NOI18N
 
@@ -777,7 +776,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         buttomPanel.add(btRestore, gridBagConstraints);
         btRestore.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ToolsPanel.class, "ToolsPanel.btRestore.AccessibleContext.accessibleDescription")); // NOI18N

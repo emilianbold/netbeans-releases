@@ -48,10 +48,17 @@
 
 package org.netbeans.modules.cnd.toolchain.ui.options;
 
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.io.IOException;
 import java.net.ConnectException;
+import javax.swing.plaf.ButtonUI;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
@@ -61,6 +68,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -427,11 +435,38 @@ import org.openide.util.Utilities;
         postIsPathFieldValid(tfCMakePath, PredefinedToolKind.CMakeTool);
     }
 
-    private void setPathFieldValid(JTextField field, boolean valid) {
+    private void setPathFieldValid(JTextField field, boolean valid, PredefinedToolKind tool) {
         if (valid) {
             field.setForeground(tfColor);
         } else {
             field.setForeground(Color.RED);
+        }
+        JCheckBox box = null;
+        switch(tool) {
+            case CCompiler:
+                box = cbCRequired;
+                break;
+            case CCCompiler:
+                box = cbCppRequired;
+                break;
+            case FortranCompiler:
+                box = cbFortranRequired;
+                break;
+            case Assembler:
+                box = cbAsRequired;
+                break;
+            case MakeTool:
+                box = cbMakeRequired;
+                break;
+            case DebuggerTool:
+                box = cbDebuggerRequired;
+                break;
+            case QMakeTool:
+                box = cbQMakeRequired;
+                break;
+        }
+        if (box != null) {
+            ((MyCheckBox)box).setInvalid(!valid);
         }
     }
 
@@ -513,25 +548,25 @@ import org.openide.util.Utilities;
         tf.setEditable(editable);
     }
 
-    private void updateField(final JTextField field, final boolean valid){
+    private void updateField(final JTextField field, final boolean valid, final PredefinedToolKind tool){
         SwingUtilities.invokeLater(new Runnable(){
             @Override
             public void run() {
-                setPathFieldValid(field, valid);
+                setPathFieldValid(field, valid, tool);
                 manager.dataValid();
             }
         });
     }
 
-    void postIsPathFieldValid(final JTextField field, final ToolKind tool) {
+    void postIsPathFieldValid(final JTextField field, final PredefinedToolKind tool) {
         final String txt = field.getText();
         if (txt.length() == 0) {
             lastValid.put(tool, false);
-            updateField(field, false);
+            updateField(field, false, tool);
             return;
         } else if (tool == PredefinedToolKind.MakeTool && !supportedMake(tfMakePath)) {
             lastValid.put(tool, false);
-            updateField(field, false);
+            updateField(field, false, tool);
             return;
         }
 
@@ -561,7 +596,7 @@ import org.openide.util.Utilities;
                         }
                     }
                     lastValid.put(tool, ok);
-                    updateField(field, ok);
+                    updateField(field, ok, tool);
                 }
             });
         } else {
@@ -570,7 +605,7 @@ import org.openide.util.Utilities;
                 public void run() {
                     boolean exists = ServerList.isValidExecutable(manager.getExecutionEnvironment(), txt);
                     lastValid.put(tool, exists);
-                    updateField(field, exists);
+                    updateField(field, exists, tool);
                 }
             });
         }
@@ -796,17 +831,17 @@ import org.openide.util.Utilities;
         btFortranBrowse = new javax.swing.JButton();
         lbFamily = new javax.swing.JLabel();
         requiredToolsLabel = new javax.swing.JLabel();
-        cbQMakeRequired = new javax.swing.JCheckBox();
-        cbMakeRequired = new javax.swing.JCheckBox();
-        cbDebuggerRequired = new javax.swing.JCheckBox();
+        cbQMakeRequired = new MyCheckBox();
+        cbMakeRequired = new MyCheckBox();
+        cbDebuggerRequired = new MyCheckBox();
         cbDebuggerRequired.addItemListener(this);
-        cbCRequired = new javax.swing.JCheckBox();
+        cbCRequired = new MyCheckBox();
         cbCRequired.addItemListener(this);
-        cbCppRequired = new javax.swing.JCheckBox();
+        cbCppRequired = new MyCheckBox();
         cbCppRequired.addItemListener(this);
-        cbFortranRequired = new javax.swing.JCheckBox();
+        cbFortranRequired = new MyCheckBox();
         cbFortranRequired.addItemListener(this);
-        cbAsRequired = new javax.swing.JCheckBox();
+        cbAsRequired = new MyCheckBox();
         cbFortranRequired.addItemListener(this);
         lbBaseDirectory = new javax.swing.JLabel();
         tfBaseDirectory = new javax.swing.JTextField();
@@ -846,14 +881,14 @@ import org.openide.util.Utilities;
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 10, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbMakeCommand, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 0);
         add(tfMakePath, gridBagConstraints);
 
         btMakeBrowse.setText(bundle.getString("ToolCollectionPanel.btMakeBrowse.text")); // NOI18N
@@ -867,7 +902,7 @@ import org.openide.util.Utilities;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btMakeBrowse, gridBagConstraints);
 
         lbDebuggerCommand.setText(bundle.getString("ToolCollectionPanel.lbDebuggerCommand.text")); // NOI18N
@@ -1019,7 +1054,8 @@ import org.openide.util.Utilities;
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbQMakeRequired, gridBagConstraints);
 
         cbMakeRequired.setSelected(true);
@@ -1028,7 +1064,8 @@ import org.openide.util.Utilities;
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbMakeRequired, gridBagConstraints);
 
         cbDebuggerRequired.setToolTipText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbDebuggerRequired.text")); // NOI18N
@@ -1036,35 +1073,40 @@ import org.openide.util.Utilities;
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbDebuggerRequired, gridBagConstraints);
 
         cbCRequired.setToolTipText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbCRequired.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbCRequired, gridBagConstraints);
 
         cbCppRequired.setToolTipText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbCppRequired.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbCppRequired, gridBagConstraints);
 
         cbFortranRequired.setToolTipText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbFortranRequired.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbFortranRequired, gridBagConstraints);
 
         cbAsRequired.setToolTipText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.cbAsRequired.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(cbAsRequired, gridBagConstraints);
 
         lbBaseDirectory.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbBaseDirectory.text")); // NOI18N
@@ -1259,7 +1301,7 @@ import org.openide.util.Utilities;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(12, 6, 0, 0);
         add(requiredSeparator, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1352,4 +1394,36 @@ import org.openide.util.Utilities;
     private javax.swing.JTextPane tpInstall;
     // End of variables declaration//GEN-END:variables
 
+
+    private static final class MyCheckBox extends JCheckBox {
+        private boolean invalid = true;
+        private final JLabel test = new JLabel();
+        private MyCheckBox() {
+            super();
+        }
+
+        private void setInvalid(boolean invalid) {
+            this.invalid = invalid;
+            this.invalidate();
+            this.repaint();
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            Rectangle clipBounds = g.getClipBounds();
+            g.setColor(test.getBackground());
+            g.fillRect(clipBounds.x, clipBounds.y, clipBounds.width, clipBounds.height);
+            String s = isSelected() ? "*" : " "; // NOI18N
+            if (invalid) {
+                g.setColor(Color.RED);
+            } else {
+                g.setColor(test.getForeground());
+            }
+            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            Font bold = new Font(g.getFont().getFamily(), Font.BOLD, g.getFont().getSize());
+            g.setFont(bold);
+            FontMetrics fontMetrics = g.getFontMetrics();
+            g.drawString(s, (getWidth() - fontMetrics.stringWidth(s))/2, fontMetrics.getHeight());
+        }
+    }
 }

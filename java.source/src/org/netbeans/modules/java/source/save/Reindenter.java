@@ -404,18 +404,8 @@ public class Reindenter implements IndentTask {
                         currentIndent = 0;
                     } else if (t != null) {
                         currentIndent = getCurrentIndent(t);
-                    } else if (isLeftBraceOnNewLine(lastPos, startOffset)) {
-                        switch (path.get(1).getKind() == Kind.METHOD ? cs.getMethodDeclBracePlacement() : cs.getOtherBracePlacement()) {
-                            case SAME_LINE:
-                            case NEW_LINE:
-                                currentIndent += cs.getIndentSize();
-                                break;
-                            case NEW_LINE_HALF_INDENTED:
-                                currentIndent += (cs.getIndentSize() - cs.getIndentSize() / 2);
-                                break;
-                        }
                     } else {
-                        currentIndent += cs.getIndentSize();
+                        currentIndent = getCurrentIndent(path.get(1)) + cs.getIndentSize();
                     }
                     if (nextTokenId != null && nextTokenId == JavaTokenId.LBRACE) {
                         switch (cs.getOtherBracePlacement()) {
