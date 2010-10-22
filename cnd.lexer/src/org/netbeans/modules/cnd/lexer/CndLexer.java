@@ -343,6 +343,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         return token(CppTokenId.LBRACE);
                     case '}':
                         return token(CppTokenId.RBRACE);
+                    case '`':
+                        return token(CppTokenId.GRAVE_ACCENT);
                     case '@':
                         return token(CppTokenId.AT);
 
