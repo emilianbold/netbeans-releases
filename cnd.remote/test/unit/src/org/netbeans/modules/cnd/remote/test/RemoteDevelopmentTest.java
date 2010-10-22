@@ -108,6 +108,19 @@ public class RemoteDevelopmentTest extends CndBaseTestSuite {
         this(testClass.getName(), testClass);
     }
 
+    /** mainly for debugging purposes - launches the given test multiple times  */
+    public RemoteDevelopmentTest(Class testClass, int passes) {
+        this(testClass.getName(), multiply(testClass, passes));
+    }
+
+    private static Class[] multiply(Class testClass, int passes) {
+        Class[] result = new Class[passes];
+        for (int i = 0; i < passes; i++) {
+            result[i] = testClass;
+        }
+        return result;
+    }
+
     // Why are tests just Test, not NativeExecutionBaseTestCase?
     // to allow add warnings (TestSuite.warning() returns test stub with warning)
     public RemoteDevelopmentTest(String name, Test... tests) {
