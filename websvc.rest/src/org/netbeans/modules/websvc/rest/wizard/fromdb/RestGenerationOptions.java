@@ -94,8 +94,8 @@ public final class RestGenerationOptions {
 
     public enum Operation {
 
-        CREATE("javax.ws.rs.PUT", "create", true ),
-        EDIT("javax.ws.rs.POST", "edit", true ),
+        CREATE("javax.ws.rs.POST", "create", true ),
+        EDIT("javax.ws.rs.PUT", "edit", true ),
         REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
         FIND("javax.ws.rs.GET", "find", "{id}"),
         FIND_ALL("javax.ws.rs.GET", "findAll", true),
