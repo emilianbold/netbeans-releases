@@ -70,6 +70,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -167,6 +168,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         TypeMirror p1 = type(Presenter.Menu.class);
         TypeMirror p2 = type(Presenter.Toolbar.class);
         TypeMirror p3 = type(Presenter.Popup.class);
+        TypeMirror caa = type(ContextAwareAction.class);
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
@@ -219,7 +221,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             boolean direct = e.getKind() == ElementKind.CLASS &&
                 (isAssignable(e.asType(), p1) ||
                  isAssignable(e.asType(), p2) ||
-                 isAssignable(e.asType(), p3));
+                 isAssignable(e.asType(), p3) ||
+                 isAssignable(e.asType(), caa));
             
             
             if (direct) {
