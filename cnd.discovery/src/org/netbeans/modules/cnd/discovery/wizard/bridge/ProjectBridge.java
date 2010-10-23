@@ -308,6 +308,9 @@ public class ProjectBridge {
             }
             if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
                 path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
             }
             int i = path.lastIndexOf('/');
             if (i >= 0){
