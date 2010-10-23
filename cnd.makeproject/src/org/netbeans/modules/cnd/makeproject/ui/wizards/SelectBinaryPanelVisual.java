@@ -861,18 +861,23 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         }
 
         private boolean isMyDll(String path, String root) {
+            path = path.replace('\\','/');
+            root = root.replace('\\','/');
             if (path.startsWith(root)) {
                 return true;
             } else {
-                String[] p1 = path.replace('\\','/').split("/");  // NOI18N
-                String[] p2 = root.replace('\\','/').split("/");  // NOI18N
+                String[] p1 = path.split("/");  // NOI18N
+                String[] p2 = root.split("/");  // NOI18N
                 for(int i = 0; i < Math.min(p1.length - 1, p2.length); i++) {
                     if (!p1[i].equals(p2[i])) {
-                        if (i > 2) {
+                        if (i > 3) {
                             return true;
                         } else {
                             return false;
                         }
+                    }
+                    if (i > 3) {
+                        return true;
                     }
                 }
             }
