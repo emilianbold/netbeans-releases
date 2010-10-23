@@ -3233,12 +3233,12 @@ assignment_expression
             | DIVIDEEQUAL
             | MINUSEQUAL
             | PLUSEQUAL
-			| MODEQUAL
-			| SHIFTLEFTEQUAL
-			| SHIFTRIGHTEQUAL
-			| BITWISEANDEQUAL
-			| BITWISEXOREQUAL
-			| BITWISEOREQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
             )
             (
                 // IZ#152872: parser error in VLC on cast expression
