@@ -1,0 +1,384 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+package org.netbeans.libs.git.jgit.commands;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.eclipse.jgit.lib.Repository;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitStatus;
+import org.netbeans.libs.git.GitStatus.Status;
+import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.libs.git.progress.ProgressMonitor.DefaultProgressMonitor;
+import org.netbeans.libs.git.progress.StatusListener;
+
+/**
+ *
+ * @author ondra
+ */
+public class StatusTest extends AbstractGitTestCase {
+
+    private File workDir;
+    private Repository repository;
+    private static final StatusListener NULL_STATUS_LISTENER = new StatusListener() {
+        @Override
+        public void notifyStatus(GitStatus status) {
+        }
+    };
+
+    public StatusTest(String testName) throws IOException {
+        super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        workDir = getWorkingDirectory();
+        repository = getRepository(getLocalGitRepository());
+    }
+
+    public void testMiscStatus () throws Exception {
+        write(new File(workDir, ".gitignore"), "ignored");
+        File untracked = new File(workDir, "untracked");
+        write(untracked, "untracked");
+        File ignored = new File(workDir, "ignored");
+        write(ignored, "ignored");
+        File added_uptodate = new File(workDir, "added-uptodate");
+        write(added_uptodate, "added-uptodate");
+        File added_modified = new File(workDir, "added-modified");
+        write(added_modified, "added_modified");
+        File added_deleted = new File(workDir, "added-deleted");
+        write(added_deleted, "added_deleted");
+
+        File uptodate_uptodate = new File(workDir, "uptodate-uptodate");
+        write(uptodate_uptodate, "uptodate_uptodate");
+        File uptodate_modified = new File(workDir, "uptodate-modified");
+        write(uptodate_modified, "uptodate_modified");
+        File uptodate_deleted = new File(workDir, "uptodate-deleted");
+        write(uptodate_deleted, "uptodate_deleted");
+
+        File modified_uptodate = new File(workDir, "modified-uptodate");
+        write(modified_uptodate, "modified_uptodate");
+        File modified_modified = new File(workDir, "modified-modified");
+        write(modified_modified, "modified_modified");
+        File modified_reset = new File(workDir, "modified-reset");
+        write(modified_reset, "modified_reset");
+        File modified_deleted = new File(workDir, "modified-deleted");
+        write(modified_deleted, "modified_deleted");
+
+        // we cannot
+        File deleted_uptodate = new File(workDir, "deleted-uptodate");
+        write(deleted_uptodate, "deleted_uptodate");
+        File deleted_untracked = new File(workDir, "deleted-untracked");
+        write(deleted_untracked, "deleted_untracked");
+
+        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked);
+        commit(workDir);
+        add(added_uptodate, added_modified, added_deleted);
+        write(modified_deleted, "modification modified_deleted");
+        write(modified_modified, "modification modified_modified");
+        write(modified_reset, "modification modified_reset");
+        write(modified_uptodate, "modification modified_uptodate");
+        add(modified_deleted, modified_modified, modified_reset, modified_uptodate);
+        deleted_uptodate.delete();
+        deleted_untracked.delete();
+        remove(true, deleted_uptodate, deleted_untracked);
+        write(added_modified, "modification2 added_modified");
+        write(uptodate_modified, "modification2 uptodate_modified");
+        write(modified_modified, "modification2 modified_modified");
+        write(modified_reset, "modified_reset");
+        added_deleted.delete();
+        modified_deleted.delete();
+        uptodate_deleted.delete();
+        deleted_untracked.createNewFile();
+
+        TestStatusListener listener = new TestStatusListener();
+        GitClient client = getClient(workDir);
+        client.addNotificationListener(listener);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.isEmpty());
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        // what about isIgnored() here?
+        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false, listener);
+    }
+
+    public void testStatusSingleFile () throws Exception {
+        File untracked = new File(workDir, "untracked");
+        write(untracked, "untracked");
+        File added_modified = new File(workDir, "added-modified");
+        write(added_modified, "added_modified");
+        File uptodate_modified = new File(workDir, "uptodate-modified");
+        write(uptodate_modified, "uptodate_modified");
+        File modified_modified = new File(workDir, "modified-modified");
+        write(modified_modified, "modified_modified");
+
+        add(uptodate_modified, modified_modified);
+        commit(uptodate_modified, modified_modified);
+        add(added_modified);
+        write(modified_modified, "modification modified_modified");
+        add(modified_modified);
+        write(added_modified, "modification2 added_modified");
+        write(uptodate_modified, "modification2 uptodate_modified");
+        write(modified_modified, "modification2 modified_modified");
+
+        GitClient client = getClient(workDir);
+        TestStatusListener monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { untracked }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { added_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { uptodate_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
+        monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        statuses = client.getStatus(new File[] { modified_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
+    }
+
+    public void testStatusTree () throws Exception {
+        File folder = new File(workDir, "folder1");
+        folder.mkdirs();
+        write(new File(folder, "untracked1"), "untracked");
+        write(new File(folder, "untracked2"), "untracked");
+        folder = new File(workDir, "folder2");
+        folder.mkdirs();
+        File f1 = new File(folder, "f1");
+        write(f1, "f1");
+        File f2 = new File(folder, "f2");
+        write(f2, "f2");
+        File folder21 = new File(folder, "folder21");
+        folder21.mkdirs();
+        File f3 = new File(folder21, "f3");
+        write(f3, "f3");
+        File f4 = new File(folder21, "f4");
+        write(f4, "f4");
+        File folder22 = new File(folder, "folder22");
+        folder22.mkdirs();
+        File f5 = new File(folder22, "f5");
+        write(f5, "f5");
+        File f6 = new File(folder22, "f6");
+        write(f6, "f6");
+
+        add(f1, f2, f3, f4, f5, f6);
+        commit(f1, f2, f3, f4, f5, f6);
+
+        GitClient client = getClient(workDir);
+        TestStatusListener monitor = new TestStatusListener();
+        client.addNotificationListener(monitor);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertEquals(6, statuses.size());
+        assertStatus(statuses, workDir, f1, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, f2, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, f3, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, f4, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, f5, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, f6, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, monitor);
+    }
+    
+    public void testStatusDifferentTree () throws Exception {
+        File folder = new File(workDir.getParent(), "folder1");
+        folder.mkdirs();
+        try {
+            StatusListener monitor = new TestStatusListener();
+            getClient(workDir).getStatus(new File[] { folder }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+            fail("Different tree");
+        } catch (IllegalArgumentException ex) {
+            // OK
+        }
+    }
+
+    public void testSkipIgnoredFolders () throws Exception {
+        File file1 = new File(workDir, "file1");
+        File folder = new File(workDir, "folder");
+        File file2 = new File(folder, "file2");
+        folder.mkdirs();
+        file1.createNewFile();
+        file2.createNewFile();
+        File subFolder = new File(folder, "subfolder");
+        File file3 = new File(folder, "file3");
+        File file4 = new File(subFolder, "file4");
+        subFolder.mkdirs();
+        file3.createNewFile();
+        file4.createNewFile();
+        File folder2 = new File(workDir, "folder2");
+        folder2.mkdirs();
+        File file5 = new File(folder2, "file5");
+        file5.createNewFile();
+        File subFolder2 = new File(folder2, "subfolder");
+        File file6 = new File(subFolder2, "file6");
+        subFolder2.mkdirs();
+        file6.createNewFile();
+
+        write(new File(workDir, ".gitignore"), "folder\nfile1");
+        write(new File(folder2, ".gitignore"), "subfolder");
+
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file1, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(folder).isFolder());
+        assertNull(statuses.get(file2));
+        assertNull(statuses.get(file3));
+        assertNull(statuses.get(file4));
+        assertStatus(statuses, workDir, file5, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
+        assertTrue(statuses.get(subFolder2).isFolder());
+        assertNull(statuses.get(file6));
+    }
+
+    public void testIgnoredFilesAreNotTracked () throws Exception {
+        File file = new File(workDir, "ignoredFile");
+        file.createNewFile();
+        File folder = new File(workDir, "ignoredFolder");
+        folder.mkdirs();
+        File folder2 = new File(workDir, "ignoredFolder2");
+        folder2.mkdirs();
+        File file2 = new File(folder2, "addedFile");
+        file2.createNewFile();
+        File ignoreFile = new File(workDir, ".gitignore");
+        write(ignoreFile, "ignored*");
+
+        add(file2);
+
+        Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.get(file).isTracked());
+        assertFalse(statuses.get(folder).isTracked());
+        assertFalse(statuses.get(folder2).isTracked());
+    }
+
+    public void testCancel () throws Exception {
+        final File file = new File(workDir, "file");
+        file.createNewFile();
+        final File file2 = new File(workDir, "file2");
+        file2.createNewFile();
+
+        class Monitor extends DefaultProgressMonitor implements StatusListener {
+            private boolean barrierAccessed;
+            private int count;
+            private boolean cont;
+            @Override
+            public void notifyStatus(GitStatus status) {
+                barrierAccessed = true;
+                ++count;
+                while (!cont) {
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+            }
+            private void waitAtBarrier() throws InterruptedException {
+                for (int i = 0; i < 100; ++i) {
+                    if (barrierAccessed) {
+                        break;
+                    }
+                    Thread.sleep(100);
+                }
+                assertTrue(barrierAccessed);
+            }
+        }
+        final Monitor m = new Monitor();
+        final GitClient client = getClient(workDir);
+        final Exception[] exs = new Exception[1];
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    client.addNotificationListener(m);
+                    client.getStatus(new File[] { file, file2 }, m);
+                } catch (GitException ex) {
+                    exs[0] = ex;
+                }
+            }
+        });
+        t1.start();
+        m.waitAtBarrier();
+        m.cancel();
+        m.cont = true;
+        t1.join();
+        assertTrue(m.isCanceled());
+        assertEquals(1, m.count);
+        assertEquals(null, exs[0]);
+    }
+
+    private void assertStatus(Map<File, GitStatus> statuses, File repository, File file, boolean tracked, Status headVsIndex, Status indexVsWorking, Status headVsWorking, boolean conflict, TestStatusListener monitor) {
+        assertStatus(statuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
+        assertStatus(monitor.notifiedStatuses, repository, file, tracked, headVsIndex, indexVsWorking, headVsWorking, conflict);
+    }
+
+    private static class TestStatusListener implements StatusListener {
+        private final Map<File, GitStatus> notifiedStatuses;
+
+        public TestStatusListener() {
+            notifiedStatuses = new HashMap<File, GitStatus>();
+        }
+
+        @Override
+        public void notifyStatus(GitStatus status) {
+            notifiedStatuses.put(status.getFile(), status);
+        }
+    }
+}
