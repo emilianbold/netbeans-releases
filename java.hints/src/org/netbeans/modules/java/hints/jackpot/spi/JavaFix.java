@@ -469,25 +469,29 @@ public abstract class JavaFix {
                 wc.rewrite(tp.getLeaf(), parsed);
             } else {
                 if (isFakeBlock(parsed)) {
-                    TreePath parent = tp.getParentPath();
-                    List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
-
-                    statements = statements.subList(1, statements.size() - 1);
-
-                    if (parent.getLeaf().getKind() == Kind.BLOCK) {
-                        List<StatementTree> newStatements = new LinkedList<StatementTree>();
-
-                        for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
-                            if (st == tp.getLeaf()) {
-                                newStatements.addAll(statements);
-                            } else {
-                                newStatements.add(st);
-                            }
-                        }
-
-                        wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                    if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$")) {
+                        wc.rewrite(tp.getLeaf(), parsed);
                     } else {
-                        wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                        TreePath parent = tp.getParentPath();
+                        List<? extends StatementTree> statements = ((BlockTree) parsed).getStatements();
+
+                        statements = statements.subList(1, statements.size() - 1);
+
+                        if (parent.getLeaf().getKind() == Kind.BLOCK) {
+                            List<StatementTree> newStatements = new LinkedList<StatementTree>();
+
+                            for (StatementTree st : ((BlockTree) parent.getLeaf()).getStatements()) {
+                                if (st == tp.getLeaf()) {
+                                    newStatements.addAll(statements);
+                                } else {
+                                    newStatements.add(st);
+                                }
+                            }
+
+                            wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                        } else {
+                            wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                        }
                     }
                 } else if (isFakeClass(parsed)) {
                     TreePath parent = tp.getParentPath();
