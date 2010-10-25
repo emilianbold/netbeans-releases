@@ -206,17 +206,27 @@ final class ViewBuilder {
             if (dReplace.index < paragraphCount) { // dReplace.removeEndIndex() == dReplace.index
                 EditorView pView = documentView.getEditorView(dReplace.index);
                 if (paragraphViewEndOffset == Integer.MIN_VALUE) {
-                    if (modOffset == 0 && offsetDelta > 0) {
+                    // Check for full rebuild
+                    if (modOffset == endOffset && offsetDelta == 0 && endOffset == docViewEndOffset && dReplace.index == 0) {
+                        assert (paragraphView == null) : "paragraphView=" + paragraphView + " != null"; // NOI18N
+                        // Remove all paragraphs (skip individual removal of each paragraph in checkRemoveParagraphs())
+                        // Current view hierarchy may be obsolete in full rebuild (e.g. after lengthy atomic operation)
+                        dReplace.removeCount = paragraphCount;
+                        viewRemovalFinished = true;
+                        matchOffset = paragraphViewEndOffset = docViewEndOffset;
+                    } else if (modOffset == 0 && offsetDelta > 0) {
                         // docView[0].getStartOffset() == 1 in case of undo()
                         paragraphViewEndOffset = 0;
                     } else {
                         paragraphViewEndOffset = pView.getStartOffset();
                     }
                 }
-                paragraphViewEndOffset += pView.getLength();
-                matchOffset = paragraphViewEndOffset;
-                dReplace.removeCount++;
-                checkRemoveParagraphs(endAffectedOffset, false);
+                if (!viewRemovalFinished) {
+                    paragraphViewEndOffset += pView.getLength();
+                    matchOffset = paragraphViewEndOffset;
+                    dReplace.removeCount++;
+                    checkRemoveParagraphs(endAffectedOffset, false);
+                }
             } else {
                 viewRemovalFinished = true;
                 matchOffset = paragraphViewEndOffset = docViewEndOffset;
