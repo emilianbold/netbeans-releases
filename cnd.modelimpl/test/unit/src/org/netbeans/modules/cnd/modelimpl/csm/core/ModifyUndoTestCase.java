@@ -57,7 +57,7 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     @Override
     protected void setUp() throws Exception {
 //        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_191307_BUG = true;
+//            TraceFlags.TRACE_191307_BUG = true;
 //        }
         super.setUp();
     }
