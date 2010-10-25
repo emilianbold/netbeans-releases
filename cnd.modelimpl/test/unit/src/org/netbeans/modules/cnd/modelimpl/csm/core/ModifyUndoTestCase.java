@@ -56,9 +56,9 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
 
     @Override
     protected void setUp() throws Exception {
-        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-            TraceFlags.TRACE_182342_BUG = true;
-        }
+//        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
+            TraceFlags.TRACE_191307_BUG = true;
+//        }
         super.setUp();
     }
 
@@ -69,7 +69,7 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     
     public void testRemoveThenUndo191307() throws Exception {
         // #191307:  Undo operation breaks code model
-        if (TraceFlags.TRACE_182342_BUG) {
+        if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST UNDO REMOVE\n");
         }
         final File sourceFile = getDataFile("fileWithoutDeadCode.cc");
