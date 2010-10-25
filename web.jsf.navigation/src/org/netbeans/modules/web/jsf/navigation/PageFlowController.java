@@ -68,11 +68,13 @@ import org.openide.util.Exceptions;
 import org.openide.filesystems.FileChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.openide.DialogDescriptor;
@@ -103,7 +105,7 @@ public class PageFlowController {
     //    public static final String DEFAULT_DOC_BASE_FOLDER = "web"; //NOI18NF
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
-    private FileObject webFolder;
+    private volatile FileObject webFolder;
 
     /** Creates a new instance of PageFlowController
      * @param context
@@ -129,12 +131,24 @@ public class PageFlowController {
     private Collection<FileObject> webFiles;
 
     private Collection<FileObject> setupWebFiles(FileObject webFolder) {
-        Collection<FileObject> myWebFiles;
+        final Collection<FileObject> myWebFiles = new LinkedList<FileObject>();
         if (webFolder == null) {
             ifNecessaryShowNoWebFolderDialog();
-            myWebFiles = new LinkedList<FileObject>();
         } else {
-            myWebFiles = getAllProjectRelevantFilesObjects();
+            // loading all the relevant files may take quite a while - see #177459
+            // they're also loaded again every time the page flow editor is opened; 
+            // would be better to hold onto them and listen for changes in the web dir(s).
+            // for now fixing it this way as it is safer (i'm not familiar 
+            // with the page flow editor, and this is probably not the best place for this code.
+            // but in any case this should be a pretty safe fix).
+            AtomicBoolean canceled = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    myWebFiles.addAll(getAllProjectRelevantFilesObjects());
+                }
+            }, NbBundle.getMessage(PageFlowController.class, "MSG_LoadingWebFiles"), canceled, false);
         }
         return myWebFiles;
     }
