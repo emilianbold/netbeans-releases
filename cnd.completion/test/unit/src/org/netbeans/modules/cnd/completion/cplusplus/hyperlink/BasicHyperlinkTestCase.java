@@ -698,12 +698,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191198.c", 15, 35, "bug191198.c", 2, 9);
         performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);        
     }
-//    
-//    public void testIZ191305() throws Exception {
-//        performTest("bug191198.c", 22, 40, "bug191198.c", 3, 9);
-//        performTest("bug191198.c", 23, 26, "bug191198.c", 2, 9);
-//        performTest("bug191198.c", 23, 40, "bug191198.c", 3, 9);
-//    }
+    
+    public void testIZ191305() throws Exception {
+        performTest("bug191198.c", 22, 40, "bug191198.c", 3, 9);
+        performTest("bug191198.c", 23, 26, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 23, 40, "bug191198.c", 3, 9);
+    }
     
     public void testIZ191200() throws Exception {
         // #191200 -  Parser errors in val_tables.c
