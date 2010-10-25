@@ -397,7 +397,7 @@ public class CsmUtilities {
         return false;
     }
 
-    private static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
+    public static CsmFile[] getCsmFiles(DataObject dobj, boolean snapShot) {
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();
