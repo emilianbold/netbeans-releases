@@ -107,6 +107,10 @@ public class StatusNode extends AbstractNode {
         return node;
     }
 
+    void refresh() {
+        // do something when needed
+    }
+
     protected static abstract class NodeProperty<T> extends ReadOnly<T> {
         protected NodeProperty (String name, Class<T> type, String displayName, String description) {
             super(name, type, displayName, description);
