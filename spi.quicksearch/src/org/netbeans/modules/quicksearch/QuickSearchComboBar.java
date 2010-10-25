@@ -76,6 +76,9 @@ public class QuickSearchComboBar extends AbstractQuickSearchComboBar {
                 }
             }
             jLabel2.setIcon(icons[index]);
+            //mac os x
+            jLabel2.repaint();
+            
             index = (index + 1) % 8;
         }
     });
