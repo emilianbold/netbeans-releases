@@ -150,7 +150,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
                 int i = 0;
                 for (CsmFile csmFile : files) {
-                    pw.printf("file [%d] [%s] of class %s\n", i++, csmFile.getAbsolutePath(), csmFile.getClass().getName());
+                    pw.printf("file [%d] [%s] of class %s\n", i++, csmFile.getAbsolutePath(), csmFile.getClass().getName());// NOI18N 
                 }
                 if (doc != null) {
                     DataObject dob = NbEditorUtilities.getDataObject(doc);
@@ -158,7 +158,7 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                     if (dob != null) {
                         modified = dob.isModified();
                     }
-                    pw.printf("document version=%d timestamp=%s. Is modified? %s\n", DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), modified);
+                    pw.printf("document version=%d timestamp=%s. Is modified? %s\n", DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), modified);// NOI18N 
                 }
                 for (CndDiagnosticProvider provider : providers) {
                     pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());// NOI18N 
