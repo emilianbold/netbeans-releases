@@ -124,7 +124,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Parameters;
 import org.openide.windows.OutputWriter;
@@ -2119,7 +2118,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public void onFileEditStart(FileBuffer buf, NativeFileItem nativeFile) {
     }
 
-    public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
+    public void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
     }
     private CsmUID<CsmProject> uid = null;
 

@@ -148,7 +148,7 @@ public final class ProjectImpl extends ProjectBase {
 
     public 
     @Override
-    void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
+    void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
         if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
@@ -162,7 +162,7 @@ public final class ProjectImpl extends ProjectBase {
                     for (CsmFile csmFile : editedFiles.keySet()) {
                         System.err.println("onFileEditEnd: edited file " + csmFile);
                     }
-                    System.err.println("onFileEditEnd: current file " + file);
+                    System.err.println("onFileEditEnd: " + (undo ? "undo" : "save") + " current file " + file);
                 }
                 EditingTask task = editedFiles.remove(file);
                 if (task != null) {
@@ -175,8 +175,11 @@ public final class ProjectImpl extends ProjectBase {
                 file.setBuffer(buf);
             }
 //            file.clearStateCache();
-            // no need for deep parsing util call here, because it will be called as external notification change anyway
-//            DeepReparsingUtils.reparseOnEdit(file, this);
+            // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
+            if (undo) {
+                // but we need to call in case of undo when there are no external modifications
+                DeepReparsingUtils.reparseOnEdit(file, this);
+            }
         }
     }
 
