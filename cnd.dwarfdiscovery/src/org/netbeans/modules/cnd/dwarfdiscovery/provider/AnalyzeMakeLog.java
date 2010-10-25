@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -236,9 +237,9 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
             }
         }
         if (set == null || set.length() == 0) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeMakeLog.class, "NotFoundMakeLog")));
         }
-        return new ApplicableImpl(true, null, 80, false, null, null, null);
+        return new ApplicableImpl(true, null, null, 80, false, null, null, null);
     }
 
     @Override

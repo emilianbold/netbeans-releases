@@ -191,6 +191,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         viewComboBox.setEnabled(false);
         table.setModel(new DefaultTableModel(0, 0));
         if (validBinary()) {
+            controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
             checking.incrementAndGet();
             validateController();
             final IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -212,6 +213,16 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         updateArtifacts(root, map, checkDll);
                     }
                 });
+            }
+        } else {
+            String path = binaryField.getText().trim();
+            if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
+                FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
+                if (fo == null || !fo.isValid()) {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
+                } else {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.Unsupported.Binary"));  // NOI18N
+                }
             }
         }
     }
@@ -242,6 +253,13 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     } else {
                         updateTableModel(Collections.<String, String>emptyMap(), root);
                     }
+                }
+                @SuppressWarnings("unchecked")
+                List<String> errors = (List<String>) map.get("DW:errors"); // NOI18N
+                if (errors != null && errors.size() > 0) {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, errors.get(0));
+                } else {
+                    controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, "");
                 }
                 validateController();
             }
