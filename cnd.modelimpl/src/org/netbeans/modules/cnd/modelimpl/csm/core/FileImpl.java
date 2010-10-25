@@ -1978,4 +1978,18 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         return false;
     }
+    
+    public void dumpInfo(PrintWriter printOut) {
+        printOut.printf("FI: %s, fileType=%s, hasSnap=%s hasBroken=%s\n", getName(), this.fileType, toYesNo(this.fileSnapshot==null), toYesNo(this.hasBrokenIncludes.get()));
+        if (this.hasBrokenIncludes.get()) {
+            
+        }
+        printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);
+        FileBuffer buffer = getBuffer();
+        printOut.printf("\tfBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());
+    }
+
+    static String toYesNo(boolean b) {
+        return b ? "yes" : "no"; // NOI18N
+    }
 }
