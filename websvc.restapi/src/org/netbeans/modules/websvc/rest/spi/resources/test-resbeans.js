@@ -648,7 +648,7 @@ TestSupport.prototype = {
             if(blobParam != null && blobParam != undefined){
                 params = blobParam;
             }
-            if(p != null && p != undefined){
+            if(p != null && p != undefined && p.length>0 ){
 	    		if ( params!=null && params.length >0 ){
 					params = p+"&"+params;
 				}
