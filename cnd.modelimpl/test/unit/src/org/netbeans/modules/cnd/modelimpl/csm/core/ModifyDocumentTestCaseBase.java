@@ -103,7 +103,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     }
 
     protected final void deleteTextThenUndo(final File sourceFile, final int startPos, final int endPos, int numDecls, int numDeclsAfterRemove) throws Exception {
-        if (TraceFlags.TRACE_182342_BUG) {
+        if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST UNDO OF DELETE BLOCK\n");
         }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
@@ -150,7 +150,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
-                    if (true || TraceFlags.TRACE_182342_BUG) {
+                    if (true || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -322,7 +322,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         if (close != null) {
             close.close();
         }
-        if (TraceFlags.TRACE_182342_BUG) {
+        if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
             System.err.printf("document text after close\n==============\n%s\n===============\n", doc.getText(0, doc.getLength()));
         }
         project.waitParse();
@@ -370,10 +370,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         public void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
             modifiedDOs.addAll(Arrays.asList(objs));
-            if (TraceFlags.TRACE_182342_BUG) {
+            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.println("ObjectsChangeListener: stateChanged " + e);
-            }
-            if (TraceFlags.TRACE_182342_BUG) {
                 ModelSupport.traceDataObjectRegistryStateChanged(e);
             }
         }
