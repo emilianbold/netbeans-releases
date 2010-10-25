@@ -83,6 +83,7 @@ public class GridDesignerWindow extends JDialog implements Customizer {
     public GridDesignerWindow() {
         super(WindowManager.getDefault().getMainWindow());
         this.designer = new GridDesigner();
+        HelpCtx.setHelpIDString(designer, "gui.layouts.griddesigner"); // NOI18N
         initComponents();
     }
 
@@ -160,8 +161,7 @@ public class GridDesignerWindow extends JDialog implements Customizer {
     private void helpButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_helpButtonActionPerformed
         Help help = Lookup.getDefault().lookup(Help.class);
         if (help != null) {
-            HelpCtx ctx = new HelpCtx("gui.layouts.griddesigner"); // NOI18N
-            help.showHelp(ctx);
+            help.showHelp(HelpCtx.findHelp(designer));
         }
     }//GEN-LAST:event_helpButtonActionPerformed
 
