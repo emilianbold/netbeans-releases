@@ -69,13 +69,15 @@ import com.sun.tools.javac.main.JavaCompiler;
 import java.io.IOException;
 import java.net.URL;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Position;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -89,7 +91,6 @@ import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
@@ -100,10 +101,10 @@ public class Reindenter implements IndentTask {
 
     private final Context context;
     private CodeStyle cs;
-    private TokenHierarchy th;
     private TokenSequence<JavaTokenId> ts;
     private CompilationUnitTree cut;
     private SourcePositions sp;
+    private Map<Integer, Integer> newIndents;
 
     private Reindenter(Context context) {
         this.context = context;
@@ -115,8 +116,12 @@ public class Reindenter implements IndentTask {
         if (regions.isEmpty()) {
             return;
         }
+        ts = TokenHierarchy.get(context.document()).tokenSequence(JavaTokenId.language());
+        if (ts == null) {
+            return;
+        }
+        newIndents = new HashMap<Integer, Integer>();
         cs = CodeStyle.getDefault(context.document());
-        th = TokenHierarchy.get(context.document());
         String text = context.document().getText(0, context.document().getLength());
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
@@ -127,16 +132,16 @@ public class Reindenter implements IndentTask {
             cut = javacTask.parse(FileObjects.memoryFileObject("", "", text)).iterator().next(); //NOI18N
             sp = JavacTrees.instance(ctx).getSourcePositions();
             for (Region region : regions) {
-                int endOffset = region.getEndOffset();
-                Iterator<Pair<Integer, Integer>> it = getStartOffsets(region).iterator();
-                while (it.hasNext()) {
-                    Pair<Integer, Integer> offsets = it.next();
-                    int offset = offsets.first;
-                    int lineStartOffset = offsets.second;
+                HashSet<Integer> linesToAddStar = new HashSet<Integer>();
+                LinkedList<Integer> startOffsets = getStartOffsets(region);
+                Iterator<Integer> it = startOffsets.iterator();
+                int startOffset = it.hasNext() ? it.next() : region.getStartOffset();
+                int endOffset = -1;
+                while (endOffset < region.getEndOffset()) {
+                    endOffset = it.hasNext() ? it.next() : region.getEndOffset();
                     String blockCommentLine = null;
                     int delta = 0;
-                    ts = th.tokenSequence(JavaTokenId.language());
-                    if (cs.addLeadingStarInComment() && ((delta = ts.move(offset)) > 0 && ts.moveNext() || ts.movePrevious())
+                    if (cs.addLeadingStarInComment() && ((delta = ts.move(startOffset)) > 0 && ts.moveNext() || ts.movePrevious())
                             && EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT).contains(ts.token().id())) {
                         blockCommentLine = ts.token().text().toString();
                         if (delta > 0) {
@@ -149,22 +154,29 @@ public class Reindenter implements IndentTask {
                             }
                         }
                     }
-                    Position pos = blockCommentLine != null ? context.document().createPosition(offset) : null;
-                    context.modifyIndent(lineStartOffset, getNewIndent(offset, endOffset) + (blockCommentLine != null ? 1 : 0));
+                    newIndents.put(startOffset, getNewIndent(startOffset, endOffset) + (blockCommentLine != null ? 1 : 0));
                     if (blockCommentLine != null && !blockCommentLine.startsWith("*")) { //NOI18N
-                        context.document().insertString(pos.getOffset(), "* ", null); //NOI18N
+                        linesToAddStar.add(startOffset);
                     }
-                    if (it.hasNext()) {
+                    startOffset = endOffset;
+                }
+                while (!startOffsets.isEmpty()) {
+                    startOffset = startOffsets.removeLast();
+                    Integer newIndent = newIndents.get(startOffset);
+                    context.modifyIndent(startOffset, newIndent);
+                    if (linesToAddStar.contains(startOffset)) {
+                        context.document().insertString(startOffset + newIndent, "* ", null); //NOI18N
+                    }
+                    if (!startOffsets.isEmpty()) {
                         char c;
                         int len = 0;
-                        while ((c = text.charAt(lineStartOffset - 2 - len)) != '\n' && Character.isWhitespace(c)) { //NOI18N
+                        while ((c = text.charAt(startOffset - 2 - len)) != '\n' && Character.isWhitespace(c)) { //NOI18N
                             len++;
                         }
                         if (len > 0) {
-                            context.document().remove(lineStartOffset - 1 - len, len);
+                            context.document().remove(startOffset - 1 - len, len);
                         }
                     }
-                    endOffset = lineStartOffset - 1;
                 }
             }
         } catch (IOException ex) {
@@ -176,15 +188,14 @@ public class Reindenter implements IndentTask {
         return null;
     }
 
-    private List<Pair<Integer, Integer>> getStartOffsets(Region region) throws BadLocationException {
-        List<Pair<Integer, Integer>> offsets = new LinkedList<Pair<Integer, Integer>>();
+    private LinkedList<Integer> getStartOffsets(Region region) throws BadLocationException {
+        LinkedList<Integer> offsets = new LinkedList<Integer>();
         int offset = region.getEndOffset();
         int lso;
-        while ((lso = context.lineStartOffset(offset)) > region.getStartOffset()) {
-            offsets.add(Pair.of(lso, lso));
+        while (offset > 0 && (lso = context.lineStartOffset(offset)) >= region.getStartOffset()) {
+            offsets.addFirst(lso);
             offset = lso - 1;
         }
-        offsets.add(Pair.of(region.getStartOffset(), lso));
         return offsets;
     }
 
@@ -196,7 +207,8 @@ public class Reindenter implements IndentTask {
         Tree last = path.get(0);
         int lastPos = (int)sp.getStartPosition(cut, last);
         int lastLineStartOffset = context.lineStartOffset(lastPos);
-        int currentIndent = context.lineIndent(lastLineStartOffset);
+        Integer newIndent = newIndents.get(lastLineStartOffset);
+        int currentIndent = newIndent != null ? newIndent : context.lineIndent(lastLineStartOffset);
         switch (last.getKind()) {
             case COMPILATION_UNIT:
                 break;
@@ -392,7 +404,7 @@ public class Reindenter implements IndentTask {
                     t = null;
                     boolean isNextLabeledStatement = false;
                     Iterator<? extends StatementTree> it = ((BlockTree)last).getStatements().iterator();
-                    while(it.hasNext()) {
+                    while (it.hasNext()) {
                         StatementTree st = it.next();
                         if (sp.getEndPosition(cut, st) > startOffset) {
                             isNextLabeledStatement = st.getKind() == Kind.LABELED_STATEMENT;
@@ -649,7 +661,9 @@ public class Reindenter implements IndentTask {
     }
 
     private int getCurrentIndent(Tree tree) throws BadLocationException {
-        return context.lineIndent(context.lineStartOffset((int)sp.getStartPosition(cut, tree)));
+        int lineStartOffset = context.lineStartOffset((int)sp.getStartPosition(cut, tree));
+        Integer newIndent = newIndents.get(lineStartOffset);
+        return newIndent != null ? newIndent : context.lineIndent(lineStartOffset);
     }
 
     private int getContinuationIndent(LinkedList<? extends Tree> path, int currentIndent) throws BadLocationException {
@@ -693,7 +707,8 @@ public class Reindenter implements IndentTask {
             int startOffset = (int)(sp.getStartPosition(cut, tree));
             int lineStartOffset = context.lineStartOffset(startOffset);
             if (lastLineStartOffset != lineStartOffset) {
-                currentIndent = context.lineIndent(lineStartOffset);
+                Integer newIndent = newIndents.get(lineStartOffset);
+                currentIndent = newIndent != null ? newIndent : context.lineIndent(lineStartOffset);
             } else if (align) {
                 currentIndent = getCol(context.document().getText(lineStartOffset, startOffset - lineStartOffset));
             } else {
