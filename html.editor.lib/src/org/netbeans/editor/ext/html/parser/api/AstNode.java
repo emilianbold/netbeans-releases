@@ -422,7 +422,7 @@ public class AstNode {
 
     public void removeChildren(List<AstNode> childrenList) {
         initChildren();
-        for(AstNode child : childrenList) {
+        for(AstNode child : new ArrayList<AstNode>(childrenList)) {
             removeChild(child);
         }
     }

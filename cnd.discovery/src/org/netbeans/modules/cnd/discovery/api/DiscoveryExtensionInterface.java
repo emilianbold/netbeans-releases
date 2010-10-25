@@ -71,6 +71,8 @@ public interface DiscoveryExtensionInterface extends IteratorExtension {
         String getSourceRoot();
 
         Position getMainFunction();
+
+        List<String> getErrors();
     }
 
     interface Position {
