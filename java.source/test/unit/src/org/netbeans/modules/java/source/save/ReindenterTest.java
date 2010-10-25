@@ -1406,11 +1406,11 @@ public class ReindenterTest extends NbTestCase {
         }
     }
 
-//    public void testSpanIndentation() throws Exception {
-//        performSpanIndentationTest("package t;\npublic class T {\n|private void t() {\nSystem.err.println(1);\n}\n|}\n",
-//                "package t;\npublic class T {\n    private void t() {\n        System.err.println(1);\n    }\n}\n");
-//    }
-//    
+    public void testSpanIndentation() throws Exception {
+        performSpanIndentationTest("package t;\npublic class T {\n|private void t() {\nSystem.err.println(1);\n}\n |}\n",
+                "package t;\npublic class T {\n    private void t() {\n        System.err.println(1);\n    }\n}\n");
+    }
+    
     private void performNewLineIndentationTest(String code, String golden) throws Exception {
         int pos = code.indexOf('|');
 
