@@ -83,7 +83,8 @@ public class FileObjectBasedFile extends File {
     public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
         super(fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
-        this.path = super.getPath();
+        // super.getPath() changes slashes and can lead to #186521 Wrong path returned by remote file chooser
+        this.path = (fo == null || "".equals(fo.getPath())) ? "/" : fo.getPath(); // NOI18N
         this.env = env;
     }
 

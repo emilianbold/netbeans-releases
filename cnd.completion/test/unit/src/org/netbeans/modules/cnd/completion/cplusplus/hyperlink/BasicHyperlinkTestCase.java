@@ -720,6 +720,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191200.c", 23, 40, "bug191200.c", 3, 3);
         performTest("bug191200.c", 24, 40, "bug191200.c", 3, 3);
     }
+
+    public void testBug191314() throws Exception {
+        // Bug 191314 - last unresolved identifier in ir2hf
+        performTest("bug191314.c", 2, 56, "bug191314.c", 2, 47);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
