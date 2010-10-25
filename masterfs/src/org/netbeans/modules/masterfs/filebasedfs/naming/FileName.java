@@ -55,6 +55,7 @@ import org.openide.util.CharSequences;
  * @author Radek Matous
  */
 public class FileName implements FileNaming {
+public final Exception trace;
     private final CharSequence name;
     private final FileNaming parent;
     private final Integer id;
@@ -65,6 +66,7 @@ public class FileName implements FileNaming {
         this.name = CharSequences.create(parseName(parent, file));
         id = NamingFactory.createID(file);
         this.currentName = name;
+trace = new Exception("Trace");
     }
 
     private static String parseName(final FileNaming parent, final File file) {

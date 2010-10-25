@@ -68,6 +68,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem.FSCallable;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
@@ -146,10 +147,17 @@ public final class FolderObj extends BaseFileObj {
             
             final FileObject fo = lfs.getFileObject(fInfo, FileObjectFactory.Caller.GetChildern);
             if (fo != null) {
+if (fileName != ((BaseFileObj)fo).getFileName()) {
+    System.err.println("Assert problem, stack traces:");
+    ((FileName)fileName).trace.printStackTrace();
+    System.err.println("and:");
+    ((FileName)((BaseFileObj)fo).getFileName()).trace.printStackTrace();
+}
                 assert fileName == ((BaseFileObj)fo).getFileName() : 
                     "FileName: " + fileName + "@" +  // NOI18N
                     Integer.toHexString(System.identityHashCode(fileName)) + 
                     " fo: " + fo; // NOI18N
+
                 results.put(fileName, fo);
             }
         }
