@@ -144,14 +144,21 @@ public class RemoteFileUtil {
                     titleText,
                     buttonText,
                     mode,
-                    null,
+                    filters,
                     initialPath,
-                    false);
-        } else {            
+                    useParent);
+        } else {
+            // TODO support useParent or rework it
             fileChooser = new FileChooserBuilder(execEnv).createFileChooser(initialPath);
             fileChooser.setApproveButtonText(buttonText);
             fileChooser.setDialogTitle(titleText);
             fileChooser.setFileSelectionMode(mode);
+            if (filters != null) {
+                for (int i = 0; i < filters.length; i++) {
+                    fileChooser.addChoosableFileFilter(filters[i]);
+                }
+                fileChooser.setFileFilter(filters[0]);
+            }
         }
         return fileChooser;
     }

@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -213,6 +214,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         Dwarf dump = null;
         String commonRoot = null;
         Position position = null;
+        List<String> errors = new ArrayList<String>();
+        int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
             dump = new Dwarf(objFileName);
@@ -227,6 +230,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
+                    foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
                     path = CndFileUtils.normalizeAbsolutePath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
@@ -323,22 +327,25 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
         } catch (FileNotFoundException ex) {
-            // Skip Exception
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "FileNotFoundException", objFileName));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
                 System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
             }
         } catch (WrongFileFormatException ex) {
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "WrongFileFormatException", objFileName));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
                 System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
             }
         } catch (IOException ex) {
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
+                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
                 ex.printStackTrace();
             }
         } catch (Exception ex) {
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
             if (TRACE_READ_EXCEPTIONS) {
-                System.err.println("Exception in file " + objFileName);  // NOI18N
+                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
                 ex.printStackTrace();
             }
         } finally {
@@ -354,13 +361,24 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 top = entry.getKey();
             }
         }
+        ArrayList<String> dllResult = null;
         if (dlls != null) {
-            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, new ArrayList<String>(dlls), commonRoot, position);
+            dllResult = new ArrayList<String>(dlls);
+        }
+        if (res > 0) {
+            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, commonRoot, position);
         } else {
-            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, null, commonRoot, position);
+            if (errors.isEmpty()) {
+                if (foundDebug > 0) {
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", objFileName));  // NOI18N
+                } else {
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
+                }
+            }
+            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, commonRoot, position);
         }
     }
-    
+
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;

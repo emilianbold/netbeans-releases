@@ -64,6 +64,9 @@ public interface DiscoveryDescriptor {
     String getRootFolder();
     void setRootFolder(String root);
 
+    List<String> getErrors();
+    void setErrors(List<String> errors);
+
     String getBuildResult();
     void setBuildResult(String binaryPath);
 
