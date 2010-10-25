@@ -271,7 +271,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
                     || "kodo.persistence.PersistenceProviderImpl".equals(toolName)) {
                 return containsPersistenceProvider(toolName);
             }
-            if ("hibernatePersistenceProviderIsDefault".equals(toolName)) {
+            if ("hibernatePersistenceProviderIsDefault1.0".equals(toolName)) {
                 return true;
             }
             if ("defaultPersistenceProviderJavaEE5".equals(toolName)) {
