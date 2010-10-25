@@ -213,6 +213,17 @@ final class StatisticsPanel extends JPanel {
         return btn;
     }
 
+    void copyFilterMask(StatisticsPanel sp) {
+        filterMask = sp.filterMask;
+        updateShowButtons();
+    }
+
+    private void updateShowButtons() {
+        btnShowPassed.setSelected((filterMask & Status.PASSED.getBitMask()) == 0);
+        btnShowFailed.setSelected((filterMask & Status.FAILED.getBitMask()) == 0);
+        btnShowError.setSelected((filterMask & Status.ERROR.getBitMask()) == 0);
+    }
+
     private void createNextPrevFailureButtons() {
         nextFailure = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/nextmatch.png", true));
         nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
