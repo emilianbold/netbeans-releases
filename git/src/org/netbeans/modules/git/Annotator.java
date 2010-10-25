@@ -219,7 +219,7 @@ public class Annotator extends VCSAnnotator {
         } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
             statusText = null;
         } else {
-            throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
+            statusText = null;
         }
         return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
     }
@@ -307,7 +307,7 @@ public class Annotator extends VCSAnnotator {
         } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
             return name;
         } else {
-            throw new IllegalArgumentException("Uncomparable status: " + mostImportantInfo.getStatus()); // NOI18N
+            return name;
         }
     }
 

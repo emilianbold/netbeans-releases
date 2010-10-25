@@ -279,10 +279,6 @@ class SyncTable implements MouseListener, ListSelectionListener {
         }
     }// </editor-fold>
 
-    StatusTableModel getTableModel () {
-        return tableModel;
-    }
-
     private File[] getSelectedFiles() {
         int[] selection = table.getSelectedRows();
         List<File> files = new LinkedList<File>();
@@ -291,6 +287,40 @@ class SyncTable implements MouseListener, ListSelectionListener {
             files.add(selectedNode.getFile());
         }
         return files.toArray(new File[files.size()]);
+    }
+
+    private void setSelectedNodes (File[] selectedFiles) {
+        Set<File> files = new HashSet(Arrays.asList(selectedFiles));
+        ListSelectionModel selection = table.getSelectionModel();
+        selection.setValueIsAdjusting(true);
+        for (int i = 0; i < table.getRowCount(); ++i) {
+            StatusNode node = tableModel.getNode(sorter.modelIndex(i));
+            if (files.contains(node.getFile())) {
+                selection.addSelectionInterval(i, i);
+            }
+        }
+        selection.setValueIsAdjusting(false);
+    }
+
+    void setNodes (StatusNode[] nodes) {
+        File[] selectedFiles = getSelectedFiles();
+        tableModel.setNodes(nodes);
+        setSelectedNodes(selectedFiles);
+    }
+
+    Collection<StatusNode> getNodes () {
+        return tableModel.getNodes();
+    }
+
+    void updateNodes (List<StatusNode> toRemove, List<StatusNode> toRefresh, List<StatusNode> toAdd) {
+        File[] selectedFiles = getSelectedFiles();
+        for (StatusNode node : toRefresh) {
+            node.refresh();
+        }
+        tableModel.remove(toRemove);
+        tableModel.add(toAdd);
+        tableModel.fireTableDataChanged();
+        setSelectedNodes(selectedFiles);
     }
 
     private static class ColumnDescriptor<T> extends ReadOnly<T> {

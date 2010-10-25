@@ -42,7 +42,11 @@
 
 package org.netbeans.modules.git.ui.status;
 
-import java.awt.EventQueue;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.nodes.Node;
 
@@ -59,15 +63,34 @@ public class StatusTableModel extends NodeTableModel {
     }
 
     @Override
-    public void setNodes (Node[] nodes) {
-        assert EventQueue.isDispatchThread();
-        assert nodes instanceof StatusNode[];
-        
-        this.nodes = (StatusNode[]) nodes;
+    public final void setNodes (Node[] nodes) {
+        throw new IllegalStateException("Do not call this method");
+    }
+
+    final void setNodes (StatusNode[] nodes) {
+        this.nodes = nodes;
         super.setNodes(nodes);
     }
 
     StatusNode getNode (int idx) {
         return nodes[idx];
+    }
+
+    Collection<StatusNode> getNodes () {
+        return new HashSet<StatusNode>(Arrays.asList(nodes));
+    }
+
+    void remove (List<StatusNode> toRemove) {
+        Set<StatusNode> newNodes = new HashSet<StatusNode>(Arrays.asList(nodes));
+        newNodes.removeAll(toRemove);
+        nodes = newNodes.toArray(new StatusNode[newNodes.size()]);
+        super.setNodes(nodes);
+    }
+
+    void add (List<StatusNode> toAdd) {
+        Set<StatusNode> newNodes = new HashSet<StatusNode>(Arrays.asList(nodes));
+        newNodes.addAll(toAdd);
+        nodes = newNodes.toArray(new StatusNode[newNodes.size()]);
+        super.setNodes(nodes);
     }
 }

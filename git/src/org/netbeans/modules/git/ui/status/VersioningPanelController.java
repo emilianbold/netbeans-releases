@@ -48,10 +48,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
@@ -59,6 +67,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
@@ -76,7 +85,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author ondra
  */
-class VersioningPanelController implements ActionListener {
+class VersioningPanelController implements ActionListener, PropertyChangeListener {
 
     private final GitVersioningTopComponent tc;
     private final VersioningPanel panel;
@@ -85,6 +94,8 @@ class VersioningPanelController implements ActionListener {
     private final NoContentPanel noContentComponent = new NoContentPanel();
     private static final RequestProcessor RP = new RequestProcessor("GitVersioningWindow", 1, true); //NOI18N
     private RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
+    private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
+    private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
     private final SyncTable syncTable;
 
@@ -142,6 +153,7 @@ class VersioningPanelController implements ActionListener {
         panel.btnCheckout.addActionListener(this);
         panel.btnDiff.addActionListener(this);
         panel.btnRefresh.addActionListener(this);
+        Git.getInstance().getFileStatusCache().addPropertyChangeListener(this);
     }
 
     private void onPrevInnerView() {
@@ -253,32 +265,122 @@ class VersioningPanelController implements ActionListener {
         }
     }
 
+    private void applyChange (FileStatusCache.ChangedEvent event) {
+        if (context != null) {
+            synchronized (applyChangeTask.changes) {
+                applyChangeTask.changes.add(event);
+            }
+            changeTask.schedule(1000);
+        }
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
+            FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
+            if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
+                applyChange(changedEvent);
+            }
+            return;
+        }
+    }
+
+    private boolean affectsView (FileStatusCache.ChangedEvent changedEvent) {
+        File file = changedEvent.getFile();
+        FileInformation oldInfo = changedEvent.getOldInfo();
+        FileInformation newInfo = changedEvent.getNewInfo();
+        if (oldInfo == null) {
+            if (!newInfo.containsStatus(displayStatuses)) return false;
+        } else {
+            if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
+        }
+        return context == null ? false: context.contains(file);
+    }
+
     private class RefreshNodesTask implements Runnable {
         @Override
         public void run() {
             final List<StatusNode> nodes = new LinkedList<StatusNode>();
-            try {
-                Git git = Git.getInstance();
-                File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
-                for (File f : interestingFiles) {
-                    File root = git.getRepositoryRoot(f);
-                    if (root != null) {
-                        nodes.add(new StatusNode(new GitFileNode(root, f)));
+            Git git = Git.getInstance();
+            File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
+            for (File f : interestingFiles) {
+                File root = git.getRepositoryRoot(f);
+                if (root != null) {
+                    nodes.add(new StatusNode(new GitFileNode(root, f)));
+                }
+            }
+            Mutex.EVENT.readAccess(new Runnable () {
+                @Override
+                public void run() {
+                    syncTable.setNodes(nodes.toArray(new StatusNode[nodes.size()]));
+                    if (nodes.isEmpty()) {
+                        setVersioningComponent(noContentComponent);
+                    } else {
+                        setVersioningComponent(syncTable.getComponent());
                     }
                 }
-            } finally {
-                Mutex.EVENT.readAccess(new Runnable () {
-                    @Override
-                    public void run() {
-                        syncTable.getTableModel().setNodes(nodes.toArray(new StatusNode[nodes.size()]));
-                        if (nodes.isEmpty()) {
-                            setVersioningComponent(noContentComponent);
-                        } else {
-                            setVersioningComponent(syncTable.getComponent());
+            });
+        }
+    }
+
+    /**
+     * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
+     */
+    private class ApplyChangesTask implements Runnable {
+        private final Set<FileStatusCache.ChangedEvent> changes = new HashSet<FileStatusCache.ChangedEvent>();
+        @Override
+        public void run() {
+            final Set<FileStatusCache.ChangedEvent> events;
+            synchronized (changes) {
+                events = new HashSet<FileStatusCache.ChangedEvent>(changes);
+                changes.clear();
+            }
+            // remove irrelevant changes
+            for (Iterator<FileStatusCache.ChangedEvent> it = events.iterator(); it.hasNext(); ) {
+                FileStatusCache.ChangedEvent evt = it.next();
+                if (!affectsView(evt)) {
+                    it.remove();
+                }
+            }
+            Git git = Git.getInstance();
+            Collection<StatusNode> nodes = syncTable.getNodes();
+            Map<File, StatusNode> nodesAsMap = new HashMap<File, StatusNode>(nodes.size());
+            for (StatusNode node : nodes) {
+                nodesAsMap.put(node.getFile(), node);
+            }
+            // sort changes
+            final List<StatusNode> toRemove = new LinkedList<StatusNode>();
+            final List<StatusNode> toRefresh = new LinkedList<StatusNode>();
+            final List<StatusNode> toAdd = new LinkedList<StatusNode>();
+            for (FileStatusCache.ChangedEvent evt : events) {
+                FileInformation newInfo = evt.getNewInfo();
+                StatusNode node = nodesAsMap.get(evt.getFile());
+                if (newInfo.containsStatus(displayStatuses)) {
+                    if (node != null) {
+                        toRefresh.add(node);
+                    } else {
+                        File root = git.getRepositoryRoot(evt.getFile());
+                        if (root != null) {
+                            toAdd.add(new StatusNode(new GitFileNode(root, evt.getFile())));
                         }
                     }
-                });
+                } else if (node != null) {
+                    toRemove.add(node);
+                }
             }
+
+            Mutex.EVENT.readAccess(new Runnable () {
+                @Override
+                public void run() {
+                    syncTable.updateNodes(toRemove, toRefresh, toAdd);
+                    Collection<StatusNode> nodes = syncTable.getNodes();
+                    if (nodes.isEmpty()) {
+                        setVersioningComponent(noContentComponent);
+                    } else {
+                        setVersioningComponent(syncTable.getComponent());
+                    }
+                }
+            });
         }
     }
 }
