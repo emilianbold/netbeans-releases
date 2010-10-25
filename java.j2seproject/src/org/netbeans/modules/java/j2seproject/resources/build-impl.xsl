@@ -921,6 +921,10 @@ is divided into following sections:
                 <macrodef>
                     <xsl:attribute name="name">copylibs</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">manifest</xsl:attribute>
+                        <xsl:attribute name="default">${manifest.file}</xsl:attribute>
+                    </attribute>
                     <element>
                         <xsl:attribute name="name">customize</xsl:attribute>
                         <xsl:attribute name="optional">true</xsl:attribute>
@@ -939,7 +943,7 @@ is divided into following sections:
                             </chainedmapper>
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
-                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="${{manifest.file}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}">
+                        <copylibs compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}">
                             <fileset dir="${{build.classes.dir}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>
