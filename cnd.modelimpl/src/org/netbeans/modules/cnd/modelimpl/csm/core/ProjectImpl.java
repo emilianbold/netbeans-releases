@@ -362,6 +362,9 @@ public final class ProjectImpl extends ProjectBase {
             if (this.lastModified == lastModified) {
                 return false;
             }
+            if (TraceFlags.TRACE_182342_BUG) {
+                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lastModified);// NOI18N
+            }
             this.lastModified = lastModified;
             return true;
         }
@@ -464,6 +467,9 @@ public final class ProjectImpl extends ProjectBase {
         RequestProcessor.Task task;
         int delay;
         synchronized (editedFiles) {
+            if (TraceFlags.TRACE_182342_BUG) {
+                new Exception("scheduleParseOnEditing " + file).printStackTrace(System.err); // NOI18N
+            }            
             EditingTask pair = editedFiles.get(file);
             if (pair == null) {
                 // we were removed between rescheduling and finish of edit
