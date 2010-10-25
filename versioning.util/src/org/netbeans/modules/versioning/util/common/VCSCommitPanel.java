@@ -44,10 +44,11 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.util.Set;
+import java.awt.EventQueue;
 import java.awt.BorderLayout;
 import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import org.openide.cookies.EditorCookie;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeEvent;
 import java.awt.Component;
@@ -55,7 +56,6 @@ import javax.swing.Box;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
-import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
@@ -68,8 +68,6 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -104,8 +102,11 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  */
 public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
-    private final AutoResizingPanel basePanel = new AutoResizingPanel();
+    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOPI18N
+    
     static final Object EVENT_SETTINGS_CHANGED = new Object();   
+    
+    private final AutoResizingPanel basePanel = new AutoResizingPanel();
 
     final PlaceholderPanel progressPanel = new PlaceholderPanel();
     private final JLabel errorLabel = new JLabel();
@@ -114,15 +115,16 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     private VCSCommitTable commitTable;
     
     private JTabbedPane tabbedPane;
-//    private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
         
     private final Preferences preferences;
     private final VCSCommitParameters parameters;
+    private final MultiDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, VCSCommitTable commitTable, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
+    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
         this.parameters = parameters;
-        this.commitTable = commitTable;
+        this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
+        this.diffProvider = diffProvider;
         
         if(hooks == null) {
             hooks = Collections.emptyList();
@@ -131,6 +133,10 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
 
         commitTable.setCommitPanel(this);
         this.preferences = preferences;
+    }
+
+    public VCSCommitTable getCommitTable() {
+        return commitTable;
     }
 
     public PlaceholderPanel getProgressPanel() {
@@ -162,23 +168,22 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     }
 
     @Override
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        // XXX
-//        if (evt.getKey().startsWith(GitModuleConfig.PROP_COMMIT_EXCLUSIONS)) {
-//            Runnable inAWT = new Runnable() {
-//                @Override
-//                public void run() {
-//                    commitTable.dataChanged();
-//                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
-//                }
-//            };
-//            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
-//            if (EventQueue.isDispatchThread()) {
-//                inAWT.run();
-//            } else {
-//                EventQueue.invokeLater(inAWT);
-//            }
-//        }
+    public void preferenceChange(PreferenceChangeEvent evt) {        
+        if (evt.getKey().startsWith(PROP_COMMIT_EXCLUSIONS)) { // XXX - need setting
+            Runnable inAWT = new Runnable() {
+                @Override
+                public void run() {
+                    commitTable.dataChanged();
+                    listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+                }
+            };
+            // this can be called from a background thread - e.g. change of exclusion status in Versioning view
+            if (EventQueue.isDispatchThread()) {
+                inAWT.run();
+            } else {
+                EventQueue.invokeLater(inAWT);
+            }
+        }
     }
 
     @Override
@@ -296,51 +301,37 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
-            commitTable.setModifiedFiles(new HashSet<File>(getModifiedFiles().keySet()));
+            if(diffProvider != null) {
+                commitTable.setModifiedFiles(diffProvider.getModifiedFiles());
+            }
         }
     }
 
     void openDiff (VCSFileNode[] nodes) {
-        // XXX
-//        for (VCSFileNode node : nodes) {
-//            if (tabbedPane == null) {
-//                initializeTabs();
-//            }
-//            File file = node.getFile();
-//            MultiDiffPanel panel = displayedDiffs.get(file);
-//            if (panel == null) {
-//                panel = new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
-//                displayedDiffs.put(file, panel);
-//                tabbedPane.addTab(file.getName(), panel);
-//            }
-//            tabbedPane.setSelectedComponent(panel);
-//        }
-//        revalidate();
-//        repaint();
-    }
-
-    /**
-     * Returns save cookies available for files in the commit table
-     * @return
-     */
-    SaveCookie[] getSaveCookies() {
-        return getModifiedFiles().values().toArray(new SaveCookie[0]);
-    }
-
-    /**
-     * Returns editor cookies available for modified and not open files in the commit table
-     * @return
-     */
-    EditorCookie[] getEditorCookies() {
-        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
-// XXX      
-//        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//            EditorCookie[] cookies = e.getValue().getEditorCookies(true);
-//            if (cookies.length > 0) {
-//                allCookies.add(cookies[0]);
-//            }
-//        }
-        return allCookies.toArray(new EditorCookie[allCookies.size()]);
+        if(diffProvider == null) {
+            return;
+        }
+        boolean newDiff = false;
+        for (VCSFileNode node : nodes) {
+            if (tabbedPane == null) {
+                tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+                 tabbedPane.addTab(NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
+                 tabbedPane.setPreferredSize(basePanel.getPreferredSize());
+                 add(tabbedPane);
+                 tabbedPane.addChangeListener(this);                
+            }
+            File file = node.getFile();
+            JComponent component = diffProvider.getDiffComponent(file); //new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+            if (component != null) {                
+                tabbedPane.addTab(file.getName(), component);
+                tabbedPane.setSelectedComponent(component);
+                newDiff = true;
+            }
+        }
+        if(newDiff) {
+            revalidate();
+            repaint();
+        }
     }
 
     /**
@@ -356,26 +347,6 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
             result = NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify(nd);
         }
         return result;
-    }
-
-    private void initializeTabs () {
-         tabbedPane = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
-         tabbedPane.addTab(NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Tab_Commit"), basePanel); //NOI18N
-         tabbedPane.setPreferredSize(basePanel.getPreferredSize());
-         add(tabbedPane);
-         tabbedPane.addChangeListener(this);
-    }
-
-    private HashMap<File, SaveCookie> getModifiedFiles () {
-        HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
-//         XXX
-//        for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//            SaveCookie[] cookies = e.getValue().getSaveCookies(false);
-//            if (cookies.length > 0) {
-//                modifiedFiles.put(e.getKey(), cookies[0]);
-//            }
-//        }
-        return modifiedFiles;
     }
 
     private abstract class CollapsiblePanel extends JPanel {
@@ -499,6 +470,23 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
                 sectionPanel.add(hooksTabbedPane);
             }                
         }
+    }
+
+    public abstract static class MultiDiffProvider {
+        private HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
+        
+        protected abstract Set<File> getModifiedFiles();
+        
+        JComponent getDiffComponent(File file) {
+            JComponent component = displayedDiffs.get(file);
+            if (component == null) {
+                component = createDiffComponent(file); //new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+                displayedDiffs.put(file, component);                
+            }   
+            return component;
+        }
+
+        protected abstract JComponent createDiffComponent(File file);
     }
     
 }
