@@ -206,9 +206,9 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 		if (!isDoNotShowAgain()) {
 		    String msg;
 		    if (DebuggerManager.isStandalone())
-			msg = Catalog.get("MSG_dbxtool_ss_attach_info");
+			msg = Catalog.get("MSG_dbxtool_ss_attach_info"); // NOI18N
 		    else
-			msg = Catalog.get("MSG_ss_attach_info");
+			msg = Catalog.get("MSG_ss_attach_info"); // NOI18N
 		    InfoPanel panel = new InfoPanel(msg);
 		    NotifyDescriptor dlg = new NotifyDescriptor.Confirmation(
 			panel,

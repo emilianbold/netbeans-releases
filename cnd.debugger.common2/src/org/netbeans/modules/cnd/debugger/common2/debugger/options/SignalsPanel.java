@@ -159,7 +159,7 @@ class SignalsPanel extends JPanel implements HelpCtx.Provider, PropertyChangeLis
 	String labelText = Catalog.get("SignalsTable");	// NOI18N
 	sigTableLabel.setText(labelText);
 	sigTableLabel.setDisplayedMnemonic
-	    (Catalog.getMnemonic("MNEM_SignalsTable"));
+	    (Catalog.getMnemonic("MNEM_SignalsTable"));	// NOI18N
 	gbc = new GridBagConstraints();
 	gbc.gridx = 0;
 	gbc.gridy = 0;
@@ -192,7 +192,7 @@ class SignalsPanel extends JPanel implements HelpCtx.Provider, PropertyChangeLis
 		JComboBox comboBox = new JComboBox(combomodel);
 		comboBox.setEditable(false);
 		comboBox.getAccessibleContext().setAccessibleName(
-		    Catalog.get("ACSN_HandledCombo")
+		    Catalog.get("ACSN_HandledCombo") // NOI18Nedit
 		);
 		TableCellEditor tce = new DefaultCellEditor(comboBox);
 	    columnModel.getColumn(3).setCellEditor(tce);

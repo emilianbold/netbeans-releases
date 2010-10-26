@@ -103,9 +103,9 @@ public final class FunctionBreakpoint extends NativeBreakpoint {
 	if (se.equals(FunctionSubEvent.IN)) {
 	    summary = fb.getFunction();
 	} else if (se.equals(FunctionSubEvent.INFUNCTION)) {
-	    summary = Catalog.format("Handler_AllFunc", fb.getFunction());
+	    summary = Catalog.format("Handler_AllFunc", fb.getFunction()); // NOI18N
 	} else if (se.equals(FunctionSubEvent.RETURNS)) {
-	    summary = Catalog.format("Handler_ReturnFrom", fb.getFunction());
+	    summary = Catalog.format("Handler_ReturnFrom", fb.getFunction()); // NOI18N
 	} else {
 	    summary = fb.getFunction();
 	}

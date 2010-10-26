@@ -51,7 +51,7 @@ public abstract class Validity {
 	this.why = why;
     }
 
-    public static final Validity TRUE = new TRUE(Catalog.get("AnyValueisValid"));
+    public static final Validity TRUE = new TRUE(Catalog.get("AnyValueisValid")); // NOI18N
 
     public abstract boolean isValid();
 

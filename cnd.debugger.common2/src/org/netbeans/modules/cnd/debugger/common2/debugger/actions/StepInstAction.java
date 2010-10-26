@@ -104,7 +104,7 @@ public class StepInstAction extends CallableSystemAction implements StateListene
     // interface SystemAction
     protected void initialize() {
 	super.initialize();
-	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepInstAction"));
+	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepInstAction")); // NOI18N
 	setEnabled(false);
     }    
 

@@ -88,7 +88,7 @@ public final class CountLimit {
 	}
 
 	if (!good) {
-	    errorMessage = Catalog.format("FMT_CountLimit_ERROR",
+	    errorMessage = Catalog.format("FMT_CountLimit_ERROR", // NOI18N
 					  count, 0, limit);
 	} else {
 	    errorMessage = null;
@@ -142,7 +142,7 @@ public final class CountLimit {
 	}
 
 	if (!good) {
-	    errorMessage = Catalog.format("FMT_CountLimit_ERROR",
+	    errorMessage = Catalog.format("FMT_CountLimit_ERROR", // NOI18N
 					  text, 0, limit);
 	} else {
 	    errorMessage = null;

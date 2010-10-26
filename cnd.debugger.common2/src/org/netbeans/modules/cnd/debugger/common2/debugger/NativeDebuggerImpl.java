@@ -777,7 +777,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             // while we might get OOD we might not have a good error message.
             // So put a placeholder.
             // error_sourceModified() might enhance it "shortly".
-            setSrcOODMessage(Catalog.get("SourceOODWarn"));
+            setSrcOODMessage(Catalog.get("SourceOODWarn")); // NOI18N
         } else {
             // error_sourceModified() doesn't get called when there's
             // _no_ out of date src, so we need to clear

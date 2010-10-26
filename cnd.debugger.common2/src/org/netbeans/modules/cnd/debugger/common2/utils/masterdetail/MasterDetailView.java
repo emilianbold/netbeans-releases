@@ -203,17 +203,17 @@ public class MasterDetailView extends TopComponent {
 	context = getAccessibleContext();
 	//context.setAccessibleName(getTitle());
 
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
 	resetButton.getAccessibleContext().setAccessibleDescription(resetButton.getText());
 	applyButton.getAccessibleContext().setAccessibleDescription(applyButton.getText());
@@ -247,7 +247,7 @@ public class MasterDetailView extends TopComponent {
 	if (okActionName != null)
 	    okButton.setText(okActionName);
 	else
-	    okButton.setText(Catalog.get("LISTEDITDIALOG_OK_BUTTON_TXT"));
+	    okButton.setText(Catalog.get("LISTEDITDIALOG_OK_BUTTON_TXT")); // NOI18N
 
         okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -255,7 +255,7 @@ public class MasterDetailView extends TopComponent {
             }
         });
 
-        cancelButton.setText(Catalog.get("LISTEDITDIALOG_CANCEL_BUTTON_TXT"));
+        cancelButton.setText(Catalog.get("LISTEDITDIALOG_CANCEL_BUTTON_TXT")); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -264,8 +264,8 @@ public class MasterDetailView extends TopComponent {
 
         buttonPanel.add(cancelButton);
 	
-        applyButton.setText(Catalog.get("LISTEDITDIALOG_APPLY_BUTTON_TXT"));
-	applyButton.setMnemonic(Catalog.getMnemonic("MNEM_Apply"));
+        applyButton.setText(Catalog.get("LISTEDITDIALOG_APPLY_BUTTON_TXT")); // NOI18N
+	applyButton.setMnemonic(Catalog.getMnemonic("MNEM_Apply")); // NOI18N
         applyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 applyButtonActionPerformed(evt);
@@ -276,8 +276,8 @@ public class MasterDetailView extends TopComponent {
 	    (button_config & CONFIGCURRENT) != 0)
 	    buttonPanel.add(applyButton);
 
-        helpButton.setMnemonic(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_MN").charAt(0));
-        helpButton.setText(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_TXT"));
+        helpButton.setMnemonic(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_MN").charAt(0)); // NOI18N
+        helpButton.setText(Catalog.get("LISTEDITDIALOG_HELP_BUTTON_TXT")); // NOI18N
         helpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpButtonActionPerformed(evt);

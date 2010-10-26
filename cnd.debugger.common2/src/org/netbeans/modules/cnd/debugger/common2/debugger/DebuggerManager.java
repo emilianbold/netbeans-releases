@@ -230,7 +230,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public static boolean is64Debuggee(NativeDebuggerInfo ndi, Host host) {
         int act = ndi.getAction();
         String debuggee = null;
-        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0);
+        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 
         if ((act & DebuggerManager.CORE) != 0) {
             debuggee = ndi.getCorefile();
@@ -741,7 +741,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         panel.setLayout(new BorderLayout(0, 8));
 
         String title = Catalog.get("TITLE_StartNewSession");// NOI18N
-        String msg = Catalog.format("FMT_StartNewSession",
+        String msg = Catalog.format("FMT_StartNewSession", // NOI18N
             programInfo, hostname);
 
         JTextArea textArea = new JTextArea(msg);
@@ -753,14 +753,14 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         textArea.setFont(UIManager.getFont("Label.font"));	// NOI18N
         textArea.setDisabledTextColor(
             UIManager.getColor("Label.foreground")); // NOI18N
-        Catalog.setAccessibleName(panel, "ACSD_StartNewSession");
+        Catalog.setAccessibleName(panel, "ACSD_StartNewSession"); // NOI18N
         panel.getAccessibleContext().setAccessibleDescription(textArea.getText());
         panel.add(textArea, BorderLayout.CENTER);
 
         JCheckBox checkBox = new JCheckBox();
-        checkBox.setText(Catalog.get("CTL_session_reuse"));
-        checkBox.setMnemonic(Catalog.get("CTL_session_reuse_Mnemonic").charAt(0));
-        checkBox.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_session_reuse"));
+        checkBox.setText(Catalog.get("CTL_session_reuse")); // NOI18N
+        checkBox.setMnemonic(Catalog.get("CTL_session_reuse_Mnemonic").charAt(0)); // NOI18N
+        checkBox.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_session_reuse")); // NOI18N
         checkBox.setSelected(DebuggerOption.SESSION_REUSE.isEnabled(globalOptions()));
 
         panel.add(checkBox, BorderLayout.SOUTH);
@@ -774,12 +774,12 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
 
         JButton b_reuse =
             new JButton(Catalog.get("CTL_FinishAndStart"));	// NOI18N
-        b_reuse.setMnemonic(Catalog.get("CTL_FinishAndStart_Mnemonic").charAt(0));
-        b_reuse.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_FinishAndStart"));
+        b_reuse.setMnemonic(Catalog.get("CTL_FinishAndStart_Mnemonic").charAt(0)); // NOI18N
+        b_reuse.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_FinishAndStart")); // NOI18N
         JButton b_new =
             new JButton(Catalog.get("CTL_StartNewSession"));// NOI18N
-        b_new.setMnemonic(Catalog.get("CTL_StartNewSession_Mnemonic").charAt(0));
-        b_new.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_StartNewSession"));
+        b_new.setMnemonic(Catalog.get("CTL_StartNewSession_Mnemonic").charAt(0)); // NOI18N
+        b_new.getAccessibleContext().setAccessibleDescription(Catalog.get("ACSD_StartNewSession")); // NOI18N
 
         descriptor.setOptions(new Object[]{
                 b_reuse, b_new, NotifyDescriptor.CANCEL_OPTION
@@ -1094,7 +1094,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         InfoPanel panel = new InfoPanel(msg);
         NotifyDescriptor dlg = new NotifyDescriptor.Confirmation(
             panel,
-            Catalog.get("INFORMATION"),
+            Catalog.get("INFORMATION"), // NOI18N
             NotifyDescriptor.DEFAULT_OPTION);
         Object answer = DialogDisplayer.getDefault().notify(dlg);
         setDoNotShowAgain(panel.dontShowAgain());
@@ -1214,9 +1214,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
         //ndi.setTarget(dt.getExecutable());
 	Host host = new Host();
 	host = CndRemote.hostFromName(host, dt.getHostName());
-        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0);
+        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 	String execPath = executor.readlink(dt.getPid());
-	ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath);
+	ndi.setTarget(execPath == null || execPath.length() == 0 ? "-" : execPath); // NOI18N
 
         ndi.setConfiguration(conf);
         ndi.setHostName(dt.getHostName());
@@ -1346,9 +1346,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public void handleExec64() {
         JPanel panel = new JPanel();
         panel.setLayout(new java.awt.BorderLayout());
-        panel.add(new JLabel(Catalog.get("EXEC64MSG")),
+        panel.add(new JLabel(Catalog.get("EXEC64MSG")), // NOI18N
             java.awt.BorderLayout.NORTH);
-        JCheckBox jc = new JCheckBox(Catalog.get("OPTION_EXEC64"));
+        JCheckBox jc = new JCheckBox(Catalog.get("OPTION_EXEC64")); // NOI18N
         jc.getAccessibleContext().setAccessibleDescription(
             Catalog.get("ACSD_OPTION_EXEC64")); // NOI18N
         panel.add(jc, java.awt.BorderLayout.SOUTH);
@@ -1386,9 +1386,9 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     public void handleExec32() {
         JPanel panel = new JPanel();
         panel.setLayout(new java.awt.BorderLayout());
-        panel.add(new JLabel(Catalog.get("EXEC32MSG")),
+        panel.add(new JLabel(Catalog.get("EXEC32MSG")), // NOI18N
             java.awt.BorderLayout.NORTH);
-        JCheckBox jc = new JCheckBox(Catalog.get("OPTION_EXEC32"));
+        JCheckBox jc = new JCheckBox(Catalog.get("OPTION_EXEC32")); // NOI18N
         jc.getAccessibleContext().setAccessibleDescription(
             Catalog.get("ACSD_OPTION_EXEC32")); // NOI18N
         panel.add(jc, java.awt.BorderLayout.SOUTH);
@@ -1925,7 +1925,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
 
-            String msg = Catalog.get("ProcForkQuestion");
+            String msg = Catalog.get("ProcForkQuestion"); // NOI18N
             JTextArea textArea = new JTextArea(msg);
             textArea.setWrapStyleWord(true);
             textArea.setLineWrap(true);
@@ -1975,7 +1975,7 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
                 bothButton.setEnabled(false);
             }
 
-            String title = Catalog.format("TTL_ProcForkHeader", name);
+            String title = Catalog.format("TTL_ProcForkHeader", name); // NOI18N
 
             dlg = new DialogDescriptor(panel,
                 title,
