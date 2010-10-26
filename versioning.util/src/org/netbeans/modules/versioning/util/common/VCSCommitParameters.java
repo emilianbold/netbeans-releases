@@ -86,6 +86,7 @@ public abstract class VCSCommitParameters {
     }        
     
     public abstract JPanel getPanel();
+    public abstract boolean isCommitable();
 
     protected Preferences getPreferences() {
         return preferences;
@@ -170,7 +171,13 @@ public abstract class VCSCommitParameters {
     
     public static class DefaultCommitParameters extends VCSCommitParameters {
         private ParametersPanel panel;
+        private String commitMessage;
 
+        public DefaultCommitParameters(Preferences preferences, String commitMessage) {
+            super(preferences);
+            this.commitMessage = commitMessage;
+        }
+        
         public DefaultCommitParameters(Preferences preferences) {
             super(preferences);
         }
@@ -178,13 +185,23 @@ public abstract class VCSCommitParameters {
         @Override
         public JPanel getPanel() {
             if(panel == null) {
-                panel = new ParametersPanel();
+                panel = new ParametersPanel();                
             }
             return panel;
         }
 
         public String getCommitMessage() {
             return ((ParametersPanel) getPanel()).messageTextArea.getText();
+        }
+
+        @Override
+        public boolean isCommitable() {
+            String msg = getCommitMessage();
+            return msg != null && !msg.isEmpty();
+        }
+
+        public void storeCommitMessage() {
+            Utils.insert(getPreferences(), RECENT_COMMIT_MESSAGES, getCommitMessage().trim(), 20);
         }
 
         private class ParametersPanel extends JPanel {
@@ -210,7 +227,10 @@ public abstract class VCSCommitParameters {
 
                 messageTextArea.getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitForm_Message")); // NOI18N
                 messageTextArea.getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitForm_Message")); // NOI18N
-
+                if(commitMessage != null) {
+                    messageTextArea.setText(commitMessage);
+                }
+                
                 JPanel topPanel = new VerticallyNonResizingPanel();
                 topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
                 topPanel.add(messageLabel);
