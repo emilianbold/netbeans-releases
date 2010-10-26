@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     public ModifyUndoTestCase(String testName) {
         super(testName);
+        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
 
     @Override
