@@ -54,12 +54,11 @@ import javax.swing.JTable;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -87,8 +86,9 @@ public class StatusTest extends AbstractGitTestCase {
                 VCSContext ctx = VCSContext.forNodes(new Node[] {
                     new AbstractNode(Children.LEAF, Lookups.singleton(repositoryLocation))
                 });
-                SystemActionBridge.createAction(SystemAction.get(StatusAction.class), "sss", ctx.getElements()).actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
-                Field f;
+                tc.setContentTitle(Utils.getContextDisplayName(ctx));
+                tc.setContext(ctx);
+		Field f;
                 try {
                     f = GitVersioningTopComponent.class.getDeclaredField("controller");
                     f.setAccessible(true);
