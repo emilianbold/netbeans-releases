@@ -51,9 +51,7 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.search.Bundle"/>
             <attr name="command" stringvalue="m2"/>
             <attr name="position" intvalue="667"/>
-            <file name="org-netbeans-modules-maven-search-MavenRepoProvider.instance">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.search.Bundle"/>
-            </file>
+            <file name="org-netbeans-modules-maven-search-MavenRepoProvider.instance"/>
         </folder>
     </folder>
 </filesystem>
