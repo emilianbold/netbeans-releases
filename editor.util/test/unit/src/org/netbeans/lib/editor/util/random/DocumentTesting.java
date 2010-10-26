@@ -44,6 +44,7 @@
 
 package org.netbeans.lib.editor.util.random;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Random;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
@@ -97,6 +98,11 @@ public class DocumentTesting {
      * to just performed undo/redo.
      */
     public static final String UNDO_REDO_INVERSE_RATIO = "doc-undo-redo-inverse-ratio";
+    
+    /**
+     * Whether invoke operations in same thread (necessary e.g. for runAtomic()) or in AWT true/false.
+     */
+    private static final String SAME_THREAD_INVOKE = "doc-same-thread-invoke"; // NOI18N
 
     /** java.lang.Boolean whether whole document text should be logged. */
     public static final String LOG_DOC = "doc-log-doc";
@@ -208,7 +214,7 @@ public class DocumentTesting {
             context.logOp(sb);
         }
 
-        SwingUtilities.invokeAndWait(new Runnable() {
+        invoke(context, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -247,7 +253,7 @@ public class DocumentTesting {
             context.logOp(sb);
         }
 
-        SwingUtilities.invokeAndWait(new Runnable() {
+        invoke(context, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -263,7 +269,7 @@ public class DocumentTesting {
         final Document doc = getDocument(context);
         final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "UNDO", count);
-        SwingUtilities.invokeAndWait(new Runnable() {
+        invoke(context, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -283,7 +289,7 @@ public class DocumentTesting {
         final Document doc = getDocument(context);
         final UndoManager undoManager = (UndoManager) doc.getProperty(UndoManager.class);
         logUndoRedoOp(context, "REDO", count);
-        SwingUtilities.invokeAndWait(new Runnable() {
+        invoke(context, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -297,6 +303,25 @@ public class DocumentTesting {
             }
         });
         logPostUndoRedoOp(context, count);
+    }
+    
+    public static void setSameThreadInvoke(Context context, boolean sameThreadInvoke) {
+        context.putProperty(SAME_THREAD_INVOKE, sameThreadInvoke);
+    }
+    
+    /**
+     * Invoke the runnable in a right thread depending on a context property
+     * @param r
+     */
+    private static void invoke(Context context, Runnable r) 
+            throws InterruptedException, InvocationTargetException
+    {
+        boolean sameThreadInvoke = Boolean.TRUE.equals(context.getPropertyOrNull(SAME_THREAD_INVOKE));
+        if (sameThreadInvoke) {
+            r.run();
+        } else {
+            SwingUtilities.invokeAndWait(r);
+        }
     }
 
     private static void logUndoRedoOp(Context context, String opType, int count) {
