@@ -163,7 +163,7 @@ public class ActionRegistrationHinter implements Hinter {
             String displayName = ctx.bundlevalue(ctx.instanceFile().getAttribute("literal:displayName"), declaration);
             if (displayName == null) {
                 // @ActionRegistration requires this attr, even though it is unused for eager actions.
-                displayName = "TODO";
+                displayName = "#TODO";
             }
             params.put("displayName", displayName);
             params.put("iconBase", ctx.instanceFile().getAttribute("iconBase"));

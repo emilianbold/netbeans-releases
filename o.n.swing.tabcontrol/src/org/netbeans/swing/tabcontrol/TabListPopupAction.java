@@ -81,6 +81,8 @@ public class TabListPopupAction extends AbstractAction {
                 SwitcherTableItem[] items = createSwitcherItems(displayer);
                 Arrays.sort(items);
                 ButtonPopupSwitcher.selectItem(jc, items, p.x, p.y);
+            } else {
+                ButtonPopupSwitcher.hidePopup();
             }
             //Other portion of issue 37487, looks funny if the
             //button becomes pressed
