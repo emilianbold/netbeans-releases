@@ -161,7 +161,7 @@ public class EditWatchPanel extends javax.swing.JPanel
     }
 
     private void initComponents() {
-	Catalog.setAccessibleDescription(this, "ACSD_NewWatch");
+	Catalog.setAccessibleDescription(this, "ACSD_NewWatch"); // NOI18N
 
 	setLayout(new GridBagLayout());
 	GridBagConstraints gbc;
@@ -205,9 +205,9 @@ public class EditWatchPanel extends javax.swing.JPanel
 
 	    add(editorComponents[0], gbc);
             
-	Catalog.setAccessibleDescription(watchText, "ACSD_WatchExpression");
+	Catalog.setAccessibleDescription(watchText, "ACSD_WatchExpression"); // NOI18N
 	watchLabel.setDisplayedMnemonic
-	    (Catalog.getMnemonic("MNEM_WatchExpression"));
+	    (Catalog.getMnemonic("MNEM_WatchExpression")); // NOI18N
 	watchLabel.setLabelFor(watchText);
 
 

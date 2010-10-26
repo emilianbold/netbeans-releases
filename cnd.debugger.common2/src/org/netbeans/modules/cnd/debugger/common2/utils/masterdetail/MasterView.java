@@ -161,20 +161,20 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 	context.setAccessibleDescription(guidanceText.getText());
 
 	context = list.getAccessibleContext();
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
 	context = scrollPane.getAccessibleContext();
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
 	context = scrollPane.getHorizontalScrollBar().getAccessibleContext();
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
 	context = scrollPane.getVerticalScrollBar().getAccessibleContext();
-	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN"));
-	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD"));
+	context.setAccessibleName(Catalog.get("LISTEDITDIALOG_ACSN")); // NOI18N
+	context.setAccessibleDescription(Catalog.get("LISTEDITDIALOG_ACSD")); // NOI18N
 
 	duplicateButton.getAccessibleContext().setAccessibleDescription(duplicateButton.getText());
 	deleteButton.getAccessibleContext().setAccessibleDescription(deleteButton.getText());
@@ -226,8 +226,8 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
 
         listButtonPanel.setLayout(new java.awt.GridBagLayout());
 
-        duplicateButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_MN").charAt(0));
-        duplicateButton.setText(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_TXT"));
+        duplicateButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_MN").charAt(0)); // NOI18N
+        duplicateButton.setText(Catalog.get("LISTEDITDIALOG_DUPLICATE_BUTTON_TXT")); // NOI18N
         duplicateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 duplicateButtonActionPerformed(evt);
@@ -238,9 +238,9 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         listButtonPanel.add(duplicateButton, gridBagConstraints);
 
-        deleteButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DELETE_BUTTON_MN").charAt(0));
+        deleteButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DELETE_BUTTON_MN").charAt(0)); // NOI18N
 	deleteButton.setEnabled(false);
-        deleteButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_BUTTON_TXT"));
+        deleteButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_BUTTON_TXT")); // NOI18N
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteButtonActionPerformed(evt);
@@ -254,8 +254,8 @@ public class MasterView<R extends Record> extends JPanel implements Validator {
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         listButtonPanel.add(deleteButton, gridBagConstraints);
 
-        deleteAllButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_MN").charAt(0));
-        deleteAllButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_TXT"));
+        deleteAllButton.setMnemonic(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_MN").charAt(0)); // NOI18N
+        deleteAllButton.setText(Catalog.get("LISTEDITDIALOG_DELETE_ALL_BUTTON_TXT")); // NOI18N
         deleteAllButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 deleteAllButtonActionPerformed(evt);

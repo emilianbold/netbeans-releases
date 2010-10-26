@@ -114,10 +114,10 @@ public class Gdb {
                 phasedProgress().setCancelMsg(Catalog.get("CancelNoted"));// NOI18N
                 String msg;
                 if (hostname != null) {
-                    msg = MessageFormat.format(Catalog.get("StartingDbgOn"),
+                    msg = MessageFormat.format(Catalog.get("StartingDbgOn"), // NOI18N
                                                hostname);
                 } else {
-                    msg = Catalog.get("StartingDbg");
+                    msg = Catalog.get("StartingDbg"); // NOI18N
                 }
                 phasedProgress().setMessageFor(0, msg, 0);
                 phasedProgress().setVisible(true);
@@ -264,7 +264,7 @@ public class Gdb {
 							      hostName);
 	    tentativeGdb.startProgressManager().setCancelListener();
 	    tentativeGdb.startProgressManager().updateProgress('>', 1,
-		Catalog.get("StartingGdb"), 0, 0);
+		Catalog.get("StartingGdb"), 0, 0); // NOI18N
 
 	    //
 	    // setup the IOPack

@@ -68,56 +68,56 @@ public final class BreakpointColumnModels implements Constants {
     public static final class Lwp extends AbstractColumnModel {
         public Lwp() {
 	    super(Constants.PROP_BREAKPOINT_LWP,
-	          Catalog.get("ACSD_LWP"),
-		  Catalog.get("ACSD_LWP"), Object.class,false, new LwpIdEditor());
+	          Catalog.get("ACSD_LWP"), // NOI18N
+		  Catalog.get("ACSD_LWP"), Object.class,false, new LwpIdEditor()); // NOI18N
        }
     }
 
     public static final class Id extends AbstractColumnModel {
         public Id() {
 	    super(Constants.PROP_BREAKPOINT_ID,
-	          Catalog.get("ACSD_ID"),
-		  Catalog.get("ACSD_ID"), Integer.class, false, new StringEditor());
+	          Catalog.get("ACSD_ID"), // NOI18N
+		  Catalog.get("ACSD_ID"), Integer.class, false, new StringEditor()); // NOI18N
         }
     }
 
     public static final class Count extends AbstractColumnModel {
         public Count() {
 	    super(Constants.PROP_BREAKPOINT_COUNT,
-	          Catalog.get("ACSD_Count"), 
-		  Catalog.get("ACSD_Count"), Integer.class, false, new StringEditor());
+	          Catalog.get("ACSD_Count"),  // NOI18N
+		  Catalog.get("ACSD_Count"), Integer.class, false, new StringEditor()); // NOI18N
        }
     }
 
     public static final class CountLimit extends AbstractColumnModel {
         public CountLimit() {
 	    super(Constants.PROP_BREAKPOINT_COUNTLIMIT,
-	          Catalog.get("ACSD_CountLimit"),
-		  Catalog.get("ACSD_CountLimit"), Object.class, false, new CountLimitEditor());
+	          Catalog.get("ACSD_CountLimit"), // NOI18N
+		  Catalog.get("ACSD_CountLimit"), Object.class, false, new CountLimitEditor()); // NOI18N
         }
     }
     
     public static final class WhileIn extends AbstractColumnModel {
         public WhileIn() {
 	    super(Constants.PROP_BREAKPOINT_WHILEIN,
-	          Catalog.get("ACSD_WhileIn"), 
-		  Catalog.get("ACSD_WhileIn"), Object.class, false, new StringEditor());
+	          Catalog.get("ACSD_WhileIn"),  // NOI18N
+		  Catalog.get("ACSD_WhileIn"), Object.class, false, new StringEditor()); // NOI18N
         }
     }
 
     public static final class Condition extends AbstractColumnModel {
         public Condition() {
 	    super(Constants.PROP_BREAKPOINT_CONDITION,
-	          Catalog.get("ACSD_Condition"), 
-		  Catalog.get("ACSD_Condition"),String.class, false, new StringEditor()); 
+	          Catalog.get("ACSD_Condition"),  // NOI18N
+		  Catalog.get("ACSD_Condition"),String.class, false, new StringEditor());  // NOI18N
         }
     }
 
     public static final class Thread extends AbstractColumnModel {
         public Thread() {
 	    super(Constants.PROP_BREAKPOINT_THREAD,
-	          Catalog.get("ACSD_Thread"), 
-		  Catalog.get("ACSD_Thread"),Object.class, false, new ThreadIdEditor()); 
+	          Catalog.get("ACSD_Thread"),  // NOI18N
+		  Catalog.get("ACSD_Thread"),Object.class, false, new ThreadIdEditor());  // NOI18N
         }
     }
 
@@ -125,24 +125,24 @@ public final class BreakpointColumnModels implements Constants {
     public static final class Temp extends AbstractColumnModel {
         public Temp() {
 	    super(Constants.PROP_BREAKPOINT_TEMP,
-	          Catalog.get("ACSD_Temp"), 
-		  Catalog.get("ACSD_Temp"), Boolean.TYPE, false, null);
+	          Catalog.get("ACSD_Temp"),  // NOI18N
+		  Catalog.get("ACSD_Temp"), Boolean.TYPE, false, null); // NOI18N
         }
     }
 
     public static final class Java extends AbstractColumnModel {
         public Java() {
 	    super(Constants.PROP_BREAKPOINT_JAVA,
-	          Catalog.get("ACSD_Java"), 
-		  Catalog.get("ACSD_Java"), Boolean.TYPE, false, null);
+	          Catalog.get("ACSD_Java"),  // NOI18N
+		  Catalog.get("ACSD_Java"), Boolean.TYPE, false, null); // NOI18N
         }
     }
 
     public static final class Timestamp extends AbstractColumnModel {
         public Timestamp() {
 	    super(Constants.PROP_BREAKPOINT_TIMESTAMP,
-	          Catalog.get("ACSD_Timestamp"), 
-		  Catalog.get("ACSD_Timestamp"), String.class, 
+	          Catalog.get("ACSD_Timestamp"),  // NOI18N
+		  Catalog.get("ACSD_Timestamp"), String.class,  // NOI18N
 		  false, new StringEditor());
         }
     }
@@ -150,8 +150,8 @@ public final class BreakpointColumnModels implements Constants {
     public static final class Context extends AbstractColumnModel {
         public Context() {
 	    super(Constants.PROP_BREAKPOINT_CONTEXT,
-	          Catalog.get("ACSD_Context"),
-		  Catalog.get("ACSD_Context"),
+	          Catalog.get("ACSD_Context"), // NOI18N
+		  Catalog.get("ACSD_Context"), // NOI18N
 		  String.class, true, new StringEditor());
         }
     }

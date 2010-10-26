@@ -183,7 +183,7 @@ public class HostOption extends Option {
 		try {
 		    Integer.parseInt(text);
 		} catch(NumberFormatException e) {
-		    String err = Catalog.format("ERROR_BADPORT");
+		    String err = Catalog.format("ERROR_BADPORT"); // NOI18N
 		    return Validity.FALSE(err);
 		}
 		return Validity.TRUE;
@@ -206,10 +206,10 @@ public class HostOption extends Option {
 
 		if (IpeUtils.isEmpty(text)) {
 		    String err = Catalog.get("ERROR_NOEMPTYHOSTNAME");// NOI18N
-		    return Validity.FALSE(Catalog.get("ERROR_NOEMPTYHOSTNAME"));
+		    return Validity.FALSE(Catalog.get("ERROR_NOEMPTYHOSTNAME")); // NOI18N
 
 		} else if (Host.localhost.equals(text)) {
-		    String err = Catalog.format("ERROR_NOLOCALHOST",
+		    String err = Catalog.format("ERROR_NOLOCALHOST", // NOI18N
 						Host.localhost);
 		    return Validity.FALSE(err);
 		} else {

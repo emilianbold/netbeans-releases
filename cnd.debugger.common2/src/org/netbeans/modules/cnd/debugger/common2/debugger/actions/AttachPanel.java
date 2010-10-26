@@ -161,7 +161,7 @@ public final class AttachPanel extends TopComponent {
 //            executablePickList.addElement(autoExe);
 //        }
         initComponents(this.engine);
-        Catalog.setAccessibleDescription(this, "ACSD_CTL_AttachToProcess");
+        Catalog.setAccessibleDescription(this, "ACSD_CTL_AttachToProcess"); // NOI18N
 
     }
 
@@ -294,13 +294,13 @@ public final class AttachPanel extends TopComponent {
         hostsButton = new javax.swing.JButton();
 
         tableLabel = new javax.swing.JLabel();
-        allProcessesCheckBox = new javax.swing.JCheckBox(Catalog.get("All_Processes_Lab"));
+        allProcessesCheckBox = new javax.swing.JCheckBox(Catalog.get("All_Processes_Lab")); // NOI18N
 	allProcessesCheckBox.setEnabled(true);
 	allProcessesCheckBox.setSelected(false);
 	allProcessesCheckBox.setFocusable(false);
-	allProcessesCheckBox.setToolTipText(Catalog.get("All_Processes"));
-	allProcessesCheckBox.setMnemonic(Catalog.getMnemonic("MNEM_All_Processes"));
-	Catalog.setAccessibleDescription(allProcessesCheckBox, "ACSD_All_Processes");
+	allProcessesCheckBox.setToolTipText(Catalog.get("All_Processes")); // NOI18N
+	allProcessesCheckBox.setMnemonic(Catalog.getMnemonic("MNEM_All_Processes")); // NOI18N
+	Catalog.setAccessibleDescription(allProcessesCheckBox, "ACSD_All_Processes"); // NOI18N
 
         allProcessesCheckBox.addActionListener(new ActionListener() {
 
@@ -313,10 +313,10 @@ public final class AttachPanel extends TopComponent {
 
         refreshButton.setIcon(new ImageIcon(ImageUtilities.loadImage(REFRESH_ICON)));
         // need to add text
-        refreshButton.setText(Catalog.get("Refresh"));
-        refreshButton.setToolTipText(Catalog.get("Refresh"));
-        refreshButton.setMnemonic(Catalog.getMnemonic("MNEM_Refresh"));
-        Catalog.setAccessibleDescription(refreshButton, "ACSD_Refresh");
+        refreshButton.setText(Catalog.get("Refresh")); // NOI18N
+        refreshButton.setToolTipText(Catalog.get("Refresh")); // NOI18N
+        refreshButton.setMnemonic(Catalog.getMnemonic("MNEM_Refresh")); // NOI18N
+        Catalog.setAccessibleDescription(refreshButton, "ACSD_Refresh"); // NOI18N
         refreshButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent evt) {
@@ -324,9 +324,9 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        filterLabel.setText(Catalog.get("AttachProcDiag_FilterColon"));
+        filterLabel.setText(Catalog.get("AttachProcDiag_FilterColon")); // NOI18N
         filterLabel.setDisplayedMnemonic(
-                Catalog.getMnemonic("MNEM_AttachProcDiag_Filter"));
+                Catalog.getMnemonic("MNEM_AttachProcDiag_Filter")); // NOI18N
 
         filterLabel.setLabelFor(filterCombo);
         filterCombo.setToolTipText(Catalog.get("RegExp")); //NOI18N
@@ -371,9 +371,9 @@ public final class AttachPanel extends TopComponent {
             }
         });
 
-        hostLabel.setText(Catalog.get("AttachProcDiag_HostColon"));
+        hostLabel.setText(Catalog.get("AttachProcDiag_HostColon")); // NOI18N
         hostLabel.setDisplayedMnemonic(
-                Catalog.getMnemonic("MNEM_AttachProcDiag_Host"));
+                Catalog.getMnemonic("MNEM_AttachProcDiag_Host")); // NOI18N
 
         hostLabel.setLabelFor(hostCombo);
         hostCombo.setToolTipText(Catalog.get("HostName")); //NOI18N

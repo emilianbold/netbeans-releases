@@ -126,7 +126,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	if (readonly) {
 	    corefileTextField.setEditable(false);
 	    corefileBrowseButton.setEnabled(false);
-	    guidanceTextArea.setText(Catalog.get("LOADCORE_GUIDANCETEXT2"));
+	    guidanceTextArea.setText(Catalog.get("LOADCORE_GUIDANCETEXT2")); // NOI18N
 	    Catalog.setAccessibleDescription(guidanceTextArea, 
 		"LOADCORE_GUIDANCETEXT2"); // NOI18N
 	}
@@ -204,7 +204,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     private int lookupAutoEntry() {
 	int count = executableComboBox.getItemCount();
 	for (int i = 0; i < count; i++) {
-	    if (((String)executableComboBox.getItemAt(i)).equals(Catalog.get("AutoCoreExe")))
+	    if (((String)executableComboBox.getItemAt(i)).equals(Catalog.get("AutoCoreExe"))) // NOI18N
 		return i;
 	}
 	return -1;
@@ -225,14 +225,14 @@ final class DebugCorePanel extends javax.swing.JPanel {
 //		executableComboBox.insertItemAt(" ", i);
 	    }
 
-	    if (exec.equals(Catalog.get("AutoCoreExe"))) {
+	    if (exec.equals(Catalog.get("AutoCoreExe"))) { // NOI18N
                 exec = "";
             }
 	} else {
             autoString = Catalog.get("AutoCoreExe"); // NOI18N
 	    int i = lookupAutoEntry(); // look up <from core> item
 	    if (i == -1) {
-		executableComboBox.addItem(Catalog.get("AutoCoreExe"));
+		executableComboBox.addItem(Catalog.get("AutoCoreExe")); // NOI18N
 	    }
 	    if (exec.isEmpty()) {
                 exec = autoString;
@@ -391,7 +391,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-	Catalog.setAccessibleDescription(this, "ACSD_DebugCoreFile");
+	Catalog.setAccessibleDescription(this, "ACSD_DebugCoreFile"); // NOI18N
 
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -422,11 +422,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
 	int gridy = 0;
 
-	Catalog.setAccessibleName(guidanceTextArea, "ACSN_Guidance");
+	Catalog.setAccessibleName(guidanceTextArea, "ACSN_Guidance"); // NOI18N
         guidanceTextArea.setEditable(false);
         guidanceTextArea.setLineWrap(true);
-        guidanceTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("LOADCORE_GUIDANCETEXT1"));
-	Catalog.setAccessibleDescription(guidanceTextArea, "LOADCORE_GUIDANCETEXT1");
+        guidanceTextArea.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("LOADCORE_GUIDANCETEXT1")); // NOI18N
+	Catalog.setAccessibleDescription(guidanceTextArea, "LOADCORE_GUIDANCETEXT1"); // NOI18N
         guidanceTextArea.setWrapStyleWord(true);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -438,7 +438,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
         add(guidanceTextArea, gridBagConstraints);
 
-        hostLabel.setText(Catalog.get("HOST_LBL"));
+        hostLabel.setText(Catalog.get("HOST_LBL")); // NOI18N
         hostLabel.setLabelFor(hostComboBox);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -459,7 +459,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	if (!DebuggerManager.isStandalone())
 	    hostsButton.setEnabled(false);      // IZ 147543
 
-        hostsButton.setText(Catalog.get("TITLE_Hosts"));
+        hostsButton.setText(Catalog.get("TITLE_Hosts")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = gridy++;
@@ -483,7 +483,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
             getMnemonic("MNEM_Engine")); // NOI18N
         Catalog.setAccessibleDescription(engineComboBox,
             "ACSD_Engine"); // NOI18N
-        engineLabel.setText(Catalog.get("ASSOCIATED_ENGINE_LBL"));
+        engineLabel.setText(Catalog.get("ASSOCIATED_ENGINE_LBL")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = gridy;

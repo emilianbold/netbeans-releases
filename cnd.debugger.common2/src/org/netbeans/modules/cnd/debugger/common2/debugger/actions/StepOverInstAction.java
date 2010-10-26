@@ -103,7 +103,7 @@ public class StepOverInstAction extends CallableSystemAction implements StateLis
     // interface SystemAction
     protected void initialize() {
 	super.initialize();
-	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepOverInstAction"));
+	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepOverInstAction")); // NOI18N
 	setEnabled(false);
     }    
 

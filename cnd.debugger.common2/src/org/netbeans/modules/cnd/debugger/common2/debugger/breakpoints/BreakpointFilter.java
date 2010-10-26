@@ -997,7 +997,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 		// interface SystemAction
 		public String getName() {
-			return Catalog.get("ACT_BPT_SaveBpt");
+			return Catalog.get("ACT_BPT_SaveBpt"); // NOI18N
 		}
 
 		// interface SystemAction
@@ -1255,7 +1255,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 			panel = new EditBreakpointPanel(editableBreakpoint);
 			boolean isModal = true;
-			final String title = Catalog.get("CTL_CustomizeBreakpointTitle");
+			final String title = Catalog.get("CTL_CustomizeBreakpointTitle"); // NOI18N
 			dd = new DialogDescriptor(panel, title, isModal, this);
 
 			Object[] buttons = new Object[]{

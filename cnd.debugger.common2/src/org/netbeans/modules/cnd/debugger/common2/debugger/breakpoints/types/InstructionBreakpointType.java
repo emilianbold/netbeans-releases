@@ -59,7 +59,7 @@ public class InstructionBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-        return Catalog.get("LBL_Instruction");
+        return Catalog.get("LBL_Instruction"); // NOI18N
     }
 
     // interface NativeBreakpointType

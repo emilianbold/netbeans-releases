@@ -63,7 +63,7 @@ public class FallbackBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-	return Catalog.get("LBL_Fallback");
+	return Catalog.get("LBL_Fallback"); // NOI18N
     }
 
     // interface NativeBreakpointType

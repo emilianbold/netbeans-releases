@@ -54,10 +54,10 @@ public final class SignalsNodeProp extends PropertySupport<Signals> {
     private final DbgProfile profile;
 
     public SignalsNodeProp(DbgProfile profile) {
-	super("Signals",				// NOI18n // NOI18N
+	super("Signals",				// NOI18N
 	      Signals.class,
-	      Catalog.get("SignalsPropDisplayName"),	// NOI18n
-	      Catalog.get("SignalsPropTT"),		// NOI18n
+	      Catalog.get("SignalsPropDisplayName"),	// NOI18N
+	      Catalog.get("SignalsPropTT"),             // NOI18N
 	      true, true);
 	this.profile = profile;
     }

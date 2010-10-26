@@ -104,7 +104,7 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
     // interface SystemAction
     protected void initialize() {
 	super.initialize();
-	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepOutInstAction"));
+	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepOutInstAction")); // NOI18N
 	setEnabled(false);
     }    
 

@@ -190,7 +190,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
         npb.setArguments(argv);
         npb.setUsePty(true);
 
-        npb.getEnvironment().put("TERM", console.getTerm().getEmulation());
+        npb.getEnvironment().put("TERM", console.getTerm().getEmulation()); // NOI18N
 
         try {
             engineProc = npb.call();
@@ -246,7 +246,7 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 	Thread reaper = new Thread() {
 	    @Override
 	    public void run() {
-		setName("ExecutorCND Reaper" );
+		setName("ExecutorCND Reaper"); // NOI18N
 		try {
 		    engineProc.waitFor();
 		} catch (InterruptedException ex) {
@@ -267,20 +267,20 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 			}
 
 			String output = "";
-			output += String.format("Process exited with %d.\n", exitValue);
-			output += String.format("Output:\n");
+			output += String.format("Process exited with %d.\n", exitValue); // NOI18N
+			output += String.format("Output:\n"); // NOI18N
 			if (processOutput == null) {
-			    output += "\t<empty>\n";
+			    output += "\t<empty>\n"; // NOI18N
 			} else {
 			    for (String l : processOutput)
-				output += l + "\n";
+				output += l + "\n"; // NOI18N
 			}
-			output += String.format("Error:\n");
+			output += String.format("Error:\n"); // NOI18N
 			if (processError == null) {
-			    output += "\t<empty>\n";
+			    output += "\t<empty>\n"; // NOI18N
 			}  else {
 			    for (String l : processError)
-				output += l + "\n";
+				output += l + "\n"; // NOI18N
 			}
 
 			final String foutput = output;

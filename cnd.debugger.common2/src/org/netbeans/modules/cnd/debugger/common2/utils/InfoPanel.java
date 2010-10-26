@@ -108,7 +108,7 @@ public class InfoPanel extends JPanel {
 	add(textArea, gbc);
 
 	if (msg1 == null)
-	    msg1 = Catalog.get("LBL_doNotShowAgain");
+	    msg1 = Catalog.get("LBL_doNotShowAgain"); // NOI18N
 	doNotShowCheckBox = new JCheckBox(msg1);	// NOI18N
 	Catalog.setAccessibleDescription(doNotShowCheckBox,
 					 "ACSD_doNotShowAgain");// NOI18N

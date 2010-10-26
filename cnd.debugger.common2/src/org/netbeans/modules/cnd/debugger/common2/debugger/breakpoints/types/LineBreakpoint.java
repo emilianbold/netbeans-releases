@@ -181,7 +181,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
     }
 
     protected final String getSummary() {
-	return Catalog.format("CTL_Line_event_name",
+	return Catalog.format("CTL_Line_event_name", // NOI18N
 		              getFileName(),
 		              getLineNumber());
     } 

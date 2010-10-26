@@ -133,13 +133,13 @@ public class GdbHandlerExpert implements HandlerExpert {
 	// First, weed out options gdb doesn't support
 	//
 	if (breakpoint.getAction() != Action.STOP)
-	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb"));
+	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
 
 	if (!IpeUtils.isEmpty(breakpoint.getWhileIn()))
-	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb"));
+	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb")); // NOI18N
 
 	if (!IpeUtils.isEmpty(breakpoint.getLwp()))
-	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb"));
+	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb")); // NOI18N
 
 
 	//
