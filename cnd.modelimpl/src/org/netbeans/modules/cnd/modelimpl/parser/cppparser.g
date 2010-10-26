@@ -1865,15 +1865,17 @@ init_declarator[int kind]
 	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
-                        (cast_initializer_head) => initializer
-		|	
+                        (cast_array_initializer_head) => initializer
+                        |	
 			LPAREN expression_list RPAREN
 		)?
 	;
 
 initializer
     : 
-        (cast_initializer_head) => cast_initializer
+        (cast_array_initializer_head) => cast_array_initializer
+    |   
+       array_initializer
     | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
@@ -1891,20 +1893,30 @@ initializer
             )            
             initializer
         )?
-    |   
+    ;
+
+cast_array_initializer:
+    // it's better to have LPAREN type RPAREN, but we use simple balanceParensInExpression
+    (AMPERSAND)? balanceParensInExpression array_initializer
+    ;
+
+array_initializer:
         LCURLY RCURLY
     |   
-        LCURLY initializer (COMMA initializer)* (COMMA)? 
+        LCURLY initializer 
+        (
+            // empty comma
+            (COMMA (RCURLY|EOF)) => COMMA
+            |
+            COMMA initializer
+        )*  
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     ;
 
-cast_initializer:
-    (AMPERSAND)? balanceParensInExpression initializer
-    ;
-
 // only for predicates
-cast_initializer_head:
+cast_array_initializer_head
+:
     (AMPERSAND)? balanceParensInExpression LCURLY
     ;
 
@@ -3112,7 +3124,7 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                (   (cast_initializer_head) => initializer
+                (   (cast_array_initializer_head) => initializer
                 |   expression
                 )
 	)?	
@@ -3225,28 +3237,28 @@ expression
 	;
 
 assignment_expression
-	:	
-        lazy_expression[false, false]
-		(options {greedy=true;}:	
+	:
+        (
+            // IZ#152872: parser error in VLC on cast expression
+            // #191198 -  Parser error in buf.c
+            (cast_array_initializer_head)=>cast_array_initializer
+            |
+            lazy_expression[false, false]
+        )
+	(options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
             | MINUSEQUAL
             | PLUSEQUAL
-			| MODEQUAL
-			| SHIFTLEFTEQUAL
-			| SHIFTRIGHTEQUAL
-			| BITWISEANDEQUAL
-			| BITWISEXOREQUAL
-			| BITWISEOREQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
             )
-            (
-                // IZ#152872: parser error in VLC on cast expression
-                // TODO: is it possible to change the next line to (cast_initializer_head)=>cast_initializer 
-                (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
-            |
-                assignment_expression
-            )
+            assignment_expression
         )?
     ;
 

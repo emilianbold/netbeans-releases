@@ -65,7 +65,7 @@ public class DiscoveryUtils {
 
     private DiscoveryUtils() {
     }
-    public static final List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
+    public static List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
@@ -76,7 +76,7 @@ public class DiscoveryUtils {
         return new ArrayList<String>();
     }
     
-    public static final String getCompilerFlavor(ProjectProxy project){
+    public static String getCompilerFlavor(ProjectProxy project){
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
@@ -87,7 +87,7 @@ public class DiscoveryUtils {
         return ""; // NOI18N
     }
 
-    public static final String getCygwinDrive(ProjectProxy project){
+    public static String getCygwinDrive(ProjectProxy project){
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
@@ -98,7 +98,7 @@ public class DiscoveryUtils {
         return null;
     }
 
-    public static final Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
+    public static Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
@@ -109,7 +109,7 @@ public class DiscoveryUtils {
         return new HashMap<String,String>();
     }
     
-    public static final boolean ignoreFolder(File file){
+    public static boolean ignoreFolder(File file){
         if (file.isDirectory()) {
             String name = file.getName();
             return name.equals("SCCS") || name.equals("CVS") || name.equals(".hg") || name.equals("SunWS_cache") || name.equals(".svn"); // NOI18N
@@ -117,7 +117,7 @@ public class DiscoveryUtils {
         return false;
     }
 
-    public static final List<String> scanCommandLine(String line){
+    public static List<String> scanCommandLine(String line){
         List<String> res = new ArrayList<String>();
         int i = 0;
         StringBuilder current = new StringBuilder();
@@ -168,7 +168,7 @@ public class DiscoveryUtils {
         return res;
     }
 
-    public static final String getRelativePath(String base, String path) {
+    public static String getRelativePath(String base, String path) {
         if (path.equals(base)) {
             return path;
         } else if (path.startsWith(base + '/')) { // NOI18N
@@ -198,11 +198,11 @@ public class DiscoveryUtils {
             StringBuilder s = new StringBuilder();
             while(stb.hasMoreTokens()) {
                 String bstring = stb.nextToken();
-                s.append(".." + File.separator); // NOI18N
+                s.append("..").append(File.separator); // NOI18N
             }
-            s.append(".." + File.separator + pstring); // NOI18N
+            s.append("..").append(File.separator).append(pstring); // NOI18N
             while(stp.hasMoreTokens()) {
-                s.append(File.separator + stp.nextToken() ); // NOI18N
+                s.append(File.separator).append(stp.nextToken()); // NOI18N
             }
             return s.toString();
         }
@@ -213,7 +213,7 @@ public class DiscoveryUtils {
      * .
      * ../
      * include
-     * Returns path in unix style
+     * Returns path in Unix style
      */
     public static String convertRelativePathToAbsolute(SourceFileProperties source, String path){
         if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
@@ -232,10 +232,10 @@ public class DiscoveryUtils {
     }
     
     /**
-     * parse compilee line
+     * parse compile line
      */
     public static String gatherCompilerLine(String line, boolean isScriptOutput,
-            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries){
+            List<String> userIncludes, Map<String, String> userMacros, Set<String> libraries, List<String> languageArtifacts){
         boolean TRACE = false;
         List<String> list = DiscoveryUtils.scanCommandLine(line);
         boolean hasQuotes = false;
@@ -352,6 +352,40 @@ public class DiscoveryUtils {
                     defaultSearchPath = removeQuotes(defaultSearchPath);
                     userIncludes.add(defaultSearchPath);
                 }
+            } else if (option.startsWith("-idirafter")){ // NOI18N
+                //Search dir for header files, but do it after all directories specified with -I and the standard system directories have been exhausted.
+                if (option.equals("-idirafter") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-iprefix")){ // NOI18N
+                //Specify prefix as the prefix for subsequent -iwithprefix options.
+                if (option.equals("-iprefix") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-iwithprefix")){ // NOI18N
+                //Append dir to the prefix specified previously with -iprefix, and add the resulting directory to the include search path.
+                if (option.equals("-iwithprefix") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-iwithprefixbefore")){ // NOI18N
+                //Append dir to the prefix specified previously with -iprefix, and add the resulting directory to the include search path.
+                if (option.equals("-iwithprefixbefore") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-isysroot")){ // NOI18N
+                //This option is like the --sysroot option, but applies only to header files.
+                if (option.equals("-isysroot") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-iquote")){ // NOI18N
+                //Search dir only for header files requested with "#include " file ""
+                if (option.equals("-iquote") && st.hasNext()) { // NOI18N
+                    st.next();
+                }
+            } else if (option.startsWith("-U")) { // NOI18N
+                if (option.equals("-U") && st.hasNext()){  //NOI18N
+                    st.next();
+                }
             } else if (option.equals("-K")){ // NOI18N
                 // Skip pic
                 if (st.hasNext()){
@@ -397,6 +431,19 @@ public class DiscoveryUtils {
                 if (st.hasNext()){
                     st.next();
                 }
+            } else if (option.equals("-x")){ // NOI18N
+                // Specify explicitly the language for the following input files (rather than letting the compiler choose a default based on the file name suffix).
+                if (st.hasNext()){
+                    String lang = st.next();
+                    if (languageArtifacts != null) {
+                        languageArtifacts.add(lang);
+                    }
+                }
+            } else if (option.equals("-xMF")){ // NOI18N
+                // ignore dependency output file
+                if (st.hasNext()){
+                    st.next();
+                }
             } else if (option.equals("-MF")){ // NOI18N
                 // ignore dependency output file
                 if (st.hasNext()){
@@ -404,6 +451,16 @@ public class DiscoveryUtils {
                 }
             } else if (option.equals("-MT")){ // NOI18N
                 // once more fancy preprocessor option with parameter. Ignore.
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-MQ")){ // NOI18N
+                // once more fancy preprocessor option with parameter. Ignore.
+                if (st.hasNext()){
+                    st.next();
+                }
+            } else if (option.equals("-aux-info")){ // NOI18N
+                // Output to the given filename prototyped declarations for all functions declared and/or defined in a translation unit, including those in header files. Ignore.
                 if (st.hasNext()){
                     st.next();
                 }
@@ -432,9 +489,9 @@ public class DiscoveryUtils {
                         System.out.println("*> "+line); //NOI18N
                     }
                     if ((option.endsWith(".c") || option.endsWith(".cc") || option.endsWith(".cpp") || //NOI18N
-                        option.endsWith(".c++") || option.endsWith(".C")) && //NOI18N
+                        option.endsWith(".cxx") ||option.endsWith(".c++") || option.endsWith(".C")) && //NOI18N
                         !(what.endsWith(".c") || what.endsWith(".cc") || what.endsWith(".cpp") || //NOI18N
-                        what.endsWith(".c++") || what.endsWith(".C"))) { //NOI18N
+                        what.endsWith(".cxx") ||what.endsWith(".c++") || what.endsWith(".C"))) { //NOI18N
                         what = option;
                     }
                 }

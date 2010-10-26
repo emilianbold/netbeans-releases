@@ -102,6 +102,82 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         System.err.printf("tearDown end %s %d\n", getName(), System.currentTimeMillis());
     }
 
+    protected final void deleteTextThenUndo(final File sourceFile, final int startPos, final int endPos, int numDecls, int numDeclsAfterRemove) throws Exception {
+        if (TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("TEST UNDO OF DELETE BLOCK\n");
+        }
+        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        final CsmProject project = super.getProject();
+        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
+        assertNotNull(fileImpl);
+        final BaseDocument doc = getBaseDocument(sourceFile);
+        assertNotNull(doc);
+        final int length = doc.getLength();
+        assertTrue(length > 0);
+        final int delLen;
+        if (endPos < 0) {
+            delLen = length;
+        } else {
+            delLen = Math.min(endPos, length)-startPos;
+        }
+        project.waitParse();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
+        CsmListeners.getDefault().addProgressListener(listener);
+        try {
+            int curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations", numDecls, curNumDecls);
+            // insert dead code block
+            // create barier
+            CountDownLatch parse1 = new CountDownLatch(1);
+            condRef.set(parse1);
+            // modify document
+            UndoManager urm = new UndoManager();
+            doc.addUndoableEditListener(urm);
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        doc.remove(startPos, delLen);
+                    } catch (BadLocationException ex) {
+                        exRef.compareAndSet(null, ex);
+                    }
+                }
+            });
+            try {
+                assertTrue("must have undo", urm.canUndo());
+                assertEquals("must have only one modified object", 1, this.doListener.size());
+                if (!parse1.await(20, TimeUnit.SECONDS)) {
+                    if (true || TraceFlags.TRACE_191307_BUG) {
+                        exRef.compareAndSet(null, new TimeoutException("not finished await"));
+                    }
+                } else {
+                    curNumDecls = fileImpl.getDeclarationsSize();
+                    assertEquals("different number of declarations", numDeclsAfterRemove, curNumDecls);
+                    assertEquals("must be exactly one parse event", 1, parseCounter.get());
+                }
+            } catch (InterruptedException ex) {
+                exRef.compareAndSet(null, ex);
+            } finally {
+                if (exRef.get() == null) {
+                    // let's undo changes
+                    closeDocument(sourceFile, urm, doc, project, null);
+                    curNumDecls = fileImpl.getDeclarationsSize();
+                    assertEquals("different number of declarations after undo", numDecls, curNumDecls);
+                }
+            }
+        } finally {
+            System.err.flush();
+            CsmListeners.getDefault().removeProgressListener(listener);
+            Exception ex = exRef.get();
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    }
+    
     protected final void insertDeadBlockText(final File sourceFile, final String ifdefTxt, final int pos,
                                     int deadBlocksBeforeModifcation, int deadBlocksAfterModifications) throws Exception {
         if (TraceFlags.TRACE_182342_BUG) {
@@ -150,7 +226,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
-                    if (TraceFlags.TRACE_182342_BUG) {
+                    if (true || TraceFlags.TRACE_182342_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -214,7 +290,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
-                    if (TraceFlags.TRACE_182342_BUG) {
+                    if (true || TraceFlags.TRACE_182342_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -237,14 +313,16 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     }
 
     private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException, BadLocationException {
-        CsmListeners.getDefault().removeProgressListener(listener);
+        if (listener != null) {
+            CsmListeners.getDefault().removeProgressListener(listener);
+        }
         urm.undo();
         DataObject testDataObject = DataObject.find(CndFileUtils.toFileObject(sourceFile));
         CloseCookie close = testDataObject.getLookup().lookup(CloseCookie.class);
         if (close != null) {
             close.close();
         }
-        if (TraceFlags.TRACE_182342_BUG) {
+        if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
             System.err.printf("document text after close\n==============\n%s\n===============\n", doc.getText(0, doc.getLength()));
         }
         project.waitParse();
@@ -292,10 +370,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         public void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
             modifiedDOs.addAll(Arrays.asList(objs));
-            if (TraceFlags.TRACE_182342_BUG) {
+            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.println("ObjectsChangeListener: stateChanged " + e);
-            }
-            if (TraceFlags.TRACE_182342_BUG) {
                 ModelSupport.traceDataObjectRegistryStateChanged(e);
             }
         }

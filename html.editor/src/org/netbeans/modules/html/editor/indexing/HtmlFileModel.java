@@ -65,6 +65,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -212,10 +213,19 @@ public class HtmlFileModel {
                 //XXX maybe we should also check the type attribute for text/css mimetype
                 if(!node.isEmpty()) {
                     int from = node.endOffset();
-                    AstNode closeTag = node.getMatchingTag();
-                    if(closeTag != null) {
-                        int to = closeTag.startOffset();
-                        getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));
+                    if(from != -1) {
+                        AstNode closeTag = node.getMatchingTag();
+                        if(closeTag != null) {
+                            int to = closeTag.startOffset();
+                            getEmbeddedCssSectionsCollectionInstance().add(new OffsetRange(from, to));
+                        }
+                    } else {
+                        //that's odd since the end offset of the tag should be always set
+                        LOGGER.log(Level.INFO, "The end offset of the node "
+                                + node.path().toString()
+                                + " is not set! Please report the exception and attach the "
+                                + FileUtil.getFileDisplayName(HtmlFileModel.this.getFileObject())
+                                + " to the issue."); //NOI18N
                     }
                 }
             }

@@ -757,7 +757,7 @@ public final class ReferencesSupport {
 
         @Override
         public String getDisplayName() {
-            return ReferencesSupport.class.getCanonicalName();
+            return "xRefSupport"; // NOI18N
         }
 
         @Override

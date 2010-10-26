@@ -510,7 +510,7 @@ public class SolarisLogReader {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         Set<String> libs = new HashSet<String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros, libs);
+        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros, libs, null);
         if (libs.size()>0){
             Set<String> l = libraries.get(getWorkingDir());
             if (l == null){

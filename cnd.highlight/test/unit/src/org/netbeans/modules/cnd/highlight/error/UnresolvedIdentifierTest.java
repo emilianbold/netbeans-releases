@@ -62,6 +62,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void testIZ191336() throws Exception {
+        // 191336: Regression in test results (Oracle Solaris Studio projects)
+        performStaticTest("iz191336.cpp");
+    }
+    
     public void testArrowDerefOfThis() throws Exception {
         performStaticTest("arrow_deref_of_this.cpp");
     }

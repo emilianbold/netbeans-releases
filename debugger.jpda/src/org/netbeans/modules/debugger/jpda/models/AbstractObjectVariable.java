@@ -96,6 +96,7 @@ import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
@@ -116,6 +117,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     private Field[]         staticFields;
     private Field[]         inheritedFields;
     private volatile boolean refreshFields;
+
+    private com.sun.jdi.Type valueType;
+    private String           valueTypeName;
+    private final boolean[]  valueTypeLoaded = new boolean[] { false };
+    private Super            superClass;
+    private final boolean[]  superClassLoaded = new boolean[] { false };
     
     private DebuggetStateListener stateChangeListener = new DebuggetStateListener();
 
@@ -123,6 +130,15 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     public AbstractObjectVariable (
         JPDADebuggerImpl debugger,
         Value value,
+        String id
+    ) {
+        this(debugger, value, (com.sun.jdi.Type) null, id);
+    }
+
+    protected AbstractObjectVariable (
+        JPDADebuggerImpl debugger,
+        Value value,
+        com.sun.jdi.Type valueType,
         String id
     ) {
         super(debugger, value, id);
@@ -134,6 +150,16 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 ObjectReferenceWrapper.disableCollection((ObjectReference) value);
             } catch (Exception ex) {}
         }*/
+        if (valueType != null) {
+            this.valueType = valueType;
+            try {
+                this.valueTypeName = TypeWrapper.name(valueType);
+            } catch (InternalExceptionWrapper ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (VMDisconnectedExceptionWrapper ex) {
+            }
+            this.valueTypeLoaded[0] = true;
+        }
         debugger.addPropertyChangeListener(
                 WeakListeners.propertyChange(stateChangeListener, debugger));
     }
@@ -289,61 +315,83 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         return inheritedFields;
     }
 
-    private volatile Super superClass;
-
     public Super getSuper () {
-        if (getInnerValue () == null) 
-            return null;
-        if (superClass != null) {
+        synchronized (superClassLoaded) {
+            if (!superClassLoaded[0]) {
+                try {
+                    Type t = getCachedType();
+                    if (t instanceof ClassType) {
+                        ClassType superType;
+                        //assert !java.awt.EventQueue.isDispatchThread();
+                        superType = ClassTypeWrapper.superclass((ClassType) t);
+                        if (superType != null) {
+                            Super s = new SuperVariable(
+                                    getDebugger(),
+                                    (ObjectReference) this.getInnerValue(),
+                                    superType,
+                                    getID()
+                                    );
+                            superClass = s;
+                        } else {
+                            superClass = null;
+                        }
+                    } else {
+                        superClass = null;
+                    }
+                } catch (ObjectCollectedExceptionWrapper ocex) {
+                    superClass = null;
+                } catch (InternalExceptionWrapper ex) {
+                    superClass = null;
+                } catch (VMDisconnectedExceptionWrapper e) {
+                    superClass = null;
+                } finally {
+                    superClassLoaded[0] = true;
+                }
+
+            }
             return superClass;
-        }
-        try {
-            Type t = ValueWrapper.type(this.getInnerValue());
-            if (!(t instanceof ClassType)) 
-                return null;
-            ClassType superType;
-            superType = ClassTypeWrapper.superclass((ClassType) t);
-            if (superType == null) 
-                return null;
-            Super s = new SuperVariable(
-                    getDebugger(), 
-                    (ObjectReference) this.getInnerValue(),
-                    superType,
-                    getID()
-                    );
-            superClass = s;
-            return s;
-        } catch (ObjectCollectedExceptionWrapper ocex) {
-            return null;
-        } catch (InternalExceptionWrapper ex) {
-            return null;
-        } catch (VMDisconnectedExceptionWrapper e) {
-            return null;
         }
     }
 
-    public boolean hasAllInterfaces() {
+    public boolean hasAllTypes() {
         if (getInnerValue () == null)
             return true;
-        ClassType ct;
-        try {
-            Type t = ValueWrapper.type(this.getInnerValue());
-            if (!(t instanceof ClassType))
-                return true;
-            ct = (ClassType) t;
-        } catch (Exception ex) {
-            return false;
-        }
-        List allInterfaces;
-        synchronized (allInterfacesMap) {
-            allInterfaces = allInterfacesMap.get(ct);
-        }
-        if (allInterfaces == null) {
-            return false;
-        } else {
-            synchronized (allInterfaces) {
-                return !allInterfaces.contains("computing");
+        Type t;
+        synchronized (valueTypeLoaded) {
+            if (!valueTypeLoaded[0]) {
+                return false;
             }
+            t = valueType;
+        }
+        if (t instanceof ClassType) {
+            ClassType ct = (ClassType) t;
+            List allInterfaces;
+            synchronized (allInterfacesMap) {
+                allInterfaces = allInterfacesMap.get(ct);
+            }
+            if (allInterfaces == null) {
+                return false;
+            } else {
+                synchronized (allInterfaces) {
+                    if (allInterfaces.contains("computing")) {
+                        return false;
+                    }
+                }
+            }
+            synchronized (superClassLoaded) {
+                if (!superClassLoaded[0]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public void loadAllTypes() {
+        getAllInterfaces();
+        Super s = getSuper();
+        while (s != null) {
+            s = s.getSuper();
         }
     }
     
@@ -351,7 +399,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         if (getInnerValue () == null)
             return null;
         try {
-            Type t = ValueWrapper.type(this.getInnerValue());
+            Type t = getCachedType();
             if (!(t instanceof ClassType))
                 return null;
             ClassType ct = (ClassType) t;
@@ -429,14 +477,38 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
      */
     public String getToStringValue (int maxLength) throws InvalidExpressionException {
         Value v = getInnerValue ();
-        return getToStringValue(v, getDebugger(), maxLength);
+        try {
+            return getToStringValue(v, getCachedType(), getDebugger(), maxLength);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
+        }
     }
-    
+
     static String getToStringValue (Value v, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
         if (v == null) return null;
+        com.sun.jdi.Type type;
         try {
-            if (!(ValueWrapper.type (v) instanceof ClassType))
+            type = ValueWrapper.type(v);
+        } catch (InternalExceptionWrapper ex) {
+            return ex.getLocalizedMessage();
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_Disconnected");
+        } catch (ObjectCollectedExceptionWrapper ocex) {
+            return NbBundle.getMessage(AbstractVariable.class, "MSG_ObjCollected");
+        }
+        return getToStringValue(v, type, debugger, maxLength);
+    }
+    
+    static String getToStringValue (Value v, com.sun.jdi.Type type, JPDADebuggerImpl debugger, int maxLength) throws InvalidExpressionException {
+        if (v == null) return null;
+        try {
+            if (!(type instanceof ClassType))
                 return AbstractVariable.getValue (v);
+            ClassType ct = (ClassType) type;
             if (v instanceof CharValue)
                 return "\'" + v.toString () + "\'";
             /*JPDAThread ct = debugger.getCurrentThread();
@@ -451,7 +523,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             boolean addDots = false;
             StringReference sr;
             if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
-                Method toStringMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type (v),
+                Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                      "toString", "()Ljava/lang/String;");  // NOI18N
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
@@ -463,7 +535,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
                 sr = (StringReference) v;
                 addQuotation = true;
             } else {
-                Method toStringMethod = ClassTypeWrapper.concreteMethodByName((ClassType) ValueWrapper.type (v),
+                Method toStringMethod = ClassTypeWrapper.concreteMethodByName(ct,
                     "toString", "()Ljava/lang/String;");  // NOI18N
                 sr = (StringReference) debugger.invokeMethod (
                     (ObjectReference) v,
@@ -533,14 +605,15 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             // 1) find corrent method
             Value v = this.getInnerValue ();
             if (v == null) return null;
+            ClassType ct = (ClassType) getCachedType();
             Method method = null;
             if (signature != null)
                 method = ClassTypeWrapper.concreteMethodByName(
-                        (ClassType) ValueWrapper.type(v),
+                        ct,
                         methodName, signature);
             else {
                 List l = ReferenceTypeWrapper.methodsByName(
-                        (ClassType) ValueWrapper.type(v),
+                        ct,
                         methodName);
                 int j, jj = l.size ();
                 for (j = 0; j < jj; j++)
@@ -555,12 +628,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             // 2) method not found => print all method signatures
             if (method == null) {
                 List l = ReferenceTypeWrapper.methodsByName(
-                        (ClassType) ValueWrapper.type(v), methodName);
+                        ct, methodName);
                 int j, jj = l.size ();
                 for (j = 0; j < jj; j++)
                     System.out.println (TypeComponentWrapper.signature((Method) l.get (j)));
                 throw new NoSuchMethodException (
-                    TypeWrapper.name(ValueWrapper.type(v)) + "." +
+                    TypeWrapper.name(ct) + "." +
                         methodName + " : " + signature
                 );
             }
@@ -607,6 +680,24 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     public Variable evaluate(String expression) throws InvalidExpressionException {
         return getDebugger().evaluate(expression, this);
     }
+
+    private com.sun.jdi.Type getCachedType() throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+        synchronized (valueTypeLoaded) {
+            if (!valueTypeLoaded[0]) {
+                Value v = getInnerValue();
+                if (v != null) {
+                    //assert !java.awt.EventQueue.isDispatchThread();
+                    valueType = ValueWrapper.type(v);
+                    valueTypeName = TypeWrapper.name(valueType);
+                } else {
+                    valueType = null;
+                    valueTypeName = "";
+                }
+                valueTypeLoaded[0] = true;
+            }
+            return valueType;
+        }
+    }
     
     /**
      * Declared type of this local.
@@ -616,10 +707,11 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     @Override
     public String getType () {
         if (genericType != null) return genericType;
-        Value v = getInnerValue ();
-        if (v == null) return "";
         try {
-            return TypeWrapper.name(ValueWrapper.type(v));
+            synchronized (valueTypeLoaded) {
+                getCachedType();
+                return valueTypeName;
+            }
         } catch (InternalExceptionWrapper ex) {
             return ex.getLocalizedMessage();
         } catch (VMDisconnectedExceptionWrapper vmdex) {
@@ -633,10 +725,8 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
     
     @Override
     public JPDAClassType getClassType() {
-        Value value = getInnerValue();
-        if (value == null) return null;
         try {
-            com.sun.jdi.Type type = ValueWrapper.type (value);
+            com.sun.jdi.Type type = getCachedType();
             if (type instanceof ReferenceType) {
                 return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
             } else {
@@ -681,7 +771,12 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         fields = null;
         staticFields = null;
         inheritedFields = null;
-        superClass = null;
+        synchronized (superClassLoaded) {
+            superClassLoaded[0] = false;
+        }
+        synchronized (valueTypeLoaded) {
+            valueTypeLoaded[0] = false;
+        }
     }
     
     private static String getTypeDescription (PushbackReader signature) 

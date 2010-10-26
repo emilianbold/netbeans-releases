@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.discovery.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,6 +67,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,10 +84,15 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     public void discoverArtifacts(Map<String, Object> map) {
         DiscoveryDescriptor descriptor = DiscoveryWizardDescriptor.adaptee(map);
         Applicable applicable = isApplicable(descriptor);
-        if (applicable != null && applicable.isApplicable()) {
-            descriptor.setCompilerName(applicable.getCompilerName());
-            descriptor.setDependencies(applicable.getDependencies());
-            descriptor.setRootFolder(applicable.getSourceRoot());
+        if (applicable != null) {
+            if (applicable.isApplicable()) {
+                descriptor.setCompilerName(applicable.getCompilerName());
+                descriptor.setDependencies(applicable.getDependencies());
+                descriptor.setRootFolder(applicable.getSourceRoot());
+                descriptor.setErrors(applicable.getErrors());
+            } else {
+                descriptor.setErrors(applicable.getErrors());
+            }
         }
     }
     
@@ -106,15 +113,33 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
         Progress progress = new MyProgress();
         progress.start(0);
         try {
+            List<String> errors = new  ArrayList<String>();
             DiscoveryExtensionInterface.Applicable applicable = isApplicableDwarfExecutable(descriptor);
             if (applicable.isApplicable()){
                 return applicable;
+            }
+            if (applicable.getErrors() != null) {
+                errors.addAll(applicable.getErrors());
             }
             applicable = isApplicableMakeLog(descriptor);
             if (applicable.isApplicable()){
                 return applicable;
             }
-            return isApplicableDwarfFolder(descriptor);
+            if (applicable.getErrors() != null) {
+                errors.addAll(applicable.getErrors());
+            }
+            applicable = isApplicableDwarfFolder(descriptor);
+            if (applicable.isApplicable()){
+                return applicable;
+            }
+            if (applicable.getErrors() != null) {
+                errors.addAll(applicable.getErrors());
+            }
+            if (!errors.isEmpty()) {
+                return ApplicableImpl.getNotApplicable(errors);
+            } else {
+                return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NoExecutable_NoBaseFolder"))); // NOI18N
+            }
         } finally {
             progress.done();
         }
@@ -123,11 +148,11 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     private DiscoveryExtensionInterface.Applicable isApplicableDwarfExecutable(DiscoveryDescriptor descriptor){
         String selectedExecutable = descriptor.getBuildResult();
         if (selectedExecutable == null) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(null);
         }
         File file = new File(selectedExecutable);
         if (!file.exists()) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundExecutable",selectedExecutable))); // NOI18N
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
@@ -138,15 +163,21 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
+            } else {
+                if (canAnalyze.getErrors().size() > 0) {
+                    return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
+                } else {
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeExecutable",selectedExecutable))); // NOI18N
+                }
             }
         }
-        return ApplicableImpl.NotApplicable;
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
-
+    
     private DiscoveryExtensionInterface.Applicable  isApplicableDwarfFolder(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(null);
         }
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
@@ -156,15 +187,21 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
+            } else {
+                if (canAnalyze.getErrors().size() > 0) {
+                    return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
+                } else {
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",rootFolder))); // NOI18N
+                }
             }
         }
-        return ApplicableImpl.NotApplicable;
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
 
     private DiscoveryExtensionInterface.Applicable  isApplicableMakeLog(DiscoveryDescriptor descriptor){
         String rootFolder = descriptor.getRootFolder();
         if (rootFolder == null) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(null);
         }
         String logFile = descriptor.getBuildLog();
         ProjectProxy proxy = new ProjectProxyImpl(descriptor);
@@ -175,9 +212,15 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             if (canAnalyze.isApplicable()){
                 descriptor.setProvider(provider);
                 return canAnalyze;
+            } else {
+                if (canAnalyze.getErrors().size() > 0) {
+                    return ApplicableImpl.getNotApplicable(canAnalyze.getErrors());
+                } else {
+                    return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "CannotAnalyzeFolder",rootFolder))); // NOI18N
+                }
             }
         }
-        return ApplicableImpl.NotApplicable;
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(DiscoveryExtension.class, "NotFoundDiscoveryProvider"))); // NOI18N
     }
     
     public DiscoveryExtensionInterface.Applicable isApplicable(Map<String,Object> map, Project project) {
