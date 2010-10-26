@@ -53,10 +53,10 @@ import org.openide.util.NbPreferences;
 
 public class FileChooser extends JFileChooser {
 
-    private static File currectChooserFile = null;
+    private static File currentChooserFile = null;
 
     public FileChooser(String titleText, String buttonText, int mode, FileFilter[] filters, String feedFilePath, boolean useParent) {
-        super();
+        super(computeCurrentDir(feedFilePath, useParent));
         setFileHidingEnabled(false);
         setFileSelectionMode(mode);
         setDialogTitle(titleText);
@@ -69,8 +69,14 @@ public class FileChooser extends JFileChooser {
             }
             setFileFilter(filters[0]);
         }
-        //System.out.println("A - currectChooserFile " + currectChooserFile);
+        File parent = getCurrentDirectory();
+        File file = FileChooser.getCurrentChooserFile();
+        if (parent != null && file != null && parent.equals(file.getParentFile())) {
+            setSelectedFile(file);
+        }
+    }
 
+    private static File computeCurrentDir(String feedFilePath, boolean useParent) {
         File feedFilePathFile = null;
         if (feedFilePath != null && feedFilePath.length() > 0) {
             feedFilePathFile = new File(feedFilePath);
@@ -79,29 +85,24 @@ public class FileChooser extends JFileChooser {
             } catch (IOException e) {
             }
         }
-
         if (feedFilePathFile != null && feedFilePathFile.exists()) {
-            FileChooser.setCurrectChooserFile(feedFilePathFile);
+            FileChooser.setCurrentChooserFile(feedFilePathFile);
         }
-
-        if (FileChooser.getCurrectChooserFile() == null && feedFilePathFile == null) {
+        if (FileChooser.getCurrentChooserFile() == null && feedFilePathFile == null) {
             feedFilePathFile = new File(getLastPath());
         }
-        if (FileChooser.getCurrectChooserFile() == null && feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
-            FileChooser.setCurrectChooserFile(feedFilePathFile.getParentFile());
+        if (FileChooser.getCurrentChooserFile() == null && feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
+            FileChooser.setCurrentChooserFile(feedFilePathFile.getParentFile());
             useParent = false;
         }
-
-
-        // Set currect directory
-        if (FileChooser.getCurrectChooserFile() != null) {
+        if (FileChooser.getCurrentChooserFile() != null) {
             if (useParent) {
-                if (FileChooser.getCurrectChooserFile() != null && FileChooser.getCurrectChooserFile().exists()) {
-                    setSelectedFile(FileChooser.getCurrectChooserFile());
+                if (FileChooser.getCurrentChooserFile() != null && FileChooser.getCurrentChooserFile().exists()) {
+                    return FileChooser.getCurrentChooserFile().getParentFile();
                 }
             } else {
-                if (FileChooser.getCurrectChooserFile() != null && FileChooser.getCurrectChooserFile().exists()) {
-                    setCurrentDirectory(FileChooser.getCurrectChooserFile());
+                if (FileChooser.getCurrentChooserFile() != null && FileChooser.getCurrentChooserFile().exists()) {
+                    return FileChooser.getCurrentChooserFile();
                 }
             }
         } else {
@@ -109,13 +110,14 @@ public class FileChooser extends JFileChooser {
             if (sd != null) {
                 File sdFile = new File(sd);
                 if (sdFile.exists()) {
-                    setCurrentDirectory(sdFile);
+                    return sdFile;
                 }
             }
         }
+        return null;
     }
 
-    private String getLastPath(){
+    private static String getLastPath(){
         String feed = System.getProperty("user.home"); // NOI18N
         if (feed == null) {
             feed = ""; // NOI18N
@@ -137,19 +139,19 @@ public class FileChooser extends JFileChooser {
         int ret = super.showOpenDialog(parent);
         if (ret != CANCEL_OPTION) {
             if (getSelectedFile().exists()) {
-                setCurrectChooserFile(getSelectedFile());
+                setCurrentChooserFile(getSelectedFile());
                 Preferences pref = NbPreferences.forModule(FileChooser.class);
-                pref.put("last-file", getCurrectChooserFile().getAbsolutePath()); // NOI18N
+                pref.put("last-file", getCurrentChooserFile().getAbsolutePath()); // NOI18N
             }
         }
         return ret;
     }
 
-    public static File getCurrectChooserFile() {
-        return currectChooserFile;
+    public static File getCurrentChooserFile() {
+        return currentChooserFile;
     }
 
-    private static void setCurrectChooserFile(File aCurrectChooserFile) {
-        currectChooserFile = aCurrectChooserFile;
+    private static void setCurrentChooserFile(File aCurrectChooserFile) {
+        currentChooserFile = aCurrectChooserFile;
     }
 }
