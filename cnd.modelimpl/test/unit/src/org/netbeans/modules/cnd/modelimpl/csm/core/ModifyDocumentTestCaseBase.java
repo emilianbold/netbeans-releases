@@ -79,7 +79,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
     private final ObjectsChangeListener doListener = new ObjectsChangeListener();
     public ModifyDocumentTestCaseBase(String testName) {
-        super(testName);
+        super(testName, true);
     }
 
     @Override
@@ -336,11 +336,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 if (TraceFlags.TRACE_182342_BUG) {
                     new Exception(getName() + " fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
                 }
+                parseCounter.incrementAndGet();
                 if (file.equals(fileImpl)) {
                     CountDownLatch cond = condRef.get();
                     cond.countDown();
                 }
-                parseCounter.incrementAndGet();
             }
         };
         return listener;
