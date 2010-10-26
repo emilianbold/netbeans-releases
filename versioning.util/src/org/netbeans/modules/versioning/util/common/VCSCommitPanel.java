@@ -44,6 +44,19 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
+import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
+import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
+import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.openide.DialogDescriptor;
+import org.openide.util.HelpCtx;
 import java.util.Set;
 import java.awt.EventQueue;
 import java.awt.BorderLayout;
@@ -79,16 +92,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.VCSHook;
 import org.netbeans.modules.versioning.hooks.VCSHookContext;
+import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.AutoResizingPanel;
-import org.netbeans.modules.versioning.util.PlaceholderPanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import static java.awt.Component.CENTER_ALIGNMENT;
 import static java.awt.Component.LEFT_ALIGNMENT;
 import static javax.swing.BorderFactory.createEmptyBorder;
-import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
+import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingConstants.EAST;
@@ -100,7 +113,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  * @author  Tomas Stupka
  * @author  Marian Petras
  */
-public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
+public abstract class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
     public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOPI18N
     
@@ -108,10 +121,13 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
 
-    final PlaceholderPanel progressPanel = new PlaceholderPanel();
+    final JPanel progressPanel = new JPanel();
     private final JLabel errorLabel = new JLabel();
     private final JPanel parametersPane1 = new JPanel();
     
+    private final JButton commitButton = new JButton();
+    private final JButton cancelButton = new JButton();
+        
     private VCSCommitTable commitTable;
     
     private JTabbedPane tabbedPane;
@@ -135,12 +151,30 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         this.preferences = preferences;
     }
 
+    protected abstract void commitTableChanged();
+    
     public VCSCommitTable getCommitTable() {
         return commitTable;
     }
 
-    public PlaceholderPanel getProgressPanel() {
+    private JPanel getProgressPanel() {
         return progressPanel;
+    }
+    
+    protected void stopProgress() {
+        JPanel p = getProgressPanel();
+        p.removeAll();
+        p.setVisible(false);
+    }
+
+    protected void startProgress(String message, JComponent progressComponent) {
+        JPanel p = getProgressPanel();
+        p.setLayout(new BoxLayout(p, X_AXIS));
+        JLabel l = new JLabel(message);
+        p.add(l);
+        p.add(makeHorizontalStrut(l, progressComponent, RELATED, p));
+        p.add(progressComponent);       
+        p.setVisible(true);
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
@@ -196,6 +230,14 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
     private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
+        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Commit"));
+        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Commit"));
+        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Commit"));
+        
+        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Cancel"));
+        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Cancel"));        
+        
         getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
         getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
         
@@ -231,18 +273,22 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         
         // bottom panel -> error label, progres, ...
         JPanel bottomPanel = new VerticallyNonResizingPanel();
-        bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
-        bottomPanel.add(errorLabel);
-        bottomPanel.add(makeFlexibleHorizontalStrut(15, 90, Short.MAX_VALUE));
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, Y_AXIS));
         bottomPanel.add(progressPanel);
+//        bottomPanel.add(makeFlexibleHorizontalStrut(15, 90, Short.MAX_VALUE));
+        bottomPanel.add(errorLabel);
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
-        progressPanel.setAlignmentY(CENTER_ALIGNMENT);        
+        progressPanel.setAlignmentY(LEFT_ALIGNMENT);        
         bottomPanel.setAlignmentX(LEFT_ALIGNMENT);
-
+        bottomPanel.setBorder(createEmptyBorder(10,           // top
+                                    getContainerGap(WEST),    // left
+                                    0,                        // bottom
+                                    getContainerGap(EAST)));  // right
+        
         basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
-        add(basePanel);                
+        add(basePanel);                    
     }// </editor-fold>
 
     static Component makeVerticalStrut(JComponent compA,
@@ -349,6 +395,84 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         return result;
     }
 
+    public boolean open(VCSContext context, HelpCtx helpCtx) {
+       
+        String contentTitle = Utils.getContextDisplayName(context);
+        
+        final DialogDescriptor dd = new DialogDescriptor(this,
+              org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
+              true,
+              new Object[] {commitButton, cancelButton},
+              commitButton,
+              DialogDescriptor.DEFAULT_ALIGN,
+              helpCtx,
+              null);
+        ActionListener al;
+        dd.setButtonListener(al = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dd.setClosingOptions(new Object[] {commitButton, cancelButton});
+                SaveCookie[] saveCookies = diffProvider.getSaveCookies();
+                if (cancelButton == e.getSource()) {
+                    if (saveCookies.length > 0) {
+                        if (SaveBeforeClosingDiffConfirmation.allSaved(saveCookies) || !isShowing()) {
+                            EditorCookie[] editorCookies = diffProvider.getEditorCookies();
+                            for (EditorCookie cookie : editorCookies) {
+                                cookie.open();
+                            }
+                        } else {
+                            dd.setClosingOptions(new Object[0]);
+                        }
+                    }
+                    dd.setValue(cancelButton);
+                } else if (commitButton == e.getSource()) {
+                    if (saveCookies.length > 0 && !SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
+                        dd.setClosingOptions(new Object[0]);
+                    } else if (!canCommit()) {
+                        dd.setClosingOptions(new Object[0]);
+                    }
+                    dd.setValue(commitButton);
+                }
+            }
+        });
+        
+        final VCSCommitTable table = getCommitTable();
+        computeNodes();
+        addVersioningListener(new VersioningListener() {
+            @Override
+            public void versioningEvent(VersioningEvent event) {
+                commitTableChanged();
+            }
+        });
+        table.getTableModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                commitTableChanged();
+            }
+        });
+
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
+
+        dialog.addWindowListener(new DialogBoundsPreserver(preferences, "git.commit.dialog")); // NOI18N
+        dialog.pack();
+        dialog.setVisible(true);
+        
+        if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
+            al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+        }
+        return dd.getValue() == commitButton;
+    }
+
+    protected boolean isCommitButtonEnabled() {
+        return commitButton.isEnabled();
+    }
+
+    protected void enableCommitButton(boolean enabled) {
+        commitButton.setEnabled(enabled);
+    }
+
+    protected abstract void computeNodes();
+    
     private abstract class CollapsiblePanel extends JPanel {
         private final Icon expandedIcon;
         private final Icon collapsedIcon;
@@ -475,7 +599,6 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
     public abstract static class MultiDiffProvider {
         private HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
         
-        protected abstract Set<File> getModifiedFiles();
         
         JComponent getDiffComponent(File file) {
             JComponent component = displayedDiffs.get(file);
@@ -487,6 +610,18 @@ public class VCSCommitPanel extends AutoResizingPanel implements PreferenceChang
         }
 
         protected abstract JComponent createDiffComponent(File file);
+        
+        protected Set<File> getModifiedFiles() {
+            return Collections.emptySet();
+        }
+        
+        protected SaveCookie[] getSaveCookies() {
+            return new SaveCookie[0];
+        }
+        
+        protected EditorCookie[] getEditorCookies() {
+            return new EditorCookie[0];
+        }
     }
     
 }

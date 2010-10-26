@@ -137,6 +137,20 @@ public class OutputLogger {
         });
     }
 
+    public void outputInRed (final String msg) {
+        if( msg == null) return;
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                OutputWriter out = getLog().getErr();
+                if (writable) {
+                    out.println(msg);
+                    out.flush();
+                }
+            }
+        });
+    }
+    
     public void output (final String msg) {
         if(msg == null) return;
         rp.post(new Runnable() {

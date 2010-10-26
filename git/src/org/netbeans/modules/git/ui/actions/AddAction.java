@@ -70,15 +70,11 @@ public class AddAction extends SingleRepositoryAction {
                 GitClient client;
                 try {
                     client = getClient();
-                } catch (GitException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                    return;
-                }
-                try {
                     client.add(roots, this);
                 } catch (GitException ex) {
                     LOG.log(Level.WARNING, null, ex);
-                }
+                    return;
+                }                
             }
             @Override
             public void finished() {
@@ -88,5 +84,5 @@ public class AddAction extends SingleRepositoryAction {
         };
         supp.start(Git.getInstance().getRequestProcessor(repository), repository, NbBundle.getMessage(AddAction.class, "LBL_AddProgress"));
     }
-
+    
 }
