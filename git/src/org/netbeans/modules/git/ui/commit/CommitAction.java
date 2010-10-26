@@ -42,51 +42,35 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.awt.BorderLayout;
 import java.util.Set;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
-import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
-import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
-import java.awt.Dialog;
-import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.FileStatusCache;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
-import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.DialogBoundsPreserver;
-import org.netbeans.modules.versioning.util.Utils;
-import org.netbeans.modules.versioning.util.VersioningEvent;
-import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -101,230 +85,216 @@ public class CommitAction extends SingleRepositoryAction {
 
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
-        commit(repository, roots, context);
-    }
 
-    public static void commit(File repository, File[] roots, VCSContext context) {
-        // show commit dialog
-        String contentTitle = Utils.getContextDisplayName(context);
-
-        final Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);        
-        HgHookContext hooksCtx = new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {});
-        Preferences preferences = GitModuleConfig.getDefault().getPreferences();
-        
-        final VCSCommitPanel panel = new VCSCommitPanel(new DefaultCommitParameters(preferences), preferences, hooks, hooksCtx, new DiffProvider());        
-        
-        final JButton commitButton = new JButton();
-        org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Commit"));
-        commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Commit"));
-        final JButton cancelButton = new JButton(org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel")); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(cancelButton, org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSN_Commit_Action_Cancel"));
-        cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CommitAction.class, "ACSD_Commit_Action_Cancel"));
-
-        final DialogDescriptor dd = new DialogDescriptor(panel,
-              org.openide.util.NbBundle.getMessage(CommitAction.class, "CTL_CommitDialog_Title", contentTitle), // NOI18N
-              true,
-              new Object[] {commitButton, cancelButton},
-              commitButton,
-              DialogDescriptor.DEFAULT_ALIGN,
-              new HelpCtx(CommitAction.class),
-              null);
-        ActionListener al;
-        dd.setButtonListener(al = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // XXX
-//                dd.setClosingOptions(new Object[] {commitButton, cancelButton});
-//                SaveCookie[] saveCookies = panel.getSaveCookies();
-//                if (cancelButton == e.getSource()) {
-//                    if (saveCookies.length > 0) {
-//                        if (SaveBeforeClosingDiffConfirmation.allSaved(saveCookies) || !panel.isShowing()) {
-//                            EditorCookie[] editorCookies = panel.getEditorCookies();
-//                            for (EditorCookie cookie : editorCookies) {
-//                                cookie.open();
-//                            }
-//                        } else {
-//                            dd.setClosingOptions(new Object[0]);
-//                        }
-//                    }
-//                    dd.setValue(cancelButton);
-//                } else if (commitButton == e.getSource()) {
-//                    if (saveCookies.length > 0 && !SaveBeforeCommitConfirmation.allSaved(saveCookies)) {
-//                        dd.setClosingOptions(new Object[0]);
-//                    } else if (!panel.canCommit()) {
-//                        dd.setClosingOptions(new Object[0]);
-//                    }
-//                    dd.setValue(commitButton);
-//                }
-            }
-        });
-        
+        final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
         VCSCommitTable table = panel.getCommitTable();
+        boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
         
-        computeNodes(table, panel, roots, repository, cancelButton);
-        commitButton.setEnabled(false);
-        panel.addVersioningListener(new VersioningListener() {
-            @Override
-            public void versioningEvent(VersioningEvent event) {
-//                refreshCommitDialog(panel, data, commitButton);
-            }
-        });
-        table.getTableModel().addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-//                refreshCommitDialog(panel, data, commitButton);
-            }
-        });
-        commitButton.setEnabled(table.containsCommitable());
+        if (ok) {
 
-        panel.putClientProperty("contentTitle", contentTitle);  // NOI18N
-        panel.putClientProperty("DialogDescriptor", dd); // NOI18N
-        final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-
-        dialog.addWindowListener(new DialogBoundsPreserver(GitModuleConfig.getDefault().getPreferences(), "git.commit.dialog")); // NOI18N
-        dialog.pack();
-        dialog.setVisible(true);
-
-        final String message = ((DefaultCommitParameters) panel.getParameters()).getCommitMessage().trim();
-        if (dd.getValue() != commitButton && !message.isEmpty()) {
-//      XXX      GitModuleConfig.getDefault().setLastCanceledCommitMessage(message);
-        }
-        if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
-            al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
-        } else if (dd.getValue() == commitButton) {
-// XXX
-//            final Map<VCSFileNode, CommitOptions> commitFiles = data.getCommitFiles();
-//            final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(context, true);
-//            XXX GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N
-//             org.netbeans.modules.versioning.util.Utils.insert(GitModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
-//            RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
-//            GitProgressSupport support = new GitProgressSupport() {
-//                @Override
-//                public void perform() {
-//                    OutputLogger logger = getLogger();
-//                    performCommit(message, commitFiles, rootFiles, this, logger, hooks);
-//                }
-//            };
-//            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
-        }
-    }
-
-    private static void computeNodes(final VCSCommitTable table, final VCSCommitPanel panel, final File[] roots, final File repository, JButton cancel) {
-        RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
-        final GitProgressSupport support = new GitProgressSupport( /*, cancel*/) {
-            @Override
-            public void perform() {
-                try {
-                    panel.getProgressPanel().setVisible(true);
-                    // Ensure that cache is uptodate
-                    FileStatusCache cache = Git.getInstance().getFileStatusCache();
-                    cache.refreshAllRoots(roots);
-
-                    File[][] split = Utils.splitFlatOthers(roots);
-                    List<File> fileList = new ArrayList<File>();
-                    for (int c = 0; c < split.length; c++) {
-                        File[] splitRoots = split[c];
-                        boolean recursive = c == 1;
-                        if (recursive) {
-//                            Set<File> repositories = HgUtils.getRepositoryRoots(ctx);
-                            File[] files = cache.listFiles(splitRoots, FileInformation.STATUS_LOCAL_CHANGES);
-                            for (int i = 0; i < files.length; i++) {
-                                for(int r = 0; r < splitRoots.length; r++) {
-                                    if(Utils.isAncestorOrEqual(splitRoots[r], files[i]))
-                                    {
-                                        if(!fileList.contains(files[i])) {
-                                            fileList.add(files[i]);
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            File[] files = GitUtils.flatten(splitRoots, FileInformation.STATUS_LOCAL_CHANGES);
-                            for (int i= 0; i<files.length; i++) {
-                                if(!fileList.contains(files[i])) {
-                                    fileList.add(files[i]);
-                                }
-                            }
-                        }
-                    }
-                    if(fileList.isEmpty()) {
+            final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
+            
+            GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
+            panel.getParameters().storeCommitMessage();
+            
+            RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
+            GitProgressSupport support = new GitProgressSupport() {
+                @Override
+                public void perform() {
+                    GitClient client;
+                    try {
+                        client = getClient();
+                        performCommit(panel.getParameters().getCommitMessage(), commitFiles, client, this, panel.getHooks());
+                    } catch (GitException ex) {
+                        LOG.log(Level.WARNING, null, ex);
                         return;
                     }
-
-                    ArrayList<VCSFileNode> nodesList = new ArrayList<VCSFileNode>(fileList.size());
-
-                    for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
-                        File file = it.next();
-                        VCSFileNode node = new GitFileNode(repository, file);
-                        nodesList.add(node);
-                    }
-                    final VCSFileNode[] nodes = nodesList.toArray(new VCSFileNode[fileList.size()]);
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            table.setNodes(nodes);
-                        }
-                    });
-                } finally {
-                    panel.getProgressPanel().setVisible(false);
                 }
+            };
+            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
+
+        }
+    }
+
+    private static void performCommit(
+            String message, 
+            Map<VCSFileNode, VCSCommitOptions> commitFiles,
+            GitClient client, 
+            GitProgressSupport support, 
+            Collection<HgHook> hooks) 
+    {
+       
+        List<File> addCandidates = new LinkedList<File>();
+        List<File> deleteCandidates = new LinkedList<File>();
+        List<File> commitCandidates = new LinkedList<File>();
+        Set<File> filesToRefresh = new HashSet<File>();
+        
+        populateCandidates(
+                commitFiles, 
+                addCandidates, 
+                deleteCandidates,
+                commitCandidates,
+                support);
+        
+        if (support.isCanceled()) {
+            return;
+        }
+
+        try {
+            support.outputInRed(
+                    NbBundle.getMessage(CommitAction.class,
+                    "MSG_COMMIT_TITLE")); // NOI18N
+            support.outputInRed(
+                    NbBundle.getMessage(CommitAction.class,
+                    "MSG_COMMIT_TITLE_SEP")); // NOI18N
+            support.output(message); // NOI18N
+
+            client.add(addCandidates.toArray(new File[addCandidates.size()]), support);
+            client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, support);
+            
+            beforeCommitHook(commitCandidates, hooks, message);
+            
+            commit(commitCandidates, client, message, support);
+            
+        } /*catch (GitException.HgCommandCanceledException ex) {
+            // XXX
+            // canceled by user, do nothing
+        } */catch (GitException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        } finally {
+            refreshFS(filesToRefresh);
+            Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);
+            support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
+            support.output(""); // NOI18N
+        }
+    }
+
+    private static void populateCandidates(
+            Map<VCSFileNode, VCSCommitOptions> commitFiles, 
+            List<File> addCandidates,
+            List<File> deleteCandidates,
+            List<File> commitCandidates,
+            GitProgressSupport support) 
+    {
+        List<String> excPaths = new ArrayList<String>();        
+        List<String> incPaths = new ArrayList<String>();
+        
+        Iterator<VCSFileNode> it = commitFiles.keySet().iterator();
+        while (it.hasNext()) {
+            if (support.isCanceled()) {
+                return;
             }
-        };
-//      XXX  panel.progressPanel.add(support.getProgressComponent());
-        panel.getProgressPanel().setVisible(true);
-        support.start(rp, repository, NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"));
+            GitFileNode node = (GitFileNode) it.next();
+            FileInformation info = node.getInformation();
+             
+            VCSCommitOptions option = commitFiles.get(node);
+            File file = node.getFile();
+            if (option != VCSCommitOptions.EXCLUDE) {
+                if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+                    addCandidates.add(file);
+                } else  if (info.containsStatus(FileInformation.STATUS_REMOVED)) {
+                    deleteCandidates.add(file);
+                }
+                commitCandidates.add(file);
+                incPaths.add(file.getAbsolutePath());
+            } else {
+                excPaths.add(file.getAbsolutePath());                
+            }
+        }
+        
+        if (!excPaths.isEmpty()) {
+            GitModuleConfig.getDefault().addExclusionPaths(excPaths);
+        }
+        if (!incPaths.isEmpty()) {
+            GitModuleConfig.getDefault().removeExclusionPaths(incPaths);
+        }        
     }
+
+
+    private static void beforeCommitHook(List<File> commitCandidates, Collection<HgHook> hooks, String message) {
+        File[] hookFiles = null;
+        if(hooks.size() > 0) {                
+            hookFiles = commitCandidates.toArray(new File[commitCandidates.size()]);
+        }
+        HgHookContext context = new HgHookContext(hookFiles, message, new HgHookContext.LogEntry[] {});
+        for (HgHook hook : hooks) {
+            try {
+                // XXX handle returned context
+                context = hook.beforeCommit(context);
+                if(context != null) {
+                    message = context.getMessage();
+                }
+            } catch (IOException ex) {
+                // XXX handle veto
+            }
+        }
+    }
+      
+    private static void commit(List<File> commitCandidates, GitClient client, String message, GitProgressSupport support) throws GitException {
+        boolean commitAfterMerge = false;        
+        try {                                        
+            client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, support);                    
+        } catch (GitException ex) {
+            // XXX
+//                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
+//                        // committing after a merge, all modified files have to be committed, even excluded files
+//                        // ask the user for confirmation
+//                        if (support.isCanceled()) {
+//                            return;
+//                        } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
+//                            return;
+//                        } else {
+//                            HgCommand.doCommit(repository, Collections.EMPTY_LIST, msg, logger);
+//                            refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
+//                            commitAfterMerge = true;
+//                        }
+//                    } else {
+//                        throw ex;
+//                    }
+            throw ex;
+        } 
+        
+        // XXX
+//                HgLogMessage tip = HgCommand.doTip(repository, logger);
+//
+//                context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
+//                        tip.getMessage(),
+//                        tip.getAuthor(),
+//                        tip.getCSetShortID(),
+//                        tip.getDate()));
+//                for (HgHook hook : hooks) {
+//                    hook.afterCommit(context);
+//                }
+
+        if (commitAfterMerge) {
+            support.getLogger().output(
+                    NbBundle.getMessage(CommitAction.class,
+                    "MSG_COMMITED_FILES_AFTER_MERGE"));         //NOI18N
+        } else {
+            if (commitCandidates.size() == 1) {
+                support.getLogger().output(
+                        NbBundle.getMessage(CommitAction.class,
+                        "MSG_COMMIT_INIT_SEP_ONE", commitCandidates.size())); //NOI18N
+            } else {
+                support.getLogger().output(
+                        NbBundle.getMessage(CommitAction.class,
+                        "MSG_COMMIT_INIT_SEP", commitCandidates.size())); //NOI18N
+            }
+            for (File f : commitCandidates) {
+                support.getLogger().output("\t" + f.getAbsolutePath());      //NOI18N
+            }
+        }
+        // XXX HgUtils.logHgLog(tip, logger);
+    }
+        
+    private static void refreshFS (final Set<File> filesToRefresh) {
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                FileUtil.refreshFor(filesToRefresh.toArray(new File[filesToRefresh.size()]));
+            }
+        }, 100);
+    }    
     
-    private static class DiffProvider extends VCSCommitPanel.MultiDiffProvider {
-        
-        @Override
-        public Set<File> getModifiedFiles() {
-            // XXX implement me
-//            HashMap<File, SaveCookie> modifiedFiles = new HashMap<File, SaveCookie>();
-//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//                SaveCookie[] cookies = e.getValue().getSaveCookies(false);
-//                if (cookies.length > 0) {
-//                    modifiedFiles.put(e.getKey(), cookies[0]);
-//                }
-//            }
-//            return modifiedFiles;
-            return Collections.emptySet();
-        }
-
-        @Override
-        public JComponent createDiffComponent(File file) {
-            JPanel p = new JPanel();
-            p.add(new JLabel("not yet implemented !!!"));
-            return p; // XXX implement me new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
-        }
-        
-
-        /**
-         * Returns save cookies available for files in the commit table
-         * @return
-         */
-        SaveCookie[] getSaveCookies() {
-            return null; // XXX getModifiedFiles().values().toArray(new SaveCookie[0]);
-        }
-
-        /**
-         * Returns editor cookies available for modified and not open files in the commit table
-         * @return
-         */
-        EditorCookie[] getEditorCookies() {
-            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
-            // XXX      
-//            for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
-//                EditorCookie[] cookies = e.getValue().getEditorCookies(true);
-//                if (cookies.length > 0) {
-//                    allCookies.add(cookies[0]);
-//                }
-//            }
-            return allCookies.toArray(new EditorCookie[allCookies.size()]);
-        }
-
-        
-    }
 }
