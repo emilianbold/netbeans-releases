@@ -558,6 +558,22 @@ public class ActionProcessorTest extends NbTestCase {
             return this;
         }
     }
+    @ActionID(category="eager", id="direct.five")
+    @ActionRegistration(displayName="Direct Action")
+    public static ContextAwareAction direct5() {return new Direct5();}
+    private static class Direct5 extends AbstractAction implements ContextAwareAction {
+        static int cnt;
+        public Direct5() {
+            cnt++;
+        }
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
+        @Override
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return this;
+        }
+    }
     public void testDirectInstanceIfImplementsMenuPresenter() throws Exception {
         FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-one.instance");
         assertNotNull("Instance found", fo);
@@ -585,6 +601,13 @@ public class ActionProcessorTest extends NbTestCase {
         Object obj = fo.getAttribute("instanceCreate");
         assertNotNull("Action created", obj);
         assertEquals("Direct class is created", Direct4.class, obj.getClass());
+    }
+    public void testDirectInstanceIfImplementsContextAwareActionByMethod() throws Exception {
+        FileObject fo = FileUtil.getConfigFile("Actions/eager/direct-five.instance");
+        assertNotNull("Instance found", fo);
+        Object obj = fo.getAttribute("instanceCreate");
+        assertNotNull("Action created", obj);
+        assertEquals("Direct class is created", Direct5.class, obj.getClass());
     }
     
     public void testNoKeyForDirects() throws IOException {

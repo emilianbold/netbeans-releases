@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.metadata.model.jdbc.oracle;
 
 import java.sql.DatabaseMetaData;
@@ -82,8 +81,8 @@ public class OracleSchema extends JDBCSchema {
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
             DatabaseMetaData dmd = jdbcCatalog.getJDBCMetadata().getDmd();
-            Set<String> recycleBinTables = getRecycleBinTables(dmd);
-            ResultSet rs = dmd.getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            Set<String> recycleBinTables = getRecycleBinObjects(dmd, "TABLE"); // NOI18N
+            ResultSet rs = dmd.getTables(jdbcCatalog.getName(), name, "%", new String[]{"TABLE"}); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N
@@ -104,28 +103,30 @@ public class OracleSchema extends JDBCSchema {
         tables = Collections.unmodifiableMap(newTables);
     }
 
-    private Set<String> getRecycleBinTables(DatabaseMetaData dmd) {
+    private Set<String> getRecycleBinObjects(DatabaseMetaData dmd, String... types) {
         String driverName = null;
         String driverVer = null;
         try {
             driverName = dmd.getDriverName();
             driverVer = dmd.getDriverVersion();
-            if (dmd.getDatabaseMajorVersion() < 10) {
+            if (dmd.getDatabaseMajorVersion() < 10 || types == null) {
                 return Collections.emptySet();
             }
             Set<String> result = new HashSet<String>();
-            Statement stmt = dmd.getConnection().createStatement();
-            try {
-                ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = 'TABLE'"); // NOI18N
+            for (String type : types) {
+                Statement stmt = dmd.getConnection().createStatement();
                 try {
-                    while (rs.next()) {
-                        result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME FROM RECYCLEBIN WHERE TYPE = '" + type + "'"); // NOI18N
+                    try {
+                        while (rs.next()) {
+                            result.add(rs.getString("OBJECT_NAME")); // NOI18N
+                        }
+                    } finally {
+                        rs.close();
                     }
                 } finally {
-                    rs.close();
+                    stmt.close();
                 }
-            } finally {
-                stmt.close();
             }
             return result;
         } catch (AbstractMethodError ame) {
@@ -143,14 +144,19 @@ public class OracleSchema extends JDBCSchema {
         try {
             DatabaseMetaData dmd = jdbcCatalog.getJDBCMetadata().getDmd();
             Statement stmt = dmd.getConnection().createStatement();
+            Set<String> recycleBinObjects = getRecycleBinObjects(dmd, "TRIGGER", "FUNCTION", "PROCEDURE"); // NOI18N
             ResultSet rs = stmt.executeQuery("SELECT OBJECT_NAME, OBJECT_TYPE, STATUS FROM SYS.ALL_OBJECTS WHERE OWNER='" + name + "'" // NOI18N
                     + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )"); // NOI18N
             try {
                 while (rs.next()) {
                     String procedureName = rs.getString("OBJECT_NAME"); // NOI18N
                     Procedure procedure = createJDBCProcedure(procedureName).getProcedure();
-                    newProcedures.put(procedureName, procedure);
-                    LOGGER.log(Level.FINE, "Created Oracle procedure: {0}, type: {1}, status: {2}", new Object[] {procedure, rs.getString("OBJECT_TYPE"), rs.getString("STATUS")});
+                    if (!recycleBinObjects.contains(procedureName)) {
+                        newProcedures.put(procedureName, procedure);
+                        LOGGER.log(Level.FINE, "Created Oracle procedure: {0}, type: {1}, status: {2}", new Object[]{procedure, rs.getString("OBJECT_TYPE"), rs.getString("STATUS")});
+                    } else {
+                        LOGGER.log(Level.FINEST, "Oracle procedure found id RECYCLEBIN: {0}, type: {1}, status: {2}", new Object[]{procedure, rs.getString("OBJECT_TYPE"), rs.getString("STATUS")});
+                    }
                 }
             } finally {
                 if (rs != null) {
@@ -162,5 +168,4 @@ public class OracleSchema extends JDBCSchema {
         }
         procedures = Collections.unmodifiableMap(newProcedures);
     }
-
 }
