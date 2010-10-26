@@ -98,7 +98,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
     private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
-    private final SyncTable syncTable;
+    private final StatusTable syncTable;
     private Mode mode;
 
     VersioningPanelController (GitVersioningTopComponent tc) {
@@ -106,7 +106,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
 
         initDisplayStatus();
         onDisplayedStatusChanged();
-        syncTable = new SyncTable(new StatusTableModel());
+        syncTable = new StatusTable(new StatusTableModel());
         setVersioningComponent(syncTable.getComponent());
         
         attachListeners();

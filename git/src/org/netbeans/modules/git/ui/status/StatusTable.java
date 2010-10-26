@@ -83,7 +83,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Maros Sandor
  */
-class SyncTable implements MouseListener, ListSelectionListener {
+class StatusTable implements MouseListener, ListSelectionListener {
 
     private JTable          table;
     private JScrollPane     component;
@@ -113,7 +113,7 @@ class SyncTable implements MouseListener, ListSelectionListener {
     };
     private final StatusTableModel tableModel;
     
-    public SyncTable (StatusTableModel model) {
+    public StatusTable (StatusTableModel model) {
         this.tableModel = model;
         sorter = new TableSorter(model);
         sorter.setColumnComparator(Node.Property.class, NodeComparator);
