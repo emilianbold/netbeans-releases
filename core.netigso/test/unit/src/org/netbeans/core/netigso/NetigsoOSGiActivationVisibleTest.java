@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.Locale;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
@@ -196,6 +197,41 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
         Method loadResource = directBundle.getMethod("loadResource", String.class, ClassLoader.class);
         URL res = (URL) loadResource.invoke(null, "org/foo/Something.txt", Thread.currentThread().getContextClassLoader());
         assertNotNull("Contxt class loader loads resource from disabled modules too", res);
+    }
+    
+    private static void assertEnumeration(String msg, Enumeration<?> res) {
+        assertNotNull(msg + " enumeration not null", res);
+        assertTrue(msg + " has at least one", res.hasMoreElements());
+        assertNotNull(msg + " one is not zero", res.nextElement());
+        assertFalse(msg + " no more items", res.hasMoreElements());
+    }
+    
+    public void testResourcesFromBundle() throws Exception {
+        Enumeration res = toEnable.getResources("org/foo/Something.txt");
+        assertEnumeration("Bundle can get its own resources", res);
+    }
+
+    public void testResourcesFromModule() throws Exception {
+        Enumeration<URL> res = m2.getClassLoader().getResources("org/foo/Something.txt");
+        assertEnumeration("Module knows how to own resource", res);
+    }
+
+    public void testResourcesDirectFromBundle() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResources", String.class, ClassLoader.class);
+        Enumeration res = (Enumeration) loadResource.invoke(null, "org/foo/Something.txt", null);
+        assertEnumeration("Bundle knows how to own resource from its classloader", res);
+    }
+
+    public void testResourcesDirectViaModuleClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResources", String.class, ClassLoader.class);
+        Enumeration res = (Enumeration) loadResource.invoke(null, "org/foo/Something.txt", someModule.getClassLoader());
+        assertEnumeration("Module knows how to own resource from its classloader", res);
+    }
+
+    public void testResourcesFromContextClassLoader() throws Exception {
+        Method loadResource = directBundle.getMethod("loadResources", String.class, ClassLoader.class);
+        Enumeration res = (Enumeration) loadResource.invoke(null, "org/foo/Something.txt", Thread.currentThread().getContextClassLoader());
+        assertEnumeration("Contxt class loader loads resource from disabled modules too", res);
     }
 
     public void testResourceAsStreamFromModule() throws Exception {
