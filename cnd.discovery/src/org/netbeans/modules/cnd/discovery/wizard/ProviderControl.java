@@ -53,11 +53,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -83,15 +80,16 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 public class ProviderControl {
-    private ProviderProperty property;
-    private String propertyKey;
+    private final ProviderProperty property;
+    private final String propertyKey;
+    private final DiscoveryDescriptor wizardDescriptor;
+    private final JPanel panel;
+    private final ChangeListener listener;
     private String description;
     private JLabel label;
-    private JComboBox field;
+    private FilePathField field;
     private JButton button;
     private int chooserMode = 0;
-    private JPanel panel;
-    private ChangeListener listener;
     
     public ProviderControl(String key, ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
             JPanel panel, ChangeListener listener){
@@ -99,12 +97,13 @@ public class ProviderControl {
         this.property = property;
         this.panel = panel;
         this.listener = listener;
+        this.wizardDescriptor = wizardDescriptor;
         description = property.getDescription();
         label = new JLabel();
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getKind()) {
             case MakeLogFile:
-                field = new JComboBox();
+                field = new FilePathField();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -121,7 +120,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFile:
-                field = new JComboBox();
+                field = new FilePathField();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -138,7 +137,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case Folder:
-                field = new JComboBox();
+                field = new FilePathField();
                 field.setEditable(true);
                 chooserMode = JFileChooser.DIRECTORIES_ONLY;
                 initRoot(wizardDescriptor);
@@ -154,7 +153,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFiles:
-                field = new JComboBox();
+                field = new FilePathField();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initArray();
@@ -223,51 +222,21 @@ public class ProviderControl {
     }
 
     private void initComboBox(String root){
-        List<String> vector = new ArrayList<String>();
-        vector.add(root);
-        Preferences prefs = NbPreferences.forModule(ProviderControl.class);
-        String old = prefs.get(propertyKey, ""); // NOI18N
-        StringTokenizer st = new StringTokenizer(old, "\u0000"); // NOI18N
-        int history = 5;
-        while(st.hasMoreTokens()) {
-            String s = st.nextToken();
-            if (!vector.contains(s)) {
-                vector.add(s);
-                history--;
-                if (history == 0) {
-                    break;
-                }
-            }
+        if (SelectProviderPanel.USE_PROJECT_PROPERTIES) {
+            field.setStorage(propertyKey, wizardDescriptor.getProject());
+        } else {
+            field.setStorage(propertyKey, NbPreferences.forModule(ProviderControl.class));
         }
-        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
-        field.setModel(rootModel);
+        field.read(root);
     }
     
     private void addListeners(){
-        field.addActionListener(new ActionListener() {
+        field.addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
         });
-        ComboBoxEditor editor = field.getEditor();
-        Component component = editor.getEditorComponent();
-        if (component instanceof JTextField) {
-            ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    update();
-                }
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    update();
-                }
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                    update();
-                }
-            });
-        }
     }
     
     private void update() {
@@ -299,23 +268,12 @@ public class ProviderControl {
     }
     
     private void storeHistory() {
-        List<String> vector = new ArrayList<String>();
-        vector.add(getComboBoxText());
-        for(int i = 0; i < field.getModel().getSize(); i++){
-            String s = field.getModel().getElementAt(i).toString();
-            if (!vector.contains(s)) {
-                vector.add(s);
-            }
+        if (SelectProviderPanel.USE_PROJECT_PROPERTIES) {
+            field.setStorage(propertyKey, wizardDescriptor.getProject());
+        } else {
+            field.setStorage(propertyKey, NbPreferences.forModule(ProviderControl.class));
         }
-        StringBuilder buf = new StringBuilder();
-        for(String s : vector) {
-            if (buf.length()>0) {
-                buf.append((char)0);
-            }
-            buf.append(s);
-        }
-        Preferences prefs = NbPreferences.forModule(ProviderControl.class);
-        prefs.put(propertyKey, buf.toString()); // NOI18N
+        field.store();
     }
 
     public boolean valid() {
@@ -460,17 +418,7 @@ public class ProviderControl {
     }
 
     private String getComboBoxText() {
-        ComboBoxEditor editor = field.getEditor();
-        if (editor != null) {
-            Component component = editor.getEditorComponent();
-            if (component instanceof JTextField) {
-                return ((JTextField)component).getText();
-            }
-        }
-        if (field.getSelectedItem() != null) {
-            return field.getSelectedItem().toString();
-        }
-        return null;
+        return field.getText();
     }
     
     private void initFields(String path) {

@@ -50,8 +50,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -83,6 +81,8 @@ import org.openide.util.Utilities;
 public final class SelectProviderPanel extends JPanel implements CsmProgressListener {
     private static boolean SHOW_RESTRICT = Boolean.getBoolean("cnd.discovery.wizard.restrictSources"); // NOI18N
     private SelectProviderWizard wizard;
+    public static final boolean USE_PROJECT_PROPERTIES = true;
+    private static final String ROOT_PROPERTY_KEY = "rootFolder"; // NOI18N
     /** Creates new form SelectProviderVisualPanel1 */
     public SelectProviderPanel(SelectProviderWizard wizard) {
         this.wizard = wizard;
@@ -95,30 +95,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void addListeners(){
-        rootFolder.addActionListener(new ActionListener() {
+        ((FilePathField)rootFolder).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update();
             }
         });
-        ComboBoxEditor editor = rootFolder.getEditor();
-        Component component = editor.getEditorComponent();
-        if (component instanceof JTextField) {
-            ((JTextField)component).getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    update();
-                }
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    update();
-                }
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                    update();
-                }
-            });
-        }
         CsmListeners.getDefault().addProgressListener(this);
     }
     
@@ -141,7 +123,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         labelForProviders = new javax.swing.JLabel();
         restrictSources = new javax.swing.JCheckBox();
         restrictCompile = new javax.swing.JCheckBox();
-        rootFolder = new javax.swing.JComboBox();
+        rootFolder = new FilePathField();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -370,31 +352,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        List<String> vector = new ArrayList<String>();
-        vector.add(path);
-        {
-            Preferences prefs = NbPreferences.forModule(SelectProviderPanel.class);
-            String old = prefs.get("rootFolder", ""); // NOI18N
-            StringTokenizer st = new StringTokenizer(old, "\u0000"); // NOI18N
-            int history = 5;
-            while(st.hasMoreTokens()) {
-                String s = st.nextToken();
-                if (!vector.contains(s)) {
-                    vector.add(s);
-                    history--;
-                    if (history == 0) {
-                        break;
-                    }
-                }
-            }
+        if (USE_PROJECT_PROPERTIES) {
+            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, wizardDescriptor.getProject());
+        } else {
+            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, NbPreferences.forModule(SelectProviderPanel.class));
         }
-        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
-        rootFolder.setModel(rootModel);
-        StringBuilder buf = new StringBuilder();
-        for(int i = 0; i < 35; i++) {
-            buf.append("w"); // NOI18N
-        }
-        rootFolder.setPrototypeDisplayValue(buf.toString());
+        ((FilePathField)rootFolder).read(path);
     }
     
     private String getRootText() {
@@ -435,25 +398,12 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
         wizardDescriptor.setRootFolder(getRootText());
-        {
-            List<String> vector = new ArrayList<String>();
-            vector.add(getRootText());
-            for(int i = 0; i < rootFolder.getModel().getSize(); i++){
-                String s = rootFolder.getModel().getElementAt(i).toString();
-                if (!vector.contains(s)) {
-                    vector.add(s);
-                }
-            }
-            StringBuilder buf = new StringBuilder();
-            for(String s : vector) {
-                if (buf.length()>0) {
-                    buf.append((char)0);
-                }
-                buf.append(s);
-            }
-            Preferences prefs = NbPreferences.forModule(SelectProviderPanel.class);
-            prefs.put("rootFolder", buf.toString()); // NOI18N
+        if (USE_PROJECT_PROPERTIES) {
+            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, wizardDescriptor.getProject());
+        } else {
+            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, NbPreferences.forModule(SelectProviderPanel.class));
         }
+        ((FilePathField)rootFolder).store();
         ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
         if (p != null) {
             if (restrictSources.isSelected()){
