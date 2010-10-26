@@ -98,6 +98,9 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.execution.ExecutorTask;
 import org.openide.loaders.DataObject;
@@ -511,7 +514,10 @@ public class ActionProviderImpl implements ActionProvider {
 
     }
 
-    public static Action customPopupActions() {
+    @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
+    @ActionRegistration(displayName = "#LBL_Custom_Run")
+    @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction customPopupActions() {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
@@ -568,7 +574,10 @@ public class ActionProviderImpl implements ActionProvider {
         }
     }
 
-    public static Action closeSubprojectsAction() {
+    @ActionID(id = "org.netbeans.modules.maven.closeSubprojects", category = "Project")
+    @ActionRegistration(displayName = "org.netbeans.modules.maven.nodes.Bundle#ACT_CloseRequired")
+    @ActionReference(position = 2000, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction closeSubprojectsAction() {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 NbMavenProjectImpl project = p.getLookup().lookup(NbMavenProjectImpl.class);
@@ -594,7 +603,10 @@ public class ActionProviderImpl implements ActionProvider {
         }
     }
 
-    public static Action showProblemsAction() {
+    @ActionID(id = "org.netbeans.modules.maven.showProblems", category = "Project")
+    @ActionRegistration(displayName = "org.netbeans.modules.maven.nodes.Bundle#ACT_ShowProblems")
+    @ActionReference(position = 3100, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction showProblemsAction() {
         return new ConditionallyShownAction() {
             protected @Override Action forProject(Project p) {
                 ProblemReporterImpl reporter = p.getLookup().lookup(ProblemReporterImpl.class);
@@ -623,8 +635,11 @@ public class ActionProviderImpl implements ActionProvider {
         }
     }
 
-    public static Action buildWithDependenciesAction() {
-        return ProjectSensitiveActions.projectCommandAction(BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null);
+    @ActionID(id = "org.netbeans.modules.maven.buildWithDependencies", category = "Project")
+    @ActionRegistration(displayName = "org.netbeans.modules.maven.nodes.Bundle#ACT_Build_Deps")
+    @ActionReference(position = 500, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction buildWithDependenciesAction() {
+        return (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(BUILD_WITH_DEPENDENCIES, NbBundle.getMessage(MavenProjectNode.class, "ACT_Build_Deps"), null);
     }
 
     /*

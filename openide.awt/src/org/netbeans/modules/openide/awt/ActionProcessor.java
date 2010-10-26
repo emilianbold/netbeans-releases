@@ -217,13 +217,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 layer(e).instanceFile("dummy", null, ActionListener.class);
                 key = ar.key();
             }
-            
-            boolean direct = e.getKind() == ElementKind.CLASS &&
-                (isAssignable(e.asType(), p1) ||
-                 isAssignable(e.asType(), p2) ||
-                 isAssignable(e.asType(), p3) ||
-                 isAssignable(e.asType(), caa));
-            
+
+            boolean direct;
+            if (e.getKind() == ElementKind.FIELD) {
+                direct = false;
+            } else {
+                TypeMirror type = e.getKind() == ElementKind.CLASS ? e.asType() : ((ExecutableElement) e).getReturnType();
+                direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa);
+            }
             
             if (direct) {
                 if (key.length() != 0) {

@@ -52,6 +52,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.BrandingUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -62,6 +65,9 @@ import org.openide.util.NbBundle;
  * 
  * @author S. Aubrecht
  */
+@ActionID(id = "org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction", category = "Project")
+@ActionRegistration(displayName = "#LBL_OpenBrandingEditor")
+@ActionReference(position = 3150, path = "Projects/org-netbeans-modules-maven/Actions")
 public class OpenBrandingEditorAction extends AbstractAction implements ContextAwareAction {
 
     private final Lookup context;
