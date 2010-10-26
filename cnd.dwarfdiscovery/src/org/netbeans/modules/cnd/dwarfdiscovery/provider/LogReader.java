@@ -71,6 +71,8 @@ import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
@@ -410,6 +412,20 @@ public class LogReader {
         LineInfo(String line) {
             compileLine = line;
         }
+
+        ItemProperties.LanguageKind getLanguage() {
+            switch (compilerType) {
+                case C:
+                    return ItemProperties.LanguageKind.C;
+                case CPP:
+                    return ItemProperties.LanguageKind.CPP;
+                case FORTRAN:
+                    return ItemProperties.LanguageKind.Fortran;
+                case UNKNOWN:
+                default:
+                    return ItemProperties.LanguageKind.Unknown;
+            }
+        }
     }
 
     private static final String LABEL_CD        = "cd "; //NOI18N
@@ -571,15 +587,7 @@ public class LogReader {
 
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           ItemProperties.LanguageKind lang = ItemProperties.LanguageKind.Unknown;
-           if (li.compilerType == CompilerType.CPP) {
-               lang = ItemProperties.LanguageKind.CPP;
-           } else if (li.compilerType == CompilerType.C) {
-               lang = ItemProperties.LanguageKind.C;
-           } else if (li.compilerType == CompilerType.FORTRAN) {
-               lang = ItemProperties.LanguageKind.Fortran;
-           }
-           gatherLine(li.compileLine, line.startsWith("+"), lang, li.compiler); // NOI18N
+           gatherLine(li);
            return true;
        }
        return false;
@@ -670,10 +678,12 @@ public class LogReader {
         }
     }
 
-    private boolean gatherLine(String line, boolean isScriptOutput, ItemProperties.LanguageKind lang, String compiler) {
+    private boolean gatherLine(LineInfo li) {
+        String line = li.compileLine;
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherCompilerLine(line, true/*isScriptOutput*/, userIncludes, userMacros,null);
+        List<String> languageArtifacts = new ArrayList<String>();
+        String what = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
         if (what == null){
             return false;
         }
@@ -703,14 +713,14 @@ public class LogReader {
         File f = new File(file);
         if (f.exists() && f.isFile()) {
             if (TRACE) {System.err.println("**** Gotcha: " + file);}
-            result.add(new CommandLineSource(lang, compiler, workingDir, what, userIncludesCached, userMacrosCached));
+            result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached));
             return true;
         }
         if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
             f = new File(guessWorkingDir+"/"+what);  //NOI18N
             if (f.exists() && f.isFile()) {
                 if (TRACE) {System.err.println("**** Gotcha guess: " + file);}
-                result.add(new CommandLineSource(lang, compiler, guessWorkingDir, what, userIncludesCached, userMacrosCached));
+                result.add(new CommandLineSource(li, languageArtifacts, guessWorkingDir, what, userIncludesCached, userMacrosCached));
                 return true;
             }
         }
@@ -721,7 +731,7 @@ public class LogReader {
                 if (TRACE) {System.err.println("** And there is no such file under root");}
             } else {
                 if (res.size() == 1) {
-                    result.add(new CommandLineSource(lang, compiler, res.get(0), what, userIncludes, userMacros));
+                    result.add(new CommandLineSource(li, languageArtifacts, res.get(0), what, userIncludes, userMacros));
                     if (TRACE) {System.err.println("** Gotcha: " + res.get(0) + File.separator + what);}
                     // kinda adventure but it works
                     setGuessWorkingDir(res.get(0));
@@ -736,7 +746,7 @@ public class LogReader {
         return false;
     }
 
-    private static class CommandLineSource implements SourceFileProperties {
+    static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
         private String sourceName;
@@ -749,10 +759,26 @@ public class LogReader {
         private Map<String, String> systemMacros = Collections.<String, String>emptyMap();
         private Set<String> includedFiles = Collections.<String>emptySet();
 
-        private CommandLineSource(ItemProperties.LanguageKind lang, String compiler, String compilePath, String sourcePath,
+        CommandLineSource(LineInfo li, List<String> languageArtifacts, String compilePath, String sourcePath,
                 List<String> userIncludes, Map<String, String> userMacros) {
-            language = lang;
-            this.compiler = compiler;
+            language = li.getLanguage();
+            if (languageArtifacts.contains("c")) { // NOI18N
+                language = ItemProperties.LanguageKind.C;
+            } else if (languageArtifacts.contains("c++")) { // NOI18N
+                language = ItemProperties.LanguageKind.CPP;
+            } else {
+                String mime =MIMESupport.getKnownMIMETypeByExtension(sourcePath);
+                if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.CPP) {
+                        language = ItemProperties.LanguageKind.CPP;
+                    }
+                } else if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                    if (li.getLanguage() != ItemProperties.LanguageKind.C) {
+                        language = ItemProperties.LanguageKind.C;
+                    }
+                }
+            }
+            this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
             if (sourceName.startsWith("/")) { // NOI18N

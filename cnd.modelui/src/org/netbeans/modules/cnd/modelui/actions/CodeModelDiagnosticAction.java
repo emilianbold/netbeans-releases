@@ -57,9 +57,13 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -111,16 +115,22 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
         if (doc != null) {
             lookupObjects.add(doc);
         }
+        List<CsmFile> files = new ArrayList<CsmFile>();
         if (activatedNodes != null) {
             lookupObjects.addAll(Arrays.asList(activatedNodes));
             for (Node node : activatedNodes) {
                 final DataObject dob = node.getLookup().lookup(DataObject.class);
                 if (dob != null) {
                     lookupObjects.add(dob);
+                    CsmFile[] csmFiles = CsmUtilities.getCsmFiles(dob, false);
+                    if (csmFiles != null) {
+                        files.addAll(Arrays.asList(csmFiles));
+                    }
                 }
             }
         }
         lookupObjects.addAll(csmProjects);
+        lookupObjects.addAll(files);
         LOG.log(Level.INFO, "perform actions on {0}\n nodes={1}\n", new Object[]{csmProjects, activatedNodes});
         if (!lookupObjects.isEmpty()) {
             Collection<? extends CndDiagnosticProvider> providers = Lookup.getDefault().lookupAll(CndDiagnosticProvider.class);
@@ -138,6 +148,18 @@ public class CodeModelDiagnosticAction extends ProjectActionBase {
                 final OutputWriter out = io.getOut();
                 final OutputWriter err = io.getErr();
                 err.printf("dumping cnd diagnostics into %s\n", tmpFile);// NOI18N 
+                int i = 0;
+                for (CsmFile csmFile : files) {
+                    pw.printf("file [%d] [%s] of class %s\n", i++, csmFile.getAbsolutePath(), csmFile.getClass().getName());// NOI18N 
+                }
+                if (doc != null) {
+                    DataObject dob = NbEditorUtilities.getDataObject(doc);
+                    boolean modified = false;
+                    if (dob != null) {
+                        modified = dob.isModified();
+                    }
+                    pw.printf("document version=%d timestamp=%s. Is modified? %s\n", DocumentUtilities.getDocumentVersion(doc), DocumentUtilities.getDocumentTimestamp(doc), modified);// NOI18N 
+                }
                 for (CndDiagnosticProvider provider : providers) {
                     pw.printf("**********************\ndiagnostics of %s\n", provider.getDisplayName());// NOI18N 
                     provider.dumpInfo(context, pw);

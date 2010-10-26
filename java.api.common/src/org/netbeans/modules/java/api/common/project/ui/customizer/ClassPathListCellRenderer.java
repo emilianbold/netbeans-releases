@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
@@ -246,6 +247,15 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 if (!f.getPath().equals(item.getFilePath()) || item.getVariableBasedProperty() != null) {
                     return f.getPath();
                 }
+                break;
+            case ClassPathSupport.Item.TYPE_ARTIFACT:                
+                final AntArtifact artifact = item.getArtifact();
+                if (artifact != null) {
+                    final FileObject projDir = artifact.getProject().getProjectDirectory();
+                    if (projDir != null) {
+                        return FileUtil.getFileDisplayName(projDir);
+                    }
+                }               
         }
 
         return null;
