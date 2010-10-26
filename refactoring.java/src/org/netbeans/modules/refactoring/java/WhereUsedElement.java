@@ -147,7 +147,10 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
                 end = pos[1];
             }
         } else if (t.getKind() == Tree.Kind.NEW_CLASS) {
-            ExpressionTree ident = ((NewClassTree)t).getIdentifier();
+            Tree ident = ((NewClassTree)t).getIdentifier();
+            if (ident.getKind() == Tree.Kind.PARAMETERIZED_TYPE) {
+                ident = ((ParameterizedTypeTree)ident).getType();
+            }
             if (ident.getKind()== Tree.Kind.MEMBER_SELECT) {
                 int[] pos = treeUtils.findNameSpan((MemberSelectTree) ident);
                 if (pos == null) {
