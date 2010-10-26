@@ -169,7 +169,9 @@ public class PackageView {
 
     private static void findNonExcludedPackages(PackageViewChildren children, Collection<PackageItem> target, FileObject fo, SourceGroup group, ProgressHandle progress, int start, int end) {
         
-        assert fo.isFolder() : "Package view only accepts folders"; // NOI18N
+        if (!fo.isFolder()) {
+            throw new IllegalArgumentException("Package view only accepts folders, given: " + FileUtil.getFileDisplayName(fo)); // NOI18N
+        }
         
         if (progress != null) {
             String path = FileUtil.getRelativePath(children.getRoot(), fo);
