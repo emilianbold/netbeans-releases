@@ -54,6 +54,7 @@ import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -140,7 +141,7 @@ public class Actions implements ActionsFactory {
         return new NewProject();
     }
     
-    public Action projectCommandAction(String command, String namePattern, Icon icon ) {
+    public ContextAwareAction projectCommandAction(String command, String namePattern, Icon icon ) {
         return new ProjectAction( command, namePattern, icon, null );
     }
     
