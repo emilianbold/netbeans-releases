@@ -260,6 +260,11 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.cnd.source</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
                         <compile-dependency/>
                         <test/>

@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.source;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.CloseCookie;
@@ -144,6 +145,10 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     @Override
     public void setReadOnly(boolean readOnly) {
         this.readonly = readOnly;
+    }
+
+    UndoRedo.Manager getUndoRedoImpl() {
+        return super.getUndoRedo();
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */

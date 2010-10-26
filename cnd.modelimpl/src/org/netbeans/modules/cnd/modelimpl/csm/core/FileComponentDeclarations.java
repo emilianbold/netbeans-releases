@@ -191,7 +191,12 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     int getDeclarationsSize(){
-        return declarations.size();
+        try {
+            declarationsLock.readLock().lock();
+            return declarations.size();
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
     }
 
     Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {

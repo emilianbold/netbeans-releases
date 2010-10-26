@@ -40,44 +40,30 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.source;
 
-import java.io.File;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import javax.swing.text.StyledDocument;
+import javax.swing.undo.UndoManager;
+import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
  * @author vv159170
  */
-public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyUndoTestCase(String testName) {
-        super(testName);
-//        System.setProperty("cnd.modelimpl.trace191307", "true");
-    }
+public class CndSourceTestUtilities {
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
+    private CndSourceTestUtilities() {}
     
-    public void testRemoveThenUndo191307() throws Exception {
-        // #191307:  Undo operation breaks code model
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
+    public static UndoManager getUndoRedo(DataObject dob) {
+        CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
+        if (ces instanceof CppEditorSupport) {
+            return ((CppEditorSupport)ces).getUndoRedoImpl();
+        } else {
+            UndoManager urm = new UndoManager();
+            StyledDocument doc = ces.getDocument();
+            doc.addUndoableEditListener(urm);
+            return urm;
         }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        long length = sourceFile.length();
-        
-        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
     }
-    
-    public void testInsertSaveThenUndoRedo190950() throws Exception {
-        // #191307:  Highlighting does not work if undo/redo is done
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
-        }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        super.insertTextThenSaveUndoRedo(sourceFile, 12 + 1, "void foo() {}\n", 3, 4);
-                
-    }    
 }
