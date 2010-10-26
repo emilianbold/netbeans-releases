@@ -231,8 +231,8 @@ public class PredefinedPanel extends javax.swing.JPanel {
         @Override
         public String addAction() {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = System.getProperty("user.home"); // NOI18N

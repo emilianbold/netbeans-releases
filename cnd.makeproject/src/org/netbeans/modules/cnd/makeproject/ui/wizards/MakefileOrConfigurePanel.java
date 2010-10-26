@@ -495,8 +495,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         String seed = null;
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
@@ -521,8 +521,8 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         String seed = null;
         if (makefileNameTextField.getText().length() > 0) {
             seed = makefileNameTextField.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }

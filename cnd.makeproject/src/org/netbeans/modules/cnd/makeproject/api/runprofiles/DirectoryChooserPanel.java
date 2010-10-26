@@ -125,8 +125,8 @@ import org.openide.util.NbBundle;
     }// </editor-fold>//GEN-END:initComponents
 
 private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-            if (seed == null && FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (seed == null && FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
 	    FileChooser fileChooser = new FileChooser(getString("Run_Directory"), getString("SelectLabel"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
 	    int ret = fileChooser.showOpenDialog(this);

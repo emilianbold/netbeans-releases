@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -421,17 +422,13 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseLocationAction(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLocationAction
-        JFileChooser chooser = new JFileChooser(); // Sic! - project is always local
-        chooser.setCurrentDirectory(null);
-        chooser.setDialogTitle(NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation")); // NOI18N
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         String path = this.projectLocationTextField.getText();
         if (path.length() > 0) {
-            File f = CndFileUtils.createLocalFile(path); // project itself is always local
-            if (f.exists()) {
-                chooser.setSelectedFile(f);
-            }
+            CndFileUtils.createLocalFile(path); // project itself is always local
         }
+        FileChooser chooser = new FileChooser(
+                NbBundle.getMessage(PanelProjectLocationVisual.class, "LBL_NWP1_SelectProjectLocation"),
+                null, JFileChooser.DIRECTORIES_ONLY, null, path, true);
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) { //NOI18N
             File projectDir = chooser.getSelectedFile();
             projectLocationTextField.setText(projectDir.getAbsolutePath());
