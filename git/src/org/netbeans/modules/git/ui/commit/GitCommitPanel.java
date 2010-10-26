@@ -124,12 +124,6 @@ public class GitCommitPanel extends VCSCommitPanel {
             @Override
             public void perform() {
                 try {
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    
                     // Ensure that cache is uptodate
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
                     cache.refreshAllRoots(roots);
