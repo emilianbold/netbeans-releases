@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
+import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -184,8 +185,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (busyListener != null) {
                 busyListener.busyStart();
             }
+            PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
             synchronized(lock) {
-                if (fileModel.setFile(csmFile, force)){
+                if (fileModel.buildModel(buildPreModel, csmFile, force)){
                     final Children children = root.getChildren();
                     if (!Children.MUTEX.isReadAccess()){
                          Children.MUTEX.writeAccess(new Runnable(){

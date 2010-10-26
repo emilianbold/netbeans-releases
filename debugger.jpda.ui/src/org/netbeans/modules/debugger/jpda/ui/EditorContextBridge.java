@@ -502,8 +502,9 @@ public class EditorContextBridge {
                         return null;
                     }
                 } catch (Exception ex) {
-                    ErrorManager.getDefault().notify(ex);
-                    return null;
+                    // Ignore if the context does not provide this functionality
+                    //ErrorManager.getDefault().notify(ex);
+                    //return null;
                 }
             }
             return s;

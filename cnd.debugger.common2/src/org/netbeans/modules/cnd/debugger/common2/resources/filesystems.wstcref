@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='us-ascii' ?>
+
+<!DOCTYPE tc-ref PUBLIC "-//NetBeans//DTD Top Component in Mode Properties 1.0//EN" "http://www.netbeans.org/dtds/tc-ref1_0.dtd">
+
+<tc-ref id="filesystems" >
+    <ui-type type="any" state="opened" constraint="center" selected="false" />
+</tc-ref>
