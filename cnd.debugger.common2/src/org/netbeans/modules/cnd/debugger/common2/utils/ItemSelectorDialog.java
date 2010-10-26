@@ -177,16 +177,16 @@ public final class ItemSelectorDialog extends JPanel implements ActionListener {
 
 	DialogDescriptor dlg = new DialogDescriptor(
 		this,
-		Catalog.get("TTL_OverloadDialog"),
+		Catalog.get("TTL_OverloadDialog"), // NOI18N
 		true,	// isModal
 		this);
 
-	okButton = new JButton(Catalog.get("CTL_OK"));		// NOI8N
-	Catalog.setAccessibleDescription(okButton, "ACSD_OK");	// NOI8N
+	okButton = new JButton(Catalog.get("CTL_OK"));		 // NOI18N
+	Catalog.setAccessibleDescription(okButton, "ACSD_OK");	 // NOI18N
 
-	cancelButton = new JButton(Catalog.get("CTL_Cancel"));	// NOI8N
+	cancelButton = new JButton(Catalog.get("CTL_Cancel"));	 // NOI18N
 	Catalog.setAccessibleDescription
-	    (cancelButton, "ACSD_Cancel");			// NOI8N // NOI18N
+	    (cancelButton, "ACSD_Cancel");			 // NOI18N
 
 	dlg.setOptions (new JButton[] {okButton, cancelButton });
 	dlg.setClosingOptions(dlg.getOptions());

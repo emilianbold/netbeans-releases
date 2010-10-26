@@ -60,8 +60,8 @@ public class EngineNodeProp extends PropertySupport<EngineType> {
     public EngineNodeProp(EngineProfile profile) {
 	super("EngineType", // NOI18N
 	      EngineType.class,
-	      Catalog.get("EnginePropDisplayName"),
-	      Catalog.get("EnginePropTT"),
+	      Catalog.get("EnginePropDisplayName"), // NOI18N
+	      Catalog.get("EnginePropTT"), // NOI18N
 	      true,
 	      true);
 	this.profile = profile;

@@ -60,7 +60,7 @@ public final class SessionColumnModels {
     public static final class PID extends AbstractColumnModel {
 	public PID() {
 	    super(Constants.PROP_SESSION_PID,
-		  Catalog.get("PROP_session_pid"), Catalog.get("PROP_session_pid"), 
+		  Catalog.get("PROP_session_pid"), Catalog.get("PROP_session_pid"), // NOI18N
 		  Long.class, true, new StringEditor());
 	}
     }
@@ -68,7 +68,7 @@ public final class SessionColumnModels {
     public static final class State extends AbstractColumnModel {
 	public State() {
 	    super(Constants.SESSION_STATE_COLUMN_ID,
-		  Catalog.get("PROP_session_state"), Catalog.get("HINT_session_state"), 
+		  Catalog.get("PROP_session_state"), Catalog.get("HINT_session_state"), // NOI18N
 		  String.class, true, new StringEditor());
 	}
     }
@@ -76,7 +76,7 @@ public final class SessionColumnModels {
     public static final class Debugger extends AbstractColumnModel {
 	public Debugger() {
 	    super(Constants.SESSION_DEBUGGER_COLUMN_ID,
-		  Catalog.get("PROP_session_debugger"), Catalog.get("HINT_session_debugger"), 
+		  Catalog.get("PROP_session_debugger"), Catalog.get("HINT_session_debugger"), // NOI18N
 		  String.class, false, new StringEditor());
 	}
     }
@@ -84,7 +84,7 @@ public final class SessionColumnModels {
     public static final class Location extends AbstractColumnModel {
 	public Location() {
 	    super(Constants.PROP_SESSION_LOCATION,
-		  Catalog.get("PROP_session_location"), Catalog.get("HINT_session_location"), 
+		  Catalog.get("PROP_session_location"), Catalog.get("HINT_session_location"), // NOI18N
 		  String.class, false, null);
 		  //String.class, false, new StringEditor());
 	}
@@ -93,7 +93,7 @@ public final class SessionColumnModels {
     public static final class Mode extends AbstractColumnModel {
 	public Mode() {
 	    super(Constants.PROP_SESSION_MODE,
-		  Catalog.get("PROP_session_mode"), Catalog.get("HINT_session_mode"), 
+		  Catalog.get("PROP_session_mode"), Catalog.get("HINT_session_mode"), // NOI18N
 		  String.class, false, new StringEditor());
 	}
     }
@@ -101,7 +101,7 @@ public final class SessionColumnModels {
     public static final class Args extends AbstractColumnModel {
 	public Args() {
 	    super(Constants.PROP_SESSION_ARGS,
-		  Catalog.get("PROP_session_args"), Catalog.get("HINT_session_args"), 
+		  Catalog.get("PROP_session_args"), Catalog.get("HINT_session_args"), // NOI18N
 		  String.class, false, new StringEditor());
 	}
     }
@@ -109,7 +109,7 @@ public final class SessionColumnModels {
     public static final class Core extends AbstractColumnModel {
 	public Core() {
 	    super(Constants.PROP_SESSION_CORE,
-		  Catalog.get("PROP_session_core"), Catalog.get("HINT_session_core"), 
+		  Catalog.get("PROP_session_core"), Catalog.get("HINT_session_core"), // NOI18N
 		  String.class, false, null);
 		  //String.class, false, new StringEditor());
 	}
@@ -118,7 +118,7 @@ public final class SessionColumnModels {
     public static final class Host extends AbstractColumnModel {
 	public Host() {
 	    super(Constants.PROP_SESSION_HOST,
-		  Catalog.get("PROP_session_host"), Catalog.get("HINT_session_host"), 
+		  Catalog.get("PROP_session_host"), Catalog.get("HINT_session_host"), // NOI18N
 		  String.class, true, new StringEditor());
 	}
     }

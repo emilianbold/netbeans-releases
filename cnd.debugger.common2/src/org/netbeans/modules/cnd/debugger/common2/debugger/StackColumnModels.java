@@ -60,8 +60,8 @@ public final class StackColumnModels {
     public static final class Location extends AbstractColumnModel {
 	public Location() {
 	     super(Constants.PROP_FRAME_LOCATION,
-		   Catalog.get("PROP_frame_location"),
-		   Catalog.get("HINT_frame_location"), String.class, false, new StringEditor());
+		   Catalog.get("PROP_frame_location"), // NOI18N
+		   Catalog.get("HINT_frame_location"), String.class, false, new StringEditor()); // NOI18N
 	}
     }
 
@@ -69,8 +69,8 @@ public final class StackColumnModels {
 
 	public Number() {
 	     super(Constants.PROP_FRAME_NUMBER,
-		   Catalog.get("PROP_frame_number"),
-		  Catalog.get("HINT_frame_number"), String.class, false, new StringEditor());
+		   Catalog.get("PROP_frame_number"), // NOI18N
+		  Catalog.get("HINT_frame_number"), String.class, false, new StringEditor()); // NOI18N
 	}
     }
 
@@ -78,8 +78,8 @@ public final class StackColumnModels {
 
 	public Optimized() {
 	     super(Constants.PROP_FRAME_OPTIMIZED,
-		   Catalog.get("PROP_frame_optimized"),
-		  Catalog.get("HINT_frame_optimized"), String.class, false, new StringEditor());
+		   Catalog.get("PROP_frame_optimized"), // NOI18N
+		  Catalog.get("HINT_frame_optimized"), String.class, false, new StringEditor()); // NOI18N
 	}
     }
 
@@ -87,8 +87,8 @@ public final class StackColumnModels {
 
 	public CurrentPC() {
 	     super(Constants.PROP_FRAME_CURRENT_PC,
-		   Catalog.get("PROP_frame_current_pc"),
-		  Catalog.get("HINT_frame_current_pc"), String.class, false, new StringEditor());
+		   Catalog.get("PROP_frame_current_pc"), // NOI18N
+		  Catalog.get("HINT_frame_current_pc"), String.class, false, new StringEditor()); // NOI18N
 	}
     }
 
@@ -96,8 +96,8 @@ public final class StackColumnModels {
 
 	public LoadObj() {
 	     super(Constants.PROP_FRAME_LOADOBJ,
-		   Catalog.get("PROP_frame_loadobj"),
-		  Catalog.get("HINT_frame_loadobj"), String.class, false, new StringEditor());
+		   Catalog.get("PROP_frame_loadobj"), // NOI18N
+		  Catalog.get("HINT_frame_loadobj"), String.class, false, new StringEditor()); // NOI18N
 	}
     }
 }

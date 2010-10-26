@@ -113,7 +113,7 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     // interface SystemAction
     protected void initialize() {
 	super.initialize();
-	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToCursorInstAction"));
+	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToCursorInstAction")); // NOI18N
 	setEnabled(false);
     }    
 

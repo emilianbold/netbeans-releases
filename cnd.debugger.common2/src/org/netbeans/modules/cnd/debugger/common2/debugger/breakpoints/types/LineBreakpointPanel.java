@@ -159,7 +159,7 @@ class LineBreakpointPanel extends BreakpointPanel {
 
 	browseButton.setMnemonic(
 	    Catalog.getMnemonic("MNEM_Browse"));// NOI18N
-	browseButton.setText(Catalog.get("Browse"));
+	browseButton.setText(Catalog.get("Browse")); // NOI18N
 	browseButton.addActionListener(new java.awt.event.ActionListener() {
 	    public void actionPerformed(java.awt.event.ActionEvent evt) {
 		onBrowse(evt);

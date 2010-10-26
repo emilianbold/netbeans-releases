@@ -312,7 +312,7 @@ public final class WatchModel extends VariableModel
     }
 
     public /* TMP */ static final Action DELETE_ACTION = Models.createAction (
-	Catalog.get("ACT_WATCH_Delete"),
+	Catalog.get("ACT_WATCH_Delete"), // NOI18N
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
                 return !(node instanceof WatchModel.EmptyWatch);

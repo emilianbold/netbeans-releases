@@ -337,7 +337,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    int flags = 0;
 	    if (Log.Startup.nopty)
 		flags |= Executor.NOPTY;
-	    executor = Executor.getDefault(Catalog.get("Gdb"), getHost(), flags);
+	    executor = Executor.getDefault(Catalog.get("Gdb"), getHost(), flags); // NOI18N
 	}
 
 	final String additionalArgv[] = null; // gdi.getAdditionalArgv();
@@ -522,7 +522,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (org.netbeans.modules.cnd.debugger.common2.debugger.Log.Start.debug) {
             System.out.printf("GdbDebuggerImpl.connectFailed()\n"); // NOI18N
         }
-        String msg = Catalog.format("ConnectionFailed", toWhom, why);
+        String msg = Catalog.format("ConnectionFailed", toWhom, why); // NOI18N
         Gdb.dyingWords(msg, ioPack);
 
         // kill() doesn't work unless ACTION_KILL is enabled.
@@ -1223,7 +1223,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		errMsg = record.command().getLogStream();
 	    } 
 	    if (errMsg == null)
-		errMsg = Catalog.get("MSG_UnknownFailure");
+		errMsg = Catalog.get("MSG_UnknownFailure"); // NOI18N
 	}
         return errMsg;
     }
@@ -1277,19 +1277,19 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         if ("exited-normally".equals(reason)) { // NOI18N
             final String exitcodeString = "0";		// NOI18N
-            msg = Catalog.format("ProgCompletedExit", exitcodeString);
+            msg = Catalog.format("ProgCompletedExit", exitcodeString); // NOI18N
             skipkill = dontKillOnExit();
 
         } else if ("exited".equals(reason)) { // NOI18N
             final MIValue exitcodeValue = results.valueOf("exit-code"); // NOI18N
             final String exitcodeString = exitcodeValue.asConst().value();
-            msg = Catalog.format("ProgCompletedExit", exitcodeString);
+            msg = Catalog.format("ProgCompletedExit", exitcodeString); // NOI18N
             skipkill = dontKillOnExit();
 
         } else if ("exited-signalled".equals(reason)) { // NOI18N
             final MIValue signalnameValue = results.valueOf("signal-name"); // NOI18N
             final String signalnameString = signalnameValue.asConst().value();
-            msg = Catalog.format("ProgAborted", signalnameString);
+            msg = Catalog.format("ProgAborted", signalnameString); // NOI18N
 
         } else {
             msg = "Stopped for unrecognized reason: " + reason; // NOI18N
@@ -2466,7 +2466,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    String var_name = loc.getName();
 	    String var_value = loc.getValue();
             if (var_name.equals("this")) {// NOI18N
-		int index = var_value.indexOf("0x");
+		int index = var_value.indexOf("0x"); // NOI18N
 		if (var_value != null) {
 		    String value_only = var_value.substring(index);
 		    gv = (GdbVariable) variableBag.byAddr(var_name, value_only,
@@ -2779,7 +2779,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	// gdb doesn't furnish any of the other info
 
 	String signalInfo;
-	signalInfo = Catalog.format("FMT_SignalInfo",
+	signalInfo = Catalog.format("FMT_SignalInfo", // NOI18N
 	    signame, signum, usercodename, usercodenum);
 	sd.setSignalInfo(signalInfo);
 
@@ -2858,7 +2858,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		results.valueOf("signal-name");		// NOI18N
 	    if (signalNameValue != null)
 		signalName = signalNameValue.asConst().value();
-            stateMsg = Catalog.get("Dbx_signal") +
+            stateMsg = Catalog.get("Dbx_signal") + // NOI18N
 		       " " + signalName;			// NOI18N
 
         } else if (reason.equals("function-finished")) { // NOI18N
@@ -3508,7 +3508,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     };
 
     public void runFailed() {
-        setStatusText(Catalog.get("RunFailed"));
+        setStatusText(Catalog.get("RunFailed")); // NOI18N
         stateSetRunning(false);
         stateChanged();
 	session().setSessionState(state());

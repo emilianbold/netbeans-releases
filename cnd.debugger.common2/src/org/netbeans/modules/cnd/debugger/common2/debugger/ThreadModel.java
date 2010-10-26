@@ -380,7 +380,7 @@ public final class ThreadModel extends ModelListenerSupport
 	private Thread thread;
 
 	MakeCurrentAction(NativeDebugger debugger, Thread thread) {
-	    super(Catalog.get("ACT_Make_Current"));
+	    super(Catalog.get("ACT_Make_Current")); // NOI18N
 	    this.debugger = debugger;
 	    this.thread = thread;
 	    setEnabled(!thread.isCurrent());

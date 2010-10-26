@@ -754,11 +754,11 @@ public class DisView {
 
 	statusPanel = new JPanel(new java.awt.GridBagLayout());
 
-	statusPanel.setToolTipText(Catalog.get("TIP_DisStatus"));// NOI18n
+	statusPanel.setToolTipText(Catalog.get("TIP_DisStatus")); // NOI18N
 	    JPanel addressPanel = new JPanel(new java.awt.GridBagLayout());
 
-		addressLabel = new JLabel(Catalog.get("LBL_Address"));
-		addressLabel.setToolTipText(Catalog.get("TIP_DisAddress"));//NOI18n
+		addressLabel = new JLabel(Catalog.get("LBL_Address")); // NOI18N
+		addressLabel.setToolTipText(Catalog.get("TIP_DisAddress")); // NOI18N
 		addressText = new JComboBox();
 		addressText.setEditable(true);
 		addressText.addActionListener(new AddressTextAction());
@@ -786,8 +786,8 @@ public class DisView {
 	    JPanel filePanel = new JPanel(new java.awt.GridBagLayout());
 
 		fileLabel = new JLabel();
-		fileLabel.setText(Catalog.get("LBL_File"));
-		fileLabel.setToolTipText(Catalog.get("TIP_DisFile"));
+		fileLabel.setText(Catalog.get("LBL_File")); // NOI18N
+		fileLabel.setToolTipText(Catalog.get("TIP_DisFile")); // NOI18N
 
 		fileText = new JTextField();
 		fileText.setColumns(15);
@@ -816,7 +816,7 @@ public class DisView {
 	    JPanel functionPanel = new JPanel(new java.awt.GridBagLayout());
 
 		functionLabel = new JLabel();
-		functionLabel.setText(Catalog.get("LBL_Function"));
+		functionLabel.setText(Catalog.get("LBL_Function")); // NOI18N
 		functionLabel.setToolTipText(Catalog.get("TIP_DisFunction"));//NOI18N
 
 		functionText = new JTextField();

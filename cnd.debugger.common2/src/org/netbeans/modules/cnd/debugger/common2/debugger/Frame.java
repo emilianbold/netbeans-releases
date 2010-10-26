@@ -123,12 +123,12 @@ public class Frame {
         // an action to get them.
 
         if (range_of_hidden) {
-            return "---- " +  Catalog.get("MSG_HIDDDEN_FRAMES") + " ----";
+            return "---- " +  Catalog.get("MSG_HIDDDEN_FRAMES") + " ----"; // NOI18N
         } else if (attr_user_call) {
-            return "---- " +  Catalog.get("MSG_DEBUGGER_CALL") + " ----";
+            return "---- " +  Catalog.get("MSG_DEBUGGER_CALL") + " ----"; // NOI18N
         } else if (attr_sig != 0) {
             return "---- " +    // NOI18N
-                   Catalog.format("MSG_SIGNAL_HANDLER",
+                   Catalog.format("MSG_SIGNAL_HANDLER", // NOI18N
 				  attr_signame, attr_sig) +
                    " ----";     // NOI18N
 

@@ -79,7 +79,7 @@ public class AddWatchAction extends NativeActionsProvider {
 	    boolean isModal = true;
 
 	    dd = new DialogDescriptor(panel,
-				      Catalog.get("TTL_NewWatch"),
+				      Catalog.get("TTL_NewWatch"), // NOI18N
 				      isModal,
 				      null);
 	    Object[] buttons = new Object[] {

@@ -62,7 +62,7 @@ public final class ThreadColumnModels {
     public static final class State extends AbstractColumnModel {
         public State() {
             super(Constants.THREAD_STATE_COLUMN_ID,
-                  Catalog.get("PROP_thread_state"), Catalog.get("HINT_thread_state"),
+                  Catalog.get("PROP_thread_state"), Catalog.get("HINT_thread_state"), // NOI18N
                   String.class, true, new StringEditor());
         }
     }
@@ -70,7 +70,7 @@ public final class ThreadColumnModels {
     public static final class Suspended extends AbstractColumnModel {
         public Suspended() {
             super(Constants.THREAD_SUSPENDED_COLUMN_ID,
-                  Catalog.get("PROP_thread_suspended"), Catalog.get("HINT_thread_suspended"),
+                  Catalog.get("PROP_thread_suspended"), Catalog.get("HINT_thread_suspended"), // NOI18N
                   Boolean.TYPE, false, null);
         }
     }
@@ -78,7 +78,7 @@ public final class ThreadColumnModels {
     public static final class Priority extends AbstractColumnModel {
         public Priority() {
             super(Constants.PROP_THREAD_PRIORITY,
-                  Catalog.get("PROP_priority"), Catalog.get("HINT_priority"),
+                  Catalog.get("PROP_priority"), Catalog.get("HINT_priority"), // NOI18N
                   Integer.class, false, new StringEditor());
         }
     }
@@ -86,7 +86,7 @@ public final class ThreadColumnModels {
     public static final class Lwp extends AbstractColumnModel {
         public Lwp() {
             super(Constants.PROP_THREAD_LWP,
-                  Catalog.get("PROP_lwp"), Catalog.get("HINT_lwp"),
+                  Catalog.get("PROP_lwp"), Catalog.get("HINT_lwp"), // NOI18N
                   Object.class, false, new StringEditor());
         }
     }
@@ -94,7 +94,7 @@ public final class ThreadColumnModels {
     public static final class StartupFlags extends AbstractColumnModel {
         public StartupFlags() {
             super(Constants.PROP_THREAD_STARTUP_FLAGS,
-                  Catalog.get("PROP_startup_flags"), Catalog.get("HINT_startup_flags"),
+                  Catalog.get("PROP_startup_flags"), Catalog.get("HINT_startup_flags"), // NOI18N
                   Object.class, false, new StringEditor());
         }
     }
@@ -102,7 +102,7 @@ public final class ThreadColumnModels {
     public static final class ExecutingFunction extends AbstractColumnModel {
         public ExecutingFunction() {
             super(Constants.PROP_THREAD_EXECUTING_FUNCTION,
-                  Catalog.get("PROP_executing_function"), Catalog.get("HINT_executing_function"),
+                  Catalog.get("PROP_executing_function"), Catalog.get("HINT_executing_function"), // NOI18N
                   Object.class, true, new StringEditor());
         }
     }
@@ -110,7 +110,7 @@ public final class ThreadColumnModels {
     public static final class StartFunction extends AbstractColumnModel {
         public StartFunction() {
             super(Constants.PROP_THREAD_START_FUNCTION,
-                  Catalog.get("PROP_start_function"), Catalog.get("HINT_start_function"),
+                  Catalog.get("PROP_start_function"), Catalog.get("HINT_start_function"), // NOI18N
                   Object.class, true, new StringEditor());
         }
     }
@@ -118,7 +118,7 @@ public final class ThreadColumnModels {
     public static final class Address extends AbstractColumnModel {
         public Address() {
             super(Constants.PROP_THREAD_ADDRESS,
-                  Catalog.get("PROP_thread_address"), Catalog.get("HINT_thread_address"),
+                  Catalog.get("PROP_thread_address"), Catalog.get("HINT_thread_address"), // NOI18N
                   Object.class, false, new StringEditor());
         }
     }
@@ -126,7 +126,7 @@ public final class ThreadColumnModels {
     public static final class Size extends AbstractColumnModel {
         public Size() {
             super(Constants.PROP_THREAD_SIZE,
-                  Catalog.get("PROP_size"), Catalog.get("HINT_size"),
+                  Catalog.get("PROP_size"), Catalog.get("HINT_size"), // NOI18N
                   Integer.class, false, new StringEditor());
         }
     }
@@ -134,7 +134,7 @@ public final class ThreadColumnModels {
     public static final class Id extends AbstractColumnModel {
         public Id() {
             super(Constants.PROP_THREAD_ID,
-                  Catalog.get("PROP_id"), Catalog.get("HINT_id"),
+                  Catalog.get("PROP_id"), Catalog.get("HINT_id"), // NOI18N
                   String.class, false, new StringEditor());
         }
     }
@@ -142,7 +142,7 @@ public final class ThreadColumnModels {
     public static final class File extends AbstractColumnModel {
         public File() { // GDB 
             super(Constants.PROP_THREAD_FILE,
-                  Catalog.get("PROP_file"), Catalog.get("HINT_file"),
+                  Catalog.get("PROP_file"), Catalog.get("HINT_file"), // NOI18N
                   String.class, false, new StringEditor());
         }
     }
@@ -150,7 +150,7 @@ public final class ThreadColumnModels {
     public static final class Line extends AbstractColumnModel {
         public Line() { // GDB
             super(Constants.PROP_THREAD_LINE,
-                  Catalog.get("PROP_line"), Catalog.get("HINT_line"),
+                  Catalog.get("PROP_line"), Catalog.get("HINT_line"), // NOI18N
                   String.class, false, new StringEditor());
         }
     }

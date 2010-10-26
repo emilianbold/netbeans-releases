@@ -76,7 +76,7 @@ public class EditHostListAction extends CallableSystemAction {
 
     // interface SystemAction
     public String getName() {
-	return Catalog.get("TITLE_Hosts");
+	return Catalog.get("TITLE_Hosts"); // NOI18N
     }
     
     // interface SystemAction

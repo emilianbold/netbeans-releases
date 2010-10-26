@@ -2856,7 +2856,7 @@ public abstract class NativeBreakpoint
 	// SHOULD revisit the whole InProgress business
 	if (isSubBreakpoint()) {
 	    if (getHandler() != null && getHandler().isInProgress())
-		return Catalog.get("AddingBreakpoint");
+		return Catalog.get("AddingBreakpoint"); // NOI18N
 	}
 
 	String summary = getDisplayNameHelp();

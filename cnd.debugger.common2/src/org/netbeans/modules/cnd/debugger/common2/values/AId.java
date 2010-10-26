@@ -103,7 +103,7 @@ public class AId {
 		numberPart = text;
 	    }
 	    if (!isDecimalNumber(numberPart)) {
-		errorMessage = Catalog.get("MSG_AId_MalformedLwp");
+		errorMessage = Catalog.get("MSG_AId_MalformedLwp"); // NOI18N
 		return;
 	    }
 	    id = "l@" + Integer.parseInt(numberPart); // NOI18N
@@ -120,7 +120,7 @@ public class AId {
 		    numberPart = text;
 		}
 		if (!isDecimalNumber(numberPart)) {
-		    errorMessage = Catalog.get("MSG_AId_MalformedThread");
+		    errorMessage = Catalog.get("MSG_AId_MalformedThread"); // NOI18N
 		    return;
 		}
 		id = "t@" + Long.parseLong(numberPart); // NOI18N

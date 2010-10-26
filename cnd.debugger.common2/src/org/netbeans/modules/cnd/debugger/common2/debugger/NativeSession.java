@@ -202,16 +202,16 @@ public final class NativeSession {
 
     public String getSessionState() {
 	if (state == null)
-            return Catalog.get("MSG_session_paused"); 
+            return Catalog.get("MSG_session_paused"); // NOI18N
         
 	if (state.isRunning) {
-            return Catalog.get("MSG_session_running"); 
+            return Catalog.get("MSG_session_running"); // NOI18N
         } else if (!state.isRunning && !state.isCore) {
-            return Catalog.get("MSG_session_paused");   
+            return Catalog.get("MSG_session_paused"); // NOI18N
         } else if (state.isCore) {
-            return Catalog.get("MSG_session_core_file");    
+            return Catalog.get("MSG_session_core_file"); // NOI18N
         } else {
-            return Catalog.get("MSG_session_paused"); 
+            return Catalog.get("MSG_session_paused"); // NOI18N
         }
     }
 

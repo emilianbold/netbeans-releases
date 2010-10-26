@@ -59,7 +59,7 @@ public class FunctionBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-	return Catalog.get("LBL_Function");
+	return Catalog.get("LBL_Function"); // NOI18N
     }
 
     // interface BreakpointType
