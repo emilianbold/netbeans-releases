@@ -334,8 +334,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             seed = outputTextField.getText();
         } else if (buildCommandWorkingDirTextField.getText().length() > 0) {
             seed = buildCommandWorkingDirTextField.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
@@ -377,8 +377,8 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
             seed = buildCommandWorkingDirTextField.getText();
 //        } else if (makefileNameTextField.getText().length() > 0) {
 //            seed = makefileNameTextField.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }

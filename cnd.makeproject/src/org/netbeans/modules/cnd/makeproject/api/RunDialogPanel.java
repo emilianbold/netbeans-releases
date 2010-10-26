@@ -392,8 +392,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
     
     private void executableBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executableBrowseButtonActionPerformed
         String seed = getExecutablePath();
-        if (seed.length() == 0 && FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        if (seed.length() == 0 && FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         }
         if (seed.length() == 0) {
             seed = System.getProperty("user.home");
