@@ -70,6 +70,7 @@ import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
@@ -181,20 +182,20 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private void onDisplayedStatusChanged () {
         // TODO persist selection
         if (panel.tgbHeadVsWorking.isSelected()) {
-            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
             mode = Mode.HEAD_VS_WORKING_TREE;
-//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadWorking")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
-            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
             mode = Mode.HEAD_VS_INDEX;
-//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadIndex")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
         } else {
-            setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
             mode = Mode.INDEX_VS_WORKING_TREE;
-//            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
+            GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_IndexWorking")); // NOI18N
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
         }
     }
 
@@ -228,9 +229,19 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     }
 
     private void initDisplayStatus () {
-        // TODO read from preferences
+        mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
         panel.tgbHeadVsWorking.setSelected(true);
-        displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+        switch (mode) {
+            case HEAD_VS_WORKING_TREE:
+                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+                break;
+            case HEAD_VS_INDEX:
+                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+                break;
+            case INDEX_VS_WORKING_TREE:
+                displayStatuses = FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
+                break;
+        }
     }
 
     private void setVersioningComponent (final JComponent component)  {

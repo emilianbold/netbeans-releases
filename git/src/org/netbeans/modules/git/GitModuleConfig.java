@@ -44,6 +44,7 @@ package org.netbeans.modules.git;
 
 import java.awt.Color;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.git.FileInformation.Mode;
 import org.openide.util.NbPreferences;
 
 /**
@@ -54,6 +55,7 @@ public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
+    private static final String PROP_LAST_USED_MODE = "lastUsedMode"; //NOI18N
     
     public static GitModuleConfig getDefault () {
         if (instance == null) {
@@ -86,5 +88,19 @@ public final class GitModuleConfig {
     public boolean getExludeNewFiles() {
         // XXX
         return false;
+    }
+
+    public Mode getLastUsedModificationContext () {
+        Mode mode;
+        try {
+            mode = Mode.valueOf(getPreferences().get(PROP_LAST_USED_MODE, Mode.HEAD_VS_WORKING_TREE.name()));
+        } catch (IllegalArgumentException ex) {
+            mode = null;
+        }
+        return mode == null ? Mode.HEAD_VS_WORKING_TREE : mode;
+    }
+
+    public void setLastUsedModificationContext (Mode mode) {
+        getPreferences().put(PROP_LAST_USED_MODE, mode.name());
     }
 }
