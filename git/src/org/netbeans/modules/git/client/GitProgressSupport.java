@@ -48,6 +48,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.libs.git.GitClient;
@@ -124,6 +125,10 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         return canceled = true;
     }
 
+    public JComponent getProgressComponent() {
+        return ProgressHandleFactory.createProgressComponent(getProgressHandle());
+    }
+    
     protected void setDisplayName (String displayName) {
         this.displayName = displayName;
         setProgress();
@@ -224,12 +229,22 @@ public abstract class GitProgressSupport implements Runnable, Cancellable, Progr
         getLogger().output("warning: " + message);
     }
 
+    public void outputInRed(String message) {
+        LOG.log(Level.FINE, message); //NOI18N
+        getLogger().outputInRed(message);
+    }
+    
+    public void output(String message) {
+        LOG.log(Level.FINE, message); //NOI18N
+        getLogger().output(message);
+    }
+    
     private void setProgressMessage (ProgressHandle progressHandle, String message) {
         LOG.log(Level.FINER, "New status of progress: {0}", message);
         progressHandle.progress(message);
     }
 
-    private OutputLogger getLogger () {
+    public OutputLogger getLogger () {
         if (logger == null) {
             logger = OutputLogger.getLogger(repositoryRoot);
         }

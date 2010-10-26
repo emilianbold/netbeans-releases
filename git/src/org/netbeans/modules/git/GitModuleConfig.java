@@ -43,7 +43,12 @@
 package org.netbeans.modules.git;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -54,6 +59,10 @@ public final class GitModuleConfig {
     
     private static GitModuleConfig instance;
     private static final String AUTO_OPEN_OUTPUT_WINDOW = "autoOpenOutput";// NOI18N
+    private static final String PROP_COMMIT_EXCLUSIONS  = "commitExclusions";                           // NOI18N
+    
+    private String lastCanceledCommitMessage;
+    private Set<String> exclusions;
     
     public static GitModuleConfig getDefault () {
         if (instance == null) {
@@ -87,4 +96,39 @@ public final class GitModuleConfig {
         // XXX
         return false;
     }
+    
+    public String getLastCanceledCommitMessage() {
+        return lastCanceledCommitMessage == null ? "" : lastCanceledCommitMessage; //NOI18N
+    }
+
+    public void setLastCanceledCommitMessage(String message) {
+        lastCanceledCommitMessage = message;
+    }
+    
+    /**
+     * @param paths collection of paths, of File.getAbsolutePath()
+     */
+    public void addExclusionPaths(Collection<String> paths) {
+        Set<String> exclusions = getCommitExclusions();
+        if (exclusions.addAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        }
+    }
+
+    /**
+     * @param paths collection of paths, File.getAbsolutePath()
+     */
+    public void removeExclusionPaths(Collection<String> paths) {
+        Set<String> exclusions = getCommitExclusions();
+        if (exclusions.removeAll(paths)) {
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+        }
+    }   
+    
+    synchronized Set<String> getCommitExclusions() {
+        if (exclusions == null) {
+            exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
+        }
+        return exclusions;
+    }    
 }

@@ -132,9 +132,10 @@ public class FileInformation extends VCSFileInformation {
         return seenInUI;
     }
 
-    Set<Status> getStatus() {
+    public Set<Status> getStatus() {
         return status;
     }
+    
     public boolean isDirectory () {
         return this.directory;
     }
