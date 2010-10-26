@@ -312,7 +312,7 @@ public class ResetTest extends AbstractGitTestCase {
         assertEquals(4, statuses.size());
         assertStatus(statuses, workDir, file1, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false);
         assertStatus(statuses, workDir, file2, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
-        assertStatus(statuses, workDir, file3, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file3, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file4, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
         assertEquals(content, read(file1));
     }

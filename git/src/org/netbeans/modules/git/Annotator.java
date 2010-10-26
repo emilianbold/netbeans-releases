@@ -76,17 +76,17 @@ import org.openide.util.actions.SystemAction;
  */
 public class Annotator extends VCSAnnotator {
     private static final EnumSet<FileInformation.Status> STATUS_IS_IMPORTANT = EnumSet.noneOf(Status.class);
-    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.VERSIONED_UPTODATE, Status.NOTVERSIONED_NEW_IN_WORKING_TREE,
-            Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE);
+    private static final EnumSet<FileInformation.Status> STATUS_BADGEABLE = EnumSet.of(Status.UPTODATE, Status.NEW_INDEX_WORKING_TREE,
+            Status.MODIFIED_HEAD_WORKING_TREE);
     static {
         STATUS_IS_IMPORTANT.addAll(FileInformation.STATUS_LOCAL_CHANGES);
-        STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.VERSIONED_UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
+        STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
     }
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
     private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
     private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
     private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
-            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified_Locally");
+            + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified");
     private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Conflicts");
 
@@ -198,30 +198,46 @@ public class Annotator extends VCSAnnotator {
             }
         }
         if(mostImportantInfo == null) return null;
-        String statusText = null;
+        String tooltip = null;
+        String statusText = mostImportantInfo.getStatusText(FileInformation.Mode.HEAD_VS_INDEX.HEAD_VS_WORKING_TREE);
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            statusText = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
-            statusText = getAnnotationProvider().REMOVED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
-            statusText = getAnnotationProvider().NEW_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_ADDED_TO_INDEX)) {
-            // TODO: copy?
-            statusText = getAnnotationProvider().ADDED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
-            statusText = getAnnotationProvider().MODIFIED_LOCALLY_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_UPTODATE)) {
-            statusText = null;
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_CONFLICT)) {
-            statusText = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[]{mostImportantInfo.getStatusText()});
+            // File is IGNORED
+            tooltip = getAnnotationProvider().EXCLUDED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.REMOVED_INDEX_WORKING_TREE))) {
+            // ADDED to index but REMOVED in WT
+            tooltip = getAnnotationProvider().UP_TO_DATE_FILE_TOOLTIP.getFormat().format(new Object[]{statusText});
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_INDEX, Status.MODIFIED_INDEX_WORKING_TREE))) {
+            // MODIFIED in index, MODIFIED in WT, but in WT same as HEAD
+            tooltip = getAnnotationProvider().UP_TO_DATE_FILE_TOOLTIP.getFormat().format(new Object[]{statusText});
+        } else if (mostImportantInfo.containsStatus(Status.REMOVED_HEAD_WORKING_TREE)) {
+            // DELETED in WT
+            tooltip = getAnnotationProvider().REMOVED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX))) {
+            // recreated in WT
+            tooltip = getAnnotationProvider().UP_TO_DATE_FILE_TOOLTIP.getFormat().format(new Object[]{statusText});
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX, Status.MODIFIED_HEAD_WORKING_TREE))) {
+            // recreated in WT and modified
+            tooltip = getAnnotationProvider().MODIFIED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+            // NEW in WT and unversioned
+            tooltip = getAnnotationProvider().NEW_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.containsStatus(Status.NEW_HEAD_INDEX)) {
+            // ADDED to index
+            tooltip = getAnnotationProvider().ADDED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
+            tooltip = getAnnotationProvider().MODIFIED_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
+        } else if (mostImportantInfo.containsStatus(Status.UPTODATE)) {
+            tooltip = null;
+        } else if (mostImportantInfo.containsStatus(Status.IN_CONFLICT)) {
+            tooltip = getAnnotationProvider().CONFLICT_FILE_TOOLTIP.getFormat().format(new Object[] { statusText });
         } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
-            statusText = null;
+            tooltip = null;
         } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
-            statusText = null;
+            tooltip = null;
         } else {
-            statusText = null;
+            throw new IllegalStateException("Unknown status: " + mostImportantInfo.getStatus()); //NOI18N
         }
-        return statusText != null ? ImageUtilities.addToolTipToImage(icon, statusText) : null;
+        return tooltip != null ? ImageUtilities.addToolTipToImage(icon, tooltip) : null;
     }
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
@@ -241,7 +257,7 @@ public class Annotator extends VCSAnnotator {
             return null;
         }
         Image badge = null;
-        if (cache.containsFiles(context, EnumSet.of(Status.VERSIONED_CONFLICT), true)) {
+        if (cache.containsFiles(context, EnumSet.of(Status.IN_CONFLICT), true)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeConflicts, true), toolTipConflict);
         } else if (cache.containsFiles(context, FileInformation.STATUS_LOCAL_CHANGES, true)) {
             badge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(badgeModified, true), toolTipModified);
@@ -283,31 +299,42 @@ public class Annotator extends VCSAnnotator {
             textAnnotation = ""; // NOI18N
         }
 
-        if (!textAnnotation.isEmpty()) {
-            textAnnotation = NbBundle.getMessage(Annotator.class, "textAnnotation", textAnnotation); // NOI18N
-        }
-
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+            // IGNORED
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_REMOVED_INDEX_WORKING_TREE)) {
-            return getAnnotationProvider().REMOVED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)) {
-            return getAnnotationProvider().NEW_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_ADDED_TO_INDEX)) {
-            // what about copy?
-            return getAnnotationProvider().ADDED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)) {
-            return getAnnotationProvider().MODIFIED_LOCALLY_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_UPTODATE)) {
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.REMOVED_INDEX_WORKING_TREE))) {
+            // ADDED to index but REMOVED in WT
             return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
-        } else if (mostImportantInfo.containsStatus(Status.VERSIONED_CONFLICT)) {
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_INDEX, Status.MODIFIED_INDEX_WORKING_TREE))) {
+            // MODIFIED in index, MODIFIED in WT, but in WT same as HEAD
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.REMOVED_HEAD_WORKING_TREE)) {
+            // DELETED in WT
+            return getAnnotationProvider().REMOVED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX))) {
+            // recreated in WT
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.REMOVED_HEAD_INDEX, Status.MODIFIED_HEAD_WORKING_TREE))) {
+            // recreated in WT and modified
+            return getAnnotationProvider().MODIFIED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+            // NEW in WT and unversioned
+            return getAnnotationProvider().NEW_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.NEW_HEAD_INDEX)) {
+            // ADDED to index
+            return getAnnotationProvider().ADDED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
+            return getAnnotationProvider().MODIFIED_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.UPTODATE)) {
+            return getAnnotationProvider().UP_TO_DATE_FILE.getFormat().format(new Object [] { name, textAnnotation });
+        } else if (mostImportantInfo.containsStatus(Status.IN_CONFLICT)) {
             return getAnnotationProvider().CONFLICT_FILE.getFormat().format(new Object [] { name, textAnnotation });
         } else if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
             return name;
         } else if (mostImportantInfo.containsStatus(Status.UNKNOWN)) {
             return name;
         } else {
-            return name;
+            throw new IllegalStateException("Unknown status: " + mostImportantInfo.getStatus()); //NOI18N
         }
     }
 
@@ -322,7 +349,7 @@ public class Annotator extends VCSAnnotator {
 
     private String formatAnnotation(FileInformation info, File file) {
         String statusString = "";  // NOI18N
-        if (info.containsStatus(Status.VERSIONED_UPTODATE)) {
+        if (info.containsStatus(Status.UPTODATE)) {
             statusString = info.getShortStatusText();
         }
 

@@ -93,10 +93,10 @@ public class FileStatusCache {
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
-    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.VERSIONED_UPTODATE), false);
+    private static final FileInformation FILE_INFORMATION_UPTODATE = new FileInformation(EnumSet.of(Status.UPTODATE), false);
     private static final FileInformation FILE_INFORMATION_NOTMANAGED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED), false);
     private static final FileInformation FILE_INFORMATION_EXCLUDED = new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), false);
-    private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE), false);
+    private static final FileInformation FILE_INFORMATION_NEWLOCALLY = new FileInformation(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE), false);
     private static final FileInformation FILE_INFORMATION_UNKNOWN = new FileInformation(EnumSet.of(Status.UNKNOWN), false);
 
     public FileStatusCache() {
@@ -207,9 +207,9 @@ public class FileStatusCache {
                 }
                 for (File root : refreshEntry.getValue()) {
                     // clean all files originally in the cache but now being up-to-date or obsolete (as ignored && deleted)
-                    for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.VERSIONED_UPTODATE)))) {
+                    for (File file : listFiles(Collections.singleton(root), EnumSet.complementOf(EnumSet.of(Status.UPTODATE)))) {
                         FileInformation fi = getInfo(file);
-                        if (fi == null || fi.containsStatus(Status.VERSIONED_UPTODATE)) {
+                        if (fi == null || fi.containsStatus(Status.UPTODATE)) {
                             // XXX debug section
                             LOG.log(Level.WARNING, "refreshAllRoots(): possibly concurrent refresh: {0}:{1}", new Object[] { file, fi });
                             boolean ea = false;
@@ -218,7 +218,7 @@ public class FileStatusCache {
                                 try {
                                     Thread.sleep(100);
                                 } catch (InterruptedException ex) { }
-                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.VERSIONED_UPTODATE))))).contains(file)) {
+                                if (new HashSet<File>(Arrays.asList(listFiles(Collections.singleton(file.getParentFile()), EnumSet.complementOf(EnumSet.of(Status.UPTODATE))))).contains(file)) {
                                     LOG.log(Level.WARNING, "refreshAllRoots(): now we have a problem, index seems to be broken", new Object[] { file });
                                     assert false : "index seems to be broken " + file.getAbsolutePath();
                                 }
@@ -449,9 +449,9 @@ public class FileStatusCache {
                 if (file.isDirectory()) {
                     setInfo(file, info = (info != null && info.containsStatus(Status.NOTVERSIONED_EXCLUDED)
                             ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true)
-                            : new FileInformation(EnumSet.of(Status.VERSIONED_UPTODATE), true)));
+                            : new FileInformation(EnumSet.of(Status.UPTODATE), true)));
                 } else {
-                    if (info == null || info.containsStatus(Status.VERSIONED_UPTODATE)) {
+                    if (info == null || info.containsStatus(Status.UPTODATE)) {
                         info = FILE_INFORMATION_UPTODATE;
                         addUpToDate(file);
                         // XXX delete later
@@ -475,7 +475,7 @@ public class FileStatusCache {
         } else {
             // an u-t-d file may be actually ignored. This needs to be checked since we skip ignored folders in the status scan
             // so ignored files appear as up-to-date after the scan finishes
-            if (info.containsStatus(Status.VERSIONED_UPTODATE) && checkForIgnoredFile(file) != null) {
+            if (info.containsStatus(Status.UPTODATE) && checkForIgnoredFile(file) != null) {
                 info = FILE_INFORMATION_EXCLUDED;
                 addAsExcluded = true;
             }
@@ -488,7 +488,7 @@ public class FileStatusCache {
                 public void run() {
                     synchronized (FileStatusCache.this) {
                         FileInformation info = getInfo(file);
-                        if (info == null || info.containsStatus(Status.VERSIONED_UPTODATE)) {
+                        if (info == null || info.containsStatus(Status.UPTODATE)) {
                             refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
                         }
                     }
@@ -538,7 +538,7 @@ public class FileStatusCache {
             boolean addToIndex = false;
             if (fi.getStatus().equals(EnumSet.of(Status.UNKNOWN))) {
                 removeInfo(file);
-            } else if (fi.getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)) && file.isFile()) {
+            } else if (fi.getStatus().equals(EnumSet.of(Status.UPTODATE)) && file.isFile()) {
                 removeInfo(file);
                 addUpToDate(file);
             } else {
@@ -617,7 +617,7 @@ public class FileStatusCache {
             ignored = ignoredFiles.get(root);
         }
         if (FileInformation.STATUS_LOCAL_CHANGES.clone().removeAll(includeStatus)) {
-            if (includeStatus.equals(EnumSet.of(Status.VERSIONED_CONFLICT))) {
+            if (includeStatus.equals(EnumSet.of(Status.IN_CONFLICT))) {
                 modified = conflictedFiles.get(root);
             } else {
                 modified = modifiedFiles.get(root);
@@ -642,7 +642,7 @@ public class FileStatusCache {
                     ignored.add(file);
                 } else {
                     modified.add(file);
-                    if (fi.containsStatus(Status.VERSIONED_CONFLICT)) {
+                    if (fi.containsStatus(Status.IN_CONFLICT)) {
                         conflicted.add(file);
                     }
                 }

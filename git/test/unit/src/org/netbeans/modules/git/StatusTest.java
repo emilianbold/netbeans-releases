@@ -43,6 +43,8 @@
 package org.netbeans.modules.git;
 
 import java.awt.EventQueue;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -65,7 +67,14 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -115,10 +124,10 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.UPTODATE)));
 
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE));
         assertEquals(1, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -127,9 +136,9 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE));
         assertEquals(2, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -139,9 +148,9 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
-        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE));
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -151,7 +160,7 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folder)));
-        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE));
         assertEquals(3, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
 
@@ -161,9 +170,9 @@ public class StatusTest extends AbstractGitTestCase {
         Thread.sleep(500);
         assertTrue(cache.getStatus(unversionedFile).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED)));
         Thread.sleep(500);
-        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(cache.getStatus(newFile).getStatus().equals(EnumSet.of(Status.UPTODATE)));
         cache.refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(newFile)));
-        assertSameStatus(newFiles, Status.NOTVERSIONED_NEW_IN_WORKING_TREE);
+        assertSameStatus(newFiles, EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE));
         assertEquals(4, cache.listFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES).length);
         assertTrue(cache.containsFiles(Collections.singleton(repositoryLocation), FileInformation.STATUS_LOCAL_CHANGES, true));
     }
@@ -192,54 +201,54 @@ public class StatusTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(folderA));
         FileInformation status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(fileA2));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         assertFalse(handler.waitForFilesToRefresh());
         assertFalse(handler.getFilesRefreshed());
 
         handler.setFilesToRefresh(Collections.singleton(fileB1));
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(fileB2));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderC));
         status = getCache().getStatus(folderC);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(folderC);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         status = getCache().getStatus(fileC1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         status = getCache().getStatus(fileC2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderB));
         status = getCache().getStatus(folderB);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileB1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         status = getCache().getStatus(fileB2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         handler.setFilesToRefresh(Collections.singleton(folderB));
         status = getCache().getStatus(folderB);
@@ -265,7 +274,7 @@ public class StatusTest extends AbstractGitTestCase {
         Git.STATUS_LOG.addHandler(handler);
         handler.setFilesToRefresh(Collections.singleton(fileA1));
         FileInformation status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -274,18 +283,18 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(fileA1));
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(fileA1)));
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         write(ignoreFile, "folderA");
         handler.setFilesToRefresh(Collections.singleton(fileA2));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE));
+        assertTrue(status.containsStatus(Status.UPTODATE));
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA2);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         handler.setFilesToRefresh(Collections.singleton(folderA));
         status = getCache().getStatus(folderA);
-        assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE)); // should be excluded actually
+        assertTrue(status.containsStatus(Status.UPTODATE)); // should be excluded actually
         assertTrue(handler.waitForFilesToRefresh());
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
@@ -293,9 +302,9 @@ public class StatusTest extends AbstractGitTestCase {
         write(ignoreFile, "");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(folderA)));
         status = getCache().getStatus(fileA1);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         ignoreFile = new File(folderA, ".gitignore");
         write(ignoreFile, "file1");
@@ -303,7 +312,7 @@ public class StatusTest extends AbstractGitTestCase {
         status = getCache().getStatus(fileA1);
         assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         status = getCache().getStatus(fileA2);
-        assertTrue(status.containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(status.containsStatus(Status.NEW_INDEX_WORKING_TREE));
     }
 
     public void testIgnoredBySharability () throws Exception {
@@ -348,7 +357,7 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(file1));
         FileInformation status = getCache().getStatus(file1);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
             assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
@@ -363,7 +372,7 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(file2));
         status = getCache().getStatus(file2);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
             assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
@@ -378,7 +387,7 @@ public class StatusTest extends AbstractGitTestCase {
         handler.setFilesToRefresh(Collections.singleton(folder));
         status = getCache().getStatus(folder);
         if (EventQueue.isDispatchThread()) {
-            assertTrue(status.containsStatus(Status.VERSIONED_UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
+            assertTrue(status.containsStatus(Status.UPTODATE) || status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         } else {
             assertTrue(status.containsStatus(Status.NOTVERSIONED_EXCLUDED));
         }
@@ -459,7 +468,7 @@ public class StatusTest extends AbstractGitTestCase {
         file3.createNewFile();
 
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        List<File> newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         List<File> ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
@@ -471,7 +480,7 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
         getCache().getStatus(file3);
         Thread.sleep(500);
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertFalse(newFiles.contains(file3));
@@ -480,7 +489,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "subfolder2");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
@@ -493,7 +502,7 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().getStatus(file2);
         getCache().getStatus(file3);
         Thread.sleep(500);
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.isEmpty());
         assertTrue(ignoredFiles.contains(folder));
@@ -503,7 +512,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "subfolder");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(folder), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertFalse(newFiles.contains(file3));
@@ -513,7 +522,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         write(ignoreFile, "");
         getCache().refreshAllRoots(Collections.<File, Collection<File>>singletonMap(repositoryLocation, Collections.singleton(repositoryLocation)));
-        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        newFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.NEW_INDEX_WORKING_TREE)));
         ignoredFiles = Arrays.asList(getCache().listFiles(Collections.singleton(repositoryLocation), EnumSet.of(Status.NOTVERSIONED_EXCLUDED)));
         assertTrue(newFiles.contains(file2));
         assertTrue(newFiles.contains(file3));
@@ -557,23 +566,21 @@ public class StatusTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NEW_INDEX_WORKING_TREE));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         add(file, folder);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(file2).getStatus());
 
         write(file2, "i am modified");
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_ADDED_TO_INDEX,
-                Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE,
-                Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE)));
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), getCache().getStatus(file).getStatus());
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertEquals(EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE, Status.MODIFIED_INDEX_WORKING_TREE), getCache().getStatus(file2).getStatus());
     }
 
     public void testStatusRemoveFiles () throws Exception {
@@ -585,37 +592,37 @@ public class StatusTest extends AbstractGitTestCase {
         file2.createNewFile();
 
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NEW_INDEX_WORKING_TREE));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file).containsStatus(Status.NEW_INDEX_WORKING_TREE));
 
         add();
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.UPTODATE)));
 
         delete(true, file2);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_REMOVED_HEAD_INDEX, Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.NEW_INDEX_WORKING_TREE)));
         assertTrue(file2.exists());
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.NOTVERSIONED_NEW_IN_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.NEW_INDEX_WORKING_TREE, Status.NEW_HEAD_WORKING_TREE)));
 
         delete(false, file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_REMOVED_HEAD_INDEX, Status.VERSIONED_REMOVED_HEAD_WORKING_TREE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.REMOVED_HEAD_INDEX, Status.REMOVED_HEAD_WORKING_TREE)));
         assertFalse(file.exists());
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
     }
 
     public void testStatusModifyFiles () throws Exception {
@@ -629,32 +636,133 @@ public class StatusTest extends AbstractGitTestCase {
         add();
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(folder).containsStatus(Status.VERSIONED_UPTODATE));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+        assertTrue(getCache().getStatus(folder).containsStatus(Status.UPTODATE));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.UPTODATE)));
 
         write(file, "hello");
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.VERSIONED_MODIFIED_INDEX_WORKING_TREE)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_WORKING_TREE, Status.MODIFIED_INDEX_WORKING_TREE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.UPTODATE)));
 
         add(file);
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_MODIFIED_HEAD_WORKING_TREE, Status.VERSIONED_MODIFIED_HEAD_INDEX)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.MODIFIED_HEAD_WORKING_TREE, Status.MODIFIED_HEAD_INDEX)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.UPTODATE)));
 
         commit();
         getCache().refreshAllRoots(Collections.singleton(repositoryLocation));
-        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
-        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.VERSIONED_UPTODATE)));
+        assertTrue(getCache().getStatus(file).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+        assertTrue(getCache().getStatus(file2).getStatus().equals(EnumSet.of(Status.UPTODATE)));
+    }
+
+    public void testAnnotations () throws Exception {
+        VersioningSupport.getPreferences().putBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, true);
+        Annotator annotator = (Annotator) Git.getInstance().getVCSAnnotator();
+        File f = new File(repositoryLocation, "file");
+        String name = f.getName();
+        File[] files = new File[] { f };
+        VCSContext context = VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f)) });
+
+        // file is New and not added to index
+        f.createNewFile();
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [-/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">-/New</font>");
+
+        // file is added to index and not modified
+        add();
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [A/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">New/-</font>");
+
+        // file is added to index and modified
+        write(f, "blabla");
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [A/M]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#008000\">New/Modified</font>");
+
+        // file is added to index and deleted in WT, so NO CHANGE between head and WT
+        f.delete();
+        getCache().refreshAllRoots(files);
+        assertEquals("file<font color=\"#999999\"> [A/D]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "New/Deleted");
+
+        // file is up-to-date
+        f.createNewFile();
+        commit();
+        getCache().refreshAllRoots(files);
+        assertEquals("file<font color=\"#999999\"> [-/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "");
+
+        // file is modified in WT
+        write(f, "blabla");
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#0000ff\">file</font><font color=\"#999999\"> [-/M]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">-/Modified</font>");
+
+        // file is modified in index
+        add();
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#0000ff\">file</font><font color=\"#999999\"> [M/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">Modified/-</font>");
+
+        // file is modified both in index and wt
+        write(f, "bubu");
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#0000ff\">file</font><font color=\"#999999\"> [M/M]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">Modified/Modified</font>");
+
+        // file is modified in index, but in wt it is the same as head - so should be painted as up to date
+        write(f, "");
+        getCache().refreshAllRoots(files);
+        assertEquals("file<font color=\"#999999\"> [M/M]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "Modified/Modified");
+
+        // file is modified in index, but deleted in WT
+        f.delete();
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#999999\">file</font><font color=\"#999999\"> [M/D]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#999999\">Modified/Deleted</font>");
+
+        // file is removed both in index and WT
+        delete(true, f);
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#999999\">file</font><font color=\"#999999\"> [D/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#999999\">Deleted/-</font>");
+
+        // file is removed in index, but in WT the same as HEAD
+        f.createNewFile();
+        getCache().refreshAllRoots(files);
+        assertEquals("file<font color=\"#999999\"> [D/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "Deleted/New");
+
+        // file is removed in index, but modified HEAD/WT
+        write(f, "blabla");
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#0000ff\">file</font><font color=\"#999999\"> [D/A]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, context, "<font color=\"#0000ff\">Deleted/New</font>");
+
+
+        // rename
+        add(f);
+        commit();
+        delete(false, f);
+        f = new File(repositoryLocation, "copy");
+        write(f, "blabla");
+        files  = new File[] { f };
+        add();
+        getCache().refreshAllRoots(files);
+        assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [R/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
+        assertIconTooltip(annotator, VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f)) }), "<font color=\"#008000\">Renamed/-</font>");
     }
 
     // TODO add more tests when exclusions are supported
     // TODO test conflicts
 
-    private void assertSameStatus(Set<File> files, Status status) {
+    private void assertSameStatus(Set<File> files, EnumSet<Status> status) {
         for (File f : files) {
-            assertTrue(getCache().getStatus(f).getStatus().equals(EnumSet.of(status)));
+            assertEquals(status, getCache().getStatus(f).getStatus());
         }
     }
 
@@ -663,6 +771,12 @@ public class StatusTest extends AbstractGitTestCase {
         f.setAccessible(true);
         f.setBoolean(FilesystemInterceptor.class, flag);
         assert ((Boolean) f.get(FilesystemInterceptor.class)).equals(flag);
+    }
+
+    private void assertIconTooltip (Annotator annotator, VCSContext context, String string) {
+        Image icon = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        icon = annotator.annotateIcon(icon, context);
+        assertEquals(string, ImageUtilities.getImageToolTip(icon));
     }
 
     @ServiceProvider(service=SharabilityQueryImplementation.class)

@@ -145,7 +145,7 @@ public class CheckoutTest extends AbstractGitTestCase {
 
         file1.delete();
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_MODIFIED, false);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_REMOVED, false);
         assertStatus(statuses, workDir, file2, true, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, GitStatus.Status.STATUS_MODIFIED, false);
         client.checkout(new File[] { file1 }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -169,7 +169,7 @@ public class CheckoutTest extends AbstractGitTestCase {
 
         GitClient client = getClient(workDir);
         Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_REMOVED, false);
         client.checkout(new File[] { file1 }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
@@ -194,7 +194,7 @@ public class CheckoutTest extends AbstractGitTestCase {
 
         GitClient client = getClient(workDir);
         Map<File, GitStatus> statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_REMOVED, GitStatus.Status.STATUS_REMOVED, false);
         client.checkout(new File[] { folder }, null, ProgressMonitor.NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(files, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, file1, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
