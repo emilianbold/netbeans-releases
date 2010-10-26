@@ -1895,10 +1895,9 @@ initializer
         )?
     ;
 
-cast_array_initializer
-{ String id = "";}
-    :
-    (AMPERSAND)? LPAREN id = qualified_id RPAREN array_initializer
+cast_array_initializer:
+    // it's better to have LPAREN type RPAREN, but we use simple balanceParensInExpression
+    (AMPERSAND)? balanceParensInExpression array_initializer
     ;
 
 array_initializer:
