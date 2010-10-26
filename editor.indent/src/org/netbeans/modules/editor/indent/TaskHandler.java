@@ -424,7 +424,7 @@ public final class TaskHandler {
             try {
                 int startOffset = handler.startPos().getOffset();
                 int endOffset = handler.endPos().getOffset();
-                if (endOffset >= doc.getLength())
+                if (endOffset > doc.getLength())
                     endOffset = Integer.MAX_VALUE;
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.fine("indentRegions: startOffset=" + startOffset + ", endOffset=" + endOffset + '\n'); //NOI18N

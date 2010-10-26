@@ -140,6 +140,10 @@ public class ElCompletionItem {
          * Collection
          */
         private void parseType(String t) {
+            if (t == null) {
+                return;
+            }
+
             int ltIndex = t.indexOf("<");
 
             String mainType = ltIndex == -1 ? t : t.substring(0, ltIndex);
