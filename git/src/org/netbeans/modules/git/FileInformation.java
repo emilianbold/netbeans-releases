@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.modules.versioning.util.common.VCSFileInformation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -179,42 +180,42 @@ public class FileInformation extends VCSFileInformation {
     }
 
     public String getShortStatusText() {
-        String sIndex = "";
-        String sWorkingTree = "";
+        String sIndex = ""; //NOI18N
+        String sWorkingTree = ""; //NOI18N
                 
         if(containsStatus(Status.NEW_HEAD_INDEX)) {
             if (isRenamed()) {
-                sIndex = "R";
+                sIndex = "R"; //NOI18N
             } else if (isCopied()) {
-                sIndex = "C";
+                sIndex = "C"; //NOI18N
             } else {
-                sIndex = "A";
+                sIndex = "A"; //NOI18N
             }
         } else if(containsStatus(Status.MODIFIED_HEAD_INDEX)) {
-            sIndex = "M";
+            sIndex = "M"; //NOI18N
         } else if(containsStatus(Status.REMOVED_HEAD_INDEX)) {
-            sIndex = "D";
+            sIndex = "D"; //NOI18N
         } else {
-            sIndex = "-";
+            sIndex = "-"; //NOI18N
         }
         
         if(containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            sWorkingTree = "A";
+            sWorkingTree = "A"; //NOI18N
         } else if(containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
-            sWorkingTree = "M";
+            sWorkingTree = "M"; //NOI18N
         } else if(containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
-            sWorkingTree = "D";
+            sWorkingTree = "D"; //NOI18N
         } else {
-            sWorkingTree = "-";
+            sWorkingTree = "-"; //NOI18N
         }
         
         if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            return "I";
+            return "I"; //NOI18N
         } else if (containsStatus(Status.IN_CONFLICT)) {
             Git.LOG.log(Level.WARNING, "Confict found, please annotate: {0}", getStatus());
-            return "CON";
+            return "CON"; //NOI18N
         } else {
-            return new MessageFormat("{0}/{1}").format(new Object[] {sIndex, sWorkingTree}, new StringBuffer(), null).toString();
+            return new MessageFormat("{0}/{1}").format(new Object[] {sIndex, sWorkingTree}, new StringBuffer(), null).toString(); //NOI18N
         }
     }
 
@@ -224,41 +225,46 @@ public class FileInformation extends VCSFileInformation {
     }
 
     public String getStatusText (Mode mode) {
-        String sIndex = "";
-        String sWorkingTree = "";
+        String sIndex = ""; //NOI18N
+        String sWorkingTree = ""; //NOI18N
 
         if (containsStatus(Status.NEW_HEAD_INDEX)) {
             if (isRenamed()) {
-                sIndex = "Renamed";
+                sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_AddedRenamed_Short"); //NOI18N
             } else if (isCopied()) {
-                sIndex = "Copied";
+                sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_AddedCopied_Short"); //NOI18N
             } else {
-                sIndex = "New";
+                sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_New_Short"); //NOI18N
             }
         } else if (containsStatus(Status.MODIFIED_HEAD_INDEX)) {
-            sIndex = "Modified";
+            sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Modified_Short"); //NOI18N
         } else if (containsStatus(Status.REMOVED_HEAD_INDEX)) {
-            sIndex = "Deleted";
+            sIndex = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Removed_Short"); //NOI18N
         } else {
-            sIndex = "-";
+            sIndex = "-"; //NOI18N
         }
 
         if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            sWorkingTree = "New";
+            sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_New_Short"); //NOI18N
         } else if (containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
-            sWorkingTree = "Modified";
+            sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Modified_Short"); //NOI18N
         } else if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
-            sWorkingTree = "Deleted";
+            sWorkingTree = NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Removed_Short"); //NOI18N
         } else {
-            sWorkingTree = "-";
+            sWorkingTree = "-"; //NOI18N
         }
 
-        if (Mode.HEAD_VS_INDEX.equals(mode)) {
-            return new MessageFormat("{0}").format(new Object[] { sIndex });
+        if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
+            return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Excluded_Short"); //NOI18N
+        } else if (containsStatus(Status.IN_CONFLICT)) {
+            Git.LOG.log(Level.WARNING, "Confict found, please annotate: {0}", getStatus());
+            return NbBundle.getMessage(FileInformation.class, "CTL_FileInfoStatus_Conflict_Short"); //NOI18N
+        } else if (Mode.HEAD_VS_INDEX.equals(mode)) {
+            return new MessageFormat("{0}").format(new Object[] { sIndex }); //NOI18N
         } else if (Mode.INDEX_VS_WORKING_TREE.equals(mode)) {
-            return new MessageFormat("{0}").format(new Object[] { sWorkingTree });
+            return new MessageFormat("{0}").format(new Object[] { sWorkingTree }); //NOI18N
         } else {
-            return new MessageFormat("{0}/{1}").format(new Object[] { sIndex, sWorkingTree }, new StringBuffer(), null).toString();
+            return new MessageFormat("{0}/{1}").format(new Object[] { sIndex, sWorkingTree }, new StringBuffer(), null).toString(); //NOI18N
         }
     }
 
