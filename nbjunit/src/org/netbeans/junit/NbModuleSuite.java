@@ -815,6 +815,15 @@ public class NbModuleSuite {
         }
 
         static File findPlatform() {
+            String clusterPath = System.getProperty("cluster.path.final"); // NOI18N
+            if (clusterPath != null) {
+                for (String piece : tokenizePath(clusterPath)) {
+                    File d = new File(piece);
+                    if (d.getName().matches("platform\\d*")) {
+                        return d;
+                    }
+                }
+            }
             try {
                 Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
                 File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
