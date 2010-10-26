@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.db.explorer.node;
 
-import java.awt.Image;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -66,7 +65,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,10 +72,12 @@ import org.openide.util.NbBundle;
  * @author Rob Englander, Jiri Rechtacek
  */
 public class ProcedureNode extends BaseNode {
-    private static final String ICONBASE_P = "org/netbeans/modules/db/resources/procedure.png";
-    private static final String ICONBASE_F = "org/netbeans/modules/db/resources/function.png";
-    private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
-    private static final Image ERROR_BADGE = ImageUtilities.loadImage("org/netbeans/modules/db/resources/error-badge.gif");
+    private static final String ICON_VALID_P = "org/netbeans/modules/db/resources/procedure.png";
+    private static final String ICON_VALID_F = "org/netbeans/modules/db/resources/function.png";
+    private static final String ICON_VALID_T = "org/netbeans/modules/db/resources/trigger.png";
+    private static final String ICON_INVALID_P = "org/netbeans/modules/db/resources/procedure-invalid.png";
+    private static final String ICON_INVALID_F = "org/netbeans/modules/db/resources/function-invalid.png";
+    private static final String ICON_INVALID_T = "org/netbeans/modules/db/resources/trigger-invalid.png";
     private static final String FOLDER = "Procedure"; //NOI18N
     
     private static final String DELIMITER = "@@"; // NOI18N
@@ -169,11 +169,11 @@ public class ProcedureNode extends BaseNode {
     public String getIconBase() {
         switch (getType()) {
             case Function:
-                return ICONBASE_F;
+                return ICON_VALID_F;
             case Procedure:
-                return ICONBASE_P;
+                return ICON_VALID_P;
             case Trigger:
-                return ICONBASE_T;
+                return ICON_VALID_T;
             default:
                 return null;
         }
@@ -446,15 +446,19 @@ public class ProcedureNode extends BaseNode {
             }
         }
 
-        @Override
-        public Image getIcon(int type) {
-            Image base = super.getIcon(type);
-            if (valid) {
-                return base;
-            } else {
-                return ImageUtilities.mergeImages(base, ERROR_BADGE, 6, 6);
-            }
+    @Override
+    public String getIconBase() {
+        switch (getType()) {
+            case Function:
+                return valid ? ICON_VALID_F : ICON_INVALID_F;
+            case Procedure:
+                return valid ? ICON_VALID_P : ICON_INVALID_P;
+            case Trigger:
+                return valid ? ICON_VALID_T : ICON_INVALID_T;
+            default:
+                return null;
         }
+    }
 
         @Override
         public boolean isViewSourceSupported() {
