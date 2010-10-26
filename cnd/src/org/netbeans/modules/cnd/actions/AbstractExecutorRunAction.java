@@ -89,7 +89,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -294,7 +293,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static String getBuildDirectory(Node node, PredefinedToolKind tool) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = FileUtil.toFile(fileObject);
+        File makefile = CndFileUtils.toFile(fileObject);
         // Build directory
         String bdir = null;
         if (tool == PredefinedToolKind.MakeTool) {
@@ -497,6 +496,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 argsFlat.append(args[i]);
             }
             traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static void trace(String message) {
+        if (TRACE) {
+            logger.log(Level.INFO, message);
         }
     }
 

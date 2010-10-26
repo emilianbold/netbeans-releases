@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.refactoring.HibernateRefactoringUtil.OccurrenceItem;
 import org.netbeans.modules.hibernate.service.api.HibernateEnvironment;
@@ -100,7 +101,7 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
             final TreePathHandle treePathHandle = query.getRefactoringSource().lookup(TreePathHandle.class);
             FileObject fo = null;
             if (treePathHandle != null &&
-                    (treePathHandle.getKind() == Kind.CLASS ||
+                    (TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind()) ||
                     treePathHandle.getKind() == Kind.VARIABLE ||
                     treePathHandle.getKind() == Kind.MEMBER_SELECT ||
                     treePathHandle.getKind() == Kind.IDENTIFIER)) {
@@ -132,7 +133,7 @@ public class HibernateFindUsagesPlugin implements RefactoringPlugin {
 
             try {
                 if (treePathHandle != null) {
-                    if (treePathHandle.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
                         findJavaClassUsage(treePathHandle, refactoringElements, fo);
                     } else /*if (treePathHandle.getKind() == Kind.VARIABLE ||
                             treePathHandle.getKind() == Kind.MEMBER_SELECT ||

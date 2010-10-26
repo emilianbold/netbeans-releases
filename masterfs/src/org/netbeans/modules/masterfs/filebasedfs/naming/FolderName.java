@@ -53,9 +53,10 @@ import java.util.WeakHashMap;
  * @author Radek Matous
  */
 public class FolderName extends FileName {
-    private static Map fileCache = new WeakHashMap();
+    private static Map<FolderName,File> fileCache = new WeakHashMap<FolderName,File>();
 
 
+    @SuppressWarnings("LeakingThisInConstructor")
     FolderName(final FileNaming parent, final File file) {
         super(parent, file);
         synchronized (FolderName.class) {
@@ -64,10 +65,10 @@ public class FolderName extends FileName {
     }
 
 
-    public File getFile() {
+    public @Override File getFile() {
         File retValue;
         synchronized (FolderName.class) {
-            retValue = (File) FolderName.fileCache.get(this);
+            retValue = FolderName.fileCache.get(this);
 
             if (retValue == null) {
                 retValue = super.getFile();
@@ -81,12 +82,12 @@ public class FolderName extends FileName {
 
     static void freeCaches() {
         synchronized (FolderName.class) {
-            FolderName.fileCache = new WeakHashMap();
+            FolderName.fileCache = new WeakHashMap<FolderName,File>();
         }
 
     }
 
-    public boolean isFile() {
+    public @Override boolean isFile() {
         return false;
     }
 

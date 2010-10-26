@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
@@ -89,7 +90,7 @@ public class ClassEncapsulation {
     static final boolean ALLOW_ENUMS_DEFAULT = false;
 
     @Hint(category="encapsulation",suppressWarnings={"PublicInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)   //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription publicCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, Modifier.PUBLIC,
@@ -97,7 +98,7 @@ public class ClassEncapsulation {
     }
 
     @Hint(category="encapsulation",suppressWarnings={"ProtectedInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)    //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription protectedCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, Modifier.PROTECTED,
@@ -105,7 +106,7 @@ public class ClassEncapsulation {
     }
 
     @Hint(category="encapsulation", suppressWarnings={"PackageVisibleInnerClass"}, enabled=false, customizerProvider=CustomizerImpl.class)
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription packageCls(final HintContext ctx) {
         assert ctx != null;
         return create(ctx, null,
@@ -119,7 +120,7 @@ public class ClassEncapsulation {
         assert suppressWarnings != null;
         final TreePath tp = ctx.getPath();
         final Tree owner = tp.getParentPath().getLeaf();
-        if (owner.getKind() != Kind.CLASS) {
+        if (!TreeUtilities.CLASS_TREE_KINDS.contains(owner.getKind())) {
             return null;
         }
         if (!hasRequiredVisibility(((ClassTree)tp.getLeaf()).getModifiers().getFlags(),visibility)) {
@@ -167,7 +168,7 @@ public class ClassEncapsulation {
                     public void run(CompilationController controller) throws Exception {
                         controller.toPhase(JavaSource.Phase.PARSED);
                         final TreePath tp = handle.resolve(controller);
-                        if (tp != null && tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                        if (tp != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                             position[0] = (int) controller.getTrees().getSourcePositions().getStartPosition(
                                     tp.getCompilationUnit(),
                                     (ClassTree)tp.getLeaf())+1;

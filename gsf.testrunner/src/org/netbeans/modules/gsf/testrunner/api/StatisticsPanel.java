@@ -50,18 +50,16 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.awt.DropDownButtonFactory;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -70,12 +68,15 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
-final class StatisticsPanel extends JPanel implements ItemListener {
+final class StatisticsPanel extends JPanel {
     
     /** */
     private final ResultPanelTree treePanel;
     /** */
-    private JToggleButton btnFilter;
+    private JToggleButton btnShowPassed;
+    private JToggleButton btnShowFailed;
+    private JToggleButton btnShowError;
+
     /**
      * Rerun button for running (all) tests again.
      */
@@ -86,15 +87,8 @@ final class StatisticsPanel extends JPanel implements ItemListener {
 
     private JButton previousFailure;
     
-    /** */
-    private String tooltipShowAll;
-    /** */
-    private String tooltipShowFailures;
-    
     private final ResultDisplayHandler displayHandler;
 
-    //default pressed value for the Show Failures Only button
-    private boolean filterEnabled = false;
     int filterMask = Status.PASSED.getBitMask();
 
     private static final Icon rerunIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/rerun.png", true);
@@ -110,10 +104,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         this.displayHandler = displayHandler;
         JComponent toolbar = createToolbar();
         treePanel = new ResultPanelTree(displayHandler, this);
-        if (filterEnabled)
-            treePanel.setFilterMask(filterMask);
-        else
-            treePanel.setFilterMask(0);
+        treePanel.setFilterMask(filterMask);
 
         add(toolbar, BorderLayout.WEST);
         add(treePanel, BorderLayout.CENTER);
@@ -122,7 +113,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     /**
      */
     private JComponent createToolbar() {
-        createFilterButton();
+        createShowButtons();
         createRerunButtons();
         createNextPrevFailureButtons();
 
@@ -130,14 +121,17 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         toolbar.add(rerunButton);
         toolbar.add(rerunFailedButton);
         toolbar.add(new JToolBar.Separator());
-        toolbar.add(btnFilter);
+        toolbar.add(btnShowPassed);
+        toolbar.add(btnShowFailed);
+        toolbar.add(btnShowError);
+        toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);
         
         toolbar.setFocusable(false);
         toolbar.setRollover(true);
         toolbar.setFloatable(false);
-
+        toolbar.setBorder(BorderFactory.createEtchedBorder());
         return toolbar;
     }
     
@@ -157,16 +151,19 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         final RerunHandler rerunHandler = displayHandler.getSession().getRerunHandler();
         if (rerunHandler != null) {
             rerunButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun();
                 }
             });
             rerunFailedButton.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     rerunHandler.rerun(treePanel.getFailedTests());
                 }
             });
             rerunHandler.addChangeListener(new ChangeListener() {
+                @Override
                 public void stateChanged(ChangeEvent e) {
                     updateButtons();
                 }
@@ -183,62 +180,56 @@ final class StatisticsPanel extends JPanel implements ItemListener {
                                      rerunHandler.enabled(RerunType.CUSTOM) &&
                                      !treePanel.getFailedTests().isEmpty());
     }
-    /**
-     */
-    private void createFilterButton() {
-        btnFilter = DropDownButtonFactory.createDropDownToggleButton(
-                ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/filter.png", true), //NOI18N
-                createFilterPopupMenu());
-        btnFilter.getAccessibleContext().setAccessibleName(
-                NbBundle.getMessage(getClass(), "ACSN_FilterButton"));  //NOI18N
-        btnFilter.setSelected(filterEnabled);
-        btnFilter.addItemListener(this);
-        updateFilterButtonLabel();
+
+    private void createShowButtons() {
+        btnShowPassed = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/ok_16.png",
+               "StatisticsPanel.btnShowPassed",
+               "ACSN_ShowPassedButton",
+               Status.PASSED);
+        btnShowFailed = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/warning_16.png",
+               "StatisticsPanel.btnShowFailed",
+               "ACSN_ShowFailedButton",
+               Status.FAILED);
+        btnShowError = newShowButton(
+               "org/netbeans/modules/gsf/testrunner/resources/error_16.png",
+               "StatisticsPanel.btnShowError",
+               "ACSN_ShowErrorButton",
+               Status.ERROR);
     }
 
-    private JPopupMenu createFilterPopupMenu(){
-        JPopupMenu popup = new JPopupMenu();
-
-        JCheckBoxMenuItem item = new JCheckBoxMenuItem();
-        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hidePassed")); //NOI18N
-        item.setSelected((filterMask & Status.PASSED.getBitMask()) != 0);
-        item.addItemListener(new FilterItemListener(Status.PASSED));
-        popup.add(item);
-
-        item = new JCheckBoxMenuItem();
-        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideFailed")); //NOI18N
-        item.setSelected((filterMask & Status.FAILED.getBitMask()) != 0);
-        item.addItemListener(new FilterItemListener(Status.FAILED));
-        popup.add(item);
-
-        item = new JCheckBoxMenuItem();
-        item.setText(NbBundle.getMessage(StatisticsPanel.class, "MultiviewPanel.btnFilter.popup.hideError")); //NOI18N
-        item.setSelected((filterMask & Status.ERROR.getBitMask()) != 0);
-        item.addItemListener(new FilterItemListener(Status.ERROR));
-        popup.add(item);
-
-        return popup;
+    private JToggleButton newShowButton(String iconId,
+                                          String tooltipId,
+                                          String accessibleNameId,
+                                          Status status) {
+        JToggleButton btn =
+                new JToggleButton(ImageUtilities.loadImageIcon(iconId, true));
+        btn.setToolTipText(NbBundle.getMessage(getClass(), tooltipId));
+        final String acsn = NbBundle.getMessage(getClass(), accessibleNameId);
+        btn.getAccessibleContext().setAccessibleName(acsn);
+        btn.setSelected((filterMask & status.getBitMask()) == 0);
+        btn.addItemListener(new FilterItemListener(status));
+        return btn;
     }
-    /**
-     */
-    private void updateFilterButtonLabel() {
-        if (tooltipShowAll == null) {
-            tooltipShowAll = NbBundle.getMessage(
-                    getClass(),
-                    "MultiviewPanel.btnFilter.showAll.tooltip");        //NOI18N
-            tooltipShowFailures = NbBundle.getMessage(
-                    getClass(),
-                    "MultiviewPanel.btnFilter.showFailures.tooltip");   //NOI18N
-        }
-        btnFilter.setToolTipText(btnFilter.isSelected() ? tooltipShowAll
-                                                        : tooltipShowFailures);
+
+    void copyFilterMask(StatisticsPanel sp) {
+        filterMask = sp.filterMask;
+        updateShowButtons();
     }
-    
+
+    private void updateShowButtons() {
+        btnShowPassed.setSelected((filterMask & Status.PASSED.getBitMask()) == 0);
+        btnShowFailed.setSelected((filterMask & Status.FAILED.getBitMask()) == 0);
+        btnShowError.setSelected((filterMask & Status.ERROR.getBitMask()) == 0);
+    }
+
     private void createNextPrevFailureButtons() {
         nextFailure = new JButton(ImageUtilities.loadImageIcon("org/netbeans/modules/gsf/testrunner/resources/nextmatch.png", true));
         nextFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_NextFailure"));
         nextFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectNextFailure();
             }
@@ -249,6 +240,7 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         previousFailure.setToolTipText(NbBundle.getMessage(StatisticsPanel.class, "MSG_PreviousFailure"));
         previousFailure.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent e) {
                 selectPreviousFailure();
             }
@@ -260,28 +252,15 @@ final class StatisticsPanel extends JPanel implements ItemListener {
     }
 
     void selectNextFailure() {
-        treePanel.selectNextFailure();;
-    }
-
-    /**
-     */
-    public void itemStateChanged(ItemEvent e) {
-        /* called when the Filter button is toggled. */
-        filterEnabled = btnFilter.isSelected();
-        if (filterEnabled)
-            treePanel.setFilterMask(filterMask);
-        else
-            treePanel.setFilterMask(0);
-        updateFilterButtonLabel();
+        treePanel.selectNextFailure();
     }
     
     /**
      */
     void displayReport(final Report report) {
-        treePanel.displayReport(report);
-        
-        btnFilter.setEnabled(
-            treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
+        treePanel.displayReport(report);        
+//        btnFilter.setEnabled(
+//          treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
     
     /**
@@ -293,8 +272,8 @@ final class StatisticsPanel extends JPanel implements ItemListener {
         
         treePanel.displayReports(reports);
         
-        btnFilter.setEnabled(
-            treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
+//        btnFilter.setEnabled(
+//          treePanel.getSuccessDisplayedLevel() != RootNode.ALL_PASSED_ABSENT);
     }
 
     /**
@@ -323,13 +302,17 @@ final class StatisticsPanel extends JPanel implements ItemListener {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == e.SELECTED) {
-                filterMask |= itemMask;
-            } else if (e.getStateChange() == e.DESELECTED) {
-                filterMask &= ~itemMask;
+            switch(e.getStateChange()) {
+                case ItemEvent.SELECTED:
+                    filterMask &= ~itemMask;
+                    treePanel.setFilterMask(filterMask);
+                    return;
+                case ItemEvent.DESELECTED:
+                    filterMask |= itemMask;
+                    treePanel.setFilterMask(filterMask);
+                    return;
             }
-            StatisticsPanel.this.itemStateChanged(e);
         }
-    }
-    
+    } // FilterItemListener
+
 }

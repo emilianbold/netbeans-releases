@@ -101,7 +101,7 @@ public class GridUtils {
      * @param rowNo requested number of rows.
      */
     public static void addPaddingComponents(GridManager manager, int columnNo, int rowNo) {
-        manager.updateLayout();
+        manager.updateLayout(false);
         boolean shouldPad = FormLoaderSettings.getInstance().getPadEmptyCells();
         if (!shouldPad) {
             return;
@@ -125,20 +125,25 @@ public class GridUtils {
         // to avoid this problem.
         if (container.getLayout() instanceof GridBagLayout) {
             revalidateGrid(manager);
+            int pad = 2;
             for (Component comp : container.getComponents()) {
-                if (comp instanceof Box.Filler) {
+                if (!GridUtils.isPaddingComponent(comp) && (comp instanceof Box.Filler)) {
                     Dimension dim = comp.getSize();
                     if (dim.width == 0) {
                         Dimension minSize = comp.getMinimumSize();
                         Dimension prefSize = comp.getPreferredSize();
-                        comp.setMinimumSize(new Dimension(1, minSize.height));
-                        comp.setPreferredSize(new Dimension(1, prefSize.height));
+                        if (prefSize.width == 0) {
+                            comp.setMinimumSize(new Dimension(pad, minSize.height));
+                            comp.setPreferredSize(new Dimension(pad, prefSize.height));
+                        }
                     }
                     if (dim.height == 0) {
                         Dimension minSize = comp.getMinimumSize();
                         Dimension prefSize = comp.getPreferredSize();
-                        comp.setMinimumSize(new Dimension(minSize.width, 1));
-                        comp.setPreferredSize(new Dimension(prefSize.width, 1));
+                        if (prefSize.height == 0) {
+                            comp.setMinimumSize(new Dimension(minSize.width, pad));
+                            comp.setPreferredSize(new Dimension(prefSize.width, pad));
+                        }
                     }
                 }
             }

@@ -49,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -104,7 +105,7 @@ public class SpringRenamePlugin implements RefactoringPlugin {
 
     private Problem prepareClassRefactoring(RefactoringElementsBag refactoringElements, TreePathHandle treePathHandle) {
         FileObject fo = null;
-        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+        if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
             fo = treePathHandle.getFileObject();
         }
         if (fo == null) {

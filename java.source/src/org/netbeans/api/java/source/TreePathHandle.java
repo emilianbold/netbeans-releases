@@ -50,17 +50,13 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
-import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -72,7 +68,6 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.Index;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
@@ -270,7 +265,7 @@ public final class TreePathHandle {
                     && clsSym.sourcefile.getKind() == JavaFileObject.Kind.SOURCE
                     && clsSym.sourcefile.toUri().isAbsolute()) {
                     u = clsSym.sourcefile.toUri().toURL();
-                } else {
+                } else if (clsSym.classfile != null) {
                     u = clsSym.classfile.toUri().toURL();
                 }
             } catch (MalformedURLException ex) {
@@ -364,14 +359,14 @@ public final class TreePathHandle {
             } else {
                 if (enclElIsCorrespondingEl) {
                     ElementKind k = element.getKind();
-                    if (k.isClass() || k.isInterface()) {
-                        kind = Tree.Kind.CLASS;
-                    } else if (k.isField()) {
-                        kind = Tree.Kind.VARIABLE;
-                    } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
-                        kind = Tree.Kind.METHOD;
-                    } else {
-                        kind = null;
+                    switch (k) {
+                        case ANNOTATION_TYPE: kind = Tree.Kind.ANNOTATION_TYPE; break;
+                        case CLASS: kind = Tree.Kind.CLASS; break;
+                        case ENUM: kind = Tree.Kind.ENUM; break;
+                        case INTERFACE: kind = Tree.Kind.INTERFACE; break;
+                        case ENUM_CONSTANT: case FIELD: kind = Tree.Kind.VARIABLE; break;
+                        case METHOD: case CONSTRUCTOR: kind = Tree.Kind.METHOD; break;
+                        default: kind = null; break;
                     }
                 } else {
                     kind = null;

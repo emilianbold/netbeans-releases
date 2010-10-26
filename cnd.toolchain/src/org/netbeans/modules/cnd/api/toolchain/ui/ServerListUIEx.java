@@ -105,5 +105,9 @@ public abstract class ServerListUIEx extends ServerListUI {
         }
     }
 
-
+    public static void save(ToolsCacheManager cacheManager, JComponent component) {
+        if (component instanceof Save) {
+            ((Save) component).save(cacheManager);
+        }
+    }
 }

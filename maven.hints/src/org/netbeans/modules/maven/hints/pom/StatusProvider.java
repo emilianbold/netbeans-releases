@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -81,6 +82,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
+@MimeRegistration(mimeType="text/x-maven-pom+xml", service=UpToDateStatusProviderFactory.class)
 public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     private static final String LAYER_POM = "pom"; //NOI18N
@@ -89,12 +91,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
 
     @Override
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
-        FileObject fo = NbEditorUtilities.getFileObject(document);
-        if (fo != null && "text/x-maven-pom+xml".equals(fo.getMIMEType())) { //NOI18N
-            //workaround for wrong mimetype registration.
-            return new StatusProviderImpl(document);
-        }
-        return null;
+        return new StatusProviderImpl(document);
     }
 
     static class StatusProviderImpl extends UpToDateStatusProvider {
@@ -140,23 +137,25 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 model.sync();
                 // model.refresh();
             } catch (IOException ex) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
             }
 
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
 
             if (!model.getState().equals(Model.State.VALID)) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
                 return err;
             }
             if (model.getProject() == null) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model root element missing");
                 return err;
             }
             
             boolean isInTransaction = model.isIntransaction();
             if (! isInTransaction) {
-                if (! model.startTransaction()) return err;
+                if (! model.startTransaction()) {
+                    return err;
+                }
             }
             try {
                 Lookup lkp = Lookups.forPath("org-netbeans-modules-maven-hints"); //NOI18N
@@ -197,15 +196,15 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 model.sync();
                 model.refresh();
             } catch (IOException ex) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Errror while syncing pom model.", ex);
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Error while syncing pom model.", ex);
             }
             List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             if (!model.getState().equals(Model.State.VALID)) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model document is not valid, is " + model.getState());
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model document is not valid, is {0}", model.getState());
                 return err;
             }
             if (model.getProject() == null) {
-                Logger.getLogger(StatusProvider.class.getName()).log(Level.INFO, "Pom model root element missing");
+                Logger.getLogger(StatusProvider.class.getName()).log(Level.FINE, "Pom model root element missing");
                 return err;
             }
 

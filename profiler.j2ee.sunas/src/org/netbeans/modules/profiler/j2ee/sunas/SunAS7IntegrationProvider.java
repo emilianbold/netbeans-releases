@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.j2ee.sunas;
 
 import java.text.MessageFormat;
-import java.util.ResourceBundle;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.attach.providers.AbstractIntegrationProvider;
@@ -52,6 +51,7 @@ import org.netbeans.modules.profiler.attach.providers.IntegrationCategorizer;
 import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
 import org.netbeans.modules.profiler.attach.wizard.steps.NullWizardStep;
 import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,23 +63,22 @@ public class SunAS7IntegrationProvider extends AbstractIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
     // <editor-fold defaultstate="collapsed" desc="Resources">
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.sunas.Bundle"); // NOI18N
-    private static final String SUNAS_7_STRING = messages.getString("SunAS7IntegrationProvider_SunAs7String"); // NOI18N
-    private static final String WORKING_DIR_HINT_MSG = messages.getString("SunAS7IntegrationProvider_WorkingDirHintMsg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MSG = messages.getString("SunAS7IntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MSG = messages.getString("SunAS7IntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MSG = messages.getString("SunAS7IntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP6_MSG = messages.getString("SunAS7IntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP1_MSG = messages.getString("SunAS7IntegrationProvider_ManualDirectStep1Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MSG = messages.getString("SunAS7IntegrationProvider_ManualDirectStep2Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MSG = messages.getString("SunAS7IntegrationProvider_ManualDirectStep3Msg"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP4_MSG = messages.getString("SunAS7IntegrationProvider_ManualDirectStep4Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP1_MSG = messages.getString("SunAS7IntegrationProvider_ManualDynamicStep1Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MSG = messages.getString("SunAS7IntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP3_MSG = messages.getString("SunAS7IntegrationProvider_ManualDynamicStep3Msg"); // NOI18N
-    private static final String DOUBLE_QUOTES_WARNING_MSG = messages.getString("SunAS7IntegrationProvider_DoubleQuotesWarningMsg"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("SunASIntegrationProvider_DynamicWarningMessage"); // NOI18N  
-                                                                                                                                //</editor-fold>
+    private static final String SUNAS_7_STRING = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_SunAs7String"); // NOI18N
+    private static final String WORKING_DIR_HINT_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_WorkingDirHintMsg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP3_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualRemoteStep3Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP4_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualRemoteStep4Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP5_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualRemoteStep5Msg"); // NOI18N
+    private static final String MANUAL_REMOTE_STEP6_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualRemoteStep6Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP1_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDirectStep1Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP2_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDirectStep2Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP3_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDirectStep3Msg"); // NOI18N
+    private static final String MANUAL_DIRECT_STEP4_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDirectStep4Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP1_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDynamicStep1Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP2_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDynamicStep2Msg"); // NOI18N
+    private static final String MANUAL_DYNAMIC_STEP3_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_ManualDynamicStep3Msg"); // NOI18N
+    private static final String DOUBLE_QUOTES_WARNING_MSG = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunAS7IntegrationProvider_DoubleQuotesWarningMsg"); // NOI18N
+    private static final String DYNAMIC_WARNING_MESSAGE = NbBundle.getMessage(SunAS7IntegrationProvider.class, "SunASIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    //</editor-fold>
     private static final WizardStep NULL_WIZARD_STEP = new NullWizardStep();
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------

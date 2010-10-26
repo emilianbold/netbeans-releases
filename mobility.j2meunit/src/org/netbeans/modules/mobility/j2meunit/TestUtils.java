@@ -251,7 +251,7 @@ public class TestUtils {
      *
      */
     public static boolean testMethodExists(ClassTree tstClass, String testMethodName) {
-        assert tstClass.getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(tstClass.getKind());
         List<? extends Tree> members = tstClass.getMembers();
         for (Tree member : members) {
             if (member instanceof MethodTree) {
@@ -300,7 +300,7 @@ public class TestUtils {
 
         Trees trees = compInfo.getTrees();
         for (Tree typeDecl : typeDecls) {
-            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                 Element element = trees.getElement(new TreePath(new TreePath(compilationUnit), typeDecl));
                 TypeElement typeElement = (TypeElement) element;
                 if (isTestable(element)) {
@@ -341,7 +341,7 @@ public class TestUtils {
 
         List<ClassTree> result = new ArrayList<ClassTree>(typeDecls.size());
         for (Tree typeDecl : typeDecls) {
-            if (typeDecl.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                 ClassTree clsTree = (ClassTree) typeDecl;
                 if (isTestable(clsTree, treeUtils)) {
                     result.add(clsTree);
@@ -359,7 +359,7 @@ public class TestUtils {
     }
 
     public static boolean hasSetUp(ClassTree tstClass) {
-        assert tstClass.getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(tstClass.getKind());
         List<? extends Tree> members = tstClass.getMembers();
         for (Tree member : members) {
             if (member instanceof MethodTree) {
@@ -372,7 +372,7 @@ public class TestUtils {
     }
 
     public static boolean hasTearDown(ClassTree tstClass) {
-        assert tstClass.getKind() == Tree.Kind.CLASS;
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(tstClass.getKind());
         List<? extends Tree> members = tstClass.getMembers();
         for (Tree member : members) {
             if (member instanceof MethodTree) {
@@ -522,7 +522,7 @@ public class TestUtils {
 
             Trees trees = parameter.getTrees();
             for (Tree typeDecl : typeDecls) {
-                if (typeDecl.getKind() == Tree.Kind.CLASS) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                     TypeElement element = (TypeElement)trees.getElement(new TreePath(new TreePath(parameter.getCompilationUnit()), typeDecl));
                     ElementKind elemKind = element.getKind();
                     if (elemKind.isInterface())

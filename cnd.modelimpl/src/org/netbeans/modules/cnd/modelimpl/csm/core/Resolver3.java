@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.UsingResolverImpl;
@@ -771,6 +772,12 @@ public final class Resolver3 implements Resolver {
                     }
                 }
             }
+            if( result == null ) {
+                if(TemplateUtils.isTemplateQualifiedName(nameTokens[0].toString())) {
+                    result = ResolverFactory.createResolver(file, offset, this).
+                            resolve(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString()), interestedKind);
+                }
+            }
         } else if( nameTokens.length > 1 ) {
             StringBuilder sb = new StringBuilder(nameTokens[0]);
             for (int i = 1; i < nameTokens.length; i++) {
@@ -874,6 +881,17 @@ public final class Resolver3 implements Resolver {
                         }
                     }
                     result = ns;
+                }
+            }
+            if( result == null ) {
+                if( TemplateUtils.isTemplateQualifiedName(sb.toString())) {
+                    StringBuilder sb2 = new StringBuilder(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString()));
+                    for (int i = 1; i < nameTokens.length; i++) {
+                        sb2.append("::"); // NOI18N
+                        sb2.append(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[i].toString()));
+                    }
+                    result = ResolverFactory.createResolver(file, offset, this).
+                            resolve(sb2.toString(), interestedKind);
                 }
             }
         }

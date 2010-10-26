@@ -58,6 +58,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.*;
 import org.openide.modules.SpecificationVersion;
@@ -119,7 +120,7 @@ public class AppletSupport {
                         CompilationUnitTree cu = control.getCompilationUnit();
                         List<? extends Tree> topLevels = cu.getTypeDecls();
                         for (Tree topLevel : topLevels) {
-                            if (topLevel.getKind() == Tree.Kind.CLASS) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(topLevel.getKind())) {
                                 TypeElement type = (TypeElement) trees.getElement(TreePath.getPath(cu, topLevel));
                                 if (type != null) {
                                     Set<Modifier> modifiers = type.getModifiers();

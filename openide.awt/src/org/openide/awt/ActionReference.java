@@ -79,10 +79,10 @@ public @interface ActionReference {
     /** Shall a separator be placed before the action?
      * @return position that is lower than {@link #position()}
      */
-    int separatorBefore() default -1;
+    int separatorBefore() default Integer.MAX_VALUE;
     
     /** Shall a separator be placed after the action?
      * @return position that is higher than {@link #position()}
      */
-    int separatorAfter() default -1;
+    int separatorAfter() default Integer.MAX_VALUE;
 }

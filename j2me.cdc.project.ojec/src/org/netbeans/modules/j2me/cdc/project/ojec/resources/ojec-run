@@ -1,0 +1,11 @@
+<xsl:comment>ojec-run</xsl:comment>
+
+    <target name="ojec-run" if="ojec-platform.trigger">
+        <taskdef name="ojecEmulatorExec" classname="org.netbeans.modules.j2me.cdc.project.ojec.OJECToolkitEmulatorExecTask" classpath="${{libs.ojec-ant-utils.classpath}}"/>
+        <ojecEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.cmd.options}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}">
+            <fileset dir="${{dist.dir}}">
+                <exclude name="javadoc/**"/>
+            </fileset>
+        </ojecEmulatorExec>
+    </target>
+    

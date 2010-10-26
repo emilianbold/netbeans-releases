@@ -146,11 +146,6 @@ public final class TabView extends EditorView implements TabableView {
     }
 
     @Override
-    public boolean setLength(int length, int modOffset, int modLength) {
-        return false; // Need to recompute total width 
-    }
-
-    @Override
     public int getStartOffset() {
         EditorView.Parent parent = (EditorView.Parent) getParent();
         return (parent != null) ? parent.getViewOffset(rawOffset) : rawOffset;
@@ -216,48 +211,41 @@ public final class TabView extends EditorView implements TabableView {
     @Override
     public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
         int startOffset = getStartOffset();
+        int endOffset = startOffset + getLength();
+        int retOffset = -1;
         switch (direction) {
-            case View.NORTH:
-            case View.SOUTH:
-                if (offset != -1) {
-                    // Presumably pos is between startOffset and endOffset,
-                    // since GlyphView is only one line, we won't contain
-                    // the position to the north/south, therefore return -1.
-                    return -1;
-                }
-                DocumentView docView = getDocumentView();
-                if (docView != null) {
-                    JTextComponent textComponent = docView.getTextComponent();
-                    Caret caret = textComponent.getCaret();
-                    Point magicPoint;
-                    magicPoint = (caret != null) ? caret.getMagicCaretPosition() : null;
-                    if (magicPoint == null) {
-                        biasRet[0] = Position.Bias.Forward;
-                        return startOffset;
+            case EAST:
+                biasRet[0] = Bias.Forward;
+                if (offset == -1) {
+                    retOffset = getStartOffset();
+                } else {
+                    retOffset = offset + 1;
+                    if (retOffset >= endOffset) {
+                        retOffset = endOffset;
+                        biasRet[0] = Bias.Backward;
                     }
-                    return viewToModelChecked((double)magicPoint.x, 0d, alloc, biasRet);
                 }
                 break;
 
             case WEST:
+                biasRet[0] = Bias.Forward;
                 if (offset == -1) {
-                    offset = Math.max(0, getEndOffset() - 1);
+                    retOffset = endOffset - 1;
                 } else {
-                    offset = Math.max(0, offset - 1);
-                }
-                break;
-            case EAST:
-                if (offset == -1) {
-                    offset = getStartOffset();
-                } else {
-                    offset = Math.min(offset + 1, getDocument().getLength());
+                    retOffset = offset - 1;
+                    if (retOffset < startOffset) {
+                        retOffset = -1;
+                    }
                 }
                 break;
 
+            case View.NORTH:
+            case View.SOUTH:
+                break; // Return -1
             default:
                 throw new IllegalArgumentException("Bad direction: " + direction);
         }
-        return offset;
+        return retOffset;
     }
 
     @Override
@@ -267,13 +255,13 @@ public final class TabView extends EditorView implements TabableView {
             AttributeSet attrs = getAttributes();
             Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
             // Paint background
-            HighlightsView.paintBackground(g, mutableBounds, attrs, docView);
+            HighlightsViewUtils.paintBackground(g, mutableBounds, attrs, docView);
             // Possibly render tab layout
             TextLayout showTabLayout = (docView.isShowNonprintingCharacters())
                     ? docView.getTabCharTextLayout(firstTabWidth)
                     : null;
             if (showTabLayout != null) {
-                HighlightsView.paintForeground(g, mutableBounds, docView, showTabLayout, attrs);
+                HighlightsViewUtils.paintForeground(g, mutableBounds, showTabLayout, attrs, docView);
                 mutableBounds.x += firstTabWidth;
                 mutableBounds.width -= firstTabWidth;
                 int len = getLength() - 1;
@@ -281,7 +269,7 @@ public final class TabView extends EditorView implements TabableView {
                     float nextTabWidth = (width - firstTabWidth) / len;
                     showTabLayout = docView.getTabCharTextLayout(nextTabWidth);
                     while (--len >= 0) {
-                        HighlightsView.paintTextLayout(g, mutableBounds, docView, showTabLayout);
+                        HighlightsViewUtils.paintTextLayout(g, mutableBounds, showTabLayout, docView);
                         mutableBounds.x += nextTabWidth;
                         mutableBounds.width -= nextTabWidth;
                     }

@@ -50,7 +50,9 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -63,50 +65,81 @@ public final class RemoteSyncSupport {
     }
 
     public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
-        ServerRecord serverRecord = ServerList.get(project);
-        if (serverRecord != null) {
-            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
-            if (syncFactory != null) {
-                return syncFactory.createNew(project, out, err);
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+                if (syncFactory != null) {
+                    return syncFactory.createNew(project, out, err);
+                }
             }
         }
         return null;
     }
 
-    /**
-     * Creates an instance of RemoteSyncWorker.
-     *
-     * @param localDir local directory that should be synchronized
-     *
-     * @param executionEnvironment
-     *
-     * @param out output stream:
-     * in the case implementation uses an external program (rsync? scp?),
-     * it can redirect its stdout here
-     *
-     * @param err error stream:
-     * in the case implementation uses an external program (rsync? scp?),
-     * it can redirect its stderr here
-     *
-     * @param privProjectStorageDir a directory to store misc. cache-ing information;
-     * it is caller's responsibility top guarantee that different local dirs
-     * has different privProjectStorage associated
-     * (usually it is "nbprohect/private" :-))
-     *
-     * @return new instance of the RemoteSyncWorker
-     */
-    public static RemoteSyncWorker createSyncWorker(ExecutionEnvironment executionEnvironment,
-        PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
-
-        ServerRecord serverRecord = ServerList.get(executionEnvironment);
-        if (serverRecord != null) {
-            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
-            if (syncFactory != null) {
-                return syncFactory.createNew(executionEnvironment, out, err, privProjectStorageDir, localDirs);
-            }
-        }
-        return null;
+    public static RemoteProject.Mode getRemoteMode(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
     }
+
+    public static PathMap getPathMap(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        CndUtils.assertNotNull(remoteProject, "null RemoteProject"); //NOI18N
+        if (remoteProject == null) {
+            return null;
+        } else {
+            PathMap pathMap = null;
+            ExecutionEnvironment execEnv = remoteProject.getDevelopmentHost();
+            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+            if (syncFactory != null) {
+                pathMap = syncFactory.getPathMap(execEnv);
+            }
+            if (pathMap == null) {
+                pathMap = HostInfoProvider.getMapper(execEnv);
+            }
+            return pathMap;
+        }
+    }
+
+    public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getSourceFileSystemHost();
+    }
+
+//    /**
+//     * Creates an instance of RemoteSyncWorker.
+//     *
+//     * @param localDir local directory that should be synchronized
+//     *
+//     * @param executionEnvironment
+//     *
+//     * @param out output stream:
+//     * in the case implementation uses an external program (rsync? scp?),
+//     * it can redirect its stdout here
+//     *
+//     * @param err error stream:
+//     * in the case implementation uses an external program (rsync? scp?),
+//     * it can redirect its stderr here
+//     *
+//     * @param privProjectStorageDir a directory to store misc. cache-ing information;
+//     * it is caller's responsibility top guarantee that different local dirs
+//     * has different privProjectStorage associated
+//     * (usually it is "nbprohect/private" :-))
+//     *
+//     * @return new instance of the RemoteSyncWorker
+//     */
+//    public static RemoteSyncWorker createSyncWorker(ExecutionEnvironment executionEnvironment,
+//        PrintWriter out, PrintWriter err, File privProjectStorageDir, File... localDirs) {
+//
+//        ServerRecord serverRecord = ServerList.get(executionEnvironment);
+//        if (serverRecord != null) {
+//            RemoteSyncFactory syncFactory = serverRecord.getSyncFactory();
+//            if (syncFactory != null) {
+//                return syncFactory.createNew(executionEnvironment, out, err, privProjectStorageDir, localDirs);
+//            }
+//        }
+//        return null;
+//    }
 
     public static class PathMapperException extends Exception {
 

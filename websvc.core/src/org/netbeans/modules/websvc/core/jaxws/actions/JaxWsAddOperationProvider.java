@@ -61,6 +61,9 @@ import org.openide.filesystems.FileUtil;
 public class JaxWsAddOperationProvider implements AddOperationActionProvider {
     
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
+        if ( !fileObject.isValid() ){
+            return null;
+        }
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fileObject);
         if (support != null) {
             String packageName = getPackageName(fileObject);

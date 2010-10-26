@@ -100,7 +100,7 @@ public class InspectEventsAtCaretAction extends AbstractEventAction {
      */
     @Override
     protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] subject,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] subject,
             JTextComponent component, FileObject fileObject )
     {
         final Object handle = subject[0];
@@ -123,18 +123,16 @@ public class InspectEventsAtCaretAction extends AbstractEventAction {
             .getCompilationController();
         final EventsModel uiModel = new EventsModel(eventInjectionPoints, 
                 controller, metaModel);
-        final ElementHandle<ExecutableElement> methodHandle = 
-            ElementHandle.create( method);
         final String name = method.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showEventsDialog( metaModel, model, 
-                    methodHandle , uiModel , name );
+                    subject , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showEventsDialog(metaModel, null , 
-                            methodHandle ,uiModel , name );
+                            subject ,uiModel , name );
                 }
             });
         }

@@ -168,7 +168,7 @@ public class BinaryAnalyser {
 
     private final ClassIndexImpl.Writer writer;
     private final File cacheRoot;
-    private final Map<Pair<String,String>,Object[]> refs = new HashMap<Pair<String,String>,Object[]>();
+    private final List<Pair<Pair<String,String>,Object[]>> refs = new ArrayList<Pair<Pair<String, String>, Object[]>>();
     private final Set<Pair<String,String>> toDelete = new HashSet<Pair<String,String>> ();
     private final LMListener lmListener;
     private Continuation cont;
@@ -503,7 +503,7 @@ public class BinaryAnalyser {
     private void store() throws IOException {
         try {
             if (this.refs.size()>0 || this.toDelete.size()>0) {
-                this.writer.store(this.refs,this.toDelete);
+                this.writer.deleteAndStore(this.refs,this.toDelete);
             }
         } finally {
             refs.clear();
@@ -720,15 +720,12 @@ public class BinaryAnalyser {
 
     private List<String> getClassReferences (final Pair<String,String> name) {
         assert name != null;
-        Object[] cr = this.refs.get (name);
-        if (cr == null) {
-            cr = new Object[] {
-                new ArrayList<String> (),
-                null,
-                null
-            };
-            this.refs.put (name, cr);
-        }
+        Object[] cr = new Object[] {
+            new ArrayList<String> (),
+            null,
+            null
+        };
+        this.refs.add(Pair.<Pair<String,String>,Object[]>of(name, cr));
         return (ArrayList<String>) cr[0];
     }
 

@@ -127,9 +127,9 @@ final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
         }
     }
 
-    EditorBoxView.ReplaceResult replaceViews(int offsetDelta, Shape alloc) {
+    VisualUpdate replaceViews(int offsetDelta) {
         if (removeCount > 0 || added != null) {
-            return view.replace(index, removeCount, addedViews(), offsetDelta, alloc); // minor span modified
+            return view.replace(index, removeCount, addedViews(), offsetDelta);
         }
         return null;
     }
@@ -138,8 +138,7 @@ final class ViewReplace<V extends EditorBoxView<CV>, CV extends EditorView> {
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
         sb.append("viewId=").append(view.getDumpId());
-        sb.append(", index=").append(index);
-        sb.append(", viewCount=").append(view.getViewCount());
+        sb.append(": index=").append(index);
         sb.append(", removeCount=").append(removeCount);
         EditorView[] addedViews = addedViews();
         sb.append(", addedCount=").append(addedViews.length);

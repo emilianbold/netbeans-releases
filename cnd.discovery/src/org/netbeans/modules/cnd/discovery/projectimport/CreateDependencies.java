@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,31 +83,34 @@ public class CreateDependencies implements PropertyChangeListener {
     private static final RequestProcessor RP = new RequestProcessor(ImportExecutable.class.getName(), 1);
     private final Project mainProject;
     private final List<String> dependencies;
+    private List<String> paths;
     private final Map<Project, String> createdProjects = new HashMap<Project,String>();
     private MakeConfigurationDescriptor mainConfigurationDescriptor;
-    private String root;
 
-    public CreateDependencies(Project mainProject, List<String> dependencies) {
+    public CreateDependencies(Project mainProject, List<String> dependencies, List<String> paths) {
         this.mainProject = mainProject;
         this.dependencies = dependencies;
+        this.paths = paths;
     }
 
     public void create() {
-        if (dependencies == null || dependencies.isEmpty()) {
+        ConfigurationDescriptorProvider pdp = mainProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (!pdp.gotDescriptor()) {
             return;
         }
-        ConfigurationDescriptorProvider pdp = mainProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.getConfigurationDescriptor();
-        Map<String,String> dllPaths = new HashMap<String, String>();
-        if (pdp.gotDescriptor()) {
-            mainConfigurationDescriptor = pdp.getConfigurationDescriptor();
-            root = ImportExecutable.findFolderPath(ImportExecutable.getRoot(mainConfigurationDescriptor));
+        mainConfigurationDescriptor = pdp.getConfigurationDescriptor();
+        if (paths == null) {
+            if (dependencies == null || dependencies.isEmpty()) {
+                return;
+            }
+            Map<String,String> dllPaths = new HashMap<String, String>();
+            String root = ImportExecutable.findFolderPath(ImportExecutable.getRoot(mainConfigurationDescriptor));
             if (root != null) {
                 MakeConfiguration activeConfiguration = mainConfigurationDescriptor.getActiveConfiguration();
                 String ldLibPath = ImportExecutable.getLdLibraryPath(activeConfiguration);
                 boolean search = false;
                 for(String dll : dependencies) {
-                    String p = ImportExecutable.findLocation(dll, ldLibPath, root);
+                    String p = ImportExecutable.findLocation(dll, ldLibPath);
                     if (p != null) {
                         dllPaths.put(dll, p);
                     } else {
@@ -118,20 +122,21 @@ public class CreateDependencies implements PropertyChangeListener {
                     ImportExecutable.gatherSubFolders(new File(root), new HashSet<String>(), dllPaths);
                 }
             }
-        }
-        for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
-            if (entry.getValue() != null) {
-                if (ImportExecutable.isMyDll(entry.getValue(), root)) {
-                    try {
-                        if (TRACE) {
-                            System.err.println("Create dependency "+entry.getKey()+"->"+entry.getValue()); // NOI18N
-                        }
-                        Project createProject = createProject(entry.getValue(), "", "", ""); // NOI18N
-                        createdProjects.put(createProject, entry.getValue());
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+            paths = new ArrayList<String>();
+            for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
+                if (entry.getValue() != null) {
+                    if (ImportExecutable.isMyDll(entry.getValue(), root)) {
+                        paths.add(entry.getValue());
                     }
                 }
+            }
+        }
+        for(String  entry : paths) {
+            try {
+                Project createProject = createProject(entry, "", "", ""); // NOI18N
+                createdProjects.put(createProject, entry);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         if (!createdProjects.isEmpty()) {
@@ -229,6 +234,8 @@ public class CreateDependencies implements PropertyChangeListener {
                         }
                     }
                     ImportExecutable.switchModel(true, lastSelectedProject);
+                } catch (Throwable ex) {
+                    Exceptions.printStackTrace(ex);
                 } finally {
                     progress.finish();
                 }

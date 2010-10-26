@@ -45,12 +45,13 @@ INSTALLDIR = /dev/null
 testit :sh= uname -s
 
 #CFLAGS-Windows_XP := -mno-cygwin
-CFLAGS-Linux := -fPIC
+CFLAGS-Linux := -fPIC -Wl,--hash-style=sysv
 CFLAGS-SunOS := -fPIC
 CFLAGS-Mac_OS_X := -fPIC
 LDFLAGS-SunOS := -lposix4
 FLAG64:=$(shell (echo ${PLATFORM_DIR} | grep 64 >/dev/null && echo -m64) || echo -m32)
 
+CFLAGS := $(CFLAGS-$(OSFAMILY))
 LDFLAGS := $(LDFLAGS-$(OSFAMILY))
 
 DIST=../release/bin/nativeexecution
@@ -58,7 +59,7 @@ BUILD=./build
 
 APP_PATH=${DIST}/${PLATFORM_DIR}
 
-all: init privp process_start pty_open sigqueue
+all: init privp process_start pty_open sigqueue stat
 
 privp: init
 	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
@@ -71,6 +72,9 @@ pty_open: init
 
 sigqueue: init
 	gcc ${CFLAGS} ${FLAG64} ${LDFLAGS} -o ${APP_PATH}/$@ $@.c
+
+stat: init
+	gcc ${CFLAGS} ${FLAG64} -o ${APP_PATH}/$@ $@.c
 
 clean:
 	rm -rf ${APP_PATH} ${DIST}/${PLATFORM_DIR}

@@ -50,6 +50,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
@@ -57,12 +58,14 @@ import java.security.Permissions;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.jar.Manifest;
@@ -72,6 +75,8 @@ import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -482,7 +487,39 @@ public final class ModuleManager extends Modules {
                 // #147082: use empty file rather than null (~ delegation to ClassLoader.systemClassLoader) to work around JAXP #6723276
                 return new ByteArrayInputStream(new byte[0]);
             } else {
-                return super.getResourceAsStream(name);
+                InputStream is = super.getResourceAsStream(name);
+                if (is == null) {
+                    ClassLoader l = NetigsoFramework.findFallbackLoader();
+                    if (l != null) {
+                        is = l.getResourceAsStream(name);
+                    }
+                }
+                return is;
+            }
+        }
+
+        @Override
+        final URL getResourceImpl(String name) {
+            URL u = super.getResourceImpl(name);
+            if (u == null) {
+                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                if (l != null) {
+                    u = l.getResource(name);
+                }
+            }
+            return u;
+        }
+
+        @Override
+        synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
+            Enumeration<URL> first = super.getResourcesImpl(name);
+            ClassLoader l = NetigsoFramework.findFallbackLoader();
+            if (l != null) {
+                return Enumerations.removeDuplicates(
+                    Enumerations.concat(first, l.getResources(name))
+                );
+            } else {
+                return first;
             }
         }
 
@@ -504,6 +541,18 @@ public final class ModuleManager extends Modules {
             return super.shouldDelegateResource(pkg, parent);
         }
 
+        @Override
+        protected synchronized Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            try {
+                return super.loadClass(name, resolve);
+            } catch (ClassNotFoundException ex) {
+                ClassLoader l = NetigsoFramework.findFallbackLoader();
+                if (l == null) {
+                    throw ex;
+                }
+                return Class.forName(name, resolve, l);
+            }
+        }
     }
 
     /** @see #create(File,Object,boolean,boolean,boolean)

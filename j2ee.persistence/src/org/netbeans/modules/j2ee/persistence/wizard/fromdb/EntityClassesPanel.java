@@ -65,9 +65,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
@@ -157,11 +159,18 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         }
         
         final String notNullAnnotation = "javax.validation.constraints.NotNull";    //NOI18N
-        ClassPath classPath = ClassPath.getClassPath(project.getProjectDirectory(), ClassPath.COMPILE);
-        if (classPath == null) {
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if(groups == null || groups.length<1){
             return false;
         }
-        return classPath.findResource(notNullAnnotation.replace('.', '/')+".class")!=null;
+        SourceGroup firstGroup=groups[0];
+        FileObject fo=firstGroup.getRootFolder();
+        ClassPath compile=ClassPath.getClassPath(fo, ClassPath.COMPILE);
+        if (compile == null) {
+            return false;
+        }
+        return compile.findResource(notNullAnnotation.replace('.', '/')+".class")!=null;//NOI18N
     }
 
     public void initialize(PersistenceGenerator persistenceGen, Project project, boolean cmp, FileObject targetFolder) {

@@ -44,6 +44,7 @@
 package org.netbeans.modules.versioning;
 
 import java.lang.reflect.Method;
+import java.util.Map.Entry;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -62,6 +63,7 @@ import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Modifier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
 /**
  * Top level versioning manager that mediates communitation between IDE and registered versioning systems.
@@ -129,6 +131,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * TODO: use SoftHashMap if there is one available in APIs
      */
     private final Map<File, VersioningSystem> folderOwners = new HashMap<File, VersioningSystem>(200);
+    
+    /**
+     * What file is versioned by what versioning system - keep it small
+     * We will hold only recently questioned files for cases when a file is subsequently 
+     * queried too often in a short time.
+     * 
+     */
+    private final Map<File, VersioningSystem> fileOwners = new LinkedHashMap<File, VersioningSystem>(50) {
+        private int MAX_SIZE = 50;
+        @Override
+        protected boolean removeEldestEntry(Entry<File, VersioningSystem> eldest) {
+            return size() > MAX_SIZE;
+        }        
+    };
 
     /**
      * Holds registered local history system.
@@ -216,6 +232,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         synchronized(folderOwners) {
             folderOwners.clear();
         }
+        synchronized(fileOwners) {
+            fileOwners.clear();
+        }
+        
     }
 
     VersioningSystem[] getVersioningSystems() {
@@ -256,29 +276,57 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem owner of the file or null if the file is not under version control
      */
     public VersioningSystem getOwner(File file) {
-        LOG.log(Level.FINE, "looking for owner of " + file);
-        
-        
+        return getOwner(file, null);
+    }
+    
+    /**
+     * Determines the versioning system that manages given file.
+     * Owner of a file:
+     * - annotates its label in explorers, editor tab, etc.
+     * - provides menu actions for it
+     * - supplies "original" content of the file
+     * 
+     * Owner of a file may change over time (one common example is the Import command). In such case, the appropriate 
+     * Versioning System is expected to fire the PROP_VERSIONED_ROOTS property change. 
+     * 
+     * @param file a file
+     * @param isFile flag to avoid unnecessary disk access if information already available. Determines
+     *        whether the given file is a file or directory.
+     * @return VersioningSystem owner of the file or null if the file is not under version control
+     */
+    public VersioningSystem getOwner(File file, Boolean isFile) {
+        LOG.log(Level.FINE, "looking for owner of {0}", file);
+                
         /**
-         * minor speed optimization, file.isFile may last a while
-         * if file is a folder then the owner may be acquired from folderOwners directly before file.isFile call
-         * otherwise the owner will be acquired after file.isFile call
+         * minor speed optimization, file.isFile may last a while, so try to acquire
+         * the owner from fileOwner or folderOwners directly before file.isFile call
+         * otherwise the owner will be acquired after a file.isFile call
          */
         VersioningSystem owner = null;
-        synchronized(folderOwners) {
-            owner = folderOwners.get(file);
+        synchronized(fileOwners) {
+            owner = fileOwners.get(file);
         }
-        if (owner == NULL_OWNER) {
-            LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
-            return null;
+        if(owner == null) {
+            synchronized(folderOwners) {
+                owner = folderOwners.get(file);
+            }
         }
         if (owner != null) {
+            if (owner == NULL_OWNER) {
+                LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { file });
+                return null;
+            }
             LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), file });
             return owner;
         }
 
         File folder = file;
-        if (Utils.isFile(file)) {
+        
+        if(isFile == null) {
+            isFile = file.isFile();
+        }
+        
+        if (isFile) {
             folder = file.getParentFile();
             if (folder == null) {
                 LOG.log(Level.FINE, " null parent");
@@ -289,15 +337,20 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         
-        if (owner == NULL_OWNER) {
-            LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
-            return null;
-        }
         if (owner != null) {
-            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });
+            synchronized(fileOwners) {
+                LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
+                fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
+            }           
+            if (owner == NULL_OWNER) {
+                LOG.log(Level.FINE, " cached NULL_OWNER of {0}", new Object[] { folder });
+                return null;
+            }            
+            LOG.log(Level.FINE, " cached owner {0} of {1}", new Object[] { owner.getClass().getName(), folder });                         
             return owner;
-        }
+        }        
         
+        // no owner known yet - lets ask all registered VersioningSystem-s
         File closestParent = null;
 
         VersioningSystem[] vs = getVersioningSystems();
@@ -326,7 +379,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
                 }
             }
         }
-        
+        synchronized(fileOwners) {
+            LOG.log(Level.FINE, " caching owner {0} of {1}", new Object[] { owner != null ? owner.getClass().getName() : null, file }) ;
+            fileOwners.put(file, owner != null ? owner : NULL_OWNER);            
+        }
         LOG.log(Level.FINE, "owner = {0}", new Object[] { owner != null ? owner.getClass().getName() : null }) ;
         return owner;
     }
@@ -338,6 +394,18 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
      * @return VersioningSystem local history versioning system or null if there is no local history for the file
      */
     VersioningSystem getLocalHistory(File file) {
+        return getLocalHistory(file, null);
+    }
+    
+    /**
+     * Returns local history module that handles the given file.
+     * 
+     * @param file the file to examine
+     * @param isFile flag to avoid unnecessary disk access if information already available. Determines
+     *        whether the given file is a file or directory.
+     * @return VersioningSystem local history versioning system or null if there is no local history for the file
+     */
+    VersioningSystem getLocalHistory(File file, Boolean isFile) {
         if (localHistory == null) return null;
 
         synchronized(localHistoryFiles) {
@@ -347,7 +415,10 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
             }
         }
         File folder = file;
-        if (Utils.isFile(file)) {
+        if(isFile == null) {
+            isFile = file.isFile();
+        }
+        if (isFile) {
             folder = file.getParentFile();
             if (folder == null) return null;
         }
@@ -385,6 +456,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
     }
 
+    @Override
     public void resultChanged(LookupEvent ev) {
         refreshVersioningSystems();
     }
@@ -392,6 +464,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
     /**
      * Versioning status or other parameter changed. 
      */
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
             Set<File> files = (Set<File>) evt.getNewValue();
@@ -412,6 +485,7 @@ public class VersioningManager implements PropertyChangeListener, LookupListener
         }
     }
 
+    @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
         VersioningAnnotationProvider.instance.refreshAnnotations(null);
     }

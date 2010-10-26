@@ -71,6 +71,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
@@ -415,15 +416,16 @@ private void resultListMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST
 }//GEN-LAST:event_resultListMouseReleased
 
 private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_resultListValueChanged
-         
         Object svObject = resultList.getSelectedValue();
         if ( svObject != null && svObject instanceof FileDescriptor ) {
             FileDescriptor selectedValue = (FileDescriptor)svObject;
-            jTextFieldLocation.setText(FileUtil.getFileDisplayName(selectedValue.getFileObject()));
+            FileObject fo = selectedValue.getFileObject();
+            if(fo != null) {
+                jTextFieldLocation.setText(FileUtil.getFileDisplayName(fo));
+            }
+            return;
         }
-        else {
-            jTextFieldLocation.setText("");
-        }
+        jTextFieldLocation.setText("");
 }//GEN-LAST:event_resultListValueChanged
 
     private void fileNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileNameTextFieldKeyPressed

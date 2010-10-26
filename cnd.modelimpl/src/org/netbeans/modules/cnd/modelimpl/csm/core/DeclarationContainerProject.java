@@ -56,6 +56,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
@@ -64,10 +65,19 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.DataPresentationImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.KeyDataPresentationImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.UniqueNameImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
+import org.netbeans.modules.cnd.repository.spi.MapBasedTable;
+import org.netbeans.modules.cnd.repository.support.KeyPresentationFactorySupport;
 import org.openide.util.CharSequences;
 
 /**
@@ -76,6 +86,7 @@ import org.openide.util.CharSequences;
  */
 public class DeclarationContainerProject extends DeclarationContainer {
     private final Map<CharSequence, Set<CsmUID<CsmFriend>>> friends;
+    private static final boolean TEST_DATABASE = false;
 
     private static final DeclarationContainerProject EMPTY = new DeclarationContainerProject() {
 
@@ -135,6 +146,142 @@ public class DeclarationContainerProject extends DeclarationContainer {
             }
         }
     }
+
+    @Override
+    public void removeDeclaration(CsmOffsetableDeclaration decl) {
+        super.removeDeclaration(decl);
+        if (TEST_DATABASE) {
+            CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(decl);
+            Key key = RepositoryUtils.UIDtoKey(uid);
+            @SuppressWarnings("unchecked")
+            MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
+            KeyDataPresentation dataPresentation = key.getDataPresentation();
+            KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
+                    dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
+                    dataPresentation.getKindPresentation(), dataPresentation.getFilePresentation(),
+                    dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
+            try {
+                getLock().writeLock().lock();
+                DataPresentationImpl removedKeyImpl = (DataPresentationImpl) table.remove(keyImpl);
+//                CharSequence uin = decl.getUniqueName();
+//                UniqueNameImpl uinImpl = new UniqueNameImpl(uin);
+//                DataPresentationImpl valueImpl = new DataPresentationImpl(keyImpl,uinImpl);
+//                if (!valueImpl.equals(removedKeyImpl)) {
+//                    if (removedKeyImpl == null) {
+//                        new Exception("Declaration is not found in database\n"+
+//                                      "\tDeclaration="+decl+"\n"+
+//                                      "\tUIN="+uinImpl.getUin()).printStackTrace();
+//                    } else {
+//                        new Exception("Remove declaration with changed UIN\n"+
+//                                      "\tDeclaration="+decl+"\n"+
+//                                      "\tOld UIN="+removedKeyImpl.getUin()+"\n"+
+//                                      "\tNew UIN="+uinImpl.getUin()).printStackTrace();
+//                    }
+//                }
+            } finally {
+                getLock().writeLock().unlock();
+            }
+        }
+    }
+
+    @Override
+    public void putDeclaration(CsmOffsetableDeclaration decl) {
+        super.putDeclaration(decl);
+        if (TEST_DATABASE) {
+            CharSequence uin = decl.getUniqueName();
+            CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(decl);
+            Key key = RepositoryUtils.UIDtoKey(uid);
+            @SuppressWarnings("unchecked")
+            MapBasedTable table = (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, DeclarationContainerProjectStorage.TABLE_NAME);
+            KeyDataPresentation dataPresentation = key.getDataPresentation();
+            KeyDataPresentationImpl keyImpl = new KeyDataPresentationImpl(
+                    dataPresentation.getUnitPresentation(), dataPresentation.getNamePresentation(),
+                    dataPresentation.getKindPresentation(), dataPresentation.getFilePresentation(),
+                    dataPresentation.getStartPresentation(), dataPresentation.getEndPresentation());
+            UniqueNameImpl uinImpl = new UniqueNameImpl(uin);
+            DataPresentationImpl valueImpl = new DataPresentationImpl(keyImpl,uinImpl);
+            try {
+                getLock().writeLock().lock();
+                table.put(keyImpl, valueImpl);
+            } finally {
+                getLock().writeLock().unlock();
+            }
+            try {
+                getLock().readLock().lock();
+                assert table.get(keyImpl).equals(valueImpl);
+            } finally {
+                getLock().readLock().unlock();
+            }
+        }
+    }
+
+    @Override
+    public Collection<CsmOffsetableDeclaration> findDeclarations(CharSequence uniqueName) {
+        Collection<CsmOffsetableDeclaration> res = super.findDeclarations(uniqueName);
+        if (TEST_DATABASE) {
+            UniqueNameImpl uinImpl = new UniqueNameImpl(uniqueName);
+            Collection<DataPresentationImpl> res2 = new ArrayList<DataPresentationImpl>();
+            try {
+                getLock().readLock().lock();
+                @SuppressWarnings("unchecked")
+                Collection<DataPresentationImpl> index = (Collection<DataPresentationImpl>)
+                        ((MapBasedTable)RepositoryAccessor.getRepository().getDatabaseTable(getKey(), DeclarationContainerProjectStorage.TABLE_INDEX)).duplicates(uinImpl);
+                res2.addAll(index);
+            } finally {
+                getLock().readLock().unlock();
+            }
+            Collection<CsmOffsetableDeclaration> res3 = new ArrayList<CsmOffsetableDeclaration>();
+            for (DataPresentationImpl entry : res2){
+                Key aKey = KeyPresentationFactorySupport.create(entry);
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) RepositoryAccessor.getRepository().get(aKey);
+                res3.add(decl);
+            }
+            if (res.size() != res3.size()) {
+                System.err.println("Find gets different results");
+                System.err.println("Map:");
+                for(CsmOffsetableDeclaration decl : res) {
+                    System.err.println("\t"+decl);
+                }
+                System.err.println("Database:");
+                for(CsmOffsetableDeclaration decl : res3) {
+                    System.err.println("\t"+decl);
+                }
+            }
+            return res3;
+        }
+        return res;
+    }
+
+    @Override
+    public CsmDeclaration getDeclaration(CharSequence uniqueName) {
+        CsmDeclaration res = super.getDeclaration(uniqueName);
+        if (TEST_DATABASE) {
+            UniqueNameImpl uinImpl = new UniqueNameImpl(uniqueName);
+            DataPresentationImpl res2;
+            try {
+                getLock().readLock().lock();
+                res2 = (DataPresentationImpl)
+                        ((MapBasedTable)RepositoryAccessor.getRepository().getDatabaseTable(getKey(), DeclarationContainerProjectStorage.TABLE_INDEX)).get(uinImpl);
+            } finally {
+                getLock().readLock().unlock();
+            }
+            CsmOffsetableDeclaration res3 = null;
+            if (res2 != null) {
+                Key aKey = KeyPresentationFactorySupport.create(res2);
+                res3 = (CsmOffsetableDeclaration) RepositoryAccessor.getRepository().get(aKey);
+            }
+            if (res != null &&  res3 != null && !res.equals(res3)) {
+                System.err.println("Find gets different results");
+                System.err.println("Map:");
+                System.err.println("\t"+res);
+                System.err.println("Database:");
+                System.err.println("\t"+res3);
+            }
+            return res3;
+        }
+        return res;
+    }
+
 
     @Override
     protected void onPutDeclaration(CsmOffsetableDeclaration decl) {

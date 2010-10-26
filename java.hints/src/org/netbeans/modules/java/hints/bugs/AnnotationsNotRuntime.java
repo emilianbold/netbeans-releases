@@ -101,7 +101,7 @@ public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$ann instanceof $annotation",
                     constraints={
-                        @Constraint(variable="$ann", type="java.lang.Annotation")
+                        @Constraint(variable="$ann", type="java.lang.annotation.Annotation")
                     }
                    )
     public static ErrorDescription instanceOf(HintContext ctx) {

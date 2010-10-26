@@ -232,6 +232,7 @@
             <friend-packages>
                 <friend>com.severity1.makefilemodule</friend>
                 <friend>org.netbeans.embedded.deployment.make</friend>
+                <friend>org.netbeans.modules.cnd.spellchecker.bindings</friend>
                 <package>org.netbeans.modules.cnd.api.makefile</package>
             </friend-packages>
         </data>

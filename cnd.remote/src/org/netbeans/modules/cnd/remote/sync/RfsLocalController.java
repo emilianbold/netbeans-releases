@@ -159,7 +159,7 @@ class RfsLocalController extends NamedRunnable {
                     }
                     String localFilePath = mapper.getLocalPath(remoteFile);
                     if (localFilePath != null) {
-                        File localFile = new File(localFilePath);
+                        File localFile = CndFileUtils.createLocalFile(localFilePath);
                         if (kind == RequestKind.WRITTEN) {
                             fileData.setState(localFile, FileState.UNCONTROLLED);
                             remoteUpdates.add(localFile);
@@ -323,7 +323,7 @@ class RfsLocalController extends NamedRunnable {
                 if (localPath == null) {
                     logger.log(Level.FINE, "Can't find local path for %s", remoteFile);
                 } else {
-                    File localFile = new File(localPath);
+                    File localFile = CndFileUtils.createLocalFile(localPath);
                     if (fileData.getFileInfo(localFile) == null) { // this is only for files we don't control
                         if (filter.accept(localFile)) {
                             remoteUpdates.add(localFile);
@@ -341,7 +341,10 @@ class RfsLocalController extends NamedRunnable {
 
         ShellScriptRunner ssr = new ShellScriptRunner(execEnv, script, lp);
         ssr.setErrorProcessor(new ShellScriptRunner.LoggerLineProcessor(prefix));
-        ssr.execute();
+        int rc = ssr.execute();
+        if (rc != 0 ) {
+            logger.log(Level.FINE, "Error %d running script \"%s\" at %s", rc, script, execEnv);
+        }
         logger.log(Level.FINE, "New files discovery at %s took %d ms; %d lines processed; %d additional new files were discovered",
                 execEnv, System.currentTimeMillis() - time, lineCnt.get(), remoteUpdates.size() - oldSize);
     }
@@ -620,8 +623,8 @@ class RfsLocalController extends NamedRunnable {
                 if (info != null) {
                     logger.log(Level.FINEST, "\tcheckLinks: %s -> %s", linkPath, linkTarget);
                     info.setLinkTarget(linkTarget);
-                    File linkParentFile = new File(linkPath).getParentFile();
-                    File linkTargetFile = new File(linkParentFile, linkTarget);
+                    File linkParentFile = CndFileUtils.createLocalFile(linkPath).getParentFile();
+                    File linkTargetFile = CndFileUtils.createLocalFile(linkParentFile, linkTarget);
                     linkTargetFile = CndFileUtils.normalizeFile(linkTargetFile);
                     FileGatheringInfo targetInfo;
                     targetInfo = map.get(linkTargetFile.getAbsolutePath());
@@ -637,13 +640,11 @@ class RfsLocalController extends NamedRunnable {
             ex.printStackTrace();
         }
 
-// do we need to wait here?
-//        try {
-//            int rc = process.waitFor();
-//        } catch (InterruptedException ex) {
-//            // don't report InterruptedException
-//            return;
-//        }
+        try {
+            process.waitFor();
+        } catch (InterruptedException ex) {
+            // don't report InterruptedException
+        }
         return addedInfos;
     }
 
@@ -672,7 +673,7 @@ class RfsLocalController extends NamedRunnable {
                 if (localFilePath != null) {
                     //RemoteUtil.LOGGER.log(Level.FINEST, "canonicalToAbsolute: {0} -> {0}", new Object[] {remoteCanonicalPath, remotePath});
                     canonicalToAbsolute.put(remoteCanonicalPath, remotePath);
-                    File localFile = new File(localFilePath);
+                    File localFile = CndFileUtils.createLocalFile(localFilePath);
                     fileData.setState(localFile, state);
                 } else {
                     logger.log(Level.FINEST, "ERROR no local file for %s", remotePath);
@@ -687,7 +688,7 @@ class RfsLocalController extends NamedRunnable {
                 String remoteFile = request.substring(2);
                 String localFilePath = mapper.getLocalPath(remoteFile);
                 if (localFilePath != null) {
-                    File localFile = new File(localFilePath);
+                    File localFile = CndFileUtils.createLocalFile(localFilePath);
                     fileData.setState(localFile, FileState.TOUCHED);
                 } else {
                     logger.log(Level.FINEST, "ERROR no local file for %s", remoteFile);

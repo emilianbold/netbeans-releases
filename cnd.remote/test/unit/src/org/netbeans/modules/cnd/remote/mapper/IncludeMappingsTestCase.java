@@ -42,14 +42,13 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
-import java.io.File;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.cnd.remote.sync.RfsSyncFactory;
 import org.netbeans.modules.cnd.remote.sync.SharedSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;

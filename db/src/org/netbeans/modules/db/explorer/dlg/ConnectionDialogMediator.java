@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -62,7 +62,7 @@ public abstract class ConnectionDialogMediator {
     
     public static final String PROP_VALID = "valid"; // NOI18N
     
-    private final List/*<ConnectionProgressListener>*/ connProgressListeners = new ArrayList/*<ConnectionProgressListener>*/();
+    private final List<ConnectionProgressListener> connProgressListeners = new ArrayList<ConnectionProgressListener>();
     private final PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
     
     private boolean valid = true;
@@ -98,6 +98,7 @@ public abstract class ConnectionDialogMediator {
         fireConnectionStarted();
         
         Task task = RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 retrieveSchemas(schemaPanel, dbcon, defaultSchema);
                 fireConnectionFinished();
@@ -109,33 +110,33 @@ public abstract class ConnectionDialogMediator {
 
     
     protected void fireConnectionStarted() {
-        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
-            ((ConnectionProgressListener)i.next()).connectionStarted();
+        for (Iterator<ConnectionProgressListener> i = connProgressListenersCopy(); i.hasNext();) {
+            i.next().connectionStarted();
         }
     }
     
     protected void fireConnectionStep(String step) {
-        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
-            ((ConnectionProgressListener)i.next()).connectionStep(step);
+        for (Iterator<ConnectionProgressListener> i = connProgressListenersCopy(); i.hasNext();) {
+            i.next().connectionStep(step);
         }
     }
     
     protected void fireConnectionFinished() {
-        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
-            ((ConnectionProgressListener)i.next()).connectionFinished();
+        for (Iterator<ConnectionProgressListener> i = connProgressListenersCopy(); i.hasNext();) {
+            i.next().connectionFinished();
         }
     }
 
     protected void fireConnectionFailed() {
-        for (Iterator i = connProgressListenersCopy(); i.hasNext();) {
-            ((ConnectionProgressListener)i.next()).connectionFailed();
+        for (Iterator<ConnectionProgressListener> i = connProgressListenersCopy(); i.hasNext();) {
+            i.next().connectionFailed();
         }
     }
     
-    private Iterator/*<ConnectionProgressListener>*/ connProgressListenersCopy() {
-        List listenersCopy = null;
+    private Iterator<ConnectionProgressListener> connProgressListenersCopy() {
+        List<ConnectionProgressListener> listenersCopy = null;
         synchronized (connProgressListeners) {
-            listenersCopy = new ArrayList(connProgressListeners);
+            listenersCopy = new ArrayList<ConnectionProgressListener>(connProgressListeners);
         }
         return listenersCopy.iterator();
     }

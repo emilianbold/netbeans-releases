@@ -113,6 +113,9 @@ public class SpringElExpression extends ELExpression {
     private SpringBean findBean(final String nameOrId) {
         final SpringBean[] bean = new SpringBean[1];
         SpringScope scope = SpringScope.getSpringScope(getFileObject());
+        if (scope == null) {
+            return null;
+        }
         for (SpringConfigModel model : scope.getAllConfigModels()) {
             try {
                 model.runReadAction(new Action<SpringBeans>() {

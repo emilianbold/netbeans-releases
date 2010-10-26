@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,9 +120,20 @@ public final class ConfigureUtils {
         return null;
     }
 
+    public static boolean isRunnable(FileObject fileObject) {
+        if (fileObject != null && fileObject.isValid()) {
+            File file = FileUtil.toFile(fileObject);
+            if (file != null) {
+                return isRunnable(file); // XXX:fullRemote: a temporary fixup
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isRunnable(File file) {
         if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
-            FileObject configureFileObject = FileUtil.toFileObject(file);
+            FileObject configureFileObject = CndFileUtils.toFileObject(file);
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
             }
@@ -152,16 +164,15 @@ public final class ConfigureUtils {
         return false;
     }
 
-    public static String findMakefile(String folder){
+    public static FileObject findMakefile(FileObject projDirFo) {
         String pattern[] = new String[]{"GNUmakefile", "makefile", "Makefile",}; // NOI18N
-        File file = new File(folder);
-        if (!(file.isDirectory() && file.canRead())) {
+        if (projDirFo == null || !(projDirFo.isFolder() && projDirFo.canRead())) {
             return null;
         }
         for (String name : pattern) {
-            file = new File(folder, name); // NOI18N
-            if (file.exists() && file.isFile() && file.canRead()) {
-                return file.getAbsolutePath();
+            FileObject makeFO = projDirFo.getFileObject(name); // NOI18N
+            if (makeFO != null && makeFO.isValid() && makeFO.isData() && makeFO.canRead()) {
+                return makeFO;
             }
         }
         return null;

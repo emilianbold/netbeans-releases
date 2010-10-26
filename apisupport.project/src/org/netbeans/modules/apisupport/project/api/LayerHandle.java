@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,17 +82,25 @@ import org.xml.sax.SAXException;
  */
 public final class LayerHandle {
 
-    // XXX needs to hold a strong ref only when modified, probably?
-    private static final Map<Project,LayerHandle> layerHandleCache = new WeakHashMap<Project,LayerHandle>();
+    private static class HandleRef extends WeakReference<LayerHandle> {
+        LayerHandle handle; // strong ref while modified, so handle will not be collected
+        HandleRef(LayerHandle handle) {
+            super(handle);
+        }
+    }
+
+    private static final Map<Project,HandleRef> layerHandleCache = new WeakHashMap<Project,HandleRef>();
 
     /**
      * Gets a handle for one project's XML layer.
      */
     public static LayerHandle forProject(Project project) {
-        LayerHandle handle = layerHandleCache.get(project);
+        HandleRef ref = layerHandleCache.get(project);
+        LayerHandle handle = ref != null ? ref.get() : null;
         if (handle == null) {
             handle = new LayerHandle(project, null);
-            layerHandleCache.put(project, handle);
+            handle.ref = new HandleRef(handle);
+            layerHandleCache.put(project, handle.ref);
         }
         return handle;
     }
@@ -101,6 +110,7 @@ public final class LayerHandle {
     private FileSystem fs;
     private SavableTreeEditorCookie cookie;
     private boolean autosave;
+    private /*final*/ HandleRef ref;
 
     public LayerHandle(Project project, FileObject layerXML) {
         //System.err.println("new LayerHandle for " + project);
@@ -151,12 +161,16 @@ public final class LayerHandle {
             cookie.addPropertyChangeListener(new PropertyChangeListener() {
                 public void propertyChange(PropertyChangeEvent evt) {
                     //System.err.println("changed in mem");
-                    if (autosave && SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
+                    if (SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
+                        if (autosave) {
                         //System.err.println("  will save...");
                         try {
                             save();
                         } catch (IOException e) {
                             Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                        } else if (ref != null) {
+                            ref.handle = LayerHandle.this;
                         }
                     }
                 }
@@ -219,6 +233,9 @@ public final class LayerHandle {
             throw new IOException("Cannot save a nonexistent layer"); // NOI18N
         }
         cookie.save();
+        if (ref != null) {
+            ref.handle = null;
+        }
     }
 
     /**

@@ -58,31 +58,39 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Common base for for/while statements implementation
  * @author Vladimir Kvashin
  */
-public class LoopStatementImpl extends StatementBase implements CsmLoopStatement {
+public final class LoopStatementImpl extends StatementBase implements CsmLoopStatement {
     
     private CsmCondition condition;
     private CsmStatement body;
-    private boolean postCheck;
+    private final boolean postCheck;
     
-    public LoopStatementImpl(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
+    private LoopStatementImpl(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
         super(ast, file, scope);
         this.postCheck = postCheck;
     }
+
+    public static LoopStatementImpl create(AST ast, CsmFile file, boolean postCheck, CsmScope scope) {
+        return new LoopStatementImpl(ast, file, postCheck, scope);
+    }
    
+    @Override
     public CsmCondition getCondition() {
         renderIfNeed();
         return condition;
     }
     
+    @Override
     public CsmStatement getBody() {
         renderIfNeed();
         return body;
     }
 
+    @Override
     public boolean isPostCheck() {
         return postCheck;
     }
 
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.WHILE;
     }
@@ -112,7 +120,7 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
                 condition = renderer.renderCondition(token, this);
             }
             else if( AstRenderer.isExpression(type) ) {
-                condition = new ConditionExpressionImpl(token, getContainingFile(), this);
+                condition = ConditionExpressionImpl.create(token, getContainingFile(), this);
             }
             else if( AstRenderer.isStatement(type) ) {
                 body = AstRenderer.renderStatement(token, getContainingFile(), this);
@@ -120,6 +128,7 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
         }
     }
 
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }

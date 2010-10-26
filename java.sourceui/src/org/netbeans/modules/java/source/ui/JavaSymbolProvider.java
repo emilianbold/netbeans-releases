@@ -82,6 +82,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
@@ -115,7 +116,7 @@ public class JavaSymbolProvider implements SymbolProvider {
     public void computeSymbolNames(final Context context, final Result result) {
         try {
             final SearchType st = context.getSearchType();
-            String _ident = context.getText();
+            String[] _ident = new String[] {context.getText()};
             ClassIndex.NameKind _kind;
             boolean _caseSensitive;
             switch (st) {
@@ -125,11 +126,12 @@ public class JavaSymbolProvider implements SymbolProvider {
                     break;
                 case REGEXP:
                     _kind = ClassIndex.NameKind.REGEXP;
-                    _ident = removeNonJavaChars(_ident);            
-                    _ident = _ident.replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = removeNonJavaChars(_ident[0]);
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = true;
                     break;
                 case CAMEL_CASE:
+                    _ident = createCamelCase(_ident);
                     _kind = ClassIndex.NameKind.CAMEL_CASE;
                     _caseSensitive = true;
                     break;
@@ -147,14 +149,14 @@ public class JavaSymbolProvider implements SymbolProvider {
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     _kind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP;
-                    _ident = removeNonJavaChars(_ident);            
-                    _ident = _ident.replace( "*", ".*" ).replace( '?', '.' ) + ".*";       //NOI18N
+                    _ident[0] = removeNonJavaChars(_ident[0]);            
+                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
                     _caseSensitive = false;
                     break;
                 default:
                     throw new IllegalArgumentException();
             }            
-            final String ident = _ident;
+            final String[] ident = _ident;
             final ClassIndex.NameKind kind = _kind;
             final boolean caseSensitive = _caseSensitive;
             try {
@@ -200,7 +202,9 @@ public class JavaSymbolProvider implements SymbolProvider {
                     final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL());
                     if (impl != null) {
                         final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
-                        impl.getDeclaredElements(ident, kind, DocumentUtil.elementHandleConvertor(),r);
+                        for (String currentIdent : ident) {
+                            impl.getDeclaredElements(currentIdent, kind, DocumentUtil.elementHandleConvertor(),r);
+                        }
                         if (!r.isEmpty()) {
                             //final ClasspathInfo cpInfo = ClasspathInfo.create(root);
                             final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
@@ -269,6 +273,17 @@ public class JavaSymbolProvider implements SymbolProvider {
             return sb.toString();
         }
         return e.getSimpleName().toString();
+    }
+    
+    private static String[] createCamelCase(final String[] text) {
+        if (text[0].length() == 0) {
+            return text;
+        } else {
+            return new String[] {
+                text[0],
+                Character.toLowerCase(text[0].charAt(0)) + text[0].substring(1)
+            };
+        }
     }
     
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {

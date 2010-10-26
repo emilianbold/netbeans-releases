@@ -77,6 +77,7 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
@@ -745,7 +746,7 @@ public class JavaClass {
             public Object run(CompilationInfo cinfo) {
                 CompilationUnitTree cunit = cinfo.getCompilationUnit();
                 for(Tree tree : cunit.getTypeDecls()) {
-                    if(tree.getKind() == Tree.Kind.CLASS) {
+                    if(TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                         ClassTree clazz = (ClassTree)tree;
                         if(clazz.getSimpleName().toString().equals(fObj.getName()) &&
                                 clazz.getModifiers().getFlags().contains(Modifier.PUBLIC)) {

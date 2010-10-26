@@ -78,7 +78,6 @@ import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**

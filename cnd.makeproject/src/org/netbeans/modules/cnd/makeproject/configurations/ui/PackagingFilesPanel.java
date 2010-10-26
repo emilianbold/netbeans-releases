@@ -78,12 +78,13 @@ import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
@@ -211,14 +212,7 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
             }
             File[] files = fileChooser.getSelectedFiles();
             for (int i = 0; i < files.length; i++) {
-                String itemPath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                    itemPath = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
-                } else {
-                    itemPath = files[i].getPath();
-                }
+                String itemPath = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
                 itemPath = CndPathUtilitities.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
@@ -260,11 +254,11 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
         }
 
         try {
-            fo = FileUtil.toFileObject(file.getCanonicalFile());
+            fo = CndFileUtils.toFileObject(file.getCanonicalFile());
         } catch (IOException e) {
             return false;
         }
-        if (fo == null) { // 149058
+        if (fo == null || !fo.isValid()) { // 149058
             return false;
         }
         DataObject dataObject = null;
@@ -367,10 +361,10 @@ public class PackagingFilesPanel extends ListEditorPanel<PackagerFileElement> {
                 if (files[i].isDirectory()) {
                     addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 } else {
-                    String path;
-                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                    String path = ProjectSupport.toProperPath(baseDir, files[i].getPath(), MakeProjectOptions.getPathMode()); // XXX:fillRemote: changeto project dependent value
+                    if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL_OR_ABS) {
                         path = CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, files[i].getPath());
-                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                    } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.PathMode.REL) {
                         path = CndPathUtilitities.toRelativePath(baseDir, files[i].getPath());
                     } else {
                         path = files[i].getPath();

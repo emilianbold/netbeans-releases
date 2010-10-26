@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.model.settings.impl;
 
-import org.netbeans.modules.maven.model.profile.ProfilesComponent;
 import org.netbeans.modules.maven.model.settings.Activation;
 import org.netbeans.modules.maven.model.settings.ModelList;
 import org.netbeans.modules.maven.model.settings.Profile;

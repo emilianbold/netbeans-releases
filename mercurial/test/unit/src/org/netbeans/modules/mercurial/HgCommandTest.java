@@ -72,8 +72,8 @@ public class HgCommandTest extends AbstractHgTest {
         File newRepo = new File(getTempDir(), "repo");
         List<File> repoAsList = Collections.singletonList(newRepo);
         handler.reset("clone", repoAsList);
-        commit(getWorkDir());
-        HgCommand.doClone(getWorkDir(), newRepo, NULL_LOGGER);
+        commit(getWorkTreeDir());
+        HgCommand.doClone(getWorkTreeDir(), newRepo, NULL_LOGGER);
         handler.assertResults(1);
         
         handler.reset();
@@ -157,7 +157,7 @@ public class HgCommandTest extends AbstractHgTest {
         commit(mainFile = createFile(mainFol, "file2"));
         // fetch the changes to the clone
         handler.reset("fetch", repoAsList);
-        HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
         handler.assertResults(1);
 
         Thread.sleep(2000); // give some time so modification timestamps differ
@@ -172,7 +172,7 @@ public class HgCommandTest extends AbstractHgTest {
         handler.reset("fetch", repoAsList);
         refreshProbe = new HgCommandTest.RefreshProbe(fileFO);
         refreshProbe.reset();
-        HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
         refreshProbe.checkRefresh(true);
         handler.assertResults(1);
 
@@ -183,7 +183,7 @@ public class HgCommandTest extends AbstractHgTest {
         handler.reset();
         write(mainFile, "pull test");
         commit(mainFile);
-        revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
+        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
         handler.assertResults(0);
         handler.reset("pull", repoAsList);
         HgCommand.doPull(newRepo, NULL_LOGGER);
@@ -204,9 +204,9 @@ public class HgCommandTest extends AbstractHgTest {
 
         write(mainFile, "import diff test");
         commit(mainFile);
-        revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
+        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
         File diffFile = new File(getTempDir(), "export.patch");
-        HgCommand.doExport(getWorkDir(), revision, diffFile.getAbsolutePath(), NULL_LOGGER);
+        HgCommand.doExport(getWorkTreeDir(), revision, diffFile.getAbsolutePath(), NULL_LOGGER);
         assertTrue(diffFile.exists());
 
         handler.reset("import", repoAsList);
@@ -217,16 +217,16 @@ public class HgCommandTest extends AbstractHgTest {
 
         // *************** PULL *************** //
         // prepare - sync changes
-        HgCommand.doFetch(newRepo, new HgURL(getWorkDir()), NULL_LOGGER);
-        HgCommand.doPush(newRepo, new HgURL(getWorkDir()), NULL_LOGGER, false);
-        HgCommand.doUpdateAll(getWorkDir(), false, null);
+        HgCommand.doFetch(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER);
+        HgCommand.doPush(newRepo, new HgURL(getWorkTreeDir()), NULL_LOGGER, false);
+        HgCommand.doUpdateAll(getWorkTreeDir(), false, null);
         Thread.sleep(2000); // give some time so modification timestamps differ
         // pull without update - no refresh, refreshed in merge
         write(mainFile, "pull test with refresh");
         commit(mainFile);
         handler.reset("pull", repoAsList);
         refreshProbe.reset();
-        revision = HgCommand.doTip(getWorkDir(), NULL_LOGGER).getCSetShortID();
+        revision = HgCommand.doTip(getWorkTreeDir(), NULL_LOGGER).getCSetShortID();
         HgCommand.doPull(newRepo, NULL_LOGGER);
         refreshProbe.checkRefresh(true);
         handler.assertResults(1);
@@ -285,9 +285,14 @@ public class HgCommandTest extends AbstractHgTest {
     private static File tmp = null;
     private File getTempDir() {
         if(tmp == null) {
-            File tmpDir = new File(System.getProperty("java.io.tmpdir"));
-            tmp = new File(tmpDir, "gtmt-" + Long.toString(System.currentTimeMillis()));
-            tmp.deleteOnExit();
+            File tmpDir;
+            try {
+                tmpDir = getWorkDir();
+                tmp = new File(tmpDir, "gtmt-" + Long.toString(System.currentTimeMillis()));
+                tmp.deleteOnExit();
+            } catch (IOException ex) {
+
+            }
         }
         return tmp;
     }

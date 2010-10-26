@@ -104,7 +104,7 @@ public final class InspectInjectablesAtCaretAction extends AbstractInjectableAct
      */
     @Override
     protected void modelAcessAction( WebBeansModel model,
-            final MetadataModel<WebBeansModel> metaModel, Object[] variable,
+            final MetadataModel<WebBeansModel> metaModel, final Object[] variable,
             final JTextComponent component, FileObject fileObject )
     {
         final VariableElement var = WebBeansActionHelper.findVariable(model, variable);
@@ -144,17 +144,16 @@ public final class InspectInjectablesAtCaretAction extends AbstractInjectableAct
                 .getCompilationController();
         final InjectablesModel uiModel = new InjectablesModel(result, controller, 
                 metaModel );
-        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showInjectablesDialog(metaModel, model, 
-                    handleVar , uiModel , name );
+                    variable , uiModel , name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showInjectablesDialog(metaModel, 
-                            null , handleVar ,uiModel , name );
+                            null , variable ,uiModel , name );
                 }
             });
         }

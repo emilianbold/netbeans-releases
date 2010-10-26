@@ -61,7 +61,7 @@ final class WrapLine {
 
     /**
      * Ending view of this line that was obtained by breaking a view
-     * at (endViewIndex - 1).
+     * at endViewIndex.
      * It may be null if the line ends at view boundary.
      */
     EditorView endViewPart;
@@ -74,19 +74,25 @@ final class WrapLine {
     float startViewX;
 
     /**
-     * Index of the first (full) view that is located at this line.
-     * It may be preceded by startView. The index must be processed
-     *
+     * Index of a first view located at this line.
+     * <br/>
+     * Logically if there's a non-null startViewPart then it comes from view
+     * at (startViewIndex - 1).
      */
     int startViewIndex;
 
+    /**
+     * Index that follows last view located at this line.
+     * <br/>
+     * It should be >= startViewIndex.
+     */
     int endViewIndex;
 
     WrapLine() {
         resetFullViews();
     }
 
-    boolean noFullViews() {
+    boolean isInited() {
         return (startViewIndex != -1);
     }
 

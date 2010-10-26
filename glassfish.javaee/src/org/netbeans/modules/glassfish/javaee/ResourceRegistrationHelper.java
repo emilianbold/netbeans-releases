@@ -91,7 +91,11 @@ public class ResourceRegistrationHelper {
     private static void deployResources(Set<File> resourceDirs, Hk2DeploymentManager dm)  {
         for(File resourceDir: resourceDirs) {
             try {
-                registerResourceDir(resourceDir,dm,dm.getCommonServerSupport().getResourcesXmlName());
+                boolean usedNewName = registerResourceDir(resourceDir,dm,dm.getCommonServerSupport().getResourcesXmlName());
+                if (!usedNewName) {
+                    // try to use sun-resources.xml
+                    registerResourceDir(resourceDir,dm,"sun-resources"); // NOI18N
+                }
             } catch (ConfigurationException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, "some data sources may not be deployed", ex);
             }

@@ -294,7 +294,7 @@ public class HtmlCompletionQuery extends UserTask {
         //different approach - simply build a nesting tree of tag from the
         //actual position to the root by using the lexical syntax elements
         boolean useHtmlParseResult = true;
-        if(version == HtmlVersion.HTML5) {
+        if(version == HtmlVersion.HTML5 || version == HtmlVersion.XHTML5) {
             for(ProblemDescription pd : htmlResult.getProblems()) {
                 if(pd.getType() > ProblemDescription.WARNING) {
                     useHtmlParseResult = false;
@@ -320,7 +320,15 @@ public class HtmlCompletionQuery extends UserTask {
             if(node == null) {
                 return null;
             }
+            //an element being typed is parsed as normal element end then
+            //returned as a leaf node for the position, which is clearly wrong
+            //since we need its parent to be able to complete the typed element
+            if(node.getNameWithoutPrefix().equals(preText)) {
+                node = node.parent();
+            }
+            
         }
+
 
         //find a leaf node for undeclared tags
         AstNode undeclaredTagsParseTreeRoot = parserResult.rootOfUndeclaredTagsParseTree();
@@ -710,7 +718,7 @@ public class HtmlCompletionQuery extends UserTask {
     private HtmlCompletionItem item4HtmlTag(HtmlTag e, int offset, boolean possible) {
         String name = e.getName();
         name = isXHtml ? name : (lowerCase ? name.toLowerCase(Locale.ENGLISH) : name.toUpperCase(Locale.ENGLISH));
-        return HtmlCompletionItem.createTag(name, offset, name, possible);
+        return HtmlCompletionItem.createTag(e, name, offset, name, possible);
     }
 
     Collection<CompletionItem> translateAttribs(int offset, Collection<HtmlTagAttribute> attribs, HtmlTag tag) {
@@ -723,7 +731,7 @@ public class HtmlCompletionQuery extends UserTask {
                     result.add(HtmlCompletionItem.createBooleanAttribute(name, offset, attrib.isRequired(), tagName + name));
                     break;
                 default:
-                    result.add(HtmlCompletionItem.createAttribute(name, offset, attrib.isRequired(), tagName + name));
+                    result.add(HtmlCompletionItem.createAttribute(attrib, name, offset, attrib.isRequired(), tagName + name));
                     break;
             }
         }

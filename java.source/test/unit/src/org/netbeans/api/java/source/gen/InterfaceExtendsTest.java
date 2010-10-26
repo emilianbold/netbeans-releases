@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 
 /**
@@ -98,7 +99,7 @@ public class InterfaceExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         List<ExpressionTree> implementz = 
                             Collections.<ExpressionTree>singletonList(
@@ -149,7 +150,7 @@ public class InterfaceExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.addClassImplementsClause(
                                 classTree, make.Identifier("Serializable")
@@ -194,7 +195,7 @@ public class InterfaceExtendsTest extends GeneratorTestMDRCompat {
 
                 for (Tree typeDecl : cut.getTypeDecls()) {
                     // ensure that it is correct type declaration, i.e. class
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         ClassTree classTree = (ClassTree) typeDecl;
                         ClassTree copy = make.removeClassImplementsClause(classTree, 0);
                         copy = make.removeClassImplementsClause(copy, 0);

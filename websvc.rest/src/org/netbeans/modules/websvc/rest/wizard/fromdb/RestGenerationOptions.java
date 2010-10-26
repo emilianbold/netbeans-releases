@@ -94,15 +94,22 @@ public final class RestGenerationOptions {
 
     public enum Operation {
 
-        CREATE("javax.ws.rs.PUT", "create"),
-        EDIT("javax.ws.rs.POST", "edit"),
+        CREATE("javax.ws.rs.POST", "create", true ),
+        EDIT("javax.ws.rs.PUT", "edit", true ),
         REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
         FIND("javax.ws.rs.GET", "find", "{id}"),
-        FIND_ALL("javax.ws.rs.GET", "findAll"),
+        FIND_ALL("javax.ws.rs.GET", "findAll", true),
         FIND_RANGE("javax.ws.rs.GET", "findRange", "{from}/{to}"),
         COUNT("javax.ws.rs.GET", "countREST", "count");
 
         private String method, methodName, uriPath;
+        private boolean override;
+        
+        private Operation(String method, String methodName, boolean override) {
+            this.method = method;
+            this.methodName = methodName;
+            this.override = override;
+        }
 
         private Operation(String method, String methodName) {
             this.method = method;
@@ -114,6 +121,7 @@ public final class RestGenerationOptions {
             this.methodName = methodName;
             this.uriPath = uriPath;
         }
+        
         public String getMethod() {
             return method;
         }
@@ -124,6 +132,10 @@ public final class RestGenerationOptions {
 
         public String getUriPath() {
             return uriPath;
+        }
+        
+        public boolean overrides(){
+            return override;
         }
     }
     

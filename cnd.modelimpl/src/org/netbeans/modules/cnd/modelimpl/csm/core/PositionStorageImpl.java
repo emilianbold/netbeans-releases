@@ -43,18 +43,21 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.Serializable;
-import org.netbeans.modules.cnd.repository.spi.DatabaseStorage;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.cnd.repository.spi.DatabaseTableDescription;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.spi.DatabaseStorage.class)
-public class PositionStorageImpl implements DatabaseStorage {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.spi.DatabaseTableDescription.class)
+public class PositionStorageImpl implements DatabaseTableDescription {
+    public static final String TABLE_NAME = "position"; //NOI18N
 
     @Override
     public String getTableName() {
-        return "position"; //NOI18N
+        return TABLE_NAME;
     }
 
     @Override
@@ -65,6 +68,11 @@ public class PositionStorageImpl implements DatabaseStorage {
     @Override
     public Class<?> getDataClass() {
         return PositionDataImpl.class;
+    }
+
+    @Override
+    public Collection<Index> getIndexes() {
+        return Collections.<Index>emptyList();
     }
 
     public static final class FilePositionKey implements Serializable {

@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
@@ -187,6 +188,7 @@ public class PHPFormatterQATest extends PHPTestBase {
     }
 
     public void test175229_1() throws Exception {
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/qa/issues/stable_fixedIssues/175229_1.php", options);
     }
@@ -519,21 +521,27 @@ public class PHPFormatterQATest extends PHPTestBase {
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
-        BaseDocument doc = getDocument(fo);
-        assertNotNull(doc);
-        String fullTxt = doc.getText(0, doc.getLength());
+
+        String text = read(fo);
+
         int formatStart = 0;
-        int formatEnd = doc.getLength();
-        int startMarkPos = fullTxt.indexOf(FORMAT_START_MARK);
+        int formatEnd = text.length();
+        int startMarkPos = text.indexOf(FORMAT_START_MARK);
 
-        if (startMarkPos >= 0) {
-            formatStart = startMarkPos + FORMAT_START_MARK.length();
-            formatEnd = fullTxt.indexOf(FORMAT_END_MARK);
-
-            if (formatEnd == -1) {
+        if (startMarkPos >= 0){
+            formatStart = startMarkPos;
+            text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
+            formatEnd = text.indexOf(FORMAT_END_MARK);
+            text = text.substring(0, formatEnd) + text.substring(formatEnd + FORMAT_END_MARK.length());
+            formatEnd --;
+            if (formatEnd == -1){
                 throw new IllegalStateException();
             }
         }
+
+        BaseDocument doc = getDocument(text);
+        assertNotNull(doc);
+
 
         IndentPrefs preferences = new IndentPrefs(4, 4);
         Formatter formatter = getFormatter(preferences);
@@ -545,21 +553,24 @@ public class PHPFormatterQATest extends PHPTestBase {
         for (String option : options.keySet()) {
             Object value = options.get(option);
             if (value instanceof Integer) {
-                prefs.putInt(option, ((Integer) value).intValue());
-            } else if (value instanceof String) {
-                prefs.put(option, (String) value);
-            } else if (value instanceof Boolean) {
-                prefs.put(option, ((Boolean) value).toString());
-            } else if (value instanceof CodeStyle.BracePlacement) {
-                prefs.put(option, ((CodeStyle.BracePlacement) value).name());
+                prefs.putInt(option, ((Integer)value).intValue());
             }
+            else if (value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+            else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean)value).toString());
+            }
+	    else if (value instanceof CodeStyle.BracePlacement) {
+		prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+	    }
+	    else if (value instanceof CodeStyle.WrapStyle) {
+		prefs.put(option, ((CodeStyle.WrapStyle)value).name());
+	    }
         }
 
         format(doc, formatter, formatStart, formatEnd, false);
-
         String after = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, after, false, ".formatted");
-
-
     }
 }

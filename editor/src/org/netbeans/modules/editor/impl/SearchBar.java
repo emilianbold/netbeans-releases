@@ -44,10 +44,10 @@
 package org.netbeans.modules.editor.impl;
 
 import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.editor.*;
 import javax.swing.Action;
 import org.openide.util.ImageUtilities;
@@ -66,8 +66,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -76,14 +75,13 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Timer;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -103,14 +101,10 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
-import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbPreferences;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 
 /**
@@ -135,36 +129,6 @@ public final class SearchBar extends JPanel {
     
     public static final String INCREMENTAL_SEARCH_FORWARD = "incremental-search-forward";
     public static final String INCREMENTAL_SEARCH_BACKWARD = "incremental-search-backward";
-
-    /** Shared mouse listener used for setting the border painting property
-     * of the toolbar buttons and for invoking the popup menu.
-     */
-    private static final MouseListener sharedMouseListener
-        = new org.openide.awt.MouseUtils.PopupMouseAdapter() {
-            public @Override void mouseEntered(MouseEvent evt) {
-                Object src = evt.getSource();
-                
-                if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
-                    AbstractButton button = (AbstractButton)evt.getSource();
-                    if (button.isEnabled()) {
-                        button.setContentAreaFilled(true);
-                        button.setBorderPainted(true);
-                    }
-                }
-            }
-            
-            public @Override void mouseExited(MouseEvent evt) {
-                Object src = evt.getSource();
-                if (src instanceof JButton) { // ignore JMenuItem and JToggleButton
-                    AbstractButton button = (AbstractButton)evt.getSource();
-                    button.setContentAreaFilled(false);
-                    button.setBorderPainted(false);
-                }
-            }
-            
-            protected void showPopup(MouseEvent evt) {
-            }
-        };
 
     private JTextComponent component;
     private JButton closeButton;
@@ -200,72 +164,89 @@ public final class SearchBar extends JPanel {
     private boolean isPopupShown = false;
     
     @SuppressWarnings("unchecked")
-    public SearchBar(JTextComponent component) {
+    public SearchBar(final JTextComponent component) {
         this.component = component;
-
+        component.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                looseFocus();
+            }
+        });
+        FindSupport findSupport = FindSupport.getFindSupport();
+        findProps = new HashMap<Object, Object>(findSupport.getFindProperties());
+        
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+        setFocusCycleRoot(true);
         Color bgColor = getBackground();
         bgColor = new Color( Math.max( 0, bgColor.getRed() - 20 ),
                              Math.max( 0, bgColor.getGreen() - 20 ),
                              Math.max( 0, bgColor.getBlue() - 20 ) );        
         setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
-        
-        //setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-        addMouseListener(sharedMouseListener);
 
-        Keymap keymap = component.getKeymap();
-        
-        if (keymap instanceof MultiKeymap) {
-            MultiKeymap multiKeymap = (MultiKeymap) keymap;
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null || !"keymap".equals(evt.getPropertyName())) { // NOI18N
+                    return;
+                }
 
-            Action[] actions = component.getActions();
-            for(Action action:actions) {
-                // Discover the keyStrokes for incremental-search-forward
-                String actionName = (String) action.getValue(Action.NAME);
-                if (actionName == null) {
-                    LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
-                }
-                //keystroke for incremental search forward and
-                //keystroke to add standard search next navigation in search bar (by default F3 on win)
-                else if (actionName.equals(INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
-                    Action incrementalSearchForwardAction = action;
-                    KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
-                    if (keyStrokes != null) {
-                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-                        for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found forward search action, " + ks); //NOI18N
-                            inputMap.put(ks, actionName);
+                Keymap keymap = component.getKeymap();
+
+                if (keymap instanceof MultiKeymap) {
+                    MultiKeymap multiKeymap = (MultiKeymap) keymap;
+
+                    Action[] actions = component.getActions();
+                    for(Action action:actions) {
+                        // Discover the keyStrokes for incremental-search-forward
+                        String actionName = (String) action.getValue(Action.NAME);
+                        if (actionName == null) {
+                            LOG.warning("SearchBar: Null Action.NAME property of action: " + action + "\n");
                         }
-                        getActionMap().put(actionName,
-                            new AbstractAction() {
-                                public void actionPerformed(ActionEvent e) {
-                                    findNext();
+                        //keystroke for incremental search forward and
+                        //keystroke to add standard search next navigation in search bar (by default F3 on win)
+                        else if (actionName.equals(INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
+                            Action incrementalSearchForwardAction = action;
+                            KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchForwardAction);
+                            if (keyStrokes != null) {
+                                InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                                for(KeyStroke ks : keyStrokes) {
+                                    LOG.fine("found forward search action, " + ks); //NOI18N
+                                    inputMap.put(ks, actionName);
                                 }
-                            });
-                    }
-                }
-                // Discover the keyStrokes for incremental-search-backward
-                // Discover the keyStrokes for search-backward
-                else if (actionName.equals(INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
-                    Action incrementalSearchBackwardAction = action;
-                    KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
-                    if (keyStrokes != null) {
-                        InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-                        for(KeyStroke ks : keyStrokes) {
-                            LOG.fine("found backward search action, " + ks); //NOI18N
-                            inputMap.put(ks, actionName);
+                                getActionMap().put(actionName,
+                                    new AbstractAction() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            findNext();
+                                        }
+                                    });
+                            }
                         }
-                        getActionMap().put(actionName,
-                            new AbstractAction() {
-                                public void actionPerformed(ActionEvent e) {
-                                    findPrevious();
+                        // Discover the keyStrokes for incremental-search-backward
+                        // Discover the keyStrokes for search-backward
+                        else if (actionName.equals(INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
+                            Action incrementalSearchBackwardAction = action;
+                            KeyStroke[] keyStrokes = multiKeymap.getKeyStrokesForAction(incrementalSearchBackwardAction);
+                            if (keyStrokes != null) {
+                                InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                                for(KeyStroke ks : keyStrokes) {
+                                    LOG.fine("found backward search action, " + ks); //NOI18N
+                                    inputMap.put(ks, actionName);
                                 }
-                            });
+                                getActionMap().put(actionName,
+                                    new AbstractAction() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            findPrevious();
+                                        }
+                                    });
+                            }
+                        }
                     }
                 }
             }
-        }
+        };
+        component.addPropertyChangeListener(pcl);
+        pcl.propertyChange(new PropertyChangeEvent(this, "keymap", null, null));
 
         // ESCAPE to put focus back in the editor
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
@@ -363,21 +344,25 @@ public final class SearchBar extends JPanel {
             }
         };
         incrementalSearchTextField.getDocument().addDocumentListener(incrementalSearchTextFieldListener);
-
-        incrementalSearchTextField.addFocusListener(new FocusAdapter() {
-            public @Override void focusLost(FocusEvent e) {
-                navigateOnFocusLost = false;
-                looseFocus();
-            }
-        });
         
-        // ENTER to find next
-        incrementalSearchTextField.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                findNext();
-            }
-        });
+        // flatten the action map for the text field to allow removal
+        ActionMap origActionMap = incrementalSearchTextField.getActionMap();
+        ActionMap newActionMap = new ActionMap();
+        for (Object key : origActionMap.allKeys()) {
+            newActionMap.put(key, origActionMap.get(key));
+        }
+        incrementalSearchTextField.setActionMap(newActionMap);
 
+        // ENTER to find next
+        incrementalSearchTextField.getInputMap().put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0, true),
+            "incremental-find-next"); // NOI18N
+        incrementalSearchTextField.getActionMap().put("incremental-find-next", // NOI18N
+            new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    findNext();
+                    looseFocus();
+                }});
         // Shift+ENTER to find previous
         incrementalSearchTextField.getInputMap()
                                   .put(KeyStroke.getKeyStroke(
@@ -387,7 +372,41 @@ public final class SearchBar extends JPanel {
             new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     findPrevious();
+                    looseFocus();
                 }});
+        incrementalSearchTextField.getActionMap().remove("toggle-componentOrientation"); // NOI18N
+
+        class JumpOutOfSearchAction extends AbstractAction {
+            private String actionName;
+            public JumpOutOfSearchAction(String n) {
+                actionName = n;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                looseFocus();
+                ActionEvent ev = new ActionEvent(component, e.getID(), e.getActionCommand(), e.getModifiers());
+                Action action = component.getActionMap().get(actionName);
+                action.actionPerformed(ev);
+            }
+        };
+        String actionName = "caret-begin-line"; // NOI18N
+        Action a1 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put(actionName, a1);
+        actionName = "caret-end-line"; // NOI18N
+        Action a2 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put(actionName, a2);
+
+        incrementalSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+            KeyEvent.VK_P, InputEvent.CTRL_MASK, false), "caret-up-alt"); // NOI18N
+        actionName = "caret-up"; // NOI18N
+        Action a3 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put("caret-up-alt", a3); // NOI18N
+        
+        incrementalSearchTextField.getInputMap().put(KeyStroke.getKeyStroke(
+            KeyEvent.VK_N, InputEvent.CTRL_MASK, false), "caret-down-alt"); // NOI18N
+        actionName = "caret-down"; // NOI18N
+        Action a4 = new JumpOutOfSearchAction(actionName);
+        incrementalSearchTextField.getActionMap().put("caret-down-alt", a4); // NOI18N
 
         // configure find next button
         findNextButton = new JButton(
@@ -416,9 +435,7 @@ public final class SearchBar extends JPanel {
         matchCaseCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchMatchCase();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         matchCaseCheckBox.setSelected(getMatchCase());
@@ -429,9 +446,7 @@ public final class SearchBar extends JPanel {
         wholeWordsCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchWholeWords();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         wholeWordsCheckBox.setSelected(getWholeWords());
@@ -445,9 +460,7 @@ public final class SearchBar extends JPanel {
                 switchRegExp();
                 // Switch other checkbozes on/off
                 wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         regexpCheckBox.setSelected(getRegExp());
@@ -458,9 +471,7 @@ public final class SearchBar extends JPanel {
         highlightCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 switchHighlightResults();
-                // Put focus back in the incremental search textField
                 incrementalSearch();
-                incrementalSearchTextField.requestFocusInWindow();
             }
         });
         highlightCheckBox.setSelected(getHighlightResults());
@@ -484,19 +495,6 @@ public final class SearchBar extends JPanel {
                 }
             }
         });
-
-        // configure find properties
-        findProps = new HashMap<Object, Object>();
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
-        findProps.put(EditorFindSupport.FIND_WHOLE_WORDS, false);
-        findProps.put(EditorFindSupport.FIND_WRAP_SEARCH, true);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH, false);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_START, null);
-        findProps.put(EditorFindSupport.FIND_BLOCK_SEARCH_END, null);
-        // XXX take from preferences
-        findProps.put(EditorFindSupport.FIND_MATCH_CASE, false);
-        findProps.put(EditorFindSupport.FIND_REG_EXP, false);
-        findProps.put(EditorFindSupport.FIND_HIGHLIGHT_SEARCH, true);
         
         // padding at the end of the toolbar
         JPanel spacer = new JPanel();
@@ -544,8 +542,6 @@ public final class SearchBar extends JPanel {
     }
     
     private void makeBarExpandable() {
-//        inBar.add(findPreviousButton);
-//        inBar.add(findNextButton);
         inBar.add(matchCaseCheckBox);
         inBar.add(wholeWordsCheckBox);
         inBar.add(regexpCheckBox);
@@ -641,6 +637,9 @@ public final class SearchBar extends JPanel {
     }
     
     private void gainFocus() {
+        FindSupport findSupport = FindSupport.getFindSupport();
+        findProps = new HashMap<Object, Object>(findSupport.getFindProperties());
+
         if (isVisible()) {
             incrementalSearchTextField.requestFocusInWindow();
             return;
@@ -662,9 +661,17 @@ public final class SearchBar extends JPanel {
             findPreviousButton.setEnabled(false);
             findNextButton.setEnabled(false);
         }
+        wholeWordsCheckBox.setSelected(getWholeWords());
+        wholeWordsCheckBox.setEnabled(!getRegExp());
+        matchCaseCheckBox.setSelected(getMatchCase());
+        regexpCheckBox.setSelected(getRegExp());
+        highlightCheckBox.setSelected(getHighlightResults());
     }
 
     private void looseFocus() {
+        if (!isVisible()) {
+            return;
+        }
         if (isPopupGoingToShow) {
             isPopupGoingToShow = false;
             return;
@@ -678,6 +685,7 @@ public final class SearchBar extends JPanel {
         FindSupport.getFindSupport().setBlockSearchHighlight(0, 0);
         FindSupport.getFindSupport().incSearchReset();
         setVisible(false);
+        component.requestFocusInWindow();
     }
 
     private void incrementalSearch() {
@@ -792,13 +800,7 @@ public final class SearchBar extends JPanel {
     }
 
     private void processButton(AbstractButton button) {
-        button.setContentAreaFilled(false);
-        button.setBorderPainted(false);
         button.setMargin(BUTTON_INSETS);
-        if (button instanceof JButton) {
-            button.addMouseListener(sharedMouseListener);
-        }
-        button.setFocusable(false);
     }
     
     @SuppressWarnings("unchecked")
@@ -944,46 +946,40 @@ public final class SearchBar extends JPanel {
         }
         return null;
     }
-    
-    // preferences
-    private static final String IS_HIGHLIGHT_RESULTS = "isHighlightResults";
-    private static final String IS_REG_EXP = "isRegExp";
-    private static final String IS_MATCH_CASE = "isMatchCase";
-    private static final String IS_WHOLE_WORDS = "isWholeWords";
-    
-    private Preferences prefs() {
-        return NbPreferences.forModule(SearchBar.class);
-    }
-    
+
     private boolean getMatchCase() {
-        return prefs().getBoolean(IS_MATCH_CASE, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_MATCH_CASE);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchMatchCase() {
-        prefs().putBoolean(IS_MATCH_CASE, !getMatchCase());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getMatchCase());
     }
-    
+
     private boolean getWholeWords() {
-        return prefs().getBoolean(IS_WHOLE_WORDS, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_WHOLE_WORDS);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchWholeWords() {
-        prefs().putBoolean(IS_WHOLE_WORDS, !getWholeWords());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getWholeWords());
     }
-    
+
     private boolean getRegExp() {
-        return prefs().getBoolean(IS_REG_EXP, false); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_REG_EXP);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchRegExp() {
-        prefs().putBoolean(IS_REG_EXP, !getRegExp());
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getRegExp());
     }
-    
+
     private boolean getHighlightResults() {
-        return prefs().getBoolean(IS_HIGHLIGHT_RESULTS, true); // NOI18N 
+        Boolean b = (Boolean)findProps.get(EditorFindSupport.FIND_HIGHLIGHT_SEARCH);
+        return b != null ? b.booleanValue() : false;
     }
-    
+
     private void switchHighlightResults() {
-        prefs().putBoolean(IS_HIGHLIGHT_RESULTS, !getHighlightResults());
-    }  
+        findProps.put(EditorFindSupport.FIND_MATCH_CASE, !getHighlightResults());
+    }
 }

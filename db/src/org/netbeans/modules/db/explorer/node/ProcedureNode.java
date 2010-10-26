@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.db.explorer.node;
 
+import java.awt.Image;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -65,6 +66,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,6 +77,7 @@ public class ProcedureNode extends BaseNode {
     private static final String ICONBASE_P = "org/netbeans/modules/db/resources/procedure.png";
     private static final String ICONBASE_F = "org/netbeans/modules/db/resources/function.png";
     private static final String ICONBASE_T = "org/netbeans/modules/db/resources/trigger.png";
+    private static final Image ERROR_BADGE = ImageUtilities.loadImage("org/netbeans/modules/db/resources/error-badge.gif");
     private static final String FOLDER = "Procedure"; //NOI18N
     
     private static final String DELIMITER = "@@"; // NOI18N
@@ -158,13 +161,13 @@ public class ProcedureNode extends BaseNode {
         return getName();
     }
     
-    public Type getType() {
+    protected Type getType() {
         return this.type;
     }
 
     @Override
     public String getIconBase() {
-        switch (type) {
+        switch (getType()) {
             case Function:
                 return ICONBASE_F;
             case Procedure:
@@ -178,7 +181,7 @@ public class ProcedureNode extends BaseNode {
 
     @Override
     public String getShortDescription() {
-        switch (type) {
+        switch (getType()) {
             case Function:
                 return NbBundle.getMessage (ProcedureNode.class, "ND_Function"); //NOI18N
             case Procedure:
@@ -336,11 +339,121 @@ public class ProcedureNode extends BaseNode {
     
     public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
+        private final MetadataElementHandle<Procedure> procedureHandle;
+        private String procedureName = null;
+        private Type procedureType = null;
+        private boolean valid = false;
         
         @SuppressWarnings("unchecked")
         private Oracle(NodeDataLookup lookup, NodeProvider provider) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
+            procedureHandle = getLookup().lookup(MetadataElementHandle.class);
+        }
+
+        @Override
+        protected void initialize() {
+            super.initialize();
+            boolean connected = !connection.getConnector().isDisconnected();
+            MetadataModel metaDataModel = connection.getMetadataModel();
+            if (connected && metaDataModel != null) {
+                try {
+                    metaDataModel.runReadAction(
+                        new Action<Metadata>() {
+                            @Override
+                            public void run(Metadata metaData) {
+                                Procedure proc = procedureHandle.resolve(metaData);
+                                procedureName = proc.getName();
+                                
+                                Statement stmt;
+                                try {
+                                    stmt = connection.getConnection().createStatement();
+                                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_TYPE, STATUS FROM SYS.ALL_OBJECTS WHERE OWNER='" + connection.getSchema().toUpperCase() + "'" // NOI18N
+                                            + " AND OBJECT_NAME = '" + procedureName + "'" // NOI18N
+                                            + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )"); // NOI18N
+                                    
+                                    while(rs.next()) {
+                                        // type of procedure
+                                        String objectType = rs.getString("OBJECT_TYPE"); // NOI18N
+                                        if ("PROCEDURE".equals(objectType)) { // NOI18N
+                                            procedureType = Type.Procedure;
+                                        } else if ("FUNCTION".equals(objectType)) { // NOI18N
+                                            procedureType = Type.Function;
+                                        } else if ("TRIGGER".equals(objectType)) { // NOI18N
+                                            procedureType = Type.Trigger;
+                                        } else {
+                                            assert false : "Unknown type " + objectType;
+                                        }
+
+                                        // valid or invalid
+                                        String status = rs.getString("STATUS"); // NOI18N
+                                        valid = "VALID".equals(status); // NOI18N
+                                    }
+                                } catch (SQLException ex) {
+                                    Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while initialize procedure " + proc);
+                                }
+                                
+                                updateProcedureProperties();
+                            }
+                        }
+                    );
+                } catch (MetadataModelException e) {
+                    NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
+                }
+            }
+        }
+        
+        private void updateProcedureProperties() {
+            PropertySupport.Name ps = new PropertySupport.Name(this);
+            addProperty(ps);
+            
+            switch (procedureType) {
+                case Function:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
+                    break;
+                case Procedure:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredProcedure")); // NOI18N
+                    break;
+                case Trigger:
+                    addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
+                    break;
+                default:
+                    assert false : "Unknown type " + procedureType;
+            }
+        }
+
+        @Override
+        public String getName() {
+            return procedureName;
+        }
+
+        @Override
+        public Type getType() {
+            return procedureType;
+        }
+
+        @Override
+        public String getShortDescription() {
+            switch (procedureType) {
+                case Function:
+                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Function") : NbBundle.getMessage (ProcedureNode.class, "ND_Function_Invalid"); //NOI18N
+                case Procedure:
+                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Procedure") : NbBundle.getMessage (ProcedureNode.class, "ND_Procedure_Invalid"); //NOI18N
+                case Trigger:
+                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Trigger") : NbBundle.getMessage (ProcedureNode.class, "ND_Trigger_Invalid"); //NOI18N;
+                default:
+                    return null;
+            }
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            Image base = super.getIcon(type);
+            if (valid) {
+                return base;
+            } else {
+                return ImageUtilities.mergeImages(base, ERROR_BADGE, 6, 6);
+            }
         }
 
         @Override
@@ -379,7 +492,7 @@ public class ProcedureNode extends BaseNode {
             try {
                 Statement stat = connection.getConnection().createStatement();
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT, OWNER FROM sys.dba_source WHERE name = '" + getName() + "'" // NOI18N
+                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + connection.getSchema().toUpperCase() + "'" // NOI18N
                         + " ORDER BY LINE"; // NOI18N
                 ResultSet rs = stat.executeQuery(q);
                 while(rs.next()) {

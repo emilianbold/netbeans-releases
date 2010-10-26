@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTMacroParamExpansion;
 import org.netbeans.modules.cnd.apt.impl.support.APTTestToken;
 import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
+import org.netbeans.modules.cnd.apt.impl.support.generated.APTExprParser;
 import org.netbeans.modules.cnd.apt.impl.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
@@ -99,6 +100,10 @@ public class APTUtils {
                 // skip
             }
         }
+    }
+
+    public static String getAPTTokenName(int type) {
+        return APTExprParser._tokenNames[type];
     }
 
     /** Creates a new instance of APTUtils */

@@ -51,7 +51,9 @@ import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
@@ -61,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
@@ -361,5 +364,48 @@ public class CsmBaseUtilities {
 
     public static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, boolean resolveTypeChain) {
         return CsmClassifierResolver.getDefault().getTypeClassifier(type, contextFile, 0, resolveTypeChain);
+    }
+
+    public static CsmObject findClosestTopLevelObject(CsmObject csmTopLevelObject) {
+        while(csmTopLevelObject != null) {
+            if (CsmKindUtilities.isScope(csmTopLevelObject) && stopOnScope((CsmScope)csmTopLevelObject)) {
+                return csmTopLevelObject;
+            } else if (CsmKindUtilities.isScopeElement(csmTopLevelObject)) {
+                CsmScopeElement elem = (CsmScopeElement) csmTopLevelObject;
+                csmTopLevelObject = ((CsmScopeElement)csmTopLevelObject).getScope();
+                if (CsmKindUtilities.isDeclaration(elem) && stopOnScope((CsmScope) csmTopLevelObject)) {
+                    // we have top level declaration or decl with unresolved scope
+                    return elem;
+                }   
+                // else let scope to be analyzed
+            } else if(CsmKindUtilities.isInclude(csmTopLevelObject)) {
+                return (CsmInclude)csmTopLevelObject;
+            } else if(CsmKindUtilities.isMacro(csmTopLevelObject)) {
+                return (CsmMacro)csmTopLevelObject;
+            } else {
+                assert false : "unexpected top level object " + csmTopLevelObject;
+                break;
+            }
+        }
+        return csmTopLevelObject;
+    }
+    
+    private static boolean stopOnScope(CsmScope scope) {
+        if (scope == null) {
+            return true;
+        } else if (CsmKindUtilities.isFile(scope)) {
+            return true;
+        } else if (CsmKindUtilities.isNamespaceDefinition(scope)) {
+            return true;
+        } else if (CsmKindUtilities.isNamespace(scope)) {
+            return true;
+        } else {
+            // special check for local classes and functions
+            if (CsmKindUtilities.isFunction(scope) || CsmKindUtilities.isClass(scope)) {
+                CsmScope parentScope = ((CsmScopeElement)scope).getScope();
+                return stopOnScope(parentScope);
+            }
+        }
+        return false;
     }
 }

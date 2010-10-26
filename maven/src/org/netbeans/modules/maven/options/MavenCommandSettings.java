@@ -51,8 +51,6 @@ import org.openide.util.NbPreferences;
  */
 public final class MavenCommandSettings {
     private static final MavenCommandSettings INSTANCE = new MavenCommandSettings();
-    
-    public static final String COMMAND_CREATE_ARCHETYPE = "createArchetype"; //NOI18N
     public static final String COMMAND_CREATE_ARCHETYPENG = "createArchetypeNG"; //NOI18N
     public static final String COMMAND_INSTALL_FILE = "installFile"; //NOI18N
     public static final String COMMAND_SCM_CHECKOUT = "scmCheckout"; //NOI18N
@@ -90,14 +88,10 @@ public final class MavenCommandSettings {
                 toRet = "install:install-file";//NOI18N
             }
             else if (COMMAND_CREATE_ARCHETYPENG.equals(command)) {
-                //when changing this value, consider checking if the new version works with
-                //embedded maven and also update the workaround in MavenJavaExecutor
-                //#156751
-                // also change the default archetype catalog at org/netbeans/modules/maven/archetype-catalog.xml
-                toRet = "org.apache.maven.plugins:maven-archetype-plugin:2.0-alpha-4:generate";//NOI18N
+                toRet = "archetype:generate"; // NOI18N
             }
             else if (COMMAND_SCM_CHECKOUT.equals(command)) {
-                toRet = "org.apache.maven.plugins:maven-scm-plugin:1.0:checkout";//NOI18N
+                toRet = "scm:checkout";//NOI18N
             }
         }
         assert toRet != null : "Command " + command + " needs implementation."; //NOI18N

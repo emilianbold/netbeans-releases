@@ -125,36 +125,50 @@ final class ViewBuilder {
      * @param endOffset end offset of the rebuild. The rebuild may actually span further until
      *  the old and newly created views match their end offsets.
      *  If there was a document modification the endOffset is measured in after-mod offsets.
-     * @param endModOffset it must be endOffset for no-mod; insertOffset+insertLength for inserts
+     * @param modOffset it must be endOffset for no-mod; insertOffset+insertLength for inserts
      *  and removeOffset+removeLength for removals.
      * @param offsetDelta it's 0 for no-mod; +insertLength for inserts; -removeLength for removals.
      */
     ViewBuilder(ParagraphView paragraphView, DocumentView documentView, int paragraphViewIndex,
             EditorViewFactory[] viewFactories, int startOffset, int endOffset,
-            int endModOffset, int offsetDelta, boolean createLocalViews)
+            int modOffset, int offsetDelta, boolean createLocalViews)
     {
         Document doc = documentView.getDocument();
         docViewEndOffset = documentView.getEndOffset();
         assert (startOffset >= 0) : "startOffset=" + startOffset + " < 0"; // NOI18N
-        assert (endOffset >= endModOffset) : "endOffset=" + endOffset + " < endModOffset=" + endModOffset; // NOI18N
+        assert (endOffset >= modOffset) : "endOffset=" + endOffset + " < modOffset=" + modOffset; // NOI18N
         this.createLocalViews = createLocalViews;
-        // For local changes in non-null paragraphView the creation of local views must be enabled
+        // When not creating local views the possible passed paragraphView must be recreated
+        if (!createLocalViews && paragraphView != null) {
+            int pOffset = paragraphView.getStartOffset();
+            assert (pOffset <= startOffset) : "pOffset=" + pOffset + " > startOffset=" + startOffset; // NOI18N
+            startOffset = pOffset;
+            // [TODO] Consider whether endOffset should be extended to pOffset+pView.getLength() or not
+            paragraphView = null;
+        }
         assert (paragraphView == null || createLocalViews) : "createLocalViews=" + createLocalViews + // NOI18N
                 ", paragraphView=" + paragraphView; // NOI18N
+        // Possibly do a first-replace in the given paragraphView
         if (paragraphView != null) {
             fReplace = new ViewReplace<ParagraphView, EditorView>(
                     paragraphView, paragraphView.getViewIndex(startOffset));
             this.pReplace = fReplace;
             paragraphViewIndex++; // dReplace will start from next paragraph view
         }
+        // Always do document-replace since the built views can extend beyond fReplace even for very local changes
         dReplace = new ViewReplace<DocumentView, ParagraphView>(documentView, paragraphViewIndex);
         // Search for the views that need to be removed.
         // Must search in original offsets to after-mod offsets by using both childView.getLength()
-        // and paragraphView.getLength() which return textual span of existing views
-        // (unaffected by possibly just performed modification(s)).
+        // and paragraphView.getLength() which returns textual span of existing views
+        // (unaffected by possibly recently performed modification(s)).
         // First project endOffset to original offset space.
-        int origEndOffset = (offsetDelta < 0) ? endOffset + (-offsetDelta) : endOffset;
-        int endAffectedOffset = Math.max(endModOffset, origEndOffset);
+        int endAffectedOffset;
+        if (offsetDelta >= 0) { // Insert
+            endAffectedOffset = Math.max(endOffset, modOffset);
+        } else { // Removal
+            endAffectedOffset = Math.max(endOffset, modOffset - offsetDelta);
+        }
+        endAffectedOffset = Math.min(endAffectedOffset, docViewEndOffset - offsetDelta);
         if (fReplace != null) {
             int paragraphViewStartOffset = paragraphView.getStartOffset();
             assert (paragraphViewStartOffset <= startOffset) : "paragraphViewStartOffset=" + // NOI18N
@@ -174,13 +188,12 @@ final class ViewBuilder {
                 while (matchOffset < endAffectedOffset) {
                     matchOffset += childView.getLength();
                     fReplace.removeCount++;
-                    int index = fReplace.removeEndIndex(); // Should be within PV's bounds
-                    if (index == paragraphView.getViewCount()) { // When endAffectedOffset inside last child view
+                    if (fReplace.removeEndIndex() == paragraphView.getViewCount()) { // When endAffectedOffset inside last child view
                         assert (matchOffset == paragraphViewEndOffset) : "matchOffset=" + // NOI18N
                                 matchOffset + " != paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
                         break;
                     }
-                    childView = paragraphView.getEditorView(index);
+                    childView = paragraphView.getEditorView(fReplace.removeEndIndex());
                 }
                 assert (matchOffset >= endAffectedOffset);
             } else {
@@ -190,13 +203,17 @@ final class ViewBuilder {
         }
         if (matchOffset < endAffectedOffset) {
             int paragraphCount = documentView.getViewCount();
-            int index = dReplace.removeEndIndex();
-            if (index < paragraphCount) {
-                EditorView nextParagraphView = documentView.getEditorView(index);
+            if (dReplace.index < paragraphCount) { // dReplace.removeEndIndex() == dReplace.index
+                EditorView pView = documentView.getEditorView(dReplace.index);
                 if (paragraphViewEndOffset == Integer.MIN_VALUE) {
-                    paragraphViewEndOffset = nextParagraphView.getStartOffset();
+                    if (modOffset == 0 && offsetDelta > 0) {
+                        // docView[0].getStartOffset() == 1 in case of undo()
+                        paragraphViewEndOffset = 0;
+                    } else {
+                        paragraphViewEndOffset = pView.getStartOffset();
+                    }
                 }
-                paragraphViewEndOffset += nextParagraphView.getLength();
+                paragraphViewEndOffset += pView.getLength();
                 matchOffset = paragraphViewEndOffset;
                 dReplace.removeCount++;
                 checkRemoveParagraphs(endAffectedOffset, false);
@@ -208,7 +225,7 @@ final class ViewBuilder {
         assert (matchOffset >= 0) : "matchOffset=" + matchOffset; // NOI18N
         assert (paragraphViewEndOffset >= 0) : "paragraphViewEndOffset=" + paragraphViewEndOffset; // NOI18N
 
-        // Apply offsetDelta to operate in actual offset coordinates
+        // Apply offsetDelta to operate in actual offset coordinates for removals
         if (!viewRemovalFinished && offsetDelta != 0) {
             matchOffset += offsetDelta;
             paragraphViewEndOffset += offsetDelta;
@@ -232,7 +249,7 @@ final class ViewBuilder {
             if (matchOffset != endOffset) {
                 sb.append("=>").append(matchOffset); // NOI18N
             }
-            sb.append(">, endModOffset=").append(endModOffset);
+            sb.append(">, modOffset=").append(modOffset);
             sb.append(", docTextLength=").append(docViewEndOffset).append("\nfReplace=");
             if (fReplace != null) {
                 sb.append(fReplace);
@@ -427,12 +444,11 @@ final class ViewBuilder {
                     pReplace.add(view);
                 }
 
-
                 if (eolView) {
                     // Init view's length except for first replace where it's updated by EBVChildren.replace()
                     if (fReplace != pReplace) {
                         int length = createdViewEndOffset - pReplace.view.getStartOffset();
-                        pReplace.view.setLength(length, 0, 0);
+                        pReplace.view.setLength(length);
                     }
                     pReplace = null;
                 }
@@ -476,7 +492,7 @@ final class ViewBuilder {
         }
     }
 
-    void repaintAndReplaceViews() {
+    void replaceAndRepaintViews() {
         // Compute repaint region as area of views being removed
         DocumentView docView = dReplace.view;
         JTextComponent textComponent = docView.getTextComponent();
@@ -486,25 +502,22 @@ final class ViewBuilder {
         Rectangle repaintBounds = new Rectangle(0,0,-1,-1);
         Rectangle2D.Double docViewBounds = docView.getAllocation();
         TextLayoutCache textLayoutCache = docView.getTextLayoutCache();
+        VisualUpdate<?> fUpdate = null;
         if (fReplace != null) {
-            if (fReplace.removeCount > 0) {
-                textLayoutCache.remove(fReplace.view, fReplace.index, fReplace.removeCount);
-            }
-            // fReplace is at (dReplace.index - 1)
-            Shape childAlloc = docView.getChildAllocation(dReplace.index - 1, docViewBounds);
             // Clear individual views from textLayoutCache
-            EditorBoxView.ReplaceResult fResult = fReplace.replaceViews(offsetDelta, childAlloc);
-            if (fResult != null) {
-                if (fResult.isPreferenceChanged()) {
-                    docView.preferenceChanged(dReplace.index - 1,
-                            fResult.isWidthChanged(), fResult.isHeightChanged(), false);
-                    docViewWidthChanged |= fResult.isWidthChanged();
-                    docViewHeightChanged |= fResult.isHeightChanged();
+            fUpdate = fReplace.replaceViews(offsetDelta);
+            if (fUpdate != null) {
+                // fReplace is at (dReplace.index - 1)
+                Shape childAlloc = docView.getChildAllocation(dReplace.index - 1, docViewBounds);
+                fUpdate.updateSpansAndLayout(childAlloc);
+                if (fUpdate.isPreferenceChanged()) {
+                    docViewWidthChanged |= fUpdate.isWidthChanged();
+                    docViewHeightChanged |= fUpdate.isHeightChanged();
                 }
-                if (!fResult.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(fResult.getRepaintBounds());
+                if (!fUpdate.getRepaintBounds().isEmpty()) {
+                    repaintBounds.add(fUpdate.getRepaintBounds());
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.fine("fReplace:REPAINT:" + ViewUtils.toString(fResult.getRepaintBounds()) + '\n');
+                        LOG.fine("fReplace:REPAINT:" + ViewUtils.toString(fUpdate.getRepaintBounds()) + '\n');
                     }
                 }
             }
@@ -514,45 +527,60 @@ final class ViewBuilder {
         for (int i = 0; i < dReplace.removeCount; i++) {
             ParagraphView paragraphView = (ParagraphView) docView.getEditorView(dReplace.index + i);
             if (paragraphView.children != null) {
-                textLayoutCache.removeParagraph(paragraphView);
+                textLayoutCache.remove(paragraphView);
             }
         }
 
         // Repaint removed paragraph views
         dReplace.retainSpans(); // Attempt to retain spans of paragraph views
-        EditorBoxView.ReplaceResult dResult = dReplace.replaceViews(0, docViewBounds);
-        if (dResult != null) {
-            if (dResult.isPreferenceChanged()) {
-                docViewWidthChanged |= dResult.isWidthChanged();
-                docViewHeightChanged |= dResult.isHeightChanged();
-            }
-            if (!dResult.getRepaintBounds().isEmpty()) {
-                repaintBounds.add(dResult.getRepaintBounds());
-                if (LOG.isLoggable(Level.FINEST)) {
-                    LOG.fine("dReplace:REPAINT:" + ViewUtils.toString(dResult.getRepaintBounds()) + '\n');
-                }
-            }
-        }
+        VisualUpdate<?> dUpdate = dReplace.replaceViews(0);
+        // dUpdate.updateSpansAndLayout() will be done later once
+        // all the paragraph-update.updateSpansAndLayout() get called.
+        // This way the exact measurement of paragraph-views heights can only be done
+        // in one iteration.
+
         for (int i = 0; i < pReplaceList.size(); i++) {
             ViewReplace<ParagraphView, EditorView> replace = pReplaceList.get(i);
-            Shape childAlloc = docView.getChildAllocation(dReplace.index + i, docViewBounds);
-            EditorBoxView.ReplaceResult pResult = replace.replaceViews(0, childAlloc);
-            if (pResult != null) {
-                if (pResult.isPreferenceChanged()) {
-                    docView.preferenceChanged(dReplace.index + i,
-                            pResult.isWidthChanged(), pResult.isHeightChanged(), false);
-                    docViewWidthChanged |= pResult.isWidthChanged();
-                    docViewHeightChanged |= pResult.isHeightChanged();
+            VisualUpdate<?> pUpdate = replace.replaceViews(0);
+            if (pUpdate != null) {
+                Shape childAlloc = docView.getChildAllocation(dReplace.index + i, docViewBounds);
+                pUpdate.updateSpansAndLayout(childAlloc);
+                if (pUpdate.isPreferenceChanged()) {
+                    docViewWidthChanged |= pUpdate.isWidthChanged();
+                    docViewHeightChanged |= pUpdate.isHeightChanged();
                 }
-                if (!pResult.getRepaintBounds().isEmpty()) {
-                    repaintBounds.add(pResult.getRepaintBounds());
+                if (!pUpdate.getRepaintBounds().isEmpty()) {
+                    repaintBounds.add(pUpdate.getRepaintBounds());
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.fine("pReplaceList[" + i + "]:REPAINT:" + // NOI18N
-                                ViewUtils.toString(pResult.getRepaintBounds()) + '\n');
+                                ViewUtils.toString(pUpdate.getRepaintBounds()) + '\n');
                     }
                 }
             }
         }
+
+        if (dUpdate != null) {
+            dUpdate.updateSpansAndLayout(docViewBounds);
+            if (dUpdate.isPreferenceChanged()) {
+                docViewWidthChanged |= dUpdate.isWidthChanged();
+                docViewHeightChanged |= dUpdate.isHeightChanged();
+            }
+            if (!dUpdate.getRepaintBounds().isEmpty()) {
+                repaintBounds.add(dUpdate.getRepaintBounds());
+                if (LOG.isLoggable(Level.FINEST)) {
+                    LOG.fine("dReplace:REPAINT:" + ViewUtils.toString(dUpdate.getRepaintBounds()) + '\n');
+                }
+            }
+        }
+        
+        // Since fUpdate is not visually included in dUpdate => use docView.preferenceChanged()
+        if (fUpdate != null && fUpdate.isPreferenceChanged()) {
+            // Explicitly call preferenceChanged() which will fix vertical span
+            // in docView if the paragraph view's height changed
+            docView.preferenceChanged(dReplace.index - 1,   
+                    fUpdate.isWidthChanged(), fUpdate.isHeightChanged(), false);
+        }
+
         if (!repaintBounds.isEmpty()) {
             if (LOG.isLoggable(Level.FINEST)) {
                 LOG.fine("REPAINT-bounds:" + ViewUtils.toString(repaintBounds) + '\n');

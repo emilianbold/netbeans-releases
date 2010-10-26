@@ -433,20 +433,20 @@ public class CommonServerSupport implements GlassfishModule2, RefreshModulesCook
 
     @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name) {
-        return redeploy(stateListener, name, null);
+            final String name, boolean resourcesChanged) {
+        return redeploy(stateListener, name, null, resourcesChanged);
     }
         
     @Override
     public Future<OperationState> redeploy(final OperationStateListener stateListener, 
-            final String name, final String contextRoot) {
-        return redeploy(stateListener, name, contextRoot, new File[0]);
+            final String name, final String contextRoot, boolean resourcesChanged) {
+        return redeploy(stateListener, name, contextRoot, new File[0], resourcesChanged);
     }
 
     @Override
-    public Future<OperationState> redeploy(OperationStateListener stateListener, String name, String contextRoot, File[] libraries) {
+    public Future<OperationState> redeploy(OperationStateListener stateListener, String name, String contextRoot, File[] libraries, boolean resourcesChanged) {
         CommandRunner mgr = new CommandRunner(isReallyRunning(), getCommandFactory(), getInstanceProperties(), stateListener);
-        return mgr.redeploy(name, contextRoot, libraries);
+        return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
     }
 
     @Override

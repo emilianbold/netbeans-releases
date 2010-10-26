@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -87,7 +88,7 @@ public class DoxygenDocumentationTest {
  "* @author thp\n" +
  "*/";
         String expResult = "<html><body><p>Document main(int,char**) here...\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argc</i>\n</p><p>\n<strong>Parameter:</strong><br>&nbsp;  <i>argv</i>\n</p><p>\n<strong>Returns:</strong><br>&nbsp;  ...\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
-        String result = DoxygenDocumentation.doxygen2HTML(doxygen);
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }
 
@@ -109,7 +110,7 @@ public class DoxygenDocumentationTest {
  "* opq\n" +
  "*/";
         String expResult = "<html><body><p>abc def ghi\n</p><p>\n<pre>111\n  333\n444\n</pre>\n</p><p>\n jkl lmn opq</p>";
-        String result = DoxygenDocumentation.doxygen2HTML(doxygen);
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }
 
@@ -124,7 +125,7 @@ public class DoxygenDocumentationTest {
  "* @author thp\n" +
  "*/";
         String expResult = "<html><body><p>Document...\n</p><p>\n<strong>unimplemented:</strong><br>&nbsp;  xyz\n</p><p>\n<strong>Author:</strong><br>&nbsp;  thp</p>";
-        String result = DoxygenDocumentation.doxygen2HTML(doxygen);
+        String result = DoxygenDocumentation.doxygen2HTML(doxygen, CppTokenId.DOXYGEN_COMMENT);
         assertEquals(expResult, result);
     }
 }

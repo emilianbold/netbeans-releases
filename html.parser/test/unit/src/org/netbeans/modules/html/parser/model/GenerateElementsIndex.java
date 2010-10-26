@@ -61,6 +61,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import nu.validator.htmlparser.sax.HtmlParser;
+import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -175,8 +176,9 @@ public class GenerateElementsIndex extends NbTestCase {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.addTest(new GenerateElementsIndex("test_GenerateNamedCharacterReferencesIndex"));
+//        suite.addTest(new GenerateElementsIndex("test_GenerateNamedCharacterReferencesIndex"));
 
+        suite.addTest(new GenerateElementsIndex("test_GenerateSVGAndMATHMLElementsIndex"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateElementsIndex"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateGlobalAndEventAttributesEnumMembers"));
 //        suite.addTest(new GenerateElementsIndex("test_GenerateAttributesIndex"));
@@ -530,7 +532,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("(new Link(\"");
             out.write(attrId);
             out.write("\", \"");
-            out.write(l.getUrl().toExternalForm());
+            out.write(l.getLink());
             out.write("\")),\n");
         }
 
@@ -549,10 +551,11 @@ public class GenerateElementsIndex extends NbTestCase {
         for (Element e : elements) {
             out.write(e.name.getName().toUpperCase());
             out.write("(\n");
+            out.write("\tHtmlTagType.HTML,\n");
             out.write("\tnew Link(\"");
             out.write(e.name.getName());
             out.write("\", \"");
-            out.write(e.name.getUrl().toExternalForm());
+            out.write(e.name.getLink());
             out.write("\"),\n\t \"");
             out.write(e.getDescription());
             out.write("\", ");
@@ -585,7 +588,7 @@ public class GenerateElementsIndex extends NbTestCase {
             out.write("new Link(\"");
             out.write(e.interfacee.getName());
             out.write("\", \"");
-            out.write(e.interfacee.getUrl().toExternalForm());
+            out.write(e.interfacee.getLink());
             out.write("\")");
 
             out.write("\n), \n\n");
@@ -593,6 +596,38 @@ public class GenerateElementsIndex extends NbTestCase {
 
 
         System.out.println(out);
+    }
+
+    //TODO this is very simple version only, just names and categories, other metadata need to be parsed from the specs
+    public void test_GenerateSVGAndMATHMLElementsIndex() throws IOException {
+        Writer out = new StringWriter();
+        generateSimpleElementDescriptors(out, ElementDescriptorRules.MATHML_TAG_NAMES, "MATHML");
+        generateSimpleElementDescriptors(out, ElementDescriptorRules.SVG_TAG_NAMES, "SVG");
+
+        System.out.println(out);
+    }
+
+    
+    public void generateSimpleElementDescriptors(Writer out, Collection<String> tagNames, String type) throws IOException {
+        out.write("\n//" + type + " elements:\n//-----------------------\n\n");
+        for(String tagName : tagNames) {
+            out.write(ElementDescriptor.elementName2EnumName(tagName));
+            out.write("(\n");
+            out.write("\tHtmlTagType." + type + ",\n");
+            out.write("\tnew Link(\"");
+            out.write(tagName);
+            out.write("\", null),\n");
+            out.write("\tnull,\n");
+            out.write("\tEnumSet.of(ContentType.FLOW, ContentType.PHRASING, ContentType.EMBEDDED),\n");
+            out.write("\tEnumSet.noneOf(FormAssociatedElementsCategory.class),\n");
+            out.write("\tEnumSet.noneOf(ContentType.class),\n");
+            out.write("\tnew String[]{},\n");
+            out.write("\tEnumSet.noneOf(ContentType.class),\n");
+            out.write("\tnew String[]{},\n");
+            out.write("\tEnumSet.noneOf(Attribute.class),\n");
+            out.write("\tnull\n");
+            out.write("),\n");
+        }
     }
 
     private void writeAttributes(Collection<? extends Link> links, Writer out) throws IOException {

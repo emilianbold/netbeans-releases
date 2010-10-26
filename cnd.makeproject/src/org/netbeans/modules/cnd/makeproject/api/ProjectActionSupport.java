@@ -63,8 +63,8 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
+import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -89,6 +90,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -332,7 +334,7 @@ public class ProjectActionSupport {
             handle.setInitialDelay(0);
             return handle;
         }
-        
+
         private InputOutput getIOTab(String name, boolean reuse) {
             Action[] actions = getActions(name);
             InputOutput tab;
@@ -444,6 +446,8 @@ public class ProjectActionSupport {
                 io = getRunIO(pae, reuseTabs);
                 if (io == null) {
                     io = ioTab;
+                } else if (io != ioTab && ioTab != null) {
+                    ioTab.getOut().close();
                 }
             }
             if (pae.getType() == PredefinedType.CUSTOM_ACTION && customHandler != null) {
@@ -570,7 +574,8 @@ public class ProjectActionSupport {
                     MakeConfiguration makeConfiguration = pae.getConfiguration();
                     executable = panel.getExecutable();
                     executable = CndPathUtilitities.naturalize(executable);
-                    executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
+                    executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
                     executable = CndPathUtilitities.normalize(executable);
                     makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
                     // Mark the project 'modified'
@@ -613,7 +618,7 @@ public class ProjectActionSupport {
                 if (conf != null && !conf.getDevelopmentHost().isLocalhost()) {
                     final ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     if (!pae.isFinalExecutable()) {
-                        PathMap mapper = HostInfoProvider.getMapper(execEnv);
+                        PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
                         executable = mapper.getRemotePath(executable, true);
                     }
                     CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
@@ -624,8 +629,8 @@ public class ProjectActionSupport {
                     // FIXUP: getExecutable should really return fully qualified name to executable including .exe
                     // but it is too late to change now. For now try both with and without.
                     File file = new File(executable);
-                    if (!file.exists()) {
-                        file = new File(executable + ".exe"); // NOI18N
+                    if (!file.exists() && Utilities.isWindows()) {
+                        file = CndFileUtils.createLocalFile(executable + ".exe"); // NOI18N
                     }
                     if (!file.exists() || file.isDirectory()) {
                         ok = false;

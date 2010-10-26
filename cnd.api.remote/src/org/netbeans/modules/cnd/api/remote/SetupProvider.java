@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.io.File;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
@@ -56,10 +57,10 @@ public interface SetupProvider {
      * @param env host files should be delivered to
      * @return a map, where
      * key - the relative remote path (relative against HostInfoProvider.getLibDir(env))
-     * value - the local path.
+     * value - the local file
      *
      * Local path can be absolute or relative;
      * in the latter case, InstalledFileLocator will be used to find the file
      */
-    public Map<String, String> getBinaryFiles(ExecutionEnvironment env);
+    public Map<String, File> getBinaryFiles(ExecutionEnvironment env);
 }

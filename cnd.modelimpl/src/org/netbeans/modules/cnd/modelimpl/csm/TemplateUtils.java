@@ -223,14 +223,14 @@ public class TemplateUtils {
                                 }
                                 if (type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                         || type.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
-                                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope, global, type));
+                                    res.add(new TemplateParameterImpl(fakeAST, AstUtil.getText(child), file, scope, global, type));
                                     parameterStart = null;
                                     break;
                                 }
                             }
                         }
                     }
-                    res.add(new TemplateParameterImpl(fakeAST, child.getText(), file, scope, global));
+                    res.add(new TemplateParameterImpl(fakeAST, AstUtil.getText(child), file, scope, global));
                     parameterStart = null;
                     break;
                 case CPPTokenTypes.CSM_PARAMETER_DECLARATION:
@@ -263,14 +263,14 @@ public class TemplateUtils {
                             case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                                 AST pn = varDecl.getFirstChild();
                                 if (pn != null) {
-                                    res.add(new TemplateParameterImpl(parameterStart, pn.getText(), file, scope, global));
+                                    res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(pn), file, scope, global));
                                 }
                                 break;
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                                 for(AST p = varDecl.getFirstChild(); p != null; p = p.getNextSibling()){
                                     if (p.getType() == CPPTokenTypes.ID) {
-                                       res.add(new TemplateParameterImpl(parameterStart, p.getText(), file, scope, global));
+                                       res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(p), file, scope, global));
                                        break;
                                     }
                                 }
@@ -285,7 +285,7 @@ public class TemplateUtils {
                             // IZ 141842 : If template parameter declared as a template class, its usage is unresolved
                             // Now all IDs of template template parameter are added to template parameters of template.
                             // When CsmClassifierBasedTemplateParameter will be finished, this should be replaced. 
-                            res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope, global));
+                            res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(paramChild), file, scope, global));
                         }
                     }
                     break;
@@ -317,7 +317,7 @@ public class TemplateUtils {
                         type = child;
                         break;
                     case CPPTokenTypes.CSM_EXPRESSION:
-                        res.add(new ExpressionBasedSpecializationParameterImpl(new ExpressionStatementImpl(child, file, scope),
+                        res.add(ExpressionBasedSpecializationParameterImpl.create(ExpressionStatementImpl.create(child, file, scope),
                                 file, OffsetableBase.getStartOffset(child), OffsetableBase.getEndOffset(child)));
                         break;
                     case CPPTokenTypes.COMMA:
@@ -342,7 +342,7 @@ public class TemplateUtils {
 
         if (type instanceof NestedType) {
             NestedType nestedType = (NestedType) type;
-            type = new NestedType(checkTemplateType(nestedType.getParent(), scope), nestedType);
+            type = NestedType.create(checkTemplateType(nestedType.getParent(), scope), nestedType);
         }
         
         // Check instantiation parameters
@@ -395,6 +395,13 @@ public class TemplateUtils {
         return newMapping;
     }
 
+    public static boolean isTemplateQualifiedName(String name) {
+        return name.contains("<"); // NOI18N
+    }
+
+    public static String getTemplateQualifiedNameWithoutSiffix(String name) {
+        return name.replaceAll("<.*", ""); // NOI18N
+    }
 
     private TemplateUtils() {
     }

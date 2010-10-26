@@ -131,6 +131,7 @@ tokens {
 	DBL_SHARP;
 	SHARP;
         FUN_LIKE_MACRO_LPAREN;
+        GRAVE_ACCENT;
 
         // marker for last const text token
         LAST_CONST_TEXT_TOKEN;
@@ -297,6 +298,7 @@ tokens {
     LITERAL__Complex="_Complex"; // NOI18N
     LITERAL___thread="__thread"; // NOI18N
     LITERAL___attribute="__attribute"; // NOI18N
+    LITERAL__Imaginary="_Imaginary"; // NOI18N
 
 
     // Fortran tokens
@@ -669,6 +671,7 @@ tokens {
      * #if defined MACRO
      */
     private boolean afterPPDefined = false;
+    private boolean ppDefinedAllowed = true;
     private boolean isAfterPPDefined() {
         return afterPPDefined;
     }
@@ -676,6 +679,13 @@ tokens {
         this.afterPPDefined = afterPPDefined;
     }
 
+    private boolean isPPDefinedAllowed() {
+        return ppDefinedAllowed;
+    }
+
+    private void setPPDefinedAllowed(boolean ppDefinedAllowed) {
+        this.ppDefinedAllowed = ppDefinedAllowed;
+    }
 
     /**
      * ID read while in this state whould be treated as ID, but 
@@ -898,6 +908,8 @@ DOLLAR options { constText=true; }  :  '$' ;
 
 AT  options { constText=true; }     :  '@' ;
 
+GRAVE_ACCENT options { constText=true; }:  '`';
+
 FIRST_GREATER options { constText=true; } : 
     '>' ( {$setType(GREATERTHAN);}                  //GREATERTHAN           : ">" ;
     | '=' {$setType(GREATERTHANOREQUALTO);}         //GREATERTHANOREQUALTO  : ">=" ;
@@ -983,22 +995,21 @@ PREPROC_DIRECTIVE :
                     {
                         setPreprocPossible(false);
                         setPreprocPending(true);
+                        setPPDefinedAllowed(true);
                     }
                     (options{greedy = true;}:Space)*
                     (  // lexer has no token labels
-                      ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); } 
-                    | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); } 
-/*                                ( {LA(1)=='_' && LA(2)=='n'&&LA(3)=='e'&&LA(4)=='x'&&LA(5)=='t'}? 
-                                "_next" { $setType(INCLUDE_NEXT); })? */
-                    | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); }
+                      ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
+                    | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
+                    | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); setPPDefinedAllowed(false);}
                     | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
                     | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
                     | ("if" PostIfChar) =>  "if"   { $setType(IF); }
-                    | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF);  }
+                    | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF); setPPDefinedAllowed(false); }
                     | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
                     | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
                     | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
-                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); } DirectiveBody
+                    | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
                     | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
                     | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
                     | DirectiveBody)
@@ -1041,7 +1052,29 @@ protected  Space : (options {combineChars=true;}:' ' | '\t' | '\f');
 
 CHAR_LITERAL
         :   
-            '\'' (Escape | ~( '\'' | '\\' ))* '\''
+            '\'' CHAR_LITERAL_BODY
+        ;
+
+protected CHAR_LITERAL_BODY
+        :   
+		(       
+                        '\\'                        
+                        (   options{greedy=true;}:
+                            (	"\r\n" {offset--;} // MS 
+                            |	"\r"     // MAC
+                            |	"\n"     // Unix
+                            ) {deferredNewline();}
+                        | 
+                            '\''
+                        |   
+                            '\\'    
+                        )?
+		|	
+                         ~('\'' | '\r' | '\n' | '\\')
+		)*
+            ('\'' // correct ending of char literal
+                |  {LA(1)=='\r'||LA(1)=='\n'}? // error char literal doesn't have closing quote
+            )
         ;
 
 protected STRING_LITERAL
@@ -1161,7 +1194,7 @@ NUMBER
 // Everything that can be treated lke ID
 ID_LIKE:
         {isPreprocPending()}?
-        ("defined")=> "defined" 
+        ({isPPDefinedAllowed()}? "defined")=> "defined" 
            ( 
              (PostPPKwdChar | "(") => {setAfterPPDefined(true); $setType(DEFINED);}
            | 

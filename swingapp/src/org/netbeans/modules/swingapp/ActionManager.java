@@ -51,6 +51,7 @@ import java.util.*;
 import javax.swing.Timer;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.FormDataObject;
@@ -434,7 +435,7 @@ public class ActionManager {
                     // get the class tree
                     ClassTree classTree = null;
                     for (Tree t: cut.getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                             ClassTree classT = (ClassTree) t;
                             if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
                                 classTree = classT;
@@ -483,7 +484,7 @@ public class ActionManager {
                     ListIterator<? extends Tree> it = members.listIterator(index);
                     while (it.hasPrevious()) {
                         Tree t = it.previous();
-                        if (t.getKind() == Tree.Kind.METHOD || t.getKind() == Tree.Kind.CLASS) {
+                        if (t.getKind() == Tree.Kind.METHOD || TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                             insertIndex = index;
                             break;
                         }
@@ -798,7 +799,7 @@ public class ActionManager {
                     // get the class tree
                     ClassTree classTree = null;
                     for (Tree t: cut.getTypeDecls()) {
-                        if (t.getKind() == Tree.Kind.CLASS) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                             ClassTree classT = (ClassTree) t;
                             if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
                                 classTree = classT;
@@ -1457,7 +1458,7 @@ public class ActionManager {
         public void run(CompilationController controller) throws Exception {
             controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
             for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                if (t.getKind() == Tree.Kind.CLASS) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                     ClassTree classT = (ClassTree) t;
                     if (sourceFile.getName().equals(classT.getSimpleName().toString())) {
                         TreePath classTPath = controller.getTrees().getPath(controller.getCompilationUnit(), classT);

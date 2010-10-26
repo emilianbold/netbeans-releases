@@ -57,10 +57,21 @@ import java.io.IOException;
  */
 public final class ParameterEllipsisImpl extends ParameterImpl {
 
-    public ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
-        super(ast, file, type, "...", scope, global); //NOI18N
+    private ParameterEllipsisImpl(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+        super(ast, file, type, NameHolder.createName("..."), scope); //NOI18N
     }
 
+    public static ParameterEllipsisImpl create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) {
+        ParameterEllipsisImpl parameterEllipsisImpl = new ParameterEllipsisImpl(ast, file, type, scope);
+        postObjectCreateRegistration(global, parameterEllipsisImpl);
+        return parameterEllipsisImpl;
+    }
+
+    @Override
+    protected boolean registerInProject() {
+        return false;
+    }
+    
     @Override
     public boolean isVarArgs() {
         return true;
