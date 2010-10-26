@@ -52,20 +52,12 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
     public ModifyUndoTestCase(String testName) {
         super(testName);
-        System.setProperty("cnd.modelimpl.trace191307", "true");
+//        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
 
     @Override
     protected void setUp() throws Exception {
-//        if (Boolean.getBoolean("cnd.modelimpl.trace.test")) {
-//            TraceFlags.TRACE_191307_BUG = true;
-//        }
         super.setUp();
-    }
-
-    @Override
-    protected Class<?> getTestCaseDataClass() {
-        return ModifyDocumentTestCaseBase.class;
     }
     
     public void testRemoveThenUndo191307() throws Exception {
@@ -73,9 +65,19 @@ public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST UNDO REMOVE\n");
         }
-        final File sourceFile = getDataFile("fileWithoutDeadCode.cc");
+        final File sourceFile = getDataFile("fileForModification.cc");
         long length = sourceFile.length();
         
-        super.deleteTextThenUndo(sourceFile, 0, (int)length, 1, 0);
+        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
     }
+    
+    public void testInsertSaveThenUndoRedo190950() throws Exception {
+        // #191307:  Highlighting does not work if undo/redo is done
+        if (TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("TEST UNDO REMOVE\n");
+        }
+        final File sourceFile = getDataFile("fileForModification.cc");
+        super.insertTextThenSaveUndoRedo(sourceFile, 12 + 1, "void foo() {}\n", 3, 4);
+                
+    }    
 }

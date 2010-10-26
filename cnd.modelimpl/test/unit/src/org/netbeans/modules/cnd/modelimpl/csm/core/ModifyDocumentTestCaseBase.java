@@ -42,11 +42,13 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -67,8 +69,10 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
+import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.cookies.CloseCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
@@ -133,8 +137,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             CountDownLatch parse1 = new CountDownLatch(1);
             condRef.set(parse1);
             // modify document
-            UndoManager urm = new UndoManager();
-            doc.addUndoableEditListener(urm);
+            final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
@@ -203,8 +206,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             CountDownLatch parse1 = new CountDownLatch(1);
             condRef.set(parse1);
             // modify document
-            UndoManager urm = new UndoManager();
-            doc.addUndoableEditListener(urm);
+            final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
@@ -268,8 +270,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             CountDownLatch parse1 = new CountDownLatch(1);
             condRef.set(parse1);
             // modify document
-            UndoManager urm = new UndoManager();
-            doc.addUndoableEditListener(urm);
+            final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
 
                 @Override
@@ -312,6 +313,17 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         }
     }
 
+    private void saveDocument(final File sourceFile, final BaseDocument doc, final CsmProject project) throws DataObjectNotFoundException, BadLocationException, IOException {
+        DataObject testDataObject = DataObject.find(CndFileUtils.toFileObject(sourceFile));
+        SaveCookie save = testDataObject.getLookup().lookup(SaveCookie.class);
+        assertNotNull(save);
+        save.save();
+        if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("document text after save\n==============\n%s\n===============\n", doc.getText(0, doc.getLength()));
+        }
+        project.waitParse();
+    }
+        
     private void closeDocument(final File sourceFile, final UndoManager urm, final BaseDocument doc, final CsmProject project, final CsmProgressListener listener) throws DataObjectNotFoundException, BadLocationException {
         if (listener != null) {
             CsmListeners.getDefault().removeProgressListener(listener);
@@ -346,6 +358,24 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         return listener;
     }
 
+        private CsmProgressListener createFileParseListener2(final FileImpl fileImpl, final AtomicReference<Semaphore> condRef, final AtomicInteger parseCounter) {
+        final CsmProgressListener listener = new CsmProgressAdapter() {
+
+            @Override
+            public void fileParsingFinished(CsmFile file) {
+                if (TraceFlags.TRACE_182342_BUG) {
+                    new Exception(getName() + " fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
+                }
+                parseCounter.incrementAndGet();
+                if (file.equals(fileImpl)) {
+                    Semaphore cond = condRef.get();
+                    cond.release();
+                }
+            }
+        };
+        return listener;
+    }
+        
     private List<CsmOffsetable> checkDeadBlocks(final CsmProject project, final FileImpl fileImpl, String docMsg, final BaseDocument doc, String msg, int expectedDeadBlocks) throws BadLocationException {
         project.waitParse();
         List<CsmOffsetable> unusedCodeBlocks = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(fileImpl);
@@ -364,11 +394,89 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         return unusedCodeBlocks;
     }
 
+    protected void insertTextThenSaveUndoRedo(File sourceFile, final int insertLine, final String insertString, int numDecls, int numDeclsAfterModification) throws Exception {
+        if (TraceFlags.TRACE_191307_BUG) {
+            System.err.printf("TEST INSERT/SAVE then UNDO/REDO\n");
+        }
+        final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
+        final AtomicReference<Semaphore> condRef = new AtomicReference<Semaphore>();
+        final CsmProject project = super.getProject();
+        final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
+        assertNotNull(fileImpl);
+        final BaseDocument doc = getBaseDocument(sourceFile);
+        final UndoManager urm = getUndoRedoManager(sourceFile);
+        final int insertOffset = CndCoreTestUtils.getDocumentOffset(doc, insertLine, 0);
+        assertNotNull(doc);
+        project.waitParse();
+        final AtomicInteger parseCounter = new AtomicInteger(0);
+        CsmProgressListener listener = createFileParseListener2(fileImpl, condRef, parseCounter);
+        CsmListeners.getDefault().addProgressListener(listener);
+        try {
+            int curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations", numDecls, curNumDecls);
+            // insert dead code block
+            // create barier
+            Semaphore waitParseSemaphore = new Semaphore(0);
+            condRef.set(waitParseSemaphore);
+            // modify document
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        doc.insertString(insertOffset, insertString, null);
+                    } catch (BadLocationException ex) {
+                        exRef.compareAndSet(null, ex);
+                    }
+                }
+            });
+            assertTrue("must have undo", urm.canUndo());
+            assertEquals("must have only one modified object", 1, this.doListener.size());
+            waitParseSemaphore.acquire();
+            curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations", numDeclsAfterModification, curNumDecls);
+            assertEquals("must be exactly one parse event", 1, parseCounter.get());
+            // let's save changes
+            saveDocument(sourceFile, doc, project);
+            waitParseSemaphore.acquire();
+            curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
+            assertEquals("must be exactly two parse events", 2, parseCounter.get());
+            assertEquals("must have zero modified object", 0, this.doListener.size());
+            
+            assertTrue("must have undoable modification", urm.canUndo());
+            urm.undo();            
+            waitParseSemaphore.acquire();
+            project.waitParse();
+            curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
+            assertEquals("must be exactly three parse events", 3, parseCounter.get());
+            assertEquals("must have only one modified object", 1, this.doListener.size());
+            
+            assertTrue("must have redoable modification", urm.canRedo());
+            urm.redo();
+            waitParseSemaphore.acquire();
+            project.waitParse();
+            curNumDecls = fileImpl.getDeclarationsSize();
+            assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
+            assertEquals("must be exactly four parse events", 4, parseCounter.get());
+            assertEquals("must have zero modified object", 0, this.doListener.size());
+        } finally {
+            System.err.flush();
+            CsmListeners.getDefault().removeProgressListener(listener);
+            Exception ex = exRef.get();
+            if (ex != null) {
+                throw ex;
+            }
+        }
+    }
+
     private static final class ObjectsChangeListener implements ChangeListener {
         private final Set<DataObject> modifiedDOs = new HashSet<DataObject>();
         @Override
         public void stateChanged(ChangeEvent e) {
             DataObject[] objs = DataObject.getRegistry().getModified();
+            modifiedDOs.clear();
             modifiedDOs.addAll(Arrays.asList(objs));
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.println("ObjectsChangeListener: stateChanged " + e);
