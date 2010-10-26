@@ -254,9 +254,9 @@ public class FileInformation extends VCSFileInformation {
         }
 
         if (Mode.HEAD_VS_INDEX.equals(mode)) {
-            return new MessageFormat("{0}").format((Object) sIndex);
+            return new MessageFormat("{0}").format(new Object[] { sIndex });
         } else if (Mode.INDEX_VS_WORKING_TREE.equals(mode)) {
-            return new MessageFormat("{0}").format((Object) sWorkingTree);
+            return new MessageFormat("{0}").format(new Object[] { sWorkingTree });
         } else {
             return new MessageFormat("{0}/{1}").format(new Object[] { sIndex, sWorkingTree }, new StringBuffer(), null).toString();
         }
