@@ -58,12 +58,19 @@ import org.openide.util.NbBundle;
  */
 public class GoToSymbolProvider implements SearchProvider {
 
+    private GoToSymbolWorker worker;
+
     public void evaluate(SearchRequest request, SearchResponse response) {
         String text = removeNonJavaChars(request.getText());
         if(text.length() == 0) {
             return;
         }
-        GoToSymbolWorker worker = new GoToSymbolWorker(text);
+        synchronized(this) {
+            if (worker!=null) {
+                worker.cancel();
+            }
+            worker = new GoToSymbolWorker(text);
+        }
         worker.run();
         
         for (SymbolDescriptor td : worker.getTypes()) {
