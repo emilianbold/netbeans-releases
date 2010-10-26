@@ -45,6 +45,7 @@ package org.netbeans.modules.git.ui.status;
 import java.io.File;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.nodes.AbstractNode;
@@ -61,10 +62,12 @@ import org.openide.util.lookup.Lookups;
 public class StatusNode extends AbstractNode {
     private final GitFileNode node;
     private NameProperty nameProperty;
+    private final Mode mode;
 
-    public StatusNode (GitFileNode node) {
+    public StatusNode (GitFileNode node, Mode mode) {
         super(Children.LEAF, Lookups.fixed(node.getLookupObjects()));
         this.node = node;
+        this.mode = mode;
         initProperties();
     }
 
@@ -74,7 +77,7 @@ public class StatusNode extends AbstractNode {
 
     @Override
     public Action getPreferredAction () {
-        if (node.getInformation().containsStatus(FileInformation.Status.VERSIONED_CONFLICT)) {
+        if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
             return new OpenInEditorAction(new File[] { getFile() });
         } else {
             // Diff
@@ -167,18 +170,20 @@ public class StatusNode extends AbstractNode {
         static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Status.DisplayName"); //NOI18N
         static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Status.Description"); //NOI18N
         private final GitFileNode fileNode;
+        private final Mode mode;
 
         public StatusProperty (StatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION);
             String sortable = Integer.toString(statusNode.getNode().getInformation().getComparableStatus());
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + statusNode.getNode().getName()); // NOI18N
             this.fileNode = statusNode.node;
+            this.mode = statusNode.mode;
         }
 
         @Override
         public String getValue () {
             FileInformation finfo =  fileNode.getInformation();
-            return finfo.getStatusText();
+            return finfo.getStatusText(mode);
         }
     }
 }

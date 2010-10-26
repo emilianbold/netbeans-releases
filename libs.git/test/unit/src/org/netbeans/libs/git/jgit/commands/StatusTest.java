@@ -114,8 +114,10 @@ public class StatusTest extends AbstractGitTestCase {
         write(deleted_uptodate, "deleted_uptodate");
         File deleted_untracked = new File(workDir, "deleted-untracked");
         write(deleted_untracked, "deleted_untracked");
+        File deleted_modified = new File(workDir, "deleted-modified");
+        write(deleted_modified, "deleted_modified");
 
-        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked);
+        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked, deleted_modified);
         commit(workDir);
         add(added_uptodate, added_modified, added_deleted);
         write(modified_deleted, "modification modified_deleted");
@@ -125,7 +127,8 @@ public class StatusTest extends AbstractGitTestCase {
         add(modified_deleted, modified_modified, modified_reset, modified_uptodate);
         deleted_uptodate.delete();
         deleted_untracked.delete();
-        remove(true, deleted_uptodate, deleted_untracked);
+        deleted_modified.delete();
+        remove(true, deleted_uptodate, deleted_untracked, deleted_modified);
         write(added_modified, "modification2 added_modified");
         write(uptodate_modified, "modification2 uptodate_modified");
         write(modified_modified, "modification2 modified_modified");
@@ -133,28 +136,30 @@ public class StatusTest extends AbstractGitTestCase {
         added_deleted.delete();
         modified_deleted.delete();
         uptodate_deleted.delete();
-        deleted_untracked.createNewFile();
+        write(deleted_untracked, "deleted_untracked");
+        write(deleted_modified, "deleted_modified\nchange");
 
         TestStatusListener listener = new TestStatusListener();
         GitClient client = getClient(workDir);
         client.addNotificationListener(listener);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(statuses.isEmpty());
-        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
-        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
-        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false, listener);
         assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
         assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
         assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
-        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
         assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
         assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
         assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
-        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_MODIFIED, false, listener);
-        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
         assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         // what about isIgnored() here?
-        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
     }
 
     public void testStatusSingleFile () throws Exception {
@@ -181,12 +186,12 @@ public class StatusTest extends AbstractGitTestCase {
         client.addNotificationListener(monitor);
         Map<File, GitStatus> statuses = client.getStatus(new File[] { untracked }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
-        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, monitor);
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, monitor);
         monitor = new TestStatusListener();
         client.addNotificationListener(monitor);
         statuses = client.getStatus(new File[] { added_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
-        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, monitor);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false, monitor);
         monitor = new TestStatusListener();
         client.addNotificationListener(monitor);
         statuses = client.getStatus(new File[] { uptodate_modified }, ProgressMonitor.NULL_PROGRESS_MONITOR);
@@ -277,13 +282,13 @@ public class StatusTest extends AbstractGitTestCase {
         write(new File(folder2, ".gitignore"), "subfolder");
 
         Map<File, GitStatus> statuses = getClient(workDir).getStatus(new File[] { workDir }, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertStatus(statuses, workDir, file1, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file1, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, folder, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(folder).isFolder());
         assertNull(statuses.get(file2));
         assertNull(statuses.get(file3));
         assertNull(statuses.get(file4));
-        assertStatus(statuses, workDir, file5, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_NORMAL, false);
+        assertStatus(statuses, workDir, file5, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
         assertStatus(statuses, workDir, subFolder2, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_IGNORED, false);
         assertTrue(statuses.get(subFolder2).isFolder());
         assertNull(statuses.get(file6));

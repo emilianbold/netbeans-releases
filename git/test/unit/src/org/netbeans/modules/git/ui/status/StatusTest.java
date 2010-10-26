@@ -43,7 +43,6 @@
 package org.netbeans.modules.git.ui.status;
 
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Collections;

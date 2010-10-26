@@ -50,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.netbeans.libs.git.progress.StatusListener;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
@@ -88,12 +87,12 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     // simple test if cache refreshes correctly
     public void testExternalChanges () throws Exception {
         waitForInitialScan();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
         getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         waitForRefresh();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_INDEX_WORKING_TREE));
     }
 
     // testing if .git events can be disabled with the commandline switch
@@ -101,35 +100,35 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         // dirstate events disabled
         System.setProperty("versioning.git.handleExternalEvents", "false");
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
         getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         failIfRefreshed();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         getCache().refreshAllRoots(Collections.singleton(modifiedFile));
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_INDEX_WORKING_TREE));
     }
 
     // testing if internal repository commands disable the handler
     // test: refreshTimestamp called manually
     public void testNoExternalEventsManualTimestampRefresh () throws Exception {
         waitForInitialScan();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
         getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         Git.getInstance().refreshWorkingCopyTimestamp(repositoryLocation);
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         failIfRefreshed();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         getCache().refreshAllRoots(Collections.singleton(modifiedFile));
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NOTVERSIONED_NEW_IN_WORKING_TREE));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_INDEX_WORKING_TREE));
     }
 
     // test: check that the index timestamp is refreshed after WT modifying commands
     public void testChangesInsideIDE () throws Exception {
         waitForInitialScan();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
         Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
         logger.setLevel(Level.ALL);
@@ -149,13 +148,13 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         Git.getInstance().getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertTrue(refreshed[0]);
         failIfRefreshed();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
     }
 
     // test: check that the index timestamp is NOT refreshed after WT read-only commands
     public void testNoRefreshAfterStatus () throws Exception {
         waitForInitialScan();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
         Logger logger = Logger.getLogger(GitClientInvocationHandler.class.getName());
         logger.setLevel(Level.ALL);
@@ -175,7 +174,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         Git.getInstance().getClient(repositoryLocation).getStatus(new File[] { modifiedFile }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertFalse(refreshed[0]);
         failIfRefreshed();
-        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.VERSIONED_ADDED_TO_INDEX));
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
     }
 
     private void waitForRefresh () throws Exception {

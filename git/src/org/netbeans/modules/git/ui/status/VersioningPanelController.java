@@ -66,6 +66,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
@@ -87,7 +88,6 @@ import org.openide.util.actions.SystemAction;
  */
 class VersioningPanelController implements ActionListener, PropertyChangeListener {
 
-    private final GitVersioningTopComponent tc;
     private final VersioningPanel panel;
     private VCSContext context;
     private EnumSet<Status> displayStatuses;
@@ -98,9 +98,9 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
     private final SyncTable syncTable;
+    private Mode mode;
 
     VersioningPanelController (GitVersioningTopComponent tc) {
-        this.tc = tc;
         this.panel = new VersioningPanel();
 
         initDisplayStatus();
@@ -182,14 +182,17 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         // TODO persist selection
         if (panel.tgbHeadVsWorking.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
+            mode = Mode.HEAD_VS_WORKING_TREE;
 //            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadWorking")); // NOI18N
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
+            mode = Mode.HEAD_VS_INDEX;
 //            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_HeadIndex")); // NOI18N
         } else {
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
+            mode = Mode.INDEX_VS_WORKING_TREE;
 //            GitModuleConfig.getDefault().setLastUsedModificationContext(Setup.DIFFTYPE_ALL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanelController.class, "MSG_No_Changes_IndexWorking")); // NOI18N
         }
@@ -306,7 +309,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
-                    nodes.add(new StatusNode(new GitFileNode(root, f)));
+                    nodes.add(new StatusNode(new GitFileNode(root, f), mode));
                 }
             }
             Mutex.EVENT.readAccess(new Runnable () {
@@ -361,7 +364,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            toAdd.add(new StatusNode(new GitFileNode(root, evt.getFile())));
+                            toAdd.add(new StatusNode(new GitFileNode(root, evt.getFile()), mode));
                         }
                     }
                 } else if (node != null) {
