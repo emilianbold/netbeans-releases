@@ -255,7 +255,19 @@ public enum CppTokenId implements TokenId {
     PERCENTEQ("%=", "operator"), // NOI18N
     LTLTEQ("<<=", "operator"), // NOI18N
     GTGTEQ(">>=", "operator"), // NOI18N
-    
+
+    ALTERNATE_AND("and", "keyword"), // NOI18N
+    ALTERNATE_BITOR("bitor", "keyword"), // NOI18N
+    ALTERNATE_OR("or", "keyword"), // NOI18N
+    ALTERNATE_XOR("xor", "keyword"), // NOI18N
+    ALTERNATE_COMPL("compl", "keyword"), // NOI18N
+    ALTERNATE_BITAND("bitand", "keyword"), // NOI18N
+    ALTERNATE_AND_EQ("and_eq", "keyword"), // NOI18N
+    ALTERNATE_OR_EQ("or_eq", "keyword"), // NOI18N
+    ALTERNATE_XOR_EQ("xor_eq", "keyword"), // NOI18N
+    ALTERNATE_NOT("not", "keyword"), // NOI18N
+    ALTERNATE_NOT_EQ("not_eq", "keyword"), // NOI18N
+
     ELLIPSIS("...", "special"), // NOI18N
     AT("@", "special"), // NOI18N
     GRAVE_ACCENT("`", "special"), // NOI18N
