@@ -187,7 +187,7 @@ public class EmbeddedIndentTest extends NbTestCase {
             List<Context.Region> regions = context.indentRegions();
             Context.Region region = regions.get(0);
             assertEquals(region.getStartOffset(), 0);
-            assertEquals(region.getEndOffset(), context.document().getLength() + 1);
+            assertEquals(region.getEndOffset(), context.document().getLength());
             context.document().insertString(context.startOffset(), TestLineTokenId.MIME_TYPE + "/", null);
             reformatPos = context.document().createPosition(context.startOffset());
         }

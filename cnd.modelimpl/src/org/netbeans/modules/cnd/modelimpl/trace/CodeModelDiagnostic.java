@@ -43,8 +43,11 @@
 package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.PrintWriter;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileSnapshot;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -62,8 +65,17 @@ public class CodeModelDiagnostic implements CndDiagnosticProvider {
 
     @Override
     public void dumpInfo(Lookup context, PrintWriter printOut) {
-        int parseCount = FileImpl.getParseCount();
-        printOut.printf("parseCount=%d\n", parseCount);// NOI18N 
+        printOut.printf("Global ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+        Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
+        for (CsmFile csmFile : allFiles) {
+            if (csmFile instanceof FileImpl) {
+                ((FileImpl)csmFile).dumpInfo(printOut);
+            } else if (csmFile instanceof FileSnapshot) {
+                ((FileSnapshot)csmFile).dumpInfo(printOut);
+            } else {
+                printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
+            }
+        }
     }
 
 }

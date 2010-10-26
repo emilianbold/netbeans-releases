@@ -311,6 +311,16 @@ public class ScannerTestCase extends NbTestCase {
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
+    public void testMSVCLogs() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        doTest(getLogs(), toolchain.getScanner(), getRef());
+    }
+
+    public void testGnuClearmakeLogs() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_LINUX);
+        doTest(getLogs(), toolchain.getScanner(), getRef());
+    }
+
     private void doTest(File logFile, ScannerDescriptor scanner, PrintStream ref) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(logFile));
         String line;

@@ -444,17 +444,19 @@ public class ModelSupport implements PropertyChangeListener {
 
     private static final class BufAndProj {
 
-        public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile) {
+        public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile, long lastModified) {
             assert buffer != null : "null buffer";
             this.buffer = buffer;
             assert project != null : "null project";
             this.project = project;
             assert nativeFile != null : "null nativeFile";
             this.nativeFile = nativeFile;
+            this.lastModified = lastModified;
         }
         public final FileBuffer buffer;
         public final ProjectBase project;
         public final NativeFileItem nativeFile;
+        public final long lastModified;
     }
 
     private class ModifiedObjectsChangeListener implements ChangeListener {
@@ -496,13 +498,14 @@ public class ModelSupport implements PropertyChangeListener {
                 if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
                     FileObject primaryFile = curObj.getPrimaryFile();
                     File file = FileUtil.toFile(primaryFile);
+                    long lastModified = file.lastModified();
                     CharSequence absPath = (file == null) ? primaryFile.getPath() : file.getAbsolutePath();
                     final FileBufferDoc buffer = new FileBufferDoc(absPath, doc);
 
                     for (NativeFileItem nativeFile : set.getItems()) {
                         ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
                         if (csmProject != null) { // this could be null when code assistance is turned off for project
-                            addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile));
+                            addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile, lastModified));
                             csmProject.onFileEditStart(buffer, nativeFile);
                         }
                     }
@@ -558,8 +561,10 @@ public class ModelSupport implements PropertyChangeListener {
                     if (!contains(objs, dao)) {
                         for (BufAndProj bufNP : getBufNP(dao)) {
                             if (bufNP != null) {
+                                final FileBuffer fileBuffer = getFileBuffer(bufNP.buffer.getFile());
+                                long lastModified = fileBuffer.lastModified();
                                 // removing old doc buffer and creating new one
-                                bufNP.project.onFileEditEnd(getFileBuffer(bufNP.buffer.getFile()), bufNP.nativeFile);
+                                bufNP.project.onFileEditEnd(fileBuffer, bufNP.nativeFile, bufNP.lastModified == lastModified);
                             } else {
                                 System.err.println("no buffer for " + dao);
                             }

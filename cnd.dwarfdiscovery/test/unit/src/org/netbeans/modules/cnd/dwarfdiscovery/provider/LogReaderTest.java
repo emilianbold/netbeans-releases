@@ -43,12 +43,15 @@
 package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
 import junit.framework.TestCase;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties;
+import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSource;
 
 /**
  *
@@ -57,16 +60,33 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 public class LogReaderTest extends TestCase {
 
     public void testWrongLibtoolCompilerInvocation() {
-        testCompilerInvocation(LogReader.CompilerType.UNKNOWN, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc");
+        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc");
     }
 
     public void testLibtoolCCompilerInvocation() {
-        testCompilerInvocation(LogReader.CompilerType.C, "/bin/sh ./libtool --mode=compile /export/home/gcc/gccobj/gcc/xgcc -shared-libgcc -B/export/home/gcc/gccobj/gcc/ ../../../libjava/gnu/gcj/natCore.c");
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/bin/sh ./libtool --mode=compile /export/home/gcc/gccobj/gcc/xgcc -shared-libgcc -B/export/home/gcc/gccobj/gcc/ ../../../libjava/gnu/gcj/natCore.c");
     }
 
     public void testLibtoolCppCompilerInvocation() {
-        testCompilerInvocation(LogReader.CompilerType.CPP, "./libtool --tag=CXX --mode=compile /usr/bin/g++ -shared -B/usr/lib/gcc/ filename.cc");
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "./libtool --tag=CXX --mode=compile /usr/bin/g++ -shared -B/usr/lib/gcc/ filename.cc");
     }
+
+    public void testCppCompilerInvocation() {
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C");
+    }
+
+    public void testCppCompilerInvocation2() {
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/g++ -c -x c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.C");
+    }
+
+    public void testCppCompilerInvocation3() {
+        testCompilerInvocation(ItemProperties.LanguageKind.C, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c");
+    }
+
+    public void testCppCompilerInvocation4() {
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/grid/common/pkgs/gcc/v4.4.0/bin/gcc -c -x c++ -fpic -DVERBOSE  -pthread -fcheck-new -Wno-deprecated -m32 -g  -DBEDB_SUPPORT -D_XOPEN_SOURCE_EXTENDED=1 -DLINUX2 -I. -I..  -I/vobs/ua/include -I/vobs/rcc/include -I/grid/cva/test_ius/ius.10.2.b6/tools/inca/include -I/grid/cva/test_ius/ius.10.2.b6/tools/include -I/vobs/ua/Debug/include -I/vobs/ua/include -I/vobs/sys/include/x86-lx2-32 -I/grid/common/pkgs/purifyplus/v7.0.1/releases/purify.i386_linux2.7.0.1 ../coGuiApp.c");
+    }
+
     /**
      * Test of scanCommandLine method, of class DwarfSource.
      */
@@ -643,7 +663,7 @@ public class LogReaderTest extends TestCase {
         line = LogReader.trimBackApostropheCalls(line, null);
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         String[] cmds = pattern.split(line);
-        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros,null);
+        String what = DiscoveryUtils.gatherCompilerLine(cmds[0], isScriptOutput, userIncludes, userMacros,null, null);
         StringBuilder res = new StringBuilder();
         res.append("Source:").append(what).append("\n");
         res.append("Macros:");
@@ -684,25 +704,36 @@ public class LogReaderTest extends TestCase {
                 startLine++;
             }
             if (expResult.charAt(i) != result.charAt(i)) {
-                sb.append("Diff starts in line " + startLine + "\n");
+                sb.append("Diff starts in line ").append(startLine).append("\n");
                 String context = expResult.substring(i);
                 if (context.length() > 40) {
                     context = context.substring(0, 40);
                 }
-                sb.append("Expected " + context + "\n");
+                sb.append("Expected ").append(context).append("\n");
                 context = result.substring(i);
                 if (context.length() > 40) {
                     context = context.substring(0, 40);
                 }
-                sb.append("Found " + context + "\n");
+                sb.append("Found ").append(context).append("\n");
                 break;
             }
         }
         assertFalse(sb.toString(), true);
     }
 
-    private void testCompilerInvocation(LogReader.CompilerType ct, String line) {
+    private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line) {
         LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
-        assert li.compilerType == ct;
+        if (ct == ItemProperties.LanguageKind.Unknown) {
+            assertEquals(li.getLanguage(), ct);
+            return;
+        }
+        List<String> userIncludes = new ArrayList<String>();
+        Map<String, String> userMacros = new HashMap<String, String>();
+        List<String> languageArtifacts = new ArrayList<String>();
+        String what = DiscoveryUtils.gatherCompilerLine(line, true, userIncludes, userMacros, null, languageArtifacts);
+        assertNotNull(what);
+        CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros);
+
+        assertEquals(cs.getLanguageKind(), ct);
     }
 }

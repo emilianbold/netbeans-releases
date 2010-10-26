@@ -59,6 +59,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.TokenCategory;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.TokenID;
@@ -211,8 +212,16 @@ public final class NonLexerSyntaxHighlighting extends AbstractHighlightsContaine
                 init = true;
 
                 try {
-                    ExtSyntaxSupport ess = (ExtSyntaxSupport)baseDocument.getSyntaxSupport();
-                    tokenItem = ess.getTokenChain(startOffset, endOffset);
+                    @SuppressWarnings("deprecation")
+                    SyntaxSupport syntax = baseDocument.getSyntaxSupport();
+
+                    if (syntax instanceof ExtSyntaxSupport) {
+                        ExtSyntaxSupport ess = (ExtSyntaxSupport) syntax;
+                        tokenItem = ess.getTokenChain(startOffset, endOffset);
+                    } else {
+                        LOG.log(Level.WARNING, "Token sequence not an ExtSyntaxSupport: document " + baseDocument + " (lexer.nbbridge module missing?)"); //NOI18N
+                        tokenItem = null;
+                    }
                 } catch (BadLocationException e) {
                     LOG.log(Level.WARNING, "Can't get token sequence: document " + baseDocument + //NOI18N
                         ", startOffset = " + startOffset + ", endOffset = " + endOffset, e); //NOI18N

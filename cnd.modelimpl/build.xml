@@ -104,7 +104,7 @@ made subject to such option by the copyright holder.
                 <classpath path="${antlr.jar}"/>
         </antlr>   
         -->
-        <java classname="org.netbeans.modules.cnd.antlr.Tool"  fork="true">
+        <java classname="org.netbeans.modules.cnd.antlr.Tool"  fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <!--<arg value="-traceParser"/>-->
@@ -144,7 +144,7 @@ made subject to such option by the copyright holder.
             dest="${antlr.grammar.dir}"/>
 
         <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
-        <java classname="org.antlr.Tool" fork="true">
+        <java classname="org.antlr.Tool" fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <arg value="${antlr.grammar.dir}/FortranParser.g"/>
@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
                     overwrite="true"/>
 
         <echo message="ANTLR Parser Generator   Version Sun-3.1.3" />
-        <java classname="org.antlr.Tool" fork="true">
+        <java classname="org.antlr.Tool" fork="true" failonerror="true">
             <arg value="-o"/>
             <arg value="${antlr3.evaluator.output.dir}"/>
             <arg value="${antlr3.evaluator.grammar.dir}/Evaluator.g"/>

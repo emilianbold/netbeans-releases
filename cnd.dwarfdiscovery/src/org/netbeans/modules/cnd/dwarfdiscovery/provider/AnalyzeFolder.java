@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -189,24 +190,24 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NoBaseFolder")));
         }
         Set<String> set = getObjectFiles(root);
         if (set.isEmpty()) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutablesInFolder", root)));
         }
         int i = 0;
         for(String obj : set){
             i++;
             DiscoveryExtensionInterface.Applicable applicable = sizeComilationUnit(obj, null);
             if (applicable.isApplicable()) {
-                return new ApplicableImpl(true, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
+                return new ApplicableImpl(true, null, applicable.getCompilerName(), 50, applicable.isSunStudio(), null, null, null);
             }
             if (i > 25) {
-                return ApplicableImpl.NotApplicable;
+                return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutableWithDebugInformation", root)));
             }
         }
-        return ApplicableImpl.NotApplicable;
+        return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeFolder.class, "NotFoundExecutableWithDebugInformation", root)));
     }
     
     @Override

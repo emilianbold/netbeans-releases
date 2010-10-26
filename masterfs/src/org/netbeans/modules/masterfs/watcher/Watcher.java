@@ -152,7 +152,7 @@ public class Watcher extends AnnotationProvider {
 
                     // XXX: handle the all-dirty message
                     if (path == null) { // all dirty
-
+                        enqueueAll(map.keySet());
                     } else {
                         // don't ask for nonexistent FOs
                         File file = new File(path);
@@ -201,6 +201,18 @@ public class Watcher extends AnnotationProvider {
                 pending = new HashSet();
             }
             pending.add(fo);
+        }
+    }
+
+    private void enqueueAll(Set<FileObject> fos) {
+        assert fos != null;
+
+        synchronized(lock) {
+            if (pending == null) {
+                refreshTask.schedule(1500);
+                pending = new HashSet();
+            }
+            pending.addAll(fos);
         }
     }
 
