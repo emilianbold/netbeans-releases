@@ -53,6 +53,7 @@ import org.netbeans.api.db.explorer.node.NodeProvider;
 import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.Specification;
+import org.netbeans.modules.db.DatabaseModule;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.metadata.model.api.Action;
@@ -90,13 +91,13 @@ public class ProcedureNode extends BaseNode {
      * @param dataLookup the lookup to use when creating node providers
      * @return the ProcedureNode instance
      */
-    public static ProcedureNode create(NodeDataLookup dataLookup, NodeProvider provider) {
+    public static ProcedureNode create(NodeDataLookup dataLookup, ProcedureNodeProvider provider, String schema) {
         DatabaseConnection conn = dataLookup.lookup(DatabaseConnection.class);
         ProcedureNode node;
-        if (conn != null && "MySQL".equalsIgnoreCase(conn.getDriverName())) { // NOI18N
-            node = new MySQL(dataLookup, provider);
-        } else if (conn != null && conn.getDriverName() != null && conn.getDriverName().startsWith("Oracle")) { // NOI18N
-            node = new Oracle(dataLookup, provider);
+        if (conn != null && DatabaseModule.IDENTIFIER_MYSQL.equalsIgnoreCase(conn.getDriverName())) {
+            node = new MySQL(dataLookup, provider, schema);
+        } else if (conn != null && conn.getDriverName() != null && conn.getDriverName().startsWith(DatabaseModule.IDENTIFIER_ORACLE)) {
+            node = new Oracle(dataLookup, provider, schema);
         } else {
             node = new ProcedureNode(dataLookup, provider);
         }
@@ -253,11 +254,15 @@ public class ProcedureNode extends BaseNode {
     
     public static class MySQL extends ProcedureNode {
         private final DatabaseConnection connection;
+        private final ProcedureNodeProvider provider;
+        private final String schema;
         
         @SuppressWarnings("unchecked")
-        private MySQL(NodeDataLookup lookup, NodeProvider provider) {
+        private MySQL(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
-            connection = getLookup().lookup(DatabaseConnection.class);
+            this.connection = getLookup().lookup(DatabaseConnection.class);
+            this.provider = provider;
+            this.schema = schema;
         }
 
         @Override
@@ -340,74 +345,29 @@ public class ProcedureNode extends BaseNode {
     public static class Oracle extends ProcedureNode {
         private final DatabaseConnection connection;
         private final MetadataElementHandle<Procedure> procedureHandle;
-        private String procedureName = null;
-        private Type procedureType = null;
-        private boolean valid = false;
-        
+        private final ProcedureNodeProvider provider;
+        private final String schema;
+
         @SuppressWarnings("unchecked")
-        private Oracle(NodeDataLookup lookup, NodeProvider provider) {
+        private Oracle(NodeDataLookup lookup, ProcedureNodeProvider provider, String schema) {
             super(lookup, provider);
             connection = getLookup().lookup(DatabaseConnection.class);
             procedureHandle = getLookup().lookup(MetadataElementHandle.class);
+            this.provider = provider;
+            this.schema = schema;
         }
 
         @Override
         protected void initialize() {
             super.initialize();
-            boolean connected = !connection.getConnector().isDisconnected();
-            MetadataModel metaDataModel = connection.getMetadataModel();
-            if (connected && metaDataModel != null) {
-                try {
-                    metaDataModel.runReadAction(
-                        new Action<Metadata>() {
-                            @Override
-                            public void run(Metadata metaData) {
-                                Procedure proc = procedureHandle.resolve(metaData);
-                                procedureName = proc.getName();
-                                
-                                Statement stmt;
-                                try {
-                                    stmt = connection.getConnection().createStatement();
-                                    ResultSet rs = stmt.executeQuery("SELECT OBJECT_TYPE, STATUS FROM SYS.ALL_OBJECTS WHERE OWNER='" + connection.getSchema().toUpperCase() + "'" // NOI18N
-                                            + " AND OBJECT_NAME = '" + procedureName + "'" // NOI18N
-                                            + " AND ( OBJECT_TYPE = 'PROCEDURE' OR OBJECT_TYPE = 'TRIGGER' OR OBJECT_TYPE = 'FUNCTION' )"); // NOI18N
-                                    
-                                    while(rs.next()) {
-                                        // type of procedure
-                                        String objectType = rs.getString("OBJECT_TYPE"); // NOI18N
-                                        if ("PROCEDURE".equals(objectType)) { // NOI18N
-                                            procedureType = Type.Procedure;
-                                        } else if ("FUNCTION".equals(objectType)) { // NOI18N
-                                            procedureType = Type.Function;
-                                        } else if ("TRIGGER".equals(objectType)) { // NOI18N
-                                            procedureType = Type.Trigger;
-                                        } else {
-                                            assert false : "Unknown type " + objectType;
-                                        }
-
-                                        // valid or invalid
-                                        String status = rs.getString("STATUS"); // NOI18N
-                                        valid = "VALID".equals(status); // NOI18N
-                                    }
-                                } catch (SQLException ex) {
-                                    Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while initialize procedure " + proc);
-                                }
-                                
-                                updateProcedureProperties();
-                            }
-                        }
-                    );
-                } catch (MetadataModelException e) {
-                    NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
-                }
-            }
+            updateProcedureProperties();
         }
         
         private void updateProcedureProperties() {
             PropertySupport.Name ps = new PropertySupport.Name(this);
             addProperty(ps);
             
-            switch (procedureType) {
+            switch (provider.getType(getName())) {
                 case Function:
                     addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
                     break;
@@ -418,29 +378,24 @@ public class ProcedureNode extends BaseNode {
                     addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredTrigger")); // NOI18N
                     break;
                 default:
-                    assert false : "Unknown type " + procedureType;
+                    assert false : "Unknown type " + provider.getType(getName());
             }
         }
 
         @Override
-        public String getName() {
-            return procedureName;
-        }
-
-        @Override
         public Type getType() {
-            return procedureType;
+            return provider.getType(getName());
         }
 
         @Override
         public String getShortDescription() {
-            switch (procedureType) {
+            switch (provider.getType(getName())) {
                 case Function:
-                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Function") : NbBundle.getMessage (ProcedureNode.class, "ND_Function_Invalid"); //NOI18N
+                    return provider.getStatus(getName()) ? NbBundle.getMessage (ProcedureNode.class, "ND_Function") : NbBundle.getMessage (ProcedureNode.class, "ND_Function_Invalid"); //NOI18N
                 case Procedure:
-                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Procedure") : NbBundle.getMessage (ProcedureNode.class, "ND_Procedure_Invalid"); //NOI18N
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Procedure") : NbBundle.getMessage (ProcedureNode.class, "ND_Procedure_Invalid"); //NOI18N
                 case Trigger:
-                    return valid ? NbBundle.getMessage (ProcedureNode.class, "ND_Trigger") : NbBundle.getMessage (ProcedureNode.class, "ND_Trigger_Invalid"); //NOI18N;
+                    return provider.getStatus(getName())  ? NbBundle.getMessage (ProcedureNode.class, "ND_Trigger") : NbBundle.getMessage (ProcedureNode.class, "ND_Trigger_Invalid"); //NOI18N;
                 default:
                     return null;
             }
@@ -450,11 +405,11 @@ public class ProcedureNode extends BaseNode {
     public String getIconBase() {
         switch (getType()) {
             case Function:
-                return valid ? ICON_VALID_F : ICON_INVALID_F;
+                return provider.getStatus(getName())  ? ICON_VALID_F : ICON_INVALID_F;
             case Procedure:
-                return valid ? ICON_VALID_P : ICON_INVALID_P;
+                return provider.getStatus(getName())  ? ICON_VALID_P : ICON_INVALID_P;
             case Trigger:
-                return valid ? ICON_VALID_T : ICON_INVALID_T;
+                return provider.getStatus(getName())  ? ICON_VALID_T : ICON_INVALID_T;
             default:
                 return null;
         }
@@ -496,7 +451,7 @@ public class ProcedureNode extends BaseNode {
             try {
                 Statement stat = connection.getConnection().createStatement();
                 // select text from sys.dba_source where name = ??? and owner = upper('???') order by dba_source.line;
-                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + connection.getSchema().toUpperCase() + "'" // NOI18N
+                String q = "SELECT TEXT, OWNER FROM SYS.ALL_SOURCE WHERE NAME = '" + getName() + "' AND OWNER='" + schema.toUpperCase() + "'" // NOI18N
                         + " ORDER BY LINE"; // NOI18N
                 ResultSet rs = stat.executeQuery(q);
                 while(rs.next()) {
@@ -506,7 +461,7 @@ public class ProcedureNode extends BaseNode {
             } catch (SQLException ex) {
                 Logger.getLogger(ProcedureNode.class.getName()).log(Level.INFO, ex + " while get source of procedure " + getName());
             }
-            if (connection.getSchema().equalsIgnoreCase(owner)) {
+            if (schema.equalsIgnoreCase(owner)) {
                 return sb.toString();
             } else {
                 return fqn(sb.toString(), owner);
