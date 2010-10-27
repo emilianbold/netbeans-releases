@@ -641,7 +641,10 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         predefinedRuntimes.clear();
         predefinedRuntimes.add("");
-        predefinedRuntimes.add(MavenSettings.getDefaultExternalMavenRuntime());
+        String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
+        if (defaultExternalMavenRuntime != null) {
+            predefinedRuntimes.add(defaultExternalMavenRuntime);
+        }
         userDefinedMavenRuntimes.clear();
         userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
         comMavenHome.removeActionListener(listItemChangedListener);
@@ -649,7 +652,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         File command = MavenSettings.getDefault().getMavenHome();
         String bundled = null;
         for (String runtime : predefinedRuntimes) {
-            boolean bundledRuntime = "".equals(runtime);
+            boolean bundledRuntime = runtime.isEmpty();
             String desc = org.openide.util.NbBundle.getMessage(SettingsPanel.class,
                     bundledRuntime ? "MAVEN_RUNTIME_Bundled" : "MAVEN_RUNTIME_External",
                     new Object[]{runtime,
