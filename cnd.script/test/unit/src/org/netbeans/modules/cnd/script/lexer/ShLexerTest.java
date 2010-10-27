@@ -42,12 +42,13 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
+import org.netbeans.modules.cnd.api.script.ShTokenId;
 import org.junit.Test;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
-import static org.netbeans.modules.cnd.script.lexer.ShTokenId.*;
+import static org.netbeans.modules.cnd.api.script.ShTokenId.*;
 import static org.netbeans.lib.lexer.test.LexerTestUtilities.assertNextTokenEquals;
 
 /**

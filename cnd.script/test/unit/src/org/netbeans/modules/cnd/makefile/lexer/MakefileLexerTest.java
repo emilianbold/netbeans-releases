@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.makefile.lexer;
 
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
