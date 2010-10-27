@@ -311,7 +311,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public float getPreferredSpan(int axis) {
-        if (lineWrapType == null) {
+        checkViewsInited();
+        if (!childrenValid) {
             return 0f; // Return zero until parent and etc. gets initialized
         }
         float span = super.getPreferredSpan(axis);
@@ -548,8 +549,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     /**
-     * Whether the view should compute
-     * @return
+     * Whether the view should compute accurate spans (no lazy children views computation).
+     * This is handy e.g. for fold preview computation.
+     *
+     * @return whether accurate span measurements should be performed.
      */
     boolean isAccurateSpan() {
         return accurateSpan;
