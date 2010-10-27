@@ -265,7 +265,7 @@ public abstract class NativeDebuggerInfo {
     public final boolean is64bitDebuggee(Host host) {
         int act = getAction();
         String debuggee = null;
-        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0);
+        Executor executor = Executor.getDefault(Catalog.get("File"), host, 0); // NOI18N
 
         if ((act & DebuggerManager.CORE) != 0) {
             debuggee = getCorefile();

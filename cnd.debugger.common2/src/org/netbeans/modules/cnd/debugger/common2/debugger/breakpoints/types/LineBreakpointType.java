@@ -68,7 +68,7 @@ public final class LineBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-	return Catalog.get("LBL_LineFile");
+	return Catalog.get("LBL_LineFile"); // NOI18N
     }
 
     // interface NativeBreakpointType

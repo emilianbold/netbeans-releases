@@ -340,5 +340,12 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
         public State getState() {
             return new StateImpl((APTMacroMapSnapshot )null);
         }
+
+        @Override
+        public String toString() {
+            return "EmptyMacroMap"; //NOI18N
+        }
+        
+        
     };    
 }

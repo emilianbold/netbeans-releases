@@ -64,32 +64,32 @@ public final class VariableColumnModels {
 
   	public ValueColumn() {
 	    super(Constants.PROP_LOCAL_VALUE,
-		  Catalog.get("PROP_value"), 
-		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor());
+		  Catalog.get("PROP_value"),  // NOI18N
+		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor()); // NOI18N
 	}
     }
 
     public static final class TypeColumn extends AbstractColumnModel {
   	
 	public TypeColumn() {
-	    super(Constants.PROP_LOCAL_TYPE, Catalog.get("PROP_type"), 
-		  Catalog.get("HINT_type"), Object.class, false, new StringEditor());
+	    super(Constants.PROP_LOCAL_TYPE, Catalog.get("PROP_type"),  // NOI18N
+		  Catalog.get("HINT_type"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
 
     public static final class DTypeColumn extends AbstractColumnModel {
   	
 	public DTypeColumn() {
-	    super(Constants.PROP_LOCAL_DTYPE, Catalog.get("PROP_dtype"), 
-		  Catalog.get("HINT_dtype"), Object.class, false, new StringEditor());
+	    super(Constants.PROP_LOCAL_DTYPE, Catalog.get("PROP_dtype"), // NOI18N
+		  Catalog.get("HINT_dtype"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
 
     public static final class AddressColumn extends AbstractColumnModel {
 
 	public AddressColumn() {
-	    super(Constants.PROP_LOCAL_ADDRESS, Catalog.get("PROP_address"), 
-		  Catalog.get("HINT_address"), Object.class, false, new StringEditor());
+	    super(Constants.PROP_LOCAL_ADDRESS, Catalog.get("PROP_address"), // NOI18N
+		  Catalog.get("HINT_address"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
 
@@ -97,16 +97,16 @@ public final class VariableColumnModels {
 
   	public WatchValueColumn() {
 	    super(Constants.PROP_WATCH_VALUE,
-		  Catalog.get("PROP_value"), 
-		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor());
+		  Catalog.get("PROP_value"), // NOI18N
+		  Catalog.get("HINT_value"), VariableValue.class, true, new VariableValueEditor()); // NOI18N
 	}
     }
 
     public static final class WatchTypeColumn extends AbstractColumnModel {
   	
 	public WatchTypeColumn() {
-	    super(Constants.PROP_WATCH_TYPE, Catalog.get("PROP_type"), 
-		  Catalog.get("HINT_type"), Object.class, false, new StringEditor());
+	    super(Constants.PROP_WATCH_TYPE, Catalog.get("PROP_type"), // NOI18N
+		  Catalog.get("HINT_type"), Object.class, false, new StringEditor()); // NOI18N
 	}
     }
 

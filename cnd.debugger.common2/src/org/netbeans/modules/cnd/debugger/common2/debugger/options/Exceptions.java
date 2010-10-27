@@ -262,7 +262,7 @@ public final class Exceptions extends ProfileCategory {
 	boolean needSpace = false;
 
 	if (all) {
-	    ret += Catalog.get("STR_InterceptAll");
+	    ret += Catalog.get("STR_InterceptAll"); // NOI18N
 	    needSpace = true;
 	} else {
 	    addSep = false;

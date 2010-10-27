@@ -42,10 +42,11 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.script.lexer;
+package org.netbeans.modules.cnd.api.script;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.cnd.script.lexer.ShLanguageHierarchy;
 
 
 /**

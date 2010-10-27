@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.api.makefile.MakefileElement;
 import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
 import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
 import org.netbeans.modules.cnd.api.makefile.MakefileRule;
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;

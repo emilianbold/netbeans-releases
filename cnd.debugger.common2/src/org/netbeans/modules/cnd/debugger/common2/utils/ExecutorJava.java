@@ -175,7 +175,7 @@ import java.util.Map;
 
     @Override
     public void reap() {
-	throw new UnsupportedOperationException("Not supported yet.");
+	throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public synchronized boolean startIO(TermComponent pio) {

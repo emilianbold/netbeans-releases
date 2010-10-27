@@ -629,6 +629,18 @@ public final class CndLexerUtilities {
 
             CppTokenId.TRUE, // C++
             CppTokenId.FALSE, // C++
+
+            CppTokenId.ALTERNATE_AND, // C++
+            CppTokenId.ALTERNATE_BITOR, // C++
+            CppTokenId.ALTERNATE_OR, // C++
+            CppTokenId.ALTERNATE_XOR, // C++
+            CppTokenId.ALTERNATE_COMPL, // C++
+            CppTokenId.ALTERNATE_BITAND, // C++
+            CppTokenId.ALTERNATE_AND_EQ, // C++
+            CppTokenId.ALTERNATE_OR_EQ, // C++
+            CppTokenId.ALTERNATE_XOR_EQ, // C++
+            CppTokenId.ALTERNATE_NOT, // C++
+            CppTokenId.ALTERNATE_NOT_EQ, // C++
         };
         addToFilter(ids, filterToModify);
     }

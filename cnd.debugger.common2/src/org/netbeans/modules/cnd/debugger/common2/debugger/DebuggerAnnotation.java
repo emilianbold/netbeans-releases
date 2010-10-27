@@ -287,17 +287,17 @@ public class DebuggerAnnotation
         }
 
         if (type == TYPE_CURRENT_PC) {
-            return Catalog.get("TOOLTIP_CURRENT_PC");
+            return Catalog.get("TOOLTIP_CURRENT_PC"); // NOI18N
 
         } else if (type == TYPE_CALLSITE) {
-            return Catalog.get("TOOLTIP_CALLSITE");
+            return Catalog.get("TOOLTIP_CALLSITE"); // NOI18N
 
         } else if (type.startsWith(TYPE_BPT)) {
             // SHOULD refine based on other extensions?
-            return Catalog.get("TOOLTIP_BREAKPOINT");
+            return Catalog.get("TOOLTIP_BREAKPOINT"); // NOI18N
 
         } else {
-            return Catalog.get("TOOLTIP_ANNOTATION");
+            return Catalog.get("TOOLTIP_ANNOTATION"); // NOI18N
         }
     }
 
