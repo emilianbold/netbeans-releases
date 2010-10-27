@@ -43,57 +43,71 @@
 package org.netbeans.modules.bugtracking.vcs;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import javax.swing.JPanel;
-import org.netbeans.modules.versioning.hooks.SvnHook;
-import org.netbeans.modules.versioning.hooks.SvnHookContext;
-import org.netbeans.modules.versioning.hooks.SvnHookContext.LogEntry;
+import org.netbeans.modules.versioning.hooks.GitHook;
+import org.netbeans.modules.versioning.hooks.GitHookContext;
+import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
- * Subversion commit hook implementation
+ * Git hook implementation
  * @author Tomas Stupka
  */
-public class SvnHookImpl extends SvnHook {
+public class GitHookImpl extends GitHook {
 
     private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
-    private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"revision", "author", "date", "message"};  // NOI18N
+    private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"changeset", "author", "date", "message"}; // NOI18N
 
     private final String name;
-    private final HookImpl delegate;
 
-     public SvnHookImpl() {
-        this.name = NbBundle.getMessage(SvnHookImpl.class, "LBL_VCSHook");       // NOI18N
-        VCSHooksConfig config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.SVN);
+    private HookImpl delegate;
+    
+    public GitHookImpl() {
+        this.name = NbBundle.getMessage(GitHookImpl.class, "LBL_VCSHook");       // NOI18N
+        VCSHooksConfig config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.GIT);
         delegate = new HookImpl(config, SUPPORTED_ISSUE_INFO_VARIABLES, SUPPORTED_REVISION_VARIABLES);
     }
 
     @Override
-    public SvnHookContext beforeCommit(SvnHookContext context) throws IOException {
+    public GitHookContext beforeCommit(GitHookContext context) throws IOException {
         String msg = delegate.beforeCommit(context.getFiles(), context.getMessage());
-        return msg != null ? new SvnHookContext(context.getFiles(), msg, new ArrayList<LogEntry>()) : null;
+        return msg != null ? new GitHookContext(context.getFiles(), msg, context.getLogEntries()) : null;
     }
 
     @Override
-    public void afterCommit(SvnHookContext context) {
-        String author = context.getLogEntries().get(0).getAuthor();
-        long revision = context.getLogEntries().get(0).getRevision();
-        Date date = context.getLogEntries().get(0).getDate();
-        String message = context.getLogEntries().get(0).getMessage();
-        delegate.afterCommit(context.getFiles(), author, Long.toString(revision), date, message, "SVN", false);        
-    }    
+    public void afterCommit(GitHookContext context) {
+        String author = context.getLogEntries()[0].getAuthor();
+        String changeset = context.getLogEntries()[0].getChangeset();
+        Date date = context.getLogEntries()[0].getDate();
+        String message = context.getMessage();
+        delegate.afterCommit(context.getFiles(), author, changeset, date, message, "GIT", true);        
+    }
 
     @Override
-    public JPanel createComponent(SvnHookContext context) {
-        HookPanel panel = delegate.createComponent(context.getFiles(), true);
-        panel.commitRadioButton.setVisible(false);
-        panel.pushRadioButton.setVisible(false);
-        return panel;
+    public GitHookContext beforePush(GitHookContext context) throws IOException {
+        return super.beforePush(context);
+    }
+
+    @Override
+    public void afterPush(GitHookContext context) {
+        LogEntry[] logEntries = context.getLogEntries();
+        String[] changesets = new String[logEntries.length];
+        for (int i = 0; i < logEntries.length; i++) {
+            LogEntry logEntry = logEntries[i];
+            changesets[i] = logEntry.getChangeset();
+        }        
+        delegate.afterPush(context.getFiles(), changesets, "GIT");
+    }
+
+    @Override
+    public JPanel createComponent(GitHookContext context) {
+        return delegate.createComponent(context.getFiles());
     }
 
     @Override
     public String getDisplayName() {
         return name;
     }
+
 }

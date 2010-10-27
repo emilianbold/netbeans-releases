@@ -60,6 +60,8 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.hooks.GitHook;
+import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHookContext;
@@ -74,7 +76,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -84,36 +85,37 @@ import org.openide.util.RequestProcessor;
  */
 public class GitCommitPanel extends VCSCommitPanel {
 
-    public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
-        
-        Preferences preferences = GitModuleConfig.getDefault().getPreferences();
-        String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
-        DefaultCommitParameters parameters = new DefaultCommitParameters(preferences, lastCanceledCommitMessage);
-        
-        Collection<HgHook> hooks = VCSHooks.getInstance().getHooks(HgHook.class);
-        HgHookContext hooksCtx = new HgHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new HgHookContext.LogEntry[] {});        
-        
-        DiffProvider diffProvider = new DiffProvider();
-        
-        return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
-    }
-    private final Collection<HgHook> hooks;
+    private final Collection<GitHook> hooks;
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, VCSCommitParameters parameters, Preferences preferences, Collection<HgHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+    private GitCommitPanel(final File[] roots, final File repository, VCSCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
         super(parameters, preferences, hooks, hooksContext, diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;
     }
 
+    public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
+        
+        Preferences preferences = GitModuleConfig.getDefault().getPreferences();
+        String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
+        DefaultCommitParameters parameters = new DefaultCommitParameters(preferences, lastCanceledCommitMessage);
+        
+        Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
+        GitHookContext hooksCtx = new GitHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new GitHookContext.LogEntry[] {});        
+        
+        DiffProvider diffProvider = new DiffProvider();
+        
+        return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
+    }
+    
     @Override
     public DefaultCommitParameters getParameters() {
         return (DefaultCommitParameters) super.getParameters();
     }
 
-    public Collection<HgHook> getHooks() {
+    public Collection<GitHook> getHooks() {
         return hooks;
     }
 
