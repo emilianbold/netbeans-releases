@@ -4880,7 +4880,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
                 
         private static boolean isCamelCasePrefix(String prefix) {
-            if (prefix == null || prefix.length() < 2)
+            if (prefix == null || prefix.length() < 2 || prefix.charAt(0) == '"')
                 return false;
             for (int i = 1; i < prefix.length(); i++) {
                 if (Character.isUpperCase(prefix.charAt(i)))
