@@ -94,8 +94,8 @@ public class StatusTest extends AbstractGitTestCase {
                     VersioningPanelController controller = (VersioningPanelController) f.get(tc);
                     f = VersioningPanelController.class.getDeclaredField("syncTable");
                     f.setAccessible(true);
-                    SyncTable table = (SyncTable) f.get(controller);
-                    f = SyncTable.class.getDeclaredField("table");
+                    StatusTable table = (StatusTable) f.get(controller);
+                    f = StatusTable.class.getDeclaredField("table");
                     f.setAccessible(true);
                     tables[0] = (JTable) f.get(table);
                 } catch (Exception ex) {
