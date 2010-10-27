@@ -65,15 +65,17 @@ public class GoToSymbolProvider implements SearchProvider {
         if(text.length() == 0) {
             return;
         }
+        GoToSymbolWorker local;
         synchronized(this) {
             if (worker!=null) {
                 worker.cancel();
             }
             worker = new GoToSymbolWorker(text);
+            local = worker;
         }
-        worker.run();
+        local.run();
         
-        for (SymbolDescriptor td : worker.getTypes()) {
+        for (SymbolDescriptor td : local.getTypes()) {
             FileObject fo = td.getFileObject();
             String displayHint = fo == null ? null : fo.getPath(); 
             String htmlDisplayName = td.getSymbolName() + " " + NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()) ;

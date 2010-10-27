@@ -63,15 +63,17 @@ public class JavaTypeSearchProvider implements SearchProvider {
             return;
         }
         
+        GoToTypeWorker local;
         synchronized (this) {
             if (worker != null) {
                 worker.cancel();
             }
             worker = new GoToTypeWorker(text);
+            local=worker;
         }
-        worker.run();
+        local.run();
         
-        for (TypeDescriptor td : worker.getTypes()) {
+        for (TypeDescriptor td : local.getTypes()) {
             FileObject fo = td.getFileObject();
             String displayHint = fo == null ? null : fo.getPath(); // #150654
             String htmlDisplayName = td.getSimpleName() + td.getContextName();
