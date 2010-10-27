@@ -175,7 +175,7 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (aid == null) {
                 throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e);
             }
-            if (aid.category().contains("/")) {
+            if (aid.category().startsWith("Actions/")) {
                 throw new LayerGenerationException("@ActionID category() cannot contain /", e);
             }
             if (!FQN.matcher(aid.id()).matches()) {
