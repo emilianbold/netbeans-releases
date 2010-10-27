@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.openide.filesystems.FileObject;
@@ -67,31 +68,46 @@ public abstract class Crawler {
      *
      * @throws java.io.IOException
      */
-    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, CancelRequest cancelRequest) throws IOException {
+    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, boolean detectChangesOnly, CancelRequest cancelRequest) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
         this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
         this.cancelRequest = cancelRequest;
+        this.detectChangesOnly = detectChangesOnly;
     }
 
     public final Collection<IndexableImpl> getResources() throws IOException {
         init ();
+        if (detectChangesOnly) {
+            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
+        }
         return checkTimeStamps ? resources : allResources;
     }
 
     public final Collection<IndexableImpl> getAllResources() throws IOException {
         init ();
+        if (detectChangesOnly) {
+            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
+        }
         return allResources;
     }
 
     public final Collection<IndexableImpl> getDeletedResources () throws IOException {
         init ();
+        if (detectChangesOnly) {
+            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
+        }
         return deleted;
     }
 
     public final void storeTimestamps() throws IOException {
         init();
         timeStamps.store();
+    }
+    
+    public final boolean hasChanged() throws IOException {
+        init();
+        return this.changed;
     }
 
     public final boolean isFinished() throws IOException {
@@ -119,29 +135,122 @@ public abstract class Crawler {
     private final boolean checkTimeStamps;
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
+    private final boolean detectChangesOnly;
 
     private Collection<IndexableImpl> resources;
     private Collection<IndexableImpl> allResources;
     private Collection<IndexableImpl> deleted;
     private boolean finished;
+    private boolean changed;
+    private boolean initialized;
 
     private void init () throws IOException {
-        if (this.resources == null) {
-            Collection<IndexableImpl> _resources = checkTimeStamps ? new LinkedHashSet<IndexableImpl>() : null;
-            Collection<IndexableImpl> _allResources = new LinkedHashSet<IndexableImpl>();
-            this.finished = collectResources(_resources, _allResources);
-            this.resources = checkTimeStamps ? Collections.unmodifiableCollection(_resources) : null;
-            this.allResources = Collections.unmodifiableCollection(_allResources);
-            final Set<String> unseen = timeStamps.getUnseenFiles();
-            if (unseen != null) {
-                deleted = new ArrayList<IndexableImpl>(unseen.size());
-                for (String u : unseen) {
-                    deleted.add(new DeletedIndexable(root, u));
+        if (!initialized) {
+            try {
+                Collection<IndexableImpl> _resources = checkTimeStamps && !detectChangesOnly ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                Collection<IndexableImpl> _allResources = !detectChangesOnly ?  new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                this.finished = collectResources(_resources, _allResources);
+                this.resources = checkTimeStamps && !detectChangesOnly? Collections.unmodifiableCollection(_resources) : null;
+                this.allResources = !detectChangesOnly? Collections.unmodifiableCollection(_allResources) : null;
+                changed = !_resources.isEmpty();
+
+                final Set<String> unseen = timeStamps.getUnseenFiles();
+                if (detectChangesOnly) {
+                    deleted = null;
+                    changed |= unseen != null && !unseen.isEmpty();
+                } else {
+                    if (unseen != null) {
+                        deleted = new ArrayList<IndexableImpl>(unseen.size());
+                        for (String u : unseen) {
+                            deleted.add(new DeletedIndexable(root, u));
+                        }
+                        deleted = Collections.unmodifiableCollection(deleted);
+                    } else {
+                        deleted = Collections.<IndexableImpl>emptySet();
+                    }
+                    changed |= !deleted.isEmpty();
                 }
-                deleted = Collections.unmodifiableCollection(deleted);
-            } else {
-                deleted = Collections.<IndexableImpl>emptySet();
+            } finally {
+                initialized = true;
             }
         }
     }
+    
+    // <editor-fold defaultstate="collapsed" desc="Proxy collection">
+    /**
+     * Only add method is used.
+     * @param <T>
+     */
+    private static class NullCollection<T> implements Collection<T> {
+        
+        private boolean changed;
+
+        @Override
+        public int size() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return !changed;
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Iterator<T> iterator() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] a) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean add(T e) {
+            changed = true;
+            return true;
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends T> c) {
+            changed = true;
+            return true;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }               
+    }
+    //</editor-fold>
 }

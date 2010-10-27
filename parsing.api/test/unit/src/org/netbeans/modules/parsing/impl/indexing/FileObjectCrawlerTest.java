@@ -123,7 +123,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
             public void removePropertyChangeListener(PropertyChangeListener listener) {}
         }));
 
-        FileObjectCrawler crawler = new FileObjectCrawler(src, false, cp.entries().get(0), CR);
+        FileObjectCrawler crawler = new FileObjectCrawler(src, false, false, cp.entries().get(0), CR);
         assertCollectedFiles("Wrong files collected", crawler.getAllResources(),
                 "p1/Included1.java",
                 "p1/Included2.java",
@@ -142,7 +142,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         };
         populateFolderStructure(root, paths);
 
-        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, false, null, CR);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
         
         FileObject folder = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
@@ -163,7 +163,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
         };
         populateFolderStructure(root, paths);
 
-        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
+        FileObjectCrawler crawler1 = new FileObjectCrawler(FileUtil.toFileObject(root), false, false, null, CR);
         assertCollectedFiles("Wrong files collected", crawler1.getAllResources(), paths);
 
         FileObject pckg2 = FileUtil.toFileObject(new File(root, "org/pckg1/pckg2"));
@@ -173,9 +173,9 @@ public class FileObjectCrawlerTest extends NbTestCase {
         FileObjectCrawler crawler2 = new FileObjectCrawler(FileUtil.toFileObject(root), new FileObject [] { pckg2 }, false, null, CR);
         assertCollectedFiles("There should be no files in " + root, crawler2.getAllResources());
 
-        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, null, CR);
-        assertCollectedFiles("There should be no files in " + root, crawler1.getAllResources());
-        assertCollectedFiles("All files in " + root + " should be deleted", crawler1.getDeletedResources());
+        FileObjectCrawler crawler3 = new FileObjectCrawler(FileUtil.toFileObject(root), false, false, null, CR);
+        assertCollectedFiles("There should be no files in " + root, crawler3.getAllResources());
+        assertCollectedFiles("All files in " + root + " should be deleted", crawler3.getDeletedResources());
     }
 
     protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {
