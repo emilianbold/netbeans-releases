@@ -46,17 +46,4 @@ made subject to such option by the copyright holder.
 <?xml-stylesheet type="text/xml" href="http://openide.netbeans.org/fs/filesystem.xsl"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Git">
-            <file name="org-netbeans-modules-git-ui-output-OpenOutputAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.git.ui.output.OpenOutputAction"/>
-            </file>
-            <file name="org-netbeans-modules-git-ui-status-StatusAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.git.ui.status.StatusAction"/>
-            </file>
-            <file name="org-netbeans-modules-git-ui-checkout-CheckoutPathsAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.git.ui.checkout.CheckoutPathsAction"/>
-            </file>
-        </folder>
-    </folder>    
 </filesystem>

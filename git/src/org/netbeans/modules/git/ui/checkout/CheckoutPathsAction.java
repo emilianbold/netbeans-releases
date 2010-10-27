@@ -57,12 +57,16 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
+@ActionID(id = "org.netbeans.modules.git.ui.checkout.CheckoutPathsAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_CheckoutPathsAction_Name")
 public class CheckoutPathsAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(CheckoutPathsAction.class.getName());

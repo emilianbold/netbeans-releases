@@ -43,8 +43,6 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
@@ -52,12 +50,16 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.git.ui.status.AddAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_AddAction_Name")
 public class AddAction extends SingleRepositoryAction {
 
     private static final Logger LOG = Logger.getLogger(AddAction.class.getName());
