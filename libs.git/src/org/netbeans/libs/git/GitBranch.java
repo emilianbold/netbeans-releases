@@ -40,45 +40,21 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.libs.git.jgit;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.libs.git.jgit.commands.AddTest;
-import org.netbeans.libs.git.jgit.commands.BranchTest;
-import org.netbeans.libs.git.jgit.commands.CatTest;
-import org.netbeans.libs.git.jgit.commands.CheckoutTest;
-import org.netbeans.libs.git.jgit.commands.CommitTest;
-import org.netbeans.libs.git.jgit.commands.CopyTest;
-import org.netbeans.libs.git.jgit.commands.RemoveTest;
-import org.netbeans.libs.git.jgit.commands.RenameTest;
-import org.netbeans.libs.git.jgit.commands.ResetTest;
-import org.netbeans.libs.git.jgit.commands.StatusTest;
+package org.netbeans.libs.git;
 
 /**
  *
  * @author ondra
  */
-public class CommandsTestSuite extends NbTestSuite {
+public interface GitBranch {
 
-    public CommandsTestSuite (String testName) {
-        super(testName);
-    }
+    public static final String NO_BRANCH = "(no branch)";
 
-    public static Test suite() throws Exception {
-        TestSuite suite = new TestSuite();
-        suite.addTestSuite(AddTest.class);
-        suite.addTestSuite(BranchTest.class);
-        suite.addTestSuite(CatTest.class);
-        suite.addTestSuite(CheckoutTest.class);
-        suite.addTestSuite(CommitTest.class);
-        suite.addTestSuite(CopyTest.class);
-        suite.addTestSuite(RemoveTest.class);
-        suite.addTestSuite(RenameTest.class);
-        suite.addTestSuite(ResetTest.class);
-        suite.addTestSuite(StatusTest.class);
-        return suite;
-    }
+    String getName ();
 
+    boolean isRemote ();
+
+    boolean isActive ();
+
+    String getId ();
 }

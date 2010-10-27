@@ -42,6 +42,8 @@
 
 package org.netbeans.libs.git.jgit;
 
+import org.netbeans.libs.git.jgit.commands.BranchCommand;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.jgit.commands.CatCommand;
 import java.io.OutputStream;
 import org.netbeans.libs.git.jgit.commands.ResetCommand;
@@ -150,6 +152,13 @@ public class JGitClient implements GitClient, StatusListener, FileListener {
         Repository repository = gitRepository.getRepository();
         CopyCommand cmd = new CopyCommand(repository, source, target, monitor, this);
         cmd.execute();
+    }
+
+    @Override
+    public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException {
+        BranchCommand cmd = new BranchCommand(gitRepository.getRepository(), all, monitor);
+        cmd.execute();
+        return cmd.getBranches();
     }
 
     @Override

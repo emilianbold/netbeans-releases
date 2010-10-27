@@ -99,7 +99,7 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
      * @throws Exception
      */
     public void testMethodsRunningInIndexingBridge () throws Exception {
-        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getStatus", "init",
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getBranches", "getStatus", "init",
                 "remove", "removeNotificationListener", "remove", "rename", "reset"));
         Set<String> indexingBridgeMethods = new HashSet<String>(Arrays.asList("checkout", "remove", "reset"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("INDEXING_BRIDGE_COMMANDS");
@@ -131,9 +131,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
      * @throws Exception
      */
     public void testIndexReadOnlyMethods () throws Exception {
-        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getStatus", "init", "remove",
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getBranches", "getStatus", "init", "remove",
                 "removeNotificationListener", "remove", "rename", "reset"));
-        Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getStatus", "removeNotificationListener"));
+        Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getBranches", "getStatus", "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("WORKING_TREE_READ_ONLY_COMMANDS");
         f.setAccessible(true);
         Set<String> actualReadOnlyMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
@@ -208,9 +208,9 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
      * @throws Exception
      */
     public void testExclusiveMethods () throws Exception {
-        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getStatus", "init", "remove",
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getBranches", "getStatus", "init", "remove",
                 "removeNotificationListener", "remove", "rename", "reset"));
-        Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getStatus", "removeNotificationListener"));
+        Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getBranches", "getStatus", "removeNotificationListener"));
         Field f = GitClientInvocationHandler.class.getDeclaredField("PARALLELIZABLE_COMMANDS");
         f.setAccessible(true);
         Set<String> actualParallelizableCommands = (Set<String>) f.get(GitClientInvocationHandler.class);

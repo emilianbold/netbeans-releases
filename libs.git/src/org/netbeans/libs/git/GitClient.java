@@ -119,6 +119,13 @@ public interface GitClient {
     public void copyAfter (File source, File target, ProgressMonitor monitor) throws GitException;
 
     /**
+     * Returns all branches
+     * @param all if false then only local branches will be returned
+     * @return
+     */
+    public Map<String, GitBranch> getBranches (boolean all, ProgressMonitor monitor) throws GitException;
+
+    /**
      * Returns an array of statuses for files under given roots
      * @param roots root folders or files
      * @return status array
