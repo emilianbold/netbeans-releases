@@ -1359,7 +1359,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     int currentIndent = Utilities.getRowIndent(doc, offset);
                     int newIndent = countIndent(doc, offset, previousIndent);
                     if (newIndent != currentIndent) {
-                        GsfUtilities.setLineIndentation(doc, offset, newIndent);
+                        GsfUtilities.setLineIndentation(doc, offset, Math.max(newIndent, 0));
                         return;
                     }
                 }
