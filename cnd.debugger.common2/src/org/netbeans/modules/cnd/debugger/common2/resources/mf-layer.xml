@@ -1071,7 +1071,7 @@ made subject to such option by the copyright holder.
 	    </folder>
 	    
 	    <!-- hide some of the unused stuff -->
-	    <folder name="form_hidden"/>
+<!--	    <folder name="form_hidden"/>-->
 	</folder>
 
 	<folder name="Groups">
@@ -1108,9 +1108,9 @@ made subject to such option by the copyright holder.
         </file>
 	  -->
 
-	<file name="F6.shadow_hidden">
+<!--	<file name="F6.shadow_hidden">
             <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance"/>
-	</file>
+	</file>-->
 
 	<!--
 	  F5 defined in dbxfacade.ide's layer file.
