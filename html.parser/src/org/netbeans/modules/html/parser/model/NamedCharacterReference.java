@@ -50,7 +50,7 @@ import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
 public enum NamedCharacterReference implements NamedCharRef {
 
     //generated code>>>
-    
+    //NOI18N
     AElig("AElig", 0x000C6),
     AMP("AMP", 0x00026),
     Aacute("Aacute", 0x000C1),

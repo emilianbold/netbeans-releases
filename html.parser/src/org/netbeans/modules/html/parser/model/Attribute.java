@@ -54,7 +54,7 @@ import java.util.regex.Pattern;
 public enum Attribute {
 
     //GENERATED SECTION>>>
-    //global attributes
+    //global attributes //NOI18N
     ACCESSKEY(new Link("accesskey", "editing.html#the-accesskey-attribute")),
     CLASS(new Link("class", "elements.html#classes")),
     CONTENTEDITABLE(new Link("contenteditable", "editing.html#attr-contenteditable")),

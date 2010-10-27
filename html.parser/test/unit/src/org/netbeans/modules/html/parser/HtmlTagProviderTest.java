@@ -115,7 +115,7 @@ public class HtmlTagProviderTest extends NbTestCase {
         String helpContent = help.getHelpContent(helpItem.getHelpURL());
         assertNotNull(helpContent);
 
-        System.out.println(helpContent);
+//        System.out.println(helpContent);
 
     }
 

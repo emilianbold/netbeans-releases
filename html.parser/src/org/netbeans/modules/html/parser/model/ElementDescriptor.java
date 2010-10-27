@@ -45,6 +45,7 @@ package org.netbeans.modules.html.parser.model;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import nu.validator.htmlparser.impl.ElementName;
@@ -61,6 +62,7 @@ public enum ElementDescriptor {
     //
     //>>>>>>>>>>>>>>>>>>>>>>>>
 
+    //NOI18N
     A(
         HtmlTagType.HTML,
         new Link("a", "text-level-semantics.html#the-a-element"),
@@ -4733,6 +4735,19 @@ HANDLER(
 
     public static String elementName2EnumName(String elementName) {
         return elementName.replace('-', '_').toUpperCase();
+    }
+
+    public static synchronized Collection<String> getAttrNamesForElement(String elementName) {
+        ElementDescriptor descriptor = ElementDescriptor.forName(elementName);
+        if(descriptor == null) {
+            return Collections.emptyList();
+        }
+        Collection<String> attrNames = new LinkedList<String>();
+        for(Attribute a : descriptor.getAttributes()) {
+            attrNames.add(a.getName());
+        }
+
+        return attrNames;
     }
 
 }

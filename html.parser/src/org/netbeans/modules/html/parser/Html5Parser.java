@@ -111,7 +111,7 @@ public class Html5Parser implements HtmlParser {
                     } catch (ValidationException ex) {
                         Logger.getLogger(Html5Parser.class.getName()).log(Level.WARNING,
                                 "Error during validating file " + source.getSourceFileObject(),
-                                ex);
+                                ex);//NOI18N
                     }
                 }
             }

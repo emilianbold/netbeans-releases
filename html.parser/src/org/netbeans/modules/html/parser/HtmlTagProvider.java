@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.html.parser;
 
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,7 +49,6 @@ import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.spi.DefaultHelpItem;
 import org.netbeans.editor.ext.html.parser.spi.HelpItem;
-import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttribute;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagAttributeType;
@@ -59,6 +57,7 @@ import org.netbeans.modules.html.parser.model.Attribute;
 import org.netbeans.modules.html.parser.model.ContentType;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.ElementDescriptorRules;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -156,7 +155,7 @@ public class HtmlTagProvider {
 
         @Override
         public String toString() {
-            return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());
+            return String.format("ElementName2HtmlTagAdapter{name=%s}", getName());//NOI18N
         }
 
         public Collection<HtmlTagAttribute> getAttributes() {
@@ -204,9 +203,11 @@ public class HtmlTagProvider {
 
         public HelpItem getHelp() {
             StringBuilder header = new StringBuilder();
-            header.append("<h2>Element '");
+            header.append("<h2>");
+            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
+            header.append(" '");//NOI18N
             header.append(descriptor.getName());
-            header.append("'</h2>");
+            header.append("'</h2>");//NOI18N
 
             return isPureHtmlTag() && descriptor.getHelpLink() != null
                     ? new DefaultHelpItem(
@@ -246,9 +247,11 @@ public class HtmlTagProvider {
 
         public HelpItem getHelp() {
             StringBuilder header = new StringBuilder();
-            header.append("<h2>Attribute '");
+            header.append("<h2>");//NOI18N
+            header.append(NbBundle.getMessage(HtmlTagProvider.class, "MSG_ElementPrefix"));//NOI18N
+            header.append(" '");//NOI18N
             header.append(attr.getName());
-            header.append("'</h2>");
+            header.append("'</h2>");//NOI18N
 
             return new DefaultHelpItem(
                     Documentation.getDefault().resolveLink(attr.getHelpLink()),
