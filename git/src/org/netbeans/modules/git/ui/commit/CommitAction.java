@@ -127,7 +127,6 @@ public class CommitAction extends SingleRepositoryAction {
         List<File> addCandidates = new LinkedList<File>();
         List<File> deleteCandidates = new LinkedList<File>();
         List<File> commitCandidates = new LinkedList<File>();
-        Set<File> filesToRefresh = new HashSet<File>();
         
         populateCandidates(
                 commitFiles, 
@@ -141,12 +140,8 @@ public class CommitAction extends SingleRepositoryAction {
         }
 
         try {
-            support.outputInRed(
-                    NbBundle.getMessage(CommitAction.class,
-                    "MSG_COMMIT_TITLE")); // NOI18N
-            support.outputInRed(
-                    NbBundle.getMessage(CommitAction.class,
-                    "MSG_COMMIT_TITLE_SEP")); // NOI18N
+            support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE")); // NOI18N
+            support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_TITLE_SEP")); // NOI18N
             support.output(message); // NOI18N
 
             if(addCandidates.size() > 0) {
@@ -166,7 +161,7 @@ public class CommitAction extends SingleRepositoryAction {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
         } finally {
-            refreshFS(filesToRefresh);
+            refreshFS(commitCandidates);
             Git.getInstance().getFileStatusCache().refreshAllRoots(commitCandidates);
             support.outputInRed(NbBundle.getMessage(CommitAction.class, "MSG_COMMIT_DONE")); // NOI18N
             support.output(""); // NOI18N
@@ -214,7 +209,6 @@ public class CommitAction extends SingleRepositoryAction {
         }        
     }
 
-
     private static void beforeCommitHook(List<File> commitCandidates, Collection<HgHook> hooks, String message) {
         File[] hookFiles = null;
         if(hooks.size() > 0) {                
@@ -237,7 +231,7 @@ public class CommitAction extends SingleRepositoryAction {
     private static void commit(List<File> commitCandidates, GitClient client, String message, GitProgressSupport support) throws GitException {
         boolean commitAfterMerge = false;        
         try {                                        
-            client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, support);                    
+            client.commit(commitCandidates.toArray(new File[commitCandidates.size()]), message, support);                                
         } catch (GitException ex) {
             // XXX
 //                    if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
@@ -291,7 +285,7 @@ public class CommitAction extends SingleRepositoryAction {
         // XXX HgUtils.logHgLog(tip, logger);
     }
         
-    private static void refreshFS (final Set<File> filesToRefresh) {
+    private static void refreshFS (final Collection<File> filesToRefresh) {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {

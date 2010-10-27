@@ -84,6 +84,17 @@ import org.openide.util.RequestProcessor;
  */
 public class GitCommitPanel extends VCSCommitPanel {
 
+    private final Collection<HgHook> hooks;
+    private final File[] roots;
+    private final File repository;
+
+    private GitCommitPanel(final File[] roots, final File repository, VCSCommitParameters parameters, Preferences preferences, Collection<HgHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+        super(parameters, preferences, hooks, hooksContext, diffProvider);
+        this.roots = roots;
+        this.repository = repository;
+        this.hooks = hooks;
+    }
+
     public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
@@ -97,17 +108,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         
         return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
     }
-    private final Collection<HgHook> hooks;
-    private final File[] roots;
-    private final File repository;
-
-    private GitCommitPanel(final File[] roots, final File repository, VCSCommitParameters parameters, Preferences preferences, Collection<HgHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
-        super(parameters, preferences, hooks, hooksContext, diffProvider);
-        this.roots = roots;
-        this.repository = repository;
-        this.hooks = hooks;
-    }
-
+    
     @Override
     public DefaultCommitParameters getParameters() {
         return (DefaultCommitParameters) super.getParameters();
