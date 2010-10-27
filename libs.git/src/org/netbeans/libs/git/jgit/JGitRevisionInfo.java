@@ -105,12 +105,12 @@ public final class JGitRevisionInfo implements GitRevisionInfo {
     }
 
     /**
-     * getter for commit time
+     * getter for commit time, time is in milliseconds
      * @return
      */
     @Override
     public final long getCommitTime () {
-        return revCommit.getCommitTime();
+        return (long) revCommit.getCommitTime() * 1000;
     }
 
     /**
