@@ -42,6 +42,7 @@
 
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;

@@ -52,7 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.modules.html.palette.HtmlPaletteUtilities;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Exceptions;
