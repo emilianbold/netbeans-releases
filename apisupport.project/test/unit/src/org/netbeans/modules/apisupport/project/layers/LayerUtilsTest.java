@@ -643,7 +643,7 @@ public class LayerUtilsTest extends LayerTestBase {
         assertNotNull(toolsMenu);
         for (FileObject kid : toolsMenu.getChildren()) {
             String name = kid.getNameExt();
-            if (name.indexOf("Options") != -1) {
+            if (name.contains("Options") && !name.contains("separator")) {
                 optionInstanceNames.add(name);
             }
         }
