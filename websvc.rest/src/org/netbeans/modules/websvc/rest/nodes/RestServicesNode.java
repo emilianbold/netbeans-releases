@@ -57,6 +57,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -74,7 +75,9 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
     static Icon openedFolderIconCache;
 
     public RestServicesNode(Project project) {
-        super(new RestServicesChildren(project), createLookup(project));
+        //super(new RestServicesChildren(project), createLookup(project));
+        super(Children.create( new RestServiceChildFactory(project), true), 
+                createLookup(project));
         setDisplayName(NbBundle.getBundle(RestServicesNode.class).getString("LBL_RestServices"));
     }
 

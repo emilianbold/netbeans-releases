@@ -1083,7 +1083,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            //Exceptions.printStackTrace(ble);
         }
 
         return null;

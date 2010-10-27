@@ -230,8 +230,6 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
-                    if (text.indexOf('\n') < 0)
-                        continue;
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts == null)
                         continue;
@@ -1676,7 +1674,7 @@ public class Reformatter implements ReformatTask {
                 if (cs.placeElseOnNewLine() || !prevblock) {
                     newline();
                 } else {
-                    spaces(cs.spaceBeforeElse() ? 1 : 0);
+                    spaces(cs.spaceBeforeElse() ? 1 : 0, tokens.offset() < startOffset);
                 }
                 accept(ELSE);
                 if (elseStat.getKind() == Tree.Kind.IF && cs.specialElseIf()) {
@@ -3139,7 +3137,7 @@ public class Reformatter implements ReformatTask {
             }
             int old = indent;
             indent += indentSize;
-            int ret = wrapTree(wrapStyle, -1, spacesCnt, tree);
+            wrapTree(wrapStyle, -1, spacesCnt, tree);
             indent = old;
             return false;
         }
