@@ -149,9 +149,12 @@ public class CommitAction extends SingleRepositoryAction {
                     "MSG_COMMIT_TITLE_SEP")); // NOI18N
             support.output(message); // NOI18N
 
-            client.add(addCandidates.toArray(new File[addCandidates.size()]), support);
-            client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, support);
-            
+            if(addCandidates.size() > 0) {
+                client.add(addCandidates.toArray(new File[addCandidates.size()]), support);
+            }
+            if(deleteCandidates.size() > 0) {
+                client.remove(deleteCandidates.toArray(new File[deleteCandidates.size()]), false, support);           
+            }            
             beforeCommitHook(commitCandidates, hooks, message);
             
             commit(commitCandidates, client, message, support);
@@ -193,7 +196,7 @@ public class CommitAction extends SingleRepositoryAction {
             if (option != VCSCommitOptions.EXCLUDE) {
                 if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
                     addCandidates.add(file);
-                } else  if (info.containsStatus(FileInformation.STATUS_REMOVED)) {
+                } else if (info.containsStatus(FileInformation.STATUS_REMOVED)) {
                     deleteCandidates.add(file);
                 }
                 commitCandidates.add(file);
