@@ -698,7 +698,7 @@ public final class UpdateTracking {
 
                     File customConfigs = new File(new File(new File(c, "config"), "Modules"), dash + ".xml");
                     if (customConfigs.exists()) {
-                        needInfoInUserDir = true;
+                        needInfoInUserDir = lastVersion == null;
                     }
                 }
 
