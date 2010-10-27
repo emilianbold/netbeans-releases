@@ -71,15 +71,15 @@ public final class FileObjectCrawler extends Crawler {
     private final ClassPath.Entry entry;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, true, cancelRequest);
+    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, boolean detectChangesOnly, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
+        super (root.getURL(), checkTimeStamps, true, detectChangesOnly, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
     public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, false, cancelRequest);
+        super (root.getURL(), checkTimeStamps, false, false, cancelRequest);
         this.root = root;
         this.entry = entry;
         this.files = files;
@@ -187,7 +187,7 @@ public final class FileObjectCrawler extends Crawler {
 
                     FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
                     allResources.add(indexable);
-                    if (!isUpToDate(fo, relativePath) && resources != null) {
+                    if (!isUpToDate(fo, relativePath)) {
                         resources.add(indexable);
                     }
                 }
