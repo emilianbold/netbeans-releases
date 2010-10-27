@@ -45,6 +45,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
@@ -68,6 +70,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -87,9 +90,9 @@ public class ActionsSearchProvider implements SearchProvider {
      * and fills response object with proper actions that are enabled
      * and can be run meaningfully on current actions context.
      */
-    public void evaluate(SearchRequest request, SearchResponse response) {
-        Map<Object, String> duplicateCheck = new HashMap<Object, String>();
-        List<Object[]> possibleResults = new ArrayList<Object[]>(7);
+    public void evaluate(final SearchRequest request, final SearchResponse response) {
+        final Map<Object, String> duplicateCheck = new HashMap<Object, String>();
+        final List<Object[]> possibleResults = new ArrayList<Object[]>(7);
         Map<ShortcutAction, Set<String>> curKeymap;
         // iterate over all found KeymapManagers
         for (KeymapManager m : Lookup.getDefault().lookupAll(KeymapManager.class)) {
@@ -107,28 +110,40 @@ public class ActionsSearchProvider implements SearchProvider {
                 }
             }
         }
-        
-        // try also actions of activated nodes
-        Node[] actNodes = TopComponent.getRegistry().getActivatedNodes();
-        for (int i = 0; i < actNodes.length; i++) {
-            Action[] acts = actNodes[i].getActions(false);
-            for (int j = 0; j < acts.length; j++) {
-                Action action = checkNodeAction(acts[j]);
-                if (action == null) {
-                    continue;
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    // try also actions of activated nodes
+                    Node[] actNodes = TopComponent.getRegistry().getActivatedNodes();
+                    for (int i = 0; i < actNodes.length; i++) {
+                        Action[] acts = actNodes[i].getActions(false);
+                        for (int j = 0; j < acts.length; j++) {
+                            Action action = checkNodeAction(acts[j]);
+                            if (action == null) {
+                                continue;
+                            }
+                            Object[] actInfo = new Object[]{action, null, null};
+                            Object name = action.getValue(Action.NAME);
+                            if (!(name instanceof String)) {
+                                // skip action without proper name
+                                continue;
+                            }
+                            String displayName = ((String) name).replaceFirst("&(?! )", ""); //NOI18N
+                            if (!doEvaluation(displayName, request, actInfo, response, possibleResults, duplicateCheck)) {
+                                return;
+                            }
+                        }
+                    }
                 }
-                Object[] actInfo = new Object[] { action, null, null };
-                Object name = action.getValue(Action.NAME);
-                if (!(name instanceof String)) {
-                    // skip action without proper name
-                    continue;
-                }
-                String displayName = ((String) name).replaceFirst("&(?! )", "");  //NOI18N
-                if (!doEvaluation(displayName, request, actInfo, response, possibleResults, duplicateCheck)) {
-                    return;
-                }
-            }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
         }
+
 
         // add results stored above, actions that contain typed text, but not as prefix
         for (Object[] actInfo : possibleResults) {
@@ -195,33 +210,39 @@ public class ActionsSearchProvider implements SearchProvider {
         return true;
     }
     
-    private Object[] getActionInfo(ShortcutAction sa, Set<String> shortcuts) {
-        Class clazz = sa.getClass();
-        Field f = null;
+    private Object[] getActionInfo(final ShortcutAction sa, final Set<String> shortcuts) {
+        final Object[][] result = new Object[1][];
         try {
-            f = clazz.getDeclaredField("action");
-            f.setAccessible(true);
-            Action action = (Action) f.get(sa);
-            
-            
-            
-            if (!action.isEnabled()) {
-                return null;
-            }
-            
-            return new Object[] {action, sa, shortcuts};
-            
-        } catch (Throwable thr) {
-            if (thr instanceof ThreadDeath) {
-                throw (ThreadDeath)thr;
-            }
-            // just log problems, it is common that some actions may
-            // complain
-            Logger.getLogger(getClass().getName()).log(Level.FINE,
-                    "Some problem getting action " + sa.getDisplayName(), thr);
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    Class clazz = sa.getClass();
+                    Field f = null;
+                    try {
+                        f = clazz.getDeclaredField("action");
+                        f.setAccessible(true);
+                        Action action = (Action) f.get(sa);
+                        if (!action.isEnabled()) {
+                            return;
+                        }
+                        result[0] = new Object[]{action, sa, shortcuts};
+                        return;
+                    } catch (Throwable thr) {
+                        if (thr instanceof ThreadDeath) {
+                            throw (ThreadDeath) thr;
+                        } // complain
+                        Logger.getLogger(getClass().getName()).log(Level.FINE, "Some problem getting action " + sa.getDisplayName(), thr);
+                    }
+                    return;
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        // fallback
-        return null;
+        return result[0];
     }
     
     
