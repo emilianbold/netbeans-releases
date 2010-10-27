@@ -692,6 +692,10 @@ public class NbModuleSuite {
                 }
             }
             
+            if (config.enableClasspathModules) {
+                addNonModules(bootCP, NbTestSuite.class.getClassLoader());
+            }
+
             // loader that does not see our current classloader
             JUnitLoader junit = new JUnitLoader(config.parentClassLoader, NbModuleSuite.class.getClassLoader());
             URLClassLoader loader = new URLClassLoader(bootCP.toArray(new URL[0]), junit);
@@ -815,6 +819,15 @@ public class NbModuleSuite {
         }
 
         static File findPlatform() {
+            String clusterPath = System.getProperty("cluster.path.final"); // NOI18N
+            if (clusterPath != null) {
+                for (String piece : tokenizePath(clusterPath)) {
+                    File d = new File(piece);
+                    if (d.getName().matches("platform\\d*")) {
+                        return d;
+                    }
+                }
+            }
             try {
                 Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
                 File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -883,6 +896,17 @@ public class NbModuleSuite {
 
             return cnbs;
         }
+        private void addNonModules(List<URL> bootCP, ClassLoader loader) throws IOException {
+            Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
+            while (en.hasMoreElements()) {
+                URL url = en.nextElement();
+                String manifest = asString(url.openStream(), true);
+                Matcher m = CODENAME.matcher(manifest);
+                if (!m.find()) {
+                    bootCP.add(new URL(url.toString().replaceFirst("/META-INF/MANIFEST[.]MF$", "/")));
+                }
+            }
+        }
         private static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");
             while (en.hasMoreElements()) {
@@ -899,11 +923,7 @@ public class NbModuleSuite {
                     if (jar == null) {
                         continue;
                     }
-                    if (jar.getParentFile().getName().equals("lib")) {
-                        // Otherwise will get DuplicateException.
-                        continue;
-                    }
-                    if (jar.getParentFile().getName().equals("core")) {
+                    if (jar.getParentFile().getName().matches("lib|core") || /* from Maven */ jar.getParentFile().getParentFile().getName().matches("org-openide-util|org-openide-util-lookup|org-openide-modules|org-netbeans-bootstrap|org-openide-filesystems|org-netbeans-core-startup")) {
                         // Otherwise will get DuplicateException.
                         continue;
                     }
@@ -917,7 +937,6 @@ public class NbModuleSuite {
 "    <param name=\"enabled\">true</param>\n" +
 "    <param name=\"jar\">" + jar + "</param>\n" +
 "    <param name=\"reloadable\">false</param>\n" +
-"    <param name=\"specversion\">" + v.group(1) + "</param>\n" +
 "</module>\n";
                     
                     File conf = new File(new File(ud, "config"), "Modules");
