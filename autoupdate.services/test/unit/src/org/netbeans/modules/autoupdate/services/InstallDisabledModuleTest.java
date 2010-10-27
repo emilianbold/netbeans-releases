@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.autoupdate.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
@@ -112,5 +113,8 @@ public class InstallDisabledModuleTest extends OperationsTestImpl {
         UpdateUnit install = UpdateManagerImpl.getInstance().getUpdateUnit(moduleCodeNameBaseForTest());
         assertNotNull("There is an NBM to install", install);
         installModule(install, null);//fail("OK");
+        
+        File f = new File(new File(new File(new File(System.getProperty("netbeans.user")), "config"), "Modules"), "com-sun-testmodule-cluster.xml");
+        assertTrue("Config file created in userdirectory for install of new module: " + f, f.exists());
     }
 }
