@@ -61,8 +61,10 @@ public class EditableComboBox extends JComboBox {
 
     private String storageKey;
     private Preferences prefs;
+    private static final String LIST_DELIMITER = "*";
 
     public EditableComboBox() {
+        setEditable(true);
     }
 
     /**
@@ -89,11 +91,11 @@ public class EditableComboBox extends JComboBox {
         if (old == null) {
             old = "";
         }
-        StringTokenizer st = new StringTokenizer(old, "\u0000"); // NOI18N
+        StringTokenizer st = new StringTokenizer(old, LIST_DELIMITER); // NOI18N
         int history = 5;
         while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (!list.contains(s)) {
+            if (!s.isEmpty() && !list.contains(s)) {
                 list.add(s);
                 history--;
                 if (history == 0) {
@@ -115,17 +117,20 @@ public class EditableComboBox extends JComboBox {
      */
     public void store() {
         List<String> list = new ArrayList<String>();
-        list.add(getText());
+        String text = getText();
+        if (!text.isEmpty()) {
+            list.add(text);
+        }
         for (int i = 0; i < getModel().getSize(); i++) {
             String s = getModel().getElementAt(i).toString();
-            if (!list.contains(s)) {
+            if (!s.isEmpty() && !list.contains(s)) {
                 list.add(s);
             }
         }
         StringBuilder buf = new StringBuilder();
         for (String s : list) {
             if (buf.length() > 0) {
-                buf.append((char) 0);
+                buf.append(LIST_DELIMITER);
             }
             buf.append(s);
         }
@@ -148,6 +153,13 @@ public class EditableComboBox extends JComboBox {
             return getSelectedItem().toString();
         }
         return null;
+    }
+
+    /**
+     * Set current text
+     */
+    public void setText(String path) {
+        setSelectedItem(path);
     }
 
     /**

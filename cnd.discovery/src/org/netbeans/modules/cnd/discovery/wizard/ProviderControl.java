@@ -88,6 +88,7 @@ public class ProviderControl {
     private EditableComboBox field;
     private JButton button;
     private int chooserMode = 0;
+    private static final String LIST_LIST_DELIMITER = ";";
     
     public ProviderControl(String key, ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
             JPanel panel, ChangeListener listener){
@@ -209,7 +210,7 @@ public class ProviderControl {
             StringBuilder buf = new StringBuilder();
             for(String s : (String[])val){
                 if (buf.length()>0){
-                    buf.append(';');
+                    buf.append(LIST_LIST_DELIMITER);
                 }
                 buf.append(s);
             }
@@ -253,7 +254,7 @@ public class ProviderControl {
                 break;
             case BinaryFiles:
                 String text = getComboBoxText();
-                StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
+                StringTokenizer st = new StringTokenizer(text,LIST_LIST_DELIMITER); // NOI18N
                 List<String> list = new ArrayList<String>();
                 while(st.hasMoreTokens()){
                     list.add(st.nextToken());
@@ -304,7 +305,7 @@ public class ProviderControl {
                 break;
             case BinaryFiles:
                 String text = getComboBoxText();
-                StringTokenizer st = new StringTokenizer(text,";"); // NOI18N
+                StringTokenizer st = new StringTokenizer(text,LIST_LIST_DELIMITER); // NOI18N
                 while(st.hasMoreTokens()){
                     path = st.nextToken();
                     if (path.length() == 0) {
@@ -357,7 +358,7 @@ public class ProviderControl {
     }
     
     private void additionalLibrariesButtonActionPerformed(ActionEvent evt) {
-        StringTokenizer tokenizer = new StringTokenizer(getComboBoxText(), ";"); // NOI18N
+        StringTokenizer tokenizer = new StringTokenizer(getComboBoxText(), LIST_LIST_DELIMITER); // NOI18N
         List<String> list = new ArrayList<String>();
         while (tokenizer.hasMoreTokens()) {
             list.add(tokenizer.nextToken());
@@ -371,7 +372,7 @@ public class ProviderControl {
             StringBuilder includes = new StringBuilder();
             for (int i = 0; i < newList.size(); i++) {
                 if (i > 0) {
-                    includes.append(';'); // NOI18N
+                    includes.append(LIST_LIST_DELIMITER); // NOI18N
                 }
                 includes.append(newList.get(i));
             }

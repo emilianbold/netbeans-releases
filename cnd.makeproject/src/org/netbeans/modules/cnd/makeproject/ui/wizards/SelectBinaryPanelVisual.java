@@ -54,6 +54,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -102,6 +104,7 @@ import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -109,6 +112,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -123,6 +127,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     private final AtomicInteger checking = new AtomicInteger(0);
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportExecutable"); // NOI18N
     private DefaultTableModel tableModel;
+    private static final String BINARY_FILE_KEY = "binaryField"; // NOI18N
 
 
     /** Creates new form SelectBinaryPanelVisual */
@@ -141,10 +146,10 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private void addListeners(){
-        binaryField.getDocument().addDocumentListener(new DocumentAdapter() {
+        ((EditableComboBox)binaryField).addChangeListener(new ActionListener() {
             @Override
-            protected void update(DocumentEvent e) {
-                String path = binaryField.getText().trim();
+            public void actionPerformed(ActionEvent e) {
+                String path = ((EditableComboBox)binaryField).getText().trim();
                 controller.getWizardStorage().setBinaryPath(path);
                 updateRoot();
             }
@@ -215,7 +220,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                 });
             }
         } else {
-            String path = binaryField.getText().trim();
+            String path = ((EditableComboBox)binaryField).getText().trim();
             if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
                 FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
                 if (fo == null || !fo.isValid()) {
@@ -422,7 +427,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         binaryLabel = new javax.swing.JLabel();
-        binaryField = new javax.swing.JTextField();
         binaryButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         sourcesLabel = new javax.swing.JLabel();
@@ -434,6 +438,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         table = new javax.swing.JTable();
         viewLabel = new javax.swing.JLabel();
         viewComboBox = new javax.swing.JComboBox();
+        binaryField = new EditableComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -445,15 +450,6 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(binaryLabel, gridBagConstraints);
-
-        binaryField.setText(org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.binaryField.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
-        add(binaryField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(binaryButton, org.openide.util.NbBundle.getMessage(SelectBinaryPanelVisual.class, "SelectBinaryPanelVisual.binaryButton.text")); // NOI18N
         binaryButton.addActionListener(new java.awt.event.ActionListener() {
@@ -554,14 +550,22 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(viewComboBox, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(binaryField, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void binaryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_binaryButtonActionPerformed
-        String path = selectBinaryFile(binaryField.getText());
+        String path = selectBinaryFile(((EditableComboBox)binaryField).getText());
         if (path == null) {
             return;
         }
-        binaryField.setText(path);
+        ((EditableComboBox)binaryField).setText(path);
     }//GEN-LAST:event_binaryButtonActionPerformed
 
     private void sourcesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourcesButtonActionPerformed
@@ -586,15 +590,23 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }//GEN-LAST:event_sourcesButtonActionPerformed
 
     void read(WizardDescriptor wizardDescriptor) {
+        ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
+        String binary = (String)wizardDescriptor.getProperty(WizardConstants.PROPERTY_BUILD_RESULT);
+        if (binary == null) {
+            binary = ""; // NOI18N
+        }
+        ((EditableComboBox)binaryField).read(binary);
     }
 
     void store(WizardDescriptor wizardDescriptor) {
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT,  binaryField.getText().trim());
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME,   new File(binaryField.getText().trim()).getName());
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_BUILD_RESULT,  ((EditableComboBox)binaryField).getText().trim());
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PREFERED_PROJECT_NAME,   new File(((EditableComboBox)binaryField).getText().trim()).getName());
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH,  sourcesField.getText().trim());
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_DEPENDENCY_KIND,  ((ProjectKindItem)dependeciesComboBox.getSelectedItem()).kind);
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_DEPENDENCIES,  getDlls());
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_TRUE_SOURCE_ROOT,  ((ProjectView)viewComboBox.getSelectedItem()).isSourceRoot);
+        ((EditableComboBox)binaryField).setStorage(BINARY_FILE_KEY, NbPreferences.forModule(SelectBinaryPanelVisual.class));
+        ((EditableComboBox)binaryField).store();
         // TODO should be inited
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_USER_MAKEFILE_PATH,  ""); // NOI18N
     }
@@ -617,7 +629,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
     }
 
     private boolean validBinary() {
-        String path = binaryField.getText().trim();
+        String path = ((EditableComboBox)binaryField).getText().trim();
         if (path.isEmpty()) {
             return false;
         }
@@ -715,7 +727,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton binaryButton;
-    private javax.swing.JTextField binaryField;
+    private javax.swing.JComboBox binaryField;
     private javax.swing.JLabel binaryLabel;
     private javax.swing.JComboBox dependeciesComboBox;
     private javax.swing.JLabel dependenciesLabel;
