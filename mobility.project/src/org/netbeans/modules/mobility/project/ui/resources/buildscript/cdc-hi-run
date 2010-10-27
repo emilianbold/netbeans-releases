@@ -3,6 +3,11 @@
     <target name="-pre-cdc-hi-run" if="cdc-hi-platform.trigger"/>
 
     <target name="-cdc-hi-run" if="cdc-hi-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2=""/>
+            </condition>
+        </fail>
         <exec executable="${{platform.home}}/bin/emulator">
           <arg value="-cp"/>
           <arg value="${{basedir}}/${{dist.dir}}/${{dist.jar}}"/>
