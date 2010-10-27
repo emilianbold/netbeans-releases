@@ -88,7 +88,7 @@ public class ProviderControl {
     private EditableComboBox field;
     private JButton button;
     private int chooserMode = 0;
-    private static final String LIST_LIST_DELIMITER = ";";
+    private static final String LIST_LIST_DELIMITER = ";"; // NOI18N
     
     public ProviderControl(String key, ProviderProperty property, DiscoveryDescriptor wizardDescriptor,
             JPanel panel, ChangeListener listener){
