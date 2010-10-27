@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -73,7 +75,7 @@ public class VCSHooksConfig {
         }  
     }
     
-    private static VCSHooksConfig instance = null;
+    private static Map<HookType, VCSHooksConfig> instances = new EnumMap<HookType, VCSHooksConfig>(HookType.class);
 
     private static final String HOOK_PREFIX               = "vcshook.";         // NOI18N
     
@@ -93,8 +95,10 @@ public class VCSHooksConfig {
     }
 
     static VCSHooksConfig getInstance(HookType type) {
+        VCSHooksConfig instance = instances.get(type);
         if(instance == null) {
             instance = new VCSHooksConfig(type);
+            instances.put(type, instance);
         }
         return instance;
     }
@@ -155,7 +159,14 @@ public class VCSHooksConfig {
         return new PushOperation(values[0], !values[1].equals("") ? values[1] : null, values[2].equals("1") ? true : false); // NOI18N
     }
 
-    static Format getDefaultHgRevisionTemplate() {
+    Format getDefaultRevisionTemplate() {
+        if(type == HookType.SVN) {
+            return getDefaultSvnRevisionTemplate();
+        }
+        return getDefaultHgRevisionTemplate();
+    }
+    
+    private static Format getDefaultHgRevisionTemplate() {
         return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Changeset"),         // NOI18N
             "{changeset}\n",                                                    // NOI18N
@@ -168,11 +179,11 @@ public class VCSHooksConfig {
         }));
     }
 
-    static Format getDefaultIssueInfoTemplate() {
+    Format getDefaultIssueInfoTemplate() {
         return new Format(false, NbBundle.getMessage(VCSHooksConfig.class, "LBL_Issue") + "{id} - {summary}");  // NOI18N
     }
 
-    static Format getDefaultSvnRevisionTemplate() {
+    private static Format getDefaultSvnRevisionTemplate() {
         return new Format(false, normalizeFormat(new String[] {
             NbBundle.getMessage(VCSHooksConfig.class, "LBL_Revision"),          // NOI18N
             "{revision}\n",                                                     // NOI18N

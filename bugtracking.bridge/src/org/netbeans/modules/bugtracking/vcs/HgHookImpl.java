@@ -42,30 +42,16 @@
 
 package org.netbeans.modules.bugtracking.vcs;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
-import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
-import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHookContext.LogEntry;
 import org.openide.util.NbBundle;
 
 /**
- * Mercurial commit hook implementation
+ * Mercurial hook implementation
  * @author Tomas Stupka
  */
 public class HgHookImpl extends HgHook {
@@ -73,134 +59,29 @@ public class HgHookImpl extends HgHook {
     private static final String[] SUPPORTED_ISSUE_INFO_VARIABLES = new String[] {"id", "summary"};                        // NOI18N
     private static final String[] SUPPORTED_REVISION_VARIABLES = new String[] {"changeset", "author", "date", "message"}; // NOI18N
 
-    private HookPanel panel;
     private final String name;
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
-    private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
-    private final VCSHooksConfig config;
 
+    private HookImpl delegate;
+    
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
-        this.config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.SVN);
+        VCSHooksConfig config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.HG);
+        delegate = new HookImpl(config, SUPPORTED_ISSUE_INFO_VARIABLES, SUPPORTED_REVISION_VARIABLES);
     }
 
     @Override
     public HgHookContext beforeCommit(HgHookContext context) throws IOException {
-        Repository selectedRepository = getSelectedRepository();
-
-        if(context.getFiles().length == 0) {
-
-            if (selectedRepository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
-                        selectedRepository);
-            }
-
-            LOG.warning("calling hg beforeCommit for zero files");               // NOI18N
-            return null;
-        }
-
-        if (selectedRepository != null) {
-            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
-                    context.getFiles(),
-                    selectedRepository);
-        }
-
-        File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg beforeCommit start for {0}", file);                // NOI18N
-
-        String msg = context.getMessage();
-        if (isLinkSelected()) {
-
-            Format format = config.getIssueInfoTemplate();
-            String formatString = format.getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_ISSUE_INFO_VARIABLES);
-            
-            Issue issue = getIssue();
-            if (issue == null) {
-                LOG.log(Level.FINE, " no issue set for {0}", file);                   // NOI18N
-                return null;
-            }
-            String issueInfo = new MessageFormat(formatString).format(
-                    new Object[] {issue.getID(), issue.getSummary()},
-                    new StringBuffer(),
-                    null).toString();
-
-            LOG.log(Level.FINER, " hg commit hook issue info ''{0}''", issueInfo);     // NOI18N
-            if(format.isAbove()) {
-                msg = issueInfo + "\n" + msg;                                   // NOI18N
-            } else {
-                msg = msg + "\n" + issueInfo;                                   // NOI18N
-            }
-            
-            context = new HgHookContext(context.getFiles(), msg, context.getLogEntries());
-            return context;
-        }
-        return super.beforeCommit(context);
+        String msg = delegate.beforeCommit(context.getFiles(), context.getMessage());
+        return msg != null ? new HgHookContext(context.getFiles(), msg, context.getLogEntries()) : null;
     }
 
     @Override
     public void afterCommit(HgHookContext context) {
-        if(panel == null) {
-            LOG.fine("no settings for afterCommit");                                // NOI18N
-            return;
-        }
-
-        if(context.getFiles().length == 0) {
-            LOG.warning("calling hg afterCommit for zero files");                   // NOI18N
-            return;
-        }
-
-        File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "hg afterCommit start for {0}", file);                    // NOI18N
-
-        Issue issue = getIssue();
-        if (issue == null) {
-            LOG.log(Level.FINE, " no issue set for {0}", file);                       // NOI18N
-            return;
-        }
-
-        config.setLink(isLinkSelected());
-        config.setResolve(isResolveSelected());
-        config.setAfterCommit(isCommitSelected());
-
-        if (!isLinkSelected() &&
-            !isResolveSelected())
-        {
-            LOG.log(Level.FINER, " nothing to do in hg afterCommit for {0}", file);   // NOI18N
-            return;
-        }
-
-        String msg = null;
-        if(isLinkSelected()) {
-            String author = context.getLogEntries()[0].getAuthor();
-            String changeset = context.getLogEntries()[0].getChangeset();
-            Date date = context.getLogEntries()[0].getDate();
-            String message = context.getLogEntries()[0].getMessage();
-
-            String formatString = config.getRevisionTemplate().getFormat();
-            formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_REVISION_VARIABLES); // NOI18N
-
-            msg = new MessageFormat(formatString).format(
-                    new Object[] {
-                        changeset,
-                        author,
-                        date != null ? CC_DATE_FORMAT.format(date) : "",        // NOI18N
-                        message},
-                    new StringBuffer(),
-                    null).toString();
-
-            LOG.log(Level.FINER, " hg afterCommit message ''{0}''", msg);      // NOI18N
-        }
-        if(isCommitSelected()) {
-            issue.addComment(msg, isResolveSelected());
-            issue.open();
-        } else {
-            config.setPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, isResolveSelected()));
-            LOG.log(Level.FINE, "schedulig issue {0} for file {1}", new Object[]{issue.getID(), file}); // NOI18N
-        }
-        LOG.log(Level.FINE, "hg afterCommit end for {0}", file);                  // NOI18N
-        VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
+        String author = context.getLogEntries()[0].getAuthor();
+        String changeset = context.getLogEntries()[0].getChangeset();
+        Date date = context.getLogEntries()[0].getDate();
+        String message = context.getLogEntries()[0].getMessage();
+        delegate.afterCommit(context.getFiles(), author, changeset, date, message, "HG", true);        
     }
 
     @Override
@@ -210,112 +91,23 @@ public class HgHookImpl extends HgHook {
 
     @Override
     public void afterPush(HgHookContext context) {
-        if(context.getFiles().length == 0) {
-            LOG.warning("calling after push for zero files");                   // NOI18N
-            return;
-        }
-        File file = context.getFiles()[0];
-        LOG.log(Level.FINE, "push hook start for {0}", file);                     // NOI18N
-
-        Repository repo = null;
-        LogEntry[] entries = context.getLogEntries();
-        for (LogEntry logEntry : entries) {
-
-            PushOperation operation = config.popPushAction(logEntry.getChangeset());
-            if(operation == null) {
-                LOG.log(Level.FINE, " no push hook scheduled for {0}", file);     // NOI18N
-                continue;
-            }
-
-            if(repo == null) { // don't go for the repository until we really need it
-                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
-                                                                                        //         might have deleted in the meantime
-                if(repo == null) {
-                    LOG.log(Level.WARNING, " could not find issue tracker for {0}", file);      // NOI18N
-                    break;
-                }
-            }
-
-            Issue issue = repo.getIssue(operation.getIssueID());
-            if(issue == null) {
-                LOG.log(Level.FINE, " no issue found with id {0}", operation.getIssueID());  // NOI18N
-                continue;
-            }
-
-            issue.addComment(operation.getMsg(), operation.isClose());
-        }
-        LOG.log(Level.FINE, "push hook end for {0}", file);                       // NOI18N
-        VCSHooksConfig.logHookUsage("HG", getSelectedRepository()); // NOI18N
+        LogEntry[] logEntries = context.getLogEntries();
+        String[] changesets = new String[logEntries.length];
+        for (int i = 0; i < logEntries.length; i++) {
+            LogEntry logEntry = logEntries[i];
+            changesets[i] = logEntry.getChangeset();
+        }        
+        delegate.afterPush(context.getFiles(), changesets, "HG");
     }
 
     @Override
     public JPanel createComponent(HgHookContext context) {
-        LOG.finer("HgHookImpl.createComponent()");                      //NOI18N
-        File referenceFile;
-        if(context.getFiles().length == 0) {
-            referenceFile = null;
-            LOG.warning("creating hg hook component for zero files");           // NOI18N
-        } else {
-            referenceFile = context.getFiles()[0];
-        }
-        
-        panel = new HookPanel(
-                        config.getLink(),
-                        config.getResolve(),
-                        config.getAfterCommit());
-        
-        if (referenceFile != null) {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
-        } else {
-            RepositoryComboSupport.setup(panel, panel.repositoryComboBox, false);
-        }
-        panel.changeFormatButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                onShowFormat();
-            }
-        });
-        return panel;
+        return delegate.createComponent(context.getFiles());
     }
 
     @Override
     public String getDisplayName() {
         return name;
-    }
-
-    private void onShowFormat() {
-        FormatPanel p = 
-                new FormatPanel(
-                    config.getRevisionTemplate(),
-                    VCSHooksConfig.getDefaultHgRevisionTemplate(),
-                    SUPPORTED_REVISION_VARIABLES,
-                    config.getIssueInfoTemplate(),
-                    VCSHooksConfig.getDefaultIssueInfoTemplate(),
-                    SUPPORTED_ISSUE_INFO_VARIABLES);
-        if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            config.setRevisionTemplate(p.getIssueFormat());
-            config.setIssueInfoTemplate(p.getCommitFormat());
-        }
-    }
-
-    private boolean isLinkSelected() {
-        return (panel != null) && panel.linkCheckBox.isSelected();
-    }
-
-    private boolean isResolveSelected() {
-        return (panel != null) && panel.resolveCheckBox.isSelected();
-    }
-
-    private boolean isCommitSelected() {
-        return (panel != null) && panel.commitRadioButton.isSelected();
-    }
-
-    private Repository getSelectedRepository() {
-        return (panel != null) ? panel.getSelectedRepository() : null;
-    }
-
-    private Issue getIssue() {
-        return (panel != null) ? panel.getIssue() : null;
     }
 
 }
