@@ -77,9 +77,11 @@ public class HgHookImpl extends HgHook {
     private final String name;
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.HgHook");   // NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
+    private final VCSHooksConfig config;
 
     public HgHookImpl() {
         this.name = NbBundle.getMessage(HgHookImpl.class, "LBL_VCSHook");       // NOI18N
+        this.config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.SVN);
     }
 
     @Override
@@ -107,10 +109,10 @@ public class HgHookImpl extends HgHook {
         File file = context.getFiles()[0];
         LOG.log(Level.FINE, "hg beforeCommit start for {0}", file);                // NOI18N
 
+        String msg = context.getMessage();
         if (isLinkSelected()) {
-            String msg = context.getMessage();
 
-            Format format = VCSHooksConfig.getInstance().getHgIssueInfoTemplate();
+            Format format = config.getIssueInfoTemplate();
             String formatString = format.getFormat();
             formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_ISSUE_INFO_VARIABLES);
             
@@ -158,9 +160,9 @@ public class HgHookImpl extends HgHook {
             return;
         }
 
-        VCSHooksConfig.getInstance().setHgLink(isLinkSelected());
-        VCSHooksConfig.getInstance().setHgResolve(isResolveSelected());
-        VCSHooksConfig.getInstance().setHgAfterCommit(isCommitSelected());
+        config.setLink(isLinkSelected());
+        config.setResolve(isResolveSelected());
+        config.setAfterCommit(isCommitSelected());
 
         if (!isLinkSelected() &&
             !isResolveSelected())
@@ -169,7 +171,6 @@ public class HgHookImpl extends HgHook {
             return;
         }
 
-
         String msg = null;
         if(isLinkSelected()) {
             String author = context.getLogEntries()[0].getAuthor();
@@ -177,7 +178,7 @@ public class HgHookImpl extends HgHook {
             Date date = context.getLogEntries()[0].getDate();
             String message = context.getLogEntries()[0].getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getHgRevisionTemplate().getFormat();
+            String formatString = config.getRevisionTemplate().getFormat();
             formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_REVISION_VARIABLES); // NOI18N
 
             msg = new MessageFormat(formatString).format(
@@ -195,7 +196,7 @@ public class HgHookImpl extends HgHook {
             issue.addComment(msg, isResolveSelected());
             issue.open();
         } else {
-            VCSHooksConfig.getInstance().setHgPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, isResolveSelected()));
+            config.setPushAction(context.getLogEntries()[0].getChangeset(), new PushOperation(issue.getID(), msg, isResolveSelected()));
             LOG.log(Level.FINE, "schedulig issue {0} for file {1}", new Object[]{issue.getID(), file}); // NOI18N
         }
         LOG.log(Level.FINE, "hg afterCommit end for {0}", file);                  // NOI18N
@@ -220,7 +221,7 @@ public class HgHookImpl extends HgHook {
         LogEntry[] entries = context.getLogEntries();
         for (LogEntry logEntry : entries) {
 
-            PushOperation operation = VCSHooksConfig.getInstance().popHGPushAction(logEntry.getChangeset());
+            PushOperation operation = config.popPushAction(logEntry.getChangeset());
             if(operation == null) {
                 LOG.log(Level.FINE, " no push hook scheduled for {0}", file);     // NOI18N
                 continue;
@@ -259,9 +260,9 @@ public class HgHookImpl extends HgHook {
         }
         
         panel = new HookPanel(
-                        VCSHooksConfig.getInstance().getHgLink(),
-                        VCSHooksConfig.getInstance().getHgResolve(),
-                        VCSHooksConfig.getInstance().getHgAfterCommit());
+                        config.getLink(),
+                        config.getResolve(),
+                        config.getAfterCommit());
         
         if (referenceFile != null) {
             RepositoryComboSupport.setup(panel, panel.repositoryComboBox, referenceFile);
@@ -285,15 +286,15 @@ public class HgHookImpl extends HgHook {
     private void onShowFormat() {
         FormatPanel p = 
                 new FormatPanel(
-                    VCSHooksConfig.getInstance().getHgRevisionTemplate(),
+                    config.getRevisionTemplate(),
                     VCSHooksConfig.getDefaultHgRevisionTemplate(),
                     SUPPORTED_REVISION_VARIABLES,
-                    VCSHooksConfig.getInstance().getHgIssueInfoTemplate(),
+                    config.getIssueInfoTemplate(),
                     VCSHooksConfig.getDefaultIssueInfoTemplate(),
                     SUPPORTED_ISSUE_INFO_VARIABLES);
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            VCSHooksConfig.getInstance().setHgRevisionTemplate(p.getIssueFormat());
-            VCSHooksConfig.getInstance().setHgIssueInfoTemplate(p.getCommitFormat());
+            config.setRevisionTemplate(p.getIssueFormat());
+            config.setIssueInfoTemplate(p.getCommitFormat());
         }
     }
 

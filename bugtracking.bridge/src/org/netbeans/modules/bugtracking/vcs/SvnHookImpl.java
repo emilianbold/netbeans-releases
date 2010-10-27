@@ -80,9 +80,11 @@ public class SvnHookImpl extends SvnHook {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.vcshooks.SvnHook");  // NOI18N
 
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");    // NOI18N
+    private VCSHooksConfig config;
 
     public SvnHookImpl() {
         this.name = NbBundle.getMessage(SvnHookImpl.class, "LBL_VCSHook");                              // NOI18N
+        this.config = VCSHooksConfig.getInstance(VCSHooksConfig.HookType.SVN);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class SvnHookImpl extends SvnHook {
         List<LogEntry> logEntries = null;
         if(isLinkSelected()) {
 
-            final Format format = VCSHooksConfig.getInstance().getSvnIssueInfoTemplate();
+            final Format format = config.getIssueInfoTemplate();
             String formatString = format.getFormat();
             formatString = HookUtils.prepareFormatString(formatString, SUPPORT_ISSUE_INFO_VARIABLES);
 
@@ -160,8 +162,8 @@ public class SvnHookImpl extends SvnHook {
             return;
         }
 
-        VCSHooksConfig.getInstance().setSvnResolve(isResolveSelected());
-        VCSHooksConfig.getInstance().setSvnLink(isLinkSelected());
+        config.setResolve(isResolveSelected());
+        config.setLink(isLinkSelected());
 
         if(!isLinkSelected() &&
            !isResolveSelected())
@@ -182,7 +184,7 @@ public class SvnHookImpl extends SvnHook {
             Date date = logEntry.getDate();
             String message = logEntry.getMessage();
 
-            String formatString = VCSHooksConfig.getInstance().getSvnRevisionTemplate().getFormat();
+            String formatString = config.getRevisionTemplate().getFormat();
             formatString = HookUtils.prepareFormatString(formatString, SUPPORT_REVISION_VARIABLES); // NOI18N
 
             msg = new MessageFormat(formatString).format(
@@ -216,8 +218,8 @@ public class SvnHookImpl extends SvnHook {
         }
 
         panel = new HookPanel(
-                    VCSHooksConfig.getInstance().getSvnLink(),
-                    VCSHooksConfig.getInstance().getSvnResolve(),
+                    config.getLink(),
+                    config.getResolve(),
                     false);
 
         if (referenceFile != null) {
@@ -255,15 +257,15 @@ public class SvnHookImpl extends SvnHook {
     private void onShowFormat() {
         FormatPanel p =
                 new FormatPanel(
-                    VCSHooksConfig.getInstance().getSvnRevisionTemplate(),
+                    config.getRevisionTemplate(),
                     VCSHooksConfig.getDefaultSvnRevisionTemplate(),
                     SUPPORT_REVISION_VARIABLES,
-                    VCSHooksConfig.getInstance().getSvnIssueInfoTemplate(),
+                    config.getIssueInfoTemplate(),
                     VCSHooksConfig.getDefaultIssueInfoTemplate(),
                     SUPPORT_ISSUE_INFO_VARIABLES);
         if(BugtrackingUtil.show(p, NbBundle.getMessage(HookPanel.class, "LBL_FormatTitle"), NbBundle.getMessage(HookPanel.class, "LBL_OK"))) {  // NOI18N
-            VCSHooksConfig.getInstance().setSvnRevisionTemplate(p.getIssueFormat());
-            VCSHooksConfig.getInstance().setSvnIssueInfoTemplate(p.getCommitFormat());
+            config.setRevisionTemplate(p.getIssueFormat());
+            config.setIssueInfoTemplate(p.getCommitFormat());
         }
     }
 

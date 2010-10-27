@@ -54,28 +54,47 @@ import org.openide.util.NbPreferences;
  * @author Tomas Stupka
  */
 public class VCSHooksConfig {
+    private final HookType type;
+
+    static enum HookType {
+        SVN("svn"),
+        HG("hg"),
+        GIT("git");
+
+        private String type;
+
+        HookType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return type;
+        }  
+    }
+    
     private static VCSHooksConfig instance = null;
 
-    private static final String HG_HOOK_RESOLVE              = "vcshook.hg_resolve";         // NOI18N
-    private static final String HG_HOOK_LINK                 = "vcshook.hg_link";            // NOI18N
-    private static final String HG_HOOK_AFTER_COMMIT         = "vcshook.hg_after_commit";    // NOI18N
-    private static final String SVN_HOOK_RESOLVE             = "vcshook.svn_resolve";        // NOI18N
-    private static final String SVN_HOOK_LINK                = "vcshook.svn_link";           // NOI18N
-
-    private static final String HG_HOOK_ISSUE_INFO_TEMPLATE  = "vcshook.hg_issue_format";    // NOI18N
-    private static final String HG_HOOK_REVISION_TEMPLATE    = "vcshook.hg_comment_format";  // NOI18N
+    private static final String HOOK_PREFIX               = "vcshook.";         // NOI18N
     
-    private static final String SVN_HOOK_ISSUE_INFO_TEMPLATE = "vcshook.svn_issue_format";   // NOI18N
-    private static final String SVN_HOOK_REVISION_TEMPLATE   = "vcshook.svn_comment_format"; // NOI18N
+    private static final String HOOK_RESOLVE              = "_resolve";         // NOI18N
+    private static final String HOOK_LINK                 = "_link";            // NOI18N
+    private static final String HOOK_AFTER_COMMIT         = "_after_commit";    // NOI18N
 
-    private static final String HG_HOOK_PUSH_           = "vcshook.hg_push_hook_";      // NOI18N
-    private static final String DELIMITER               = "<=>";                        // NOI18N
+    private static final String HOOK_ISSUE_INFO_TEMPLATE  = "_issue_format";    // NOI18N
+    private static final String HOOK_REVISION_TEMPLATE    = "_comment_format";  // NOI18N
     
-    private VCSHooksConfig() { }
 
-    static VCSHooksConfig getInstance() {
+    private static final String HOOK_PUSH_                = "_push_hook_";      // NOI18N
+    private static final String DELIMITER                 = "<=>";              // NOI18N
+    
+    private VCSHooksConfig(HookType type) { 
+        this.type = type;
+    }
+
+    static VCSHooksConfig getInstance(HookType type) {
         if(instance == null) {
-            instance = new VCSHooksConfig();
+            instance = new VCSHooksConfig(type);
         }
         return instance;
     }
@@ -84,87 +103,55 @@ public class VCSHooksConfig {
         return NbPreferences.forModule(VCSHooksConfig.class);
     }
 
-    void setHgIssueInfoTemplate(Format format) {
-        getPreferences().put(HG_HOOK_ISSUE_INFO_TEMPLATE, format.toString());
+    void setIssueInfoTemplate(Format format) {
+        getPreferences().put(HOOK_PREFIX + type + HOOK_ISSUE_INFO_TEMPLATE, format.toString());
     }
 
-    void setHgRevisionTemplate(Format format) {
-        getPreferences().put(HG_HOOK_REVISION_TEMPLATE, format.toString());
+    void setRevisionTemplate(Format format) {
+        getPreferences().put(HOOK_PREFIX + type + HOOK_REVISION_TEMPLATE, format.toString());
     }
 
-    void setSvnIssueInfoTemplate(Format format) {
-        getPreferences().put(SVN_HOOK_ISSUE_INFO_TEMPLATE, format.toString());
+    void setResolve(boolean bl) {
+        getPreferences().putBoolean(HOOK_PREFIX + type + HOOK_RESOLVE, bl);
     }
 
-    void setSvnRevisionTemplate(Format format) {
-        getPreferences().put(SVN_HOOK_REVISION_TEMPLATE, format.toString());
+    void setLink(boolean bl) {
+        getPreferences().putBoolean(HOOK_PREFIX + type + HOOK_LINK, bl);
     }
 
-    void setSvnResolve(boolean bl) {
-        getPreferences().putBoolean(SVN_HOOK_RESOLVE, bl);
+    boolean getResolve() {
+        return getPreferences().getBoolean(HOOK_PREFIX + type + HOOK_RESOLVE, false);
     }
 
-    void setSvnLink(boolean bl) {
-        getPreferences().putBoolean(SVN_HOOK_LINK, bl);
+    boolean getLink() {
+        return getPreferences().getBoolean(HOOK_PREFIX + type + HOOK_LINK, true);
     }
 
-    void setHgResolve(boolean bl) {
-        getPreferences().putBoolean(HG_HOOK_RESOLVE, bl);
+    boolean getAfterCommit() {
+        return getPreferences().getBoolean(HOOK_PREFIX + type + HOOK_AFTER_COMMIT, false);
     }
 
-    void setHgAfterCommit(boolean bl) {
-        getPreferences().putBoolean(HG_HOOK_AFTER_COMMIT, bl);
+    Format getRevisionTemplate() {
+        return getFormat(getPreferences().get(HOOK_PREFIX + type + HOOK_REVISION_TEMPLATE, null), type == HookType.SVN ? getDefaultSvnRevisionTemplate() : getDefaultHgRevisionTemplate());
     }
 
-    void setHgLink(boolean bl) {
-        getPreferences().putBoolean(HG_HOOK_LINK, bl);
+    Format getIssueInfoTemplate() {
+        return getFormat(getPreferences().get(HOOK_PREFIX + type + HOOK_ISSUE_INFO_TEMPLATE, null), getDefaultIssueInfoTemplate());
     }
 
-    boolean getSvnResolve() {
-        return getPreferences().getBoolean(SVN_HOOK_RESOLVE, false);
+    void setPushAction(String changeset, PushOperation pushAction) {
+        getPreferences().put(HOOK_PREFIX + type + HOOK_PUSH_ + changeset,  pushAction.toString());
     }
 
-    boolean getSvnLink() {
-        return getPreferences().getBoolean(SVN_HOOK_LINK, true);
+    void setAfterCommit(boolean bl) {
+        getPreferences().putBoolean(HOOK_PREFIX + type + HOOK_AFTER_COMMIT, bl);
     }
-
-    boolean getHgResolve() {
-        return getPreferences().getBoolean(HG_HOOK_RESOLVE, false);
-    }
-
-    boolean getHgLink() {
-        return getPreferences().getBoolean(HG_HOOK_LINK, true);
-    }
-
-    boolean getHgAfterCommit() {
-        return getPreferences().getBoolean(HG_HOOK_AFTER_COMMIT, false);
-    }
-
-    Format getHgRevisionTemplate() {
-        return getFormat(getPreferences().get(HG_HOOK_REVISION_TEMPLATE, null), getDefaultHgRevisionTemplate());
-    }
-
-    Format getHgIssueInfoTemplate() {
-        return getFormat(getPreferences().get(HG_HOOK_ISSUE_INFO_TEMPLATE, null), getDefaultIssueInfoTemplate());
-    }
-
-    Format getSvnRevisionTemplate() {
-        return getFormat(getPreferences().get(SVN_HOOK_REVISION_TEMPLATE, null), getDefaultSvnRevisionTemplate());
-    }
-
-    Format getSvnIssueInfoTemplate() {
-        return getFormat(getPreferences().get(SVN_HOOK_ISSUE_INFO_TEMPLATE, null), getDefaultIssueInfoTemplate());
-    }
-
-    void setHgPushAction(String changeset, PushOperation pushAction) {
-        getPreferences().put(HG_HOOK_PUSH_ + changeset,  pushAction.toString());
-    }
-
-    PushOperation popHGPushAction(String changeset) {
-        String value = getPreferences().get(HG_HOOK_PUSH_ + changeset, null);
+    
+    PushOperation popPushAction(String changeset) {
+        String value = getPreferences().get(HOOK_PREFIX + type + HOOK_PUSH_ + changeset, null);
         if(value == null) return null;
         String values[] = value.split(DELIMITER);
-        getPreferences().remove(HG_HOOK_PUSH_ + changeset);
+        getPreferences().remove(HOOK_PREFIX + type + HOOK_PUSH_ + changeset);
         return new PushOperation(values[0], !values[1].equals("") ? values[1] : null, values[2].equals("1") ? true : false); // NOI18N
     }
 
