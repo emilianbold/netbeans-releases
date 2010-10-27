@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.script.lexer;
 
+import org.netbeans.modules.cnd.api.script.ShTokenId;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
