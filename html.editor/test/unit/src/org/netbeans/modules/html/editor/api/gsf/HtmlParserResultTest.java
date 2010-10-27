@@ -43,7 +43,7 @@
 package org.netbeans.modules.html.editor.api.gsf;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;

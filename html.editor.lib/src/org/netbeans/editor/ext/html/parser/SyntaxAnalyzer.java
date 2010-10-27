@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.editor.ext.html.parser.api;
+package org.netbeans.editor.ext.html.parser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +50,9 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ext.html.parser.SyntaxAnalyzerElements;
-import org.netbeans.editor.ext.html.parser.SyntaxElement;
+import org.netbeans.editor.ext.html.parser.api.HtmlSource;
+import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
+import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -93,11 +94,11 @@ public final class SyntaxAnalyzer {
         return new SyntaxAnalyzerResult(this);
     }
 
-    HtmlSource source() {
+    public HtmlSource source() {
         return source;
     }
 
-    synchronized SyntaxAnalyzerElements elements() {
+    public synchronized SyntaxAnalyzerElements elements() {
         if(parsedElements == null) {
             List<SyntaxElement> parsed = parseDocument();
             parsedElements = new SyntaxAnalyzerElements(parsed);
@@ -145,6 +146,10 @@ public final class SyntaxAnalyzer {
     }
     
     private void tag(boolean emptyTag) {
+        tag(emptyTag, null);
+    }
+
+    private void tag(boolean emptyTag, ProblemDescription problem) {
         List<SyntaxElement.TagAttribute> attributes = new ArrayList<SyntaxElement.TagAttribute>();
             for(int i = 0; i < attr_keys.size(); i++) {
                 TokenInfo key = attr_keys.get(i);
@@ -177,14 +182,20 @@ public final class SyntaxAnalyzer {
                     attributes.add(ta);
                 }
             }
-        
-        elements.add(new SyntaxElement.Tag(sourceCode,
-                start, 
+
+        SyntaxElement element = new SyntaxElement.Tag(sourceCode,
+                start,
                 ts.offset() + ts.token().length() - start,
-                tagName.intern(), 
+                tagName.intern(),
                 attributes.isEmpty() ? null : attributes,
                 openTag,
-                emptyTag));
+                emptyTag);
+
+        if(problem != null) {
+            element.addProblem(problem);
+        }
+
+        elements.add(element);
         
         tagName = null;
         attrib = null;
@@ -193,11 +204,11 @@ public final class SyntaxAnalyzer {
     }
 
     //an error inside a tag, at least the tag name is known
-    private void tag_with_error() {
+    private void tag_with_error(ProblemDescription problem) {
         //lets put back the errorneous symbol first
         backup(1);
         //make the tag, we do not know if empty or not
-        tag(false);
+        tag(false, problem);
         
         state = S_INIT;
         start = -1;
@@ -259,6 +270,7 @@ public final class SyntaxAnalyzer {
         for (TokenSequence _ts : sequences) {
             ts = _ts;
             while (ts.moveNext()) {
+                int offset = ts.offset();
                 token = ts.token();
                 HTMLTokenId id = token.id();
 
@@ -353,7 +365,12 @@ public final class SyntaxAnalyzer {
                                 start = -1;
                                 break;
                             default:
-                                tag_with_error();
+                                tag_with_error(
+                                        ProblemDescription.create(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG,
+                                        String.format("Unexpected symbol '%s' found in the open tag", token.text()),
+                                        ProblemDescription.ERROR,
+                                        offset,
+                                        offset + token.length()));
                                 break;
                         }
                         break;
@@ -379,7 +396,12 @@ public final class SyntaxAnalyzer {
                                 backup(1);
                                 break;
                             default:
-                                tag_with_error();
+                                tag_with_error(
+                                        ProblemDescription.create(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG,
+                                        String.format("Unexpected symbol '%s' found in the open tag", token.text()),
+                                        ProblemDescription.ERROR,
+                                        offset,
+                                        offset + token.length()));
                                 break;
                         }
                         break;
@@ -401,7 +423,12 @@ public final class SyntaxAnalyzer {
                                 
                                 break;
                             case ERROR:
-                                tag_with_error();
+                                 tag_with_error(
+                                        ProblemDescription.create(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG,
+                                        String.format("Unexpected symbol '%s' found in the open tag", token.text()),
+                                        ProblemDescription.ERROR,
+                                        offset,
+                                        offset + token.length()));
                                 break;
                             default:
                                 backup(1);

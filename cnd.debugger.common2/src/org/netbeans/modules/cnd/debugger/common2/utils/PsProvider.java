@@ -629,7 +629,7 @@ public abstract class PsProvider {
 	// translate header
 	for (int hx = 0; hx < parsedHeader.size(); hx++) {
 	    String h = parsedHeader.get(hx);
-	    parsedHeader.set(hx, Catalog.get("PS_HDR_" + h));
+	    parsedHeader.set(hx, Catalog.get("PS_HDR_" + h)); // NOI18N
 	}
 
 	return parsedHeader;

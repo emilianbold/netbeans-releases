@@ -165,12 +165,12 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	ActionsPanel() {
 	    model = new DefaultComboBoxModel(Action.getTags());
 
-	    setBorder(makeBorder(Catalog.get("BORDER_Actions")));
+	    setBorder(makeBorder(Catalog.get("BORDER_Actions"))); // NOI18N
 	    setLayout(new GridBagLayout());
 
 	    GridBagConstraints gbc;
 
-	    JLabel comboLabel = new JLabel(Catalog.get("LBL_ActionsCombo"));
+	    JLabel comboLabel = new JLabel(Catalog.get("LBL_ActionsCombo")); // NOI18N
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -195,7 +195,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 
 	    comboLabel.setLabelFor(actionCombo);
 
-	    scriptLabel = new JLabel(Catalog.get("LBL_ActionsScript"));
+	    scriptLabel = new JLabel(Catalog.get("LBL_ActionsScript")); // NOI18N
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 1;
@@ -309,7 +309,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	 */
 
 	panel_settings = new JPanel();
-	    panel_settings.setBorder(makeBorder(Catalog.get("BORDER_Settings")));
+	    panel_settings.setBorder(makeBorder(Catalog.get("BORDER_Settings"))); // NOI18N
 
 	    gbc = new GridBagConstraints();
 	    gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -617,7 +617,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
     private class CommonPanel extends JPanel {
 
         protected CommonPanel() {
-            setBorder(makeBorder(Catalog.get("BORDER_Common")));
+            setBorder(makeBorder(Catalog.get("BORDER_Common"))); // NOI18N
 	    setLayout(new GridBagLayout());
             
             int y = 0;

@@ -90,7 +90,7 @@ public class DebugCoreAction extends SystemAction {
     }
 
     public String getName() {
-        return Catalog.get("LOADCOREDIALOGACTION_NAME"); 
+        return Catalog.get("LOADCOREDIALOGACTION_NAME"); // NOI18N
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -136,8 +136,8 @@ public class DebugCoreAction extends SystemAction {
         //
         JButton debugButton;
         Object options[];
-        debugButton = new JButton(Catalog.get("DEBUG_BUTTON_TXT"));
-        Catalog.setAccessibleDescription(debugButton, "ACSD_Debug");
+        debugButton = new JButton(Catalog.get("DEBUG_BUTTON_TXT")); // NOI18N
+        Catalog.setAccessibleDescription(debugButton, "ACSD_Debug"); // NOI18N
         options = new Object[]{
                     debugButton,
                     DialogDescriptor.CANCEL_OPTION,};
@@ -145,7 +145,7 @@ public class DebugCoreAction extends SystemAction {
         coreDialogPanel = new DebugCorePanel(corefilePath, executablePickList.getElementsDisplayName(), debugButton, ro);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 coreDialogPanel,
-                Catalog.get("LBL_DebugCorefile"),
+                Catalog.get("LBL_DebugCorefile"), // NOI18N
                 true,
                 options,
                 debugButton,
@@ -207,7 +207,7 @@ public class DebugCoreAction extends SystemAction {
                 corefileNode = findCorefileNode(corefile);
 
                 if (corefileNode == null) {
-                    String msg = NbBundle.getMessage(DebugCoreAction.class, "ERROR_NOTACOREFILE", corefile);
+                    String msg = NbBundle.getMessage(DebugCoreAction.class, "ERROR_NOTACOREFILE", corefile); // NOI18N
                     errorDialog(msg);
                     return;
                 }
@@ -218,7 +218,7 @@ public class DebugCoreAction extends SystemAction {
         // Validate the executable
         //
         if (executable == null ||
-                executable.equals(Catalog.get("AutoCoreExe")) || 
+                executable.equals(Catalog.get("AutoCoreExe")) ||  // NOI18N
                 executable.equals("") || // NOI18N
                 executable.equals("-")) { // NOI18N
 
@@ -229,8 +229,8 @@ public class DebugCoreAction extends SystemAction {
                 File exeFile = new File(executable);
                 if (!exeFile.exists() || exeFile.isDirectory()) {
                     StatusDisplayer.getDefault().setStatusText(
-                            Catalog.get("MSG_BadExecutable")); 
-                    errorDialog(Catalog.get("MSG_BadExecutable"));
+                            Catalog.get("MSG_BadExecutable"));  // NOI18N
+                    errorDialog(Catalog.get("MSG_BadExecutable")); // NOI18N
                     return;
                 }
             }

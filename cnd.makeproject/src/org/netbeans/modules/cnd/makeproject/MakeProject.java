@@ -314,7 +314,7 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
                     UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                     new MakeSharabilityQuery(projectDescriptorProvider, FileUtil.toFile(getProjectDirectory())),
                     sources,
-                    new AntProjectHelperProvider(),
+                    helper,
                     projectDescriptorProvider,
                     new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
                     new NativeProjectProvider(this, projectDescriptorProvider),
@@ -540,13 +540,6 @@ public final class MakeProject implements Project, AntProjectListener, Runnable 
     }
 
     // Package private methods -------------------------------------------------
-    private final class AntProjectHelperProvider {
-
-        AntProjectHelper getAntProjectHelper() {
-            return helper;
-        }
-    }
-
     private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
 
         private static final String[] RECOMMENDED_TYPES = new String[]{

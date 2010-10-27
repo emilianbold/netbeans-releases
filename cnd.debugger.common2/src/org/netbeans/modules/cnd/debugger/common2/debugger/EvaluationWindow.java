@@ -312,16 +312,16 @@ public final class EvaluationWindow extends TopComponent
 	    cp = new JPanel(new java.awt.GridBagLayout());
 
             cp.setToolTipText("Control panel to specify Expression. Use pop-up menu to specify output format."); // NOI18N
-            JLabel cp_text1 = new JLabel(Catalog.get("LBL_Expression"));
-            cp_text1.setToolTipText(Catalog.get("HINT_Expression"));
+            JLabel cp_text1 = new JLabel(Catalog.get("LBL_Expression")); // NOI18N
+            cp_text1.setToolTipText(Catalog.get("HINT_Expression")); // NOI18N
             exprList = new JComboBox();
 	    exprList.setMaximumSize(cp.getPreferredSize());
             exprList.addItem(expr);
             exprList.setEditable(true);
             exprList.addActionListener(this);
 
-            JLabel cp_text3 = new JLabel(Catalog.get("LBL_Format"));
-            cp_text3.setToolTipText(Catalog.get("HINT_Output_format"));
+            JLabel cp_text3 = new JLabel(Catalog.get("LBL_Format")); // NOI18N
+            cp_text3.setToolTipText(Catalog.get("HINT_Output_format")); // NOI18N
 	    format_listener = new FormatListener();
             format_jcb = new JComboBox(formats);
             format_jcb.setSelectedIndex(format);

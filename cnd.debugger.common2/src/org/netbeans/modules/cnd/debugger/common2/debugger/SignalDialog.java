@@ -139,7 +139,7 @@ public class SignalDialog {
 
 
 	BForwardAndContinue = new JButton();
-	BForwardAndContinue.setText(Catalog.get("SignalForwardAndContinue"));
+	BForwardAndContinue.setText(Catalog.get("SignalForwardAndContinue")); // NOI18N
 	Catalog.setAccessibleDescription(BForwardAndContinue,
 					 "ACSD_Signal_ForwardAndContinue");// NOI18N
 	BForwardAndContinue.setMnemonic(Catalog.
@@ -167,11 +167,11 @@ public class SignalDialog {
     private void fillText() {
 	String text = explanation + "\n";	// NOI18N
 
-	String origin = Catalog.format("SignalSrc", senderpid);
+	String origin = Catalog.format("SignalSrc", senderpid); // NOI18N
 
 	text += origin + "\n";		// NOI18N
 
-	String dest = Catalog.format("SignalDst", session, receiverPid);
+	String dest = Catalog.format("SignalDst", session, receiverPid); // NOI18N
 
 	text += dest + "\n\n";		// NOI18N
 
@@ -184,7 +184,7 @@ public class SignalDialog {
 
     public void show() {
 	fillText();
-	String title = Catalog.format("SignalTitle", session);
+	String title = Catalog.format("SignalTitle", session); // NOI18N
 	
 	dlg = new DialogDescriptor(
 		panel,

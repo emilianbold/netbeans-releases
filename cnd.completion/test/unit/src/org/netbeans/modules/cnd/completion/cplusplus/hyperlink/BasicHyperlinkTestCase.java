@@ -725,6 +725,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 191314 - last unresolved identifier in ir2hf
         performTest("bug191314.c", 2, 56, "bug191314.c", 2, 47);
     }
+
+    public void testBug190127_2() throws Exception {
+        // Bug 190127 - Extern declarations without return type are not supported
+        performTest("bug190127.c", 4, 12, "bug190127.c", 1, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

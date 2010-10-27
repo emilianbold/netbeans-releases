@@ -104,7 +104,7 @@ public class RunToFunctionAction extends CallableSystemAction implements StateLi
     // interface SystemAction
     protected void initialize() {
         super.initialize();
-        putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToFunctionAction"));
+        putValue(SHORT_DESCRIPTION, Catalog.get("TIP_RunToFunctionAction")); // NOI18N
         setEnabled(false);
     }
 

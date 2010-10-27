@@ -48,6 +48,7 @@ package org.netbeans.modules.cnd.source;
 import java.io.IOException;
 
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
+import org.openide.awt.UndoRedo;
 import org.openide.loaders.DataObject;
 
 import org.openide.cookies.CloseCookie;
@@ -144,6 +145,22 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     @Override
     public void setReadOnly(boolean readOnly) {
         this.readonly = readOnly;
+    }
+
+    UndoRedo.Manager getUndoRedoImpl() {
+        return super.getUndoRedo();
+    }
+
+    @Override
+    protected String documentID() {
+        DataObject dataObject = getDataObject();
+        if (dataObject != null && dataObject.isValid()) {
+            // Netbeans use primitive names for top components id and use file name for editor top component id
+            // So let differ threads TC and editor TC for threads.h
+            // But best solution is use full file name for TC id
+            return dataObject.getPrimaryFile().getNameExt();
+        }
+        return ""; // NOI18N
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */

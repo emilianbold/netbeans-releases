@@ -545,6 +545,14 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
+            <folder name="bat">
+                <folder name="Actions">
+                    <file name="ShellRunAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-cnd-actions-ShellRunAction.instance"/>
+                        <attr name="position" intvalue="1750"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-cmake">
                 <folder name="Factories">
                     <file name="CMakeDataLoader.instance">

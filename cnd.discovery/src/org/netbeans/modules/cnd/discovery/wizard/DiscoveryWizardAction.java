@@ -150,7 +150,9 @@ public final class DiscoveryWizardAction extends NodeAction {
         if (Utilities.isWindows()){
             base = base.replace('\\', '/');
         } else {
-            base = File.separator+project.getProjectDirectory().getPath();
+            if (!base.startsWith(File.separator)) {
+                base = File.separator+base;
+            }
 	}
 	return base;
     }

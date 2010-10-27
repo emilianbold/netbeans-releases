@@ -1980,13 +1980,27 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void dumpInfo(PrintWriter printOut) {
-        printOut.printf("FI: %s, fileType=%s, hasSnap=%s hasBroken=%s\n", getName(), this.fileType, toYesNo(this.fileSnapshot==null), toYesNo(this.hasBrokenIncludes.get()));// NOI18N 
+        printOut.printf("FI: %s, fileType=%s, hasSnap=%s hasBroken=%s\n", getName(), this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(this.hasBrokenIncludes.get()));// NOI18N 
         if (this.hasBrokenIncludes.get()) {
             
         }
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
+        int i = 0;
+        final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
+        printOut.printf("Has %d ppStatePairs:\n", preprocStatePairs.size());// NOI18N 
+        for (PreprocessorStatePair pair : preprocStatePairs) {
+            printOut.printf("----------------Pair[%d]------------------------\n", ++i);// NOI18N 
+            printOut.printf("pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N 
+        }
+        Collection<APTPreprocHandler> preprocHandlers = this.getPreprocHandlers();
+        printOut.printf("Converted into %d ppStates:\n", preprocHandlers.size());// NOI18N 
+        i = 0;
+        for (APTPreprocHandler ppHandler : preprocHandlers) {
+            printOut.printf("----------------Handler[%d]------------------------\n", ++i);// NOI18N 
+            printOut.printf("handler=%s\n", ppHandler);// NOI18N 
+        }
     }
 
     static String toYesNo(boolean b) {

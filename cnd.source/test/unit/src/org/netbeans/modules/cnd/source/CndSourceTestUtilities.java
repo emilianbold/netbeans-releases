@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,46 +34,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.script.lexer;
+package org.netbeans.modules.cnd.source;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
-
+import javax.swing.text.StyledDocument;
+import javax.swing.undo.UndoManager;
+import org.openide.loaders.DataObject;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
- * @author Jan Jancura
+ * @author vv159170
  */
-public enum BatTokenId implements TokenId {
+public class CndSourceTestUtilities {
 
-    KEYWORD ("keyword"), // NOI18N
-    COMMAND ("command"), // NOI18N
-    OPERATOR ("operator"), // NOI18N
-    NUMBER ("number"), // NOI18N
-    WHITESPACE ("whitespace"), // NOI18N
-    IDENTIFIER ("identifier"), // NOI18N
-    STRING ("string"), // NOI18N
-    COMMENT ("comment"), // NOI18N
-    ERROR ("error"); // NOI18N
-
-    private String  name;
+    private CndSourceTestUtilities() {}
     
-    BatTokenId (
-        String  name
-    ) {
-        this.name = name;
-    }
-
-    public String primaryCategory () {
-        return name;
-    }
-
-    private static final Language<BatTokenId> LANGUAGE =
-            new BatLanguageHierarchy().language();
-
-    public static Language<BatTokenId> language() {
-        return LANGUAGE;
+    public static UndoManager getUndoRedo(DataObject dob) {
+        CloneableEditorSupport ces = dob.getLookup().lookup(CloneableEditorSupport.class);
+        if (ces instanceof CppEditorSupport) {
+            return ((CppEditorSupport)ces).getUndoRedoImpl();
+        } else {
+            UndoManager urm = new UndoManager();
+            StyledDocument doc = ces.getDocument();
+            doc.addUndoableEditListener(urm);
+            return urm;
+        }
     }
 }

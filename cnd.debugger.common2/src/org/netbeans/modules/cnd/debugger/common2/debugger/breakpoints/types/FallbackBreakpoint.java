@@ -72,7 +72,7 @@ public final class FallbackBreakpoint extends NativeBreakpoint {
     protected String getDisplayNameHelp() {
 	String summary = null;
 	FallbackBreakpoint bre = this;
-	summary = Catalog.format("Handler_Fallback", bre.getEventspec());
+	summary = Catalog.format("Handler_Fallback", bre.getEventspec()); // NOI18N
 	return summary;
     }
 

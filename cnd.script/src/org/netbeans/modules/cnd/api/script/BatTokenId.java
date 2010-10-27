@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,40 +42,45 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.utils.options;
+package org.netbeans.modules.cnd.api.script;
 
-public abstract class Validity {
-    private final String why;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.modules.cnd.script.lexer.BatLanguageHierarchy;
 
-    private Validity(String why) {
-	this.why = why;
+
+/**
+ *
+ * @author Jan Jancura
+ */
+public enum BatTokenId implements TokenId {
+
+    KEYWORD ("keyword"), // NOI18N
+    COMMAND ("command"), // NOI18N
+    OPERATOR ("operator"), // NOI18N
+    NUMBER ("number"), // NOI18N
+    WHITESPACE ("whitespace"), // NOI18N
+    IDENTIFIER ("identifier"), // NOI18N
+    STRING ("string"), // NOI18N
+    COMMENT ("comment"), // NOI18N
+    ERROR ("error"); // NOI18N
+
+    private String  name;
+    
+    BatTokenId (
+        String  name
+    ) {
+        this.name = name;
     }
 
-    public static final Validity TRUE = new TRUE(Catalog.get("AnyValueisValid")); // NOI18N
-
-    public abstract boolean isValid();
-
-    public String why() { return why; }
-
-    public static Validity TRUE(String why) {
-	return new TRUE(why);
+    public String primaryCategory () {
+        return name;
     }
 
-    public static Validity FALSE(String why) {
-	return new FALSE(why);
-    }
+    private static final Language<BatTokenId> LANGUAGE =
+            new BatLanguageHierarchy().language();
 
-    private static class TRUE extends Validity {
-	TRUE(String why) {
-	    super(why);
-	}
-	public boolean isValid() { return true; }
-    }
-
-    private static class FALSE extends Validity {
-	FALSE(String why) {
-	    super(why);
-	}
-	public boolean isValid() { return false; }
+    public static Language<BatTokenId> language() {
+        return LANGUAGE;
     }
 }

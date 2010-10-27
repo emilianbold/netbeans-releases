@@ -482,7 +482,7 @@ public final class ProjectSupport {
 		    // it an empty baseDir should be OK.
 
 		    // In order to avoid assertion failures in RunProfile.setBaseDir():
-		    baseDir = "/";
+		    baseDir = "/"; // NOI18N
 		}
 
 		if (seed.conf != null) {

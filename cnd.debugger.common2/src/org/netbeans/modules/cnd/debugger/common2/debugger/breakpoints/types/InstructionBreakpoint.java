@@ -70,7 +70,7 @@ public final class InstructionBreakpoint extends NativeBreakpoint {
     }
 
     protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Instruction", getAddress());
+	return Catalog.format("Handler_Instruction", getAddress()); // NOI18N
     }
 
     protected void processOriginalEventspec(String oeventspec) {

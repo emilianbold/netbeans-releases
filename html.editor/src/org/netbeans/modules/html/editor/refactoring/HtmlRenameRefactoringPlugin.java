@@ -227,6 +227,9 @@ public class HtmlRenameRefactoringPlugin implements RefactoringPlugin {
         //b. rename the references
         //c. rename the file itself - done via default rename plugin
         DependenciesGraph deps = index.getDependencies(file);
+        if(deps == null) {
+            return ; //exception should be logged in index.getDependencies()
+        }
         Collection<Node> allRefering = deps.getSourceNode().getReferingNodes();
 
         for (Node ref : allRefering) {

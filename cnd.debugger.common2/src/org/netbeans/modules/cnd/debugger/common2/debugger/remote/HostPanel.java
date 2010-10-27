@@ -79,7 +79,7 @@ public class HostPanel extends DetailView<Host> {
 	};
 
     private final DummyPropertySheet propertySheet =
-	new DummyPropertySheet(Catalog.get("REMOTE_DIALOG_GUIDANCE_TXT"),
+	new DummyPropertySheet(Catalog.get("REMOTE_DIALOG_GUIDANCE_TXT"), // NOI18N
 			       listener);
 
     // dirtiness is a property of a model not the view

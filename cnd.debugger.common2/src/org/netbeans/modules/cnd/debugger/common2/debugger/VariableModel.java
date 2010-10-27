@@ -147,7 +147,7 @@ public abstract class VariableModel extends ModelListenerSupport
     // interface NodeModel
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
-	    return Catalog.get("PROP_name");
+	    return Catalog.get("PROP_name"); // NOI18N
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
 	    return v.getVariableName();
@@ -205,7 +205,7 @@ public abstract class VariableModel extends ModelListenerSupport
     // return value of tooltip
     public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
-	    return Catalog.get("PROP_name");
+	    return Catalog.get("PROP_name"); // NOI18N
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
 	    if (Log.Variable.tipdebug) {
@@ -491,7 +491,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public String getName() {
-	    return Catalog.get("ACT_Dynamic");
+	    return Catalog.get("ACT_Dynamic"); // NOI18N
 	}
 
 	// interface SystemAction
@@ -527,7 +527,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public String getName() {
-	    return Catalog.get("ACT_Inherited");
+	    return Catalog.get("ACT_Inherited"); // NOI18N
 	}
 
 	// interface SystemAction
@@ -563,7 +563,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public String getName() {
-	    return Catalog.get("ACT_Static");
+	    return Catalog.get("ACT_Static"); // NOI18N
 	}
 
 	// interface SystemAction
@@ -591,7 +591,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	// interface SystemAction
 	public String getName () {
-	    return Catalog.get("ACT_Output_Format");
+	    return Catalog.get("ACT_Output_Format"); // NOI18N
 	}
 
 	// interface SystemAction

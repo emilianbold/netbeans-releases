@@ -41,7 +41,6 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
@@ -78,6 +77,7 @@ public class SyntaxTreeBuilder {
     static final String MISSING_REQUIRED_END_TAG = "missing_required_end_tag"; //NOI18N
     public static final String MISSING_REQUIRED_ATTRIBUTES = "missing_required_attribute"; //NOI18N
     static final String TAG_CANNOT_BE_EMPTY = "tag_cannot_be_empty"; //NOI18N
+    static final String UNEXPECTED_SYMBOL_IN_OPEN_TAG = "unexpected_symbol_in_open_tag"; //NOI18N
 
     //XXX >>> fix this, fake context only!!!
     private static final class Context {
@@ -124,6 +124,8 @@ public class SyntaxTreeBuilder {
                     AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
                             tagElement.offset(), tagElement.offset() + tagElement.length(), tagElement.isEmpty());
 
+                    copyProblemsFromElementToNode(element, unknownTagNode);
+
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
                         String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_TAG", //NOI18N
@@ -144,6 +146,8 @@ public class SyntaxTreeBuilder {
                 AstNode openTagNode = new AstNode(tagName, AstNode.NodeType.OPEN_TAG,
                         tagElement.offset(), tagElement.offset() + tagElement.length(),
                         currentNodeDtdElement, tagElement.isEmpty(), stack(stack));
+
+                copyProblemsFromElementToNode(element, openTagNode);
 
 //                //check if the tag can be empty
 //                if(tagElement.isEmpty() && !currentNodeDtdElement.isEmpty()) {
@@ -301,6 +305,8 @@ public class SyntaxTreeBuilder {
                     AstNode unknownTagNode = new AstNode(tagName, AstNode.NodeType.UNKNOWN_TAG,
                             element.offset(), element.offset() + element.length(), false);
 
+                    copyProblemsFromElementToNode(element, unknownTagNode);
+
                     //ignore namespaced tags, they won't be matched, but without errors
                     if (!isIgnoredTagName(tagName)) {
                         String errorMessage = NbBundle.getMessage(SyntaxTreeBuilder.class, "MSG_UNKNOWN_TAG", //NOI18N
@@ -319,6 +325,8 @@ public class SyntaxTreeBuilder {
 
                 AstNode closeTagNode = new AstNode(tagName, AstNode.NodeType.ENDTAG,
                         element.offset(), element.offset() + element.length(), dtdElement, false, stack(stack));
+
+                copyProblemsFromElementToNode(element, closeTagNode);
 
                 int matched_index = -1;
                 for (int i = stack.size() - 1; i >=
@@ -430,6 +438,8 @@ public class SyntaxTreeBuilder {
                 AstNode node = new AstNode(null, nodeType, element.offset(),
                         element.offset() + element.length(), false);
 
+                copyProblemsFromElementToNode(element, node);
+
                 stack.getLast().addChild(node);
 
             } else {
@@ -469,6 +479,16 @@ public class SyntaxTreeBuilder {
         }
 
         return rootNode;
+    }
+
+    private static void copyProblemsFromElementToNode(SyntaxElement element, AstNode node) {
+        List<ProblemDescription> problems = element.getProblems();
+        if(problems == null) {
+            return ;
+        }
+        for(ProblemDescription problem : problems) {
+            node.addDescription(problem);
+        }
     }
 
     private static List<String> stack(LinkedList<AstNode> stack) {

@@ -144,7 +144,7 @@ public class CndRemote {
 	    continuation.run();
 	    return;
 	}
-	if (name != null && name.equals("localhost")) {
+	if (name != null && name.equals("localhost")) { // NOI18N
 	    continuation.run();
 	    return;
 	}
@@ -178,7 +178,7 @@ public class CndRemote {
 		    javax.swing.SwingUtilities.invokeAndWait(continuation);
 		} catch (Exception x) {
 		    ErrorManager.getDefault().notify(x);
-		    final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName());
+		    final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName()); // NOI18N
 		    final String title = Catalog.get("DLG_TITLE_Cant_Connect"); //NOI18N
 		    SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
