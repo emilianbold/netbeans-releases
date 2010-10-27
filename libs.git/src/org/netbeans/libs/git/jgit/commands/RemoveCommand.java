@@ -78,6 +78,16 @@ public class RemoveCommand extends GitCommand {
     }
 
     @Override
+    protected boolean prepareCommand() throws GitException {
+        boolean retval = super.prepareCommand();
+        if (retval && roots.length == 0) {
+            retval = false;
+            monitor.notifyWarning(EMPTY_ROOTS);
+        }
+        return retval;
+    }
+
+    @Override
     protected void run() throws GitException {
         Repository repository = getRepository();
         try {

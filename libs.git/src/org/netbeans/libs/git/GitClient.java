@@ -134,7 +134,7 @@ public interface GitClient {
 
     /**
      * Removes given files/folders from the index and/or from the working tree
-     * @param roots files/folders to remove
+     * @param roots files/folders to remove, can not be empty
      * @param cached if <code>true</code> the working tree will not be affected
      * @param monitor
      */

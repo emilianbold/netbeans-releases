@@ -91,9 +91,9 @@ public class RemoveTest extends AbstractGitTestCase {
         Monitor m = new Monitor();
         client.addNotificationListener(m);
         client.remove(new File[0], false, m);
-        assertEquals(new HashSet<File>(Arrays.asList(file, file2)), m.notifiedFiles);
-        assertFalse(file.exists());
-        assertFalse(file2.exists());
+        assertEquals(1, m.notifiedWarnings.size());
+        assertTrue(file.exists());
+        assertTrue(file2.exists());
     }
 
     public void testRemoveFileHard () throws Exception {

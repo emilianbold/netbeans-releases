@@ -53,6 +53,7 @@ import org.netbeans.libs.git.progress.ProgressMonitor;
 public abstract class GitCommand {
     private final Repository repository;
     private final ProgressMonitor monitor;
+    protected static final String EMPTY_ROOTS = "No files passed";
 
     protected GitCommand (Repository repository, ProgressMonitor monitor) {
         this.repository = repository;
