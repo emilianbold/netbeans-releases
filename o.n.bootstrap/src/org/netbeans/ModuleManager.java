@@ -490,7 +490,7 @@ public final class ModuleManager extends Modules {
                 InputStream is = super.getResourceAsStream(name);
                 if (is == null) {
                     ClassLoader l = NetigsoFramework.findFallbackLoader();
-                    if (l != null) {
+                    if (l != null && l != this) {
                         is = l.getResourceAsStream(name);
                     }
                 }
@@ -503,7 +503,7 @@ public final class ModuleManager extends Modules {
             URL u = super.getResourceImpl(name);
             if (u == null) {
                 ClassLoader l = NetigsoFramework.findFallbackLoader();
-                if (l != null) {
+                if (l != null && l != this) {
                     u = l.getResource(name);
                 }
             }
@@ -514,7 +514,7 @@ public final class ModuleManager extends Modules {
         synchronized Enumeration<URL> getResourcesImpl(String name) throws IOException {
             Enumeration<URL> first = super.getResourcesImpl(name);
             ClassLoader l = NetigsoFramework.findFallbackLoader();
-            if (l != null) {
+            if (l != null && l != this) {
                 return Enumerations.removeDuplicates(
                     Enumerations.concat(first, l.getResources(name))
                 );
@@ -547,7 +547,7 @@ public final class ModuleManager extends Modules {
                 return super.loadClass(name, resolve);
             } catch (ClassNotFoundException ex) {
                 ClassLoader l = NetigsoFramework.findFallbackLoader();
-                if (l == null) {
+                if (l == null || l == this) {
                     throw ex;
                 }
                 return Class.forName(name, resolve, l);
