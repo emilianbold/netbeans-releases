@@ -461,7 +461,7 @@ made subject to such option by the copyright holder.
 
 		<file name="org-netbeans-modules-cnd-debugger-common2-DisassemblerWindowAction.shadow">
 		    <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-cnd-debugger-common2-DisassemblerWindowAction.instance"/>
-		    <attr name="position" intvalue="1000"/>
+		    <attr name="position" intvalue="950"/>
 		</file>
 
 		<file name="org-netbeans-modules-cnd-debugger-common2-MemoryWindowAction.shadow">
