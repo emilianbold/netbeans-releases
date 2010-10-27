@@ -63,6 +63,9 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -72,6 +75,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -96,11 +100,26 @@ public final class Actions extends Object {
         // noinstances
     }
     
+    @ActionID(id = "org.netbeans.modules.favorites.View", category = "Window")
+    @ActionRegistration(displayName = "#ACT_View", iconBase = "org/netbeans/modules/favorites/resources/actionView.png")
+    @ActionReference(position = 350, name = "ViewFavoritesTabAction", path = "Menu/Window")
     public static Action view () { return View.getDefault(); }
-    public static Action add () { return Add.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Add", category = "Window")
+    @ActionRegistration(displayName = "#ACT_Add")
+    @ActionReference(position = 300, path = "UI/ToolActions/Files")
+    public static ContextAwareAction add() { return Add.getDefault(); }
+
     public static Action addOnFavoritesNode () { return AddOnFavoritesNode.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Remove", category = "Window")
+    @ActionRegistration(displayName = "#ACT_Remove")
     public static Action remove () { return Remove.getDefault(); }
-    public static Action select () { return Select.getDefault(); }
+
+    @ActionID(id = "org.netbeans.modules.favorites.Select", category = "Window/SelectDocumentNode")
+    @ActionRegistration(displayName = "#ACT_Select_Main_Menu")
+    @ActionReference(position = 2800, name = "org-netbeans-modules-favorites-SelectInFavorites", path = "Menu/GoTo")
+    public static ContextAwareAction select () { return Select.getDefault(); }
     
     /**
      * Action which opend <code>CurrentProjectNode.ProjectsTab</code> default component.
@@ -142,7 +161,7 @@ public final class Actions extends Object {
     private static class Select extends NodeAction {
         private static final Select SELECT = new Select ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault () {
             return SELECT;
         }
         
@@ -284,7 +303,7 @@ public final class Actions extends Object {
         //  static final long serialVersionUID = -5280204757097896304L;
         private static final Add ADD = new Add ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault() {
             return ADD;
         }
         
@@ -573,7 +592,7 @@ public final class Actions extends Object {
         
         private static final AddOnFavoritesNode ADD_ON_FAVORITES_NODE = new AddOnFavoritesNode ();
         
-        public static Action getDefault () {
+        public static ContextAwareAction getDefault () {
             return ADD_ON_FAVORITES_NODE;
         }
         

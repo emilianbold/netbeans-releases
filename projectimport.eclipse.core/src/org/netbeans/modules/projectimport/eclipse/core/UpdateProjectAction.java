@@ -48,11 +48,17 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.projectimport.eclipse.core.spi.UpgradableProjectLookupProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
+@ActionID(id = "org.netbeans.modules.projectimport.eclipse.core.UpdateProjectAction", category = "Project")
+@ActionRegistration(displayName = "#UpdateProjectAction.Name")
+@ActionReference(position = 234, path = "Projects/Actions")
 public final class UpdateProjectAction extends AbstractAction implements ContextAwareAction {
     
     private Lookup context;

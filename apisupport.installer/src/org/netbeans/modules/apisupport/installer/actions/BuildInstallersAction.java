@@ -65,6 +65,9 @@ import javax.swing.JButton;
 import org.netbeans.api.annotations.common.SuppressWarnings;
 import org.openide.ErrorManager;
 import org.netbeans.api.project.Project;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -82,6 +85,9 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
+@ActionID(id = "org.netbeans.modules.apisupport.installer.actions.BuildInstallersAction", category = "Project")
+@ActionRegistration(displayName = "#CTL_BuildInstallers")
+@ActionReference(position = 1, path = "Projects/org-netbeans-modules-apisupport-project-suite/Actions")
 public final class BuildInstallersAction extends AbstractAction implements ContextAwareAction {
 
     public BuildInstallersAction() {
