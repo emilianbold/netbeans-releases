@@ -43,7 +43,6 @@ package org.netbeans.editor.ext.html.parser;
 
 import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
@@ -84,7 +83,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeBuilderTest("testIssue185837"));
+        suite.addTest(new SyntaxTreeBuilderTest("testUnclosedDivTag_Issue191286"));
         return suite;
     }
 
@@ -491,6 +490,26 @@ public class SyntaxTreeBuilderTest extends TestBase {
     public void testIssue185837() throws Exception {
         String code = "<html><head><title></title></head><body><b><del></del></b></body></html>";
         assertAST(code);
+    }
+
+    public void testUnclosedDivTag_Issue191286() throws Exception {
+        //         0123456789
+        assertAST("<div</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 4, 6, ProblemDescription.ERROR));
+
+        //         0123456789
+        assertAST("<div </div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 5, 7, ProblemDescription.ERROR));
+
+        //         01234567890
+        assertAST("<div name</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR));
+
+        //         012345678901
+        assertAST("<div id=</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 0, 4, ProblemDescription.ERROR));
+
     }
 
     //------------------------ private methods ---------------------------

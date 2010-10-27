@@ -15,6 +15,11 @@
 
     <target name="-pre-cdc-hi-debug-run" if="cdc-hi-platform.trigger"/>
     <target name="-cdc-hi-debug-run" depends="init,jar" if="cdc-hi-platform.trigger">
+        <fail message="Main class is not set!">
+            <condition>
+                <equals arg1="${{main.class}}" arg2=""/>
+            </condition>
+        </fail>
         <echo> Starting emulator with port number ${active.debug.port} </echo>
         <exec executable="${{platform.home}}/bin/emulator">
           <arg value="-cp"/>

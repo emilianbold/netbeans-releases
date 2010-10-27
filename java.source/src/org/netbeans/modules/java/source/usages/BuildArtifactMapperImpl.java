@@ -44,6 +44,7 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -411,6 +412,8 @@ public class BuildArtifactMapperImpl {
 
             FileUtil.copy(ins, out);
             //target.setLastModified(MINIMAL_TIMESTAMP); see 156153
+        } catch (FileNotFoundException fnf) {
+            LOG.log(Level.INFO, "Cannot open file.", fnf);   //NOI18N
         } finally {
             if (ins != null) {
                 try {

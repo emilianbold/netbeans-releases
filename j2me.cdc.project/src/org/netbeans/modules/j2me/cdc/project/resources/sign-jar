@@ -1,0 +1,3 @@
+    <target name="sign-jar" if="sign.jar.trigger">
+        <signjar jar="${{dist.dir}}/${{dist.jar}}" alias="${{sign.alias}}" keystore="${{sign.keystore}}" storepass="${{sign.keystore.password}}" keypass="${{sign.alias.password}}"/>
+    </target>

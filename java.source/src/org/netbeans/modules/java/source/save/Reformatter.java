@@ -224,14 +224,12 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (endOffset < start)
                 continue;
-            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
+            if (endOffset == start && (text == null || !(text.trim().equals("}") || templateEdit))) //NOI18N
                 continue;
             if (embeddingOffset >= start)
                 continue;
             if (startOffset >= start) {
                 if (text != null && text.length() > 0) {
-                    if (text.indexOf('\n') < 0)
-                        continue;
                     TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
                     if (ts == null)
                         continue;
@@ -1676,7 +1674,7 @@ public class Reformatter implements ReformatTask {
                 if (cs.placeElseOnNewLine() || !prevblock) {
                     newline();
                 } else {
-                    spaces(cs.spaceBeforeElse() ? 1 : 0);
+                    spaces(cs.spaceBeforeElse() ? 1 : 0, tokens.offset() < startOffset);
                 }
                 accept(ELSE);
                 if (elseStat.getKind() == Tree.Kind.IF && cs.specialElseIf()) {
@@ -2855,7 +2853,7 @@ public class Reformatter implements ReformatTask {
                             int idx = 0;
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                if (idx > 0 && idx >= lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx, templateEdit ? getIndent() : null));
                                 lastIdx = idx + 1;
                                 count--;
@@ -3139,7 +3137,7 @@ public class Reformatter implements ReformatTask {
             }
             int old = indent;
             indent += indentSize;
-            int ret = wrapTree(wrapStyle, -1, spacesCnt, tree);
+            wrapTree(wrapStyle, -1, spacesCnt, tree);
             indent = old;
             return false;
         }
