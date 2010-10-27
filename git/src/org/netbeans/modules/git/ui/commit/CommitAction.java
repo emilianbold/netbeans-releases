@@ -187,7 +187,9 @@ public class CommitAction extends SingleRepositoryAction {
             VCSCommitOptions option = commitFiles.get(node);
             File file = node.getFile();
             if (option != VCSCommitOptions.EXCLUDE) {
-                if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+                if (info.containsStatus(Status.NEW_INDEX_WORKING_TREE) ||
+                    info.containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) 
+                {
                     addCandidates.add(file);
                 } else if (info.containsStatus(FileInformation.STATUS_REMOVED)) {
                     deleteCandidates.add(file);
