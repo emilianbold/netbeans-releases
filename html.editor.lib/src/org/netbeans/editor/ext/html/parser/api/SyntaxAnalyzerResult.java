@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
