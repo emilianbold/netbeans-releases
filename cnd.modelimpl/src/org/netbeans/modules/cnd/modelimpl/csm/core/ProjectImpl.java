@@ -361,14 +361,15 @@ public final class ProjectImpl extends ProjectBase {
             this.buf.addChangeListener(bufListener);
         }
 
-        public boolean updateLastModified(long lastModified) {
-            if (this.lastModified == lastModified) {
+        public boolean updateLastModified() {
+            long lm = this.buf.lastModified();
+            if (this.lastModified == lm) {
                 return false;
             }
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lastModified);// NOI18N
             }
-            this.lastModified = lastModified;
+            this.lastModified = lm;
             return true;
         }
         
@@ -481,7 +482,7 @@ public final class ProjectImpl extends ProjectBase {
                 }
                 return;
             }
-            if (!pair.updateLastModified(file.getBuffer().lastModified())) {
+            if (!pair.updateLastModified()) {
                 // no need to schedule the second parse
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     System.err.println("scheduleParseOnEditing: no updates " + file + " : " + pair.lastModified);

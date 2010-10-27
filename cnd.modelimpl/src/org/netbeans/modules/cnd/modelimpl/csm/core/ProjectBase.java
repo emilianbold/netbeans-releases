@@ -1580,7 +1580,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 newStateFound.set(true);
             } else {
                 boolean keep = false;
-                if (pair.state != null && pair.state.isValid()) {
+                // check if pure invalid state, but do not consider as invalid
+                // the invalidated entry in parsing mode
+                if (pair.state != null && (pair.state.isValid() || pair.pcState == FilePreprocessorConditionState.PARSING)) {
                     if (pair.state.isCompileContext()) {
                         keep = true;
                         if (!newState.isCompileContext()) {
@@ -2814,14 +2816,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             this.sorageKey = sorageKey;
         }
 
-        void clear() {
+        synchronized void clear() {
             if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
                 weakContainer.clear();
             }
         }
 
         @SuppressWarnings("unchecked")
-        T getContainer() {
+        synchronized T getContainer() {
             T container = null;
             WeakReference<T> weak = null;
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
