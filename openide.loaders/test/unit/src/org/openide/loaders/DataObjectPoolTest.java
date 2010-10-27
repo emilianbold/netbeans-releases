@@ -37,21 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.platform.ui;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
+package org.openide.loaders;
 
-@ActionID(id = "org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction", category = "Tools")
-@ActionRegistration(iconInMenu = false, displayName = "#CTL_PlatformManager")
-@ActionReference(position = 300, name = "JavaPlatformsCustomizerAction", path = "Menu/Tools")
-public final class PlatformsCustomizerAction implements ActionListener {
-    public void actionPerformed(ActionEvent e) {
-        org.netbeans.api.java.platform.PlatformsCustomizer.showCustomizer(null);
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+
+public class DataObjectPoolTest extends NbTestCase {
+
+    public DataObjectPoolTest(String name) {
+        super(name);
     }
+
+    public void testLeak() throws Exception {
+        FileObject f = FileUtil.createMemoryFileSystem().getRoot().createData("whatever");
+        DataObject.find(f);
+        Reference<?> ref = new WeakReference<Object>(f);
+        f = null;
+        assertGC("can release file", ref);
+    }
+
 }

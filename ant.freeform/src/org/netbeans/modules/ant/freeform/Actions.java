@@ -71,6 +71,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.ant.freeform.ui.TargetMappingPanel;
 import org.netbeans.modules.ant.freeform.ui.UnboundTargetAlert;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
@@ -80,6 +81,9 @@ import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -467,6 +471,9 @@ public final class Actions implements ActionProvider {
         TARGET_RUNNER.runTarget(scriptFile, targetNameArray, props);
     }
 
+    @ActionID(id = "org.netbeans.modules.ant.freeform.Actions$Custom", category = "Project")
+    @ActionRegistration(displayName = "Custom Freeform Actions") // should not be displayed in UI anyway
+    @ActionReference(position = 300, path = "Projects/org-netbeans-modules-ant-freeform/Actions")
     public static final class Custom extends AbstractAction implements ContextAwareAction {
         public Custom() {
             setEnabled(false);

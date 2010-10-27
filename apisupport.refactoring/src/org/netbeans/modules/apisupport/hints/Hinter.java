@@ -351,7 +351,7 @@ public interface Hinter {
         public void delete(FileObject entry) throws IOException {
             entry.delete();
             FileObject parent = entry.getParent();
-            if (parent.getChildren().length == 0) {
+            if (parent.getChildren().length == 0 && !parent.getAttributes().hasMoreElements()) {
                 if (parent.isRoot()) {
                     // XXX maybe delete the whole layer file! (and its reference in manifest.mf)
                 } else {

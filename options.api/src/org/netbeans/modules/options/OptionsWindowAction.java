@@ -46,18 +46,19 @@
 package org.netbeans.modules.options;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import java.awt.event.ActionListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.openide.util.NbBundle;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
 /**
  * @author Radek Matous
  */
-public class OptionsWindowAction extends AbstractAction {
-    public OptionsWindowAction() {
-        putValue(Action.NAME, NbBundle.getMessage (OptionsWindowAction.class, "CTL_Options_Window_Action"));
-    }
+@ActionID(id = "org.netbeans.modules.options.OptionsWindowAction", category = "Window")
+@ActionRegistration(displayName = "#CTL_Options_Window_Action")
+@ActionReference(position = 1700, path = "Menu/Tools", separatorBefore=1500)
+public class OptionsWindowAction implements ActionListener {
     
     public void actionPerformed(ActionEvent evt) {
         OptionsDisplayer.getDefault().open();

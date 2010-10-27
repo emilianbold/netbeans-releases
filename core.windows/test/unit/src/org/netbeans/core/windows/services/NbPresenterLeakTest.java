@@ -124,7 +124,7 @@ public class NbPresenterLeakTest extends NbTestCase {
         }
     }
     
-    private WizardDescriptor.Panel<?>[] getPanels () {
+    private WizardDescriptor.Panel<Object>[] getPanels () {
         WizardDescriptor.Panel p1 = new WizardDescriptor.Panel () {
             public Component getComponent() {
                 return new JLabel ("test");
