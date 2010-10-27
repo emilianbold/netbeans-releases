@@ -49,6 +49,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -59,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -76,6 +80,7 @@ public class MavenSettings  {
     public static final String PROP_LAST_ARCHETYPE_GROUPID = "lastArchetypeGroupId"; //NOI18N
     public static final String PROP_CUSTOM_LOCAL_REPOSITORY = "localRepository"; //NOI18N
     public static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
+    public static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -84,7 +89,6 @@ public class MavenSettings  {
     private static final String PROP_PLUGIN_POLICY = "pluginUpdatePolicy"; //NOI18N
     private static final String PROP_FAILURE_BEHAVIOUR = "failureBehaviour"; //NOI18N
     private static final String PROP_USE_REGISTRY = "usePluginRegistry"; //NOI18N
-
     
     private static final MavenSettings INSTANCE = new MavenSettings();
     
@@ -288,6 +292,7 @@ public class MavenSettings  {
     public boolean isShowRunDialog(){
      return getPreferences().getBoolean(PROP_SHOW_RUN_DIALOG, false);
     }
+    
     public void setShowRunDialog(boolean  b){
       getPreferences().putBoolean(PROP_SHOW_RUN_DIALOG, b);
     }
@@ -389,6 +394,94 @@ public class MavenSettings  {
             }
         }
         return null;
+    }
+
+    private static List<String> searchMavenRuntimes(String[] paths, boolean stopOnFirstValid) {
+        List<String> runtimes = new ArrayList<String>();
+        for (String path : paths) {
+            File file = new File(path);
+            path = FileUtil.normalizeFile(file).getAbsolutePath();
+            String version = getCommandLineMavenVersion(new File(path));
+            if (version != null) {
+                runtimes.add(path);
+                if (stopOnFirstValid) {
+                    break;
+                }
+            }
+        }
+
+        return runtimes;
+    }
+
+	/**
+	 * Searches for Maven Runtimes by the environment settings and returns the first valid one.
+	 *
+	 * <p>It searches in this order:
+	 * <ul>
+	 * <li>MAVEN_HOME</li>
+	 * <li>M2_HOME</li>
+	 * <li>PATH</li></ul>
+	 * </p>
+	 * <p>Only the first appereance will be appended.</p>
+	 *
+	 * @returns the default external Maven runtime on the path.
+	 */
+    public static String getDefaultExternalMavenRuntime() {
+        String paths = System.getenv("PATH"); // NOI18N
+        String mavenHome = System.getenv("MAVEN_HOME"); // NOI18N
+        String m2Home = System.getenv("M2_HOME"); // NOI18N
+
+        List<String> mavenEnvDirs = new ArrayList<String>();
+        if (mavenHome != null) {
+            mavenEnvDirs.add(mavenHome);
+        }
+        if (m2Home != null) {
+            mavenEnvDirs.add(m2Home);
+        }
+        if (paths != null) {
+            for (String path : paths.split(File.pathSeparator)) {
+                if (!path.endsWith("bin")) { // NOI18N
+                    continue;
+                }
+
+                mavenEnvDirs.add(path.substring(0,
+                        path.length() - "bin".length() - File.pathSeparator.length()));
+            }
+        }
+
+        List<String> runtimes = searchMavenRuntimes(mavenEnvDirs.toArray(new String[0]), true);
+        return !runtimes.isEmpty() ? runtimes.get(0) : null;
+    }
+    
+    public List<String> getUserDefinedMavenRuntimes() {
+        List<String> runtimes = new ArrayList<String>();
+
+        String defaultRuntimePath = getDefaultExternalMavenRuntime();
+        String runtimesPref = getPreferences().get(PROP_MAVEN_RUNTIMES, null);
+        if (runtimesPref != null) {
+            for (String runtimePath : runtimesPref.split(File.pathSeparator)) {
+                if (!"".equals(runtimePath) && !runtimePath.equals(defaultRuntimePath)) {
+                    runtimes.add(runtimePath);
+                }
+            }
+        }
+
+        return Collections.unmodifiableList(runtimes);
+    }
+
+    public void setMavenRuntimes(List<String> runtimes) {
+        if (runtimes == null) {
+            getPreferences().remove(PROP_MAVEN_RUNTIMES);
+        } else {
+            String runtimesPref = "";
+            for (String path : runtimes) {
+                runtimesPref += path + File.pathSeparator;
+            }
+            if (runtimesPref.endsWith(File.pathSeparator)) {
+                runtimesPref = runtimesPref.substring(0, runtimesPref.length() - 1);
+            }
+            putProperty(PROP_MAVEN_RUNTIMES, runtimesPref);
+        }
     }
     
 }
