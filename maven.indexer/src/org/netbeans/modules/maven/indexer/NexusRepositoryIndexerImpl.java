@@ -1020,27 +1020,17 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public List<RepositoryInfo> getLoaded(final List<RepositoryInfo> repos) {
-        try {
-            final List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
-            for (final RepositoryInfo repo : repos) {
-                getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
-                    public @Override Void run() throws Exception {
-                        if (!inited) {
-                            toRet.clear();
-                            return null;
-                        }
-                        if (indexer.getIndexingContexts().get(repo.getId()) != null) {
-                            toRet.add(repo);
-                        }
-                        return null;
-                    }
-                });
+        final List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>(repos.size());
+        for (final RepositoryInfo repo : repos) {
+            File loc = new File(getDefaultIndexLocation(), repo.getId()); // index folder
+            if (loc.exists()) {
+                File timestamp = new File(loc, "timestamp"); //NOI18N
+                if (timestamp.exists()) {
+                    toRet.add(repo);
+                }
             }
-            return toRet;
-        } catch (MutexException ex) {
-            Exceptions.printStackTrace(ex);
         }
-        return Collections.emptyList();
+        return toRet;
     }
 
     private String toNexusField(String field) {
