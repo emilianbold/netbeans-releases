@@ -55,6 +55,8 @@ import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -62,6 +64,8 @@ import org.openide.util.NbBundle;
  *
  * @author ondra
  */
+@ActionID(id = "org.netbeans.modules.git.ui.status.StatusAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_StatusAction_Name")
 public class StatusAction extends GitAction {
 
     @Override

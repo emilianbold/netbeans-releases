@@ -46,12 +46,16 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author ondra
  */
+@ActionID(id = "org.netbeans.modules.git.ui.output.OpenOutputAction", category = "Git")
+@ActionRegistration(displayName = "#LBL_OpenOutputAction_Name")
 public class OpenOutputAction extends MultipleRepositoryAction {
 
     @Override
