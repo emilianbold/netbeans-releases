@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import org.netbeans.modules.cnd.utils.ui.FilePathField;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -96,7 +96,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     }
     
     private void addListeners(){
-        ((FilePathField)rootFolder).addChangeListener(new ActionListener() {
+        ((EditableComboBox)rootFolder).addChangeListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update();
@@ -124,7 +124,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         labelForProviders = new javax.swing.JLabel();
         restrictSources = new javax.swing.JCheckBox();
         restrictCompile = new javax.swing.JCheckBox();
-        rootFolder = new FilePathField();
+        rootFolder = new EditableComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -359,8 +359,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         } else {
             preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
-        ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
-        ((FilePathField)rootFolder).read(path);
+        ((EditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
+        ((EditableComboBox)rootFolder).read(path);
     }
     
     private String getRootText() {
@@ -407,8 +407,8 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         } else {
             preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
-        ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
-        ((FilePathField)rootFolder).store();
+        ((EditableComboBox)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
+        ((EditableComboBox)rootFolder).store();
         ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
         if (p != null) {
             if (restrictSources.isSelected()){

@@ -57,12 +57,12 @@ import javax.swing.event.DocumentListener;
  * Editable combo box with memory on 5 previous values
  * @author Alexander Simon
  */
-public class FilePathField extends JComboBox {
+public class EditableComboBox extends JComboBox {
 
     private String storageKey;
     private Preferences prefs;
 
-    public FilePathField() {
+    public EditableComboBox() {
     }
 
     /**

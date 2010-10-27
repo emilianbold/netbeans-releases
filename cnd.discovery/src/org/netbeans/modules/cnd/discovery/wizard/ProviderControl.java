@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import org.netbeans.modules.cnd.utils.ui.FilePathField;
+import org.netbeans.modules.cnd.utils.ui.EditableComboBox;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -85,7 +85,7 @@ public class ProviderControl {
     private final ChangeListener listener;
     private String description;
     private JLabel label;
-    private FilePathField field;
+    private EditableComboBox field;
     private JButton button;
     private int chooserMode = 0;
     
@@ -101,7 +101,7 @@ public class ProviderControl {
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getKind()) {
             case MakeLogFile:
-                field = new FilePathField();
+                field = new EditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -118,7 +118,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFile:
-                field = new FilePathField();
+                field = new EditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initBuildOrRoot(wizardDescriptor);
@@ -135,7 +135,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case Folder:
-                field = new FilePathField();
+                field = new EditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.DIRECTORIES_ONLY;
                 initRoot(wizardDescriptor);
@@ -151,7 +151,7 @@ public class ProviderControl {
                 addListeners();
                 break;
             case BinaryFiles:
-                field = new FilePathField();
+                field = new EditableComboBox();
                 field.setEditable(true);
                 chooserMode = JFileChooser.FILES_ONLY;
                 initArray();
