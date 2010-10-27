@@ -113,9 +113,14 @@ public class CommitTest extends AbstractGitTestCase {
         client.add(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+        long t1 = System.currentTimeMillis();
+        Thread.sleep(1000);
         GitRevisionInfo info = client.commit(new File[] { toCommit }, "initial commit", ProgressMonitor.NULL_PROGRESS_MONITOR);
+        Thread.sleep(1000);
+        long t2 = System.currentTimeMillis();
         statuses = client.getStatus(new File[] { toCommit }, ProgressMonitor.NULL_PROGRESS_MONITOR);
         assertStatus(statuses, workDir, toCommit, true, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_NORMAL, false);
+        assertTrue(t1 <= info.getCommitTime() && t2 >= info.getCommitTime());
 
         Git git = new Git(repository);
         LogCommand log = git.log();
