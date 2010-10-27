@@ -57,6 +57,7 @@ public class DocumentModificationTest extends CndBaseTestSuite {
         this.addTestSuite(InsertDeadBlockTestCase.class);
         this.addTestSuite(RemoveDeadBlockTestCase.class);
         this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
+        this.addTestSuite(ModifyMultiIncludedHeaderTestCase.class);
     }
 
     public static Test suite() {
