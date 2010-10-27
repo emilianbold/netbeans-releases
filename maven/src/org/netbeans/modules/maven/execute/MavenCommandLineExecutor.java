@@ -56,6 +56,8 @@ import java.awt.Color;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.netbeans.api.progress.ProgressHandle;
@@ -418,6 +420,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             // TODO: do we really put *all* the env vars there? maybe filter, M2_HOME and JDK_HOME?
             builder.environment().put(env, val);
             display.append(Utilities.escapeParameters(new String[] {env + "=" + val})).append(' '); // NOI18N
+        }
+        for (Iterator<Map.Entry<String, String>> it = builder.environment().entrySet().iterator(); it.hasNext(); ) {
+            if ("M2_HOME".equals(it.next().getKey().toUpperCase(Locale.ENGLISH))) { // NOI18N
+                it.remove(); // #191374: would prevent bin/mvn from using selected installation
+            }
         }
         List<String> command = builder.command();
         display.append(Utilities.escapeParameters(command.toArray(new String[command.size()])));
