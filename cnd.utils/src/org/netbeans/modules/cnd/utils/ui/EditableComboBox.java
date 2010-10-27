@@ -61,7 +61,7 @@ public class EditableComboBox extends JComboBox {
 
     private String storageKey;
     private Preferences prefs;
-    private static final String LIST_DELIMITER = "*";
+    private static final String LIST_DELIMITER = "*"; // NOI18N
 
     public EditableComboBox() {
         setEditable(true);
@@ -153,6 +153,19 @@ public class EditableComboBox extends JComboBox {
             return getSelectedItem().toString();
         }
         return null;
+    }
+
+    public String getLastText() {
+        String candidate = getText();
+        if (candidate == null || candidate.isEmpty()) {
+            for (int i = 0; i < getModel().getSize(); i++) {
+                String s = getModel().getElementAt(i).toString();
+                if (!s.isEmpty()) {
+                    return s;
+                }
+            }
+        }
+        return candidate;
     }
 
     /**
