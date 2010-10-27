@@ -431,6 +431,7 @@ tokens {
     protected static final int declGeneric = 2;
     protected static final int declNotFirst = 3;
     protected static final int declFunctionParam = 4;
+    protected static final int declExternFunction = 5;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -1021,6 +1022,17 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
     |
+        // Extern function declaration without return type but with parameters list
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification)?
+            LITERAL_extern
+            (options {greedy=true;} :function_attribute_specification)?
+            function_declarator[false, false] (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declExternFunction]
+        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
         // Function definition with return value
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification!)?
@@ -1558,22 +1570,30 @@ is_declaration
         ;
 
 declaration[int kind]
-	:	
-		(LITERAL_extern STRING_LITERAL)=> linkage_specification
-	|	
-		{beginDeclaration();}
-		// LL 31/1/97: added (COMMA) ? below. This allows variables to
-		// typedef'ed more than once. DW 18/08/03 ?
-		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])? 
+    :
+        (LITERAL_extern STRING_LITERAL)=> linkage_specification
+    |
+        {kind == declExternFunction}? (LITERAL_extern) =>
+        {beginDeclaration();}
+        LITERAL_extern
+        ((COMMA!)? init_declarator_list[kind])?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
-		//{end_of_stmt();}
-		{endDeclaration();}
-	|	
-		using_declaration	// DW 19/04/04
+        {endDeclaration();}
+    |
+        {beginDeclaration();}
+        // LL 31/1/97: added (COMMA) ? below. This allows variables to
+        // typedef'ed more than once. DW 18/08/03 ?
+        declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON )
+        //{end_of_stmt();}
+        {endDeclaration();}
+    |
+	using_declaration	// DW 19/04/04
     |
         namespace_alias_definition
-	;
+    ;
 
 linkage_specification
 	:	LITERAL_extern STRING_LITERAL
@@ -1622,7 +1642,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
         |   (options {greedy=true;} : attribute_specification!)
 		)*
-		(	
+		(
                         (options {greedy=true;} :type_attribute_specification)?
                         ts = type_specifier[ds, noTypeId]
                         // support for "A const*";
