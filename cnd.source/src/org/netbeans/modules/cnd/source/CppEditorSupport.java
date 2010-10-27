@@ -151,6 +151,18 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         return super.getUndoRedo();
     }
 
+    @Override
+    protected String documentID() {
+        DataObject dataObject = getDataObject();
+        if (dataObject != null && dataObject.isValid()) {
+            // Netbeans use primitive names for top components id and use file name for editor top component id
+            // So let differ threads TC and editor TC for threads.h
+            // But best solution is use full file name for TC id
+            return dataObject.getPrimaryFile().getNameExt();
+        }
+        return ""; // NOI18N
+    }
+
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */
     private static class Environment extends DataEditorSupport.Env {
 
