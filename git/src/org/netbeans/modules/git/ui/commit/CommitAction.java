@@ -103,10 +103,8 @@ public class CommitAction extends SingleRepositoryAction {
             GitProgressSupport support = new GitProgressSupport() {
                 @Override
                 public void perform() {
-                    GitClient client;
                     try {
-                        client = getClient();
-                        performCommit(panel.getParameters().getCommitMessage(), commitFiles, client, this, panel.getHooks());
+                        performCommit(panel.getParameters().getCommitMessage(), commitFiles, getClient(), this, panel.getHooks());
                     } catch (GitException ex) {
                         LOG.log(Level.WARNING, null, ex);
                         return;
@@ -130,12 +128,7 @@ public class CommitAction extends SingleRepositoryAction {
         List<File> deleteCandidates = new LinkedList<File>();
         List<File> commitCandidates = new LinkedList<File>();
         
-        populateCandidates(
-                commitFiles, 
-                addCandidates, 
-                deleteCandidates,
-                commitCandidates,
-                support);
+        populateCandidates(commitFiles, addCandidates, deleteCandidates, commitCandidates, support);
         
         if (support.isCanceled()) {
             return;
