@@ -58,13 +58,19 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author ak119685
  */
-@ServiceProvider(service = AutocompletionProviderFactory.class)
+
+//@ServiceProvider(service = AutocompletionProviderFactory.class)
+// This provider is not, actualy, very useful, as it doesn't give the full path
+// to the executable at the end... Plus in dialogs it is not a common practice
+// to have completion for executables, taken from PATH...
+//
+//@ServiceProvider(service = AutocompletionProviderFactory.class)
+
 public class FindBasedExecutablesCompletionProviderFactory implements AutocompletionProviderFactory {
 
     public AutocompletionProvider newInstance(ExecutionEnvironment env) {
