@@ -80,7 +80,7 @@ public class GitHookImpl extends GitHook {
         String author = context.getLogEntries()[0].getAuthor();
         String changeset = context.getLogEntries()[0].getChangeset();
         Date date = context.getLogEntries()[0].getDate();
-        String message = context.getLogEntries()[0].getMessage();
+        String message = context.getMessage();
         delegate.afterCommit(context.getFiles(), author, changeset, date, message, "GIT", true);        
     }
 
