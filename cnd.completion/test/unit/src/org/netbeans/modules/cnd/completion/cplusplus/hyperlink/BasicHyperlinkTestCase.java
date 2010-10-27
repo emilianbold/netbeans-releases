@@ -730,6 +730,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 190127 - Extern declarations without return type are not supported
         performTest("bug190127.c", 4, 12, "bug190127.c", 1, 1);
     }
+
+    public void testBug141302() throws Exception {
+        // Bug 141302 - Add to keywords C++ alternative tokens
+        performTest("bug141302.cpp", 8, 10, "bug141302.cpp", 2, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
