@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.discovery.wizard;
 
-import java.awt.Component;
+import org.netbeans.modules.cnd.utils.ui.FilePathField;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -53,16 +53,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import javax.swing.ComboBoxEditor;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
@@ -222,11 +220,13 @@ public class ProviderControl {
     }
 
     private void initComboBox(String root){
+        Preferences preferences;
         if (SelectProviderPanel.USE_PROJECT_PROPERTIES) {
-            field.setStorage(propertyKey, wizardDescriptor.getProject());
+            preferences = ProjectUtils.getPreferences(wizardDescriptor.getProject(), ProviderControl.class, false);
         } else {
-            field.setStorage(propertyKey, NbPreferences.forModule(ProviderControl.class));
+            preferences = NbPreferences.forModule(ProviderControl.class);
         }
+        field.setStorage(propertyKey, preferences);
         field.read(root);
     }
     
@@ -268,11 +268,14 @@ public class ProviderControl {
     }
     
     private void storeHistory() {
+        Preferences preferences;
         if (SelectProviderPanel.USE_PROJECT_PROPERTIES) {
-            field.setStorage(propertyKey, wizardDescriptor.getProject());
+            preferences = ProjectUtils.getPreferences(wizardDescriptor.getProject(), ProviderControl.class, false);
         } else {
+            preferences = NbPreferences.forModule(ProviderControl.class);
             field.setStorage(propertyKey, NbPreferences.forModule(ProviderControl.class));
         }
+        field.setStorage(propertyKey, preferences);
         field.store();
     }
 

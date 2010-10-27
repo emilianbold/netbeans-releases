@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.discovery.wizard;
+package org.netbeans.modules.cnd.utils.ui;
 
 import java.awt.Component;
 import java.awt.event.ActionListener;
@@ -52,32 +52,17 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 
 /**
- * Editable combo box with memory
+ * Editable combo box with memory on 5 previous values
  * @author Alexander Simon
  */
 public class FilePathField extends JComboBox {
 
     private String storageKey;
-    private Project project;
     private Preferences prefs;
 
     public FilePathField() {
-    }
-
-    /**
-     * Set project private properties as storage
-     * @param key
-     * @param project
-     */
-    public void setStorage(String key, Project project) {
-        storageKey = key;
-        this.project = project;
-
     }
 
     /**
@@ -95,14 +80,10 @@ public class FilePathField extends JComboBox {
      * @param path is initial combo box value
      */
     public void read(String path) {
-        List<String> vector = new ArrayList<String>();
-        vector.add(path);
+        List<String> list = new ArrayList<String>();
+        list.add(path);
         String old = null;
-        if (project != null) {
-            AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-            EditableProperties properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            old = properties.getProperty(storageKey);
-        } else if (prefs != null) {
+        if (prefs != null) {
             old = prefs.get(storageKey, ""); // NOI18N
         }
         if (old == null) {
@@ -112,15 +93,15 @@ public class FilePathField extends JComboBox {
         int history = 5;
         while (st.hasMoreTokens()) {
             String s = st.nextToken();
-            if (!vector.contains(s)) {
-                vector.add(s);
+            if (!list.contains(s)) {
+                list.add(s);
                 history--;
                 if (history == 0) {
                     break;
                 }
             }
         }
-        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(vector.toArray());
+        DefaultComboBoxModel rootModel = new DefaultComboBoxModel(list.toArray());
         setModel(rootModel);
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 35; i++) {
@@ -133,27 +114,22 @@ public class FilePathField extends JComboBox {
      * Store combo box state in the storage
      */
     public void store() {
-        List<String> vector = new ArrayList<String>();
-        vector.add(getText());
+        List<String> list = new ArrayList<String>();
+        list.add(getText());
         for (int i = 0; i < getModel().getSize(); i++) {
             String s = getModel().getElementAt(i).toString();
-            if (!vector.contains(s)) {
-                vector.add(s);
+            if (!list.contains(s)) {
+                list.add(s);
             }
         }
         StringBuilder buf = new StringBuilder();
-        for (String s : vector) {
+        for (String s : list) {
             if (buf.length() > 0) {
                 buf.append((char) 0);
             }
             buf.append(s);
         }
-        if (project != null) {
-            AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-            EditableProperties properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            properties.put(storageKey, buf.toString());
-            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
-        } else if (prefs != null) {
+        if (prefs != null) {
             prefs.put(storageKey, buf.toString()); // NOI18N
         }
     }

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.discovery.wizard;
 
+import org.netbeans.modules.cnd.utils.ui.FilePathField;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,14 +51,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -352,11 +353,13 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
+        Preferences preferences;
         if (USE_PROJECT_PROPERTIES) {
-            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, wizardDescriptor.getProject());
+            preferences = ProjectUtils.getPreferences(wizardDescriptor.getProject(), SelectProviderPanel.class, false);
         } else {
-            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, NbPreferences.forModule(SelectProviderPanel.class));
+            preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
+        ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
         ((FilePathField)rootFolder).read(path);
     }
     
@@ -398,11 +401,13 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         ProviderItem provider = (ProviderItem)prividersComboBox.getSelectedItem();
         wizardDescriptor.setProvider(provider.getProvider());
         wizardDescriptor.setRootFolder(getRootText());
+        Preferences preferences;
         if (USE_PROJECT_PROPERTIES) {
-            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, wizardDescriptor.getProject());
+            preferences = ProjectUtils.getPreferences(wizardDescriptor.getProject(), SelectProviderPanel.class, false);
         } else {
-            ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, NbPreferences.forModule(SelectProviderPanel.class));
+            preferences = NbPreferences.forModule(SelectProviderPanel.class);
         }
+        ((FilePathField)rootFolder).setStorage(ROOT_PROPERTY_KEY, preferences);
         ((FilePathField)rootFolder).store();
         ProviderProperty p = provider.getProvider().getProperty("restrict_source_root"); // NOI18N
         if (p != null) {
