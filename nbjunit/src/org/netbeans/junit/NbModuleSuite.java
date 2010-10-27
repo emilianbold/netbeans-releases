@@ -923,11 +923,7 @@ public class NbModuleSuite {
                     if (jar == null) {
                         continue;
                     }
-                    if (jar.getParentFile().getName().equals("lib")) {
-                        // Otherwise will get DuplicateException.
-                        continue;
-                    }
-                    if (jar.getParentFile().getName().equals("core")) {
+                    if (jar.getParentFile().getName().matches("lib|core") || /* from Maven */ jar.getParentFile().getParentFile().getName().matches("org-openide-util|org-openide-util-lookup|org-openide-modules|org-netbeans-bootstrap|org-openide-filesystems|org-netbeans-core-startup")) {
                         // Otherwise will get DuplicateException.
                         continue;
                     }
@@ -941,7 +937,6 @@ public class NbModuleSuite {
 "    <param name=\"enabled\">true</param>\n" +
 "    <param name=\"jar\">" + jar + "</param>\n" +
 "    <param name=\"reloadable\">false</param>\n" +
-"    <param name=\"specversion\">" + v.group(1) + "</param>\n" +
 "</module>\n";
                     
                     File conf = new File(new File(ud, "config"), "Modules");
