@@ -181,6 +181,9 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         int configModulesSize = (configModules.listFiles () != null) ? configModules.listFiles ().length : 0;
         int modulesSize = (modules.listFiles () != null) ? modules.listFiles ().length : 0;
         assertFalse (fileChanges[0]);
+        
+        Thread.sleep(1000);
+        
         FileObject foConfigModules = FileUtil.getConfigFile("Modules");
         assertNotNull (foConfigModules);
         int foConfigModulesSize = foConfigModules.getChildren ().length;
@@ -298,7 +301,7 @@ public abstract class OperationsTestImpl extends DefaultTestCase {
         return installElement;
     }
     
-    private void assertInstalledModule (UpdateUnit toInstallUnit) throws InterruptedException {
+    void assertInstalledModule (UpdateUnit toInstallUnit) throws InterruptedException {
         ModuleInfo info = getModuleInfos ().get (toInstallUnit.getCodeName ());
         assertNotNull (info);
         int timeout = 250;
