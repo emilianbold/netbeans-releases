@@ -53,7 +53,7 @@ import java.util.TreeSet;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.css.formatting.api.embedding.JoinedTokenSequence;

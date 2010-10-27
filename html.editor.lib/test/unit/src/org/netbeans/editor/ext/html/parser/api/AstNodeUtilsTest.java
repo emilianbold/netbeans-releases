@@ -41,6 +41,7 @@
  */
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import java.util.ArrayList;
 import java.util.Arrays;
