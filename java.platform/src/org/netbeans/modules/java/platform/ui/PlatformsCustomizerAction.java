@@ -43,7 +43,13 @@ package org.netbeans.modules.java.platform.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
+@ActionID(id = "org.netbeans.modules.java.platform.ui.PlatformsCustomizerAction", category = "Tools")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_PlatformManager")
+@ActionReference(position = 300, name = "JavaPlatformsCustomizerAction", path = "Menu/Tools")
 public final class PlatformsCustomizerAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         org.netbeans.api.java.platform.PlatformsCustomizer.showCustomizer(null);

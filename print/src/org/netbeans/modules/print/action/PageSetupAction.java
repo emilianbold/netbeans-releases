@@ -43,34 +43,24 @@
  */
 package org.netbeans.modules.print.action;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.actions.CallableSystemAction;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.netbeans.modules.print.util.Config;
-import static org.netbeans.modules.print.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.09
  */
-public final class PageSetupAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.print.action.PageSetupAction", category = "File")
+@ActionRegistration(displayName = "#LBL_PageSetup_Action")
+@ActionReference(position = 2100, path = "Menu/File")
+public final class PageSetupAction implements ActionListener {
 
     @Override
-    public synchronized void performAction() {
+    public void actionPerformed(ActionEvent e) {
         Config.getDefault().showPageSetup();
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    @Override
-    public String getName() {
-        return i18n(PageSetupAction.class, "LBL_PageSetup_Action"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
     }
 }

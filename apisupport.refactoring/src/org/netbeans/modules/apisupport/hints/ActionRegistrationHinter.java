@@ -182,15 +182,15 @@ public class ActionRegistrationHinter implements Hinter {
                 }
                 if (ctx.instanceFile().getPath().equals(shadow.getAttribute("originalFile"))) {
                     List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-                    Integer pos = (Integer) shadow.getAttribute("position");
-                    if (pos != null) {
-                        arguments.add(make.Assignment(make.Identifier("position"), make.Literal(pos)));
-                    }
+                    arguments.add(make.Assignment(make.Identifier("path"), make.Literal(shadow.getParent().getPath())));
                     String name = shadow.getName();
                     if (!name.equals(ctx.instanceFile().getName())) {
                         arguments.add(make.Assignment(make.Identifier("name"), make.Literal(name)));
                     }
-                    arguments.add(make.Assignment(make.Identifier("path"), make.Literal(shadow.getParent().getPath())));
+                    Integer pos = (Integer) shadow.getAttribute("position");
+                    if (pos != null) {
+                        arguments.add(make.Assignment(make.Identifier("position"), make.Literal(pos)));
+                    }
                     // XXX maybe look for nearby separators?
                     TypeElement ann = wc.getElements().getTypeElement("org.openide.awt.ActionReference");
                     if (ann == null) {

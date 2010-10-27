@@ -43,7 +43,13 @@ package org.netbeans.modules.project.ant;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
+@ActionID(id = "org.netbeans.modules.project.ant.VariablesCustomizerAction", category = "Tools")
+@ActionRegistration(iconInMenu = false, displayName = "#ACTION_NAME_Variables")
+@ActionReference(position = 475, name = "VariablesCustomizerAction", path = "Menu/Tools")
 public final class VariablesCustomizerAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {
