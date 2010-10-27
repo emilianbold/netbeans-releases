@@ -270,8 +270,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = baseDir;
@@ -317,8 +317,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
         @Override
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = baseDir;

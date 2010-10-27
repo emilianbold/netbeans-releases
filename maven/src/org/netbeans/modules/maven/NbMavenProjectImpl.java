@@ -107,6 +107,9 @@ import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.PrivilegedTemplates;
 import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.openide.ErrorManager;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.*;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -592,9 +595,12 @@ public final class NbMavenProjectImpl implements Project {
     /**
      * TODO move elsewhere?
      */
-    private static Action refreshAction;
+    private static ContextAwareAction refreshAction;
 
-    public static Action createRefreshAction() {
+    @ActionID(id = "org.netbeans.modules.maven.refresh", category = "Project")
+    @ActionRegistration(displayName = "#ACT_Reload_Project")
+    @ActionReference(position = 1700, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction createRefreshAction() {
         if (refreshAction == null) {
             refreshAction = new RefreshAction(Lookup.EMPTY);
         }

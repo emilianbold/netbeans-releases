@@ -998,19 +998,19 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         String layersB = layers(both);
 
         if (!layersR.contains(f1.toURI().toString())) {
-            fail("Missing " + f1 + "\ninside: " + layersR);
+            fail("Missing " + f1 + "\ninside: " + layersR + " (test string is '" + f1.toURI().toString() + "')");
         }
         if (!layersR.contains(f2.toURI().toString())) {
-            fail("Missing " + f2 + "\ninside: " + layersR);
+            fail("Missing " + f2 + "\ninside: " + layersR +  " (test string is '" + f2.toURI().toString() + "')");
         }
 
         assertEquals(f1.toURL().toExternalForm(), layers1);
         assertEquals(f2.toURL().toExternalForm(), layers2);
         if (!layersB.contains(f1.toURI().toString())) {
-            fail("Missing " + f1 + "\ninside: " + layersB);
+            fail("Missing " + f1 + "\ninside: " + layersB  + " (test string is '" + f1.toURI().toString() + "')");
         }
         if (!layersB.contains(f2.toURI().toString())) {
-            fail("Missing " + f2 + "\ninside: " + layersB);
+            fail("Missing " + f2 + "\ninside: " + layersB + " (test string is '" + f2.toURI().toString() + "')");
         }
     }
 

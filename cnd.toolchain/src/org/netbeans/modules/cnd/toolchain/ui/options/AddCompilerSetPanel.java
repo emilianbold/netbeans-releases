@@ -279,8 +279,8 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
         String seed = null;
         if (tfBaseDirectory.getText().length() > 0) {
             seed = tfBaseDirectory.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             ExecutionEnvironment env = csm.getExecutionEnvironment();
             if (env.isLocal()){

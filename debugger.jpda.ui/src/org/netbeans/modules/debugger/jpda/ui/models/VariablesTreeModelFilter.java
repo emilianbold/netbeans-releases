@@ -177,15 +177,15 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 Thread.currentThread().interrupt();
             }
         }
-        getAllInterfaces(o); // Initialize all interfaces
+        loadAllTypes(o); // Initialize all types, implemented interfaces and super classes
     }
 
-    private static boolean hasAllInterfaces(Object o) {
+    private static boolean hasAllTypes(Object o) {
         if (!(o instanceof ObjectVariable)) return true;
         ObjectVariable ov = (ObjectVariable) o;
         boolean hasAllInterfaces;
         try {
-            java.lang.reflect.Method hasAllInterfacesMethod = ov.getClass().getMethod("hasAllInterfaces");
+            java.lang.reflect.Method hasAllInterfacesMethod = ov.getClass().getMethod("hasAllTypes");
             hasAllInterfacesMethod.setAccessible(true);
             hasAllInterfaces = (Boolean) hasAllInterfacesMethod.invoke(ov);
         } catch (Exception ex) {
@@ -194,6 +194,19 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         }
         return hasAllInterfaces;
         
+    }
+
+    private static void loadAllTypes(Object o) {
+        if (!(o instanceof ObjectVariable)) return ;
+        ObjectVariable ov = (ObjectVariable) o;
+        // TODO: List<JPDAClassType> ov.loadAllTypes();
+        try {
+            java.lang.reflect.Method loadAllTypesMethod = ov.getClass().getMethod("loadAllTypes");
+            loadAllTypesMethod.setAccessible(true);
+            loadAllTypesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private static List<JPDAClassType> getAllInterfaces(Object o) {
@@ -591,23 +604,16 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
         Variable v = (Variable) o;
 
-        String type;
         if (checkEvaluated) {
             boolean evaluated;
             if (v instanceof Refreshable) {
                 synchronized (v) { // Do the test and retrieve of type in synch
                     evaluated = ((Refreshable) v).isCurrent();
-                    if (evaluated) {
-                        type = v.getType();
-                    } else {
-                        type = null;
-                    }
                 }
             } else {
                 evaluated = true;
-                type = v.getType();
             }
-            if (!hasAllInterfaces(v)) {
+            if (!hasAllTypes(v)) {
                 evaluated = false;
             }
             if (!evaluated) {
@@ -616,9 +622,8 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 }
                 return null;
             }
-        } else {
-            type = v.getType();
         }
+        String type = v.getType();
 
         VariablesFilter vf = (VariablesFilter) typeToFilterL.get (type);
         if (vf != null) return vf;

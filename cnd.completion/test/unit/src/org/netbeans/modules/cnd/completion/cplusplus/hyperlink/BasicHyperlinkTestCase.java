@@ -696,7 +696,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191198.c", 9, 35, "bug191198.c", 2, 9);
         performTest("bug191198.c", 9, 45, "bug191198.c", 3, 9);
         performTest("bug191198.c", 15, 35, "bug191198.c", 2, 9);
-        performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);
+        performTest("bug191198.c", 15, 45, "bug191198.c", 3, 9);        
+    }
+    
+    public void testIZ191305() throws Exception {
+        performTest("bug191198.c", 22, 40, "bug191198.c", 3, 9);
+        performTest("bug191198.c", 23, 26, "bug191198.c", 2, 9);
+        performTest("bug191198.c", 23, 40, "bug191198.c", 3, 9);
     }
     
     public void testIZ191200() throws Exception {
@@ -713,6 +719,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug191200.c", 16, 40, "bug191200.c", 3, 3);
         performTest("bug191200.c", 23, 40, "bug191200.c", 3, 3);
         performTest("bug191200.c", 24, 40, "bug191200.c", 3, 3);
+    }
+
+    public void testBug191314() throws Exception {
+        // Bug 191314 - last unresolved identifier in ir2hf
+        performTest("bug191314.c", 2, 56, "bug191314.c", 2, 47);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

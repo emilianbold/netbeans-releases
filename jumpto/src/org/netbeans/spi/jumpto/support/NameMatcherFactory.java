@@ -125,19 +125,28 @@ public final class NameMatcherFactory {
             if (name.length() == 0) {
                 throw new IllegalArgumentException ();
             }
+                 
             final StringBuilder patternString = new StringBuilder ();
-            for (int i=0; i<name.length(); i++) {
-                char c = name.charAt(i);
-                patternString.append(c);
-                if (i == name.length()-1) {
-                    patternString.append("\\w*");  // NOI18N
-                }
-                else {
-                    patternString.append("[\\p{Lower}\\p{Digit}]*");  // NOI18N
-                }
-            }
+            int lastIndex = 0;
+            int index;
+            do {
+                index = findNextUpper(name, lastIndex + 1);
+                String token = name.substring(lastIndex, index == -1 ? name.length(): index);
+                patternString.append(Pattern.quote(token));
+                patternString.append( index != -1 ?  "[\\p{Lower}\\p{Digit}_]*" : ".*"); // NOI18N
+                lastIndex = index;
+            } while(index != -1);
             pattern = Pattern.compile(patternString.toString());
 	}
+        
+        private static int findNextUpper(String text, int offset ) {
+            for( int i = offset; i < text.length(); i++ ) {
+                if ( Character.isUpperCase(text.charAt(i)) ) {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
         @Override
 	public final boolean accept(String name) {

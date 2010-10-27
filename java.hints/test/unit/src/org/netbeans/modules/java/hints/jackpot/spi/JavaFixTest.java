@@ -238,6 +238,33 @@ public class JavaFixTest extends TestBase {
 		           "}\n");
     }
 
+    public void testMultistatementsRewrite() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        System.err.println(1);\n" +
+                           "        java.util.concurrent.Lock l = null;\n" +
+                           "        l.lock();\n" +
+                           "        System.err.println(2);\n" +
+                           "        l.unlock();\n" +
+                           "    }\n" +
+                           "}\n",
+                           "$l.lock(); $s$; $l.unlock(); => $l.lock();\ntry {\n$s$;\n} finally {\n$l.unlock();}",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    {\n" +
+                           "        System.err.println(1);\n" +
+                           "        java.util.concurrent.Lock l = null;\n" +
+                           "        l.lock();\n" +
+                           "        try {\n" +
+                           "            System.err.println(2);\n" +
+                           "        } finally {\n" +
+                           "            l.unlock();\n" +
+                           "        }\n" +
+                           "    }\n" +
+                          "}\n");
+    }
+
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 

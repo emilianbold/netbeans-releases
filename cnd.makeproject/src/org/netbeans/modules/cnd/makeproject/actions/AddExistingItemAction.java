@@ -109,8 +109,8 @@ public class AddExistingItemAction extends NodeAction {
             return;
         }
 	String seed = null;
-	if (FileChooser.getCurrectChooserFile() != null) {
-	    seed = FileChooser.getCurrectChooserFile().getPath();
+	if (FileChooser.getCurrentChooserFile() != null) {
+	    seed = FileChooser.getCurrentChooserFile().getPath();
 	}
 	if (seed == null) {
 	    seed = projectDescriptor.getBaseDir();

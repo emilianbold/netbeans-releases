@@ -60,7 +60,7 @@ import org.openide.util.Utilities;
  * @author Alexander Simon
  */
 @SuppressWarnings("unchecked") // NOI18N
-public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor{
+public class DiscoveryWizardDescriptor extends WizardDescriptor implements DiscoveryDescriptor {
     public static final String PROJECT = "DW:project"; // NOI18N
     public static final String PROVIDER = "DW:provider"; // NOI18N
     public static final String ROOT_FOLDER = "DW:rootFolder"; // NOI18N
@@ -73,6 +73,7 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
     public static final String INVOKE_PROVIDER = "DW:invokeProvider"; // NOI18N
     public static final String COMPILER_NAME = "DW:compiler"; // NOI18N
     public static final String DEPENDENCIES = "DW:dependencies"; // NOI18N
+    public static final String ERRORS = "DW:errors"; // NOI18N
     
     private boolean stateChanged = true;
     private boolean simple = true;
@@ -116,6 +117,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
         putProperty(ROOT_FOLDER, root);
     }
     
+    @Override
+    public List<String> getErrors(){
+        return (List<String>) getProperty(ERRORS);
+    }
+
+    @Override
+    public void setErrors(List<String> errors){
+        stateChanged = true;
+        putProperty(ERRORS, errors);
+    }
+
     @Override
     public String getBuildResult() {
         return (String) getProperty(BUILD_RESULT);
@@ -290,6 +302,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
                 root = root.replace('\\','/');
             }
             wizard.putProperty(ROOT_FOLDER, root);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> getErrors(){
+            return (List<String>) wizard.getProperty(ERRORS);
+        }
+
+        @Override
+        public void setErrors(List<String> errors){
+            wizard.putProperty(ERRORS, errors);
         }
         
         @Override
@@ -475,6 +498,17 @@ public class DiscoveryWizardDescriptor extends WizardDescriptor implements Disco
                 root = root.replace('\\','/');
             }
             map.put(ROOT_FOLDER, root);
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<String> getErrors(){
+            return (List<String>) map.get(ERRORS);
+        }
+
+        @Override
+        public void setErrors(List<String> errors){
+            map.put(ERRORS, errors);
         }
         
         @Override

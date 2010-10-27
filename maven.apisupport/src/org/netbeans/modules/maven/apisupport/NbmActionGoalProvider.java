@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import javax.swing.Action;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -59,8 +58,12 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -109,14 +112,20 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     }
     
     
-    public static Action createReloadAction() {
-        Action a = ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
+    @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReload", category = "Project")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload")
+    @ActionReference(position = 1250, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction createReloadAction() {
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
 
-    public static Action createReloadTargetAction() {
-        Action a = ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
+    @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReloadTarget", category = "Project")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload_Target")
+    @ActionReference(position = 1225, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction createReloadTargetAction() {
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }

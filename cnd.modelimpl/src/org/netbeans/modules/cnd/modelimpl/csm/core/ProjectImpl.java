@@ -129,7 +129,7 @@ public final class ProjectImpl extends ProjectBase {
                 }
             };
             synchronized (editedFiles) {
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     for (CsmFile csmFile : editedFiles.keySet()) {
                         System.err.println("onFileEditStart: edited file " + csmFile);
                     }
@@ -148,7 +148,7 @@ public final class ProjectImpl extends ProjectBase {
 
     public 
     @Override
-    void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile) {
+    void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
         if (!Utils.acceptNativeItem(nativeFile)) {
             return;
         }
@@ -158,11 +158,11 @@ public final class ProjectImpl extends ProjectBase {
         FileImpl file = getFile(buf.getFile(), false);
         if (file != null) {
             synchronized (editedFiles) {
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     for (CsmFile csmFile : editedFiles.keySet()) {
                         System.err.println("onFileEditEnd: edited file " + csmFile);
                     }
-                    System.err.println("onFileEditEnd: current file " + file);
+                    System.err.println("onFileEditEnd: " + (undo ? "undo" : "save") + " current file " + file);
                 }
                 EditingTask task = editedFiles.remove(file);
                 if (task != null) {
@@ -175,8 +175,11 @@ public final class ProjectImpl extends ProjectBase {
                 file.setBuffer(buf);
             }
 //            file.clearStateCache();
-            // no need for deep parsing util call here, because it will be called as external notification change anyway
-//            DeepReparsingUtils.reparseOnEdit(file, this);
+            // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
+            if (undo) {
+                // but we need to call in case of undo when there are no external modifications
+                DeepReparsingUtils.reparseOnEdit(file, this);
+            }
         }
     }
 
@@ -362,12 +365,15 @@ public final class ProjectImpl extends ProjectBase {
             if (this.lastModified == lastModified) {
                 return false;
             }
+            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lastModified);// NOI18N
+            }
             this.lastModified = lastModified;
             return true;
         }
         
         public void setTask(Task task) {
-            if (TraceFlags.TRACE_182342_BUG) {
+            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.printf("EditingTask.setTask: set new EditingTask %d for %s\n", task.hashCode(), buf.getFile());
             }
             this.task = task;
@@ -375,7 +381,7 @@ public final class ProjectImpl extends ProjectBase {
 
         public void cancelTask() {
             if (this.task != null) {
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     if (!task.isFinished()) {
                         new Exception("EditingTask.cancelTask: cancelling previous EditingTask " + task.hashCode()).printStackTrace(System.err); // NOI18N
                     } else {
@@ -464,24 +470,27 @@ public final class ProjectImpl extends ProjectBase {
         RequestProcessor.Task task;
         int delay;
         synchronized (editedFiles) {
+            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+                new Exception("scheduleParseOnEditing " + file).printStackTrace(System.err); // NOI18N
+            }            
             EditingTask pair = editedFiles.get(file);
             if (pair == null) {
                 // we were removed between rescheduling and finish of edit
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     System.err.println("scheduleParseOnEditing: file was removed " + file);
                 }
                 return;
             }
             if (!pair.updateLastModified(file.getBuffer().lastModified())) {
                 // no need to schedule the second parse
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     System.err.println("scheduleParseOnEditing: no updates " + file + " : " + pair.lastModified);
                 }
                 return;
             }
             task = pair.getTask();
             if (task == null) {
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     for (CsmFile csmFile : editedFiles.keySet()) {
                         System.err.println("scheduleParseOnEditing: edited file " + csmFile);
                     }
@@ -492,7 +501,7 @@ public final class ProjectImpl extends ProjectBase {
                     @Override
                     public void run() {
                         try {
-                            if (TraceFlags.TRACE_182342_BUG) {
+                            if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                                 System.err.printf("scheduleParseOnEditing: RUN scheduleParseOnEditing task for %s\n", file);
                             }
                             if (isDisposing()) {
@@ -509,7 +518,7 @@ public final class ProjectImpl extends ProjectBase {
                 task.setPriority(Thread.MIN_PRIORITY);
                 pair.setTask(task);
             } else {
-                if (TraceFlags.TRACE_182342_BUG) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     for (CsmFile csmFile : editedFiles.keySet()) {
                         System.err.println("reschedule in scheduleParseOnEditing: edited file " + csmFile);
                     }

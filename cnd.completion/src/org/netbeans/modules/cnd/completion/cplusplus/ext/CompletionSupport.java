@@ -529,7 +529,20 @@ public final class CompletionSupport implements DocumentListener {
                 // so here is a hack with regexp...
                 try {
                     String e = getDocument().getText(ret.getStartOffset(), ret.getEndOffset() - ret.getStartOffset());
-                    String typeName = e.replaceAll("\\W*return\\W*\\((.*)\\)\\W*\\{.*\\}.*", "$1"); // NOI18N
+                    String typeName = e.replaceAll("((\\W|\n)*)return((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
+                    CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
+                    if (cls != null) {
+                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        return type;
+                    }
+                } catch (BadLocationException ex) {
+                }
+            } else if(stmt.getKind() == Kind.EXPRESSION) {
+                // ret.getReturnExpression() is not implemented
+                // so here is a hack with regexp...
+                try {
+                    String e = getDocument().getText(stmt.getStartOffset(), stmt.getEndOffset() - stmt.getStartOffset());
+                    String typeName = e.replaceAll("((.|\n)*)=((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
                         CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);

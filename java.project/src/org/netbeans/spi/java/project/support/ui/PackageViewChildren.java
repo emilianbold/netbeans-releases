@@ -155,7 +155,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     
     protected Node[] createNodes(String path) {
         FileObject fo = root.getFileObject(path);
-        if ( fo != null && fo.isValid()) {
+        if ( fo != null && fo.isValid() && fo.isFolder()) {
             Object o = names2nodes.get(path);
             PackageNode n;
             DataFolder folder = DataFolder.findFolder(fo);
@@ -428,6 +428,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
             }
 
             FileObject parent = fo.getParent();
+            if (!parent.isFolder()) {
+                throw new IllegalStateException(FileUtil.getFileDisplayName(parent) + " is not a folder!"); //NOI18N
+            }
             // XXX consider using group.contains() here
             if ( !VisibilityQuery.getDefault().isVisible( parent ) ) {
                 return; // Adding file into ignored directory
@@ -467,6 +470,9 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                 removeSubTree( fo );
                 // Now add the parent if necessary 
                 FileObject parent = fo.getParent();
+                if (!parent.isFolder()) {
+                    throw new IllegalStateException(FileUtil.getFileDisplayName(parent) + " is not a folder!"); //NOI18N
+                }
                 if ( ( FileUtil.isParentOf( root, parent ) || root.equals( parent ) ) && get( parent ) == null && parent.isValid() ) {
                     // Candidate for adding
                     if ( !toBeRemoved( parent ) ) {

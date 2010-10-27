@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<debugtargets version="2">
+  <debugtarget id="1 /bin/cat  [localhost] [dbx]">
+    <engine>dbx</engine>
+    <settings>
+      <exec>/bin/cat</exec>
+      <args></args>
+      <host>localhost</host>
+      <rundir>.</rundir>
+      <environment>
+      </environment>
+    </settings>
+    <dbxdebugger version="1">
+      <pathmaps>
+      </pathmaps>
+      <interceptlist>
+        <interceptoptions all="false" unhandled="true" unexpected="true"/>
+      </interceptlist>
+      <signals>
+      </signals>
+      <options>
+        <DebugOptions>
+        </DebugOptions>
+      </options>
+      <buildfirst buildfirst_overriden="false" buildfirst_old="false"/>
+    </dbxdebugger>
+    <dbx_gdbdebugger version="1">
+      <gdb_pathmaps>
+      </gdb_pathmaps>
+      <gdb_interceptlist>
+        <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+      </gdb_interceptlist>
+      <gdb_options>
+        <DebugOptions>
+        </DebugOptions>
+      </gdb_options>
+      <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+    </dbx_gdbdebugger>
+    <dbxrtc version="1">
+      <options>
+        <RtcOptions>
+          <option name="rtc_error_log_file_name" value="/dev/null"/>
+        </RtcOptions>
+      </options>
+      <loadobjs>
+        <lo name="/bin/cat" skip="false"/>
+        <lo name="/usr/lib/ld.so.1" skip="false"/>
+      </loadobjs>
+    </dbxrtc>
+  </debugtarget>
+  <debugtarget id="2 /bin/ls  [localhost] [dbx]">
+    <engine>dbx</engine>
+    <settings>
+      <exec>/bin/ls</exec>
+      <args></args>
+      <host>localhost</host>
+      <rundir>.</rundir>
+      <environment>
+      </environment>
+    </settings>
+    <dbxdebugger version="1">
+      <pathmaps>
+      </pathmaps>
+      <interceptlist>
+        <interceptoptions all="false" unhandled="true" unexpected="true"/>
+      </interceptlist>
+      <signals>
+      </signals>
+      <options>
+        <DebugOptions>
+          <option name="output_base" value="10"/>
+        </DebugOptions>
+      </options>
+      <buildfirst buildfirst_overriden="false" buildfirst_old="false"/>
+    </dbxdebugger>
+    <dbx_gdbdebugger version="1">
+      <gdb_pathmaps>
+      </gdb_pathmaps>
+      <gdb_interceptlist>
+        <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+      </gdb_interceptlist>
+      <gdb_options>
+        <DebugOptions>
+        </DebugOptions>
+      </gdb_options>
+      <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+    </dbx_gdbdebugger>
+    <dbxrtc version="1">
+      <options>
+        <RtcOptions>
+          <option name="rtc_error_log_file_name" value="/dev/null"/>
+        </RtcOptions>
+      </options>
+      <loadobjs>
+        <lo name="/bin/ls" skip="false"/>
+        <lo name="/usr/lib/ld.so.1" skip="false"/>
+        <lo name="/lib/libsec.so.1" skip="false"/>
+        <lo name="/lib/libavl.so.1" skip="false"/>
+      </loadobjs>
+    </dbxrtc>
+  </debugtarget>
+</debugtargets>

@@ -46,6 +46,7 @@ package org.netbeans.modules.favorites;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Rectangle;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,6 +61,10 @@ import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -67,6 +72,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -164,7 +170,7 @@ implements Runnable, ExplorerManager.Provider {
     * @return Tree view that will serve as main view for this explorer.
     */
     protected TreeView initGui () {
-        TreeView tView = new BeanTreeView();
+        TreeView tView = new MyBeanTreeView();
         tView.setRootVisible(false);
         tView.setDragSource (true);
         tView.setUseSubstringInQuickSearch(true);
@@ -519,6 +525,7 @@ implements Runnable, ExplorerManager.Provider {
                 if (selected) {
                     open();
                     requestActive();
+                    scrollToSelection();
                     StatusDisplayer.getDefault().setStatusText(""); // NOI18N
                 } else {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Tab.class,"MSG_NodeNotFound"));
@@ -588,6 +595,41 @@ implements Runnable, ExplorerManager.Provider {
     public Object readResolve() throws ObjectStreamException {
         getDefault().scheduleValidation();
         return getDefault();
+    }
+
+    private void scrollToSelection() {
+        final Node[] selection = getExplorerManager().getSelectedNodes();
+        if( null == selection || selection.length < 1 )
+            return;
+        if( view instanceof MyBeanTreeView ) {
+            ((MyBeanTreeView)view).scrollNodeToVisible(selection[0]);
+        }
+    }
+
+    private static class MyBeanTreeView extends BeanTreeView {
+        private void scrollNodeToVisible( final Node n ) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    TreeNode tn = Visualizer.findVisualizer(n);
+                    if (tn == null) {
+                        return;
+                    }
+                    TreeModel model = tree.getModel();
+                    if (!(model instanceof DefaultTreeModel)) {
+                        return;
+                    }
+                    TreePath path = new TreePath(((DefaultTreeModel) model).getPathToRoot(tn));
+                    if( null == path )
+                        return;
+                    Rectangle r = tree.getPathBounds(path);
+                    if (r != null) {
+                        tree.scrollRectToVisible(r);
+                    }
+                }
+            });
+        }
     }
 
 } // end of Tab inner class

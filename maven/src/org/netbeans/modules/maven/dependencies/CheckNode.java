@@ -134,13 +134,6 @@ public class CheckNode extends DefaultMutableTreeNode {
     public boolean isSelected() {
         return isSelected;
     }
-    
-    private String tooltip;
-    public String getToolTip() {
-        if (tooltip==null) {
-        }
-        return tooltip;
-    }
 
     void strike() {
         strike = true;

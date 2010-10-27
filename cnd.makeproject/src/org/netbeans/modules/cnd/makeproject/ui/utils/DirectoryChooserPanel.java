@@ -235,8 +235,8 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         @Override
         public String addAction() {
             String seed = null;
-            if (FileChooser.getCurrectChooserFile() != null) {
-                seed = FileChooser.getCurrectChooserFile().getPath();
+            if (FileChooser.getCurrentChooserFile() != null) {
+                seed = FileChooser.getCurrentChooserFile().getPath();
             }
             if (seed == null) {
                 seed = baseDir;

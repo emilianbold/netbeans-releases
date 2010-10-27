@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
+import org.netbeans.modules.db.DatabaseModule;
 import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
@@ -342,8 +343,8 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         this.driverName = driverName;
         this.driverClass = driverClass;
         if (driverName != null) {
-            if (driverName.contains("Oracle")) { // NOI18N
-                if (driverName.contains("OCI")) { // NOI18N
+            if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE)) {
+                if (driverName.contains(DatabaseModule.IDENTIFIER_ORACLE_OCI_DRIVER)) {
                     this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverDisplayName"); // NOI18N
                     this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDriverClass"); // NOI18N
                     this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "OracleOCIDatabaseUrl"); // NOI18N
@@ -362,7 +363,7 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 while (st.hasMoreTokens()) {
                     this.allPrivilegedFileNames.add(st.nextToken().trim());
                 }
-            } else if (driverName.contains("MySQL")) { // NOI18N
+            } else if (driverName.contains(DatabaseModule.IDENTIFIER_MYSQL)) {
                 this.driverDN = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverDisplayName"); // NOI18N
                 this.driverClass = NbBundle.getMessage(AddConnectionWizard.class, "MySQLDriverClass"); // NOI18N
                 this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N

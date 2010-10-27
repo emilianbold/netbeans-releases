@@ -313,8 +313,8 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         String seed;
         if (executableTextField.getText().length() > 0) {
             seed = executableTextField.getText();
-        } else if (FileChooser.getCurrectChooserFile() != null) {
-            seed = FileChooser.getCurrectChooserFile().getPath();
+        } else if (FileChooser.getCurrentChooserFile() != null) {
+            seed = FileChooser.getCurrentChooserFile().getPath();
         } else {
             seed = System.getProperty("user.home"); // NOI18N
         }
