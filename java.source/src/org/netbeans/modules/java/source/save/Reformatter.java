@@ -224,7 +224,7 @@ public class Reformatter implements ReformatTask {
                 continue;
             if (endOffset < start)
                 continue;
-            if (endOffset == start && (text == null || !text.trim().equals("}"))) //NOI18N
+            if (endOffset == start && (text == null || !(text.trim().equals("}") || templateEdit))) //NOI18N
                 continue;
             if (embeddingOffset >= start)
                 continue;
@@ -2853,7 +2853,7 @@ public class Reformatter implements ReformatTask {
                             int idx = 0;
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
-                                if (idx > lastIdx)
+                                if (idx > 0 && idx >= lastIdx)
                                     addDiff(new Diff(offset + lastIdx, offset + idx, templateEdit ? getIndent() : null));
                                 lastIdx = idx + 1;
                                 count--;
