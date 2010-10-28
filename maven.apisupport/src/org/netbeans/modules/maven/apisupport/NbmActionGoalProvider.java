@@ -133,20 +133,12 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     }
 
     public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (RELOAD_TARGET.equals(action) && hasNbm(project)) {
-            return true;
+        if (RELOAD_TARGET.equals(action) || NBMRELOAD.equals(action)) {
+            return hasNbm(project);
         }
-        if (!ActionProvider.COMMAND_RUN.equals(action) &&
-                !ActionProvider.COMMAND_DEBUG.equals(action) &&
-                !NBMRELOAD.equals(action)) {
-            return false;
+        if (ActionProvider.COMMAND_RUN.equals(action) || ActionProvider.COMMAND_DEBUG.equals(action)) {
+            return hasNbm(project) || isPlatformApp(project);
         }
-        if (isPlatformApp(project)) {
-            return true;
-        } else if (hasNbm(project)) {
-            return true;
-        }
-
         return false;
     }
 
