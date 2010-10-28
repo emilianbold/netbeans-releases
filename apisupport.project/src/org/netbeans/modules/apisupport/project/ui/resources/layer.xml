@@ -175,7 +175,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.project.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newProject.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific2"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
             <file name="emptyLibraryDescriptor">
                 <attr name="position" intvalue="1100"/>
