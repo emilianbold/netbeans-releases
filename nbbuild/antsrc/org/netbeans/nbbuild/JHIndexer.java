@@ -44,10 +44,19 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -192,10 +201,16 @@ public class JHIndexer extends MatchingTask {
         classpath = cp;
     }
 
-    public void execute () throws BuildException {
-        if (classpath == null) throw new BuildException ("Must specify the classpath attribute to find jhall.jar or jsearch.jar");
-        if (db == null) throw new BuildException ("Must specify the db attribute");
-        if (basedir == null) throw new BuildException ("Must specify the basedir attribute");
+    public @Override void execute() throws BuildException {
+        if (classpath == null) {
+            throw new BuildException ("Must specify the classpath attribute to find jhall.jar or jsearch.jar");
+        }
+        if (db == null) {
+            throw new BuildException ("Must specify the db attribute");
+        }
+        if (basedir == null) {
+            throw new BuildException ("Must specify the basedir attribute");
+        }
         FileScanner scanner = getDirectoryScanner (basedir);
         scanner.scan ();
         String[] files = scanner.getIncludedFiles ();
