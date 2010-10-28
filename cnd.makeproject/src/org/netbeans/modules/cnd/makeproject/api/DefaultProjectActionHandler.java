@@ -225,7 +225,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler, Execut
 
         LineConvertor converter = null;
 
-        if (actionType == ProjectActionEvent.PredefinedType.BUILD) {
+        if (actionType == ProjectActionEvent.PredefinedType.BUILD || actionType == ProjectActionEvent.PredefinedType.BUILD_TESTS) {
             converter = new CompilerLineConvertor(
                     conf.getCompilerSet().getCompilerSet(),
                     execEnv, CndFileUtils.toFileObject(runDirectory));
