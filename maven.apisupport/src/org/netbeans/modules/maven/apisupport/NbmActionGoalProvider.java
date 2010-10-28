@@ -58,6 +58,8 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -132,9 +134,7 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
 
     public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
         if (RELOAD_TARGET.equals(action) && hasNbm(project)) {
-            // Cf. ModuleActions.createReloadAction.
-            Project app = MavenNbModuleImpl.findAppProject(project);
-            return app != null && FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile();
+            return true;
         }
         if (!ActionProvider.COMMAND_RUN.equals(action) &&
                 !ActionProvider.COMMAND_DEBUG.equals(action) &&
@@ -156,7 +156,16 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
             // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
+            if (app == null) {
+                if (SelectPlatformAppModulePanel.findAppModule(project)) {
+                    app = MavenNbModuleImpl.findAppProject(project);
+                }
+            }
             if (app != null) {
+                if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(NbmActionGoalProvider.class, "NbmActionGoalProvider.target_platform_not_running"), NotifyDescriptor.WARNING_MESSAGE));
+                    return null;
+                }
                 // XXX how to build this project first?
                 RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);
                 assert rc != null;
@@ -187,7 +196,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     public @Override NetbeansActionMapping getMappingForAction(String actionName,
             Project project) {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
-            // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
             if (app != null) {
                 return createMapping(actionName, app, platformDelegate);
