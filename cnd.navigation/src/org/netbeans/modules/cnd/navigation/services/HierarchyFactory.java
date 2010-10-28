@@ -39,6 +39,7 @@ import javax.swing.Action;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,6 +55,11 @@ public class HierarchyFactory {
     }
 
     public HierarchyModel buildTypeHierarchyModel(CsmClass cls, Action[] actions, boolean subDirection, boolean plain, boolean recursive){
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         return new HierarchyModelImpl(cls, actions, subDirection, plain, recursive);
     }
 
