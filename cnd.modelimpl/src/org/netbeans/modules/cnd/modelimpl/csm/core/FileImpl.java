@@ -218,13 +218,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** Cache the hash code */
     private int hash = 0; // Default to 0
     private Reference<List<CsmReference>> lastMacroUsages = null;
-    private final ChangeListener fileBufferChangeListener = new ChangeListener() {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            FileImpl.this.markReparseNeeded(false);
-        }
-    };
 
     /** For test purposes only */
     public interface Hook {
@@ -237,7 +230,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        setBuffer(fileBuffer);
+        this.fileBuffer = fileBuffer;
 
         fileDeclarationsKey = new FileDeclarationsKey(this);
         weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey);
@@ -432,26 +425,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //    }
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {
-            if (this.fileBuffer != null) {
-                this.fileBuffer.removeChangeListener(fileBufferChangeListener);
-            }
             this.fileBuffer = fileBuffer;
 //            if (traceFile(getAbsolutePath())) {
 //                new Exception("setBuffer: " + fileBuffer).printStackTrace(System.err);
 //            }
-            // we do not need listener for non-document based buffer
-            // all state invalidations are made through:
-            //  - external file change event
-            //  - or "end file edit" action in deep reparsing utils
-            if (fileBuffer != null && !fileBuffer.isFileBased()) {
-                if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
-                    if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
-                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                    }
-                    state = State.MODIFIED;
-                    postMarkedAsModified();
+            if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
+                if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
+                    System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                 }
-                this.fileBuffer.addChangeListener(fileBufferChangeListener);
+                state = State.MODIFIED;
+                postMarkedAsModified();
             }
         }
     }
