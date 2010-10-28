@@ -34,6 +34,7 @@ import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -168,13 +169,15 @@ public class CppTypeProvider implements TypeProvider {
             case STRUCT:
                 if(!isCancelled) {
                     CsmClass cls = (CsmClass) decl;
-                    if (matcher.accept(decl.getName().toString())) {
-                        result.add(createTypeDescriptor(cls));
-                    }
-                    for( CsmMember member : cls.getMembers() ) {
-                        if( ! isCancelled ) {
-                            if (matcher.accept(member.getName().toString())) {
-                                processDeclaration(member, result, matcher);
+                    if (!CsmClassifierResolver.getDefault().isForwardClass(cls)) {
+                        if (matcher.accept(decl.getName().toString())) {
+                            result.add(createTypeDescriptor(cls));
+                        }
+                        for( CsmMember member : cls.getMembers() ) {
+                            if( ! isCancelled ) {
+                                if (matcher.accept(member.getName().toString())) {
+                                    processDeclaration(member, result, matcher);
+                                }
                             }
                         }
                     }
