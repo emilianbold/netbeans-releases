@@ -229,8 +229,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <package>org.netbeans.core.windows.nativeaccess</package>
                 <package>org.netbeans.core.windows.view.ui.tabcontrol</package>
-                <package>org.netbeans.core.windows.resources</package>
-                <package>org.netbeans.core.windows.actions</package>
             </friend-packages>
         </data>
     </configuration>
