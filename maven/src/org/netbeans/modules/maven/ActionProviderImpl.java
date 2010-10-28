@@ -220,15 +220,6 @@ public class ActionProviderImpl implements ActionProvider {
             Logger.getLogger(ActionProviderImpl.class.getName()).log(Level.INFO, "No handling for action: {0}. Ignoring.", action); //NOI18N
 
         } else {
-            if (rc instanceof BeanRunConfig) {
-                BeanRunConfig brc = (BeanRunConfig)rc;
-                if (brc.getPreExecutionActionName() != null) {
-                    RunConfig rc2 = ActionToGoalUtils.createRunConfig(brc.getPreExecutionActionName(), project, enhanced);
-                    if (rc2 != null) {
-                        brc.setPreExecution(rc2);
-                    }
-                }
-            }
             setupTaskName(action, rc, lookup);
             runGoal(rc, true);
         }
@@ -425,7 +416,7 @@ public class ActionProviderImpl implements ActionProvider {
             }
 
             if (!showUI) {
-                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null);
+                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null, Lookup.EMPTY);
                 rc.setShowDebug(MavenSettings.getDefault().isShowDebug());
                 rc.setTaskDisplayName(NbBundle.getMessage(ActionProviderImpl.class, "TXT_Build"));
 
@@ -475,7 +466,7 @@ public class ActionProviderImpl implements ActionProvider {
                         ex.printStackTrace();
                     }
                 }
-                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null);
+                ModelRunConfig rc = new ModelRunConfig(project, mapping, mapping.getActionName(), null, Lookup.EMPTY);
                 rc.setOffline(Boolean.valueOf(pnl.isOffline()));
                 rc.setShowDebug(pnl.isShowDebug());
                 rc.setRecursive(pnl.isRecursive());
