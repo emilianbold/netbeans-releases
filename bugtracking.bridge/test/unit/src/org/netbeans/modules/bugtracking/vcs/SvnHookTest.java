@@ -63,6 +63,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
+import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.versioning.hooks.SvnHook;
 import org.netbeans.modules.versioning.hooks.SvnHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
@@ -92,8 +93,8 @@ public class SvnHookTest extends NbTestCase {
     public void testPanel() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(true);
-        VCSHooksConfig.getInstance().setSvnResolve(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
 
         HookPanel panel = getPanel(hook, getContext());
         assertFalse(panel.pushRadioButton.isVisible());
@@ -102,8 +103,8 @@ public class SvnHookTest extends NbTestCase {
         assertTrue(panel.linkCheckBox.isSelected());
         assertTrue(panel.resolveCheckBox.isSelected());
 
-        VCSHooksConfig.getInstance().setSvnLink(false);
-        VCSHooksConfig.getInstance().setSvnResolve(false);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(false);
+        VCSHooksConfig.getInstance(HookType.SVN).setResolve(false);
 
         panel = getPanel(hook, getContext());
 
@@ -114,21 +115,20 @@ public class SvnHookTest extends NbTestCase {
     public void testBeforeCommitNoLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(false);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(false);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
         HookPanel panel = getPanel(hook, ctx); // initiate panel
 
         ctx = hook.beforeCommit(ctx);
-        assertNotNull(ctx);
-        assertSame(msg, ctx.getMessage());
+        assertNull(ctx);
     }
 
     public void testBeforeCommitWithLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
@@ -144,8 +144,8 @@ public class SvnHookTest extends NbTestCase {
     public void testAfterCommitLink() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(true);
-        VCSHooksConfig.getInstance().setSvnResolve(false);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setResolve(false);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
@@ -160,8 +160,8 @@ public class SvnHookTest extends NbTestCase {
     public void testAfterCommitResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(false);
-        VCSHooksConfig.getInstance().setSvnResolve(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(false);
+        VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
@@ -175,8 +175,8 @@ public class SvnHookTest extends NbTestCase {
     public void testAfterCommitLinkResolve() throws MalformedURLException, CoreException, IOException, InterruptedException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         SvnHookImpl hook = getHook();
 
-        VCSHooksConfig.getInstance().setSvnLink(true);
-        VCSHooksConfig.getInstance().setSvnResolve(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setLink(true);
+        VCSHooksConfig.getInstance(HookType.SVN).setResolve(true);
 
         String msg = "msg";
         SvnHookContext ctx = getContext(msg);
@@ -251,146 +251,4 @@ public class SvnHookTest extends NbTestCase {
         panel.enableFields(); // emulate event
     }
 
-    private static class HookIssue extends Issue {
-        static HookIssue instance;
-
-        private boolean closed;
-        private String comment;
-
-        private HookIssue() {
-            super(null);
-        }
-
-        static HookIssue getInstance() {
-            if(instance == null) {
-                instance = new HookIssue();
-            }
-            return instance;
-        }
-
-        void reset() {
-            comment = null;
-            closed = false;
-        }
-        @Override
-        public String getDisplayName() {
-            return "HookIssue";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "HookIssue";
-        }
-
-        @Override
-        public String getID() {
-            return "1";
-        }
-
-        @Override
-        public String getSummary() {
-            return "HookIssue";
-        }
-
-        @Override
-        public boolean isNew() {
-            return false;
-        }
-
-        @Override
-        public boolean refresh() {
-            return true;
-        }
-
-        @Override
-        public void addComment(String comment, boolean closeAsFixed) {
-            this.comment = comment;
-            closed = closeAsFixed;
-        }
-
-        @Override
-        public void attachPatch(File file, String description) {
-            // do nothing
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
-
-    private class HookRepository extends Repository {
-
-        @Override
-        public Image getIcon() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getID() {
-            return "HookRepository";
-        }
-
-        @Override
-        public String getUrl() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue getIssue(String id) {
-            return HookIssue.instance;
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query createQuery() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query[] getQueries() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Issue[] simpleSearch(String criteria) {
-            return new Issue[] {HookIssue.instance};
-        }
-
-        @Override
-        public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
 }
