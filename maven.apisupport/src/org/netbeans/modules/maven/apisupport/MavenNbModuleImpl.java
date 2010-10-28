@@ -71,6 +71,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.xml.namespace.QName;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
@@ -84,7 +85,11 @@ import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDisplayer;
@@ -345,6 +350,51 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE,
                 new Object[]{btnClose}, btnClose));
         NbPreferences.forModule(MavenNbModuleImpl.class).putBoolean("showNextTime_BuildNeeded", checkShowNextTime.isSelected()); //NOI18N
+    }
+
+
+    public @Override String getReleaseDirectoryPath() {
+        return "src/main/release";
+    }
+
+    public @Override FileObject getReleaseDirectory() throws IOException {
+        Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"), Collections.<ModelOperation<POMModel>>singletonList(new ModelOperation<POMModel>() {
+            public @Override void performOperation(POMModel model) {
+                Build build = model.getProject().getBuild();
+                if (build != null) {
+                    Plugin nbmPlugin = build.findPluginById("org.codehaus.mojo", "nbm-maven-plugin"); // XXX introduce constant (used in several places in maven{,.apisupport})
+                    if (nbmPlugin != null) {
+                        Configuration configuration = nbmPlugin.getConfiguration();
+                        if (configuration == null) {
+                            configuration = model.getFactory().createConfiguration();
+                            nbmPlugin.setConfiguration(configuration);
+                        }
+                        POMExtensibilityElement resources = ModelUtils.getOrCreateChild(configuration, "nbmResources", model);
+                        boolean needed = true;
+                        NEEDED: for (POMExtensibilityElement configurationElement : resources.getExtensibilityElements()) {
+                            if (configurationElement.getQName().getLocalPart().equals("nbmResource")) {
+                                for (POMExtensibilityElement dir : configurationElement.getExtensibilityElements()) {
+                                    if (dir.getQName().getLocalPart().equals("directory")) {
+                                        if (dir.getElementText().equals(getReleaseDirectoryPath())) {
+                                            needed = false;
+                                            break NEEDED;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (needed) {
+                            POMExtensibilityElement dir = model.getFactory().createPOMExtensibilityElement(new QName("directory"));
+                            dir.setElementText(getReleaseDirectoryPath());
+                            POMExtensibilityElement res = model.getFactory().createPOMExtensibilityElement(new QName("nbmResource"));
+                            res.addExtensibilityElement(dir);
+                            resources.addExtensibilityElement(res);
+                        }
+                    }
+                }
+            }
+        }));
+        return FileUtil.createFolder(project.getProjectDirectory(), getReleaseDirectoryPath());
     }
     
     private class DependencyAdder implements Runnable {

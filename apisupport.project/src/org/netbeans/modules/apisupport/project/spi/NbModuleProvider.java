@@ -101,6 +101,20 @@ public interface NbModuleProvider {
     String getResourceDirectoryPath(boolean inTests);
 
     /**
+     * Gets a directory where you may place files to be copied unmodified to the cluster/NBM in an analogous tree structure.
+     * You must call {@link #
+     * @return relative path from project root to release dir
+     */
+    String getReleaseDirectoryPath();
+
+    /**
+     *
+     * @return an actual directory corresponding to {@link #getReleaseDirectoryPath}
+     * @throws IOException in case of problem
+     */
+    FileObject getReleaseDirectory() throws IOException;
+
+    /**
      *  returns the relative path to the main project file (eg. nbproject/project.xml)
      * @return relative path from project root to the main project file.
      */
