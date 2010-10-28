@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.apisupport;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.project.MavenProject;
@@ -56,8 +57,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -131,22 +135,12 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     }
 
     public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (RELOAD_TARGET.equals(action) && hasNbm(project)) {
-            // Cf. ModuleActions.createReloadAction.
-            Project app = MavenNbModuleImpl.findAppProject(project);
-            return app != null && FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile();
+        if (RELOAD_TARGET.equals(action) || NBMRELOAD.equals(action)) {
+            return hasNbm(project);
         }
-        if (!ActionProvider.COMMAND_RUN.equals(action) &&
-                !ActionProvider.COMMAND_DEBUG.equals(action) &&
-                !NBMRELOAD.equals(action)) {
-            return false;
+        if (ActionProvider.COMMAND_RUN.equals(action) || ActionProvider.COMMAND_DEBUG.equals(action)) {
+            return hasNbm(project) || isPlatformApp(project);
         }
-        if (isPlatformApp(project)) {
-            return true;
-        } else if (hasNbm(project)) {
-            return true;
-        }
-
         return false;
     }
 
@@ -156,10 +150,19 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
             // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
+            if (app == null) {
+                if (SelectPlatformAppModulePanel.findAppModule(project)) {
+                    app = MavenNbModuleImpl.findAppProject(project);
+                }
+            }
             if (app != null) {
-                // XXX how to build this project first?
+                if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(NbmActionGoalProvider.class, "NbmActionGoalProvider.target_platform_not_running"), NotifyDescriptor.WARNING_MESSAGE));
+                    return null;
+                }
                 RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);
                 assert rc != null;
+                rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
                 MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
                 String outputDir = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR, "directory", "jar"); // NOI18N
                 if (outputDir == null) {
@@ -187,7 +190,6 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     public @Override NetbeansActionMapping getMappingForAction(String actionName,
             Project project) {
         if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
-            // Cf. ModuleActions.createReloadAction.
             Project app = MavenNbModuleImpl.findAppProject(project);
             if (app != null) {
                 return createMapping(actionName, app, platformDelegate);
