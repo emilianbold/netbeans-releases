@@ -619,7 +619,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized (changeStateLock) {
             if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.printf("#markReparseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                new Exception("markReparseNeeded is called").printStackTrace(System.err);
+                if (TraceFlags.TRACE_191307_BUG) {
+                    new Exception("markReparseNeeded is called").printStackTrace(System.err);// NOI18N
+                }// NOI18N
             }
             if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                 state = State.MODIFIED;
