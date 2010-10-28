@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.apisupport;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.maven.project.MavenProject;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.DialogDisplayer;
@@ -158,9 +160,9 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(NbmActionGoalProvider.class, "NbmActionGoalProvider.target_platform_not_running"), NotifyDescriptor.WARNING_MESSAGE));
                     return null;
                 }
-                // XXX how to build this project first?
                 RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);
                 assert rc != null;
+                rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
                 MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
                 String outputDir = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR, "directory", "jar"); // NOI18N
                 if (outputDir == null) {
