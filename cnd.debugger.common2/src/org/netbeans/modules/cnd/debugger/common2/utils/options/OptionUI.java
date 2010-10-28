@@ -199,7 +199,7 @@ public abstract class OptionUI {
      * this subpanel holds the given options
      */
 
-     public static SubcategoryOptionUI createSubPanel(OptionUI[] optionUIS,
+     public static OptionUI createSubPanel(OptionUI[] optionUIS,
 				    CatalogDynamic catalog,
 				    String titleResource ) {
 
