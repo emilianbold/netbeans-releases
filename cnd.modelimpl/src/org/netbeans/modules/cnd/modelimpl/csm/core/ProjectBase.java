@@ -1729,7 +1729,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final void onFileExternalChange(FileImpl file) {
-        DeepReparsingUtils.reparseOnEdit(file, this);
+        DeepReparsingUtils.reparseOnChangedFile(file, this);
     }
 
     @Override

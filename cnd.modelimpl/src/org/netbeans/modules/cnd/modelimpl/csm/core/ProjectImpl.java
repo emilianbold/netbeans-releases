@@ -178,20 +178,17 @@ public final class ProjectImpl extends ProjectBase {
             // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
             if (undo) {
                 // but we need to call in case of undo when there are no external modifications
-                DeepReparsingUtils.reparseOnEdit(file, this);
+                DeepReparsingUtils.reparseOnChangedFile(file, this);
             }
         }
     }
 
     @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); //NOI18N
         }
-        DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
+        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this);
     }
 
     @Override
