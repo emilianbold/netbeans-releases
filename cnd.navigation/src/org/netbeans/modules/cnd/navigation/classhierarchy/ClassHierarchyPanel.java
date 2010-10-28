@@ -63,6 +63,7 @@ import javax.swing.UIManager;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelutil.ui.ElementNode;
 import org.netbeans.modules.cnd.navigation.services.HierarchyFactory;
 import org.netbeans.modules.cnd.navigation.services.HierarchyModel;
 import org.openide.awt.Mnemonics;
@@ -73,6 +74,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 import org.openide.windows.TopComponent;
 
@@ -84,13 +86,14 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     public static final String ICON_PATH = "org/netbeans/modules/cnd/navigation/classhierarchy/resources/subtypehierarchy.gif"; // NOI18N
 
     private AbstractNode root;
-    private CsmUID<CsmClass> object;
+    private volatile CsmUID<CsmClass> object;
     private boolean subDirection = true;
     private boolean recursive = true;
     private boolean plain = false;
     private ExplorerManager explorerManager = new ExplorerManager();
     private Action[] actions;
     private Action close;
+    private final RequestProcessor.Task refreshTask = new RequestProcessor("ClassHierarchyPanelUpdater").create(new Updater());// NOI18N
     
     /** Creates new form ClassHierarchyPanel */
     public ClassHierarchyPanel(boolean isView) {
@@ -371,40 +374,20 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     }
     
     private synchronized void update(final CsmClass csmClass) {
-        if (csmClass != null){
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                        HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
-                        model.setCloseWindowAction(close);
-                        final Node node = new HierarchyNode(csmClass,model, null);
-                        children.add(new Node[]{node});
-                        try {
-                            getExplorerManager().setSelectedNodes(new Node[]{node});
-                        } catch (PropertyVetoException ex) {
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                ((BeanTreeView) hierarchyPane).expandNode(node);
-                            }
-                        });
+        final Children children = root.getChildren();
+        if (!Children.MUTEX.isReadAccess()){
+            Children.MUTEX.writeAccess(new Runnable(){
+                @Override
+                public void run() {
+                    children.remove(children.getNodes());
+                    refreshTask.cancel();
+                    if (csmClass != null) {
+                        // add wait node for the time of calculation
+                        children.add(new Node[] { ElementNode.getWaitNode(NbBundle.getMessage(ClassHierarchyPanel.class, "PleaseWait")) });
+                        refreshTask.schedule(10);
                     }
-                });
-            }
-        } else {
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -617,5 +600,56 @@ public class ClassHierarchyPanel extends JPanel implements ExplorerManager.Provi
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("TypeView"); // NOI18N
+    }
+    
+    private class Updater implements Runnable {
+        HierarchyModel model;
+        CsmClass csmClass;
+        public Updater() {
+        }
+
+        @Override
+        public void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+
+            final Children children = root.getChildren();
+                if (!Children.MUTEX.isReadAccess()) {
+                    Children.MUTEX.writeAccess(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            children.remove(children.getNodes());
+                            HierarchyModel curModel = model;
+                            if (curModel != null) {
+                                HierarchyModel model = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
+                                model.setCloseWindowAction(close);
+                                final Node node = new HierarchyNode(csmClass, model, null);
+                                children.add(new Node[]{node});
+                                try {
+                                    getExplorerManager().setSelectedNodes(new Node[]{node});
+                                } catch (PropertyVetoException ex) {
+                                }
+                                SwingUtilities.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ((BeanTreeView) hierarchyPane).expandNode(node);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }                
+            } else {
+                CsmUID<CsmClass> uid = ClassHierarchyPanel.this.object;
+                csmClass = uid == null ? null : uid.getObject();
+                HierarchyModel newModel = null;
+                if (csmClass != null) {
+                    newModel = HierarchyFactory.getInstance().buildTypeHierarchyModel(csmClass, actions, subDirection, plain, recursive);
+                    newModel.setCloseWindowAction(close);
+                }
+                model = newModel;
+                SwingUtilities.invokeLater(this);
+            }
+        }
     }
 }

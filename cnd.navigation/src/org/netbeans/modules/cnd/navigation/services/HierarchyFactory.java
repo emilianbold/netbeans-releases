@@ -53,7 +53,7 @@ public class HierarchyFactory {
         return new HierarchyFactory();
     }
 
-    public HierarchyModel buildTypeHierarchyModel(CsmClass cls, Action[] actions, boolean subDirection, boolean plain, boolean recursive){
+    public HierarchyModel buildTypeHierarchyModel(CsmClass cls, Action[] actions, boolean subDirection, boolean plain, boolean recursive) {
         return new HierarchyModelImpl(cls, actions, subDirection, plain, recursive);
     }
 

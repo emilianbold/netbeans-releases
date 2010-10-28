@@ -91,7 +91,6 @@ final class HierarchyTopComponent extends TopComponent implements CsmModelListen
             ClassHierarchyPanel panel = new ClassHierarchyPanel(true);
             add(panel, BorderLayout.CENTER);
             validate();
-            panel.setClass(decl);
             last = panel;
         }
         if (setClose) {
