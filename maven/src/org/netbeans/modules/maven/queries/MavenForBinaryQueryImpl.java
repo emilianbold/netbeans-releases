@@ -161,18 +161,18 @@ public class MavenForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                 return -1;
             }
         }
-        if ("jar".equals(url.getProtocol()) //NOI18N
-                && !Boolean.getBoolean("mevenide.projectLinksDisable")) { //possible fix for MEVENIDE-535   //NOI18N
-            URL binRoot = FileUtil.getArchiveFile(url);
-            File file = new File(URI.create(binRoot.toString()));
-            String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
-            String path = project.getArtifactRelativeRepositoryPath();
-            int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
-            if (ret == -1) {
-                path = project.getTestArtifactRelativeRepositoryPath();
-                ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
+        if (!Boolean.getBoolean("mevenide.projectLinksDisable")) { //possible fix for MEVENIDE-535   //NOI18N
+            File file = FileUtil.archiveOrDirForURL(url);
+            if (file != null) {
+                String filepath = file.getAbsolutePath().replace('\\', '/'); //NOI18N
+                String path = project.getArtifactRelativeRepositoryPath();
+                int ret = path == null ? -1 : filepath.endsWith(path) ? 0 : -1;
+                if (ret == -1) {
+                    path = project.getTestArtifactRelativeRepositoryPath();
+                    ret = path == null ? -1 : filepath.endsWith(path) ? 1 : -1;
+                }
+                return ret;
             }
-            return ret;
         }
         return -1;
     }
