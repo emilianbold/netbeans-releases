@@ -1028,7 +1028,7 @@ abstract public class CsmCompletionQuery {
                             }
                             // Get all fields and methods of the cls
                             result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
-                                    exp, substPos, 0, cls.getName().length() + 1, isProjectBeeingParsed(), contextElement, instantiateTypes);
+                                    exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed(), contextElement, instantiateTypes);
                         } else { // Found namespace (otherwise ok would be false)
                             if (true) {
                                 // in C++ it's not legal to have NS-> or NS.
