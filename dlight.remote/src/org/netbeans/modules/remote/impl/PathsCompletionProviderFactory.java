@@ -39,9 +39,11 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.impl;
 
+import java.io.File;
+import java.util.concurrent.CancellationException;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.remote.api.ui.AutocompletionProvider;
 import org.netbeans.modules.remote.spi.AutocompletionProviderFactory;
 import org.netbeans.modules.remote.util.ExecSupport;
@@ -54,6 +56,7 @@ import java.util.List;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -87,6 +90,7 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
         private final static int cacheSizeLimit = 20;
         private final static int cacheLifetime = 1000 * 60 * 10; // 10 min
         private final ExecutionEnvironment env;
+        private String homeDir = null;
         private final LinkedList<CachedValue> cache = new LinkedList<CachedValue>();
         private final Task cleanUpTask;
 
@@ -106,6 +110,31 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
         @Override
         public List<String> autocomplete(String str) {
             cleanUpTask.schedule(cacheLifetime);
+            boolean absolutePaths = false;
+
+            if ("~".equals(str) || ".".equals(str)) { // NOI18N
+                List<String> dir = new ArrayList<String>();
+
+                if (".".equals(str) && env.isLocal()) { // NOI18N
+                    dir.add(new File("").getAbsolutePath() + '/'); // NOI18N
+                } else {
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                        dir.add(hostInfo.getUserDir() + '/');
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (CancellationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+
+                return dir;
+            }
+
+            if (str.startsWith("~")) { // NOI18N
+                str = str.replaceFirst("~", getHomeDir()); // NOI18N
+                absolutePaths = true;
+            }
 
             if (!str.startsWith(".") && !str.startsWith("/") && !str.startsWith("~")) { // NOI18N
                 return Collections.<String>emptyList();
@@ -120,7 +149,11 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
 
             for (String c : content) {
                 if (c.startsWith(file)) {
-                    result.add(c);
+                    if (absolutePaths) {
+                        result.add(dir + c);
+                    } else {
+                        result.add(c);
+                    }
                 }
             }
 
@@ -164,6 +197,20 @@ public class PathsCompletionProviderFactory implements AutocompletionProviderFac
             }
 
             return content;
+        }
+
+        private synchronized String getHomeDir() {
+            if (homeDir == null) {
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                    homeDir = hostInfo.getUserDir();
+                } catch (Exception ex) {
+                    // fallback... 
+                    homeDir = "/home/" + env.getUser() + "/"; // NOI18N
+                }
+            }
+
+            return homeDir;
         }
     }
 
