@@ -227,7 +227,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             try {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
-                if (!parse1.await(20, TimeUnit.SECONDS)) {
+                if (!parse1.await(2000, TimeUnit.SECONDS)) {
                     if (true || TraceFlags.TRACE_182342_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
@@ -433,13 +433,18 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             assertTrue("must have undo", urm.canUndo());
             assertEquals("must have only one modified object", 1, this.doListener.size());
             waitParseSemaphore.acquire();
+//            waitParseSemaphore.acquire();
             assertTrue(fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations", numDeclsAfterModification, curNumDecls);
-            assertEquals("must be exactly one parse event", 1, parseCounter.get());
+//            assertEquals("must be exactly one parse event", 1, parseCounter.get());
+            project.waitParse();
+            while(waitParseSemaphore.tryAcquire()) {}
             // let's save changes
             saveDocument(sourceFile, doc, project);
             waitParseSemaphore.acquire();
+            project.waitParse();
+            while(waitParseSemaphore.tryAcquire()) {}
             assertTrue(fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
@@ -448,8 +453,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             
             assertTrue("must have undoable modification", urm.canUndo());
             if (doUndoRedo) {
-                urm.undo();            
+                urm.undo();          
                 waitParseSemaphore.acquire();
+                project.waitParse();
+                while(waitParseSemaphore.tryAcquire()) {}
                 assertTrue(fileImpl.isParsed());
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
@@ -459,11 +466,14 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have redoable modification", urm.canRedo());
                 urm.redo();
                 waitParseSemaphore.acquire();
+                project.waitParse();
+                while(waitParseSemaphore.tryAcquire()) {}
                 assertTrue(fileImpl.isParsed());
                 curNumDecls = fileImpl.getDeclarationsSize();
                 assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
     //            assertEquals("must be exactly four parse events", 4, parseCounter.get());
                 assertEquals("must have zero modified object", 0, this.doListener.size());
+                project.waitParse();
             }
         } finally {
             System.err.flush();

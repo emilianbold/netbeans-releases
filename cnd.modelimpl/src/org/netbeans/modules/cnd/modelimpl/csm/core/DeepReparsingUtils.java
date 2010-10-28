@@ -75,7 +75,7 @@ public final class DeepReparsingUtils {
      * Reparse one file when fileImpl content changed.
      */
     static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
-        project.invalidatePreprocState(fileImpl.getFile());
+        project.markAsParsingPreprocStates(fileImpl.getFile());
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
                 ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);

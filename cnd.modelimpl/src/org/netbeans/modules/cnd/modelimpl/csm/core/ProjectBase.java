@@ -1185,6 +1185,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         fileContainer.put();
     }
 
+    protected final void markAsParsingPreprocStates(File file) {
+        FileContainer fileContainer = getFileContainer();
+        Object stateLock = fileContainer.getLock(file);
+        synchronized (stateLock) {
+            fileContainer.markAsParsingPreprocStates(file);
+        }
+//        fileContainer.put();
+    }
     /**
      * The method is for tracing/testing/debugging purposes only
      */
@@ -1582,7 +1590,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 boolean keep = false;
                 // check if pure invalid state, but do not consider as invalid
                 // the invalidated entry in parsing mode
-                if (pair.state != null && (pair.state.isValid() || pair.pcState == FilePreprocessorConditionState.PARSING)) {
+                if (pair.state != null && (pair.state.isValid())) {
                     if (pair.state.isCompileContext()) {
                         keep = true;
                         if (!newState.isCompileContext()) {
