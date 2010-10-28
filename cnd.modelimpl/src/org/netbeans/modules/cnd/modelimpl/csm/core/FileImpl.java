@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -217,13 +218,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** Cache the hash code */
     private int hash = 0; // Default to 0
     private Reference<List<CsmReference>> lastMacroUsages = null;
-    private final ChangeListener fileBufferChangeListener = new ChangeListener() {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            FileImpl.this.markReparseNeeded(false);
-        }
-    };
 
     /** For test purposes only */
     public interface Hook {
@@ -236,7 +230,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        setBuffer(fileBuffer);
+        this.fileBuffer = fileBuffer;
 
         fileDeclarationsKey = new FileDeclarationsKey(this);
         weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey);
@@ -431,26 +425,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 //    }
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {
-            if (this.fileBuffer != null) {
-                this.fileBuffer.removeChangeListener(fileBufferChangeListener);
-            }
             this.fileBuffer = fileBuffer;
 //            if (traceFile(getAbsolutePath())) {
 //                new Exception("setBuffer: " + fileBuffer).printStackTrace(System.err);
 //            }
-            // we do not need listener for non-document based buffer
-            // all state invalidations are made through:
-            //  - external file change event
-            //  - or "end file edit" action in deep reparsing utils
-            if (fileBuffer != null && !fileBuffer.isFileBased()) {
-                if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
-                    if (reportParse || logState || TraceFlags.DEBUG) {
-                        System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
-                    }
-                    state = State.MODIFIED;
-                    postMarkedAsModified();
+            if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
+                if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
+                    System.err.printf("#setBuffer changing to MODIFIED %s is %s with current state %s %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
                 }
-                this.fileBuffer.addChangeListener(fileBufferChangeListener);
+                state = State.MODIFIED;
+                postMarkedAsModified();
             }
         }
     }
@@ -614,7 +598,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (state == State.PARSED) {
                 long lastModified = getBuffer().lastModified();
                 if (lastModified > lastParsed) {
-                    if (TraceFlags.TRACE_VALIDATION) {
+                    if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
                         System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                     }
                     if (reportParse || logState || TraceFlags.DEBUG) {
@@ -633,8 +617,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     public final void markReparseNeeded(boolean invalidateCache) {
         synchronized (changeStateLock) {
-            if (reportParse || logState || TraceFlags.DEBUG) {
+            if (reportParse || logState || TraceFlags.DEBUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.printf("#markReparseNeeded %s is %s with current state %s, %s\n", getAbsolutePath(), fileType, state, parsingState); // NOI18N
+                new Exception("markReparseNeeded is called").printStackTrace(System.err);
             }
             if (state != State.INITIAL || parsingState != ParsingState.NOT_BEING_PARSED) {
                 state = State.MODIFIED;
@@ -1486,6 +1471,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
 
+    public final String getStateFromTest() {
+        assert CndUtils.isUnitTestMode();
+        return state.toString();
+    }
+    
+    public final String getParsingStateFromTest() {
+        assert CndUtils.isUnitTestMode();
+        return parsingState.toString();
+    }    
+    
     public boolean isParsingOrParsed() {
         synchronized (changeStateLock) {
             return state == State.PARSED || parsingState != ParsingState.NOT_BEING_PARSED;
@@ -1995,7 +1990,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             printOut.printf("pc=%s\nstate=%s\n", pair.pcState, pair.state);// NOI18N 
         }
         Collection<APTPreprocHandler> preprocHandlers = this.getPreprocHandlers();
-        printOut.printf("Converted into %d ppStates:\n", preprocHandlers.size());// NOI18N 
+        printOut.printf("Converted into %d Handlers:\n", preprocHandlers.size());// NOI18N 
         i = 0;
         for (APTPreprocHandler ppHandler : preprocHandlers) {
             printOut.printf("----------------Handler[%d]------------------------\n", ++i);// NOI18N 

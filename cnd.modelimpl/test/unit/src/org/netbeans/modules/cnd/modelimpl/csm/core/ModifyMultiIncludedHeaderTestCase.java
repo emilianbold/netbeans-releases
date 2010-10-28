@@ -49,35 +49,18 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  *
  * @author vv159170
  */
-public class ModifyUndoTestCase extends ModifyDocumentTestCaseBase {
-    public ModifyUndoTestCase(String testName) {
+public class ModifyMultiIncludedHeaderTestCase extends ModifyDocumentTestCaseBase {
+    public ModifyMultiIncludedHeaderTestCase(String testName) {
         super(testName);
 //        System.setProperty("cnd.modelimpl.trace191307", "true");
     }
-    
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-    
-    public void testRemoveThenUndo191307() throws Exception {
-        // #191307:  Undo operation breaks code model
+
+    public void test174007() throws Exception {
+        // #174007:  (Sometimes) Incorrect processing of i#ifndef .. #define
         if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
+            System.err.printf("TEST MULTI INCLUSION\n");
         }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        long length = sourceFile.length();
-        
-        super.deleteTextThenUndo(sourceFile, 0, (int)length, 3, 0);
+        final File sourceFile = getDataFile("multiIncludedFileForModification.h");
+        super.insertTextThenSave(sourceFile, 12 + 1, "void foo();\n", 3, 4, true);
     }
-    
-    public void testInsertSaveThenUndoRedo190950() throws Exception {
-        // #191307:  Highlighting does not work if undo/redo is done
-        if (TraceFlags.TRACE_191307_BUG) {
-            System.err.printf("TEST UNDO REMOVE\n");
-        }
-        final File sourceFile = getDataFile("fileForModification.cc");
-        super.insertTextThenSave(sourceFile, 12 + 1, "void foo() {}\n", 3, 4, true);
-                
-    }    
 }

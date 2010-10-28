@@ -178,20 +178,17 @@ public final class ProjectImpl extends ProjectBase {
             // no need for deep parsing util call here in case of save, because it will be called as external notification change anyway
             if (undo) {
                 // but we need to call in case of undo when there are no external modifications
-                DeepReparsingUtils.reparseOnEdit(file, this);
+                DeepReparsingUtils.reparseOnChangedFile(file, this);
             }
         }
     }
 
     @Override
     public void onFilePropertyChanged(NativeFileItem nativeFile) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFilePropertyChanged " + nativeFile.getFile().getName()); //NOI18N
         }
-        DeepReparsingUtils.reparseOnPropertyChanged(nativeFile, this);
+        DeepReparsingUtils.reparseOnPropertyChanged(Collections.singletonList(nativeFile), this);
     }
 
     @Override
@@ -361,14 +358,15 @@ public final class ProjectImpl extends ProjectBase {
             this.buf.addChangeListener(bufListener);
         }
 
-        public boolean updateLastModified(long lastModified) {
-            if (this.lastModified == lastModified) {
+        public boolean updateLastModified() {
+            long lm = this.buf.lastModified();
+            if (this.lastModified == lm) {
                 return false;
             }
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                 System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lastModified);// NOI18N
             }
-            this.lastModified = lastModified;
+            this.lastModified = lm;
             return true;
         }
         
@@ -481,7 +479,7 @@ public final class ProjectImpl extends ProjectBase {
                 }
                 return;
             }
-            if (!pair.updateLastModified(file.getBuffer().lastModified())) {
+            if (!pair.updateLastModified()) {
                 // no need to schedule the second parse
                 if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                     System.err.println("scheduleParseOnEditing: no updates " + file + " : " + pair.lastModified);

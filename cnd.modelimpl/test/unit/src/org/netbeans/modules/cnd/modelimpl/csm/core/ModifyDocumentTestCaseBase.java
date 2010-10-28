@@ -227,7 +227,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             try {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
-                if (!parse1.await(20, TimeUnit.SECONDS)) {
+                if (!parse1.await(2000, TimeUnit.SECONDS)) {
                     if (true || TraceFlags.TRACE_182342_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
@@ -358,13 +358,13 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         return listener;
     }
 
-        private CsmProgressListener createFileParseListener2(final FileImpl fileImpl, final AtomicReference<Semaphore> condRef, final AtomicInteger parseCounter) {
+    private CsmProgressListener createFileParseListener2(final FileImpl fileImpl, final AtomicReference<Semaphore> condRef, final AtomicInteger parseCounter) {
         final CsmProgressListener listener = new CsmProgressAdapter() {
 
             @Override
             public void fileParsingFinished(CsmFile file) {
-                if (TraceFlags.TRACE_182342_BUG) {
-                    new Exception(getName() + " fileParsingFinished " + file).printStackTrace(System.err); // NOI18N
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+                    new Exception(getName() + " fileParsingFinished parsingState = " + ((FileImpl)file).getParsingStateFromTest() + " state = " + ((FileImpl)file).getState() + " " + file).printStackTrace(System.err); // NOI18N
                 }
                 parseCounter.incrementAndGet();
                 if (file.equals(fileImpl)) {
@@ -394,7 +394,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         return unusedCodeBlocks;
     }
 
-    protected void insertTextThenSaveUndoRedo(File sourceFile, final int insertLine, final String insertString, int numDecls, int numDeclsAfterModification) throws Exception {
+    protected void insertTextThenSave(File sourceFile, final int insertLine, final String insertString, int numDecls, int numDeclsAfterModification, boolean doUndoRedo) throws Exception {
         if (TraceFlags.TRACE_191307_BUG) {
             System.err.printf("TEST INSERT/SAVE then UNDO/REDO\n");
         }
@@ -433,34 +433,48 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             assertTrue("must have undo", urm.canUndo());
             assertEquals("must have only one modified object", 1, this.doListener.size());
             waitParseSemaphore.acquire();
+//            waitParseSemaphore.acquire();
+            assertTrue(fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations", numDeclsAfterModification, curNumDecls);
-            assertEquals("must be exactly one parse event", 1, parseCounter.get());
+//            assertEquals("must be exactly one parse event", 1, parseCounter.get());
+            project.waitParse();
+            while(waitParseSemaphore.tryAcquire()) {}
             // let's save changes
             saveDocument(sourceFile, doc, project);
             waitParseSemaphore.acquire();
+            project.waitParse();
+            while(waitParseSemaphore.tryAcquire()) {}
+            assertTrue(fileImpl.isParsed());
             curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations after save", numDeclsAfterModification, curNumDecls);
-            assertEquals("must be exactly two parse events", 2, parseCounter.get());
+//            assertEquals("must be exactly two parse events", 2, parseCounter.get());
             assertEquals("must have zero modified object", 0, this.doListener.size());
             
             assertTrue("must have undoable modification", urm.canUndo());
-            urm.undo();            
-            waitParseSemaphore.acquire();
-            project.waitParse();
-            curNumDecls = fileImpl.getDeclarationsSize();
-            assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
-            assertEquals("must be exactly three parse events", 3, parseCounter.get());
-            assertEquals("must have only one modified object", 1, this.doListener.size());
-            
-            assertTrue("must have redoable modification", urm.canRedo());
-            urm.redo();
-            waitParseSemaphore.acquire();
-            project.waitParse();
-            curNumDecls = fileImpl.getDeclarationsSize();
-            assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
-            assertEquals("must be exactly four parse events", 4, parseCounter.get());
-            assertEquals("must have zero modified object", 0, this.doListener.size());
+            if (doUndoRedo) {
+                urm.undo();          
+                waitParseSemaphore.acquire();
+                project.waitParse();
+                while(waitParseSemaphore.tryAcquire()) {}
+                assertTrue(fileImpl.isParsed());
+                curNumDecls = fileImpl.getDeclarationsSize();
+                assertEquals("different number of declarations after save and undo", numDecls, curNumDecls);
+    //            assertEquals("must be exactly three parse events", 3, parseCounter.get());
+                assertEquals("must have only one modified object", 1, this.doListener.size());
+
+                assertTrue("must have redoable modification", urm.canRedo());
+                urm.redo();
+                waitParseSemaphore.acquire();
+                project.waitParse();
+                while(waitParseSemaphore.tryAcquire()) {}
+                assertTrue(fileImpl.isParsed());
+                curNumDecls = fileImpl.getDeclarationsSize();
+                assertEquals("different number of declarations after save and undo", numDeclsAfterModification, curNumDecls);
+    //            assertEquals("must be exactly four parse events", 4, parseCounter.get());
+                assertEquals("must have zero modified object", 0, this.doListener.size());
+                project.waitParse();
+            }
         } finally {
             System.err.flush();
             CsmListeners.getDefault().removeProgressListener(listener);

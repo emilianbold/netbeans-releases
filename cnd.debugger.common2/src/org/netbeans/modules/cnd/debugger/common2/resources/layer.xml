@@ -487,7 +487,7 @@ made subject to such option by the copyright holder.
 		</file>
 		<file name="ConsoleAction.shadow">
 		    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-cnd-debugger-common2-debugger-io-ConsoleAction.instance"/>
-		    <attr name="position" intvalue="1500"/>
+		    <attr name="position" intvalue="1450"/>
 		</file>
 
 
