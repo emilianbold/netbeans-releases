@@ -182,7 +182,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
     }
     
     public void setParametrizedText(String parametrizedText) {
-        this.parametrizedText = CharacterConversions.lineSeparatorToLineFeed(parametrizedText);
+        int idx = 0;
+        while(idx < parametrizedText.length() && Character.isWhitespace(parametrizedText.charAt(idx)))
+            idx++;
+        this.parametrizedText = CharacterConversions.lineSeparatorToLineFeed(idx > 0 ? parametrizedText.substring(idx) : parametrizedText);
         parseParametrizedText();
     }
 

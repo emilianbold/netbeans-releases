@@ -50,8 +50,8 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +83,7 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
  */
 public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
+    private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
     private ClassMemberPanelUI ui;
     private final AtomicBoolean canceled = new AtomicBoolean ();
     
@@ -114,7 +115,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         Description rootDescription = new Description( ui );
         rootDescription.fileObject = info.getFileObject();
-        rootDescription.subs = new ArrayList<Description>();
+        rootDescription.subs = new HashSet<Description>();
         
         // Get all outerclasses in the Compilation unit
         CompilationUnitTree cuTree = info.getCompilationUnit();        
@@ -131,7 +132,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             for (Element element : elements) {
                 Description topLevel = element2description(element, null, false, info, pos);
                 if( null != topLevel ) {
-                    rootDescription.subs.add( topLevel );
+                    if (!rootDescription.subs.add( topLevel )) {
+                        LOG.log(Level.INFO, "Duplicate top level class: {0}", topLevel.name);   //NOI18N
+                    }
                     addMembers( (TypeElement)element, topLevel, info, pos);
                 }
             }
@@ -215,7 +218,9 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             
             Description d = element2description(m, e, parentDescription.isInherited, info, pos);
             if( null != d ) {
-                parentDescription.subs.add( d );
+                if (!parentDescription.subs.add( d )) {
+                    LOG.log(Level.INFO, "Duplicate enclosed element: {0}", d.name);   //NOI18N  Should never happen
+                }
                 if( m instanceof TypeElement && !d.isInherited ) {
                     addMembers( (TypeElement)m, d, info, pos);
                 }
@@ -233,7 +238,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         Description d = new Description( ui, e.getSimpleName().toString(), ElementHandle.create(e), e.getKind(), TreePathHandle.create(e, info), inherited );
         
         if( e instanceof TypeElement ) {
-            d.subs = new ArrayList<Description>();
+            d.subs = new HashSet<Description>();
             d.htmlHeader = createHtmlHeader(  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited ); 
         } else if( e instanceof ExecutableElement ) {
             d.htmlHeader = createHtmlHeader(  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited ); 
@@ -257,7 +262,6 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     private long getPosition(final Element e, final CompilationInfo info, final Map<Element,Long> pos) {
          Long res = pos.get(e);
          if (res == null) {
-//                java.util.logging.Logger.getLogger(ElementScanningTask.class.getName()).warning("No pos for: " + e);
             return -1;
          }
          return res.longValue();
