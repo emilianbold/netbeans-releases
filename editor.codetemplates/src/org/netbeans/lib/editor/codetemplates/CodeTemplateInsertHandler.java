@@ -290,7 +290,6 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             }
 
             // insert the complete text
-            int insertOffset = component.getCaretPosition();
             completeTextRegion.updateBounds(null, 
                     TextRegion.createFixedPosition(completeInsertString.length()));
 
@@ -336,6 +335,7 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             this.inserted = true;
             
             if (bdoc != null) {
+                component.setCaretPosition(caretTextRegion.startOffset());
                 formatter.reformat(pos.getOffset(), pos.getOffset() + completeInsertString.length());
             }
 
