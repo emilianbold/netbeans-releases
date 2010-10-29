@@ -1091,6 +1091,12 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		}
 		decl_namespace
 		// moved to decl_namespace { #external_declaration = #(#[, ""], #external_declaration); }
+        |
+		{isCPlusPlus()}?
+            // Constructor definition with initializer
+            (   ctor_decl_spec ctor_declarator[true] COLON ) =>
+            ctor_definition
+            { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
 	|	
 		// everything else (except templates)
 		{if (statementTrace>=1) 
