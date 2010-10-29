@@ -255,7 +255,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     }
 
     private void duplicateCompilerSet() {
-        CompilerSet selectedCompilerSet = (CompilerSet) lstDirlist.getSelectedValue();
+        final CompilerSet selectedCompilerSet = (CompilerSet) lstDirlist.getSelectedValue();
         DuplicateCompilerSetPanel panel = new DuplicateCompilerSetPanel(csm, selectedCompilerSet);
         DialogDescriptor dialogDescriptor = new DialogDescriptor(panel, getString("COPY_TOOL_SET_TITLE"));
         panel.setDialogDescriptor(dialogDescriptor);
@@ -263,12 +263,26 @@ public final class ToolsPanel extends JPanel implements ActionListener,
         if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION) {
             return;
         }
-        String compilerSetName = panel.getCompilerSetName().trim();
-        CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet).createCopy(
-                selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding(), true);
-        csm.add(cs);
-        changed = true;
-        update(false, cs, null);
+        final String compilerSetName = panel.getCompilerSetName().trim();
+
+        updating = true;
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        RP.post(new Runnable(){
+            @Override
+            public void run() {
+                final CompilerSetImpl cs = ((CompilerSetImpl) selectedCompilerSet).createCopy(
+                        selectedCompilerSet.getCompilerFlavor(), selectedCompilerSet.getDirectory(), compilerSetName, false, selectedCompilerSet.getEncoding(), true);
+                csm.add(cs);
+                changed = true;
+                SwingUtilities.invokeLater(new Runnable(){
+                    @Override
+                    public void run() {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                        update(false, cs, null);
+                    }
+                });
+            }
+        });
     }
 
     private void onCompilerSetChanged() {
