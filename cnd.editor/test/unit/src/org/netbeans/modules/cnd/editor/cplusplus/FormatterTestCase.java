@@ -4380,6 +4380,8 @@ public class FormatterTestCase extends EditorBase {
         setDefaultsOptions("MySQL");
         EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
                 putBoolean(EditorOptions.alignMultilineParen, true);
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                putBoolean(EditorOptions.spaceKeepExtra, false);
         setLoadDocumentText(
             "Query_log_event::Query_log_event(THD* thd_arg, const char* query_arg,\n" + 
             "				 ulong query_length, bool using_trans,\n" +

@@ -61,7 +61,9 @@ public class JaxWsRootChildren extends Children.Keys<Service> {
     JaxWsListener listener;
     FileObject[] srcRoots;
 
-    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+    private RequestProcessor.Task updateNodeTask = 
+        new RequestProcessor("JaxWS-Request-Processor").create(new Runnable()   //NOI18N 
+    {
         public void run() {
             updateKeys();
         }
