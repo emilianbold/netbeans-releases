@@ -681,10 +681,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     public boolean removeItemAction(Item item, boolean setModified) {
         ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>(1);
         list.add(item);
+        boolean ret = removeItem(item, setModified);
         if (isProjectFiles()) {
             configurationDescriptor.fireFilesRemoved(list);
         }
-        return removeItem(item, setModified);
+        return ret;
     }
 
     public void renameItemAction(String oldPath, Item newItem) {
@@ -750,8 +751,9 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean removeFolderAction(Folder folder, boolean setModified) {
+        boolean ret = removeFolder(folder, setModified);
         configurationDescriptor.fireFilesRemoved(folder.getAllItemsAsList());
-        return removeFolder(folder, setModified);
+        return ret;
     }
 
     private boolean removeFolder(Folder folder, boolean setModified) {
