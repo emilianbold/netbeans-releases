@@ -54,6 +54,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.zip.CRC32;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -306,13 +307,11 @@ public final class UpdateTracking {
                 is.close();
         }
         catch ( org.xml.sax.SAXException e ) {
-            System.out.println("Bad update_tracking" ); // NOI18N
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking", e); // NOI18N
             return;
         }
         catch ( java.io.IOException e ) {
-            System.out.println("Missing update_tracking" ); // NOI18N
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.SEVERE, "Missing update_tracking", e); // NOI18N
             return;
         }
 
@@ -463,8 +462,7 @@ public final class UpdateTracking {
             if (is != null)
                 is.close();
         } catch ( org.xml.sax.SAXException e ) {
-            System.out.println("Bad update_tracking" ); // NOI18N
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.SEVERE, "Bad update_tracking", e); // NOI18N
             return null;
         }
         catch ( java.io.IOException e ) {
@@ -751,20 +749,21 @@ public final class UpdateTracking {
             
             document.getDocumentElement().normalize();
 
+            Long touch = file.exists() ? file.lastModified() : null;
             OutputStream os = null;
             try {
                 os = new FileOutputStream(file);
             } catch (Exception e) {
-                e.printStackTrace();
+                XMLUtil.LOG.log(Level.WARNING, "Cannot read " + file, e);
                 //#154904
                 if (!file.delete()) {
-                    new IOException("Corresponding update would not be installed since it is not possible to modify or delete update tracking file " + file).printStackTrace();
+                    XMLUtil.LOG.log(Level.SEVERE, null, new IOException("Corresponding update would not be installed since it is not possible to modify or delete update tracking file " + file));
                 } else {
-                    new IOException("Update tracking file was deleted since permissions does not allow to modify it: " + file).printStackTrace();
+                    XMLUtil.LOG.log(Level.SEVERE, null, new IOException("Update tracking file was deleted since permissions does not allow to modify it: " + file));
                     try {
                         os = new FileOutputStream(file);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        XMLUtil.LOG.log(Level.WARNING, "Cannot read", ex);
                     }
                 }
             }
@@ -772,16 +771,19 @@ public final class UpdateTracking {
             if (os != null) {
                 try {
                     XMLUtil.write(document, os);
+                    os.close();
+                    XMLUtil.touch(file, touch);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    XMLUtil.LOG.log(Level.WARNING, "Cannot write " + file, e);
                 } finally {
                     try {
                         os.close();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        XMLUtil.LOG.log(Level.WARNING, "Cannot close " + file, e);
                     }
                 }
             }
+            
         }
 
         void deleteUnusedFiles() {
@@ -889,7 +891,7 @@ public final class UpdateTracking {
                 }
             }
             if (!needToWrite) {
-                System.out.println("Warning: No config file written for module " + codenamebase + ". No jar file present in \"modules\" directory.");
+                XMLUtil.LOG.log(Level.WARNING, "No config file written for module {0}. No jar file present in \"modules\" directory.", codenamebase);
                 return;
             }
             assert newCandidate != null || oldCandidate != null : "No jar file present!";
@@ -898,7 +900,7 @@ public final class UpdateTracking {
                 assert oldCandidate.equals(candidate) : "More files look as module: " + oldCandidate;
                 // only temporary
                 if (!oldCandidate.equals(candidate)) {
-                    System.out.println("NBM Error: More files look as module: " + oldCandidate);
+                    XMLUtil.LOG.log(Level.WARNING, "More files look as module: {0}", oldCandidate);
                     oldCandidate = candidate;
                 }
                 // end of temp
@@ -910,6 +912,7 @@ public final class UpdateTracking {
             String spec = newVersion.getVersion();
             OutputStream os;
             try {
+                Long touch = config.exists() ? config.lastModified() : null;
                 os = new FileOutputStream(config);
                 PrintWriter pw = new PrintWriter(new java.io.OutputStreamWriter(os, "UTF-8"));
                 // Please make sure formatting matches what the IDE actually spits
@@ -929,8 +932,9 @@ public final class UpdateTracking {
                 pw.println("</module>");
                 pw.flush();
                 pw.close();
+                XMLUtil.touch(config, touch);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                XMLUtil.LOG.log(Level.INFO, null, ex);
             }
         }
     }
@@ -1194,20 +1198,17 @@ public final class UpdateTracking {
                 is = new FileInputStream (f);
                 document = XMLUtil.parse (new InputSource (is), false, false, null, null);
             } catch (org.xml.sax.SAXException e) {
-                System.out.println ("Bad " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + " " + f); // NOI18N
-                e.printStackTrace ();
+                XMLUtil.LOG.log (Level.WARNING,"Bad " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + f, e); // NOI18N
                 return res;
             } catch (java.io.IOException e) {
-                System.out.println ("Missing " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + " " + f); // NOI18N
-                e.printStackTrace ();
+                XMLUtil.LOG.log (Level.WARNING,"Missing " + UpdateTracking.ADDITIONAL_INFO_FILE_NAME + f, e); // NOI18N
                 return res;
             } finally {
                 if (is != null) {
                     try {
                         is.close ();
                     } catch (IOException ioe) {
-                        System.out.println ("Cannot close stream for file " + f); // NOI18N
-                        ioe.printStackTrace ();
+                        XMLUtil.LOG.log (Level.INFO, "Cannot close stream for file " + f, ioe); // NOI18N
                         return res;
                     }
                 }

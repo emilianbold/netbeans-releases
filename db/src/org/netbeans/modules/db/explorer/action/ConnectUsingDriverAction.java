@@ -58,7 +58,6 @@ import org.openide.nodes.Node;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 
-import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.explorer.dlg.AddConnectionWizard;
@@ -99,10 +98,6 @@ public class ConnectUsingDriverAction extends BaseAction {
     
     public static final class NewConnectionDialogDisplayer extends ConnectionDialogMediator {
         
-        ConnectionDialog dlg;
-        boolean advancedPanel = false;
-        boolean okPressed = false;
-
         // the most recent task passed to the RequestProcessor
         Task activeTask = null;
 

@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,11 +49,10 @@ import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.JComponent;
 
 import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
 
-import javax.swing.event.ChangeListener;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -63,30 +62,29 @@ import org.openide.util.NbBundle;
 public class ConnectionDialog {
 
     private transient ConnectionDialogMediator mediator;
-    private transient JTabbedPane tabs;
     private transient Exception storedExp;
     
     final DialogDescriptor descriptor;
     final Dialog dialog;
     
-    public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, JPanel extendPane,  String dlgTitle, HelpCtx helpCtx, ActionListener actionListener, ChangeListener tabListener) {
-        if(basePane.equals(extendPane)) {
-            throw new IllegalArgumentException("The basePane and extendPane must not equal!"); // NOI18N
-        }
-        
+    public ConnectionDialog(ConnectionDialogMediator mediator, FocusablePanel basePane, String dlgTitle, HelpCtx helpCtx, ActionListener actionListener) {
         this.mediator = mediator;
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            @Override
             public void connectionStarted() {
                 descriptor.setValid(false);
             }
             
+            @Override
             public void connectionStep(String step) {
             }
 
+            @Override
             public void connectionFinished() {
                 descriptor.setValid(true);
             }
 
+            @Override
             public void connectionFailed() {
                 descriptor.setValid(true);
             }
@@ -94,6 +92,7 @@ public class ConnectionDialog {
         mediator.addConnectionProgressListener(progressListener);
         
         PropertyChangeListener propChangeListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propertyName = evt.getPropertyName();
                 if (propertyName == null || propertyName.equals(ConnectionDialogMediator.PROP_VALID)) {
@@ -103,28 +102,10 @@ public class ConnectionDialog {
         };
         mediator.addPropertyChangeListener(propChangeListener);
 
-        tabs = new JTabbedPane(JTabbedPane.TOP);
-        
-        tabs.addChangeListener(tabListener);
+        basePane.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yName"));
+        basePane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yDesc"));
 
-        // base panel for set base info for connection
-        tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "BasePanelTitle"), // NOI18N
-                    /*icon*/ null, basePane, 
-                    NbBundle.getMessage (ConnectionDialog.class, "BasePanelHint") ); // NOI18N
-
-        if (extendPane != null) {
-            // extend panel for select schema name
-            tabs.addTab(NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelTitle"), // NOI18N
-                        /*icon*/ null, 
-                        extendPane, 
-                        NbBundle.getMessage (ConnectionDialog.class, "ExtendPanelHint") ); // NOI18N
-
-        }
-
-        tabs.getAccessibleContext().setAccessibleName(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yName"));
-        tabs.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectionDialog.class, "ACS_ConnectDialogA11yDesc"));
-
-        descriptor = new DialogDescriptor(tabs, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION, 
+        descriptor = new DialogDescriptor(basePane, dlgTitle, true, DialogDescriptor.OK_CANCEL_OPTION,
                      DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, helpCtx, actionListener);
         // inbuilt close of the dialog is only after CANCEL button click
         // after OK button is dialog closed by hand
@@ -152,10 +133,6 @@ public class ConnectionDialog {
         dialog.setVisible(mode);
     }
     
-    public void setSelectedComponent(JPanel panel) {
-        tabs.setSelectedComponent(panel);
-    }
-    
     public void setException(Exception e) {
         storedExp = e;
     }
@@ -167,11 +144,6 @@ public class ConnectionDialog {
     private void updateValid() {
         boolean valid = mediator.getValid();
         descriptor.setValid(valid);
-        
-        boolean isConnected = mediator.isConnected();
-        if (tabs.getTabCount() > 1) {
-            tabs.setEnabledAt(1, valid && isConnected);
-        }
     }
     
     /**

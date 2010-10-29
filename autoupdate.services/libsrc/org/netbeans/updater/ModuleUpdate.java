@@ -47,12 +47,11 @@ package org.netbeans.updater;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
-import java.util.*;
 import java.util.jar.*;
+import java.util.logging.Level;
 
 import org.w3c.dom.*;
 import org.xml.sax.*;
-import javax.xml.parsers.*;
 
 /** This class represents one module update available on the web
  *
@@ -101,8 +100,7 @@ class ModuleUpdate extends Object {
 
         } catch ( java.io.IOException e ) {
             errorMessage = "Missing info : " + file.getAbsolutePath (); // NOI18N
-            System.out.println(errorMessage);
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.WARNING, errorMessage, e);
             exit = true;
         }
         finally {
@@ -110,7 +108,7 @@ class ModuleUpdate extends Object {
                 if (jf != null)
                     jf.close();
             } catch ( IOException ioe ) {
-                ioe.printStackTrace();
+                XMLUtil.LOG.log(Level.WARNING, "Cannot close " + jf, ioe);
                 exit = true;
             }
         }
@@ -146,14 +144,12 @@ class ModuleUpdate extends Object {
         }
         catch ( org.xml.sax.SAXException e ) {
             errorMessage = "Bad info : " + nbmFile.getAbsolutePath (); // NOI18N
-            System.out.println(errorMessage);
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.WARNING, errorMessage, e);
             exit = true;
         }            
         catch ( java.io.IOException e ) {
             errorMessage = "Missing info : " + nbmFile.getAbsolutePath (); // NOI18N
-            System.out.println(errorMessage);
-            e.printStackTrace ();
+            XMLUtil.LOG.log(Level.WARNING, errorMessage, e);
             exit = true;
         }
         finally {
@@ -163,7 +159,7 @@ class ModuleUpdate extends Object {
                 if (jf != null)
                     jf.close();
             } catch ( IOException ioe ) {
-                ioe.printStackTrace();
+                XMLUtil.LOG.log(Level.WARNING, "Cannot close " + jf, ioe);
                 exit = true;
             }
         }

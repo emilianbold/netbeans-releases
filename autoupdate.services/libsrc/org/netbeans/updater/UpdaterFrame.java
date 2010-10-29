@@ -51,6 +51,7 @@ import java.io.*;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Collection;
+import java.util.logging.Level;
 
 
 import javax.swing.border.LineBorder;
@@ -506,7 +507,7 @@ public class UpdaterFrame extends javax.swing.JPanel {
                 try {
                     Localization.setBranding(branding);
                 } catch (IllegalArgumentException iae) {
-                    iae.printStackTrace();
+                    XMLUtil.LOG.log(Level.WARNING, "Cannot change branding", iae);
                     return 1;
                 }
             }

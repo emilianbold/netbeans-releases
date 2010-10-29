@@ -90,7 +90,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
     private String driverClass;
     private String databaseUrl;
     private String user;
-    private String defaultSchema;
     private DatabaseConnection connection;
     private List<String> schemas = null;
     private String currentSchema;
@@ -290,18 +289,11 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
         return schemas;
     }
     
-    String getDefaultSchema() {
-        return defaultSchema;
-    }
-
     void setCurrentSchema(String schema) {
         this.currentSchema = schema;
     }
     
     String getCurrentSchema() {
-        if (currentSchema == null) {
-            return defaultSchema;
-        }
         return currentSchema;
     }
 
@@ -355,7 +347,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 }
                 this.user = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleUser"); // NOI18N
                 this.pwd = NbBundle.getMessage(AddConnectionWizard.class, "OracleSamplePassword"); // NOI18N
-                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "OracleSampleSchema"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "oracle.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "oracle.driver.name"); // NOI18N
@@ -369,7 +360,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.databaseUrl = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleDatabaseUrl"); // NOI18N
                 this.user = user == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleUser") : user; // NOI18N
                 this.pwd = password == null ? NbBundle.getMessage(AddConnectionWizard.class, "MySQLSamplePassword") : password; // NOI18N
-                this.defaultSchema = NbBundle.getMessage(AddConnectionWizard.class, "MySQLSampleSchema"); // NOI18N
                 this.downloadFrom = NbBundle.getMessage(AddConnectionWizard.class, "mysql.from"); // NOI18N
                 this.allPrivilegedFileNames.clear();
                 this.privilegedFileName = NbBundle.getMessage(AddConnectionWizard.class, "mysql.driver.name"); // NOI18N
@@ -383,7 +373,6 @@ public class AddConnectionWizard extends ConnectionDialogMediator implements Wiz
                 this.databaseUrl = databaseUrl;
                 this.user = user;
                 this.pwd = password;
-                this.defaultSchema = ""; // NOI18N
                 this.downloadFrom = null;
                 this.driverDN = null;
                 this.privilegedFileName = ""; // NOI18N

@@ -102,7 +102,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
             databaseConnection.setPassword(pw.getPassword());
             databaseConnection.setDatabase(pw.getDatabaseUrl());
             try {
-                databaseConnection.setDefaultSchema(pw.getDefaultSchema());
+                databaseConnection.setDefaultSchema(pw.getUser());
             } catch (Exception x) {
                 Logger.getLogger(ConnectionPanel.class.getName()).log(Level.INFO, x.getLocalizedMessage(), x.getCause());
             }
@@ -177,6 +177,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     public void storeSettings(AddConnectionWizard settings) {
         // store values from from into connection
         component.setConnectionInfo();
+        pw.setCurrentSchema(databaseConnection.getUser());
         pw.setDatabaseConnection(databaseConnection);
     }
 
