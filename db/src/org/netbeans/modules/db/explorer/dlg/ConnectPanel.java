@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -59,8 +59,6 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 public class ConnectPanel extends ConnectionDialog.FocusablePanel implements DocumentListener, ListDataListener {
 
-    private ConnectionDialogMediator mediator;
-    private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
 
@@ -69,25 +67,28 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
      * 
      * @param connection instance of DatabaseConnection object
      */
+    @SuppressWarnings("LeakingThisInConstructor")
     public ConnectPanel(ConnectionDialogMediator mediator, DatabaseConnection connection) {
-        this.mediator = mediator;
-        this.connection = connection;
         initComponents();
         initAccessibility();
 
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+            @Override
             public void connectionStarted() {
                 startProgress();
             }
             
+            @Override
             public void connectionStep(String step) {
                 setProgressMessage(step);
             }
 
+            @Override
             public void connectionFinished() {
                 stopProgress(true);
             }
 
+            @Override
             public void connectionFailed() {
                 stopProgress(false);
             }
@@ -113,6 +114,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         connectProgressPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (ConnectPanel.class, "ACS_ConnectionProgressBarA11yDesc")); //NOI18N
     }
 
+    @Override
     public void initializeFocus() {
         getInitiallyFocusedComponent().requestFocusInWindow();
     }
@@ -172,6 +174,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
@@ -181,6 +184,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 11);
         add(passwordField, gridBagConstraints);
@@ -189,6 +193,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 5, 0, 11);
         add(userTextField, gridBagConstraints);
@@ -207,7 +212,8 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.weightx = 1.0;
@@ -250,6 +256,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
 
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(null);
                 progressComponent = ProgressHandleFactory.createProgressComponent(progressHandle);
@@ -262,6 +269,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
     
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 progressMessageLabel.setText(message);
             }
@@ -270,6 +278,7 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
 
     private void stopProgress(final boolean connected) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 if (progressHandle == null) {
                     return ;
@@ -291,26 +300,32 @@ public class ConnectPanel extends ConnectionDialog.FocusablePanel implements Doc
         progressMessageLabel.setText(""); // NOI18N
     }
 
+    @Override
     public void changedUpdate(javax.swing.event.DocumentEvent e) {
         fireChange();
     }
 
+    @Override
     public void insertUpdate(javax.swing.event.DocumentEvent e) {
         fireChange();
     }
 
+    @Override
     public void removeUpdate(javax.swing.event.DocumentEvent e) {
         fireChange();
     }
 
+    @Override
     public void contentsChanged(javax.swing.event.ListDataEvent e) {
         fireChange();
     }
 
+    @Override
     public void intervalAdded(javax.swing.event.ListDataEvent e) {
         fireChange();
     }
 
+    @Override
     public void intervalRemoved(javax.swing.event.ListDataEvent e) {
         fireChange();
     }
