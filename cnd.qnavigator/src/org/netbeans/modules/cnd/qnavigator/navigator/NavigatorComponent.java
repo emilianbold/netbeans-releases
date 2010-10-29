@@ -56,6 +56,8 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -135,7 +137,11 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
     
     @Override
     public Lookup getLookup() {
-        return this.panelUI.getLookup();
+        if (curData == null) {
+            return this.panelUI.getLookup();
+        } else {
+            return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
+        }
     }
     
     // ModelBusyListener impl - sets wait cursor on content during computing
@@ -202,7 +208,7 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
         try {
             curModel.addBusyListener(this);
         } catch (Exception exc) {
-            exc.printStackTrace();
+            exc.printStackTrace(System.err);
         }
         curModel.addNotify();
     }

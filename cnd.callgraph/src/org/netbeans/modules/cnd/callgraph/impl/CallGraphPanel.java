@@ -71,13 +71,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import org.netbeans.api.visual.graph.layout.GraphLayout;
-import org.netbeans.api.visual.graph.layout.GridGraphLayout;
-import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -106,6 +103,7 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
     private boolean isShowOverriding;
     public static final String IS_CALLS = "CallGraphIsCalls"; // NOI18N
     public static final String IS_SHOW_OVERRIDING = "CallGraphIsShowOverriding"; // NOI18N
+    public static final String INITIAL_LAYOUT = "CallGraphLayout"; // NOI18N
     
     private CallGraphScene scene;
     private static double dividerLocation = 0.5;
@@ -205,10 +203,18 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         JComponent view = scene.createView();
         graphView.setViewportView(view);
         view.setFocusable(isCalls);
-        GraphLayout<Function,Call> layout = new GridGraphLayout<Function,Call>();
-        SceneLayout sceneLayout = LayoutFactory.createSceneGraphLayout(scene, layout);
-        scene.setLayout(sceneLayout);
-        sceneLayout.invokeLayout();
+        int aInt = NbPreferences.forModule(CallGraphPanel.class).getInt(INITIAL_LAYOUT, 0);
+        switch (aInt) {
+            case 0:
+                scene.setLayout(LayoutKind.grid);
+                break;
+            case 1:
+                scene.setLayout(LayoutKind.hierarchical);
+                break;
+            case 2:
+                scene.setLayout(LayoutKind.hierarchical_inverted);
+                break;
+        }
         graphView.setFocusable(false);
     }
     
@@ -421,15 +427,15 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     
     public void setModel(CallModel model) {
         this.model = model;
-        //this.isCalls = model.isCalls();
-        if (showGraph) {
-            scene.setModel(model);
-        }
         updateButtons();
         update();
     }
 
     private synchronized void update() {
+        final CallGraphState state = new CallGraphState(model, scene, actions);
+        if (showGraph) {
+            scene.setModel(state);
+        }
         if (showGraph) {
             scene.clean();
             scene.setShowOverriding(isShowOverriding);
@@ -442,7 +448,6 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     @Override
                     public void run() {
                         children.remove(children.getNodes());
-                        CallGraphState state = new CallGraphState(model, scene, actions);
                         final Node node = new FunctionRootNode(function, state, isCalls, isShowOverriding);
                         children.add(new Node[]{node});
                         try {
