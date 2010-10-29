@@ -253,8 +253,6 @@ public class GitCommitPanel extends VCSCommitPanel {
 //            }
 //            return allCookies.toArray(new EditorCookie[allCookies.size()]);
             return super.getEditorCookies();
-        }
-
-        
+        }        
     }    
 }
