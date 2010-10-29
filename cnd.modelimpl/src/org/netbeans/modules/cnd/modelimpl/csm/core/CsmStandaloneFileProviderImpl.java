@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -606,4 +607,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return "SA " + file + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
+    
+    public void dumpInfo(PrintWriter printOut) {
+        printOut.printf("SAProvider %s has toBeRemoved=%d entries\n", this.getClass().getSimpleName(), toBeRmoved.size());// NOI18N 
+        int ind = 1;
+        for (String str : toBeRmoved) {
+            printOut.printf("[%d] %s\n", ind++, str);// NOI18N
+        }
+    }
+    
 }
