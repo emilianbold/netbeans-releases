@@ -44,6 +44,21 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.awt.GridBagConstraints;
+import java.awt.Container;
+import java.awt.FocusTraversalPolicy;
+import java.awt.Font;
+import java.awt.Insets;
+import java.awt.KeyboardFocusManager;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JCheckBox;
+import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.CompoundBorder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -60,6 +75,7 @@ import org.openide.util.HelpCtx;
 import java.util.Set;
 import java.awt.EventQueue;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.LayoutStyle;
@@ -77,6 +93,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.Dimension;
+import java.awt.GridBagLayout;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,6 +105,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTree;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.VCSHook;
@@ -474,74 +492,57 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     protected abstract void computeNodes();
     
     private abstract class CollapsiblePanel extends JPanel {
-        private final Icon expandedIcon;
-        private final Icon collapsedIcon;
-        protected final JLabel sectionButton;
+        protected final CategoryButton sectionButton;
         protected final JPanel sectionPanel;
-        private boolean defaultSectionDisplayed;
-        
-        protected static final boolean DEFAULT_DISPLAY_FILES = true;
-        protected static final boolean DEFAULT_DISPLAY_HOOKS = false;
-    
+                
         public CollapsiblePanel(boolean defaultSectionDisplayed) {
-            this.sectionButton = new JLabel();
-            this.sectionPanel = new JPanel();
-            this.defaultSectionDisplayed = defaultSectionDisplayed;
+            ActionListener al = new ActionListener() {
+               @Override
+               public void actionPerformed(ActionEvent e) {
+                   if (sectionPanel.isVisible()) {
+                       hideSection();
+                   } else {
+                       displaySection();
+                   }
+               }
+            };
             
-            JTree tv = new JTree();
-            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
-            expandedIcon = tvui.getExpandedIcon();
-            collapsedIcon = tvui.getCollapsedIcon();            
-                                    
+            this.sectionButton = new CategoryButton(al);
+            this.sectionPanel = new JPanel();
+            
+            this.sectionButton.setSelected(defaultSectionDisplayed);
+            
             setLayout(new BoxLayout(this, Y_AXIS));
+            sectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
             add(sectionButton);
-//            add(makeVerticalStrut(sectionButton, sectionPanel, RELATED, VCSCommitPanel.this));
-            add(sectionPanel);    
-         
-            sectionPanel.setBorder(createEmptyBorder(10,         // top
-                                    getContainerGap(WEST) * 2,   // left
-                                    0,                           // bottom
-                                    getContainerGap(EAST) * 2)); // right
+            add(makeVerticalStrut(sectionButton, sectionPanel, RELATED, VCSCommitPanel.this));
+            add(sectionPanel);  
             
             setAlignmentX(LEFT_ALIGNMENT);
             sectionPanel.setLayout(new BoxLayout(sectionPanel, Y_AXIS));
             sectionPanel.setAlignmentX(LEFT_ALIGNMENT);            
             sectionButton.setAlignmentX(LEFT_ALIGNMENT);
-        }
-        
-        protected void initSection() {
-            if (defaultSectionDisplayed) {
+            
+            if(defaultSectionDisplayed) {
                 displaySection();
             } else {
                 hideSection();
             }
-            sectionButton.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    if (sectionPanel.isVisible()) {
-                        hideSection();
-                    } else {
-                        displaySection();
-                    }
-                }
-            });                   
-        }    
+        }
         
         private void displaySection() {
             sectionPanel.setVisible(true);
-            sectionButton.setIcon(expandedIcon);
             enlargeVerticallyAsNecessary();
         }
 
         private void hideSection() {
-            sectionPanel.setVisible(false);
-            sectionButton.setIcon(collapsedIcon);
+            sectionPanel.setVisible(false);            
         }        
     }
     
     private class FilesPanel extends CollapsiblePanel {
         final JLabel filesLabel = new JLabel();        
-        
+        private static final boolean DEFAULT_DISPLAY_FILES = true;                   
         public FilesPanel() {
             super(DEFAULT_DISPLAY_FILES);
             
@@ -557,8 +558,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             sectionPanel.add(filesLabel);
             sectionPanel.add(makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
             sectionPanel.add(table);
-                        
-            initSection();
         }
 
     }
@@ -567,7 +566,8 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             
         private Collection<? extends VCSHook> hooks = Collections.emptyList();
         private VCSHookContext hookContext;    
-
+        private static final boolean DEFAULT_DISPLAY_HOOKS = false;
+        
         public HookPanel(Collection<? extends VCSHook> hooks, VCSHookContext hookContext) {            
             super(DEFAULT_DISPLAY_HOOKS);
             this.hooks = hooks;
@@ -576,7 +576,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             sectionButton.setText((hooks.size() == 1)
                                            ? hooks.iterator().next().getDisplayName()
                                            : getMessage("LBL_Advanced"));   //NOI18N                        
-            initSection();
         }
 
         @Override
@@ -623,5 +622,157 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             return new EditorCookie[0];
         }
     }
-    
+
+    // inspired by org.netbeans.modules.palette.ui.CategoryButton
+    private class CategoryButton extends JCheckBox {
+
+        final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
+        final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
+        final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
+        private final ActionListener al;
+
+
+        @Override
+        public String getUIClassID() {
+            String classID = super.getUIClassID();
+            if (isGTK) {
+                classID = "MetalCheckBoxUI_4_GTK";
+            }
+            return classID;
+        }
+
+        CategoryButton(ActionListener al) {
+            this.al = al;
+            if (isGTK) {
+                UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
+            }
+
+            //force initialization of PropSheet look'n'feel values 
+            UIManager.get( "nb.propertysheet" );
+
+            setFont( getFont().deriveFont( Font.BOLD ) );
+            setMargin(new Insets(0, 3, 0, 3));
+            setFocusPainted( false );
+
+            setHorizontalAlignment( SwingConstants.LEFT );
+            setHorizontalTextPosition( SwingConstants.RIGHT );
+            setVerticalTextPosition( SwingConstants.CENTER );
+
+            updateProperties();
+
+            if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
+                Dimension pref = getPreferredSize();
+                pref.height -= 3;
+                setPreferredSize( pref );
+            }
+
+            addActionListener(al);
+            initActions();
+        }
+
+        private void initActions() {
+            InputMap inputMap = getInputMap( WHEN_FOCUSED );
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0, false ), "collapse" ); //NOI18N
+            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0, false ), "expand" ); //NOI18N
+
+            ActionMap actionMap = getActionMap();
+            actionMap.put( "collapse", new ExpandAction( false ) ); //NOI18N
+            actionMap.put( "expand", new ExpandAction( true ) ); //NOI18N
+        }
+
+        private void updateProperties() {
+            setIcon( UIManager.getIcon(isGTK ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon") );
+            setSelectedIcon( UIManager.getIcon(isGTK ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon") );
+            Mnemonics.setLocalizedText( this, getText() );
+            getAccessibleContext().setAccessibleName( getText() );
+            getAccessibleContext().setAccessibleDescription( getText() );
+            if( isAqua ) {
+                setContentAreaFilled(true);
+                setOpaque(true);
+                setBackground( new Color(0,0,0) );
+                setForeground( new Color(255,255,255) );
+            }
+            if( isNimbus ) {
+                setOpaque(true);
+                setContentAreaFilled(true);
+            }
+        }
+
+        private boolean isExpanded() {
+            return isSelected();
+        }
+
+        private void setExpanded( boolean expand ) {
+            setSelected(expand);
+            requestFocus ();
+        }
+
+        @Override
+        public Color getBackground() {
+            if( isFocusOwner() ) {
+                if( isGTK || isNimbus )
+                    return UIManager.getColor("Tree.selectionBackground"); //NOI18N
+                return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
+            } else {
+                if( isAqua ) {
+                    Color defBk = UIManager.getColor("NbExplorerView.background");
+                    if( null == defBk )
+                        defBk = Color.gray;
+                    return new Color( defBk.getRed()-10, defBk.getGreen()-10, defBk.getBlue()-10);
+                }
+                if( isGTK || isNimbus ) {
+                    if( getModel().isRollover() )
+                        return new Color( UIManager.getColor( "Menu.background" ).getRGB() ).darker(); //NOI18N
+                    return new Color( UIManager.getColor( "Menu.background" ).getRGB() );//NOI18N
+                }
+                return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
+            }
+        }
+
+        @Override
+        public Color getForeground() {
+            if( isFocusOwner() ) {
+                if( isAqua )
+                    return UIManager.getColor( "Table.foreground" ); //NOI18N
+                else if( isGTK || isNimbus )
+                    return UIManager.getColor( "Tree.selectionForeground" ); //NOI18N
+                return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N
+            } else {
+                if( isAqua ) {
+                    Color res = UIManager.getColor("PropSheet.setForeground"); //NOI18N
+
+                    if (res == null) {
+                        res = UIManager.getColor("Table.foreground"); //NOI18N
+
+                        if (res == null) {
+                            res = UIManager.getColor("textText");
+
+                            if (res == null) {
+                                res = Color.BLACK;
+                            }
+                        }
+                    }
+                    return res;
+                }
+                if( isGTK || isNimbus ) {
+                    return new Color( UIManager.getColor( "Menu.foreground" ).getRGB() ); //NOI18N
+                }
+                return super.getForeground();
+            }
+        }
+
+        private class ExpandAction extends AbstractAction {
+            private boolean expand;
+            public ExpandAction( boolean expand ) {
+                this.expand = expand;
+            }
+            public void actionPerformed(ActionEvent e) {
+                if( expand == isExpanded() ) {
+                    return;                    
+                }
+                setExpanded( expand );
+                al.actionPerformed(e);
+            }
+        }
+    }    
 }
