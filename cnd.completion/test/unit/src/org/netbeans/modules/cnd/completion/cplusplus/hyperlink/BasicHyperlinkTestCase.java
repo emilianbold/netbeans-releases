@@ -54,6 +54,14 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test191457() throws Exception {
+        // #191457: Parser error in hashtable.cc (ccfe)
+        performTest("iz191457.cc", 9, 10, "iz191457.cc", 15, 1);
+        performTest("iz191457.cc", 15, 15, "iz191457.cc", 9, 9);
+        performTest("iz191457.cc", 16, 10, "iz191457.cc", 7, 9);
+        performTest("iz191457.cc", 17, 10, "iz191457.cc", 8, 9);
+    }
+    
     public void testIZ157907() throws Exception {
         // IZ#157907: False positive recognition of macro
         performTest("fun_macro_and_name.c", 6, 5, "fun_macro_and_name.c", 6, 3); // PREFIX as name of typedef
@@ -729,6 +737,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testBug190127_2() throws Exception {
         // Bug 190127 - Extern declarations without return type are not supported
         performTest("bug190127.c", 4, 12, "bug190127.c", 1, 1);
+    }
+
+    public void testBug141302() throws Exception {
+        // Bug 141302 - Add to keywords C++ alternative tokens
+        performTest("bug141302.cpp", 8, 10, "bug141302.cpp", 2, 5);
     }
     
     public static class Failed extends HyperlinkBaseTestCase {

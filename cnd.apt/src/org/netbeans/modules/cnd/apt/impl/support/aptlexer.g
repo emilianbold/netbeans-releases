@@ -852,7 +852,36 @@ FIRST_STAR options { constText=true; } :
 
 FIRST_MOD options { constText=true; } :
     '%' ( {$setType(MOD);}                  //MOD             : '%' ;
-    | '=' {$setType(MODEQUAL);});           //MODEQUAL        : "%=" ;
+    | '=' {$setType(MODEQUAL);}             //MODEQUAL        : "%=" ;
+    | '>' {$setType(RCURLY);}               //RCURLY          : "%>" ;
+    | ':' ( {isPreprocPending()}? {$setType(SHARP);}     
+        | {isPreprocPending()}? '%' ':' {$setType(DBL_SHARP);}
+        | {!isPreprocPossible()}? {$setType(SHARP);}
+        | {isPreprocPossible()}?
+            {
+                setPreprocPossible(false);
+                setPreprocPending(true);
+                setPPDefinedAllowed(true);
+            }
+            (options{greedy = true;}:Space)*
+            (  // lexer has no token labels
+              ("include" PostInclChar) => "include" { $setType(INCLUDE); setAfterInclude(true); setPPDefinedAllowed(false); } 
+            | ("include_next" PostInclChar) => "include_next" { $setType(INCLUDE_NEXT); setAfterInclude(true); setPPDefinedAllowed(false); } 
+            | ("define" PostPPKwdChar) => "define" { $setType(DEFINE); setAfterDefine(true); setPPDefinedAllowed(false);}
+            | ("ifdef" PostPPKwdChar) => "ifdef" { $setType(IFDEF); }
+            | ("ifndef" PostPPKwdChar) => "ifndef" { $setType(IFNDEF); }
+            | ("if" PostIfChar) =>  "if"   { $setType(IF); }
+            | ("undef" PostPPKwdChar) => "undef"  { $setType(UNDEF); setPPDefinedAllowed(false); }
+            | ("elif" PostIfChar) => "elif"  { $setType(ELIF);  }
+            | ("else" PostPPKwdChar) =>  "else" { $setType(ELSE); }
+            | ("endif" PostPPKwdChar) => "endif" { $setType(ENDIF); }
+            | ("pragma" PostPPKwdChar) => "pragma" { $setType(PRAGMA); setPPDefinedAllowed(false); } DirectiveBody
+            | ("error" PostPPKwdChar) => "error" { $setType(ERROR); } DirectiveBody
+            | ("line" PostPPKwdChar) => "line" { $setType(LINE); } DirectiveBody
+            | DirectiveBody)
+            // Do not need this here, can be skipped
+            (options{greedy = true;}:Space)*
+        ));
 
 FIRST_NOT options { constText=true; } :
     '!' ( {$setType(NOT);}                  //NOT             : '!' ;
@@ -891,15 +920,19 @@ FIRST_BITWISEXOR options { constText=true; } :
     | '=' {$setType(BITWISEXOREQUAL);} );   //BITWISEXOREQUAL : "^=" ;
 
 FIRST_COLON options { constText=true; } :
-    ':' ( {$setType(COLON);}                //COLON : ':' ;
-    | ':' {$setType(SCOPE);} );             //SCOPE : "::"  ;
+    ':' ( {$setType(COLON);}                //COLON   : ':' ;
+    | ':' {$setType(SCOPE);}                //SCOPE   : "::"  ;
+    | '>' {$setType(RSQUARE);} );           //RSQUARE : ":>" ;
+
 
 FIRST_LESS :
     ( 
     '<' (options{generateAmbigWarnings = false;}:
         {isAfterInclude()}? H_char_sequence ('>')? {$setType(SYS_INCLUDE_STRING);setAfterInclude(false);}
         | '=' {$setType(LESSTHANOREQUALTO);}            //LESSTHANOREQUALTO     : "<=" ;
-        | {$setType(LESSTHAN);}                     //LESSTHAN              : "<" ;
+        | '%' {$setType(LCURLY);}                       //LCURLY                : "<%" ;
+        | ':' {$setType(LSQUARE);}                      //LSQUARE               : "<:" ;
+        | {$setType(LESSTHAN);}                         //LESSTHAN              : "<" ;
         | '<' ({$setType(SHIFTLEFT);}                   //SHIFTLEFT             : "<<" ;
                | '=' {$setType(SHIFTLEFTEQUAL);}))      //SHIFTLEFTEQUAL        : "<<=" ;
     );
