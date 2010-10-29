@@ -166,7 +166,7 @@ made subject to such option by the copyright holder.
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.png"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/apisupport/project/ui/resources/newJavaHelp.html"/>
-                <attr name="templateCategory" stringvalue="nbm-specific2"/>
+                <attr name="templateCategory" stringvalue="nbm-specific"/>
             </file>
             <file name="newProject">
                 <attr name="position" intvalue="1000"/>
