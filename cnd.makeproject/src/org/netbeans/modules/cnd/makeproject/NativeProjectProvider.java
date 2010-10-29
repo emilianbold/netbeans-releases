@@ -286,31 +286,13 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         if (TRACE) {
             System.out.println("fireFilesRemoved "); // NOI18N
         }
-        ArrayList<NativeFileItem> actualList = new ArrayList<NativeFileItem>();
-        // Remove non C/C++ items
-        MakeConfiguration conf = getMakeConfiguration();
-        for (NativeFileItem nativeFileItem : nativeFileItems) {
-            ItemConfiguration itemConfiguration = ((Item) nativeFileItem).getItemConfiguration(conf);
-            if (itemConfiguration == null) {
-                continue;
-            }
-            if ((!itemConfiguration.isCompilerToolConfiguration()
-                    // check of mime type is better to support headers without extensions
-                    && !MIMENames.HEADER_MIME_TYPE.equals(((Item) nativeFileItem).getMIMEType()))) {
-                continue; // IZ 87407
-            }
-            actualList.add(nativeFileItem);
-            if (TRACE) {
-                System.out.println("    " + ((Item) nativeFileItem).getPath()); // NOI18N
-            }
-        }
         // Fire NativeProject change event
-        if (actualList.size() > 0) {
+        if (nativeFileItems.size() > 0) {
             for (NativeProjectItemsListener listener : getListenersCopy()) {
-                if (actualList.size() == 1) {
-                    listener.fileRemoved(actualList.get(0));
+                if (nativeFileItems.size() == 1) {
+                    listener.fileRemoved(nativeFileItems.get(0));
                 } else {
-                    listener.filesRemoved(actualList);
+                    listener.filesRemoved(nativeFileItems);
                 }
             }
         }

@@ -325,20 +325,22 @@ public final class DeepReparsingUtils {
                 invalidateFileAndPreprocState(project, incl);
             }
         }
-        try {
-            // send notifications
-            ParserQueue.instance().onStartAddingProjectFiles(project);
-            for (CsmFile parent : topParents) {
-                if (parent.getProject() == project) {
-                    FileImpl parentImpl = (FileImpl) parent;
-                    addToReparse(project, parentImpl, invalidateCache);
+        if (!topParents.isEmpty()) {
+            try {
+                // send notifications
+                ParserQueue.instance().onStartAddingProjectFiles(project);
+                for (CsmFile parent : topParents) {
+                    if (parent.getProject() == project) {
+                        FileImpl parentImpl = (FileImpl) parent;
+                        addToReparse(project, parentImpl, invalidateCache);
+                    }
                 }
+            } catch (Exception e) {
+                DiagnosticExceptoins.register(e);
+            } finally {
+                // send notifications
+                ParserQueue.instance().onEndAddingProjectFiles(project);
             }
-        } catch (Exception e) {
-            DiagnosticExceptoins.register(e);
-        } finally {
-            // send notifications
-            ParserQueue.instance().onEndAddingProjectFiles(project);
         }
     }
 
