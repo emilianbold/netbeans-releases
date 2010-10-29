@@ -50,6 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -73,6 +74,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
     private long lastShowWaitNodeTime = -1;
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
@@ -172,7 +174,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if ( rootNode != null && rootNode.getDescritption().fileObject.equals( description.fileObject) ) {
             // update
             //System.out.println("UPDATE ======" + description.fileObject.getName() );
-            SwingUtilities.invokeLater(new Runnable() {
+            RP.post(new Runnable() {
                 public void run() {
                     rootNode.updateRecursively( description );
                 }
