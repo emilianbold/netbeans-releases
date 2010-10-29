@@ -320,7 +320,7 @@ abstract public class CsmCompletionQuery {
             CompletionSupport sup = CompletionSupport.get(doc);
             CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort, instantiateTypes);
-            ctx.resolveExp(exp);
+            ctx.resolveExp(exp, true);
             if (ctx.result != null) {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
@@ -876,7 +876,7 @@ abstract public class CsmCompletionQuery {
                 // when resolve type use full scope of search
                 QueryScope old = ctx.compResolver.setResolveScope(QueryScope.GLOBAL_QUERY);
                 try {
-                    if (ctx.resolveExp(exp)) {
+                    if (ctx.resolveExp(exp, true)) {
                         typ = ctx.lastType;
                     }
                 } finally {
@@ -998,7 +998,7 @@ abstract public class CsmCompletionQuery {
         }
 
         @SuppressWarnings({"fallthrough", "unchecked"})
-        boolean resolveExp(CsmCompletionExpression exp) {
+        boolean resolveExp(CsmCompletionExpression exp, boolean first) {
             boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
 
@@ -1135,7 +1135,7 @@ abstract public class CsmCompletionQuery {
                 // nobreak
                 default: // The rest of the situations is resolved as a singleton item
                     AtomicBoolean derefOfTHIS = new AtomicBoolean(false);
-                    ok = resolveItem(exp, true, true, ExprKind.NONE, ExprKind.NONE, derefOfTHIS);
+                    ok = resolveItem(exp, first, true, ExprKind.NONE, ExprKind.NONE, derefOfTHIS);
                     break;
             }
 
@@ -1467,6 +1467,13 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.GENERIC_TYPE: {
                     CsmType typ = resolveType(item.getParameter(0));
+                    if(typ == null) {
+                        boolean oldFindType = findType;
+                        findType = true;
+                        resolveExp(item.getParameter(0), first);
+                        typ = lastType;
+                        findType = oldFindType;
+                    }
                     if (typ != null) {
                         lastType = typ;
                         CsmClassifier cls = getClassifier(lastType, contextFile);
@@ -1651,7 +1658,7 @@ abstract public class CsmCompletionQuery {
                                     break;
                             }
                         }
-                        cont = resolveExp(item.getParameter(0));
+                        cont = resolveExp(item.getParameter(0), first);
                         memberPointer = false;
                     }
                     break;
@@ -1755,7 +1762,7 @@ abstract public class CsmCompletionQuery {
 
                 case CsmCompletionExpression.CONSTRUCTOR: // constructor can be part of a DOT expression
                     isConstructor = true;
-                    cont = resolveExp(item.getParameter(0));
+                    cont = resolveExp(item.getParameter(0), true);
                     staticOnly = false;
                     break;
 
@@ -1781,7 +1788,7 @@ abstract public class CsmCompletionQuery {
                     if(param.getExpID() == CsmCompletionExpression.METHOD) {
                         boolean oldFindType = findType;
                         setFindType(true);
-                        cont = resolveExp(param);
+                        cont = resolveExp(param, true);
                         setFindType(oldFindType);
                     }
 
