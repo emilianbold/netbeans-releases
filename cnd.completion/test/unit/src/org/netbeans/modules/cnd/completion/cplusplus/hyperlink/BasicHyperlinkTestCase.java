@@ -56,7 +56,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void test191457() throws Exception {
         // #191457: Parser error in hashtable.cc (ccfe)
-//        performTest("iz191457.cc", 9, 10, "iz191457.cc", 15, 1);
+        performTest("iz191457.cc", 9, 10, "iz191457.cc", 15, 1);
         performTest("iz191457.cc", 15, 15, "iz191457.cc", 9, 9);
         performTest("iz191457.cc", 16, 10, "iz191457.cc", 7, 9);
         performTest("iz191457.cc", 17, 10, "iz191457.cc", 8, 9);
