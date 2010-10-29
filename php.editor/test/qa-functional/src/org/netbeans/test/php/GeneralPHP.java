@@ -536,18 +536,21 @@ public class GeneralPHP extends JellyTestCase {
     protected void CheckCompletionItems(
             CompletionJListOperator jlist,
             String[] asIdeal) {
+        String completionList = "";
         for (String sCode : asIdeal) {
             int iIndex = jlist.findItemIndex(sCode, new CFulltextStringComparator());
             if (-1 == iIndex) {
                 try {
                     List list = jlist.getCompletionItems();
                     for (int i = 0; i < list.size(); i++) {
-                        System.out.println("******" + list.get(i));
+                        
+                        completionList += list.get(i)+"\n";
                     }
                 } catch (java.lang.Exception ex) {
                     System.out.println("#" + ex.getMessage());
                 }
-                fail("Unable to find " + sCode + " completion.");
+                System.out.println("Unable to find " + sCode + " completion. Completion list is " + completionList);
+                fail("Unable to find " + sCode + " completion. Completion list is " + completionList);
             }
         }
     }
