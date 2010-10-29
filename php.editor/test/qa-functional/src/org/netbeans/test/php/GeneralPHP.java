@@ -642,11 +642,13 @@ public class GeneralPHP extends JellyTestCase {
         }
         return true;
     }
-
-    public JDialogOperator selectPHPFromEditorOptions(int mode) {
     
+    public JDialogOperator selectPHPFromEditorOptions(int mode, int platform) {
+    
+        if (platform != 4096) 
             new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
-        
+        else 
+            new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner|Preferences...");
         Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
         if (mode == 0) {
@@ -676,7 +678,7 @@ public class GeneralPHP extends JellyTestCase {
 
     public void setMethodParametersWrappingOptions(int state) {
 
-        JDialogOperator window = selectPHPFromEditorOptions(1);
+        JDialogOperator window = selectPHPFromEditorOptions(1, getPlatform());
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 2);
@@ -700,7 +702,7 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     public void setPHPIndentation(int initialIndentation, int contIndentation, int arrayDeclarationIndentation) {
-        JDialogOperator window = selectPHPFromEditorOptions(1);
+        JDialogOperator window = selectPHPFromEditorOptions(1, getPlatform());
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 1);
