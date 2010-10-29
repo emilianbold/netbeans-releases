@@ -102,25 +102,27 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             if (Utils.isLocalHistory(system)) {
                 localHistory = system;
             } else {
-                JMenu menu = createVersioningSystemMenu(system, ctx);
+                JMenu menu = createVersioningSystemMenu(system);
                 items.add(menu);
             }
         }
         
         if (localHistory != null) {
             items.add(Utils.createJSeparator());
-            items.add(createVersioningSystemMenu(localHistory, ctx));
+            items.add(createVersioningSystemMenu(localHistory));
         }
 
         return items.toArray(new JComponent[items.size()]);
     }
 
-    private JMenu createVersioningSystemMenu(final VersioningSystem system, final VCSContext ctx) {
+    private JMenu createVersioningSystemMenu(final VersioningSystem system) {
         final JMenu menu = new JMenu();
         Mnemonics.setLocalizedText(menu, Utils.getMenuLabel(system));
         menu.addMenuListener(new MenuListener() {
             public void menuSelected(MenuEvent e) {
                 if (menu.getItemCount() != 0) return;
+                // context should be cached while the menu is displayed
+                VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
                 constructMenu(menu, system, ctx);
             }
     
