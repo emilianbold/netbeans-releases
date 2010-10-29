@@ -260,11 +260,19 @@ public class FortranParserEx extends FortranParser {
                 if(dummy!= null && subroutineData != null && subroutineData.args != null) {
                     subroutineData.args.add(dummy.getText());
                 }
+                if(dummy!= null && functionData != null && functionData.args != null) {
+                    functionData.args.add(dummy.getText());
+                }
             }
 
             public void dummy_arg_list__begin() {
                 if(subroutineData != null) {
                     subroutineData.args = new ArrayList<String>();
+                }
+                if(functionData != null) {
+                    if(functionData.args == null) {
+                        functionData.args = new ArrayList<String>();
+                    }
                 }
             }
 
@@ -277,11 +285,19 @@ public class FortranParserEx extends FortranParser {
                 if(ident!= null && subroutineData != null && subroutineData.args != null) {
                     subroutineData.args.add(ident.getText());
                 }
+                if(ident!= null && functionData != null && functionData.args != null) {
+                    functionData.args.add(ident.getText());
+                }
             }
 
             public void generic_name_list__begin() {
                 if(subroutineData != null) {
                     subroutineData.args = new ArrayList<String>();
+                }
+                if(functionData != null) {
+                    if(functionData.args == null) {
+                        functionData.args = new ArrayList<String>();
+                    }
                 }
             }
 

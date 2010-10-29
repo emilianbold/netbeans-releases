@@ -182,7 +182,10 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
     }
     
     public void setParametrizedText(String parametrizedText) {
-        this.parametrizedText = CharacterConversions.lineSeparatorToLineFeed(parametrizedText);
+        int idx = 0;
+        while(idx < parametrizedText.length() && Character.isWhitespace(parametrizedText.charAt(idx)))
+            idx++;
+        this.parametrizedText = CharacterConversions.lineSeparatorToLineFeed(idx > 0 ? parametrizedText.substring(idx) : parametrizedText);
         parseParametrizedText();
     }
 
@@ -287,7 +290,6 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             }
 
             // insert the complete text
-            int insertOffset = component.getCaretPosition();
             completeTextRegion.updateBounds(null, 
                     TextRegion.createFixedPosition(completeInsertString.length()));
 
@@ -333,6 +335,7 @@ public final class CodeTemplateInsertHandler implements TextRegionManagerListene
             this.inserted = true;
             
             if (bdoc != null) {
+                component.setCaretPosition(caretTextRegion.startOffset());
                 formatter.reformat(pos.getOffset(), pos.getOffset() + completeInsertString.length());
             }
 

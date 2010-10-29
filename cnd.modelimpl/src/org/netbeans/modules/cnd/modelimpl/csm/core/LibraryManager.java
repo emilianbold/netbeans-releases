@@ -47,6 +47,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -474,5 +475,30 @@ public final class LibraryManager {
         private void removeProject(CsmUID<CsmProject> project) {
             dependentProjects.remove(project);
         }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("folder=").append(folder).append(",\nlibraryUID=").append(libraryUID);// NOI18N
+            if (dependentProjects.isEmpty()) {
+                sb.append(" NO DEPENDENT PROJECTS!");// NOI18N
+            } else {
+                sb.append("\ndependentProjects=");// NOI18N
+                for (CsmUID<CsmProject> csmUID : dependentProjects.keySet()) {
+                    sb.append("\n(").append(System.identityHashCode(csmUID)).append(")").append(csmUID);// NOI18N
+                }
+            }
+            return sb.toString();
+        }
+        
     }
+    
+    public void dumpInfo(PrintWriter printOut) {
+        printOut.printf("LibraryManager: libs=%d\n", librariesEntries.size());// NOI18N
+        int ind = 1;
+        for (Map.Entry<String, LibraryEntry> entry : librariesEntries.entrySet()) {
+             printOut.printf("Lib[%d] %s with LibEntry %s\n", ind++, entry.getKey(), entry.getValue());// NOI18N
+        }
+    }
+
 }

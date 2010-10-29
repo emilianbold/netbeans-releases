@@ -37,6 +37,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -49,6 +50,10 @@ import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
+import org.netbeans.api.visual.graph.layout.GraphLayout;
+import org.netbeans.api.visual.graph.layout.GraphLayoutFactory;
+import org.netbeans.api.visual.graph.layout.GridGraphLayout;
+import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.layout.SceneLayout;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
@@ -59,10 +64,10 @@ import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.cnd.callgraph.api.Call;
-import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
@@ -85,9 +90,16 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     private Font defaultItalicFont;
     private Action exportAction;
 
-    
-    private CallModel callModel;
+    private CallGraphState callModel;
     private boolean isShowOverriding;
+
+    public enum LayoutKind {
+        grid,
+        hierarchical,
+        hierarchical_inverted
+    }
+
+    private LayoutKind layoutKind = LayoutKind.grid;
 
     public CallGraphScene() {
         mainLayer = new LayerWidget (this);
@@ -102,11 +114,28 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         getActions().addAction(ActionFactory.createWheelPanAction());
     }
     
-    public void setLayout(SceneLayout sceneLayout){
-        this.sceneLayout = sceneLayout;
+    public void setLayout(LayoutKind layoutKind){
+        this.layoutKind = layoutKind;
+        GraphLayout<Function,Call> layout = null;
+        switch (layoutKind) {
+            case grid:
+                layout = new GridGraphLayout<Function,Call>();
+                NbPreferences.forModule(CallGraphPanel.class).putInt(CallGraphPanel.INITIAL_LAYOUT, 0);
+                break;
+            case hierarchical:
+                layout = GraphLayoutFactory.<Function,Call>createHierarchicalGraphLayout(this, true, false);
+                NbPreferences.forModule(CallGraphPanel.class).putInt(CallGraphPanel.INITIAL_LAYOUT, 1);
+                break;
+            case hierarchical_inverted:
+                layout = GraphLayoutFactory.<Function,Call>createHierarchicalGraphLayout(this, true, true);
+                NbPreferences.forModule(CallGraphPanel.class).putInt(CallGraphPanel.INITIAL_LAYOUT, 2);
+                break;
+        }
+        sceneLayout = LayoutFactory.createSceneGraphLayout(this, layout);
+        doLayout();
     }
     
-    public void setModel(CallModel model){
+    public void setModel(CallGraphState model){
         callModel = model;
     }
 
@@ -547,12 +576,20 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 final Function f = (Function) node;
                 menu = new JPopupMenu();
                 menu.add(new GoToReferenceAction(f,0).getPopupPresenter());
-                menu.add(new ExpandCallees(f).getPopupPresenter());
-                menu.add(new ExpandCallers(f).getPopupPresenter());
+                if (!callModel.isCalleesExpanded(f)) {
+                    menu.add(new ExpandCallees(f).getPopupPresenter());
+                }
+                if (!callModel.isCallersExpanded(f)) {
+                    menu.add(new ExpandCallers(f).getPopupPresenter());
+                }
                 menu.add(new JSeparator());
                 menu.add(new RemoveNode(f).getPopupPresenter());
             } else if (widget instanceof CallGraphScene) {
                 menu = new JPopupMenu();
+                menu.add(new GridAction().getPopupPresenter());
+                menu.add(new HierarchicalAction().getPopupPresenter());
+                menu.add(new HierarchicalInvertedAction().getPopupPresenter());
+                menu.add(new JSeparator());
                 menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
             }
             return menu;
@@ -641,6 +678,66 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
         @Override
         public final JMenuItem getPopupPresenter() {
+            return menuItem;
+        }
+    }
+
+    private class GridAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public GridAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "GridLayout"));  // NOI18N
+            menuItem = new JRadioButtonMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setLayout(LayoutKind.grid);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(layoutKind == LayoutKind.grid);
+            return menuItem;
+        }
+    }
+
+    private class HierarchicalAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public HierarchicalAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "HierarchicalLayout"));  // NOI18N
+            menuItem = new JRadioButtonMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setLayout(LayoutKind.hierarchical);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(layoutKind == LayoutKind.hierarchical);
+            return menuItem;
+        }
+    }
+
+    private class HierarchicalInvertedAction extends AbstractAction implements Presenter.Popup {
+        private JRadioButtonMenuItem menuItem;
+        public HierarchicalInvertedAction() {
+            putValue(Action.NAME, NbBundle.getMessage(CallGraphScene.class, "HierarchicalInvertedLayout"));  // NOI18N
+            menuItem = new JRadioButtonMenuItem(this);
+            Mnemonics.setLocalizedText(menuItem, (String)getValue(Action.NAME));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setLayout(LayoutKind.hierarchical_inverted);
+        }
+
+        @Override
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(layoutKind == LayoutKind.hierarchical_inverted);
             return menuItem;
         }
     }
