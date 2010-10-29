@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.antlr.Parser;
 import org.netbeans.modules.cnd.antlr.RecognitionException;
@@ -73,7 +72,6 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -1977,13 +1975,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
     
     public void dumpInfo(PrintWriter printOut) {
-        printOut.printf("FI: %s, fileType=%s, hasSnap=%s hasBroken=%s\n", getName(), this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(this.hasBrokenIncludes.get()));// NOI18N 
+        ProjectBase projectImpl = this.getProjectImpl(false);
+        printOut.printf("FI: %s, of %s prj=%s (%d)\n\tprjUID=(%d) %s\n\tfileType=%s, hasSnap=%s hasBroken=%s\n", getName(), // NOI18N 
+                projectImpl.getClass().getSimpleName(), projectImpl.getName(), System.identityHashCode(projectImpl),
+                System.identityHashCode(projectUID), projectUID,
+                this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(this.hasBrokenIncludes.get()));
         if (this.hasBrokenIncludes.get()) {
             
         }
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
-        printOut.printf("\tfBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
+        printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
         int i = 0;
         final Collection<PreprocessorStatePair> preprocStatePairs = this.getPreprocStatePairs();
         printOut.printf("Has %d ppStatePairs:\n", preprocStatePairs.size());// NOI18N 
