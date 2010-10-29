@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -133,12 +133,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
             @Override
             public void connectionFinished() {
-                stopProgress(true);
+                stopProgress();
             }
 
             @Override
             public void connectionFailed() {
-                stopProgress(false);
+                stopProgress();
             }
         };
         wd.addConnectionProgressListener(progressListener);
@@ -168,6 +168,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         }
 
         new InputAdapter(templateComboBox);
+        new InputAdapter(userField);
+        new InputAdapter(passwordField);
 
         urlField.addFocusListener(new FocusListener() {
             @Override
@@ -793,10 +795,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
      */
     public void terminateProgress()
     {
-        stopProgress(false);
+        stopProgress();
     }
     
-    private void stopProgress(final boolean connected) {
+    private void stopProgress() {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

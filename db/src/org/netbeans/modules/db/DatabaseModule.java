@@ -57,8 +57,8 @@ public class DatabaseModule extends ModuleInstall {
 
     public static final String IDENTIFIER_MYSQL = "MySQL"; // NOI18N
     public static final String IDENTIFIER_ORACLE = "Oracle"; // NOI18N
-    public static final String IDENTIFIER_ORACLE_THIN_DRIVER = "Oracle"; // NOI18N
-    public static final String IDENTIFIER_ORACLE_OCI_DRIVER = "Oracle"; // NOI18N
+    //public static final String IDENTIFIER_ORACLE_THIN_DRIVER = "Thin"; // NOI18N
+    public static final String IDENTIFIER_ORACLE_OCI_DRIVER = "OCI"; // NOI18N
     
     @Override
     public void close () {

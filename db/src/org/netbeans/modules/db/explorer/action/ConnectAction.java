@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -50,20 +50,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import javax.swing.JTabbedPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -86,7 +81,6 @@ import org.netbeans.modules.db.explorer.node.ConnectionNode;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -137,7 +131,6 @@ public class ConnectAction extends BaseAction {
     public static final class ConnectionDialogDisplayer extends ConnectionDialogMediator {
         
         ConnectionDialog dlg;
-        boolean advancedPanel = false;
         boolean okPressed = false;
         
         // This flag is used to detect whether there was a failure to connect
@@ -198,26 +191,6 @@ public class ConnectAction extends BaseAction {
             // (and is the default password for MySQL and PostgreSQL).
             if (user == null || !remember || showDialog) {
                 final ConnectPanel basePanel = new ConnectPanel(this, dbcon);
-                final SchemaPanel schemaPanel = new SchemaPanel(this, dbcon);
-
-                PropertyChangeListener argumentListener = new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent event) {
-                        if (event.getPropertyName().equals("argumentChanged")) { //NOI18N
-                            schemaPanel.setSchemas(Collections.EMPTY_LIST, ""); //NOI18N
-                            schemaPanel.resetProgress();
-                            try {
-                                Connection conn = dbcon.getConnection();
-                                if (DatabaseConnection.isVitalConnection(conn, null)) {
-                                    conn.close();
-                                }
-                            } catch (SQLException exc) {
-                                Exceptions.printStackTrace(exc);
-                            }
-                        }
-                    }
-                };
-                basePanel.addPropertyChangeListener(argumentListener);
 
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
                     @Override
@@ -229,22 +202,8 @@ public class ConnectAction extends BaseAction {
                             fireConnectionFailed();
                         }
                         if (event.getPropertyName().equals("connected")) { //NOI18N
-                            //connected by "Get Schemas" button in the schema panel => don't initialize the connection node,
-                            //it will be done in actionListener
-                            if (advancedPanel && !okPressed) {
-                                // #67241: should not retrieve the schema list after connecting
-                                // an existing connection, takes a long time on databases with a lot of schemas
-                                // thus only retrieve the schema list when connected by the "Get schemas" button
-                                if (retrieveSchemas(schemaPanel, dbcon, dbcon.getSchema())) {
-                                    dbcon.setSchema(dbcon.getSchema());
-                                }
-                                dlg.setSelectedComponent(schemaPanel);
-                                fireConnectionFinished();
-                                return;
-                            } else {
-                                fireConnectionFinished();
-                                dbcon.setSchema(dbcon.getSchema());
-                            }
+                            fireConnectionFinished();
+                            dbcon.setSchema(dbcon.getSchema());
                             
                             try {
                                 connector.finishConnect(null, dbcon, dbcon.getConnection());
@@ -290,9 +249,6 @@ public class ConnectAction extends BaseAction {
                             if (! DatabaseConnection.isVitalConnection(dbcon.getConnection(), null)) {
                                 dbcon.connectAsync();
                             } else {
-                                dbcon.setSchema(schemaPanel.getSchema());
-                                dbcon.setSchema(schemaPanel.getSchema());
-
                                 try {
                                     connector.finishConnect(null, dbcon, dbcon.getConnection());
                                 } catch (DatabaseException exc) {
@@ -319,20 +275,7 @@ public class ConnectAction extends BaseAction {
                     }
                 };
 
-                ChangeListener changeTabListener = new ChangeListener() {
-                    @Override
-                    public void stateChanged (ChangeEvent e) {
-                        if (((JTabbedPane) e.getSource()).getSelectedComponent().equals(schemaPanel)) {
-                            advancedPanel = true;
-                            dbcon.setUser(basePanel.getUser());
-                            dbcon.setPassword(basePanel.getPassword());
-                        } else {
-                            advancedPanel = false;
-                        }
-                    }
-                };
-
-                dlg = new ConnectionDialog(this, basePanel, remember ? schemaPanel : null, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener, changeTabListener);  // NOI18N
+                dlg = new ConnectionDialog(this, basePanel, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener);  // NOI18N
                 dlg.setVisible(true);
             } else { // without dialog with connection data (username, password), just with progress dlg
                 try {

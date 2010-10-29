@@ -58,8 +58,6 @@ import org.netbeans.modules.db.explorer.DatabaseConnection;
 
 public class SchemaPanel extends javax.swing.JPanel {
 
-    private ConnectionDialogMediator mediator;
-    private DatabaseConnection dbcon;
     private ProgressHandle progressHandle;
     private JComponent progressComponent;
 
@@ -69,8 +67,6 @@ public class SchemaPanel extends javax.swing.JPanel {
      * @param dbcon instance of DatabaseConnection object
      */
     public SchemaPanel(ConnectionDialogMediator mediator, DatabaseConnection dbcon) {
-        this.mediator = mediator;
-        this.dbcon = dbcon;
         initComponents();
         initAccessibility();
 
