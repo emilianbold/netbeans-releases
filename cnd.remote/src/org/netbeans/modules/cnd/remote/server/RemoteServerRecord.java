@@ -175,8 +175,10 @@ public class RemoteServerRecord implements ServerRecord {
         Object ostate = state;
         state = State.INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(getExecutionEnvironment());
-        if (rss.needsSetupOrUpdate()) {
-            rss.setup();
+        if (!Boolean.getBoolean("cnd.remote.skip.setup")) {
+            if (rss.needsSetupOrUpdate()) {
+                rss.setup();
+            }
         }
 //        if (ostate == State.UNINITIALIZED) {
 //            checkX11Forwarding();

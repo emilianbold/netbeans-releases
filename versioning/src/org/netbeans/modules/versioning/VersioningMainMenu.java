@@ -63,14 +63,17 @@ import java.util.*;
  */
 public class VersioningMainMenu extends AbstractAction implements DynamicMenuContent {
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         // does nothing, this is a popup menu
     }
 
+    @Override
     public JComponent[] getMenuPresenters() {
         return createMenu();
     }
 
+    @Override
     public JComponent[] synchMenuPresenters(JComponent[] items) {
         return createMenu();
     }
@@ -102,31 +105,36 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
             if (Utils.isLocalHistory(system)) {
                 localHistory = system;
             } else {
-                JMenu menu = createVersioningSystemMenu(system, ctx);
+                JMenu menu = createVersioningSystemMenu(system);
                 items.add(menu);
             }
         }
         
         if (localHistory != null) {
             items.add(Utils.createJSeparator());
-            items.add(createVersioningSystemMenu(localHistory, ctx));
+            items.add(createVersioningSystemMenu(localHistory));
         }
 
         return items.toArray(new JComponent[items.size()]);
     }
 
-    private JMenu createVersioningSystemMenu(final VersioningSystem system, final VCSContext ctx) {
+    private JMenu createVersioningSystemMenu(final VersioningSystem system) {
         final JMenu menu = new JMenu();
         Mnemonics.setLocalizedText(menu, Utils.getMenuLabel(system));
         menu.addMenuListener(new MenuListener() {
+            @Override
             public void menuSelected(MenuEvent e) {
                 if (menu.getItemCount() != 0) return;
+                // context should be cached while the menu is displayed
+                VCSContext ctx = VCSContext.forNodes(TopComponent.getRegistry().getActivatedNodes());
                 constructMenu(menu, system, ctx);
             }
     
+            @Override
             public void menuDeselected(MenuEvent e) {
             }
     
+            @Override
             public void menuCanceled(MenuEvent e) {
             }
         });
@@ -162,6 +170,7 @@ public class VersioningMainMenu extends AbstractAction implements DynamicMenuCon
     }
 
     static final class ByDisplayNameComparator implements Comparator<VersioningSystem> {
+        @Override
         public int compare(VersioningSystem a, VersioningSystem b) {
             return Utils.getDisplayName(a).compareTo(Utils.getDisplayName(b));
         }

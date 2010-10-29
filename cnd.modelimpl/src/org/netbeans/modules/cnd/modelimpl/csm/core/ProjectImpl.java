@@ -364,7 +364,7 @@ public final class ProjectImpl extends ProjectBase {
                 return false;
             }
             if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lastModified);// NOI18N
+                System.err.printf("EditingTask.updateLastModified: set lastModified from %d to %d\n", this.lastModified, lm);// NOI18N
             }
             this.lastModified = lm;
             return true;

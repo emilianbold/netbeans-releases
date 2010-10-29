@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -599,7 +600,8 @@ public final class RunDialogPanel extends javax.swing.JPanel implements Property
                     String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
                     String projectName = ProjectGenerator.getValidProjectName(projectParentFolder, new File(getExecutablePath()).getName());
                     String baseDir = projectParentFolder + File.separator + projectName;
-                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE);  // NOI18N
+                    MakeConfiguration conf = new MakeConfiguration(baseDir, "Default", MakeConfiguration.TYPE_MAKEFILE, // NOI18N
+                            ExecutionEnvironmentFactory.getLocal().getHost());
                     // Working dir
                     String wd = new File(getExecutablePath()).getParentFile().getPath();
                     wd = CndPathUtilitities.toRelativePath(baseDir, wd);

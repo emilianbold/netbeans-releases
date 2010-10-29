@@ -553,6 +553,7 @@ public class EditorOptions {
         mysql.put(alignMultilineMethodParams, true);
         mysql.put(alignMultilineIfCondition, true);
         mysql.put(spaceAroundAssignOps, false);
+        mysql.put(spaceKeepExtra, true);
         mysql.put(addLeadingStarInComment, false);
     }
 
