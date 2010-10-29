@@ -45,9 +45,13 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.PrintWriter;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.debug.CndDiagnosticProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmStandaloneFileProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileSnapshot;
+import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -65,13 +69,25 @@ public class CodeModelDiagnostic implements CndDiagnosticProvider {
 
     @Override
     public void dumpInfo(Lookup context, PrintWriter printOut) {
-        printOut.printf("Global ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
+        printOut.printf("====CsmStandaloneFileProviders info:\n");// NOI18N
+        for (CsmStandaloneFileProvider sap : Lookup.getDefault().lookupAll(CsmStandaloneFileProvider.class)) {
+            if (sap instanceof CsmStandaloneFileProviderImpl) {
+                ((CsmStandaloneFileProviderImpl)sap).dumpInfo(printOut);
+            } else {
+                printOut.printf("UKNOWN FOR ME [%s] %s\n", sap.getClass().getName(), sap.toString());// NOI18N 
+            }
+        }
+        printOut.printf("====ModelImpl:\n");// NOI18N
+        ModelImpl.instance().dumpInfo(printOut);
+        printOut.printf("====Libraries:\n"); //NOI18N
+        LibraryManager.getInstance().dumpInfo(printOut);
+        printOut.printf("====Files info:\nGlobal ParseCount=%d\n", FileImpl.getParseCount());// NOI18N 
         Collection<? extends CsmFile> allFiles = context.lookupAll(CsmFile.class);
         for (CsmFile csmFile : allFiles) {
             if (csmFile instanceof FileImpl) {
-                ((FileImpl)csmFile).dumpInfo(printOut);
+                ((FileImpl) csmFile).dumpInfo(printOut);
             } else if (csmFile instanceof FileSnapshot) {
-                ((FileSnapshot)csmFile).dumpInfo(printOut);
+                ((FileSnapshot) csmFile).dumpInfo(printOut);
             } else {
                 printOut.printf("UKNOWN FOR ME [%s] %s\n", csmFile.getClass().getName(), csmFile.toString());// NOI18N 
             }
