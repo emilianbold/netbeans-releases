@@ -67,7 +67,7 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
             }
             assert pw != null : "ChoosingSchemaPanel must be initialized.";
             component = new SchemaPanel(pw, pw.getDatabaseConnection());
-            component.setSchemas(pw.getSchemas(), pw.getDefaultSchema());
+            component.setSchemas(pw.getSchemas(), pw.getCurrentSchema());
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 2);
             component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, pw.getSteps());
             component.putClientProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
