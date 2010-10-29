@@ -61,6 +61,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  * Tests for the quick search feature in the treeview.
@@ -179,6 +180,103 @@ public class TreeViewQuickSearchTest extends NbTestCase {
         if (problem[0] != null) {
             throw problem[0];
         }
+    }
+    
+    public void testQuickSearchEnable() throws Throwable {
+        final AbstractNode root = new AbstractNode(new Children.Array());
+        root.setName("test root");
+        
+        final Node[] children = {
+            createLeaf("foo1"),
+            createLeaf("foo2"),
+            createLeaf("bar1"),
+            createLeaf("bar2"),
+            createLeaf("alpha"),
+        };
+        
+        root.getChildren().add(children);
+        
+        final Panel p = new Panel();
+        p.getExplorerManager().setRootContext(root);
+        
+        final BeanTreeView btv = new BeanTreeView();
+        p.add(BorderLayout.CENTER, btv);
+
+        
+        JFrame f = new JFrame();
+        f.setDefaultCloseOperation(f.EXIT_ON_CLOSE);
+        f.getContentPane().add(BorderLayout.CENTER, p);
+        f.pack();
+        f.setVisible(true);
+        
+        
+       final Exception[]problem = new Exception[1];
+        final Integer[] phase = new Integer[1];
+         phase[0] = 0;
+        class AWTTst implements Runnable {
+            public void run() {
+                try {
+                        if (phase[0] == 0) {
+                            btv.tree.requestFocus();
+                            try {
+                                p.getExplorerManager().setSelectedNodes(new Node[] { root });
+                            } catch (PropertyVetoException e) {
+                                fail("Unexpected PropertyVetoException from ExplorerManager.setSelectedNodes()");
+                            }
+                        }
+                            Robot robot = new Robot();
+                            Point p = btv.tree.getLocationOnScreen();
+                            robot.mouseMove(p.x + 10, p.y + 10);
+                            robot.mousePress(0);
+                            robot.mouseRelease(0);
+                            robot.keyPress(KeyEvent.VK_A);
+                           
+                            if(phase[0] != 0)
+                            {
+                                boolean panelUsed = btv.searchpanel !=null;
+          
+                                if(btv.isQuickSearchAllowed()){
+                                    assertTrue("Quick Search enabled ", panelUsed);
+                                }else{
+                                    assertFalse("Quick Search disable",  panelUsed);
+                                }
+                            }
+                            
+                        
+                } catch (AWTException ex) {
+                    problem[0] = ex;
+                }
+            }
+        }
+        AWTTst awt = new AWTTst();
+        try {
+            SwingUtilities.invokeAndWait(awt);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+        if (problem[0] != null) {
+            throw problem[0];
+        }
+        Thread.sleep(1000);
+        phase[0] = 1;
+        btv.setQuickSearchAllowed(true);
+        try {
+            SwingUtilities.invokeAndWait(awt);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+        if (problem[0] != null) {
+            throw problem[0];
+        }
+        
+        Thread.sleep(1000);
+        btv.setQuickSearchAllowed(false);
+        try {
+            SwingUtilities.invokeAndWait(awt);
+        } catch (InvocationTargetException ex) {
+            throw ex.getTargetException();
+        }
+        
     }
     
     private static Node createLeaf(String name) {
