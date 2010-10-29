@@ -1112,7 +1112,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
                 
                 if ("file".equals(protocol)) { //NOI18N
                     try {
-                        File f = new File(URI.create(url.toExternalForm()));
+                        File f = new File(url.getPath());
                         if (!f.equals(lastFile)) {
                             lastFile = f;
                             lastFileDate = new Date(f.lastModified());
