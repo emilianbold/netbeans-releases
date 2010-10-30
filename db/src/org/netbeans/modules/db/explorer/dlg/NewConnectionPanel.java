@@ -41,8 +41,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.db.explorer.dlg;
+
+import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -75,6 +77,7 @@ import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.WizardValidationException;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
@@ -83,15 +86,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private DatabaseConnection connection;
     private ProgressHandle progressHandle;
     private Window window;
-
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
-
     private final LinkedHashMap<String, UrlField> urlFields =
             new LinkedHashMap<String, UrlField>();
-
     private Set<String> knownConnectionNames = new HashSet<String>();
-
     private static final Logger LOGGER = Logger.getLogger(NewConnectionPanel.class.getName());
     private final ConnectionPanel wp;
 
@@ -121,6 +120,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
 
         ConnectionProgressListener progressListener = new ConnectionProgressListener() {
+
             @Override
             public void connectionStarted() {
                 startProgress();
@@ -144,7 +144,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         wd.addConnectionProgressListener(progressListener);
 
         userField.setText(connection.getUser());
-        
+
         passwordField.setText(connection.getPassword());
 
         String driver = connection.getDriver();
@@ -153,7 +153,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             for (int i = 0; i < templateComboBox.getItemCount(); i++) {
                 Object item = templateComboBox.getItemAt(i);
                 if (item instanceof JdbcUrl) {
-                    JdbcUrl url = ((JdbcUrl)item);
+                    JdbcUrl url = ((JdbcUrl) item);
                     assert url.getDriver() != null;
                     if (url.getClassName().equals(driver) && url.getDriver().getName().equals(driverName)) {
                         templateComboBox.setSelectedIndex(i);
@@ -163,7 +163,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             }
         }
 
-        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+        for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             new InputAdapter(entry.getValue().getField());
         }
 
@@ -172,6 +172,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         new InputAdapter(passwordField);
 
         urlField.addFocusListener(new FocusListener() {
+
             @Override
             public void focusGained(FocusEvent e) {
             }
@@ -180,9 +181,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             public void focusLost(FocusEvent e) {
                 updateFieldsFromUrl();
             }
-
         });
         urlField.getDocument().addDocumentListener(new DocumentListener() {
+
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (urlField.hasFocus()) {
@@ -210,28 +211,25 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         setUrlField();
         updateFieldsFromUrl();
         setUpFields();
-        
-        DocumentListener docListener = new DocumentListener()
-        {
+
+        DocumentListener docListener = new DocumentListener() {
+
             @Override
-            public void insertUpdate(DocumentEvent evt) 
-            {
+            public void insertUpdate(DocumentEvent evt) {
                 fireChange();
             }
 
             @Override
-            public void removeUpdate(DocumentEvent evt) 
-            {
+            public void removeUpdate(DocumentEvent evt) {
                 fireChange();
             }
 
             @Override
-            public void changedUpdate(DocumentEvent evt) 
-            {
+            public void changedUpdate(DocumentEvent evt) {
                 fireChange();
             }
         };
-        
+
         userField.getDocument().addDocumentListener(docListener);
         passwordField.getDocument().addDocumentListener(docListener);
 
@@ -270,7 +268,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         dsnLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionDSNA11yDesc")); //NOI18N
         instanceField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameTextFieldA11yName")); //NOI18N
         instanceLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NewConnectionPanel.class, "ACS_NewConnectionInstanceNameA11yDesc")); //NOI18N
-  }
+    }
 
     @Override
     public void initializeFocus() {
@@ -551,22 +549,18 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }//GEN-LAST:event_urlFieldActionPerformed
 
     private void urlFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_urlFieldFocusLost
-        
     }//GEN-LAST:event_urlFieldFocusLost
 
     private void urlFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_urlFieldKeyPressed
-        
     }//GEN-LAST:event_urlFieldKeyPressed
 
     private void templateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_templateComboBoxActionPerformed
-
     }//GEN-LAST:event_templateComboBoxActionPerformed
 
     private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
-        if (evt.getStateChange() == ItemEvent.SELECTED)
-        {
+        if (evt.getStateChange() == ItemEvent.SELECTED) {
             Object item = templateComboBox.getSelectedItem();
-            if ( item != null && !(item instanceof JdbcUrl)) {
+            if (item != null && !(item instanceof JdbcUrl)) {
                 // This is an item indicating "Create a New Driver", and if
                 // we futz with the fields, then the ComboBox wants to make the
                 // drop-down invisible and the dialog never gets a chance to
@@ -574,11 +568,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 return;
             }
 
-            JdbcUrl jdbcurl = (JdbcUrl)item;
+            JdbcUrl jdbcurl = (JdbcUrl) item;
 
             // Field entry mode doesn't make sense if this URL isn't parsed.  change the mode
             // now if appropriate
-            if (! jdbcurl.isParseUrl()) {
+            if (!jdbcurl.isParseUrl()) {
                 updateInputMode(false);
             } else {
                 setUpFields();
@@ -590,10 +584,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }//GEN-LAST:event_templateComboBoxItemStateChanged
 
     private void bTestConnectionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bTestConnectionActionPerformed
-       testConnection();
+        tryConnection();
     }//GEN-LAST:event_bTestConnectionActionPerformed
-
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton bTestConnection;
     private javax.swing.JTextField databaseField;
@@ -630,11 +622,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         JdbcUrl url = getSelectedJdbcUrl();
         if (url != null) {
             JDBCDriver driver = url.getDriver();
-            assert(driver != null);
+            assert (driver != null);
             connection.setDriverName(driver.getName());
             connection.setDriver(driver.getClassName());
         }
-        
+
         connection.setDatabase(urlField.getText());
 
         connection.setUser(userField.getText());
@@ -652,15 +644,15 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private void updateInputMode(boolean copyUrl) {
         setUpFields();
     }
-    
+
     /**
      * Set up which fields are enabled based on the URL template for the
      * selected driver
      */
     private void setUpFields() {
-        
+
         Object item = templateComboBox.getSelectedItem();
-        if ( item != null && !(item instanceof JdbcUrl)) {
+        if (item != null && !(item instanceof JdbcUrl)) {
             // This is an item indicating "Create a New Driver", and if
             // we futz with the fields, then the ComboBox wants to make the
             // drop-down invisible and the dialog never gets a chance to
@@ -668,7 +660,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             return;
         }
 
-        JdbcUrl jdbcurl = (JdbcUrl)item;
+        JdbcUrl jdbcurl = (JdbcUrl) item;
 
         if (jdbcurl == null) {
             for (Entry<String, UrlField> entry : urlFields.entrySet()) {
@@ -693,16 +685,16 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         directUrlLabel.setVisible(true);
 
-        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+        for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             entry.getValue().getField().setVisible(jdbcurl.supportsToken(entry.getKey()));
             entry.getValue().getLabel().setVisible(jdbcurl.supportsToken(entry.getKey()));
         }
 
-        if (! jdbcurl.isParseUrl()) {
+        if (!jdbcurl.isParseUrl()) {
             urlField.setVisible(true);
             setUrlField();
         }
-        
+
         setFocus();
         checkValid();
         resize();
@@ -714,7 +706,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             return;
         }
 
-        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+        for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             if (entry.getValue().getField().isVisible()) {
                 entry.getValue().getField().requestFocusInWindow();
                 return;
@@ -726,11 +718,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     private JdbcUrl getSelectedJdbcUrl() {
         Object item = templateComboBox.getSelectedItem();
-        if (! (item instanceof JdbcUrl)) {
+        if (!(item instanceof JdbcUrl)) {
             return null;
         }
 
-        return (JdbcUrl)item;
+        return (JdbcUrl) item;
     }
 
     private void setUrlField() {
@@ -756,10 +748,11 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private String getPassword() {
         String password;
         String tempPassword = new String(passwordField.getPassword());
-        if (tempPassword.length() > 0)
+        if (tempPassword.length() > 0) {
             password = tempPassword;
-        else
+        } else {
             password = null;
+        }
 
         return password;
     }
@@ -770,6 +763,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     private void startProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NewConnectionPanel.class, "ConnectionProgress_Connecting"));
@@ -781,9 +775,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     private void setProgressMessage(final String message) {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
-                if  (progressHandle != null) {
+                if (progressHandle != null) {
                     progressHandle.setDisplayName(message);
                 }
             }
@@ -793,13 +788,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     /**
      * Terminates the use of the progress bar.
      */
-    public void terminateProgress()
-    {
+    public void terminateProgress() {
         stopProgress();
     }
-    
+
     private void stopProgress() {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 if (progressHandle != null) {
@@ -816,12 +811,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         passwordField.setEnabled(enable);
         passwordCheckBox.setEnabled(enable);
         urlField.setEnabled(enable);
-        
-        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+
+        for (Entry<String, UrlField> entry : urlFields.entrySet()) {
             entry.getValue().getField().setEnabled(enable);
         }
     }
-    
+
     private void resetProgress() {
         if (progressHandle != null) {
             progressHandle.setDisplayName(""); // NOI18N
@@ -833,7 +828,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         // the user has changed some parameter, so if there's a connection it's
         // no longer in sync with the field data
         wd.closeConnection();
-        
+
         firePropertyChange("argumentChanged", null, null);
         resetProgress();
         wp.fireChangeEvent();
@@ -848,10 +843,10 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
         // If the fields are being modified because the user is manually
         // changing the URL, don't circle back and update the URL again.
-        if (! updatingUrl) {
+        if (!updatingUrl) {
             updatingFields = true;
 
-            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            for (Entry<String, UrlField> entry : urlFields.entrySet()) {
                 url.put(entry.getKey(), entry.getValue().getField().getText());
             }
 
@@ -870,7 +865,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         if (url == null) {
             displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.MSG_SelectADriver"), false);
         } else if (url != null && url.isParseUrl()) {
-            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            for (Entry<String, UrlField> entry : urlFields.entrySet()) {
                 if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
                     requiredFieldMissing = true;
                     displayMessage(NbBundle.getMessage(NewConnectionPanel.class, "NewConnection.ERR_FieldRequired",
@@ -878,7 +873,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
                 }
             }
 
-            if (! requiredFieldMissing) {
+            if (!requiredFieldMissing) {
                 clearError();
             }
         } else if (isEmpty(urlField.getText())) {
@@ -908,7 +903,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         try {
             url.setUrl(urlField.getText());
             clearError();
-        } catch ( MalformedURLException e ) {
+        } catch (MalformedURLException e) {
             LOGGER.log(Level.FINE, null, e);
             // just log in but don't report it to users
         }
@@ -918,7 +913,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             // from trying to update the URL, thus causing a circular even loop.
             updatingUrl = true;
 
-            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            for (Entry<String, UrlField> entry : urlFields.entrySet()) {
                 entry.getValue().getField().setText(url.get(entry.getKey()));
             }
 
@@ -933,7 +928,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     private void displayMessage(String message, boolean isError) {
-        wd.setValid(! isError);
+        wd.setValid(!isError);
         wp.fireChangeEvent();
         if (isError) {
             wd.getNotificationLineSupport().setErrorMessage(message);
@@ -941,8 +936,32 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
             wd.getNotificationLineSupport().setInformationMessage(message);
         }
     }
+    private RequestProcessor RP = new RequestProcessor(NewConnectionPanel.class.getName(), 1);
 
-    public void testConnection() {
+    private void tryConnection() {
+        setWaitingState(true);
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                testConnection();
+            }
+        });
+    }
+
+    private void setWaitingState(boolean wait) {
+        Component parent = getParent();
+        Component rootPane = getRootPane();
+        setEnabled(!wait);
+        if (parent != null) {
+            parent.setEnabled(!wait);
+        }
+        if (rootPane != null) {
+            rootPane.setCursor(wait ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR) : null);
+        }
+    }
+
+    private void testConnection() {
         try {
             setConnectionInfo();
             wp.validate();
@@ -950,6 +969,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         } catch (WizardValidationException ex) {
             displayMessage(ex.getLocalizedMessage(), true);
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setWaitingState(false);
+            }
+        });
     }
 
     boolean valid() {
@@ -957,6 +982,7 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     }
 
     private class UrlField {
+
         private final JTextField field;
         private final JLabel label;
 
@@ -972,76 +998,64 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
         public JLabel getLabel() {
             return label;
         }
-
     }
-    
+
     /**
      * This class is used to track user input for an associated input field.
      */
-    private class InputAdapter implements DocumentListener, ListDataListener
-    {
+    private class InputAdapter implements DocumentListener, ListDataListener {
+
         @SuppressWarnings("LeakingThisInConstructor")
-        public InputAdapter(JTextField source)
-        {
+        public InputAdapter(JTextField source) {
             source.getDocument().addDocumentListener(this);
         }
 
         @SuppressWarnings("LeakingThisInConstructor")
-        public InputAdapter(JComboBox source)
-        {
+        public InputAdapter(JComboBox source) {
             source.getModel().addListDataListener(this);
         }
-        
+
         @SuppressWarnings("LeakingThisInConstructor")
-        public InputAdapter(JTextArea source)
-        {
+        public InputAdapter(JTextArea source) {
             source.getDocument().addDocumentListener(this);
         }
-        
+
         @Override
-        public void insertUpdate(DocumentEvent evt) 
-        {
+        public void insertUpdate(DocumentEvent evt) {
             updateUrlFromFields();
             checkValid();
             fireChange();
         }
 
         @Override
-        public void removeUpdate(DocumentEvent evt) 
-        {
+        public void removeUpdate(DocumentEvent evt) {
             updateUrlFromFields();
             checkValid();
             fireChange();
         }
 
         @Override
-        public void changedUpdate(DocumentEvent evt) 
-        {
+        public void changedUpdate(DocumentEvent evt) {
             updateUrlFromFields();
             checkValid();
             fireChange();
         }
 
         @Override
-        public void intervalAdded(ListDataEvent evt) 
-        {
+        public void intervalAdded(ListDataEvent evt) {
             fireChange();
         }
 
         @Override
-        public void intervalRemoved(ListDataEvent evt) 
-        {
+        public void intervalRemoved(ListDataEvent evt) {
             fireChange();
         }
 
         @Override
-        public void contentsChanged(ListDataEvent evt) 
-        {
+        public void contentsChanged(ListDataEvent evt) {
             updateUrlFromFields();
             checkValid();
             fireChange();
         }
-        
     }
-            
 }
