@@ -1921,12 +1921,24 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private final CsmUID<IncludeImpl> includeUid;
         private final CsmUID<CsmOffsetableDeclaration> containerUid;
+        // TODO: need to track already fixed includes
+        private volatile boolean alreadyFixed;
 
         public FakeIncludePair(CsmUID<IncludeImpl> includeUid, CsmUID<CsmOffsetableDeclaration> containerUID) {
             this.includeUid = includeUid;
             this.containerUid = containerUID;
+            this.alreadyFixed = false;
         }
 
+        boolean isFixed() {
+            return alreadyFixed;
+        }
+        
+        void markFixed() {
+            assert !alreadyFixed;
+            alreadyFixed = true;
+        }
+        
         static Collection<CsmUID<IncludeImpl>> toIncludeUIDCollection(Collection<FakeIncludePair> fakePairs) {
             Collection<CsmUID<IncludeImpl>> out = new ArrayList<CsmUID<IncludeImpl>>(fakePairs.size());
             for (FakeIncludePair pair: fakePairs) {
