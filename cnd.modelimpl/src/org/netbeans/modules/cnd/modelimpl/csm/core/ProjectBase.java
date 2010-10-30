@@ -542,7 +542,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected final synchronized void registerProjectListeners() {
         if (platformProject instanceof NativeProject) {
             if (projectListener == null) {
-                projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject);
+                projectListener = new NativeProjectListenerImpl(getModel(), (NativeProject) platformProject, this);
             }
             ((NativeProject) platformProject).addProjectItemsListener(projectListener);
         }

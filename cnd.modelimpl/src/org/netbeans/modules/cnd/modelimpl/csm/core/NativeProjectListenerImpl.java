@@ -71,13 +71,18 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 
     private final ModelImpl model;
     private final NativeProject nativeProject;
+    // TODO: we have so much conversion to ProjectBase, while each ProjectBase have own listener associated with
+    // own NativeProject, may be it's worth to reuse it and simplify all logic in this class?
+    private final ProjectBase project;
     private volatile boolean enabledEventsHandling = true;
 
-    public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject) {
+    public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject, ProjectBase project) {
 	this.model = model;
         this.nativeProject = nativeProject;
+        this.project = project;
     }
     
+    @Override
     public void fileAdded(NativeFileItem fileItem) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -87,6 +92,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	onProjectItemAdded(fileItem);
     }
 
+    @Override
     public void filesAdded(List<NativeFileItem> fileItems) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -234,7 +240,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	return res.values();
     }
 
-    protected void onProjectItemAdded(final NativeFileItem item) {
+    private void onProjectItemAdded(final NativeFileItem item) {
         try {
             final ProjectBase project = getProject(item, true);
             if( project != null ) {
@@ -245,7 +251,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    protected void onProjectItemAdded(final List<NativeFileItem> items) {
+    private void onProjectItemAdded(final List<NativeFileItem> items) {
         if (items.size()>0){
             try {
                 final ProjectBase project = getProject(items.get(0), true);
@@ -258,7 +264,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    protected void onProjectItemRemoved(final NativeFileItem item) {
+    private void onProjectItemRemoved(final NativeFileItem item) {
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {
@@ -275,8 +281,8 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    protected void onProjectItemRemoved(final List<NativeFileItem> items) {
-        if (items.size()>0){
+    private void onProjectItemRemoved(final List<NativeFileItem> items) {
+        if (!items.isEmpty()) {
             try {
                 final ProjectBase project = getProject(items.get(0), false);
                 if( project != null ) {
@@ -288,7 +294,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
 
-    protected void onProjectItemRenamed(String oldPath, NativeFileItem newFileIetm) {
+    private void onProjectItemRenamed(String oldPath, NativeFileItem newFileIetm) {
         try {
             final ProjectBase project = getProject(newFileIetm, false);
             if( project != null ) {
@@ -303,7 +309,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    protected void onProjectItemChanged(final NativeFileItem item) {
+    private void onProjectItemChanged(final NativeFileItem item) {
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {
@@ -316,7 +322,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
     
-    protected void onProjectItemChanged(final List<NativeFileItem> items) {
+    private void onProjectItemChanged(final List<NativeFileItem> items) {
         if (items.size()>0){
             try {
                 final ProjectBase project = getProject(items.get(0), true);
@@ -349,17 +355,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
         return csmProject;
     }
-    
-//    private Collection<NativeProject> getNativeProjects() {
-//        Set<NativeProject> res = new HashSet<NativeProject>();
-//        for(CsmProject project : model.projects()){
-//            Object prj = project.getPlatformProject();
-//            if (prj instanceof NativeProject) {
-//                res.add((NativeProject)prj);
-//            }
-//        }
-//        return res;
-//    }
 
     private static class FileDeleteListener extends FileChangeAdapter {
         private final ProjectBase project;

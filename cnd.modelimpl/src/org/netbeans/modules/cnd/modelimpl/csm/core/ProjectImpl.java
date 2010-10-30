@@ -204,7 +204,7 @@ public final class ProjectImpl extends ProjectBase {
             //Notificator.instance().startTransaction();
             onFileRemovedImpl(impl);
             if (impl != null) {
-                DeepReparsingUtils.reparseOnRemoved(impl, this);
+                DeepReparsingUtils.reparseOnRemoved(Collections.singletonList(impl), this);
             }
         } finally {
             //Notificator.instance().endTransaction();
@@ -214,14 +214,17 @@ public final class ProjectImpl extends ProjectBase {
 
     @Override
     public void onFileImplRemoved(List<FileImpl> files) {
-        for (FileImpl impl : files) {
-            onFileRemovedImpl(impl);
+        try {
+            for (FileImpl impl : files) {
+                onFileRemovedImpl(impl);
+            }
+            DeepReparsingUtils.reparseOnRemoved(files, this);
+        } finally {
+            Notificator.instance().flush();
         }
-        DeepReparsingUtils.reparseOnRemoved(files, this);
     }
 
     private FileImpl onFileRemovedImpl(FileImpl impl) {
-        CndFileUtils.clearFileExistenceCache();
         if (impl != null) {
             synchronized (editedFiles) {
                 EditingTask task = editedFiles.remove(impl);
