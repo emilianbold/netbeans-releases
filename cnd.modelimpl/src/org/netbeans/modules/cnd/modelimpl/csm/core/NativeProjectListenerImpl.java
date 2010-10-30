@@ -73,13 +73,13 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     private final NativeProject nativeProject;
     // TODO: we have so much conversion to ProjectBase, while each ProjectBase have own listener associated with
     // own NativeProject, may be it's worth to reuse it and simplify all logic in this class?
-    private final ProjectBase project;
+    private final ProjectBase projectBase;
     private volatile boolean enabledEventsHandling = true;
 
     public NativeProjectListenerImpl(ModelImpl model, NativeProject nativeProject, ProjectBase project) {
 	this.model = model;
         this.nativeProject = nativeProject;
-        this.project = project;
+        this.projectBase = project;
     }
     
     @Override
@@ -106,6 +106,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	}
     }
 
+    @Override
     public void fileRemoved(NativeFileItem fileItem) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -115,6 +116,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	onProjectItemRemoved(fileItem);
     }
 
+    @Override
     public void filesRemoved(List<NativeFileItem> fileItems) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -128,6 +130,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	}
     }
 
+    @Override
     public void fileRenamed(String oldPath, NativeFileItem newFileIetm){
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -138,6 +141,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	onProjectItemRenamed(oldPath, newFileIetm);
     }
 
+    @Override
     public void filePropertiesChanged(NativeFileItem fileItem) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -147,6 +151,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
 	onProjectItemChanged(fileItem);
     }
 
+    @Override
     public void filesPropertiesChanged(final List<NativeFileItem> fileItems) {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -158,6 +163,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         if (enabledEventsHandling) {
             // FIXUP for #109425
             ModelImpl.instance().enqueueModelTask(new Runnable() {
+                @Override
                 public void run() {
                     filesPropertiesChangedImpl(fileItems);
                 }
@@ -184,6 +190,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
    }
 
+    @Override
     public void filesPropertiesChanged() {
         if (TRACE) {
             new Exception().printStackTrace(System.err);
@@ -195,6 +202,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         if (enabledEventsHandling) {
             // FIXUP for #109425
             ModelImpl.instance().enqueueModelTask(new Runnable() {
+                @Override
                 public void run() {
                     ArrayList<NativeFileItem> list = new ArrayList<NativeFileItem>();
                     for(NativeFileItem item : nativeProject.getAllFiles()){
@@ -220,6 +228,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         }
     }
 
+    @Override
     public void projectDeleted(NativeProject nativeProject) {
 	RepositoryUtils.onProjectDeleted(nativeProject);
     }
@@ -351,7 +360,7 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
                     (ProjectBase) model.findProject(aNnativeProject);
             }
         } catch(NullPointerException ex) {
-            ex.printStackTrace();
+            ex.printStackTrace(System.err);
         }
         return csmProject;
     }
