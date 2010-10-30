@@ -111,7 +111,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             System.err.printf("TEST UNDO OF DELETE BLOCK\n");
         }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        CountDownLatch parse1 = new CountDownLatch(1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        Semaphore waitParseSemaphore = new Semaphore(0);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -127,15 +130,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         }
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
             int curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations", numDecls, curNumDecls);
             // insert dead code block
-            // create barier
-            CountDownLatch parse1 = new CountDownLatch(1);
-            condRef.set(parse1);
             // modify document
             final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -153,7 +153,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
-                    if (true || TraceFlags.TRACE_191307_BUG) {
+                    if (TraceFlags.TRACE_191307_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -187,7 +187,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             System.err.printf("TEST INSERT DEAD BLOCK\n");
         }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        CountDownLatch parse1 = new CountDownLatch(1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        Semaphore waitParseSemaphore = new Semaphore(0);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -196,15 +199,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         assertTrue(doc.getLength() > 0);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
             checkDeadBlocks(project, fileImpl, "1. text before inserting dead block:", doc, "File must have " + deadBlocksBeforeModifcation + " dead code blocks ", deadBlocksBeforeModifcation);
 
             // insert dead code block
-            // create barier
-            CountDownLatch parse1 = new CountDownLatch(1);
-            condRef.set(parse1);
             // modify document
             final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -228,7 +228,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(2000, TimeUnit.SECONDS)) {
-                    if (true || TraceFlags.TRACE_182342_BUG) {
+                    if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -251,7 +251,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
 
     protected final void removeDeadBlock(final File sourceFile, int deadBlocksBeforeRemove, int deadBlocksAfterRemove) throws Exception {
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
-        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>();
+        CountDownLatch parse1 = new CountDownLatch(1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        Semaphore waitParseSemaphore = new Semaphore(0);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -260,15 +263,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         assertTrue(doc.getLength() > 0);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, parseCounter);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
 
             final List<CsmOffsetable> unusedCodeBlocks = checkDeadBlocks(project, fileImpl, "1. text before deleting dead block:", doc, "File must have " + deadBlocksBeforeRemove + " dead code block ", deadBlocksBeforeRemove);
             // insert dead code block
-            // create barier
-            CountDownLatch parse1 = new CountDownLatch(1);
-            condRef.set(parse1);
             // modify document
             final UndoManager urm = getUndoRedoManager(sourceFile);
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -291,7 +291,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 assertTrue("must have undo", urm.canUndo());
                 assertEquals("must have only one modified object", 1, this.doListener.size());
                 if (!parse1.await(20, TimeUnit.SECONDS)) {
-                    if (true || TraceFlags.TRACE_182342_BUG) {
+                    if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
                         exRef.compareAndSet(null, new TimeoutException("not finished await"));
                     }
                 } else {
@@ -340,7 +340,7 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         project.waitParse();
     }
     
-    private CsmProgressListener createFileParseListener(final FileImpl fileImpl, final AtomicReference<CountDownLatch> condRef, final AtomicInteger parseCounter) {
+    private CsmProgressListener createFileParseListener(final FileImpl fileImpl, final AtomicReference<CountDownLatch> condRef, final AtomicReference<Semaphore> semRef, final AtomicInteger parseCounter) {
         final CsmProgressListener listener = new CsmProgressAdapter() {
 
             @Override
@@ -352,24 +352,8 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
                 if (file.equals(fileImpl)) {
                     CountDownLatch cond = condRef.get();
                     cond.countDown();
-                }
-            }
-        };
-        return listener;
-    }
-
-    private CsmProgressListener createFileParseListener2(final FileImpl fileImpl, final AtomicReference<Semaphore> condRef, final AtomicInteger parseCounter) {
-        final CsmProgressListener listener = new CsmProgressAdapter() {
-
-            @Override
-            public void fileParsingFinished(CsmFile file) {
-                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
-                    new Exception(getName() + " fileParsingFinished parsingState = " + ((FileImpl)file).getParsingStateFromTest() + " state = " + ((FileImpl)file).getState() + " " + file).printStackTrace(System.err); // NOI18N
-                }
-                parseCounter.incrementAndGet();
-                if (file.equals(fileImpl)) {
-                    Semaphore cond = condRef.get();
-                    cond.release();
+                    Semaphore sem = semRef.get();
+                    sem.release();
                 }
             }
         };
@@ -399,7 +383,10 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             System.err.printf("TEST INSERT/SAVE then UNDO/REDO\n");
         }
         final AtomicReference<Exception> exRef = new AtomicReference<Exception>();
-        final AtomicReference<Semaphore> condRef = new AtomicReference<Semaphore>();
+        CountDownLatch parse1 = new CountDownLatch(1);
+        final AtomicReference<CountDownLatch> condRef = new AtomicReference<CountDownLatch>(parse1);
+        Semaphore waitParseSemaphore = new Semaphore(0);
+        final AtomicReference<Semaphore> semRef = new AtomicReference<Semaphore>(waitParseSemaphore);
         final CsmProject project = super.getProject();
         final FileImpl fileImpl = (FileImpl) getCsmFile(sourceFile);
         assertNotNull(fileImpl);
@@ -409,15 +396,11 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
         assertNotNull(doc);
         project.waitParse();
         final AtomicInteger parseCounter = new AtomicInteger(0);
-        CsmProgressListener listener = createFileParseListener2(fileImpl, condRef, parseCounter);
+        CsmProgressListener listener = createFileParseListener(fileImpl, condRef, semRef, parseCounter);
         CsmListeners.getDefault().addProgressListener(listener);
         try {
             int curNumDecls = fileImpl.getDeclarationsSize();
             assertEquals("different number of declarations", numDecls, curNumDecls);
-            // insert dead code block
-            // create barier
-            Semaphore waitParseSemaphore = new Semaphore(0);
-            condRef.set(waitParseSemaphore);
             // modify document
             SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -432,6 +415,12 @@ public class ModifyDocumentTestCaseBase extends ProjectBasedTestCase {
             });
             assertTrue("must have undo", urm.canUndo());
             assertEquals("must have only one modified object", 1, this.doListener.size());
+            if (!parse1.await(20, TimeUnit.SECONDS)) {
+                if (TraceFlags.TRACE_182342_BUG || TraceFlags.TRACE_191307_BUG) {
+                    exRef.compareAndSet(null, new TimeoutException("not finished await"));
+                }
+                return;
+            }            
             waitParseSemaphore.acquire();
 //            waitParseSemaphore.acquire();
             assertTrue(fileImpl.isParsed());
