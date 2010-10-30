@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -294,27 +295,18 @@ public final class DeepReparsingUtils {
         }
     }
 
-    /**
-     * Reparse including/included files at file removed.
-     */
-    public static void reparseOnRemoved(FileImpl impl, ProjectBase project) {
-        Set<CsmFile> topParents = project.getGraph().getTopParentFiles(impl).getCompilationUnits();
-        Set<CsmFile> coherence = project.getGraph().getCoherenceFiles(impl).getCoherenceFiles();
-        project.getGraph().removeFile(impl);
-        topParents.remove(impl);
-        coherence.remove(impl);
-        addToReparse(project, topParents, coherence, false);
-    }
-
-    static void reparseOnRemoved(List<FileImpl> toReparse, ProjectBase project) {
+    static void reparseOnRemoved(Collection<FileImpl> toReparse, ProjectBase project) {
+        CndFileUtils.clearFileExistenceCache();
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
         for (FileImpl impl : toReparse) {
-            topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
-            coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
-            project.getGraph().removeFile(impl);
-            topParents.remove(impl);
-            coherence.remove(impl);
+            if (impl != null) {
+                topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
+                coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
+                project.getGraph().removeFile(impl);
+                topParents.remove(impl);
+                coherence.remove(impl);
+            }
         }
         addToReparse(project, topParents, coherence, false);
     }

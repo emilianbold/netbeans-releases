@@ -199,44 +199,30 @@ public final class ProjectImpl extends ProjectBase {
     }
 
     @Override
-    public void onFileRemoved(FileImpl impl) {
+    public void onFileImplRemoved(Collection<FileImpl> files) {
         try {
-            //Notificator.instance().startTransaction();
-            onFileRemovedImpl(impl);
-            if (impl != null) {
-                DeepReparsingUtils.reparseOnRemoved(impl, this);
-            }
-        } finally {
-            //Notificator.instance().endTransaction();
-            Notificator.instance().flush();
-        }
-    }
-
-    @Override
-    public void onFileImplRemoved(List<FileImpl> files) {
-        for (FileImpl impl : files) {
-            onFileRemovedImpl(impl);
-        }
-        DeepReparsingUtils.reparseOnRemoved(files, this);
-    }
-
-    private FileImpl onFileRemovedImpl(FileImpl impl) {
-        CndFileUtils.clearFileExistenceCache();
-        if (impl != null) {
             synchronized (editedFiles) {
-                EditingTask task = editedFiles.remove(impl);
-                if (task != null) {
-                    task.cancelTask();
+                for (FileImpl impl : files) {
+                    EditingTask task = editedFiles.remove(impl);
+                    if (task != null) {
+                        task.cancelTask();
+                    }
                 }
             }
-            removeNativeFileItem(impl.getUID());
-            impl.dispose();
-            removeFile(impl.getAbsolutePath());
-            APTDriver.getInstance().invalidateAPT(impl.getBuffer());
-            APTFileCacheManager.invalidate(impl.getBuffer());
-            ParserQueue.instance().remove(impl);
+            for (FileImpl impl : files) {
+                if (impl != null) {
+                    removeNativeFileItem(impl.getUID());
+                    impl.dispose();
+                    removeFile(impl.getAbsolutePath());
+                    APTDriver.getInstance().invalidateAPT(impl.getBuffer());
+                    APTFileCacheManager.invalidate(impl.getBuffer());
+                    ParserQueue.instance().remove(impl);
+                }
+            }
+            DeepReparsingUtils.reparseOnRemoved(files, this);
+        } finally {
+            Notificator.instance().flush();
         }
-        return impl;
     }
 
     @Override
@@ -246,19 +232,12 @@ public final class ProjectImpl extends ProjectBase {
             List<FileImpl> toReparse = new ArrayList<FileImpl>();
             for (NativeFileItem item : items) {
                 File file = item.getFile();
-                try {
-                    //Notificator.instance().startTransaction();
-                    FileImpl impl = getFile(file, false);
-                    if (impl != null) {
-                        onFileRemovedImpl(impl);
-                        toReparse.add(impl);
-                    }
-                } finally {
-                    //Notificator.instance().endTransaction();
-                    Notificator.instance().flush();
+                FileImpl impl = getFile(file, false);
+                if (impl != null) {
+                    toReparse.add(impl);
                 }
             }
-            DeepReparsingUtils.reparseOnRemoved(toReparse, this);
+            onFileImplRemoved(toReparse);
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(this);
         }
