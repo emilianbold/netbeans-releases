@@ -1009,13 +1009,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
             }
         }
-        if (!removedPhysically.isEmpty()) {
-            if (TraceFlags.TRACE_VALIDATION) {
-                for (FileImpl file : removedPhysically) {
-                    System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
-                }
+        final ArrayList<FileImpl> removedFiles = new ArrayList<FileImpl>(removedPhysically);
+        if (TraceFlags.TRACE_VALIDATION) {
+            for (FileImpl file : removedPhysically) {
+                System.err.printf("Validation: removing (physically deleted) %s\n", file.getAbsolutePath()); //NOI18N
             }
-            onFileImplRemoved(new ArrayList<FileImpl>(removedPhysically));
         }
         for (FileImpl file : candidates) {
             boolean remove = true;
@@ -1028,11 +1026,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
             if (remove) {
                 if (TraceFlags.TRACE_VALIDATION) {
-                    System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath());
-                } //NOI18N
-                onFileRemoved(file);
+                    System.err.printf("Validation: removing (removed from project) %s\n", file.getAbsolutePath());//NOI18N
+                }
+                removedFiles.add(file);
             }
         }
+        onFileImplRemoved(removedFiles);
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(File file) {
@@ -1707,9 +1706,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public abstract void onFileAdded(List<NativeFileItem> items);
     //public abstract void onFileRemoved(NativeFileItem nativeFile);
 
-    public abstract void onFileRemoved(FileImpl fileImpl);
-
-    public abstract void onFileImplRemoved(List<FileImpl> files);
+    public abstract void onFileImplRemoved(Collection<FileImpl> files);
 
     public abstract void onFileRemoved(List<NativeFileItem> items);
 
@@ -1728,7 +1725,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     protected abstract void clearNativeFileContainer();
 
     public final void onFileRemoved(File nativeFile) {
-        onFileRemoved(getFile(nativeFile, false));
+        onFileImplRemoved(Collections.singletonList(getFile(nativeFile, false)));
     }
 
     public final void onFileExternalCreate(FileObject file) {

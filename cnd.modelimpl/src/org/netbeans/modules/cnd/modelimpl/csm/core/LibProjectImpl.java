@@ -115,13 +115,10 @@ public final class LibProjectImpl extends ProjectBase {
         return Collections.<CsmProject>emptyList();
     }
 
-    public void onFileRemoved(FileImpl file) {
-    }
-
     public void onFileRemoved(List<NativeFileItem> file) {
     }
 
-    public void onFileImplRemoved(List<FileImpl> files) {
+    public void onFileImplRemoved(Collection<FileImpl> files) {
     }
 
     public void onFileAdded(NativeFileItem file) {

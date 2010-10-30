@@ -295,16 +295,18 @@ public final class DeepReparsingUtils {
         }
     }
 
-    static void reparseOnRemoved(List<FileImpl> toReparse, ProjectBase project) {
+    static void reparseOnRemoved(Collection<FileImpl> toReparse, ProjectBase project) {
         CndFileUtils.clearFileExistenceCache();
         Set<CsmFile> topParents = new HashSet<CsmFile>();
         Set<CsmFile> coherence = new HashSet<CsmFile>();
         for (FileImpl impl : toReparse) {
-            topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
-            coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
-            project.getGraph().removeFile(impl);
-            topParents.remove(impl);
-            coherence.remove(impl);
+            if (impl != null) {
+                topParents.addAll(project.getGraph().getTopParentFiles(impl).getCompilationUnits());
+                coherence.addAll(project.getGraph().getCoherenceFiles(impl).getCoherenceFiles());
+                project.getGraph().removeFile(impl);
+                topParents.remove(impl);
+                coherence.remove(impl);
+            }
         }
         addToReparse(project, topParents, coherence, false);
     }
