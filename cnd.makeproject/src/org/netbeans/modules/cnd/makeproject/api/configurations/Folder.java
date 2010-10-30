@@ -527,9 +527,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Add it to project Items
         if (isProjectFiles()) {
             configurationDescriptor.addProjectItem(item);
-            CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-            MakeProjectFileProviderFactory.addToSearchBase(configurationDescriptor.getProject(), this, itemPath);
             if (setModified) {
+                final Project project = configurationDescriptor.getProject();
+                if (project != null) {
+                    CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
+                    MakeProjectFileProviderFactory.addToSearchBase(project, this, itemPath);
+                }
                 configurationDescriptor.setModified();
             }
 
@@ -725,9 +728,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         if (isProjectFiles()) {
             // Remove it from project Items
             configurationDescriptor.removeProjectItem(item);
-            CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
-            MakeProjectFileProviderFactory.removeFromSearchBase(configurationDescriptor.getProject(), this, itemPath);
             if (setModified) {
+                final Project project = configurationDescriptor.getProject();
+                if (project != null) {
+                    CharSequence itemPath = CharSequences.create(item.getAbsolutePath());
+                    MakeProjectFileProviderFactory.removeFromSearchBase(project, this, itemPath);
+                }
                 configurationDescriptor.setModified();
             }
 

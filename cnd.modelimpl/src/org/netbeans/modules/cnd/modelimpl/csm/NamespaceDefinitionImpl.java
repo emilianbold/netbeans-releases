@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -298,5 +299,14 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (getName().length() == 0) {
             readUID(input);
         }
-    }      
+    }
+
+    public void fixFakeRender(FileImpl file, AST ast, boolean b) {
+        final CsmNamespace ns = getNamespace();
+        if (ast != null && ns instanceof NamespaceImpl) {
+            CsmAST root = new CsmAST();
+            root.addChild(ast);
+            new AstRenderer(file).render(root, (NamespaceImpl)ns, this);
+        }
+    }
 }

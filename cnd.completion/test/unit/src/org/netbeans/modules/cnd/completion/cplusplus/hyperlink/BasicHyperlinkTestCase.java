@@ -54,6 +54,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test191446() throws Exception {
+        // #191446 -  no code assistance for elementes #include'ed in namespace body
+        performTest("iz191446.cc", 7, 25, "iz191446.h", 5, 1);
+        performTest("iz191446.cc", 8, 20, "iz191446.h", 9, 9);
+    }
+    
     public void test191457() throws Exception {
         // #191457: Parser error in hashtable.cc (ccfe)
         performTest("iz191457.cc", 9, 10, "iz191457.cc", 15, 1);
