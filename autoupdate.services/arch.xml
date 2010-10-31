@@ -799,6 +799,17 @@ action.putValue("InitialTab", "installed");
 action.performAction();
             </pre>            
         </api>
+        <api name="Show-In-AutoUpdate-Client" category="stable" group="property" type="export">
+            Each module can control whether it shall be visible in a UI 
+            that presents updates, installed modules, etc. This can be done
+            by defining <code>OpenIDE-Module-Show-In-AutoUpdate-Client: false</code>
+            (or <code>true</code>) in its own 
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-manifest">manifest</a>. 
+            This attribute shall take precedence over 
+            any default deduced by the UI (e.g. don't show 
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#enablement">autoload modules</a>
+            for example).
+        </api>
     </answer>
     
     
