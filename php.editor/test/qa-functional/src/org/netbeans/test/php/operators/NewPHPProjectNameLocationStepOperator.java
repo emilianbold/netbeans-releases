@@ -335,7 +335,7 @@ public class NewPHPProjectNameLocationStepOperator extends JDialogOperator {
      */
     public JComboBoxOperator cboSourcesFolder() {
         if (_cboSourcesFolder==null) {
-            _cboSourcesFolder = new JComboBoxOperator(this);
+            _cboSourcesFolder = new JComboBoxOperator(this, 1);
         }
         return _cboSourcesFolder;
     }
@@ -367,7 +367,7 @@ public class NewPHPProjectNameLocationStepOperator extends JDialogOperator {
      */
     public JComboBoxOperator cboDefaultEncoding() {
         if (_cboDefaultEncoding==null) {
-            _cboDefaultEncoding = new JComboBoxOperator(this, 1);
+            _cboDefaultEncoding = new JComboBoxOperator(this, 2);
         }
         return _cboDefaultEncoding;
     }
@@ -511,6 +511,7 @@ public class NewPHPProjectNameLocationStepOperator extends JDialogOperator {
      * @param text String text
      */
     public void typeProjectName(String text) {
+        txtProjectName().selectText(0, txtProjectName().getText().length());
         txtProjectName().typeText(text);
     }
 

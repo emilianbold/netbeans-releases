@@ -98,14 +98,16 @@ public class testCCExceptionAfterInvokation extends cc
     eoPHP.setCaretPosition( "?>", false );
     // Add new line
     eoPHP.insert( "\n" );
-    Sleep( 1000 );
+    Sleep( 100 );
     // Press Ctrl+Space
     eoPHP.typeKey( '<' );
-    Sleep( 1000 );
+    Sleep( 100 );
     eoPHP.typeKey( '?' );
-    Sleep( 1000 );
+    Sleep( 100 );
+    eoPHP.typeKey( ' ' );
+    Sleep( 100 );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-    Sleep( 1000 );
+    Sleep( 100 );
     // Check code completion list
     CompletionInfo jCompl = GetCompletion( );
     //List list = jCompl.getCompletionItems( );

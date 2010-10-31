@@ -58,9 +58,11 @@ import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 
 /**
  *
@@ -82,6 +84,7 @@ public class testPalette extends palette
       NbModuleSuite.createConfiguration( testPalette.class ).addTest(
           "CreateApplication",
           "Create_a_PHP_web_page",
+          "openPalette",
           "DnD_Table_HTML_component_to_HTML_code",
           "DnD_Table_HTML_component_to_PHP_code",
           "DnD_Table_HTML_component_outside_of_editor_view",
@@ -107,8 +110,14 @@ public class testPalette extends palette
     startTest( );
 
     CreatePHPFile( TEST_PHP_NAME, "PHP Web Page", null );
-
+    
     endTest( );
+  }
+  
+  public void openPalette() {
+      startTest();
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Palette");
+      endTest();
   }
 
   private void DragSomething(
