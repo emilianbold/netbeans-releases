@@ -114,7 +114,12 @@ final class FileSelector extends JPanel implements PropertyChangeListener, Explo
         manager.setRootContext (root);//s[0]);
         
         // Center
-        tree = new BeanTreeView ();
+        tree = new BeanTreeView () {
+            {
+                tree.setCellEditor(null);
+                tree.setEditable(false);
+            }
+        };
         tree.setPopupAllowed (false);
         tree.setDefaultActionAllowed (false);
         // install proper border for tree
