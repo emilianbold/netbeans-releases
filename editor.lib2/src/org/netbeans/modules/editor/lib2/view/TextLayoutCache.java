@@ -66,7 +66,7 @@ public final class TextLayoutCache {
      * These should be both visible lines and possibly lines where model-to-view
      * translations are being done.
      */
-    private static final int MAX_SIZE = 150;
+    private static final int MAX_SIZE = 200;
 
     private final Map<ParagraphView, Entry> paragraph2entry = new HashMap<ParagraphView, Entry>();
 
@@ -91,6 +91,16 @@ public final class TextLayoutCache {
     synchronized void clear() {
         paragraph2entry.clear();
         head = tail = null;
+    }
+    
+    synchronized int size() {
+        return paragraph2entry.size();
+    }
+
+    synchronized boolean contains(ParagraphView paragraphView) {
+        assert (paragraphView != null);
+        Entry entry = paragraph2entry.get(paragraphView);
+        return (entry != null);
     }
 
     /**

@@ -47,7 +47,6 @@ package org.netbeans.modules.editor.lib2.view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextHitInfo;
@@ -56,7 +55,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -96,10 +94,19 @@ public class HighlightsViewUtils {
      *  needs to be examined.
      * @return index from which the children's text layout should be recomputed.
      */
-    static int findAffectedLayoutIndex(EditorBoxView boxView, int index) {
+    static <V extends EditorView> int findAffectedLayoutIndex(EditorBoxView<V> boxView,
+            VisualUpdate<V> visualUpdate, int index)
+    {
+        assert (boxView instanceof ParagraphView) : "Not ParagraphView instance"; // NOI18N
+        ParagraphView pView = (ParagraphView) boxView;
+        DocumentView docView = pView.getDocumentView();
+        boolean inTLCache = docView.getTextLayoutCache().contains(pView);
+        if (inTLCache) {
+            visualUpdate.markInCache();
+        } else { // Not in cache => return 0
+            return 0;
+        }
         if (index > 0) {
-            assert (boxView instanceof ParagraphView) : "Not ParagraphView instance"; // NOI18N
-            DocumentView docView = ((ParagraphView)boxView).getDocumentView();
             Font defaultFont = docView.getTextComponent().getFont();
             EditorView prevView = boxView.getEditorView(index - 1);
             if (!(prevView instanceof HighlightsView)) {
@@ -107,9 +114,8 @@ public class HighlightsViewUtils {
             }
             HighlightsView prevHView = (HighlightsView) prevView;
             Object prevLayout = prevHView.layoutRaw();
-            if (prevLayout == null) { // layouts not inited for whole paragraph view => start at 0
-                return 0;
-            }
+            // Layouts should be inited (otherwise return earlier above)
+            assert (prevLayout != null) : "Null prevLayout"; // NOI18N
             boolean prevRebuild;
             if (prevLayout instanceof TextLayoutPart) {
                 prevRebuild = !((TextLayoutPart) prevLayout).isLast();
@@ -203,8 +209,9 @@ public class HighlightsViewUtils {
      * @param viewCount total view count in boxView.
      * @return possibly increased endIndex if fixing went beyond it (continuous group occurred).
      */
-    static int fixLayouts(EditorBoxView boxView, int startIndex, int endIndex, int viewCount) {
-        DocumentView docView = ((ParagraphView)boxView).getDocumentView();
+    static <V extends EditorView> void fixLayouts(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate) {
+        ParagraphView pView = (ParagraphView) boxView;
+        DocumentView docView = pView.getDocumentView();
         Document doc = docView.getDocument();
         CharSequence docText = DocumentUtilities.getText(doc);
         JTextComponent textComponent = docView.getTextComponent();
@@ -214,8 +221,15 @@ public class HighlightsViewUtils {
         Font fontFirst = null;
         Color foreColorFirst = null;
         Color backColorFirst = null;
+        int viewCount = boxView.getViewCount();
+        if (!visualUpdate.isInCache()) {
+            assert (visualUpdate.visualIndex == 0); // Should be set to zero in findAffectedLayoutIndex()
+            visualUpdate.endVisualIndex = viewCount;
+            // Will become part of the cache
+            docView.getTextLayoutCache().activate(pView);
+        }
         int i;
-        for (i = startIndex; i < viewCount; i++) {
+        for (i = visualUpdate.visualIndex; i < viewCount; i++) {
             EditorView view = boxView.getEditorView(i);
             if (view instanceof HighlightsView) {
                 AttributeSet attrs = view.getAttributes();
@@ -258,7 +272,7 @@ public class HighlightsViewUtils {
             }
             
             // Check if there's nothing "opened" at endIndex.
-            if (i >= endIndex && hViewFirst == null) {
+            if (i >= visualUpdate.endVisualIndex && hViewFirst == null) {
                 // Check that existing layout in the next existing view is not "opened"
                 // i.e. the next child view must not be a textlayoutpart with index != 0.
                 Object layout;
@@ -267,7 +281,8 @@ public class HighlightsViewUtils {
                         !((layout = ((HighlightsView)view).layoutRaw()) instanceof TextLayoutPart) ||
                         ((TextLayoutPart)layout).index() == 0)
                 {
-                    break;
+                    visualUpdate.endVisualIndex = i;
+                    return;
                 }
             }
         }
@@ -276,7 +291,7 @@ public class HighlightsViewUtils {
             fixLayoutViewGroup(boxView, docView, groupStartIndex, i, hViewFirst,
                     docText, fontFirst, foreColorFirst, backColorFirst);
         }
-        return i;
+        visualUpdate.endVisualIndex = viewCount;
     }
     
     private static void fixLayoutViewGroup(EditorBoxView boxView, DocumentView docView,
