@@ -42,18 +42,13 @@
 
 package org.netbeans.modules.git;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import org.netbeans.modules.git.client.GitClientInvocationHandler;
 import java.io.File;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
