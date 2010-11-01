@@ -113,9 +113,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.openide.NotifyDescriptor;
 import org.xml.sax.SAXException;
+
 
 /*
  *  Children of the web service node, namely,
@@ -136,6 +138,9 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     private WsdlChangeListener wsdlChangeListener;
 
     private FileChangeListener fcl;
+    
+    private RequestProcessor requestProcessor = 
+        new RequestProcessor("JaxWs-request-processor");        // NOI18N
     
     public JaxWsChildren(Service service, FileObject srcRoot, FileObject implClass) {
         super();
@@ -249,7 +254,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
             }
             setKeys(keys);
         } else {
-            SwingUtilities.invokeLater(new Runnable() {
+            requestProcessor.postRequest(new Runnable() {
                 public void run() {
                     final List<?>[] keys = new List<?>[1];
                     if (implClass != null) {
