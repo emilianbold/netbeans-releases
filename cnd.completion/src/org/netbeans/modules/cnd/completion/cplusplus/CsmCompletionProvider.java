@@ -219,7 +219,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             MAX_ITEMS_TO_DISPLAY = val;
         }
 
-        private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
+        private void addItems(CompletionResultSet resultSet, Collection<? extends CompletionItem> items) {
             if (TRACE) {
                 System.err.println("adding items " + getTestState()); // NOI18N
             }
@@ -279,7 +279,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                     }
                     queryAnchorOffset = res.getSubstituteOffset();
-                    Collection<CompletionItem> items = res.getItems();
+                    Collection<? extends CompletionItem> items = res.getItems();
                     // no more title in NB 6 in completion window
                     //resultSet.setTitle(res.getTitle());
                     resultSet.setAnchorOffset(queryAnchorOffset);
@@ -369,7 +369,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             return true;
         }
 
-        private Collection<CompletionItem> getFilteredData(Collection<CompletionItem> data, String prefix) {
+        private Collection<CompletionItem> getFilteredData(Collection<? extends CompletionItem> data, String prefix) {
             List<CompletionItem> ret = new ArrayList<CompletionItem>(1024);
             for (CompletionItem itm : data) {
                 // TODO: filter
