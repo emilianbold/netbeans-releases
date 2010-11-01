@@ -363,7 +363,7 @@ public class ArchetypeWizardUtils {
                 handle.start( nbm_artifactId == null ? 4 : (4 + 3));
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         arch, additional, 0);
-                final File appDir = new File(projFile, "application"); //NOI18N
+                File appDir = null;
 
                 if (nbm_artifactId != null && projFile.exists()) {
                     //NOW we have the nbm-Platform or nbm suite template
@@ -377,6 +377,9 @@ public class ArchetypeWizardUtils {
                             ArchetypeWizardUtils.NB_MODULE_ARCH, null, 3);
                     trimInheritedFromNbmProject(nbm_folder);
                     if (ArchetypeWizardUtils.NB_APP_ARCH.equals(arch)) {
+                        appDir = new File(projFile, "application"); //NOI18N
+                        nbm.groupId = "${project.groupId}"; // NOI18N
+                        nbm.version = "${project.version}"; // NOI18N
                         addModuleToApplication(appDir, nbm, null);
                     }
                 }
@@ -492,7 +495,7 @@ public class ArchetypeWizardUtils {
         FileObject fDir = FileUtil.toFileObject(dirF);
         if (fDir != null) {
             // the archetype generation didn't fail.
-            FileObject mainFO = FileUtil.toFileObject(mainProjectDir);
+            FileObject mainFO = mainProjectDir != null ? FileUtil.toFileObject(mainProjectDir) : null;
             resultList.add(fDir);
             processProjectFolder(fDir, null);
 
@@ -620,6 +623,7 @@ public class ArchetypeWizardUtils {
         public void performOperation(POMModel model) {
             org.netbeans.modules.maven.model.pom.Project p = model.getProject();
             p.setGroupId(null);
+            p.setVersion(null);
             List<Repository> reps = p.getRepositories();
             if (reps != null) {
                 for (Repository r : reps) {
@@ -642,6 +646,10 @@ public class ArchetypeWizardUtils {
                 pl = b.findPluginById("org.apache.maven.plugins", "maven-compiler-plugin");
                 if (pl != null) {
                     b.removePlugin(pl);
+                }
+                pl = b.findPluginById("org.apache.maven.plugins", "maven-jar-plugin");
+                if (pl != null) {
+                    pl.setVersion(null);
                 }
             }
             List<Dependency> deps = p.getDependencies();
@@ -667,12 +675,6 @@ public class ArchetypeWizardUtils {
             this.artifact = info.artifactId;
             this.version = info.version;
             this.type = type;
-        }
-        public AddDependencyOperation(String g, String a, String v, String t) {
-            group = g;
-            artifact = a;
-            version = v;
-            type = t;
         }
 
         @Override
