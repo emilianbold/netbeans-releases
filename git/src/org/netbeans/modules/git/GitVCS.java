@@ -193,6 +193,7 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener {
         } else if (event.getPropertyName().equals(Git.PROP_VERSIONED_FILES_CHANGED)) {
             LOG.fine("cleaning unversioned parents cache"); //NOI18N
             unversionedParents.clear();
+            knownRoots.clear();
             fireVersionedFilesChanged();
         }
     }

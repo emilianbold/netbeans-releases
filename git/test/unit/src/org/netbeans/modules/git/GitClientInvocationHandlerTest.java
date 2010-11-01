@@ -156,6 +156,37 @@ public class GitClientInvocationHandlerTest extends AbstractGitTestCase {
         assertTrue(readOnlyMethods.isEmpty());
     }
 
+    /**
+     * tests that we don't miss any command that results in a need to refresh repository info.
+     * If a method is added to GitClient, we NEED to evaluate and decide if it's a command after which we should refresh the repository info (current branch, head and stuff).
+     * @throws Exception
+     */
+    public void testMethodsNeedingRepositoryInfoRefresh () throws Exception {
+        Set<String> allTestedMethods = new HashSet<String>(Arrays.asList("add", "addNotificationListener", "catFile", "checkout", "commit", "copyAfter", "getBranches", "getStatus", "init",
+                "remove", "removeNotificationListener", "remove", "rename", "reset"));
+        Set<String> expectedMethods = new HashSet<String>(Arrays.asList("checkout", "commit", "reset"));
+        Field f = GitClientInvocationHandler.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
+        f.setAccessible(true);
+        Set<String> actualMethods = (Set<String>) f.get(GitClientInvocationHandler.class);
+
+        Method[] methods = GitClient.class.getDeclaredMethods();
+        Arrays.sort(methods, new Comparator<Method>() {
+            @Override
+            public int compare(Method o1, Method o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        for (Method m : methods) {
+            String methodName = m.getName();
+            assertTrue(methodName, allTestedMethods.contains(methodName));
+            if (expectedMethods.contains(methodName)) {
+                assertTrue(methodName, actualMethods.contains(methodName));
+                expectedMethods.remove(methodName);
+            }
+        }
+        assertTrue(expectedMethods.isEmpty());
+    }
+
     public void testIndexingBridge () throws Exception {
         indexingLogger.setLevel(Level.ALL);
         LogHandler h = new LogHandler();

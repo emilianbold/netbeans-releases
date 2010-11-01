@@ -51,6 +51,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -149,6 +150,41 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(refreshed[0]);
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
+    }
+
+    // test: check that the repository info is refreshed after commit modifying commands
+    public void testRepositoryInfoRefreshInsideIDE () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
+        RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
+        assertNull(info.getActiveBranch());
+        String newHead = Git.getInstance().getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        for (int i = 0; i < 100; ++i) {
+            Thread.sleep(100);
+            if (info.getActiveBranch() != null) {
+                break;
+            }
+        }
+        assertNotNull(info.getActiveBranch());
+        assertEquals(newHead, info.getActiveBranch().getId());
+    }
+
+    // test: check that the repository info is refreshed after commit outside of IDE
+    public void testRepositoryInfoRefreshOutsideIDE () throws Exception {
+        waitForInitialScan();
+        assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
+        RepositoryInfo info = RepositoryInfo.getInstance(repositoryLocation);
+        assertNull(info.getActiveBranch());
+        String newHead = getClient(repositoryLocation).commit(new File[] { modifiedFile }, "bla", ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
+        waitForRefresh();
+        for (int i = 0; i < 100; ++i) {
+            Thread.sleep(100);
+            if (info.getActiveBranch() != null) {
+                break;
+            }
+        }
+        assertNotNull(info.getActiveBranch());
+        assertEquals(newHead, info.getActiveBranch().getId());
     }
 
     // test: check that the index timestamp is NOT refreshed after WT read-only commands

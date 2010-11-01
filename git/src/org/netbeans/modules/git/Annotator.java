@@ -53,11 +53,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.Action;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.output.OpenOutputAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
@@ -83,8 +86,8 @@ public class Annotator extends VCSAnnotator {
         STATUS_IS_IMPORTANT.addAll(EnumSet.of(FileInformation.Status.UPTODATE, FileInformation.Status.NOTVERSIONED_EXCLUDED));
     }
     private static final Pattern lessThan = Pattern.compile("<");  // NOI18N
-    private static final String badgeModified = "org/netbeans/modules/mercurial/resources/icons/modified-badge.png";
-    private static final String badgeConflicts = "org/netbeans/modules/mercurial/resources/icons/conflicts-badge.png";
+    private static final String badgeModified = "org/netbeans/modules/git/resources/icons/modified-badge.png";
+    private static final String badgeConflicts = "org/netbeans/modules/git/resources/icons/conflicts-badge.png";
     private static final String toolTipModified = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeModified) + "\">&nbsp;"
             + NbBundle.getMessage(Annotator.class, "MSG_Contains_Modified");
     private static final String toolTipConflict = "<img src=\"" + Annotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
@@ -274,8 +277,27 @@ public class Annotator extends VCSAnnotator {
         if (mostImportantInfo.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             return getAnnotationProvider().EXCLUDED_FILE.getFormat().format(new Object [] { nameHtml, ""}); // NOI18N
         }
+        
+        String folderAnnotation = null;
+        Set<File> roots = context.getRootFiles();
+        File repository = Git.getInstance().getRepositoryRoot(mostImportantFile);
+        if (roots.size() > 1 || mostImportantFile.equals(repository)) {
+            // project node or repository root
+            String branchLabel = ""; //NOI18N
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            GitBranch branch = info.getActiveBranch();
+            if (branch != null) {
+                branchLabel = branch.getName();
+                if (branchLabel == GitBranch.NO_BRANCH) { // do not use equals
+                    // not on a branch, show also commit id
+                    branchLabel += " " + branch.getId(); // NOI18N
+                }
+            }
+            folderAnnotation = NbBundle.getMessage(Annotator.class, "MSG_Annotator.folderAnnotation", branchLabel); //NOI18N
+        }
+
         MessageFormat uptodateFormat = getAnnotationProvider().UP_TO_DATE_FILE.getFormat();
-        return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        return uptodateFormat.format(new Object [] { nameHtml, folderAnnotation != null ? new StringBuilder(" [").append(folderAnnotation).append("]").toString() : "" }); // NOI18N
     }
 
     public String annotateNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
