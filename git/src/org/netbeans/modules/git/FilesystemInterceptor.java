@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
@@ -477,6 +478,8 @@ class FilesystemInterceptor extends VCSInterceptor {
                             @Override
                             public void run() {
                                 FileUtil.removeRecursiveListener(fList, gitFolder);
+                                // repository was deleted, we should refresh versioned parents
+                                Git.getInstance().versionedFilesChanged();
                             }
                         });
                     }
@@ -527,6 +530,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 }
                 if (lastCachedModified == null) {
                     File repository = gitFolder.getParentFile();
+                    RepositoryInfo.refreshAsync(repository);
                     Git.STATUS_LOG.fine("refreshAdminFolder: planning repository scan for " + repository.getAbsolutePath()); //NOI18N
                     reScheduleRefresh(3000, getSeenRoots(repository)); // scan repository root
                     refreshOpenFiles(repository);

@@ -43,8 +43,8 @@
 package org.netbeans.libs.git.jgit;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitClientFactory;
 import org.netbeans.libs.git.GitException;
@@ -63,7 +63,7 @@ public final class JGitClientFactory extends GitClientFactory {
     private final Map<File, JGitRepository> repositoryPool;
 
     public JGitClientFactory () {
-        repositoryPool = new HashMap<File, JGitRepository>(5);
+        repositoryPool = new WeakHashMap<File, JGitRepository>(5);
     }
 
     static synchronized JGitClientFactory getInstance () {
@@ -78,7 +78,8 @@ public final class JGitClientFactory extends GitClientFactory {
         synchronized (repositoryPool) {
             JGitRepository repository = repositoryPool.get(repositoryLocation);
             if (repository == null) {
-                repositoryPool.put(repositoryLocation, repository = new JGitRepository(repositoryLocation));
+                // careful about keeping the reference to the repositoryRoot, rather create a new instance
+                repositoryPool.put(repositoryLocation, repository = new JGitRepository(new File(repositoryLocation.getParentFile(), repositoryLocation.getName())));
             }
             return createClient(repository);
         }
