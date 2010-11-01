@@ -201,13 +201,17 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         p.setVisible(false);
     }
 
-    protected void startProgress(String message, JComponent progressComponent) {
+    protected void setupProgress(String message, JComponent progressComponent) {
         JPanel p = getProgressPanel();
         p.setLayout(new BoxLayout(p, X_AXIS));
         JLabel l = new JLabel(message);
         p.add(l);
         p.add(makeHorizontalStrut(l, progressComponent, RELATED, p));
-        p.add(progressComponent);       
+        p.add(progressComponent);               
+    }
+    
+    protected void showProgress() {
+        JPanel p = getProgressPanel();
         p.setVisible(true);
     }
     
