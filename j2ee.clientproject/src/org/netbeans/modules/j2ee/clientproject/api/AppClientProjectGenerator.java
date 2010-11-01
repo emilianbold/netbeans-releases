@@ -50,6 +50,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -67,7 +68,6 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -78,7 +78,6 @@ import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
-import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -670,8 +669,8 @@ public class AppClientProjectGenerator {
         // XXX this seems to be used in runtime only so, not part of sharable server
         // set j2ee.appclient environment
         File[] accrt = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
-        epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, root));
+        Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        epPriv.setProperty(AppClientProjectProperties.APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(accrt, roots));
         
         
         String acMain = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS);

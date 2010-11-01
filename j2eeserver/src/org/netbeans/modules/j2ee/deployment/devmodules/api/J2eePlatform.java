@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.libraries.Library;
@@ -72,6 +73,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.config.J2eeModuleAccessor;
 import org.netbeans.modules.j2ee.deployment.impl.sharability.ServerLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibraryDependency;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -406,9 +408,66 @@ public final class J2eePlatform {
      * directory.
      *
      * @return platform's root directories.
+     * @deprecated use {@link #getServerHome()} or {@link #getDomainHome()}
+     *             or {@link #getMiddlewareHome()}
      */
     public File[] getPlatformRoots() {
         return impl.getPlatformRoots();
+    }
+    
+    /**
+     * Returns the server installation directory or <code>null</code> if not
+     * specified or unknown.
+     * 
+     * @return the server installation directory or <code>null</code> if not
+     *            specified or unknown
+     * @since 1.72
+     * @see J2eePlatformImpl2#getServerHome() 
+     */
+    @CheckForNull
+    public File getServerHome() {
+        if (impl instanceof J2eePlatformImpl2) {
+            return ((J2eePlatformImpl2) impl).getServerHome();
+        }
+        return null;
+    }
+    
+    /**
+     * Returns the domain directory or <code>null</code> if not
+     * specified or unknown. Many Java EE servers allows usage of multiple
+     * server instances using single binaries. In such case this method should
+     * return the installation/configuration directory of such instance.
+     * 
+     * @return the domain directory or <code>null</code> if not
+     *            specified or unknown
+     * @since 1.72
+     * @see J2eePlatformImpl2#getDomainHome() 
+     */  
+    @CheckForNull
+    public File getDomainHome() {
+        if (impl instanceof J2eePlatformImpl2) {
+            return ((J2eePlatformImpl2) impl).getDomainHome();
+        }
+        return null;        
+    }
+    
+    /**
+     * Returns the middleware directory or <code>null</code> if not
+     * specified or unknown. Some servers share certain binaries on higher level
+     * with other products of the same vendor. In such case this method should
+     * return the appropriate directory.
+     * 
+     * @return the middleware directory or <code>null</code> if not
+     *            specified or unknown
+     * @since 1.72
+     * @see J2eePlatformImpl2#getMiddlewareHome() 
+     */    
+    @CheckForNull
+    public File getMiddlewareHome() {
+        if (impl instanceof J2eePlatformImpl2) {
+            return ((J2eePlatformImpl2) impl).getMiddlewareHome();
+        }
+        return null;         
     }
 
     /**

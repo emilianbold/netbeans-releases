@@ -59,7 +59,6 @@ import org.openide.cookies.LineCookie;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-import org.openide.windows.Mode;
 
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
@@ -106,16 +105,24 @@ public final class EditorBridge {
 	Or check the currently selected TC for #2 and #3.
 	*/
 
-	Mode mode = WindowManager.getDefault().
-	    findMode(CloneableEditorSupport.EDITOR_MODE);
-	if (mode == null)
-	    return null;
+//	Mode mode = WindowManager.getDefault().
+//	    findMode(CloneableEditorSupport.EDITOR_MODE);
+//	if (mode == null)
+//	    return null;
+//
+//	TopComponent tc = mode.getSelectedTopComponent();
+//	if (tc instanceof CloneableEditorSupport.Pane) {
+//	    if (tc.isShowing())
+//		return tc;
+//	}
 
-	TopComponent tc = mode.getSelectedTopComponent();
-	if (tc instanceof CloneableEditorSupport.Pane) {
-	    if (tc.isShowing())
-		return tc;
-	}
+        // See IZ 191251
+        // LATER: EditorBridge to be replaced by EditorContextBridge
+        TopComponent activated = TopComponent.getRegistry().getActivated();
+        if (activated instanceof CloneableEditorSupport.Pane) {
+            if (activated.isShowing())
+            return activated;
+        }
 	return null;
     }
 

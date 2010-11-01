@@ -166,6 +166,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
             this.editorContext = CsmContext.create(lkp);
         }
 
+        @Override
         public final void run() {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(lookup);
             if (ctx == null && editorContext == null) {
@@ -198,6 +199,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         public void cancel() {
         }
 
+        @Override
         public final void run() {
             CsmObject ctx = CsmRefactoringUtils.findContextObject(context);
             if (!CsmRefactoringUtils.isSupportedReference(ctx)) {

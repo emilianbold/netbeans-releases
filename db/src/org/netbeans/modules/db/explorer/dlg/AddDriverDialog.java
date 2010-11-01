@@ -400,6 +400,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         } while (count != i);
         
         findDriverClass();
+        updateState();
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
@@ -479,6 +480,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 wp.fireChangeEvent();
             }
         }
+        updateState();
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void drvListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_drvListValueChanged
@@ -739,9 +741,11 @@ public final class AddDriverDialog extends javax.swing.JPanel {
             if (driverNode != null) {
                 driverNode.destroy();
             }
+            String drvClass = dlgPanel.getDriverClass();
+            String displayName = dlgPanel.getDisplayName();
             // any change?
-            if (! Arrays.equals(current.getURLs(), dlgPanel.getDriverURLs())) {
-                JDBCDriver modified = JDBCDriver.create(current.getName(), current.getDisplayName(), current.getClassName(), dlgPanel.getDriverURLs());
+            if (current != null && ! Arrays.equals(current.getURLs(), dlgPanel.getDriverURLs())) {
+                JDBCDriver modified = JDBCDriver.create(current.getName(), displayName, drvClass, dlgPanel.getDriverURLs());
                 for (JdbcUrl url : DriverListUtil.getJdbcUrls(current)) {
                     url.setDriver(modified);
                 }
@@ -749,10 +753,20 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                     JDBCDriverManager.getDefault().removeDriver(current);
                     JDBCDriverManager.getDefault().addDriver(modified);
                 } catch (DatabaseException ex) {
-                    Logger.getLogger(ChoosingDriverUI.class.getName()).log(Level.WARNING,
+                    Logger.getLogger(AddDriverDialog.class.getName()).log(Level.WARNING,
                             "Unable to modify driver " + current.getName() + " and add driver jar files " +
-                            Arrays.asList(dlgPanel.getDriverURLs()) +
-                            ": can not convert to URL", ex);
+                            Arrays.asList(dlgPanel.getDriverURLs()), ex);
+                }
+                driver = modified;
+            } else {
+                URL[] urls = dlgPanel.getDriverURLs();
+                driver = JDBCDriver.create(displayName, displayName, drvClass, urls);
+                try {
+                    JDBCDriverManager.getDefault().addDriver(driver);
+                } catch (DatabaseException ex) {
+                    Logger.getLogger(AddDriverDialog.class.getName()).log(Level.WARNING,
+                            "Unable to add driver " + driver.getName() + " and add driver jar files " +
+                            Arrays.asList(dlgPanel.getDriverURLs()), ex);
                 }
             }
         }
@@ -765,5 +779,13 @@ public final class AddDriverDialog extends javax.swing.JPanel {
      */
     public static JDBCDriver showDialog() {
         return showDialog(null);
+    }
+
+    private String getDriverClass() {
+        return (String) drvClassComboBox.getSelectedItem();
+    }
+
+    private String getDisplayName() {
+        return nameTextField.getText();
     }
 }

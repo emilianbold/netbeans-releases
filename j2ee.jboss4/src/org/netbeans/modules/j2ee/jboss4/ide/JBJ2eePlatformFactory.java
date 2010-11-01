@@ -57,7 +57,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
@@ -77,6 +76,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
@@ -106,7 +106,7 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         return platform;
     }
     
-    public static class J2eePlatformImplImpl extends J2eePlatformImpl {
+    public static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
         
         private static final Set<Type> MODULE_TYPES = new HashSet<Type>();
         static {
@@ -207,10 +207,24 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
             return properties.getJavaPlatform();
         }
 
+        @Override
         public File[] getPlatformRoots() {
-            return new File[] {
-                properties.getRootDir()
-            };
+            return new File[] {getServerHome(), getDomainHome()};
+        }
+
+        @Override
+        public File getServerHome() {
+            return properties.getRootDir();
+        }
+
+        @Override
+        public File getDomainHome() {
+            return properties.getServerDir();
+        }
+
+        @Override
+        public File getMiddlewareHome() {
+            return null;
         }
         
         private static class FF implements FilenameFilter {

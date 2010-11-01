@@ -46,10 +46,9 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 import java.io.File;
 import javax.swing.JFileChooser;
-import org.openide.text.Line;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 
@@ -91,12 +90,11 @@ class LineBreakpointPanel extends BreakpointPanel {
 
 	if (!customizing) {
 	    // Seed the bpt object
-	    Line l = EditorBridge.getCurrentLine();
-	    if (l != null) {
-		String fname = EditorBridge.filenameFor(l);
-		int lineno = l.getLineNumber();
-		breakpoint.setFileAndLine(fname, lineno);
-	    }
+            String fileName = EditorContextBridge.getCurrentFilePath();
+            if (!fileName.trim().equals("")) {
+                int lineNo = EditorContextBridge.getCurrentLineNumber();
+                breakpoint.setFileAndLine(fileName, lineNo);
+            }
 	}
 
 	seed(breakpoint);

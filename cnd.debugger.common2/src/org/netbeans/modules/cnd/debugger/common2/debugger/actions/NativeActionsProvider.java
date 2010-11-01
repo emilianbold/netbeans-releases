@@ -95,6 +95,4 @@ abstract class NativeActionsProvider
     protected DebuggerManager manager() {
 	return DebuggerManager.get();
     }
-
-    public abstract void update(State state);
 }

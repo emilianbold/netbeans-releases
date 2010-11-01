@@ -381,12 +381,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         String defaultPath = pi.getPathAsString();
         CompilerSet cs = getCompilerSet(node);
         if (cs != null) {
-            defaultPath += pi.pathSeparator() + cs.getDirectory();
+            defaultPath = cs.getDirectory() + pi.pathSeparator() + defaultPath;
             // TODO Provide platform info
             String cmdDir = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
             if (cmdDir != null && 0 < cmdDir.length()) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
-                defaultPath += pi.pathSeparator() + cmdDir;
+                defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
             }
         }
         return Collections.singletonMap(pi.getPathName(), defaultPath);

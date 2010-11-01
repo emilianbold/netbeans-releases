@@ -146,15 +146,28 @@ public final class Resolver3 implements Resolver {
         CsmClassifier result = null;
         while ( ns != null  && result == null) {
             String fqn = ns.getQualifiedName() + "::" + qualifiedNamePart; // NOI18N
-            result = findClassifier(fqn);
+            result = findClassifierUsedInFile(fqn);
             ns = ns.getParent();
         }
         return result;
     }
 
-    private CsmClassifier findClassifier(CharSequence qualifiedName) {
+    private CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName) {
         // try to find visible classifier
-        CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
+        CsmClassifier result = null;
+        // first of all - check local context
+        currTypedef = null;
+        currLocalClassifier = null;
+        gatherMaps(file, false);
+        if (currLocalClassifier != null && needClassifiers()) {
+            result = currLocalClassifier;
+        }
+        if (currTypedef != null && needClassifiers()) {
+            result = currTypedef;
+        }
+        if (result == null) {
+            result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
+        }
         return result;
     }
 
@@ -238,7 +251,7 @@ public final class Resolver3 implements Resolver {
                 }
             } else if (ForwardClass.isForwardClass(orig)) {
                 // try to find another class
-                resovedClassifier = this.findClassifier(orig.getQualifiedName());
+                resovedClassifier = this.findClassifierUsedInFile(orig.getQualifiedName());
             } else {
                 break;
             }
@@ -354,7 +367,7 @@ public final class Resolver3 implements Resolver {
         CsmObject result = null;
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
             String fqn = udir.getName() + "::" + nameToken; // NOI18N
-            result = findClassifier(fqn);
+            result = findClassifierUsedInFile(fqn);
             if (result != null) {
                 break;
             }
@@ -446,7 +459,7 @@ public final class Resolver3 implements Resolver {
                        , CsmDeclaration.Kind.UNION
                        );
 
-    private void gatherMaps(CsmFile file) {
+    private void gatherMaps(CsmFile file, boolean visitIncludedFiles) {
         if( file == null || visitedFiles.contains(file) ) {
             return;
         }
@@ -457,15 +470,17 @@ public final class Resolver3 implements Resolver {
         } else {
             filter = CsmSelect.getFilterBuilder().createOffsetFilter(0, offset);
         }
-        Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
-        while (iter.hasNext()){
-            CsmInclude inc = iter.next();
-            CsmFile incFile = inc.getIncludeFile();
-            if( incFile != null ) {
-                int oldOffset = offset;
-                offset = Integer.MAX_VALUE;
-                gatherMaps(incFile);
-                offset = oldOffset;
+        if (visitIncludedFiles) {
+            Iterator<CsmInclude> iter = CsmSelect.getIncludes(file, filter);
+            while (iter.hasNext()){
+                CsmInclude inc = iter.next();
+                CsmFile incFile = inc.getIncludeFile();
+                if( incFile != null ) {
+                    int oldOffset = offset;
+                    offset = Integer.MAX_VALUE;
+                    gatherMaps(incFile, true);
+                    offset = oldOffset;
+                }
             }
         }
         if (offset == Integer.MAX_VALUE) {
@@ -476,6 +491,9 @@ public final class Resolver3 implements Resolver {
             }
         }
         gatherMaps(CsmSelect.getDeclarations(file, filter));
+        if (!visitIncludedFiles) {
+            visitedFiles.remove(file);
+        }
     }
 
     private void gatherMaps(Iterable<? extends CsmObject> declarations) {
@@ -609,8 +627,11 @@ public final class Resolver3 implements Resolver {
             }
         } else if (CsmKindUtilities.isScope(element)) {
             if (inLocalContext && needClassifiers() && CsmKindUtilities.isClassifier(element)) {
-                if (CharSequences.comparator().compare(currName(), ((CsmClassifier)element).getName()) == 0) {
-                    currLocalClassifier = (CsmClassifier)element;
+                // don't want forward to find itself
+                if (!CsmKindUtilities.isClassForwardDeclaration(element) || (this.offset > end)) {
+                    if (CharSequences.comparator().compare(currName(), ((CsmClassifier)element).getName()) == 0) {
+                        currLocalClassifier = (CsmClassifier)element;
+                    }
                 }
             }
             if (this.offset < end || isInContext((CsmScope) element)) {
@@ -618,7 +639,8 @@ public final class Resolver3 implements Resolver {
             }
         } else if( kind == CsmDeclaration.Kind.TYPEDEF && needClassifiers()){
             CsmTypedef typedef = (CsmTypedef) element;
-            if( CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
+            // don't want typedef to find itself
+            if( this.offset > end && CharSequences.comparator().compare(currName(),typedef.getName())==0 ) {
                 currTypedef = typedef;
             }
         }
@@ -714,12 +736,10 @@ public final class Resolver3 implements Resolver {
                 result = findNamespace(containingNS, nameTokens[0]);
             }
             if (result == null  && needClassifiers()){
-                result = findClassifier(nameTokens[0]);
+                result = findClassifierUsedInFile(nameTokens[0]);
             }
             if( result == null ) {
-                currTypedef = null;
-                currLocalClassifier = null;
-                gatherMaps(file);
+                gatherMaps(file, true);
                 if( currLocalClassifier != null && needClassifiers()) {
                     result = currLocalClassifier;
                 }
@@ -738,7 +758,7 @@ public final class Resolver3 implements Resolver {
                     for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
                         String nsp = iter.next().toString();
                         String fqn = nsp + "::" + nameTokens[0]; // NOI18N
-                        result = findClassifier(fqn);
+                        result = findClassifierUsedInFile(fqn);
                         if (result == null) {
                             result = findClassifier(containingNS, fqn);
                         }
@@ -785,7 +805,7 @@ public final class Resolver3 implements Resolver {
                 sb.append(nameTokens[i]);
             }
             if (needClassifiers()) {
-                result = findClassifier(sb.toString());
+                result = findClassifierUsedInFile(sb.toString());
             }
             if( result == null && needClassifiers()) {
                 containingNS = getContainingNamespace();
@@ -796,7 +816,7 @@ public final class Resolver3 implements Resolver {
                 result = findNamespace(containingNS, sb.toString());
             }
             if( result == null && needClassifiers()) {
-                gatherMaps(file);
+                gatherMaps(file, true);
                 if( currTypedef != null) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {
@@ -819,7 +839,7 @@ public final class Resolver3 implements Resolver {
                     for (Iterator<CharSequence> iter = usedNamespaces.iterator(); iter.hasNext();) {
                         String nsp = iter.next().toString();
                         String fqn = nsp + "::" + sb; // NOI18N
-                        result = findClassifier(fqn);
+                        result = findClassifierUsedInFile(fqn);
                         if( result != null ) {
                             break;
                         }
@@ -836,7 +856,7 @@ public final class Resolver3 implements Resolver {
                                 sb.append("::"); // NOI18N
                                 sb.append(nameTokens[i]);
                             }
-                            result = findClassifier(sb.toString());
+                            result = findClassifierUsedInFile(sb.toString());
                             if (result == null) {
                                 sb = new StringBuilder(nameTokens[1]);
                                 for (int i = 2; i < nameTokens.length; i++) {
@@ -851,7 +871,6 @@ public final class Resolver3 implements Resolver {
                     }
                 }
             }
-
             if (result == null && needNamespaces()) {
                 CsmObject obj = new Resolver3(this.file, this.origOffset, this).resolve(nameTokens[0], NAMESPACE);
                 if (obj instanceof CsmNamespace) {

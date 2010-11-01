@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services.evaluator;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
@@ -56,22 +53,17 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
-import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
-import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver3;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ExpressionEvaluator;
-import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.impl.services.MemberResolverImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 
 /**
  *
@@ -84,15 +76,18 @@ public class VariableProvider {
     private final int level;
     CsmOffsetableDeclaration decl;
     Map<CsmTemplateParameter, CsmSpecializationParameter> mapping;
+    private final Resolver resolver;
 
-    public VariableProvider(int level) {
+    public VariableProvider(int level, Resolver resolver) {
         this.level = level;
+        this.resolver = resolver;
     }
 
-    public VariableProvider(CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, int level) {
+    public VariableProvider(CsmOffsetableDeclaration decl, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping, int level, Resolver resolver) {
         this.decl = decl;
         this.mapping = mapping;
         this.level = level;
+        this.resolver = resolver;
     }
 
     public int getValue(String variableName) {
@@ -111,12 +106,12 @@ public class VariableProvider {
                         (decl.getQualifiedName() + "::" + variableName).equals(param.getQualifiedName().toString())) { // NOI18N
                     CsmSpecializationParameter spec = mapping.get(param);
                     if (CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                        Object eval = new ExpressionEvaluator(level+1).eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), decl, mapping);
+                        Object eval = new ExpressionEvaluator(level+1).eval(((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), decl, mapping, resolver);
                         if (eval instanceof Integer) {
                             return (Integer) eval;
                         }
                     } else if (CsmKindUtilities.isTypeBasedSpecalizationParameter(spec)) {
-                        Object eval = new ExpressionEvaluator(level+1).eval(((CsmTypeBasedSpecializationParameter) spec).getText().toString(), decl, mapping);
+                        Object eval = new ExpressionEvaluator(level+1).eval(((CsmTypeBasedSpecializationParameter) spec).getText().toString(), decl, mapping, resolver);
                         if (eval instanceof Integer) {
                             return (Integer) eval;
                         }
@@ -125,13 +120,13 @@ public class VariableProvider {
             }
             if(CsmKindUtilities.isClass(decl)) {
                 final CsmClass clazz = (CsmClass) decl;
-                MemberResolverImpl r = new MemberResolverImpl(null);
+                MemberResolverImpl r = new MemberResolverImpl(resolver);
                 final Iterator<CsmMember> classMembers = r.getDeclarations(clazz, variableName);
                 if (classMembers.hasNext()) {
                     CsmMember member = classMembers.next();
                     if(member.isStatic() && CsmKindUtilities.isField(member) && member.getName().toString().equals(variableName)) {
                         if(CsmKindUtilities.isInstantiation(member)) {
-                            Object eval = new ExpressionEvaluator(level+1).eval(((CsmField)member).getInitialValue().getText().toString(), member.getContainingClass(), getMapping((CsmInstantiation) member));
+                            Object eval = new ExpressionEvaluator(level+1).eval(((CsmField)member).getInitialValue().getText().toString(), member.getContainingClass(), getMapping((CsmInstantiation) member), resolver);
                             if (eval instanceof Integer) {
                                 return (Integer) eval;
                             }
@@ -139,7 +134,7 @@ public class VariableProvider {
                     }
                 }
             }
-            Resolver3 r = new Resolver3(decl.getContainingFile(), decl.getStartOffset(), null);
+            Resolver3 r = new Resolver3(decl.getContainingFile(), decl.getStartOffset(), resolver);
             CsmObject o = r.resolve(variableName.replaceAll("(.*)::.*", "$1"), Resolver3.ALL); // NOI18N
             if (CsmKindUtilities.isClassifier(o)) {
                 CsmClassifier cls = (CsmClassifier) o;

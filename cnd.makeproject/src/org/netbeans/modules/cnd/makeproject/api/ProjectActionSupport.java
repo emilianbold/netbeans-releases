@@ -442,6 +442,9 @@ public class ProjectActionSupport {
 
             InputOutput io = ioTab;
             int consoleType = pae.getProfile().getConsoleType().getValue();
+            if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
+                consoleType = RunProfile.getDefaultConsoleType();
+            }
             if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                 io = getRunIO(pae, reuseTabs);
                 if (io == null) {

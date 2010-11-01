@@ -619,6 +619,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
         //termset.finish();
         if (gdb != null && gdb.connected()) {
+            // see IZ 191508, need to pause before exit
+            pause();
+            
             // Ask gdb to quit (shutdown)
             MICommand cmd = new AbstractMICommand(0, "-gdb-exit") { // NOI18N
 
@@ -642,11 +645,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     public void shutDown() {
-	/* LATER postKill doesn't quite work
-	// dbx side does something a bit more specialized but should it?
 	postKill();
-	*/
-	assert false : "shutDown(): NOT IMPLEMENTED";
     }
 
     public final void stepInto() {

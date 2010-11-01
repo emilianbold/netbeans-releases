@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.apt.utils;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenStream;
+import java.io.File;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * SPI extending the original {@link J2eePlatformImpl} adding methods to handle
+ * platform directories in a cleaner way.
+ * 
+ * @author Petr Hejl
+ * @since 1.72
+ * @see J2eePlatformImpl
  */
-public final class TokenBasedTokenStream implements TokenStream, APTTokenStream {
-    private APTToken token;
-    private boolean first;
+public abstract class J2eePlatformImpl2 extends J2eePlatformImpl {
+
+    /**
+     * Returns the server installation directory or <code>null</code> if not
+     * specified or unknown.
+     * 
+     * @return the server installation directory or <code>null</code> if not
+     *            specified or unknown
+     */
+    @CheckForNull
+    public abstract File getServerHome();
+
+    /**
+     * Returns the domain directory or <code>null</code> if not
+     * specified or unknown. Many Java EE servers allows usage of multiple
+     * server instances using single binaries. In such case this method should
+     * return the installation/configuration directory of such instance.
+     * 
+     * @return the domain directory or <code>null</code> if not
+     *            specified or unknown
+     */    
+    @CheckForNull
+    public abstract File getDomainHome();
     
-    /** Creates a new instance of TokenBasedTokenStream */
-    public TokenBasedTokenStream(APTToken token) {
-        if (token == null) {
-            throw new NullPointerException("not possible to create token stream for null token"); // NOI18N
-        }
-        this.token = token;
-        this.first = true;
-    }
-
-    @Override
-    public APTToken nextToken() {
-        APTToken ret;
-        if (first) {
-            ret = token;
-            first = false;
-        } else {
-            ret = APTUtils.EOF_TOKEN;
-        }
-        return ret;
-    }
-
-    @Override
-    public String toString() {
-        String retValue;
-        
-        retValue = token.toString();
-        return retValue;
-    }    
+    /**
+     * Returns the middleware directory or <code>null</code> if not
+     * specified or unknown. Some servers share certain binaries on higher level
+     * with other products of the same vendor. In such case this method should
+     * return the appropriate directory.
+     * 
+     * @return the middleware directory or <code>null</code> if not
+     *            specified or unknown
+     */
+    @CheckForNull
+    public abstract File getMiddlewareHome();
+    
 }
