@@ -910,8 +910,8 @@ public class BinaryAnalyser {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), 0L);
-                    if (accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
+                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), fileMTime);
+                    if (!isUpToDate (relativePath, fileMTime)) {
                         toDelete.add(Pair.<String,String>of (relativePath,null));
                         try {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
