@@ -375,6 +375,73 @@ public class OrigSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
                        "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void testTryWrapper171124() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private int test() throws Exception {\n" + 
+                       "        return 0;\n" +
+                       "    }\n" +
+                       "    private void testm() {\n" +
+                       "        switch(10) {\n" +
+                       "            case 1:\n" +
+                       "                int i = |test();\n" +
+                       "                return i;\n" +
+                       "            case 2:\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    private int test() throws Exception {\n" + 
+                       "        return 0;\n" +
+                       "    }\n" +
+                       "    private void testm() {\n" +
+                       "        switch(10) {\n" +
+                       "            case 1:\n" +
+                       "                int i;\n" +
+                       "                try {\n" +
+                       "                    i = test();\n" +
+                       "                } catch (Exception ex) {\n" +
+                       "                    ex.printStackTrace();\n" +
+                       "                }\n" +
+                       "                return i;\n" +
+                       "            case 2:\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void testTryWrapper189271() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    private int test() throws Exception {\n" + 
+                       "        return 0;\n" +
+                       "    }\n" +
+                       "    private void testm() {\n" +
+                       "        for(int i = |test(); i < 10; i++) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "FixImpl",
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    private int test() throws Exception {\n" + 
+                       "        return 0;\n" +
+                       "    }\n" +
+                       "    private void testm() {\n" +
+                       "        try {\n" +
+                       "            for(int i = test(); i < 10; i++) {\n" +
+                       "            }\n" +
+                       "        } catch (Exception ex) {\n" +
+                       "                    ex.printStackTrace();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new UncaughtException().run(info, null, pos, path, null);
