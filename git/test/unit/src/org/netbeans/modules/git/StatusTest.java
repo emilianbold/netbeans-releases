@@ -67,6 +67,7 @@ import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
@@ -746,7 +747,7 @@ public class StatusTest extends AbstractGitTestCase {
 
         // rename
         add(f);
-        commit();
+        String commitId = getClient(repositoryLocation).commit(files, "commit", ProgressMonitor.NULL_PROGRESS_MONITOR).getRevision();
         delete(false, f);
         f = new File(repositoryLocation, "copy");
         write(f, "blabla");
@@ -755,6 +756,13 @@ public class StatusTest extends AbstractGitTestCase {
         getCache().refreshAllRoots(files);
         assertEquals("<font color=\"#008000\">file</font><font color=\"#999999\"> [R/-]</font>", annotator.annotateNameHtml(name, getCache().getStatus(f), f));
         assertIconTooltip(annotator, VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(f)) }), "<font color=\"#008000\">Renamed/-</font>");
+
+        assertEquals("reposka<font color=\"#999999\"> [master]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
+        // test annotation for detached head
+        Thread.sleep(1100);
+        write(new File(new File(repositoryLocation, ".git"), "HEAD"), commitId);
+        RepositoryInfo.getInstance(repositoryLocation).refresh();
+        assertEquals("reposka<font color=\"#999999\"> [(no branch) " + commitId + "]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
     }
 
     // TODO add more tests when exclusions are supported
