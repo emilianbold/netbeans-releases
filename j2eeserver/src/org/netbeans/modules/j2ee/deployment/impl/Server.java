@@ -101,17 +101,14 @@ public class Server implements Node.Cookie {
     private RegistryNodeProvider nodeProvider = null;
 
 
-    public Server(FileObject fo) throws IOException, ParserConfigurationException,
+    Server(FileObject fo) throws IOException, ParserConfigurationException,
             SAXException, ClassNotFoundException {
 
         initDeploymentConfigurationFileList(fo);
 
         name = fo.getName();
         FileObject descriptor = fo.getFileObject("Descriptor");
-        if (descriptor == null) {
-            String msg = NbBundle.getMessage(Server.class, "MSG_InvalidServerPlugin", fo.toString());
-            throw new IllegalStateException(msg);
-        }
+        assert descriptor != null;
         needsFindServerUI = getBooleanValue(descriptor.getAttribute(ATTR_NEEDS_FIND_SERVER_UI), false);
 
         dep = NetbeansDeployment.createGraph(descriptor.getInputStream());
