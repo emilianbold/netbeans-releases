@@ -128,7 +128,7 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
     }
 
     @Override
-    protected void updateLayout(EditorBoxView<EditorView> boxView, VisualUpdate visualUpdate, Shape alloc) {
+    protected void updateLayout(EditorBoxView<EditorView> boxView, VisualUpdate<EditorView> visualUpdate, Shape alloc) {
         double origWidth = boxView.getMajorAxisSpan();
         float origHeight = boxView.getMinorAxisSpan();
         

@@ -59,11 +59,13 @@ public final class VisualUpdate<V extends EditorView> {
 
     private static final int TABS_CHANGED = 16;
     
+    private static final int IN_CACHE = 32; // Whether line is in text layout cache or not
+    
     private final EditorBoxView<V> boxView;
 
     Rectangle repaintBounds;
 
-    int spanChange;
+    private int statusBits;
 
     int visualIndex;
 
@@ -87,49 +89,58 @@ public final class VisualUpdate<V extends EditorView> {
     }
 
     public boolean isPreferenceChanged() {
-        return spanChange != 0;
+        return (statusBits & (MAJOR_SPAN_CHANGED | MINOR_SPAN_CHANGED |
+                WIDTH_CHANGED | HEIGHT_CHANGED | TABS_CHANGED)) != 0;
     }
 
     public boolean isMajorChildrenSpanChanged() {
-        return (spanChange & MAJOR_SPAN_CHANGED) != 0;
+        return (statusBits & MAJOR_SPAN_CHANGED) != 0;
     }
 
     void markMajorChildrenSpanChanged() {
-        spanChange |= MAJOR_SPAN_CHANGED;
+        statusBits |= MAJOR_SPAN_CHANGED;
     }
 
     public boolean isMinorChildrenSpanChanged() {
-        return (spanChange & MINOR_SPAN_CHANGED) != 0;
+        return (statusBits & MINOR_SPAN_CHANGED) != 0;
     }
 
     void markMinorChildrenSpanChanged() {
-        spanChange |= MINOR_SPAN_CHANGED;
+        statusBits |= MINOR_SPAN_CHANGED;
     }
 
     public boolean isWidthChanged() {
-        return (spanChange & WIDTH_CHANGED) != 0;
+        return (statusBits & WIDTH_CHANGED) != 0;
     }
 
     void markWidthChanged() {
-        spanChange |= WIDTH_CHANGED;
+        statusBits |= WIDTH_CHANGED;
     }
 
     public boolean isHeightChanged() {
-        return (spanChange & HEIGHT_CHANGED) != 0;
+        return (statusBits & HEIGHT_CHANGED) != 0;
     }
 
     void markHeightChanged() {
-        spanChange |= HEIGHT_CHANGED;
+        statusBits |= HEIGHT_CHANGED;
     }
 
     public boolean isTabsChanged() {
-        return (spanChange & TABS_CHANGED) != 0;
+        return (statusBits & TABS_CHANGED) != 0;
     }
 
     void markTabsChanged() {
-        spanChange |= TABS_CHANGED;
+        statusBits |= TABS_CHANGED;
     }
     
+    public boolean isInCache() {
+        return (statusBits & IN_CACHE) != 0;
+    }
+    
+    void markInCache() {
+        statusBits |= IN_CACHE;
+    }
+
     /**
      * Span that needs to be repainted because it was modified.
      */

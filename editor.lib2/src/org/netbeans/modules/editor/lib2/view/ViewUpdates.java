@@ -165,14 +165,24 @@ public final class ViewUpdates implements DocumentListener {
         buildViews(null, 0, startOffset, endOffset, endOffset, 0, documentView.isAccurateSpan());
     }
 
+    /**
+     * Init children of views in given range.
+     *
+     * @param startIndex lower bound (can possibly be < 0)
+     * @param endIndex upper bound (can possibly be >= viewCount).
+     */
     void initChildren(int startIndex, int endIndex) {
-        assert (startIndex >= 0) : "startIndex=" + startIndex; // NOI18N
-        assert (endIndex >= startIndex) : "endIndex=" + endIndex + " < startIndex=" + startIndex; // NOI18N
         if (endIndex - startIndex < LAZY_CHILDREN_MIN_BATCH_LINES) {
             // Build views around too
-            startIndex = Math.max(startIndex - (LAZY_CHILDREN_MIN_BATCH_LINES >> 1), 0);
-            endIndex = Math.min(endIndex + (LAZY_CHILDREN_MIN_BATCH_LINES >> 1), documentView.getViewCount());
+            startIndex -= (LAZY_CHILDREN_MIN_BATCH_LINES >> 1);
+            endIndex += (LAZY_CHILDREN_MIN_BATCH_LINES >> 1);
         }
+        startIndex = Math.max(startIndex, 0);
+        endIndex = Math.min(endIndex, documentView.getViewCount());
+
+        assert (startIndex >= 0) : "startIndex=" + startIndex; // NOI18N
+        assert (endIndex >= startIndex) : "endIndex=" + endIndex + " < startIndex=" + startIndex; // NOI18N
+        
         // Possibly shrink the area if some part already built
         ParagraphView startChild = documentView.getEditorView(startIndex);
         while (startChild.children != null && startIndex < endIndex - 1) {

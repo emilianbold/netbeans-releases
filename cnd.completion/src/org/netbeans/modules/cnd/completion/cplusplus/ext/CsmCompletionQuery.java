@@ -608,25 +608,25 @@ abstract public class CsmCompletionQuery {
         NONE, SCOPE, ARROW, DOT
     }
 
-    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile) {
+    private static CsmClassifier getClassifier(CsmType type, CsmFile contextFile, int offset) {
 //        if (type instanceof CsmCompletion.BaseType || type instanceof CsmCompletion.OffsetableType) {
 //            new Exception(type.getClass().getName() + type).printStackTrace();
 //        }
 //        boolean resolveTypeChain = true;
-        CsmClassifier cls = CsmBaseUtilities.getClassifier(type, contextFile, true);
+        CsmClassifier cls = CsmBaseUtilities.getClassifier(type, contextFile, offset, true);
         return cls;
     }
 
-    private static CsmFunction getOperator(CsmClassifier classifier, CsmFile contextFile, CsmFunction.OperatorKind opKind) {
+    private static CsmFunction getOperator(CsmClassifier classifier, CsmFile contextFile, int offset, CsmFunction.OperatorKind opKind) {
         if (!CsmKindUtilities.isClass(classifier)) {
             return null;
         }
         CsmClass cls = (CsmClass) classifier;
         CsmFilter filter = CsmSelect.getFilterBuilder().createNameFilter("operator " + opKind.getImage(), false, true, false); // NOI18N
-        return getOperatorCheckBaseClasses(cls, contextFile, filter, opKind, new AntiLoop());
+        return getOperatorCheckBaseClasses(cls, contextFile, offset, filter, opKind, new AntiLoop());
     }
 
-    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFile contextFile, CsmFilter filter, CsmFunction.OperatorKind opKind, AntiLoop antiLoop) {
+    private static CsmFunction getOperatorCheckBaseClasses(CsmClass cls, CsmFile contextFile, int offset, CsmFilter filter, CsmFunction.OperatorKind opKind, AntiLoop antiLoop) {
         if (antiLoop.contains(cls)) {
             return null;
         }
@@ -642,9 +642,9 @@ abstract public class CsmCompletionQuery {
         }
         // now check base classes as well
         for (CsmInheritance csmInheritance : cls.getBaseClasses()) {
-            CsmClassifier baseClassifier = getClassifier(csmInheritance.getAncestorType(), contextFile);
+            CsmClassifier baseClassifier = getClassifier(csmInheritance.getAncestorType(), contextFile, offset);
             if (CsmKindUtilities.isClass(baseClassifier)) {
-                CsmFunction operatorFun = getOperatorCheckBaseClasses((CsmClass) baseClassifier, contextFile, filter, opKind, antiLoop);
+                CsmFunction operatorFun = getOperatorCheckBaseClasses((CsmClass) baseClassifier, contextFile, offset, filter, opKind, antiLoop);
                 if (operatorFun != null) {
                     return operatorFun;
                 }
@@ -653,20 +653,20 @@ abstract public class CsmCompletionQuery {
         return null;
     }
 
-    private static CsmType getOverloadedOperatorReturnType(CsmType type, CsmFile contextFile, CsmFunction.OperatorKind operator, int level) {
+    private static CsmType getOverloadedOperatorReturnType(CsmType type, CsmFile contextFile, int offset, CsmFunction.OperatorKind operator, int level) {
         if (type == null || type.isPointer() || type.getArrayDepth() > 0) {
             return null;
         }
         CsmType opType = null;
-        CsmClassifier cls = getClassifier(type, contextFile);
+        CsmClassifier cls = getClassifier(type, contextFile, offset);
         if (CsmKindUtilities.isClass(cls)) {
-            CsmFunction op = CsmCompletionQuery.getOperator((CsmClass) cls, contextFile, operator);
+            CsmFunction op = CsmCompletionQuery.getOperator((CsmClass) cls, contextFile, offset, operator);
             if (op != null) {
                 opType = op.getReturnType();
                 if ((!type.equals(opType)) && (level > 0)) {
                     if (operator == CsmFunction.OperatorKind.ARROW) {
                         // recursion only for ->
-                        CsmType opType2 = getOverloadedOperatorReturnType(opType, contextFile, operator, level - 1);
+                        CsmType opType2 = getOverloadedOperatorReturnType(opType, contextFile, offset, operator, level - 1);
                         if (opType2 != null) {
                             opType = opType2;
                         }
@@ -797,7 +797,7 @@ abstract public class CsmCompletionQuery {
             CsmClassifier cls;
             if (lastType.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {
                 // Not array or deref array with arrow
-                cls = getClassifier(lastType, contextFile);
+                cls = getClassifier(lastType, contextFile, endOffset);
             } else {
                 // Array of some depth
                 cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
@@ -973,7 +973,7 @@ abstract public class CsmCompletionQuery {
                 nextKind = extractKind(exp, i + 1, startIdx, lastDot, false);
                 /*resolve arrows*/
                 if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && (i != startIdx) && (i < parmCnt || lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
-                    CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
+                    CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, endOffset, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (opType != null) {
                         lastType = opType;
                     }
@@ -987,7 +987,7 @@ abstract public class CsmCompletionQuery {
                 kind = extractKind(exp, tokCount + 1, startIdx, true, true);
                 /*resolve arrows*/
                 if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && (lastDot || findType) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
-                    CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
+                    CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, endOffset, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (opType != null) {
                         lastType = opType;
                     }
@@ -1317,7 +1317,7 @@ abstract public class CsmCompletionQuery {
                                         boolean inner = false;
                                         int ad = lastType.getArrayDepth();
                                         if (staticOnly && ad == 0) { // can be inner class
-                                            CsmClassifier classifier = getClassifier(lastType, contextFile);
+                                            CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
                                             if (CsmKindUtilities.isClass(classifier)) {
                                                 CsmClass clazz = (CsmClass) classifier;
                                                 List<CsmClassifier> classes = finder.findNestedClassifiers(contextElement, clazz, var, true, true, this.sort);
@@ -1329,7 +1329,7 @@ abstract public class CsmCompletionQuery {
                                         }
                                         if (!inner) { // not inner class name
                                             if (ad == 0 || (kind == ExprKind.ARROW)) { // zero array depth or deref array as pointer
-                                                CsmClassifier classifier = getClassifier(lastType, contextFile);
+                                                CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
                                                 if (CsmKindUtilities.isClass(classifier)) {
                                                     CsmClass clazz = (CsmClass) classifier;
                                                     List elemList = finder.findFields(contextElement, clazz, var, true, staticOnly, true, true, scopeAccessedClassifier, this.sort);
@@ -1434,7 +1434,7 @@ abstract public class CsmCompletionQuery {
                     lastType = resolveType(item.getParameter(0));
                     cont = false;
                     if (lastType != null) { // must be type
-                        CsmClassifier cls = getClassifier(lastType, contextFile);
+                        CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
                         if (cls != null) {
                             if (item.getParameterCount() == 2) { // index in array follows
                                 int ptrDepth = lastType.getPointerDepth();
@@ -1446,7 +1446,7 @@ abstract public class CsmCompletionQuery {
                                     arrDepth--;
                                     lastType = CsmCompletion.getType(cls, ptrDepth, ptrDepth > 0, arrDepth, lastType.isConst());
                                 } else {
-                                    CsmFunction opArray = CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.ARRAY);
+                                    CsmFunction opArray = CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.ARRAY);
                                     if (opArray != null) {
                                         lastType = opArray.getReturnType();
                                     }
@@ -1476,7 +1476,7 @@ abstract public class CsmCompletionQuery {
                     }
                     if (typ != null) {
                         lastType = typ;
-                        CsmClassifier cls = getClassifier(lastType, contextFile);
+                        CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
                         if (cls != null && CsmKindUtilities.isTemplate(cls)) {
                             CsmObject obj = createInstantiation((CsmTemplate)cls, item);
                             if (obj != null && CsmKindUtilities.isClass(obj)) {
@@ -1678,7 +1678,7 @@ abstract public class CsmCompletionQuery {
                             }
                         }
                         if (opKind != null) {
-                            CsmType opType = CsmCompletionQuery.getOverloadedOperatorReturnType(lastType, contextFile, opKind, MAX_DEPTH);
+                            CsmType opType = CsmCompletionQuery.getOverloadedOperatorReturnType(lastType, contextFile, endOffset, opKind, MAX_DEPTH);
                             if (opType != null) {
                                 lastType = opType;
                             } else if (lastType != null) {
@@ -1686,7 +1686,7 @@ abstract public class CsmCompletionQuery {
                                 if (ptrDepth > 0 && opKind == CsmFunction.OperatorKind.POINTER) {
                                     ptrDepth--;
                                 }
-                                lastType = CsmCompletion.getType(getClassifier(lastType, contextFile), ptrDepth, lastType.isReference(), lastType.getArrayDepth(), lastType.isConst());
+                                lastType = CsmCompletion.getType(getClassifier(lastType, contextFile, endOffset), ptrDepth, lastType.isReference(), lastType.getArrayDepth(), lastType.isConst());
                             }
                         }
                     // TODO: need to convert lastType into reference based on item token '&' or '*'
@@ -1915,8 +1915,8 @@ abstract public class CsmCompletionQuery {
                                         if (CsmKindUtilities.isVariable(object)) {
                                             CsmType varType = ((CsmVariable) object).getType();
                                             if (varType != null) {
-                                                CsmClassifier cls = getClassifier(varType, contextFile);
-                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                                CsmClassifier cls = getClassifier(varType, contextFile, endOffset);
+                                                CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
                                                 if (funCall != null) {
                                                     mtdList.add(funCall);
                                                 }
@@ -1925,8 +1925,8 @@ abstract public class CsmCompletionQuery {
                                     }
                                 }
                                 if (lastType != null && (!last || findType)) {
-                                    CsmClassifier cls = getClassifier(lastType, contextFile);
-                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                    CsmClassifier cls = getClassifier(lastType, contextFile, endOffset);
+                                    CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
                                     if (funCall != null) {
                                         mtdList.add(funCall);
                                     }
@@ -1966,8 +1966,8 @@ abstract public class CsmCompletionQuery {
                                                             }
                                                         }
                                                         if (fldType != null) {
-                                                            CsmClassifier cls = getClassifier(fldType, contextFile);
-                                                            CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, CsmFunction.OperatorKind.CAST);
+                                                            CsmClassifier cls = getClassifier(fldType, contextFile, endOffset);
+                                                            CsmFunction funCall = cls == null ? null : CsmCompletionQuery.getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.CAST);
                                                             if (funCall != null) {
                                                                 lastType = funCall.getReturnType();
                                                             }
@@ -2103,7 +2103,7 @@ abstract public class CsmCompletionQuery {
             }
 
             if (last && !first && (result == null || result.getItems().isEmpty()) && lastType != null) {
-                CsmClassifier classifier = getClassifier(lastType, contextFile);
+                CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
                 if(CsmKindUtilities.isInstantiation(classifier)) {
                     boolean instantiatedByTemplateParam = false;
                     CsmInstantiation inst = (CsmInstantiation)classifier;

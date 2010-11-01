@@ -553,7 +553,7 @@ public final class CompletionSupport implements DocumentListener {
             }
         }
         for (CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)) {
-            if (decl instanceof CsmVariable) {
+            if (CsmKindUtilities.isVariable(decl)) {
                 CsmVariable v = (CsmVariable) decl;
                 if (v.getName().toString().equals(var)) {
                     return v.getType();

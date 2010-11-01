@@ -142,16 +142,16 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 	NativeBreakpoint bpt =
 	    bb.locateBreakpointAt(fileName, lineNo, debugger);
 
-	int routingToken = RoutingToken.BREAKPOINTS.getUniqueRoutingTokenInt();
-
 	if (bpt != null) {
 	    // toggle off
 	    bpt.dispose();
 	} else {
 	    // toggle on
 	    bpt = NativeBreakpoint.newLineBreakpoint(fileName, lineNo);
-	    if (bpt != null)
+	    if (bpt != null) {
+                int routingToken = RoutingToken.BREAKPOINTS.getUniqueRoutingTokenInt();
 		Handler.postNewHandler(debugger, bpt, routingToken);
+            }
 	}
     }
 
