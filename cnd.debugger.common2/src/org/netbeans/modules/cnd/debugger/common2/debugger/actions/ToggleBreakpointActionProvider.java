@@ -56,21 +56,20 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 
-import org.openide.text.Line;
 
 import org.netbeans.api.debugger.ActionsManager;
 
-import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
-import org.netbeans.spi.debugger.ActionsProvider;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.spi.debugger.ActionsProvider.Registration;
 
 
 /*
@@ -80,18 +79,18 @@ import org.netbeans.spi.debugger.ActionsProvider;
  *	org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointAction
  * was: ToggleBreakpointSupport (or ToggleLinePerformer?)
  */
-@ActionsProvider.Registration
-public class ToggleBreakpointActionProvider extends NativeActionsProvider {
+@Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={"text/x-c++", "text/x-c", "text/x-h", "text/x-c/text/x-h", "text/x-fortran", "text/x-asm"})
+public class ToggleBreakpointActionProvider extends NativeActionsProvider implements PropertyChangeListener {
     
     public ToggleBreakpointActionProvider() {
 	super(null);
-	setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        EditorContextBridge.addPropertyChangeListener(this);
     }
 
-    public ToggleBreakpointActionProvider(ContextProvider ctxProvider) {
-	super(ctxProvider);
-	setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
-    }
+//    public ToggleBreakpointActionProvider(ContextProvider ctxProvider) {
+//	super(ctxProvider);
+//	setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+//    }
 
     /* LATER
     public String getName() {
@@ -122,18 +121,13 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider {
 
     /* interface ActionsProvider */
     public void doAction(Object action) {
-	NativeDebugger debugger = getDebugger();
-	
-	Line l = EditorBridge.getCurrentLine();
+        String fileName = EditorContextBridge.getCurrentFilePath();
+        if (fileName.trim().equals("")) {
+            return;
+        }
+	int lineNo = EditorContextBridge.getCurrentLineNumber();
 
-	// 6502318
-	if (l == null)
-	    return;
-
-	String fileName = EditorBridge.filenameFor(l);
-	int lineNo = l.getLineNumber();
-
-	if (ignoreJava && fileName.indexOf(".java") > 0) { // NOI18N
+	if (ignoreJava && fileName.endsWith(".java")) { // NOI18N
 	    // Ignore toggles in .java files because if the jpda debugger
 	    // is on we'll get two breakpoints.
 	    return;
@@ -144,6 +138,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider {
 
 	BreakpointBag bb = DebuggerManager.get().breakpointBag();
 
+        NativeDebugger debugger = getDebugger();
 	NativeBreakpoint bpt =
 	    bb.locateBreakpointAt(fileName, lineNo, debugger);
 
@@ -158,6 +153,18 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider {
 	    if (bpt != null)
 		Handler.postNewHandler(debugger, bpt, routingToken);
 	}
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        int lnum = EditorContextBridge.getCurrentLineNumber();
+        String mimeType = EditorContextBridge.getCurrentMIMEType();
+	boolean isValid = (MIMENames.isFortranOrHeaderOrCppOrC(mimeType)
+                || mimeType.equals(MIMENames.ASM_MIME_TYPE))
+                        && lnum > 0;
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isValid);
+//        if (debugger != null && debugger.getState() == GdbDebugger.State.EXITED) {
+//            destroy();
+//        }
     }
 
     /* interface NativeActionsProvider */
