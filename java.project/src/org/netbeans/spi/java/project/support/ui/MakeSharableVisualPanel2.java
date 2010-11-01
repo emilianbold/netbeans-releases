@@ -241,10 +241,13 @@ final class MakeSharableVisualPanel2 extends JPanel {
         tblJars.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         // oh well, how to reasonably set the prefered size otherwise?
-        col2.setHeaderRenderer(new XSizer());
-        col2.setHeaderValue("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //NOI18N
-        col2.sizeWidthToFit();
-        col2.setHeaderRenderer(null);
+//        col2.setHeaderRenderer(new XSizer());
+//        col2.setHeaderValue("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"); //NOI18N
+//        col2.sizeWidthToFit();
+//        col2.setHeaderRenderer(null);
+        col2.setPreferredWidth(300);
+        col2.setMinWidth(150);
+        col2.setWidth(300);
         col2.setHeaderValue(NbBundle.getMessage(MakeSharableVisualPanel2.class, "tblJars.header2"));
         
     }
@@ -281,6 +284,14 @@ final class MakeSharableVisualPanel2 extends JPanel {
         lblJars.setLabelFor(tblJars);
         org.openide.awt.Mnemonics.setLocalizedText(lblJars, org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "MakeSharableVisualPanel2.lblJars.text")); // NOI18N
 
+        tblJars.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+
+            }
+        ));
         jScrollPane1.setViewportView(tblJars);
         tblJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "ACSD_lblJars")); // NOI18N
 
@@ -299,25 +310,25 @@ final class MakeSharableVisualPanel2 extends JPanel {
             .add(layout.createSequentialGroup()
                 .add(lblJars)
                 .addContainerGap())
+            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
             .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(lblDetails)
                 .addContainerGap())
             .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
-            .add(lblHint, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(lblHint)
+                .add(lblHint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblJars)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 90, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(lblDetails)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 92, Short.MAX_VALUE))
+                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE))
         );
 
         lblJars.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MakeSharableVisualPanel2.class, "ACSD_lblJars")); // NOI18N
@@ -405,7 +416,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
                                 url = URLMapper.findURL(FileUtil.getArchiveFile(fo), URLMapper.EXTERNAL);
                             }
                         }
-                        contents.append(url).append("\n"); //NOI18N
+                        if ("file".equals(url.getProtocol())) { //NOI18N
+                            contents.append(FileUtil.getFileDisplayName(fo)).append("\n"); //NOI18N
+                        } else {
+                            contents.append(url).append("\n"); //NOI18N
+                        }
                     }
                 }
                 taDetails.setText(NbBundle.getMessage(MakeSharableVisualPanel2.class, "LBL_LIbraryContent", 
