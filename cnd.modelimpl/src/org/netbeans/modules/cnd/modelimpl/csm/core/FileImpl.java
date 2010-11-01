@@ -1614,40 +1614,45 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         boolean wereFakes = false;
         synchronized (fakeIncludeRegistrations) {
             for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
-                CsmInclude include = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.includeUid);
-                if (include != null) {
-                    CsmOffsetableDeclaration container = UIDCsmConverter.UIDtoDeclaration(fakeIncludePair.containerUid);
-                    if (container != null && container.isValid()) {
-                        FileImpl file = (FileImpl) include.getIncludeFile();
-                        if (file != null && file.isValid()) {
-                            TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
-                            if (ts != null) {
-                                CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
-                                if (container instanceof ClassImpl) {
-                                    ClassImpl cls = (ClassImpl) container;
-                                    parser.fix_fake_class_members();
-                                    AST ast = parser.getAST();
+                if (!fakeIncludePair.isFixed()) {
+                    CsmInclude include = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.includeUid);
+                    if (include != null) {
+                        CsmOffsetableDeclaration container = UIDCsmConverter.UIDtoDeclaration(fakeIncludePair.containerUid);
+                        if (container != null && container.isValid()) {
+                            FileImpl file = (FileImpl) include.getIncludeFile();
+                            if (file != null && file.isValid()) {
+                                TokenStream ts = file.getTokenStream(0, Integer.MAX_VALUE, 0, true);
+                                if (ts != null) {
+                                    CPPParserEx parser = CPPParserEx.getInstance(file.getFile().getName(), ts, 0);
+                                    if (container instanceof ClassImpl) {
+                                        ClassImpl cls = (ClassImpl) container;
+                                        parser.fix_fake_class_members();
+                                        AST ast = parser.getAST();
 
 
-                                    CsmDeclaration.Kind kind = cls.getKind();
-                                    CsmVisibility visibility = CsmVisibility.PRIVATE;
-                                    if(kind == CsmDeclaration.Kind.CLASS) {
-                                        visibility = CsmVisibility.PRIVATE;
-                                    } else if( kind == CsmDeclaration.Kind.STRUCT ||
-                                            kind == CsmDeclaration.Kind.UNION) {
-                                        visibility = CsmVisibility.PUBLIC;
+                                        CsmDeclaration.Kind kind = cls.getKind();
+                                        CsmVisibility visibility = CsmVisibility.PRIVATE;
+                                        if(kind == CsmDeclaration.Kind.CLASS) {
+                                            visibility = CsmVisibility.PRIVATE;
+                                        } else if( kind == CsmDeclaration.Kind.STRUCT ||
+                                                kind == CsmDeclaration.Kind.UNION) {
+                                            visibility = CsmVisibility.PUBLIC;
+                                        }
+                                        cls.fixFakeRender(file, visibility, ast, false);
+                                        fakeIncludePair.markFixed();
+                                        wereFakes = true;
+                                    } else if (container instanceof NamespaceDefinitionImpl) {
+                                        NamespaceDefinitionImpl ns = (NamespaceDefinitionImpl) container;
+                                        parser.external_declaration();
+                                        AST ast = parser.getAST();
+                                        ns.fixFakeRender(file, ast, false);
+                                        fakeIncludePair.markFixed();
+                                        wereFakes = true;
                                     }
-                                    cls.fixFakeRender(file, visibility, ast, false);
-                                } else if (container instanceof NamespaceDefinitionImpl) {
-                                    NamespaceDefinitionImpl ns = (NamespaceDefinitionImpl) container;
-                                    parser.external_declaration();
-                                    AST ast = parser.getAST();
-                                    ns.fixFakeRender(file, ast, false);
+                                } else {
+                                    APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N                            
                                 }
-                            } else {
-                                APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N                            
                             }
-                            wereFakes = true;
                         }
                     }
                 }
@@ -1698,8 +1703,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         fileReferencesKey.write(output);
         factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
 
-        factory.writeUIDCollection(FakeIncludePair.toIncludeUIDCollection(fakeIncludeRegistrations), output, false);
-        factory.writeUIDCollection(FakeIncludePair.toClassUIDCollection(fakeIncludeRegistrations), output, false);
+        FakeIncludePair.write(fakeIncludeRegistrations, output);
 
         //output.writeUTF(state.toString());
         output.writeByte(fileType.ordinal());
@@ -1755,11 +1759,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         factory.readUIDCollection(this.fakeFunctionRegistrations, input);
 
-        Collection<CsmUID<IncludeImpl>> fakeIncludeUIDs = new ArrayList<CsmUID<IncludeImpl>>(0);
-        Collection<CsmUID<CsmOffsetableDeclaration>> fakeContainerUIDs = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0);
-        factory.readUIDCollection(fakeIncludeUIDs, input);
-        factory.readUIDCollection(fakeContainerUIDs, input);
-        FakeIncludePair.appedToFakeCollection(fakeIncludeUIDs, fakeContainerUIDs, fakeIncludeRegistrations);
+        FakeIncludePair.read(this.fakeIncludeRegistrations, input);
 
         fileType = FileType.values()[input.readByte()];
 
@@ -1921,7 +1921,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         private final CsmUID<IncludeImpl> includeUid;
         private final CsmUID<CsmOffsetableDeclaration> containerUid;
-        // TODO: need to track already fixed includes
         private volatile boolean alreadyFixed;
 
         public FakeIncludePair(CsmUID<IncludeImpl> includeUid, CsmUID<CsmOffsetableDeclaration> containerUID) {
@@ -1939,30 +1938,38 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             alreadyFixed = true;
         }
         
-        static Collection<CsmUID<IncludeImpl>> toIncludeUIDCollection(Collection<FakeIncludePair> fakePairs) {
-            Collection<CsmUID<IncludeImpl>> out = new ArrayList<CsmUID<IncludeImpl>>(fakePairs.size());
-            for (FakeIncludePair pair: fakePairs) {
-                out.add(pair.includeUid);
+        private void write(DataOutput output) throws IOException {
+            UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+            factory.writeUID(includeUid, output);
+            factory.writeUID(containerUid, output);
+            output.writeBoolean(alreadyFixed);            
+        }
+        
+        private FakeIncludePair(DataInput input) throws IOException {
+            UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
+            includeUid = factory.readUID(input);
+            containerUid = factory.readUID(input);
+            alreadyFixed = input.readBoolean();
+        }
+        
+        private static void write(List<FakeIncludePair> coll, DataOutput output) throws IOException {
+            assert output != null;
+            Collection<FakeIncludePair> copy = new ArrayList<FakeIncludePair>(coll);
+            int collSize = copy.size();
+            output.writeInt(collSize);
+
+            for (FakeIncludePair pair : copy) {
+                assert pair != null;
+                pair.write(output);
             }
-            return out;
         }
 
-        static Collection<CsmUID<CsmOffsetableDeclaration>> toClassUIDCollection(Collection<FakeIncludePair> fakePairs) {
-            Collection<CsmUID<CsmOffsetableDeclaration>> out = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(fakePairs.size());
-            for (FakeIncludePair pair: fakePairs) {
-                out.add(pair.containerUid);
-            }
-            return out;
-        }
-
-        static void appedToFakeCollection(Collection<CsmUID<IncludeImpl>> fakeIncludeUIDs, Collection<CsmUID<CsmOffsetableDeclaration>> fakeCcontUIDs, Collection<FakeIncludePair> fakeRegistrationPairs) {
-            Iterator<CsmUID<IncludeImpl>> incIt = fakeIncludeUIDs.iterator();
-            Iterator<CsmUID<CsmOffsetableDeclaration>> contIt = fakeCcontUIDs.iterator();
-            while (incIt.hasNext() && contIt.hasNext()) {
-                CsmUID<IncludeImpl> inc = incIt.next();
-                CsmUID<CsmOffsetableDeclaration> cls = contIt.next();
-                fakeRegistrationPairs.add(new FakeIncludePair(inc, cls));
-            }
+        private static void read(List<FakeIncludePair> coll, DataInput input) throws IOException {
+            int collSize = input.readInt();
+            for (int i = 0; i < collSize; i++) {
+                FakeIncludePair pair = new FakeIncludePair(input);
+                coll.add(pair);
+            }            
         }
     }
 
