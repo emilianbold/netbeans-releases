@@ -192,7 +192,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return visualUpdate;
     }
     
-    void updateSpansAndLayout(EditorBoxView<V> boxView, VisualUpdate visualUpdate, Shape alloc) {
+    void updateSpansAndLayout(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, Shape alloc) {
         fixSpans(boxView, visualUpdate);
         // Update various spans affected by preceding changes.
         updateLayout(boxView, visualUpdate, alloc);
@@ -207,24 +207,23 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return visualUpdate;
     }
 
-    private void setVisualIndexAndOffset(EditorBoxView<V> boxView, VisualUpdate visualUpdate, int index) {
+    private void setVisualIndexAndOffset(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, int index) {
         // Adjacent child views on a line (highlight views) can be affected
         // if they share the same text layout with the removed child views.
         // Final determination can only be done once the added views are in-place and their font can be examined.
         // Check handleTabableViews() to determine whether handle joined text layouts (paragraph views)
         if (handleTabableViews()) {
-            index = HighlightsViewUtils.findAffectedLayoutIndex(boxView, index);
+            index = HighlightsViewUtils.findAffectedLayoutIndex(boxView, visualUpdate, index);
         }
         visualUpdate.visualIndex = index;
         visualUpdate.visualOffset = getViewVisualOffset(boxView, index);
     }
         
-    private void fixSpans(EditorBoxView<V> boxView, VisualUpdate visualUpdate) {
+    private void fixSpans(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate) {
         // Go through affected children and recompute spans and visual offsets.
         // For lines the only affected children are the added ones but for intra-line views
         // a TextLayout may span multiple views so affected children may precede/follow the added ones.
         boolean handleTabableViews = handleTabableViews();
-        int viewCount = size();
         int majorAxis = boxView.getMajorAxis();
         int minorAxis = ViewUtils.getOtherAxis(majorAxis);
         TabExpander tabExpander = handleTabableViews ? boxView.getTabExpander() : null;
@@ -234,8 +233,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
             "visualIndex=" + visualUpdate.visualIndex +
             " > endVisualIndex=" + visualUpdate.endVisualIndex; // NOI18N
         if (handleTabableViews) {
-            visualUpdate.endVisualIndex = HighlightsViewUtils.fixLayouts(
-                    boxView, visualUpdate.visualIndex, visualUpdate.endVisualIndex, viewCount);
+            HighlightsViewUtils.fixLayouts(boxView, visualUpdate);
         }
         
         for (int i = visualUpdate.visualIndex; i < visualUpdate.endVisualIndex; i++) {
@@ -285,6 +283,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
 
         // Fix upper visual offsets
         boolean tabsChanged = false;
+        int viewCount = size();
         if (gapStorage != null) {
             gapStorage.visualGapIndex = visualUpdate.endVisualIndex;
             gapStorage.visualGapStart = visualOffset;
@@ -368,7 +367,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         boxView.setMinorAxisSpan(minorAxisSpan);
     }
 
-    protected void updateLayout(EditorBoxView<V> boxView, VisualUpdate visualUpdate, Shape alloc) {
+    protected void updateLayout(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, Shape alloc) {
         int majorAxis = boxView.getMajorAxis();
         if (alloc != null) {
             Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
@@ -447,10 +446,6 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return child;
     }
     
-    private void ensureChildrenValid(EditorBoxView<V> boxView, int startIndex, int endIndex) {
-        boxView.initChildren(startIndex, endIndex);
-    }
-
     int getViewIndex(int offset, Position.Bias bias) {
 	if(bias == Position.Bias.Backward) {
 	    offset -= 1;
@@ -870,7 +865,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         if (LOG.isLoggable(Level.FINER)) {
             LOG.finer("EBView.paintChildren(): <" + startIndex + "," + endIndex + ">\n");
         }
-        ensureChildrenValid(boxView, startIndex, endIndex);
+        boxView.initChildren(startIndex - 1, endIndex + 1); // Ensure valid children (plus extra 2 lines)
         while (startIndex < endIndex) {
             V view = getEditorViewChildrenValid(boxView, startIndex);
             Shape childAlloc = getChildAllocation(boxView, startIndex, startIndex + 1, alloc);
