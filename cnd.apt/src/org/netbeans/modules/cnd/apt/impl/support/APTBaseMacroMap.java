@@ -124,7 +124,7 @@ public abstract class APTBaseMacroMap implements APTMacroMap {
             } while (defNode.accept(null, next));
             // special check for macros without values, we must set it to be 1
             if (defNode.getBody().isEmpty() && look4Equal) {
-                defNode.accept(null, APTUtils.DEF_MACRO_BODY.get(0));
+                defNode.accept(null, APTUtils.DEF_MACRO_BODY);
             }
             if (isSystem) {
                 defineImpl(null, defNode, Kind.COMPILER_PREDEFINED);
