@@ -68,35 +68,25 @@ public abstract class Crawler {
      *
      * @throws java.io.IOException
      */
-    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, boolean detectChangesOnly, CancelRequest cancelRequest) throws IOException {
+    protected Crawler(final URL root, boolean checkTimeStamps, boolean detectDeletedFiles, CancelRequest cancelRequest) throws IOException {
         this.root = root;
         this.checkTimeStamps = checkTimeStamps;
         this.timeStamps = TimeStamps.forRoot(root, detectDeletedFiles);
         this.cancelRequest = cancelRequest;
-        this.detectChangesOnly = detectChangesOnly;
     }
 
     public final Collection<IndexableImpl> getResources() throws IOException {
-        init ();
-        if (detectChangesOnly) {
-            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
-        }
+        init ();        
         return checkTimeStamps ? resources : allResources;
     }
 
     public final Collection<IndexableImpl> getAllResources() throws IOException {
-        init ();
-        if (detectChangesOnly) {
-            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
-        }
+        init ();        
         return allResources;
     }
 
     public final Collection<IndexableImpl> getDeletedResources () throws IOException {
-        init ();
-        if (detectChangesOnly) {
-            throw new IllegalStateException("Not supported in detect changes only mode");   //NOI18N
-        }
+        init ();        
         return deleted;
     }
 
@@ -135,7 +125,6 @@ public abstract class Crawler {
     private final boolean checkTimeStamps;
     private final TimeStamps timeStamps;
     private final CancelRequest cancelRequest;
-    private final boolean detectChangesOnly;
 
     private Collection<IndexableImpl> resources;
     private Collection<IndexableImpl> allResources;
@@ -147,29 +136,24 @@ public abstract class Crawler {
     private void init () throws IOException {
         if (!initialized) {
             try {
-                Collection<IndexableImpl> _resources = checkTimeStamps && !detectChangesOnly ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
-                Collection<IndexableImpl> _allResources = !detectChangesOnly ?  new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                Collection<IndexableImpl> _resources = checkTimeStamps ? new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                Collection<IndexableImpl> _allResources = new LinkedHashSet<IndexableImpl>();
                 this.finished = collectResources(_resources, _allResources);
-                this.resources = checkTimeStamps && !detectChangesOnly? Collections.unmodifiableCollection(_resources) : null;
-                this.allResources = !detectChangesOnly? Collections.unmodifiableCollection(_allResources) : null;
+                this.resources = checkTimeStamps ? Collections.unmodifiableCollection(_resources) : null;
+                this.allResources = Collections.unmodifiableCollection(_allResources);
                 changed = !_resources.isEmpty();
 
-                final Set<String> unseen = timeStamps.getUnseenFiles();
-                if (detectChangesOnly) {
-                    deleted = null;
-                    changed |= unseen != null && !unseen.isEmpty();
-                } else {
-                    if (unseen != null) {
-                        deleted = new ArrayList<IndexableImpl>(unseen.size());
-                        for (String u : unseen) {
-                            deleted.add(new DeletedIndexable(root, u));
-                        }
-                        deleted = Collections.unmodifiableCollection(deleted);
-                    } else {
-                        deleted = Collections.<IndexableImpl>emptySet();
+                final Set<String> unseen = timeStamps.getUnseenFiles();                
+                if (unseen != null) {
+                    deleted = new ArrayList<IndexableImpl>(unseen.size());
+                    for (String u : unseen) {
+                        deleted.add(new DeletedIndexable(root, u));
                     }
-                    changed |= !deleted.isEmpty();
+                    deleted = Collections.unmodifiableCollection(deleted);
+                } else {
+                    deleted = Collections.<IndexableImpl>emptySet();
                 }
+                changed |= !deleted.isEmpty();
             } finally {
                 initialized = true;
             }
