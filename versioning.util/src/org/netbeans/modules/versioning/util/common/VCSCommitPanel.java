@@ -151,10 +151,10 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     private final Preferences preferences;
     private final VCSCommitParameters parameters;
     private final Map<String, VCSCommitFilter> filters = new LinkedHashMap<String, VCSCommitFilter>();
-    private final MultiDiffProvider diffProvider;
+    private final VCSCommitDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, MultiDiffProvider diffProvider) {
+    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
         this.parameters = parameters;
         this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
         this.diffProvider = diffProvider;
@@ -359,7 +359,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             return Box.createHorizontalStrut(width);
     }
             
-    private int getContainerGap(int direction) {
+    int getContainerGap(int direction) {
         return LayoutStyle.getInstance().getContainerGap(this,
                                                                direction,
                                                                null);
@@ -507,71 +507,13 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
 
     protected abstract void computeNodes();
     
-    private abstract class CollapsiblePanel extends JPanel {
-        protected final CategoryButton sectionButton;
-        protected final JPanel sectionPanel;
-                
-        public CollapsiblePanel(boolean defaultSectionDisplayed) {
-            ActionListener al = new ActionListener() {
-               @Override
-               public void actionPerformed(ActionEvent e) {
-                   if (sectionPanel.isVisible()) {
-                       hideSection();
-                   } else {
-                       displaySection();
-                   }
-               }
-            };
-            
-            this.sectionButton = new CategoryButton(al);
-            this.sectionPanel = new JPanel();
-            
-            this.sectionButton.setSelected(defaultSectionDisplayed);
-            
-            setLayout(new BoxLayout(this, Y_AXIS));
-            sectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, sectionButton.getMaximumSize().height));
-            add(sectionButton);
-            add(makeVerticalStrut(sectionButton, sectionPanel, RELATED, VCSCommitPanel.this));
-            add(sectionPanel);  
-            
-            setAlignmentX(LEFT_ALIGNMENT);
-            sectionPanel.setLayout(new BoxLayout(sectionPanel, Y_AXIS));
-            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);            
-            sectionButton.setAlignmentX(LEFT_ALIGNMENT);
-            
-            Icon i = sectionButton.getIcon();
-            Border b = sectionButton.getBorder();
-            int left = (b != null ? b.getBorderInsets(sectionButton).left : 0) + (i != null ? i.getIconWidth() : 16) + sectionButton.getIconTextGap();
-            int bottom = getContainerGap(SOUTH);
-            sectionPanel.setBorder(createEmptyBorder(0,     // top
-                                    left,                   // left
-                                    bottom,                 // bottom
-                                    0));                    // right
-            
-            if(defaultSectionDisplayed) {
-                displaySection();
-            } else {
-                hideSection();
-            }
-        }
-        
-        private void displaySection() {
-            sectionPanel.setVisible(true);
-            enlargeVerticallyAsNecessary();
-        }
-
-        private void hideSection() {
-            sectionPanel.setVisible(false);            
-        }        
-    }
-    
     private class FilesPanel extends CollapsiblePanel implements ActionListener {
         public static final String TOOLBAR_FILTER = "toolbar.filter";           // NOI18N
         final JLabel filesLabel = new JLabel();        
         private static final boolean DEFAULT_DISPLAY_FILES = true;
         private final JToolBar toolbar;
         public FilesPanel()  {
-            super(DEFAULT_DISPLAY_FILES);
+            super(VCSCommitPanel.this, DEFAULT_DISPLAY_FILES);
             
             Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
                         
@@ -646,7 +588,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         private static final boolean DEFAULT_DISPLAY_HOOKS = false;
         
         public HookPanel(Collection<? extends VCSHook> hooks, VCSHookContext hookContext) {            
-            super(DEFAULT_DISPLAY_HOOKS);
+            super(VCSCommitPanel.this, DEFAULT_DISPLAY_HOOKS);
             this.hooks = hooks;
             this.hookContext = hookContext;
             
@@ -671,185 +613,5 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             }                
         }
     }
-
-    public abstract static class MultiDiffProvider {
-        private HashMap<File, JComponent> displayedDiffs = new HashMap<File, JComponent>();
-        
-        
-        JComponent getDiffComponent(File file) {
-            JComponent component = displayedDiffs.get(file);
-            if (component == null) {
-                component = createDiffComponent(file); //new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
-                displayedDiffs.put(file, component);                
-            }   
-            return component;
-        }
-
-        protected abstract JComponent createDiffComponent(File file);
-        
-        protected Set<File> getModifiedFiles() {
-            return Collections.emptySet();
-        }
-        
-        protected SaveCookie[] getSaveCookies() {
-            return new SaveCookie[0];
-        }
-        
-        protected EditorCookie[] getEditorCookies() {
-            return new EditorCookie[0];
-        }
-    }
-
-    // inspired by org.netbeans.modules.palette.ui.CategoryButton
-    private class CategoryButton extends JCheckBox {
-
-        final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
-        final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
-        final boolean isAqua = "Aqua".equals( UIManager.getLookAndFeel().getID() );
-        private final ActionListener al;
-
-
-        @Override
-        public String getUIClassID() {
-            String classID = super.getUIClassID();
-            if (isGTK) {
-                classID = "MetalCheckBoxUI_4_GTK";
-            }
-            return classID;
-        }
-
-        CategoryButton(ActionListener al) {
-            this.al = al;
-            if (isGTK) {
-                UIManager.put("MetalCheckBoxUI_4_GTK", "javax.swing.plaf.metal.MetalCheckBoxUI");
-            }
-
-            //force initialization of PropSheet look'n'feel values 
-            UIManager.get( "nb.propertysheet" );
-
-            setFont( getFont().deriveFont( Font.BOLD ) );
-            setMargin(new Insets(0, 3, 0, 3));
-            setFocusPainted( false );
-
-            setHorizontalAlignment( SwingConstants.LEFT );
-            setHorizontalTextPosition( SwingConstants.RIGHT );
-            setVerticalTextPosition( SwingConstants.CENTER );
-
-            updateProperties();
-
-            if( getBorder() instanceof CompoundBorder ) { // from BasicLookAndFeel
-                Dimension pref = getPreferredSize();
-                pref.height -= 3;
-                setPreferredSize( pref );
-            }
-
-            addActionListener(al);
-            initActions();
-        }
-
-        private void initActions() {
-            InputMap inputMap = getInputMap( WHEN_FOCUSED );
-            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_LEFT, 0, false ), "collapse" ); //NOI18N
-            inputMap.put( KeyStroke.getKeyStroke( KeyEvent.VK_RIGHT, 0, false ), "expand" ); //NOI18N
-
-            ActionMap actionMap = getActionMap();
-            actionMap.put( "collapse", new ExpandAction( false ) ); //NOI18N
-            actionMap.put( "expand", new ExpandAction( true ) ); //NOI18N
-        }
-
-        private void updateProperties() {
-            setIcon( UIManager.getIcon(isGTK ? "Tree.gtk_collapsedIcon" : "Tree.collapsedIcon") );
-            setSelectedIcon( UIManager.getIcon(isGTK ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon") );
-            Mnemonics.setLocalizedText( this, getText() );
-            getAccessibleContext().setAccessibleName( getText() );
-            getAccessibleContext().setAccessibleDescription( getText() );
-            if( isAqua ) {
-                setContentAreaFilled(true);
-                setOpaque(true);
-                setBackground( new Color(0,0,0) );
-                setForeground( new Color(255,255,255) );
-            }
-            if( isNimbus ) {
-                setOpaque(true);
-                setContentAreaFilled(true);
-            }
-        }
-
-        private boolean isExpanded() {
-            return isSelected();
-        }
-
-        private void setExpanded( boolean expand ) {
-            setSelected(expand);
-            requestFocus ();
-        }
-
-        @Override
-        public Color getBackground() {
-            if( isFocusOwner() ) {
-                if( isGTK || isNimbus )
-                    return UIManager.getColor("Tree.selectionBackground"); //NOI18N
-                return UIManager.getColor( "PropSheet.selectedSetBackground" ); //NOI18N
-            } else {
-                if( isAqua ) {
-                    Color defBk = UIManager.getColor("NbExplorerView.background");
-                    if( null == defBk )
-                        defBk = Color.gray;
-                    return new Color( defBk.getRed()-10, defBk.getGreen()-10, defBk.getBlue()-10);
-                }
-                if( isGTK || isNimbus ) {
-                    if( getModel().isRollover() )
-                        return new Color( UIManager.getColor( "Menu.background" ).getRGB() ).darker(); //NOI18N
-                    return new Color( UIManager.getColor( "Menu.background" ).getRGB() );//NOI18N
-                }
-                return UIManager.getColor( "PropSheet.setBackground" ); //NOI18N
-            }
-        }
-
-        @Override
-        public Color getForeground() {
-            if( isFocusOwner() ) {
-                if( isAqua )
-                    return UIManager.getColor( "Table.foreground" ); //NOI18N
-                else if( isGTK || isNimbus )
-                    return UIManager.getColor( "Tree.selectionForeground" ); //NOI18N
-                return UIManager.getColor( "PropSheet.selectedSetForeground" ); //NOI18N
-            } else {
-                if( isAqua ) {
-                    Color res = UIManager.getColor("PropSheet.setForeground"); //NOI18N
-
-                    if (res == null) {
-                        res = UIManager.getColor("Table.foreground"); //NOI18N
-
-                        if (res == null) {
-                            res = UIManager.getColor("textText");
-
-                            if (res == null) {
-                                res = Color.BLACK;
-                            }
-                        }
-                    }
-                    return res;
-                }
-                if( isGTK || isNimbus ) {
-                    return new Color( UIManager.getColor( "Menu.foreground" ).getRGB() ); //NOI18N
-                }
-                return super.getForeground();
-            }
-        }
-
-        private class ExpandAction extends AbstractAction {
-            private boolean expand;
-            public ExpandAction( boolean expand ) {
-                this.expand = expand;
-            }
-            public void actionPerformed(ActionEvent e) {
-                if( expand == isExpanded() ) {
-                    return;                    
-                }
-                setExpanded( expand );
-                al.actionPerformed(e);
-            }
-        }
-    }    
+      
 }

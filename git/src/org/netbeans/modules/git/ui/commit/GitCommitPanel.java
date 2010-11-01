@@ -58,8 +58,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
@@ -73,6 +71,7 @@ import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
@@ -96,7 +95,7 @@ public class GitCommitPanel extends VCSCommitPanel {
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+    private GitCommitPanel(final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, VCSCommitDiffProvider diffProvider) {
         super(parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
         this.roots = roots;
         this.repository = repository;
@@ -247,7 +246,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         enableCommitButton(enabled && table.containsCommitable());        
     }
 
-    private static class DiffProvider extends VCSCommitPanel.MultiDiffProvider {
+    private static class DiffProvider extends VCSCommitDiffProvider {
         
         @Override
         public Set<File> getModifiedFiles() {
