@@ -112,7 +112,7 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  */
 public abstract class VCSCommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener {
 
-    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOPI18N
+    public static final String PROP_COMMIT_EXCLUSIONS       = "commitExclusions";    // NOI18N
     
     static final Object EVENT_SETTINGS_CHANGED = new Object();   
     
@@ -155,8 +155,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         commitTable.setCommitPanel(this);
         this.preferences = preferences;
     }
-
-    protected abstract void commitTableChanged();
     
     public VCSCommitTable getCommitTable() {
         return commitTable;
@@ -174,26 +172,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
 
     private JPanel getProgressPanel() {
         return progressPanel;
-    }
-    
-    protected void stopProgress() {
-        JPanel p = getProgressPanel();
-        p.removeAll();
-        p.setVisible(false);
-    }
-
-    protected void setupProgress(String message, JComponent progressComponent) {
-        JPanel p = getProgressPanel();
-        p.setLayout(new BoxLayout(p, X_AXIS));
-        JLabel l = new JLabel(message);
-        p.add(l);
-        p.add(makeHorizontalStrut(l, progressComponent, RELATED, p));
-        p.add(progressComponent);               
-    }
-    
-    protected void showProgress() {
-        JPanel p = getProgressPanel();
-        p.setVisible(true);
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
@@ -244,6 +222,38 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
     }
     
+    protected abstract void commitTableChanged();
+    
+    protected abstract void computeNodes();
+    
+    protected boolean isCommitButtonEnabled() {
+        return commitButton.isEnabled();
+    }
+
+    protected void enableCommitButton(boolean enabled) {
+        commitButton.setEnabled(enabled);
+    }    
+    
+    protected void stopProgress() {
+        JPanel p = getProgressPanel();
+        p.removeAll();
+        p.setVisible(false);
+    }
+
+    protected void setupProgress(String message, JComponent progressComponent) {
+        JPanel p = getProgressPanel();
+        p.setLayout(new BoxLayout(p, X_AXIS));
+        JLabel l = new JLabel(message);
+        p.add(l);
+        p.add(makeHorizontalStrut(l, progressComponent, RELATED, p));
+        p.add(progressComponent);               
+    }
+    
+    protected void showProgress() {
+        JPanel p = getProgressPanel();
+        p.setVisible(true);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      */
@@ -257,7 +267,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         cancelButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Cancel"));
         cancelButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Cancel"));        
         
-        getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog")); // NOI18N
+        getAccessibleContext().setAccessibleName(getMessage("ACSN_CommitDialog"));        // NOI18N
         getAccessibleContext().setAccessibleDescription(getMessage("ACSD_CommitDialog")); // NOI18N
         
         basePanel.setBorder(createEmptyBorder(10,             // top
@@ -282,7 +292,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         // hooks area
         if(!hooks.isEmpty()) {            
             HookPanel hooksPanel = new HookPanel(this, hooks, hooksContext);                                                              
-//            basePanel.add(makeVerticalStrut(filesPanel, hooksPanel, RELATED, this));
             hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
             basePanel.add(hooksPanel);
             basePanel.add(makeVerticalStrut(hooksPanel, errorLabel, RELATED, this));
@@ -294,7 +303,6 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, Y_AXIS));
         bottomPanel.add(progressPanel);
-//        bottomPanel.add(makeFlexibleHorizontalStrut(15, 90, Short.MAX_VALUE));
         bottomPanel.add(errorLabel);
         errorLabel.setAlignmentY(CENTER_ALIGNMENT);                
         errorLabel.setText("");
@@ -386,7 +394,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
                  tabbedPane.addChangeListener(this);                
             }
             File file = node.getFile();
-            JComponent component = diffProvider.getDiffComponent(file); //new MultiDiffPanel(file, HgRevision.BASE, HgRevision.CURRENT, false); // switch the last parameter to true if editable diff works poorly
+            JComponent component = diffProvider.getDiffComponent(file); 
             if (component != null) {                
                 tabbedPane.addTab(file.getName(), component);
                 tabbedPane.setSelectedComponent(component);
@@ -481,15 +489,5 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         }
         return dd.getValue() == commitButton;
     }
-
-    protected boolean isCommitButtonEnabled() {
-        return commitButton.isEnabled();
-    }
-
-    protected void enableCommitButton(boolean enabled) {
-        commitButton.setEnabled(enabled);
-    }
-
-    protected abstract void computeNodes();
       
 }
