@@ -56,7 +56,6 @@ import org.openide.util.NbBundle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -176,6 +175,10 @@ public final class ServerRegistry implements java.io.Serializable {
         String name = ""; //NOI18N
         try {
             if (fo.isFolder()) {
+                if (fo.getFileObject("Descriptor") == null) { // NOI18N
+                    LOGGER.log(Level.WARNING, "No server descriptor found in {0}", fo.getPath());
+                    return;
+                }
                 name = fo.getName();
                 Server server = null;
                 synchronized (this) {
