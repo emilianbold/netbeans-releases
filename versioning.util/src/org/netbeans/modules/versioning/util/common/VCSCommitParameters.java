@@ -92,55 +92,65 @@ public abstract class VCSCommitParameters {
         return preferences;
     }
     
-    protected JLabel createRecentMessagesLink(final JTextArea text) {
+    public static JLabel createRecentMessagesLink(final JTextArea text, final Preferences preferences) {
+        JLabel recentLink = new JLabel();
+        recentLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/recent_messages.png"))); // NOI18N
+        recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N            
+
+        recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        recentLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onBrowseRecentMessages(text, preferences);
+            }
+        });                    
+        return recentLink;
+    }
+    
+    public JLabel getRecentMessagesLink(final JTextArea text) {
         if(recentLink == null) {
-            recentLink = new JLabel();
-            recentLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/recent_messages.png"))); // NOI18N
-            recentLink.setToolTipText(getMessage("CTL_CommitForm_RecentMessages")); // NOI18N            
-            
-            recentLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            recentLink.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    onBrowseRecentMessages(text);
-                }
-            });            
+            recentLink = createRecentMessagesLink(text, preferences);
         }
         return recentLink;
     }
     
-    protected JLabel createMessagesTemplateLink(final JTextArea text) {
+    protected static JLabel createMessagesTemplateLink(final JTextArea text, final Preferences preferences) {
+        JLabel templateLink = new JLabel();
+        templateLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/load_template.png"))); // NOI18N
+        templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N            
+
+        templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        templateLink.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                onTemplate(text, preferences);
+            }
+        });    
+        return templateLink;
+    }
+    
+    protected JLabel getMessagesTemplateLink(final JTextArea text) {
         if(templateLink == null) {
-            templateLink = new JLabel();
-            templateLink.setIcon(new ImageIcon(VCSCommitParameters.class.getResource("/org/netbeans/modules/versioning/util/resources/load_template.png"))); // NOI18N
-            templateLink.setToolTipText(getMessage("CTL_CommitForm_LoadTemplate")); // NOI18N            
-            
-            templateLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            templateLink.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    onTemplate(text);
-                }
-            });        
+            templateLink = createMessagesTemplateLink(text, preferences);
         }
         return templateLink;
     }
     
-    private String getMessage(String msgKey) {
+    private static String getMessage(String msgKey) {
         return NbBundle.getMessage(VCSCommitParameters.class, msgKey);
     } 
     
-    private void onBrowseRecentMessages(JTextArea text) {
+    private static void onBrowseRecentMessages(JTextArea text, Preferences preferences) {
         StringSelector.RecentMessageSelector selector = new StringSelector.RecentMessageSelector(preferences);    
         String message = selector.getRecentMessage(getMessage("CTL_CommitForm_RecentTitle"),  // NOI18N
                                                getMessage("CTL_CommitForm_RecentPrompt"),  // NOI18N
-            getRecentCommitMessages());
+            getRecentCommitMessages(preferences));
         if (message != null) {
             text.replaceSelection(message);
         }
     }
 
-    private void onTemplate(JTextArea text) {
+    private static void onTemplate(JTextArea text, Preferences preferences) {
         TemplateSelector ts = new TemplateSelector(preferences);
         if(ts.show()) {
             text.setText(ts.getTemplate());
@@ -151,7 +161,7 @@ public abstract class VCSCommitParameters {
         return preferences.get(LAST_COMMIT_MESSAGE, "");
     }
         
-    protected List<String> getRecentCommitMessages() {
+    protected static List<String> getRecentCommitMessages(Preferences preferences) {
         return Utils.getStringList(preferences, RECENT_COMMIT_MESSAGES);
     }  
     
@@ -170,7 +180,7 @@ public abstract class VCSCommitParameters {
     }
     
     public static class DefaultCommitParameters extends VCSCommitParameters {
-        private ParametersPanel panel;
+        private JPanel panel;
         private String commitMessage;
 
         public DefaultCommitParameters(Preferences preferences, String commitMessage) {
@@ -185,11 +195,15 @@ public abstract class VCSCommitParameters {
         @Override
         public JPanel getPanel() {
             if(panel == null) {
-                panel = new ParametersPanel();                
+                panel = createPanel();                
             }
             return panel;
         }
 
+        protected JPanel createPanel() {
+            return new ParametersPanel();
+        }
+        
         public String getCommitMessage() {
             return ((ParametersPanel) getPanel()).messageTextArea.getText();
         }
@@ -214,8 +228,8 @@ public abstract class VCSCommitParameters {
                 messageLabel.setLabelFor(messageTextArea);
                 Mnemonics.setLocalizedText(messageLabel, getMessage("CTL_CommitForm_Message")); // NOI18N
 
-                JLabel templateLink = createMessagesTemplateLink(messageTextArea);
-                JLabel recentLink = createRecentMessagesLink(messageTextArea);
+                JLabel templateLink = getMessagesTemplateLink(messageTextArea);
+                JLabel recentLink = getRecentMessagesLink(messageTextArea);
 
                 messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
                 messageTextArea.setLineWrap(true);
@@ -256,13 +270,14 @@ public abstract class VCSCommitParameters {
             public void addNotify() {
                 super.addNotify();
 
+                // XXX why in notify?
                 TemplateSelector ts = new TemplateSelector(getPreferences());
                 if (ts.isAutofill()) {
                     messageTextArea.setText(ts.getTemplate());
                 } else {
                     String lastCommitMessage = getLastCanceledCommitMessage();
                     if (lastCommitMessage.isEmpty() && new StringSelector.RecentMessageSelector(getPreferences()).isAutoFill()) {
-                        List<String> messages = getRecentCommitMessages();
+                        List<String> messages = getRecentCommitMessages(getPreferences());
                         if (messages.size() > 0) {
                             lastCommitMessage = messages.get(0);
                         }
