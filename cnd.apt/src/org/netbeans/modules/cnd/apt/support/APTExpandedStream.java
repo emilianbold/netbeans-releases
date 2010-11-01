@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
+import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 import org.openide.util.CharSequences;
 
 /**
@@ -199,7 +200,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             if (isExpandingPPExpression()) {
                 if (APTUtils.isEOF(out.nextToken())) {
                     // no body => use default
-                    out = new ListBasedTokenStream(APTUtils.DEF_MACRO_BODY);
+                    out = new TokenBasedTokenStream(APTUtils.DEF_MACRO_BODY);
                 } else {
                     // has body => restore original eaten by the nextToken call above
                     out = new APTCommentsFilter(macro.getBody());
