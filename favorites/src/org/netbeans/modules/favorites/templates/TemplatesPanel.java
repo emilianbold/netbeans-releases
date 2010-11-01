@@ -44,6 +44,7 @@
 package org.netbeans.modules.favorites.templates;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -159,6 +160,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         view.setRootVisible (false);
         view.setPopupAllowed (true);
         view.setDefaultActionAllowed (false);
+        view.setPreferredSize(new Dimension(350, 250));
     }
     
     private static class TemplateTreeView extends BeanTreeView {
@@ -275,7 +277,6 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         jSeparator4 = new javax.swing.JSeparator();
         settingsButton = new javax.swing.JButton();
 
-        setPreferredSize(new java.awt.Dimension(500, 300));
         setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(templatesLabel, org.openide.util.NbBundle.getBundle(TemplatesPanel.class).getString("LBL_TemplatesPanel_TemplatesLabel")); // NOI18N
@@ -308,7 +309,6 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 3, 0);
         buttonsPanel.add(addButton, gridBagConstraints);
         addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "ACD_TemplatesPanel_Add")); // NOI18N
@@ -411,7 +411,6 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 3, 0);
         buttonsPanel.add(deleteButton, gridBagConstraints);
         deleteButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TemplatesPanel.class, "ACD_TemplatesPanel_Delete")); // NOI18N
