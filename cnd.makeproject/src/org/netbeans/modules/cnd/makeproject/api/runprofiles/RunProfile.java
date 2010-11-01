@@ -537,7 +537,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     public static int getDefaultConsoleType() {
-        return CONSOLE_TYPE_EXTERNAL;
+        return CONSOLE_TYPE_INTERNAL;
     }
 
     public IntConfiguration getTerminalType() {
