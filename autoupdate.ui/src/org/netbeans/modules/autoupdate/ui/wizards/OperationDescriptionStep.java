@@ -192,33 +192,38 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                     ((InstallUnitWizardModel) model).hasStandardComponents ();
                 }
                 boolean hasBrokenDependencies = model.hasBrokenDependencies ();
+                final String[] args = { null, null, null, null };
+                final boolean[] barg = { false };
                 if (hasBrokenDependencies) {
-                    body = new OperationDescriptionPanel ("", "",
-                            prepareBrokenDependenciesForShow (model),
-                            "",
-                            true);
+                    args[0] = "";
+                    args[1] = "";
+                    args[2] = prepareBrokenDependenciesForShow (model);
+                    args[3] = "";
+                    barg[0] = true;
                 } else {
-                    body = new OperationDescriptionPanel (tableTitle,
-                            preparePluginsForShow (
+                    args[0] = tableTitle;
+                    args[1] = preparePluginsForShow (
                                 model.getPrimaryUpdateElements(),
                                 model.getPrimaryVisibleUpdateElements(true),
                                 model.getCustomHandledComponents (),
                                 model.getOperation (),
-                                true),
-                            dependenciesTitle,
-                            preparePluginsForShow (
+                                true);
+                    args[2] = dependenciesTitle;
+                    args[3] = preparePluginsForShow (
                                 model.getRequiredUpdateElements(),
                                 model.getRequiredVisibleUpdateElements(),
                                 null,
                                 model.getOperation (),
-                                true),
-                            ! model.getRequiredVisibleUpdateElements().isEmpty ());
+                                true);
+                    barg[0] = !model.getRequiredVisibleUpdateElements().isEmpty();
                 }
-                final JPanel finalPanel = body;
                 readyToGo = model != null && ! hasBrokenDependencies;
                 SwingUtilities.invokeLater (new Runnable () {
                     public void run () {
-                        component.setBody (finalPanel);
+                        JPanel p = new OperationDescriptionPanel(
+                            args[0], args[1], args[2], args[3], barg[0]
+                        );
+                        component.setBody (p);
                         component.setWaitingState (false);
                         fireChange ();
                     }
