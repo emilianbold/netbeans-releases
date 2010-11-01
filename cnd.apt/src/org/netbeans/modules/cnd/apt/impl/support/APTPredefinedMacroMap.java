@@ -63,7 +63,7 @@ import org.openide.util.CharSequences;
  *
  * @author alms
  */
-public class APTPredefinedMacroMap implements APTMacroMap {
+public final class APTPredefinedMacroMap implements APTMacroMap {
        
     private static CharSequence []preMacro = new CharSequence [] {
          CharSequences.create("__FILE__"),  // NOI18N
@@ -75,17 +75,20 @@ public class APTPredefinedMacroMap implements APTMacroMap {
          CharSequences.create("__pragma")  // NOI18N
     };
 
-    public APTPredefinedMacroMap() {
+    /*package*/ APTPredefinedMacroMap() {
     }
 
+    @Override
     public APTMacroMap.State getState() {
         return null;
     }
 
+    @Override
     public boolean isDefined(APTToken token) {
         return isDefined(token.getTextID());
     }
     
+    @Override
     public boolean isDefined(CharSequence token) {
         int i;
         
@@ -102,6 +105,7 @@ public class APTPredefinedMacroMap implements APTMacroMap {
         return false;
     }
 
+    @Override
     public APTMacro getMacro(APTToken token) {
         if (isDefined(token.getTextID())) {
             return new APTPredefinedMacroImpl(token);
@@ -110,27 +114,33 @@ public class APTPredefinedMacroMap implements APTMacroMap {
     }
     
 
+    @Override
     public void setState(APTMacroMap.State state) {
         APTUtils.LOG.log(Level.SEVERE, "setState is not supported", new IllegalAccessException()); // NOI18N
     }
 
+    @Override
     public void define(APTFile file, APTDefine define, Kind macroType) {
         APTUtils.LOG.log(Level.SEVERE, "define is not supported", new IllegalAccessException()); // NOI18N
     }
 
+    @Override
     public void undef(APTFile file, APTToken name) {
         APTUtils.LOG.log(Level.SEVERE, "undef is not supported", new IllegalAccessException()); // NOI18N
     }
    
+    @Override
     public boolean pushExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "pushExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
     }
 
+    @Override
     public void popExpanding() {
         APTUtils.LOG.log(Level.SEVERE, "popExpanding is not supported", new IllegalAccessException()); // NOI18N
     }
 
+    @Override
     public boolean isExpanding(APTToken token) {
         APTUtils.LOG.log(Level.SEVERE, "isExpanding is not supported", new IllegalAccessException()); // NOI18N
         return false;
@@ -143,14 +153,17 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             this.macro =  macro;           
         }
 
+        @Override
         public CharSequence getFile() {
             return CharSequences.empty();
         }
 
+        @Override
         public Kind getKind() {
             return Kind.POSITION_PREDEFINED;
         }
 
+        @Override
         public boolean isFunctionLike() {
             if ("_Pragma".contentEquals(macro.getTextID()) || // NOI18N
                     "__pragma".contentEquals(macro.getTextID())) { // NOI18N
@@ -159,18 +172,22 @@ public class APTPredefinedMacroMap implements APTMacroMap {
             return false;
         }
 
+        @Override
         public APTToken getName() {
             return macro;
         }
 
+        @Override
         public Collection<APTToken> getParams() {
             return Collections.<APTToken>emptyList();
         }
 
+        @Override
         public APTDefine getDefineNode() {
             throw new UnsupportedOperationException("Not supported operation."); // NOI18N
         }
 
+        @Override
         public TokenStream getBody() {
             APTToken tok = APTUtils.createAPTToken(macro, APTTokenTypes.STRING_LITERAL);
             
