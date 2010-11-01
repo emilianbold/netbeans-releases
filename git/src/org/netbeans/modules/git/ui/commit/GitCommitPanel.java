@@ -48,10 +48,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -70,8 +73,10 @@ import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
+import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
@@ -84,29 +89,25 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  */
 public class GitCommitPanel extends VCSCommitPanel {
+    public static final String FILTER_HEAD_VS_INDEX = "HEAD_VS_INDEX";
+    public static final String FILTER_HEAD_VS_WORKING = "HEAD_VS_WORKING";
 
     private final Collection<GitHook> hooks;
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, GitCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
-        super(parameters, preferences, hooks, hooksContext, diffProvider);
+    private GitCommitPanel(final File[] roots, final File repository, DefaultCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+        super(parameters, preferences, hooks, hooksContext, createFilters(), diffProvider);
         this.roots = roots;
         this.repository = repository;
-        this.hooks = hooks;
-        parameters.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                computeNodes();
-            }
-        });
+        this.hooks = hooks;        
     }
 
     public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
-        GitCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage);
+        DefaultCommitParameters parameters = new DefaultCommitParameters(preferences, lastCanceledCommitMessage);
         
         Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
         GitHookContext hooksCtx = new GitHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new GitHookContext.LogEntry[] {});        
@@ -116,9 +117,26 @@ public class GitCommitPanel extends VCSCommitPanel {
         return new GitCommitPanel(roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider);
     }
     
+    private static List<VCSCommitFilter> createFilters() {
+        List<VCSCommitFilter> filters = new LinkedList<VCSCommitFilter>();
+        filters.add(
+            new GitCommitFilter(
+                FILTER_HEAD_VS_WORKING, 
+                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png")),
+                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsWorking.toolTipText"),
+                true));            
+        filters.add(
+            new GitCommitFilter(
+                FILTER_HEAD_VS_INDEX, 
+                new ImageIcon(GitCommitPanel.class.getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png")),
+                NbBundle.getMessage(GitCommitPanel.class, "ParametersPanel.tgbHeadVsIndex.toolTipText"),
+                false));
+        return filters;
+    }
+    
     @Override
-    public GitCommitParameters getParameters() {
-        return (GitCommitParameters) super.getParameters();
+    public DefaultCommitParameters getParameters() {
+        return (DefaultCommitParameters) super.getParameters();
     }
 
     public Collection<GitHook> getHooks() {
@@ -198,17 +216,13 @@ public class GitCommitPanel extends VCSCommitPanel {
     }
     
     private EnumSet<Status> getAcceptedStatus() {
-        GitCommitParameters param = getParameters();
-        switch(param.getSelectedMode()) {
-            case INDEX_VS_WORKING_TREE :
-                return FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
-            case HEAD_VS_INDEX :
-                return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
-            case HEAD_VS_WORKING_TREE :
-                return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;                
-            default :
-                throw new IllegalStateException("wrong modus");
-        }        
+        VCSCommitFilter f = getSelectedFilter();
+        if(f.getID().equals(FILTER_HEAD_VS_INDEX)) {
+            return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+        } else if(f.getID().equals(FILTER_HEAD_VS_WORKING)) {
+            return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;                
+        }         
+        throw new IllegalStateException("wrong filter " + (f != null ? f.getID() : "NULL"));    // NOI18N        
     }
     
     @Override
@@ -282,4 +296,33 @@ public class GitCommitPanel extends VCSCommitPanel {
             return super.getEditorCookies();
         }        
     }    
+    
+    private static class GitCommitFilter extends VCSCommitFilter {
+        private final Icon icon;
+        private final String tooltip;
+        private final String id;
+
+        GitCommitFilter(String id, Icon icon, String tooltip, boolean selected) {
+            super(selected);
+            this.icon = icon;
+            this.tooltip = tooltip;
+            this.id = id;
+        }
+        
+        @Override
+        public Icon getIcon() {
+            return icon;
+        }
+
+        @Override
+        public String getTooltip() {
+            return tooltip;
+        }
+
+        @Override
+        public String getID() {
+            return id;
+        }
+        
+    }
 }
