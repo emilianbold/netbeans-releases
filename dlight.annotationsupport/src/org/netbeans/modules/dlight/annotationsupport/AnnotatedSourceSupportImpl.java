@@ -101,6 +101,9 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
             if (sourceFileInfo != null) {
                 if (sourceFileInfo.isSourceKnown()) {
                     String filePath = sourceFileInfo.getFileName();
+                    if (new File(filePath).exists()) {
+                        filePath = FileUtil.normalizePath(filePath);
+                    }
                     FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(filePath);
                     if (fileAnnotationInfo == null) {
                         fileAnnotationInfo = new FileAnnotationInfo();
@@ -163,7 +166,7 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 }
             }
         }
-        
+
         activeAnnotations = new HashMap<String, FileAnnotationInfo>();
         preProcessAnnotations(sourceFileInfoProvider, metrics, list, true);
         preProcessAnnotations(sourceFileInfoProvider, metrics, functionCalls, false);
@@ -214,12 +217,12 @@ public class AnnotatedSourceSupportImpl implements AnnotatedSourceSupport {
                 final FileAnnotationInfo fileAnnotationInfo = activeAnnotations.get(fileURI);
                 if (fileAnnotationInfo != null) {
 //                    if (!fileAnnotationInfo.isAnnotated()) {
-                        fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
-                        fileAnnotationInfo.setAnnotated(true);
+                    fileAnnotationInfo.setEditorPane((JEditorPane) jEditorPane);
+                    fileAnnotationInfo.setAnnotated(true);
 //                    }
 //                    SwingUtilities.invokeLater(new Annotate(jEditorPane, fileAnnotationInfo));
                     new Annotate(jEditorPane, fileAnnotationInfo).run();
-               }
+                }
             }
         }
     }
