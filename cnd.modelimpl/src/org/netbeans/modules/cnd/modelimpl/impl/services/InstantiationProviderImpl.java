@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Resolver;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.spi.model.services.CsmExpressionEvaluatorProvider;
 
 /**
  * Service that provides template instantiations
@@ -456,15 +457,30 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 } else {
                                     // Expression evaluation
                                     if (TraceFlags.EXPRESSION_EVALUATOR) {
+                                        CsmExpressionEvaluatorProvider p = CsmExpressionEvaluator.getProvider();
                                         if (CsmKindUtilities.isInstantiation(cls)) {
-                                            final Object val1 = CsmExpressionEvaluator.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(), (CsmInstantiation) cls);
-                                            final Object val2 = CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            final Object val1;
+                                            final Object val2;
+                                            if(p instanceof ExpressionEvaluator) {
+                                                 val1 = ((ExpressionEvaluator)p).eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(), (CsmInstantiation) cls, resolver);
+                                                 val2 = ((ExpressionEvaluator)p).eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString(), resolver);
+                                            } else {
+                                                 val1 = p.eval(((CsmTemplate) ((CsmInstantiation) cls).getTemplateDeclaration()).getTemplateParameters().get(i).getName().toString(), (CsmInstantiation) cls);
+                                                 val2 = p.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            }
                                             if (val1.equals(val2)) {
                                                 match += 2;
                                             }
                                         } else {
-                                            final Object val1 = CsmExpressionEvaluator.eval(paramsText.get(i).toString());
-                                            final Object val2 = CsmExpressionEvaluator.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            final Object val1;
+                                            final Object val2;
+                                            if(p instanceof ExpressionEvaluator) {
+                                                val1 = ((ExpressionEvaluator)p).eval(paramsText.get(i).toString(), resolver);
+                                                val2 = ((ExpressionEvaluator)p).eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString(), resolver);
+                                            } else {
+                                                val1 = p.eval(paramsText.get(i).toString());
+                                                val2 = p.eval(((CsmExpressionBasedSpecializationParameter) specParam).getText().toString());
+                                            }
                                             if (val1.equals(val2)) {
                                                 match += 2;
                                             }
