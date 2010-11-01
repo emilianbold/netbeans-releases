@@ -54,7 +54,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.ui.actions.AddAction;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
