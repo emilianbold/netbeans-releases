@@ -90,10 +90,7 @@ public class ChoosingDriverPanel implements AddConnectionWizard.Panel {
 
     @Override
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return AddDriverDialog.getHelpCtx();
     }
 
     @Override

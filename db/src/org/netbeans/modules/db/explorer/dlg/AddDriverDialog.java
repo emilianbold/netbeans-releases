@@ -92,8 +92,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 public final class AddDriverDialog extends javax.swing.JPanel {
+    private static HelpCtx ADD_DRIVER_DIALOG_HELPCTX = new HelpCtx(AddDriverDialog.class);
+
+    public static HelpCtx getHelpCtx() {
+        return ADD_DRIVER_DIALOG_HELPCTX;
+    }
     
     private DefaultListModel dlm;
     private List<URL> drvs = new LinkedList<URL>();
@@ -730,6 +736,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         AddDriverDialog dlgPanel = new AddDriverDialog(driverNode == null ? null : driverNode.getDatabaseDriver().getJDBCDriver(), null, null);
 
         DialogDescriptor descriptor = new DialogDescriptor(dlgPanel, NbBundle.getMessage(AddDriverDialog.class, "AddDriverDialogTitle")); //NOI18N
+        descriptor.setHelpCtx(AddDriverDialog.getHelpCtx());
         descriptor.createNotificationLineSupport();
         dlgPanel.setDescriptor(descriptor);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
