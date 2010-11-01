@@ -217,6 +217,11 @@ public class BinaryAnalyser {
         if (cont == null) {
             return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
         }
+        if (!cont.hasChanges() && timeStamps.second.isEmpty()) {
+            assert refs.isEmpty();
+            assert toDelete.isEmpty();
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
+        }
         final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
         final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
         cont = null;
@@ -791,6 +796,7 @@ public class BinaryAnalyser {
     private static abstract class Continuation {
 
         private List<Pair<ElementHandle<TypeElement>,Long>> result;
+        private boolean changed;
 
         protected Continuation () {
             this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
@@ -802,6 +808,10 @@ public class BinaryAnalyser {
 
         protected final void report (final ElementHandle<TypeElement> te, final long crc) {
             this.result.add(Pair.of(te, crc));
+        }
+        
+        protected final void markChanged() {
+            this.changed = true;
         }
 
         public final Result execute () throws IOException {
@@ -820,6 +830,10 @@ public class BinaryAnalyser {
             });
             return result;
         }
+        
+        public final boolean hasChanges() {
+            return changed;
+        }
     }
 
     //<editor-fold defaultstate="collapsed" desc="Continuation implementations (Zip, FileObject, java.io.File, Deleted)">
@@ -836,6 +850,7 @@ public class BinaryAnalyser {
             this.zipFile = zipFile;
             this.entries = entries;
             this.ctx = ctx;
+            markChanged();  //Always dirty, created only for dirty root
         }
 
         @Override
@@ -930,6 +945,7 @@ public class BinaryAnalyser {
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
                     cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), fileMTime);
                     if (!isUpToDate (relativePath, fileMTime)) {
+                        markChanged();
                         toDelete.add(Pair.<String,String>of (relativePath,null));
                         try {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
@@ -979,6 +995,7 @@ public class BinaryAnalyser {
             assert ctx != null;
             this.todo = todo;
             this.ctx = ctx;
+            markChanged();  //Always dirty, created only for dirty root
         }
 
         @Override
@@ -1020,6 +1037,10 @@ public class BinaryAnalyser {
     }
 
     private class DeletedContinuation extends Continuation {
+        
+        public DeletedContinuation() {
+            markChanged();  //Always dirty
+        }
 
         @Override
         protected Result doExecute() throws IOException {
