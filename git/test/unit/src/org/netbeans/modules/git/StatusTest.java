@@ -765,6 +765,24 @@ public class StatusTest extends AbstractGitTestCase {
         assertEquals("reposka<font color=\"#999999\"> [(no branch) " + commitId + "]</font>", annotator.annotateName("reposka", VCSContext.forNodes(new Node[] { new AbstractNode(Children.LEAF, Lookups.fixed(repositoryLocation)) })));
     }
 
+    public void testAllStatusAreComparable () throws Exception {
+        for (Status status : FileInformation.Status.values()) {
+            FileInformation fi = new FileInformation(EnumSet.of(status), false);
+            assertTrue(fi.getComparableStatus() >= 0);
+        }
+    }
+
+    public void testComparableStatus () throws Exception {
+        // conflict is the most important
+        FileInformation fiConflict = new FileInformation(EnumSet.of(Status.IN_CONFLICT), false);
+        for (Status status : FileInformation.Status.values()) {
+            FileInformation fi = new FileInformation(EnumSet.of(status), false);
+            if (!fi.containsStatus(Status.IN_CONFLICT)) {
+                assertTrue(fi.getComparableStatus() > fiConflict.getComparableStatus());
+            }
+        }
+    }
+
     // TODO add more tests when exclusions are supported
     // TODO test conflicts
 

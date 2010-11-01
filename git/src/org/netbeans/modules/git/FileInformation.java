@@ -153,31 +153,47 @@ public class FileInformation extends VCSFileInformation {
     public int getComparableStatus () {
         if (containsStatus(Status.IN_CONFLICT)) {
             return 0;
-        } else if (containsStatus(Status.IN_CONFLICT)) {
-            return 1;
-        } else if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
-            return 10;
-        } else if (containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
-            return 11;
-        } else if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
-            return 12;
-        } else if (containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
-            return 13;
         } else if (containsStatus(Status.UPTODATE)) {
-            return 50;
+            return 850;
         } else if (containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-            return 100;
+            return 900;
         } else if (containsStatus(Status.NOTVERSIONED_NOTMANAGED)) {
-            return 101;
+            return 901;
         } else if (containsStatus(Status.UNKNOWN)) {
-            return 102;
-        } else {
-            // throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
-            Git.LOG.log(Level.WARNING, "Uncomparable status: {0}", getStatus());
-            
-            // XXX compare all statuses
-            return 0;
+            return 902;
         }
+        int value = 400;
+        if (containsStatus(Status.REMOVED_HEAD_WORKING_TREE)) {
+            value -= 100;
+        }
+        if (containsStatus(Status.MODIFIED_HEAD_WORKING_TREE)) {
+            value -= 100;
+        }
+        if (containsStatus(Status.NEW_HEAD_WORKING_TREE)) {
+            value -= 100;
+        }
+        if (containsStatus(Status.REMOVED_HEAD_INDEX)) {
+            value -= 10;
+        }
+        if (containsStatus(Status.MODIFIED_HEAD_INDEX)) {
+            value -= 10;
+        }
+        if (containsStatus(Status.NEW_HEAD_INDEX)) {
+            value -= 10;
+        }
+        if (containsStatus(Status.REMOVED_INDEX_WORKING_TREE)) {
+            value -= 1;
+        }
+        if (containsStatus(Status.MODIFIED_INDEX_WORKING_TREE)) {
+            value -= 1;
+        }
+        if (containsStatus(Status.NEW_INDEX_WORKING_TREE)) {
+            value -= 1;
+        }
+        if (value == 400) {
+            throw new IllegalArgumentException("Uncomparable status: " + getStatus()); //NOI18N
+        }
+        return value;
     }
 
     public String getShortStatusText() {
