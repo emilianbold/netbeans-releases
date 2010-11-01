@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.spi.*;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=150)
 public class CsmRefactoringsFactory implements RefactoringPluginFactory {
    
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         CsmContext editorContext = refactoring.getRefactoringSource().lookup(CsmContext.class);
         CsmObject ref = CsmRefactoringUtils.findContextObject(refactoring.getRefactoringSource());
