@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.util.List;
+import java.util.Map;
+import javax.swing.ButtonGroup;
+import javax.swing.JToolBar;
+import javax.swing.JToggleButton;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.KeyEvent;
@@ -92,6 +97,8 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.TreeMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -143,18 +150,26 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         
     private final Preferences preferences;
     private final VCSCommitParameters parameters;
+    private final Map<String, VCSCommitFilter> filters = new LinkedHashMap<String, VCSCommitFilter>();
     private final MultiDiffProvider diffProvider;
 
     /** Creates new form CommitPanel */
-    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+    public VCSCommitPanel(VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, MultiDiffProvider diffProvider) {
         this.parameters = parameters;
         this.commitTable = new VCSCommitTable(new VCSCommitTableModel());
         this.diffProvider = diffProvider;
         
+        boolean selected = false;
+        for (VCSCommitFilter f : filters) {
+            assert (f.isSelected() && !selected) || !f.isSelected();
+            selected = f.isSelected();
+            this.filters.put(f.getID(), f);
+        }       
+        
         if(hooks == null) {
             hooks = Collections.emptyList();
         }
-        initComponents(hooks, hooksContext);
+        initComponents(hooks, hooksContext, filters);
 
         commitTable.setCommitPanel(this);
         this.preferences = preferences;
@@ -164,6 +179,16 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
     
     public VCSCommitTable getCommitTable() {
         return commitTable;
+    }
+    
+    public VCSCommitFilter getSelectedFilter() {
+        for (VCSCommitFilter f : filters.values()) {
+            if(f.isSelected()) {
+                return f;
+            }
+        }
+        assert false : "no filter selected"; // there always must be one
+        return null;
     }
 
     private JPanel getProgressPanel() {
@@ -238,7 +263,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
      * This method is called from within the constructor to initialize the form.
      */
     // <editor-fold defaultstate="collapsed" desc="UI Layout Code">
-    private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext) {
+    private void initComponents(Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, Collection<VCSCommitFilter> filters) {
         org.openide.awt.Mnemonics.setLocalizedText(commitButton, org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "CTL_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSN_Commit_Action_Commit"));
         commitButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(VCSCommitPanel.class, "ACSD_Commit_Action_Commit"));
@@ -264,7 +289,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         parametersPane1.setAlignmentX(LEFT_ALIGNMENT);        
         basePanel.add(parametersPane1);
         
-        // files table
+        // files table        
         FilesPanel filesPanel = new FilesPanel();
         basePanel.add(makeVerticalStrut(parametersPane1, filesPanel, RELATED, this));        
         basePanel.add(filesPanel);
@@ -540,10 +565,12 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         }        
     }
     
-    private class FilesPanel extends CollapsiblePanel {
+    private class FilesPanel extends CollapsiblePanel implements ActionListener {
+        public static final String TOOLBAR_FILTER = "toolbar.filter";           // NOI18N
         final JLabel filesLabel = new JLabel();        
-        private static final boolean DEFAULT_DISPLAY_FILES = true;                   
-        public FilesPanel() {
+        private static final boolean DEFAULT_DISPLAY_FILES = true;
+        private final JToolBar toolbar;
+        public FilesPanel()  {
             super(DEFAULT_DISPLAY_FILES);
             
             Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
@@ -556,15 +583,60 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
             table.setPreferredSize(new Dimension(0, 2 * parameters.getPanel().getPreferredSize().height));
             
-            sectionPanel.add(filesLabel);
-            sectionPanel.add(makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
+            ButtonGroup bg = new ButtonGroup();
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            
+            for (VCSCommitFilter filter : filters.values()) {
+                
+                JToggleButton tgb = new JToggleButton();
+                tgb.setIcon(filter.getIcon()); 
+                tgb.setToolTipText(filter.getTooltip()); 
+                tgb.setFocusable(false);
+                tgb.setSelected(filter.isSelected());
+                tgb.addActionListener(this);                
+                tgb.putClientProperty(TOOLBAR_FILTER, filter);
+                bg.add(tgb);
+                toolbar.add(tgb);
+                
+            }
+            toolbar.setAlignmentX(LEFT_ALIGNMENT);        
+            
+            sectionPanel.add(toolbar);
             sectionPanel.add(table);
+            sectionPanel.add(makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
+            sectionPanel.add(filesLabel);
             
             sectionPanel.setAlignmentX(LEFT_ALIGNMENT);
             filesLabel.setAlignmentX(LEFT_ALIGNMENT);
             table.setAlignmentX(LEFT_ALIGNMENT);
-        }
+        }        
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Object s = e.getSource();            
+            if(s instanceof JToggleButton) {
+                JToggleButton tgb = (JToggleButton)s;
+                Object o = tgb.getClientProperty(TOOLBAR_FILTER);
+                assert o != null;
+                if(o != null) {
+                    VCSCommitFilter f = (VCSCommitFilter) o;
+                    boolean selected = tgb.isSelected();
+                    if(selected != f.isSelected()) {
+                        f.setSelected(selected);
+                        String id = f.getID();                        
+                        for (VCSCommitFilter filter : filters.values()) {
+                            if(!filter.getID().equals(id)) {
+                                filter.setSelected(!selected);
+                            }
+                        }
+                        computeNodes();
+                    } else {
+                        return;
+                    }
+                } 
+            }
+        }
     }
     
     private class HookPanel extends CollapsiblePanel {
