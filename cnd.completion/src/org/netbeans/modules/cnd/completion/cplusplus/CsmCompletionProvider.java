@@ -83,6 +83,7 @@ public class CsmCompletionProvider implements CompletionProvider {
 
     private static final boolean TRACE = false;
 
+    @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
@@ -101,6 +102,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         return 0;
     }
 
+    @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         CompletionSupport sup = CompletionSupport.get(component);
         if (sup == null) {
@@ -126,11 +128,11 @@ public class CsmCompletionProvider implements CompletionProvider {
         return null;
     }
 
-    public static final CsmCompletionQuery getCompletionQuery() {
+    public static CsmCompletionQuery getCompletionQuery() {
         return new NbCsmCompletionQuery(null, CsmCompletionQuery.QueryScope.GLOBAL_QUERY, null);
     }
 
-    public static final CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+    public static CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CsmCompletionQuery.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext);
     }
 
@@ -162,10 +164,10 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         private String getTestState() {
             StringBuilder builder = new StringBuilder();
-            builder.append(" creationCaretOffset = " + creationCaretOffset); // NOI18N
-            builder.append(" queryAnchorOffset = " + queryAnchorOffset); // NOI18N
-            builder.append(" queryScope = " + queryScope); // NOI18N
-            builder.append(" filterPrefix = " + filterPrefix); // NOI18N
+            builder.append(" creationCaretOffset = ").append(creationCaretOffset); // NOI18N
+            StringBuilder append = builder.append(" queryAnchorOffset = ").append(queryAnchorOffset); // NOI18N
+            builder.append(" queryScope = ").append(queryScope); // NOI18N
+            builder.append(" filterPrefix = ").append(filterPrefix); // NOI18N
             if (queryResult == null) {
                 builder.append(" no queryResult"); // NOI18N
             } else if (queryResult.isSimpleVariableExpression()) {
@@ -248,6 +250,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             }
         }
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             if (TRACE) {
                 System.err.println("query begin" + getTestState()); // NOI18N
@@ -406,6 +409,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private Position queryMethodParamsStartPos = null;
         private boolean otherMethodContext;
 
+        @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             Position oldPos = queryMethodParamsStartPos;
             queryMethodParamsStartPos = null;
@@ -564,6 +568,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             this.str = "" + Query.MAX_ITEMS_TO_DISPLAY + " " + NbBundle.getBundle(CsmCompletionProvider.class).getString("last-item-text"); // NOI18N
         }
 
+        @Override
         public java.awt.Component getPaintComponent(boolean isSelected) {
             stringComponent.setString(str);
             return stringComponent;
