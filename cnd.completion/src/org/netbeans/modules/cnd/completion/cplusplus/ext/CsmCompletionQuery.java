@@ -1026,8 +1026,14 @@ abstract public class CsmCompletionQuery {
                             } else { // not source-help
                                 res = findFieldsAndMethods(finder, contextElement, cls, "", false, staticOnly && !memberPointer, false, true, this.scopeAccessedClassifier, true, sort); // NOI18N
                             }
+                            CsmResultItem.SubstitutionHint hint = CsmResultItem.SubstitutionHint.NONE;
+                            if (lastParamKind[0] == ExprKind.DOT && lastType.isPointer()) {
+                                hint = CsmResultItem.SubstitutionHint.DOT_TO_ARROW;
+                            } else if (lastParamKind[0] == ExprKind.ARROW && !lastType.isPointer()) {
+                                
+                            }
                             // Get all fields and methods of the cls
-                            result = new CsmCompletionResult(component, getBaseDocument(), res, formatType(lastType, true, true, true),
+                            result = new CsmCompletionResult(component, getBaseDocument(), res, hint, formatType(lastType, true, true, true),
                                     exp, substPos, 0, 0/*cls.getName().length() + 1*/, isProjectBeeingParsed(), contextElement, instantiateTypes);
                         } else { // Found namespace (otherwise ok would be false)
                             if (true) {
@@ -2291,13 +2297,13 @@ abstract public class CsmCompletionQuery {
         private BaseDocument baseDocument;
         private final List<CsmResultItem> items;
 
-        public CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
                 CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc, data, title, substituteExp, substituteExp.getTokenOffset(0),
                     substituteExp.getTokenLength(0), classDisplayOffset, isProjectBeeingParsed, contextElement, instantiateTypes);
         }
 
-        public CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, CompletionResolver.Result res, String title,
                 CsmCompletionExpression substituteExp, int substituteOffset,
                 int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc,
@@ -2309,15 +2315,24 @@ abstract public class CsmCompletionQuery {
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
-        public CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, String title,
                 CsmCompletionExpression substituteExp, int substituteOffset,
                 int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
             this(component, doc,
-                    convertData(data, classDisplayOffset, substituteExp, substituteOffset, contextElement, instantiateTypes),
+                    convertData(data, classDisplayOffset, substituteExp, substituteOffset, contextElement, instantiateTypes, CsmResultItem.SubstitutionHint.NONE),
                     true, title, substituteExp, substituteOffset,
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
+        CsmCompletionResult(JTextComponent component, BaseDocument doc, Collection data, CsmResultItem.SubstitutionHint hint, String title,
+                CsmCompletionExpression substituteExp, int substituteOffset,
+                int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
+            this(component, doc,
+                    convertData(data, classDisplayOffset, substituteExp, substituteOffset, contextElement, instantiateTypes, hint),
+                    true, title, substituteExp, substituteOffset,
+                    substituteLength, classDisplayOffset, isProjectBeeingParsed);
+        }
+        
         private CsmCompletionResult(JTextComponent component, BaseDocument doc, List<CsmResultItem> data, boolean updateTitle, String title,
                 CsmCompletionExpression substituteExp, int substituteOffset,
                 int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
@@ -2339,7 +2354,7 @@ abstract public class CsmCompletionQuery {
         public List<? extends CompletionItem> getItems() {
             return Collections.unmodifiableList(items);
         }
-
+        
         private static String getTitle(List data, String origTitle, boolean isProjectBeeingParsed) {
             if (CsmUtilities.DEBUG) {
                 System.out.println("original title (resolved type) was " + origTitle); //NOI18N
@@ -2386,6 +2401,12 @@ abstract public class CsmCompletionQuery {
 
     private static boolean isSimpleVariableExpression(CsmCompletionExpression exp) {
         switch (exp.getExpID()) {
+            case CsmCompletionExpression.MEMBER_POINTER:
+            case CsmCompletionExpression.MEMBER_POINTER_OPEN:
+                if (exp.getParameterCount() > 0) {
+                    return isSimpleVariableExpression(exp.getParameter(0));
+                }
+                break;
             case CsmCompletionExpression.DOT_OPEN: // Dot expression with the dot at the end
             case CsmCompletionExpression.ARROW_OPEN: // Arrow expression with the arrow at the end
             case CsmCompletionExpression.DOT: // Dot expression
@@ -2642,13 +2663,15 @@ abstract public class CsmCompletionQuery {
 
     ////////////////////////////////////////////////////////////////////////////
     // convert data into CompletionItem
-    private static List<CsmResultItem> convertData(Collection dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, CsmOffsetableDeclaration contextElement, boolean instantiateTypes) {
+    private static List<CsmResultItem> convertData(Collection dataList, int classDisplayOffset, CsmCompletionExpression substituteExp, int substituteOffset, 
+            CsmOffsetableDeclaration contextElement, boolean instantiateTypes, CsmResultItem.SubstitutionHint hint) {
         List<CsmResultItem> ret = new ArrayList<CsmResultItem>();
         for (Object obj : dataList) {
             CsmResultItem item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement, instantiateTypes);
             assert item != null : "why null item? object " + obj;
             if (item != null) {
                 item.setSubstituteOffset(substituteOffset);
+                item.setHint(hint);
                 ret.add(item);
             }
         }
