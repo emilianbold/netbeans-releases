@@ -96,6 +96,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         this.fileReferencesContext = fileReferencesContext;
     }
     
+    @Override
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
@@ -108,6 +109,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return finder;
     }
 
+    @Override
     protected FileReferencesContext getFileReferencesContext() {
         return fileReferencesContext;
     }
@@ -159,6 +161,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         return this.queryScope;
     }
     
+    @Override
     protected CompletionResolver getCompletionResolver(boolean openingSource, boolean sort,boolean inIncludeDirective) {
 	return getCompletionResolver(getBaseDocument(), getCsmFile(), openingSource, sort, queryScope, inIncludeDirective);
     }
@@ -185,6 +188,7 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         setCsmItemFactory(new NbCsmItemFactory());
     }
 
+    @Override
     protected boolean isProjectBeeingParsed(boolean openingSource) {
         if (!openingSource) {
             if (getFinder() != null) {
@@ -239,124 +243,156 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
         public NbCsmItemFactory() {
         }
 
+        @Override
         public CsmResultItem.LocalVariableResultItem createLocalVariableResultItem(CsmVariable var) {
             return new NbCsmResultItem.NbLocalVariableResultItem(var, LOCAL_VAR_PRIORITY);  
         }          
 
+        @Override
 	public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld){
             return new NbCsmResultItem.NbFieldResultItem(fld, FIELD_PRIORITY);
         }
         
+        @Override
         public CsmResultItem.EnumeratorResultItem createMemberEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, CLASS_ENUMERATOR_PRIORITY);  
         }          
         
+        @Override
 	public CsmResultItem.MethodResultItem createMethodResultItem(CsmMethod mtd, CsmCompletionExpression substituteExp, boolean isDeclaration, boolean instantiateTypes){
             return new NbCsmResultItem.NbMethodResultItem(mtd, substituteExp, METHOD_PRIORITY, isDeclaration, instantiateTypes);
         }
+        @Override
 	public CsmResultItem.ConstructorResultItem createConstructorResultItem(CsmConstructor ctr, CsmCompletionExpression substituteExp, boolean isDeclaration, boolean instantiateTypes){
             return new NbCsmResultItem.NbConstructorResultItem(ctr, substituteExp, CONSTRUCTOR_PRIORITY, isDeclaration, instantiateTypes);
         }
 
+        @Override
         public CsmResultItem.ClassResultItem createClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbClassResultItem(cls, classDisplayOffset, displayFQN, CLASS_PRIORITY);
         }
+        @Override
         public CsmResultItem.ForwardClassResultItem createForwardClassResultItem(CsmClassForwardDeclaration cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbForwardClassResultItem(cls, classDisplayOffset, displayFQN, CLASS_PRIORITY);
         }
+        @Override
         public CsmResultItem.EnumResultItem createEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumResultItem(enm, enumDisplayOffset, displayFQN, ENUM_PRIORITY);  
         }  
+        @Override
         public CsmResultItem.TypedefResultItem createTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbTypedefResultItem(def, classDisplayOffset, displayFQN, TYPEDEF_PRIORITY);  
         }
         
+        @Override
         public CsmResultItem.FileLocalVariableResultItem createFileLocalVariableResultItem(CsmVariable var) {
             return new NbCsmResultItem.NbFileLocalVariableResultItem(var, FILE_LOCAL_VAR_PRIORITY);  
         }          
         
+        @Override
         public CsmResultItem.EnumeratorResultItem createFileLocalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, FILE_LOCAL_ENUMERATOR_PRIORITY);  
         } 
         
+        @Override
         public CsmResultItem.MacroResultItem createFileLocalMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_LOCAL_MACRO_PRIORITY);  
         }
         
+        @Override
         public CsmResultItem.FileLocalFunctionResultItem createFileLocalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration, boolean instantiateTypes) {
             return new NbCsmResultItem.NbFileLocalFunctionResultItem(fun, substituteExp, FILE_LOCAL_FUNCTION_PRIORITY, isDeclaration, instantiateTypes);
         }
         
+        @Override
         public CsmResultItem.MacroResultItem createFileIncludedProjectMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_INCLUDED_PRJ_MACRO_PRIORITY);  
         }
         
+        @Override
         public CsmResultItem.GlobalVariableResultItem createGlobalVariableResultItem(CsmVariable var) {
             return new NbCsmResultItem.NbGlobalVariableResultItem(var, GLOBAL_VAR_PRIORITY);  
         }  
         
+        @Override
         public CsmResultItem.EnumeratorResultItem createGlobalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, GLOBAL_ENUMERATOR_PRIORITY);  
         }          
 
+        @Override
         public CsmResultItem.MacroResultItem createGlobalMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, GLOBAL_MACRO_PRIORITY);  
         }
 
+        @Override
         public CsmResultItem.GlobalFunctionResultItem createGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean isDeclaration, boolean instantiateTypes) {
             return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, GLOBAL_FUN_PRIORITY, isDeclaration, instantiateTypes);
         }
         
+        @Override
         public CsmResultItem.NamespaceResultItem createNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
 	    return new NbCsmResultItem.NbNamespaceResultItem(pkg, displayFullNamespacePath, GLOBAL_NAMESPACE_PRIORITY);
         }
 
+        @Override
         public CsmResultItem.NamespaceAliasResultItem createNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, GLOBAL_NAMESPACE_ALIAS_PRIORITY);
         }
         
+        @Override
         public CsmResultItem.ClassResultItem createLibClassResultItem(CsmClass cls, int classDisplayOffset, boolean displayFQN){
             return new NbCsmResultItem.NbClassResultItem(cls, classDisplayOffset, displayFQN, LIB_CLASS_PRIORITY);
         }
+        @Override
         public CsmResultItem.EnumResultItem createLibEnumResultItem(CsmEnum enm, int enumDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumResultItem(enm, enumDisplayOffset, displayFQN, LIB_ENUM_PRIORITY);  
         }  
+        @Override
         public CsmResultItem.TypedefResultItem createLibTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbTypedefResultItem(def, classDisplayOffset, displayFQN, LIB_TYPEDEF_PRIORITY);  
         }
         
+        @Override
         public CsmResultItem.MacroResultItem createFileIncludedLibMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, FILE_INCLUDED_LIB_MACRO_PRIORITY);  
         }   
         
+        @Override
         public CsmResultItem.MacroResultItem createLibMacroResultItem(CsmMacro mac) {
             return new NbCsmResultItem.NbMacroResultItem(mac, LIB_MACRO_PRIORITY);  
         }  
         
+        @Override
         public CsmResultItem.GlobalVariableResultItem createLibGlobalVariableResultItem(CsmVariable var) {
             return new NbCsmResultItem.NbGlobalVariableResultItem(var, LIB_VAR_PRIORITY);  
         }  
         
+        @Override
         public CsmResultItem.EnumeratorResultItem createLibGlobalEnumeratorResultItem(CsmEnumerator enmtr, int enumtrDisplayOffset, boolean displayFQN) {
             return new NbCsmResultItem.NbEnumeratorResultItem(enmtr, enumtrDisplayOffset, displayFQN, LIB_ENUMERATOR_PRIORITY);  
         }  
         
+        @Override
         public CsmResultItem.GlobalFunctionResultItem createLibGlobalFunctionResultItem(CsmFunction fun, CsmCompletionExpression substituteExp, boolean instantiateTypes) {
             return new NbCsmResultItem.NbGlobalFunctionResultItem(fun, substituteExp, LIB_FUN_PRIORITY, false, instantiateTypes);
         }
         
+        @Override
         public CsmResultItem.NamespaceResultItem createLibNamespaceResultItem(CsmNamespace pkg, boolean displayFullNamespacePath) {
 	    return new NbCsmResultItem.NbNamespaceResultItem(pkg, displayFullNamespacePath, LIB_NAMESPACE_PRIORITY);
         }         
 
+        @Override
         public CsmResultItem.NamespaceAliasResultItem createLibNamespaceAliasResultItem(CsmNamespaceAlias alias, boolean displayFullNamespacePath) {
             return new NbCsmResultItem.NbNamespaceAliasResultItem(alias, displayFullNamespacePath, LIB_NAMESPACE_ALIAS_PRIORITY);
         }
 
+        @Override
         public CsmResultItem.TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
             return new NbCsmResultItem.NbTemplateParameterResultItem(par, CLASS_ENUMERATOR_PRIORITY);
         }
 
+        @Override
         public CsmResultItem createLabelResultItem(CsmLabel csmStatement) {
             return new NbCsmResultItem.LabelResultItem(csmStatement, LOCAL_VAR_PRIORITY);
         }
