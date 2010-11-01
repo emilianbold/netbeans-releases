@@ -44,12 +44,8 @@
 
 package org.netbeans.modules.git.ui.status;
 
-import org.openide.nodes.*;
 import org.openide.windows.TopComponent;
 import org.openide.awt.MouseUtils;
-import org.netbeans.modules.versioning.util.TableSorter;
-
-import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
@@ -63,15 +59,29 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
-import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.swing.etable.ETable;
+import org.netbeans.swing.etable.ETableColumn;
 import org.openide.awt.Mnemonics;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
@@ -83,13 +93,11 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Maros Sandor
  */
-class StatusTable implements MouseListener, ListSelectionListener {
+class StatusTable extends ETable implements MouseListener, ListSelectionListener {
 
-    private JTable          table;
+    private ETable          table;
     private JScrollPane     component;
     
-    private TableSorter sorter;
-
     private static final Comparator NodeComparator = new Comparator() {
         @Override
         public int compare(Object o1, Object o2) {
@@ -115,9 +123,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
     
     public StatusTable (StatusTableModel model) {
         this.tableModel = model;
-        sorter = new TableSorter(model);
-        sorter.setColumnComparator(Node.Property.class, NodeComparator);
-        table = new SortedTable(sorter);
+        table = new ETable(tableModel);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addMouseListener(this);
         table.getSelectionModel().addListSelectionListener(this);
@@ -143,12 +149,12 @@ class StatusTable implements MouseListener, ListSelectionListener {
     private void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
         properties[0] = new ColumnDescriptor<String>(StatusNode.NameProperty.NAME, String.class, StatusNode.NameProperty.DISPLAY_NAME, StatusNode.NameProperty.DESCRIPTION);
-        sorter.setColumnComparator(0, null);
         properties[1] = new ColumnDescriptor<String>(StatusNode.StatusProperty.NAME, String.class, StatusNode.StatusProperty.DISPLAY_NAME, StatusNode.StatusProperty.DESCRIPTION);
-        sorter.setColumnComparator(1, null);
         properties[2] = new ColumnDescriptor<String>(StatusNode.PathProperty.NAME, String.class, StatusNode.PathProperty.DISPLAY_NAME, StatusNode.PathProperty.DESCRIPTION);
-        sorter.setColumnComparator(2, null);
         tableModel.setProperties(properties);
+        for (int i = 0; i < table.getColumnCount(); ++i) {
+            ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
+        }
     }
 
     public JComponent getComponent() {
@@ -239,7 +245,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
             if (row == -1) {
                 return;
             }
-            StatusNode node = tableModel.getNode(sorter.modelIndex(row));
+            StatusNode node = tableModel.getNode(table.convertRowIndexToModel(row));
             Action action = node.getPreferredAction();
             if (action != null && action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
@@ -250,17 +256,17 @@ class StatusTable implements MouseListener, ListSelectionListener {
     @Override
     public void valueChanged (ListSelectionEvent e) {
         List<StatusNode> selectedNodes = new ArrayList<StatusNode>();
-        ListSelectionModel selectionModel = table.getSelectionModel();
+        ListSelectionModel selection = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
         if (tc == null) {
             return; // table is no longer in component hierarchy
         }
-        int min = selectionModel.getMinSelectionIndex();
+        int min = selection.getMinSelectionIndex();
         if (min != -1) {
-            int max = selectionModel.getMaxSelectionIndex();
+            int max = selection.getMaxSelectionIndex();
             for (int i = min; i <= max; i++) {
-                if (selectionModel.isSelectedIndex(i)) {
-                    int idx = sorter.modelIndex(i);
+                if (selection.isSelectedIndex(i)) {
+                    int idx = table.convertRowIndexToModel(i);
                     selectedNodes.add(tableModel.getNode(idx));
                 }
             }
@@ -283,7 +289,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
         int[] selection = table.getSelectedRows();
         List<File> files = new LinkedList<File>();
         for (int i : selection) {
-            StatusNode selectedNode = tableModel.getNode(sorter.modelIndex(i));
+            StatusNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
             files.add(selectedNode.getFile());
         }
         return files.toArray(new File[files.size()]);
@@ -293,8 +299,9 @@ class StatusTable implements MouseListener, ListSelectionListener {
         Set<File> files = new HashSet(Arrays.asList(selectedFiles));
         ListSelectionModel selection = table.getSelectionModel();
         selection.setValueIsAdjusting(true);
+        selection.clearSelection();
         for (int i = 0; i < table.getRowCount(); ++i) {
-            StatusNode node = tableModel.getNode(sorter.modelIndex(i));
+            StatusNode node = tableModel.getNode(table.convertRowIndexToModel(i));
             if (files.contains(node.getFile())) {
                 selection.addSelectionInterval(i, i);
             }
@@ -345,7 +352,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
             int modelColumnIndex = table.convertColumnIndexToModel(column);
             StatusNode node = null;
             if (modelColumnIndex == 0) {
-                node = tableModel.getNode(sorter.modelIndex(row));
+                node = tableModel.getNode(table.convertRowIndexToModel(row));
                 if (!isSelected) {
                     value = "<html>" + node.getHtmlDisplayName(); // NOI18N
                 }
@@ -357,7 +364,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
             }
             if (renderer instanceof JComponent) {
                 if (node == null) {
-                    node = tableModel.getNode(sorter.modelIndex(row));
+                    node = tableModel.getNode(table.convertRowIndexToModel(row));
                 }
                 String path = node.getFile().getAbsolutePath();
                 ((JComponent) renderer).setToolTipText(path);
