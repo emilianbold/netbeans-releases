@@ -52,8 +52,10 @@ import java.util.logging.Level;
 import javax.swing.JTable;
 import org.netbeans.modules.git.AbstractGitTestCase;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -132,6 +134,31 @@ public class StatusTest extends AbstractGitTestCase {
         assertTable(table, Collections.singleton(file));
     }
 
+    public void testBranchName () throws Exception {
+        final GitVersioningTopComponent tcs[] = new GitVersioningTopComponent[1];
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                GitVersioningTopComponent tc = GitVersioningTopComponent.findInstance();
+                tcs[0] = tc;
+                VCSContext ctx = VCSContext.forNodes(new Node[] {
+                    new AbstractNode(Children.LEAF, Lookups.singleton(FileUtil.toFileObject(FileUtil.normalizeFile(repositoryLocation))))
+                });
+                tc.setContentTitle(Utils.getContextDisplayName(ctx));
+                tc.setContext(ctx);
+            }
+        });
+        GitVersioningTopComponent tc = tcs[0];
+        assertNotNull(tc);
+        assertName(tc, "Git - work ");
+        File f = new File(repositoryLocation, "f");
+        f.createNewFile();
+        add();
+        commit();
+        RepositoryInfo.getInstance(repositoryLocation).refresh();
+        assertName(tc, "Git - work - master");
+    }
+
     private void assertTable (final JTable table, Set<File> files) throws Exception {
         Thread.sleep(5000);
         final Set<File> displayedFiles = new HashSet<File>();
@@ -145,5 +172,15 @@ public class StatusTest extends AbstractGitTestCase {
             }
         });
         assertEquals(files, displayedFiles);
+    }
+
+    private void assertName (GitVersioningTopComponent tc, String expected) throws InterruptedException {
+        for (int i = 0; i < 100; ++i) {
+            if (expected.equals(tc.getName())) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        assertEquals(expected, tc.getName());
     }
 }

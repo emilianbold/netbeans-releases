@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import java.beans.PropertyChangeEvent;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
@@ -54,13 +55,17 @@ import org.openide.util.HelpCtx;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -71,7 +76,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Maros Sandor
  */
-public class GitVersioningTopComponent extends TopComponent implements Externalizable {
+public class GitVersioningTopComponent extends TopComponent implements Externalizable, PropertyChangeListener {
    
     private static final long serialVersionUID = 1L;    
     
@@ -80,6 +85,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
     private String                  contentTitle;
     private String                  branchTitle;
     private static final String     PREFERRED_ID = "GitVersioning"; // NOI18N
+    private RepositoryInfo          repositoryInfo;
     
     private static GitVersioningTopComponent instance;
 
@@ -141,11 +147,6 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         if (controller == null) return;  // the component is not showing => nothing to refresh
         updateTitle();
         controller.setContext(context);
-    }
-
-    private void setBranchTitle (String branchTitle) {
-        this.branchTitle = branchTitle;
-        updateTitle();
     }
     
     private void updateTitle () {
@@ -226,12 +227,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         setEnabled(true);
         setCursor(Cursor.getDefaultCursor());
         context = ctx;
-        Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
-        if (repositoryRoots.size() == 1) {
-            setBranchTitle(NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_VersioningView_UnnamedBranchTitle")); // NOI18N
-        } else {
-            setBranchTitle(null);
-        }
+        refreshBranchName();
         refreshContent();
         setToolTipText(getContextFilesList(ctx, NbBundle.getMessage(GitVersioningTopComponent.class, "CTL_Versioning_TopComponent_Title"))); // NOI18N            
     }
@@ -257,5 +253,44 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         }
         sb.delete(sb.length() - 4, Integer.MAX_VALUE);
         return sb.toString();
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (RepositoryInfo.PROPERTY_ACTIVE_BRANCH.equals(evt.getPropertyName())) {
+            setBranchTitle(((GitBranch) evt.getNewValue()));
+            updateTitle();
+        }
+    }
+
+    void refreshBranchName () {
+        Runnable runnable = new Runnable () {
+            @Override
+            public void run() {
+                if (repositoryInfo != null) {
+                    repositoryInfo.removePropertyChangeListener(GitVersioningTopComponent.this);
+                }
+                Set<File> repositoryRoots = GitUtils.getRepositoryRoots(context);
+                branchTitle = null;
+                if (repositoryRoots.size() == 1) {
+                    RepositoryInfo repositoryInfo = RepositoryInfo.getInstance(repositoryRoots.iterator().next());
+                    GitBranch branch = repositoryInfo.getActiveBranch();
+                    if (branch != null) {
+                        setBranchTitle(branch);
+                    }
+                    repositoryInfo.addPropertyChangeListener(GitVersioningTopComponent.this);
+                }
+                updateTitle();
+            }
+        };
+        if (EventQueue.isDispatchThread()) {
+            Utils.post(runnable);
+        } else {
+            runnable.run();
+        }
+    }
+
+    private void setBranchTitle (GitBranch branch) {
+        branchTitle = branch.getName();
     }
 }
