@@ -1827,22 +1827,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             
             FileObjectCrawler crawler = null;
-            boolean isFolder = false;
-            boolean isUpToDate = false;
-            if ("file".equals(root.getProtocol())) { //NOI18N
-                FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null && rootFo.isFolder()) {
-                    isFolder = true;
-                    crawler = new FileObjectCrawler(rootFo, true, true, null, getShuttdownRequest());
-                    if (crawler.isFinished()) {
-                        if (!crawler.hasChanged()) {
-                            // no files have been deleted or modified since we have seen the folder
-                            isUpToDate = true;
-                            LOGGER.log(Level.FINE, "Binary folder {0} is up-to-date", root); //NOI18N
-                        }
-                    } // XXX: we should now quit and let the work to be restarted
-                }
-            }
 
             List<Context> transactionContexts = new LinkedList<Context>();
             try {
@@ -1858,7 +1842,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final Context ctx = SPIAccessor.getInstance().createContext(
                             cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
                             false, getShuttdownRequest());
-                    SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate || !votes.get(f)); // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1984,7 +1968,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 try {
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                     final Crawler crawler = files.isEmpty() ?
-                        new FileObjectCrawler(rootFo, !forceRefresh, false, entry, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
+                        new FileObjectCrawler(rootFo, !forceRefresh, entry, getShuttdownRequest()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), !forceRefresh, entry, getShuttdownRequest()); // rescan selected files (no timestamp check)
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
@@ -2321,7 +2305,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (rootFo != null) {
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, false, entry, getShuttdownRequest());
+                        Crawler crawler = new FileObjectCrawler(rootFo, false, entry, getShuttdownRequest());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
@@ -2428,7 +2412,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (rootFo != null) {
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                        Crawler crawler = new FileObjectCrawler(rootFo, false, false, entry, getShuttdownRequest());
+                        Crawler crawler = new FileObjectCrawler(rootFo, false, entry, getShuttdownRequest());
                         final Collection<IndexableImpl> resources = crawler.getResources();
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
@@ -3245,7 +3229,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final FileObject rootFo = URLMapper.findFileObject(root);
                 if (rootFo != null) {
                     final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
-                    final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, false, entry, getShuttdownRequest());
+                    final Crawler crawler = new FileObjectCrawler(rootFo, !fullRescan, entry, getShuttdownRequest());
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     final Collection<IndexableImpl> allResources = crawler.getAllResources();
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
