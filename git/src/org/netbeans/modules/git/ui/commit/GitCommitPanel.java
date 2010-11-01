@@ -52,6 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -82,6 +84,8 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
@@ -143,7 +147,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     }
 
     @Override
-    protected void computeNodes() {
+    protected void computeNodes() {      
+        final boolean refreshFinnished[] = new boolean[] { false };
         RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
         final GitProgressSupport support = new GitProgressSupport( /*, cancel*/) {
             @Override
@@ -160,6 +165,11 @@ public class GitCommitPanel extends VCSCommitPanel {
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
                     cache.refreshAllRoots(roots);
 
+                    // the realy time consuming part is over; 
+                    // no need to show the progress component, 
+                    // which only makes the dialog flicker
+                    refreshFinnished[0] = true;
+                    
                     File[][] split = Utils.splitFlatOthers(roots);
                     List<File> fileList = new ArrayList<File>();
                     for (int c = 0; c < split.length; c++) {
@@ -205,13 +215,35 @@ public class GitCommitPanel extends VCSCommitPanel {
                         }
                     });
                 } finally {
-                    stopProgress();
+                    refreshFinnished[0] = true;
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            stopProgress();
+                        }
+                    });         
                 }
             }
         };
-        String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit");        
-        startProgress(preparingMessage, support.getProgressComponent());
+        final String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit");        
+        setupProgress(preparingMessage, support.getProgressComponent());
         support.start(rp, repository, preparingMessage);
+        
+        // do not show progress in dialog if task finnished early        
+        Timer t = new Timer();
+        t.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if(!(refreshFinnished[0])) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            showProgress();                            
+                        }
+                    });                     
+                }
+            }
+        }, 1000);
     }
     
     private EnumSet<Status> getAcceptedStatus() {
