@@ -38,6 +38,7 @@ import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.DoWhileLoopTree;
@@ -51,6 +52,7 @@ import com.sun.source.tree.InstanceOfTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
@@ -803,9 +805,54 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return scan(node.getBlock(), ef.getBlock(), p);
     }
 
-//    public Boolean visitClass(ClassTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitClass(ClassTree node, TreePath p) {
+        if (p == null)
+            return super.visitClass(node, p);
+
+        ClassTree t = (ClassTree) p.getLeaf();
+
+        String name = t.getSimpleName().toString();
+
+        if (!name.isEmpty()) {
+            if (!scan(node.getModifiers(), t.getModifiers(), p))
+                return false;
+
+            if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+                String existingName = bindState.variables2Names.get(name);
+                String currentName = node.getSimpleName().toString();
+
+                if (existingName != null) {
+                    if (!existingName.equals(name)) {
+                        return false;
+                    }
+                } else {
+                    //XXX: putting the variable into both variables and variable2Names.
+                    //variables is needed by the declarative hints to support conditions like
+                    //referencedIn($variable, $statements$):
+                    //causes problems in JavaFix, see visitIdentifier there.
+                    bindState.variables.put(name, getCurrentPath());
+                    bindState.variables2Names.put(name, currentName);
+                }
+            } else {
+                if (!node.getSimpleName().contentEquals(name))
+                    return false;
+            }
+
+            if (!checkLists(node.getTypeParameters(), t.getTypeParameters(), p))
+                return false;
+
+            if (!scan(node.getExtendsClause(), t.getExtendsClause(), p))
+                return false;
+
+            if (!checkLists(node.getImplementsClause(), t.getImplementsClause(), p))
+                return false;
+        } else {
+            if (node.getSimpleName().length() != 0)
+                return false;
+        }
+
+        return checkLists(Utilities.filterHidden(getCurrentPath(), node.getMembers()), Utilities.filterHidden(p, t.getMembers()), p);
+    }
 
     public Boolean visitConditionalExpression(ConditionalExpressionTree node, TreePath p) {
         if (p == null) {
@@ -977,10 +1024,59 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return nodeValue.equals(ltValue);
     }
 
-//    public Boolean visitMethod(MethodTree node, TreePath p) {
-//        throw new UnsupportedOperationException("Not supported yet.");
-//    }
+    public Boolean visitMethod(MethodTree node, TreePath p) {
+        if (p == null)
+            return super.visitMethod(node, p);
 
+        MethodTree t = (MethodTree) p.getLeaf();
+
+        if (!scan(node.getModifiers(), t.getModifiers(), p))
+            return false;
+
+        if (!checkLists(node.getTypeParameters(), t.getTypeParameters(), p))
+            return false;
+
+        if (!scan(node.getReturnType(), t.getReturnType(), p))
+            return false;
+
+        String name = t.getName().toString();
+
+        if (name.startsWith("$")) { //XXX: there should be a utility method for this check
+            String existingName = bindState.variables2Names.get(name);
+            String currentName = node.getName().toString();
+
+            if (existingName != null) {
+                if (!existingName.equals(name)) {
+                    return false;
+                }
+            } else {
+                //XXX: putting the variable into both variables and variable2Names.
+                //variables is needed by the declarative hints to support conditions like
+                //referencedIn($variable, $statements$):
+                //causes problems in JavaFix, see visitIdentifier there.
+                bindState.variables.put(name, getCurrentPath());
+                bindState.variables2Names.put(name, currentName);
+            }
+        } else {
+            if (!node.getName().contentEquals(name))
+                return false;
+        }
+
+        if (!checkLists(node.getParameters(), t.getParameters(), p))
+            return false;
+
+        if (!checkLists(node.getThrows(), t.getThrows(), p))
+            return false;
+
+        if (!checkLists(node.getReceiverAnnotations(), t.getReceiverAnnotations(), p))
+            return false;
+
+        if (!scan(node.getBody(), t.getBody(), p))
+            return false;
+
+        return scan(node.getDefaultValue(), t.getDefaultValue(), p);
+    }
+    
     public Boolean visitModifiers(ModifiersTree node, TreePath p) {
         if (p == null)
             return super.visitModifiers(node, p);
