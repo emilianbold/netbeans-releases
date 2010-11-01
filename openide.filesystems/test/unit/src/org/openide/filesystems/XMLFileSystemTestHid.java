@@ -297,7 +297,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             Thread.sleep(3000);
             assertTrue(f2.createNewFile());
         }
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
         assertEquals(fo.lastModified().getTime(), f.lastModified());        

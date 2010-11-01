@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.ListIterator;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -59,6 +60,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  * @author Vladimir Voskresensky
  */
 public class CsmContext {
+    private final CsmFile file;
     // offset for which the context is looking for or last off
     private final int offset;
     
@@ -71,7 +73,8 @@ public class CsmContext {
     private CsmObject   csmLastObject;
 
     /** Creates a new instance of CsmContext */
-    public CsmContext(int offset) {
+    public CsmContext(CsmFile file, int offset) {
+        this.file = file;
         this.offset = offset;
         context = new ArrayList<CsmContextEntry>();
     }
@@ -148,6 +151,10 @@ public class CsmContext {
         return this.offset;
     }
     
+    CsmFile getFile() {
+        return this.file;
+    }
+
     /**
      * Returns a string representation of the object. 
      * @return  a string representation of the object.
@@ -155,7 +162,7 @@ public class CsmContext {
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
-        buf.append("\nlast element is " + csmLastObject); // NOI18N
+        buf.append("\nlast element is ").append(csmLastObject); // NOI18N
         buf.append("\ncontext for offset ").append(offset); //NOI18N
         if (isEmpty()) {
             buf.append(" empty"); //NOI18N
@@ -169,8 +176,7 @@ public class CsmContext {
         }
         return buf.toString();
     }
-    
-    
+
     // help structure to store one context object and offset where was jump in
     // inner scope
     public static class CsmContextEntry {
@@ -178,7 +184,7 @@ public class CsmContext {
         private CsmScope    scope;
         
         // offset in scope to stop processing scopeElements
-        private int         offset;
+        private final int         offset;
         
         public static final int WHOLE_SCOPE = -1;
         

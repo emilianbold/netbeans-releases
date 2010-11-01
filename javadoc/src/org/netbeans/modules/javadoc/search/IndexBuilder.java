@@ -258,7 +258,7 @@ public class IndexBuilder implements Runnable, ChangeListener {
                     }
                     title = st.getOverviewTitleBase(title);
                 }
-                if (title == null || "".equals(title)) { // NOI18N
+                if (title == null || title.isEmpty() || title.equals("Overview")) { // NOI18N
                     String filename = URLUtils.getDisplayName(index);
                     if (filename.length() > 54) {
                         // trim to display 54 chars

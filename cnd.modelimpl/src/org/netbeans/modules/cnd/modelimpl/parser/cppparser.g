@@ -694,7 +694,7 @@ public translation_unit:
 protected
 template_explicit_specialization
     :
-    LITERAL_template LESSTHAN GREATERTHAN
+    (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
         (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
@@ -766,7 +766,7 @@ template_explicit_specialization
 protected
 external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition;}
 	:      
-		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
+		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
@@ -913,7 +913,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		(LITERAL___extension__!)? LITERAL_extern LITERAL_template external_declaration
 		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
         |
-	    {isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => external_declaration_template
+	    {isCPlusPlus()}? ((LITERAL___extension__)? (LITERAL_export)? LITERAL_template) => external_declaration_template
         |
 	// Class definition (templates too)
 	// This is separated out otherwise the next alternative

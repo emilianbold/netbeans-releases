@@ -1041,7 +1041,7 @@ public class BaseKit extends DefaultEditorKit {
 
         public DefaultKeyTypedAction() {
             // Construct with defaultKeyTypedAction name to retain full compatibility for extending actions
-            super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
+            super(defaultKeyTypedAction, CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
             LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
@@ -1068,6 +1068,11 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
+                // reset magic caret position
+                if (target.getCaret() != null) {
+                    target.getCaret().setMagicCaretPosition(null);
+                }
+                
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
                 if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {

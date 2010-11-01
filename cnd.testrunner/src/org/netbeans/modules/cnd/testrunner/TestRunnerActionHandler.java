@@ -107,6 +107,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TestSession session;
     private Manager manager;
+    private InputOutput lastIO = null;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -115,6 +116,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     @Override
     public void execute(final InputOutput io) {
+        lastIO = io;
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -344,8 +346,10 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     @Override
     public void rerun() {
-        refresh();
-        runExecution();
+        if(lastIO != null) {
+            refresh();
+            execute(lastIO);
+        }
     }
 
     @Override

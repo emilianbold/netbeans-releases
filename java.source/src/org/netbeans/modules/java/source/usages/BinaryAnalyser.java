@@ -248,7 +248,7 @@ public class BinaryAnalyser {
                             cont = new ZipContinuation (zipFile, e, ctx);
                             return cont.execute();
                         } catch (ZipException e) {
-                            LOGGER.warning("Broken zip file: " + archive.getAbsolutePath());
+                            LOGGER.log(Level.WARNING, "Broken zip file: {0}", archive.getAbsolutePath());
                         }
                     }
                 }
@@ -474,12 +474,13 @@ public class BinaryAnalyser {
             final ZipEntry oe = archiveFile.getEntry(FileObjects.convertPackage2Folder(Object.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
             if (oe != null) {
                 class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
+                    @Override
                     public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
                         if (LOGGER.isLoggable(Level.FINE)) {
                             LOGGER.log(Level.FINE, "Diagnostic reported during prebuilding args: {0}", diagnostic.toString()); //NOI18N
                         }
                     }
-                };
+                }
                 ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
                     ClassPathSupport.createClassPath(new URL[0]),
                     ClassPathSupport.createClassPath(new URL[0]));
@@ -517,7 +518,7 @@ public class BinaryAnalyser {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
-    private final void delete (final String className) throws IOException {
+    private void delete (final String className) throws IOException {
         assert className != null;
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
@@ -658,7 +659,11 @@ public class BinaryAnalyser {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        LOGGER.warning("Invalid method signature: "+className+"::"+method.getName()+" signature is:" + jvmTypeId);  // NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid method signature: {0}::{1} signature is:{2}",
+                                new Object[] {
+                                    className,
+                                    method.getName(),
+                                    jvmTypeId});  // NOI18N
                     }
                 }
                 Code code = method.getCode();
@@ -678,7 +683,10 @@ public class BinaryAnalyser {
                                 addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                             }
                         } catch (IllegalStateException is) {
-                            LOGGER.warning("Invalid local variable signature: "+className+"::"+method.getName());  // NOI18N
+                            LOGGER.log(Level.WARNING, "Invalid local variable signature: {0}::{1}",
+                                    new Object[]{
+                                        className,
+                                        method.getName()});  // NOI18N
                         }
                     }
                 }
@@ -701,7 +709,10 @@ public class BinaryAnalyser {
                             addUsage(usages, typeSigName, ClassIndexImpl.UsageType.TYPE_REFERENCE);
                         }
                     } catch (IllegalStateException is) {
-                        LOGGER.warning("Invalid field signature: "+className+"::"+var.getName()+" signature is: "+jvmTypeId);  // NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid field signature: {0}::{1} signature is: {2}",
+                                new Object[]{
+                                    className, var.getName(),
+                                    jvmTypeId});  // NOI18N
                     }
                 }
             }
@@ -800,6 +811,7 @@ public class BinaryAnalyser {
         public final List<Pair<ElementHandle<TypeElement>,Long>> finish () throws IOException {
             doFinish();
             Collections.sort(result, new Comparator() {
+                @Override
                 public int compare(Object o1, Object o2) {
                     final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
                     final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
@@ -826,6 +838,7 @@ public class BinaryAnalyser {
             this.ctx = ctx;
         }
 
+        @Override
         protected Result doExecute () throws IOException {
             while(entries.hasMoreElements()) {
                 ZipEntry ze;
@@ -844,7 +857,10 @@ public class BinaryAnalyser {
                     try {
                         analyse(in);
                     } catch (InvalidClassFormatException icf) {
-                        LOGGER.warning("Invalid class file format: "+ new File(zipFile.getName()).toURI() + "!/" + ze.getName());     //NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}!/{1}",
+                                new Object[]{
+                                    new File(zipFile.getName()).toURI(),
+                                    ze.getName()});     //NOI18N
                     } catch (IOException x) {
                         Exceptions.attachMessage(x, "While scanning: " + ze.getName());                                         //NOI18N
                         throw x;
@@ -868,6 +884,7 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         protected void doFinish () throws IOException {
             this.zipFile.close();
         }
@@ -888,6 +905,7 @@ public class BinaryAnalyser {
             this.ctx = ctx;
         }
 
+        @Override
         public Result doExecute () throws IOException {
             while (!todo.isEmpty()) {
                 File file = todo.removeFirst();
@@ -910,22 +928,22 @@ public class BinaryAnalyser {
                         endPos = filePath.length();
                     }
                     String relativePath = FileObjects.convertFolder2Package (filePath.substring(rootPath.length(), endPos));
-                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), 0L);
-                    if (accepts(file.getName()) && !isUpToDate (relativePath, fileMTime)) {
+                    cont.report(ElementHandleAccessor.INSTANCE.create(ElementKind.CLASS, relativePath), fileMTime);
+                    if (!isUpToDate (relativePath, fileMTime)) {
                         toDelete.add(Pair.<String,String>of (relativePath,null));
                         try {
                             InputStream in = new BufferedInputStream(new FileInputStream(file));
                             try {
                                 analyse(in);
                             } catch (InvalidClassFormatException icf) {
-                                LOGGER.warning("Invalid class file format: " + file.getAbsolutePath());      //NOI18N
+                                LOGGER.log(Level.WARNING, "Invalid class file format: {0}", file.getAbsolutePath());      //NOI18N
 
                             } finally {
                                 in.close();
                             }
                         } catch (IOException ex) {
                             //unreadable file?
-                            LOGGER.warning("Cannot read file: " + file.getAbsolutePath());      //NOI18N
+                            LOGGER.log(Level.WARNING, "Cannot read file: {0}", file.getAbsolutePath());      //NOI18N
                             LOGGER.log(Level.FINE, null, ex);
                         }
                         if (lmListener.isLowMemory()) {
@@ -945,6 +963,7 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         public void doFinish () throws IOException {
         }
     }
@@ -962,6 +981,7 @@ public class BinaryAnalyser {
             this.ctx = ctx;
         }
 
+        @Override
         public Result doExecute () throws IOException {
             while (todo.hasMoreElements()) {
                 FileObject fo = todo.nextElement();
@@ -972,7 +992,7 @@ public class BinaryAnalyser {
                     try {
                         analyse (in);
                     } catch (InvalidClassFormatException icf) {
-                        LOGGER.warning("Invalid class file format: "+FileUtil.getFileDisplayName(fo));      //NOI18N
+                        LOGGER.log(Level.WARNING, "Invalid class file format: {0}", FileUtil.getFileDisplayName(fo));      //NOI18N
                     }
                     finally {
                         in.close();
@@ -993,6 +1013,7 @@ public class BinaryAnalyser {
             return Result.FINISHED;
         }
 
+        @Override
         public void doFinish () throws IOException {
 
         }

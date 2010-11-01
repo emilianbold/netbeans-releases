@@ -117,6 +117,28 @@ is the proper place.
 
     <changes>
 
+       <change id="platformRoots">
+    	    <api name="plugins"/>
+            <summary>
+                Methods to obtain server, domain and middleware home.
+            </summary>
+            <version major="1" minor="72"/>
+            <date day="27" month="10" year="2010"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                <p>
+                So far there was just J2eePlatform.getPlatformRoots() with unclear
+                semantics. Now there are explicit getServerHome(), getDomainHome()
+                and getMiddlewareHome() methods in the API. The corresponding SPI
+                has been added - J2eePlatformImpl2.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="J2eePlatformImpl2"/>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="J2eePlatform"/>
+            <issue number="190387"/>
+        </change>
+
        <change id="required-librariers">
     	    <api name="plugins"/>
             <summary>
@@ -138,7 +160,6 @@ is the proper place.
             <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="IncrementalDeployment2"/>
             <issue number="186331"/>
         </change>
-
 
         <change id="deploymentDescriptorConfiguration">
 	    <api name="j2eeserver"/>
