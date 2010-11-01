@@ -100,7 +100,7 @@ public class GitCommitPanel extends VCSCommitPanel {
         
         Preferences preferences = GitModuleConfig.getDefault().getPreferences();
         String lastCanceledCommitMessage = GitModuleConfig.getDefault().getLastCanceledCommitMessage();
-        DefaultCommitParameters parameters = new DefaultCommitParameters(preferences, lastCanceledCommitMessage);
+        GitCommitParameters parameters = new GitCommitParameters(preferences, lastCanceledCommitMessage);
         
         Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
         GitHookContext hooksCtx = new GitHookContext(context.getRootFiles().toArray( new File[context.getRootFiles().size()]), null, new GitHookContext.LogEntry[] {});        
