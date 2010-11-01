@@ -53,12 +53,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
@@ -76,7 +76,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Ludo
  */
-public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
+public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     
     private Hk2DeploymentManager dm;
     private final LibraryImplementation lib = new J2eeLibraryTypeProvider().createLibrary();
@@ -347,16 +347,35 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      */
     @Override
     public java.io.File[] getPlatformRoots() {
+        File server = getServerHome();
+        if (server != null) {
+            return new File[] {server};
+        }
+        return new File[]{};
+    }
+
+    @Override
+    public File getServerHome() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
         File returnedElement;
-        File[] retVal = new File[0];
         if (gfRootStr != null) {
             returnedElement = new File(gfRootStr);
             if (returnedElement.exists()) {
-                retVal = new File[] { returnedElement };
+                return returnedElement;
             }
         }
-        return retVal;
+        return null;
+    }
+
+    @Override
+    public File getDomainHome() {
+        // FIXME perhaps we want to return GF domain
+        return null;
+    }
+
+    @Override
+    public File getMiddlewareHome() {
+        return null;
     }
     
     /**
