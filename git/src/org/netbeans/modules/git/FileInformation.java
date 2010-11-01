@@ -358,7 +358,8 @@ public class FileInformation extends VCSFileInformation {
     public static final EnumSet<Status> STATUS_MANAGED = EnumSet.complementOf(EnumSet.of(Status.NOTVERSIONED_NOTMANAGED));
     public static final EnumSet<Status> STATUS_REMOVED = EnumSet.of(Status.REMOVED_HEAD_INDEX,
                                                                     Status.REMOVED_INDEX_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(Status.NEW_HEAD_INDEX,
+    public static final EnumSet<Status> STATUS_LOCAL_CHANGES = EnumSet.of(
+            Status.NEW_HEAD_INDEX,
             Status.NEW_INDEX_WORKING_TREE,
             Status.NEW_HEAD_WORKING_TREE,
             Status.IN_CONFLICT,
@@ -369,15 +370,18 @@ public class FileInformation extends VCSFileInformation {
             Status.MODIFIED_HEAD_WORKING_TREE,
             Status.MODIFIED_INDEX_WORKING_TREE);
 
-    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_WORKING = EnumSet.of(Status.NEW_HEAD_WORKING_TREE,
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_WORKING = EnumSet.of(
+            Status.NEW_HEAD_WORKING_TREE,
             Status.IN_CONFLICT,
             Status.REMOVED_HEAD_WORKING_TREE,
             Status.MODIFIED_HEAD_WORKING_TREE);
-    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_INDEX = EnumSet.of(Status.NEW_HEAD_INDEX,
+    public static final EnumSet<Status> STATUS_MODIFIED_HEAD_VS_INDEX = EnumSet.of(
+            Status.NEW_HEAD_INDEX,
             Status.IN_CONFLICT,
             Status.REMOVED_HEAD_INDEX,
             Status.MODIFIED_HEAD_INDEX);
-    public static final EnumSet<Status> STATUS_MODIFIED_INDEX_VS_WORKING = EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
+    public static final EnumSet<Status> STATUS_MODIFIED_INDEX_VS_WORKING = EnumSet.of(
+            Status.NEW_INDEX_WORKING_TREE,
             Status.IN_CONFLICT,
             Status.REMOVED_INDEX_WORKING_TREE,
             Status.MODIFIED_INDEX_WORKING_TREE);

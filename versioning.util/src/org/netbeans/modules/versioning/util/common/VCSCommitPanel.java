@@ -44,12 +44,8 @@
 
 package org.netbeans.modules.versioning.util.common;
 
-import java.awt.GridBagConstraints;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.Font;
 import java.awt.Insets;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -58,6 +54,7 @@ import javax.swing.JCheckBox;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
@@ -90,10 +87,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.event.TableModelEvent;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.Dimension;
-import java.awt.GridBagLayout;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -104,10 +98,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.JTree;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.versioning.hooks.VCSHook;
 import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -281,7 +272,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
         // hooks area
         if(!hooks.isEmpty()) {            
             HookPanel hooksPanel = new HookPanel(hooks, hooksContext);                                                              
-            basePanel.add(makeVerticalStrut(filesPanel, hooksPanel, RELATED, this));
+//            basePanel.add(makeVerticalStrut(filesPanel, hooksPanel, RELATED, this));
             hooksPanel.setAlignmentX(LEFT_ALIGNMENT);
             basePanel.add(hooksPanel);
             basePanel.add(makeVerticalStrut(hooksPanel, errorLabel, RELATED, this));
@@ -513,7 +504,7 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             this.sectionButton.setSelected(defaultSectionDisplayed);
             
             setLayout(new BoxLayout(this, Y_AXIS));
-            sectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            sectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, sectionButton.getMaximumSize().height));
             add(sectionButton);
             add(makeVerticalStrut(sectionButton, sectionPanel, RELATED, VCSCommitPanel.this));
             add(sectionPanel);  
@@ -522,6 +513,15 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             sectionPanel.setLayout(new BoxLayout(sectionPanel, Y_AXIS));
             sectionPanel.setAlignmentX(LEFT_ALIGNMENT);            
             sectionButton.setAlignmentX(LEFT_ALIGNMENT);
+            
+            Icon i = sectionButton.getIcon();
+            Border b = sectionButton.getBorder();
+            int left = (b != null ? b.getBorderInsets(sectionButton).left : 0) + (i != null ? i.getIconWidth() : 16) + sectionButton.getIconTextGap();
+            int bottom = getContainerGap(SOUTH);
+            sectionPanel.setBorder(createEmptyBorder(0,     // top
+                                    left,                   // left
+                                    bottom,                 // bottom
+                                    0));                    // right
             
             if(defaultSectionDisplayed) {
                 displaySection();
@@ -551,13 +551,18 @@ public abstract class VCSCommitPanel extends AutoResizingPanel implements Prefer
             JComponent table = commitTable.getComponent();
             
             filesLabel.setLabelFor(table);
+            filesLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesLabel.getMaximumSize().height));
+            
             Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
             table.setPreferredSize(new Dimension(0, 2 * parameters.getPanel().getPreferredSize().height));
             
-            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);
             sectionPanel.add(filesLabel);
             sectionPanel.add(makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
             sectionPanel.add(table);
+            
+            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);
+            filesLabel.setAlignmentX(LEFT_ALIGNMENT);
+            table.setAlignmentX(LEFT_ALIGNMENT);
         }
 
     }
