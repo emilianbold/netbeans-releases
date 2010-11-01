@@ -119,8 +119,7 @@ public class GitCommitParameters extends DefaultCommitParameters {
 
     Mode getSelectedMode() {
         if(isHeadVsIndex()) return Mode.HEAD_VS_INDEX;
-        if(isHeadVsWorking()) return Mode.HEAD_VS_WORKING_TREE;
-        if(isIndexVsWorking()) return Mode.INDEX_VS_WORKING_TREE;
+        if(isHeadVsWorking()) return Mode.HEAD_VS_WORKING_TREE;        
         // how is this?
         throw new IllegalStateException("no modus selected");
     }
@@ -131,11 +130,7 @@ public class GitCommitParameters extends DefaultCommitParameters {
     
     private boolean isHeadVsWorking() {
         return getPanel().tgbHeadVsWorking.isSelected();
-    }
-    
-    private boolean isIndexVsWorking() {
-        return getPanel().tgbIndexVsWorking.isSelected();
-    }
+    }    
 
     private class ParametersPanel extends JPanel implements ActionListener {
         private JScrollPane scrollpane = new JScrollPane();
@@ -143,7 +138,6 @@ public class GitCommitParameters extends DefaultCommitParameters {
         private final JTextArea messageTextArea = new JTextArea();
         JToggleButton tgbHeadVsIndex = new JToggleButton();
         JToggleButton tgbHeadVsWorking = new JToggleButton();
-        JToggleButton tgbIndexVsWorking = new JToggleButton();
         private UndoRedoSupport um;                
 
         public ParametersPanel() {
@@ -171,19 +165,9 @@ public class GitCommitParameters extends DefaultCommitParameters {
             toolbar.add(tgbHeadVsIndex);
             bg.add(tgbHeadVsIndex);
             tgbHeadVsIndex.addActionListener(this);
-
-            tgbIndexVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/index_vs_working.png"))); // NOI18N
-            tgbIndexVsWorking.setToolTipText(bundle.getString("ParametersPanel.tgbIndexVsWorking.toolTipText")); // NOI18N
-            tgbIndexVsWorking.setFocusable(false);
-            toolbar.add(tgbIndexVsWorking);
-            bg.add(tgbIndexVsWorking);
-            tgbIndexVsWorking.addActionListener(this);
             
             Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-            switch(mode) {
-                case INDEX_VS_WORKING_TREE:
-                    tgbIndexVsWorking.setSelected(true);
-                    break;
+            switch(mode) {                
                 case HEAD_VS_INDEX:
                     tgbHeadVsIndex.setSelected(true);
                     break;
@@ -273,8 +257,7 @@ public class GitCommitParameters extends DefaultCommitParameters {
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == tgbHeadVsWorking ||
-               e.getSource() == tgbHeadVsIndex || 
-               e.getSource() == tgbIndexVsWorking) 
+               e.getSource() == tgbHeadVsIndex) 
             {
                 ChangeListener[] la;
                 synchronized(listeners) {
