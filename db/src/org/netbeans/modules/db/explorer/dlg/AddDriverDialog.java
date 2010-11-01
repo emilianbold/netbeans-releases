@@ -400,6 +400,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         } while (count != i);
         
         findDriverClass();
+        updateState();
     }//GEN-LAST:event_removeButtonActionPerformed
 
     private void findButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findButtonActionPerformed
@@ -479,6 +480,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
                 wp.fireChangeEvent();
             }
         }
+        updateState();
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void drvListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_drvListValueChanged
