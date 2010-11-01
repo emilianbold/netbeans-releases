@@ -235,6 +235,11 @@ public final class Git {
         gitVCS.refreshStatus(files);
     }
 
+    public void versionedFilesChanged () {
+        rootsToFile.clear();
+        support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
+    }
+
     /**
      * Refreshes cached modification timestamp of the repository's metadata
      * @param repository owner of the metadata to refresh

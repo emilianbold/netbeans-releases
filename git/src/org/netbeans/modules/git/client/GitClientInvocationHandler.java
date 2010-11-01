@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 
 /**
@@ -67,6 +68,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
     private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getBranches", "getStatus", "removeNotificationListener")); //NOI18N
     private static final HashSet<String> INDEXING_BRIDGE_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "remove", "reset")); //NOI18N
     private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", "catFile", "getBranches", "getStatus", "removeNotificationListener")); //NOI18N
+    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("checkout", "commit", "reset")); //NOI18N
     private static final Logger LOG = Logger.getLogger(GitClientInvocationHandler.class.getName());
     private GitProgressSupport progressSupport;
 
@@ -109,6 +111,7 @@ public class GitClientInvocationHandler implements InvocationHandler {
                 @Override
                 public Object call() throws Exception {
                     boolean refreshIndexTimestamp = modifiesWorkingTree(method);
+                    boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(method.getName());
                     long t = 0;
                     if (LOG.isLoggable(Level.FINE)) {
                         t = System.currentTimeMillis();
@@ -123,6 +126,10 @@ public class GitClientInvocationHandler implements InvocationHandler {
                         if (refreshIndexTimestamp) {
                             LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
                             Git.getInstance().refreshWorkingCopyTimestamp(repositoryRoot);
+                        }
+                        if (repositoryInfoRefreshNeeded) {
+                            LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { method.getName(), repositoryRoot.getAbsolutePath() }); //NOI18N
+                            RepositoryInfo.refreshAsync(repositoryRoot);
                         }
                     }
                 }
