@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.navigator.NavigatorPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -140,7 +141,11 @@ public class NavigatorComponent implements NavigatorPanel, LookupListener {
         if (curData == null) {
             return this.panelUI.getLookup();
         } else {
-            return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
+            if (this.panelUI.getLookup().lookup(Node.class) == null) {
+                return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData.getNodeDelegate(), curData, curData.getPrimaryFile()));
+            } else {
+                return new ProxyLookup(this.panelUI.getLookup(), Lookups.fixed(curData, curData.getPrimaryFile()));
+            }
         }
     }
     

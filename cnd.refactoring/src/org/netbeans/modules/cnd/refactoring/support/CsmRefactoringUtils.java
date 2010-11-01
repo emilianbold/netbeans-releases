@@ -230,7 +230,18 @@ public final class CsmRefactoringUtils {
     }
     
     public static CsmObject findContextObject(Lookup lookup) {
-        CsmObject out = lookup.lookup(CsmObject.class);
+        CsmFile file = null;
+        CsmObject out = null;
+        Collection<? extends CsmObject> coll = lookup.lookupAll(CsmObject.class);
+        for (CsmObject obj : coll) {
+           if (CsmKindUtilities.isFile(obj)) {
+               // try to find something smaller
+               file = (CsmFile) obj;
+           } else {
+               out = obj;
+               break;
+           }
+        }
         if (out == null) {
             CsmUID uid = lookup.lookup(CsmUID.class);
             if (uid != null) {
@@ -241,7 +252,10 @@ public final class CsmRefactoringUtils {
                 if (node != null) {
                     out = CsmReferenceResolver.getDefault().findReference(node);
                 }
-            }
+            }            
+        }
+        if (out == null) {
+            out = file;
         }
         return out;
     }
