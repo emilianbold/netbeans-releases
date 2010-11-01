@@ -420,11 +420,11 @@ public final class EarProjectProperties {
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
             return;
         }
-        String root = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
+        Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(j2eePlatform);
         // update j2ee.appclient.tool.runtime
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_APP_CLIENT_RUNTIME)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_APP_CLIENT_RUNTIME);
-            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(wsClasspath, root));
+            privateProps.setProperty(APPCLIENT_TOOL_RUNTIME, J2EEProjectProperties.toClasspathString(wsClasspath, roots));
         } else {
             privateProps.remove(APPCLIENT_TOOL_RUNTIME);
         }
