@@ -42,6 +42,18 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.util.Map;
+import org.openide.util.NbBundle;
+import java.util.Collection;
+import java.util.Collections;
+import javax.swing.ButtonGroup;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
+import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
+import org.netbeans.modules.versioning.hooks.VCSHook;
+import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -74,7 +86,7 @@ import static javax.swing.BorderFactory.createEmptyBorder;
 abstract class CollapsiblePanel extends JPanel {
     protected final CategoryButton sectionButton;
     protected final JPanel sectionPanel;
-    private final VCSCommitPanel master;
+    protected final VCSCommitPanel master;
 
     public CollapsiblePanel(VCSCommitPanel master, boolean defaultSectionDisplayed) {
         this.master = master;
@@ -129,6 +141,10 @@ abstract class CollapsiblePanel extends JPanel {
     private void hideSection() {
         sectionPanel.setVisible(false);            
     }        
+    
+    private static String getMessage(String msgKey) {
+        return NbBundle.getMessage(VCSCommitPanel.class, msgKey);
+    }
     
     // inspired by org.netbeans.modules.palette.ui.CategoryButton
     class CategoryButton extends JCheckBox {
@@ -282,4 +298,114 @@ abstract class CollapsiblePanel extends JPanel {
             }
         }
     }      
+    
+    static class FilesPanel extends CollapsiblePanel implements ActionListener {
+        public static final String TOOLBAR_FILTER = "toolbar.filter";           // NOI18N
+        final JLabel filesLabel = new JLabel();        
+        private static final boolean DEFAULT_DISPLAY_FILES = true;
+        private final JToolBar toolbar;
+        private final Map<String, VCSCommitFilter> filters;
+        public FilesPanel(VCSCommitPanel master, Map<String, VCSCommitFilter> filters, int preferedHeight)  {
+            super(master, DEFAULT_DISPLAY_FILES);
+            this.filters = filters;
+            
+            Mnemonics.setLocalizedText(sectionButton, getMessage("LBL_CommitDialog_FilesToCommit"));    // NOI18N            
+                        
+            JComponent table = master.getCommitTable().getComponent();
+            
+            filesLabel.setLabelFor(table);
+            filesLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesLabel.getMaximumSize().height));
+            
+            Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
+            table.setPreferredSize(new Dimension(0, preferedHeight));
+            
+            ButtonGroup bg = new ButtonGroup();
+            toolbar = new JToolBar();
+            toolbar.setFloatable(false);
+            
+            for (VCSCommitFilter filter : filters.values()) {
+                
+                JToggleButton tgb = new JToggleButton();
+                tgb.setIcon(filter.getIcon()); 
+                tgb.setToolTipText(filter.getTooltip()); 
+                tgb.setFocusable(false);
+                tgb.setSelected(filter.isSelected());
+                tgb.addActionListener(this);                
+                tgb.putClientProperty(TOOLBAR_FILTER, filter);
+                bg.add(tgb);
+                toolbar.add(tgb);
+                
+            }
+            toolbar.setAlignmentX(LEFT_ALIGNMENT);        
+            
+            sectionPanel.add(toolbar);
+            sectionPanel.add(table);
+            sectionPanel.add(VCSCommitPanel.makeVerticalStrut(filesLabel, table, RELATED, sectionPanel));
+            sectionPanel.add(filesLabel);
+            
+            sectionPanel.setAlignmentX(LEFT_ALIGNMENT);
+            filesLabel.setAlignmentX(LEFT_ALIGNMENT);
+            table.setAlignmentX(LEFT_ALIGNMENT);
+        }        
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            Object s = e.getSource();            
+            if(s instanceof JToggleButton) {
+                JToggleButton tgb = (JToggleButton)s;
+                Object o = tgb.getClientProperty(TOOLBAR_FILTER);
+                assert o != null;
+                if(o != null) {
+                    VCSCommitFilter f = (VCSCommitFilter) o;
+                    boolean selected = tgb.isSelected();
+                    if(selected != f.isSelected()) {
+                        f.setSelected(selected);
+                        String id = f.getID();                        
+                        for (VCSCommitFilter filter : filters.values()) {
+                            if(!filter.getID().equals(id)) {
+                                filter.setSelected(!selected);
+                            }
+                        }
+                        master.computeNodes();
+                    } else {
+                        return;
+                    }
+                } 
+            }
+        }
+    }
+    
+    static class HookPanel extends CollapsiblePanel {
+            
+        private Collection<? extends VCSHook> hooks = Collections.emptyList();
+        private VCSHookContext hookContext;    
+        private static final boolean DEFAULT_DISPLAY_HOOKS = false;
+        
+        public HookPanel(VCSCommitPanel master, Collection<? extends VCSHook> hooks, VCSHookContext hookContext) {            
+            super(master, DEFAULT_DISPLAY_HOOKS);
+            this.hooks = hooks;
+            this.hookContext = hookContext;
+            
+            sectionButton.setText((hooks.size() == 1)
+                                           ? hooks.iterator().next().getDisplayName()
+                                           : getMessage("LBL_Advanced"));   //NOI18N                        
+        }
+
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            // need this to happen in addNotify() - depends on how 
+            // repositoryComboSupport in hook.createComponents works for bugzilla|jira
+            if (hooks.size() == 1) {                
+                sectionPanel.add(hooks.iterator().next().createComponent(hookContext));
+            } else {
+                JTabbedPane hooksTabbedPane = new JTabbedPane();
+                for (VCSHook hook : hooks) {
+                    hooksTabbedPane.add(hook.createComponent(hookContext), hook.getDisplayName());
+                }
+                sectionPanel.add(hooksTabbedPane);
+            }                
+        }
+    }    
+    
 }
