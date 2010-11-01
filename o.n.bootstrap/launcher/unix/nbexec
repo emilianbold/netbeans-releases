@@ -151,7 +151,9 @@ if [ -z "$jdkhome" ] ; then
 
     case "`uname`" in
         Darwin*)
-        if [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
+        if [ -f "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java" ] ; then
+            jdkhome="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home"
+        elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
             jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
         elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
             jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
