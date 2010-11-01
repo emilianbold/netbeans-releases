@@ -60,32 +60,47 @@ final class ALPairComparator implements Comparator<Pair<?>> {
 
     /** Compares two items.
     */
+    @Override
     public int compare(Pair<?> i1, Pair<?> i2) {
         int result = i1.getIndex() - i2.getIndex();
 
         if (result == 0) {
             if (i1 != i2) {
-                java.io.ByteArrayOutputStream bs = new java.io.ByteArrayOutputStream();
-                java.io.PrintStream ps = new java.io.PrintStream(bs);
-
-                ps.println(
-                    "Duplicate pair in tree" + // NOI18N
-                    "Pair1: " + i1 + " pair2: " + i2 + " index1: " + i1.getIndex() + " index2: " +
-                    i2.getIndex() // NOI18N
-                     +" item1: " + i1.getInstance() + " item2: " + i2.getInstance() // NOI18N
-                     +" id1: " + Integer.toHexString(System.identityHashCode(i1)) // NOI18N
-                     +" id2: " + Integer.toHexString(System.identityHashCode(i2)) // NOI18N
-                );
-
-                //                print (ps, false);
-                ps.close();
-
-                throw new IllegalStateException(bs.toString());
+                throw new DuplicatedPairException(i1, i2);
             }
 
             return 0;
         }
 
         return result;
+    }
+    
+    private static final class DuplicatedPairException extends IllegalStateException {
+        private final Pair<?> i1, i2;
+
+        public DuplicatedPairException(Pair<?> i1, Pair<?> i2) {
+            this.i1 = i1;
+            this.i2 = i2;
+        }
+
+        @Override
+        public String getMessage() {
+                java.io.ByteArrayOutputStream bs = new java.io.ByteArrayOutputStream();
+            java.io.PrintStream ps = new java.io.PrintStream(bs);
+
+            ps.println(
+                    "Duplicate pair in tree" + // NOI18N
+                    "Pair1: " + i1 + " pair2: " + i2 + " index1: " + i1.getIndex() + " index2: "
+                    + i2.getIndex() // NOI18N
+                    + " item1: " + i1.getInstance() + " item2: " + i2.getInstance() // NOI18N
+                    + " id1: " + Integer.toHexString(System.identityHashCode(i1)) // NOI18N
+                    + " id2: " + Integer.toHexString(System.identityHashCode(i2)) // NOI18N
+                    );
+
+            //                print (ps, false);
+            ps.close();
+
+            return bs.toString();
+        }
     }
 }
