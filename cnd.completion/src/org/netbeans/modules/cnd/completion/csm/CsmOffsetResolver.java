@@ -99,7 +99,7 @@ public class CsmOffsetResolver {
         CsmObject last = null;
         if (context == null) {
             // create dummy context
-            context = new CsmContext(offset);
+            context = new CsmContext(file, offset);
         }
         CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
         last = lastObj;
@@ -212,7 +212,7 @@ public class CsmOffsetResolver {
     }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
-        CsmContext context = new CsmContext(offset);
+        CsmContext context = new CsmContext(file, offset);
         findObjectWithContext(file, offset, context, fileReferncesContext);
         return context;
     }
