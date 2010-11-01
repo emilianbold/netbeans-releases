@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,10 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.git.FileInformation;
+import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
@@ -62,16 +66,12 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
-import org.netbeans.modules.versioning.hooks.HgHook;
-import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
-import org.netbeans.modules.versioning.util.common.VCSCommitParameters;
-import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
@@ -89,11 +89,17 @@ public class GitCommitPanel extends VCSCommitPanel {
     private final File[] roots;
     private final File repository;
 
-    private GitCommitPanel(final File[] roots, final File repository, VCSCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
+    private GitCommitPanel(final File[] roots, final File repository, GitCommitParameters parameters, Preferences preferences, Collection<GitHook> hooks, VCSHookContext hooksContext, MultiDiffProvider diffProvider) {
         super(parameters, preferences, hooks, hooksContext, diffProvider);
         this.roots = roots;
         this.repository = repository;
         this.hooks = hooks;
+        parameters.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                computeNodes();
+            }
+        });
     }
 
     public static GitCommitPanel create(final File[] roots, final File repository, VCSContext context) {
@@ -111,8 +117,8 @@ public class GitCommitPanel extends VCSCommitPanel {
     }
     
     @Override
-    public DefaultCommitParameters getParameters() {
-        return (DefaultCommitParameters) super.getParameters();
+    public GitCommitParameters getParameters() {
+        return (GitCommitParameters) super.getParameters();
     }
 
     public Collection<GitHook> getHooks() {
@@ -126,6 +132,13 @@ public class GitCommitPanel extends VCSCommitPanel {
             @Override
             public void perform() {
                 try {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            getCommitTable().setNodes(new VCSFileNode[0]);                            
+                        }
+                    });
+                    
                     // Ensure that cache is uptodate
                     FileStatusCache cache = Git.getInstance().getFileStatusCache();
                     cache.refreshAllRoots(roots);
@@ -136,7 +149,7 @@ public class GitCommitPanel extends VCSCommitPanel {
                         File[] splitRoots = split[c];
                         boolean recursive = c == 1;
                         if (recursive) {
-                            File[] files = cache.listFiles(splitRoots, FileInformation.STATUS_LOCAL_CHANGES);
+                            File[] files = cache.listFiles(splitRoots, getAcceptedStatus());
                             for (int i = 0; i < files.length; i++) {
                                 for(int r = 0; r < splitRoots.length; r++) {
                                     if(Utils.isAncestorOrEqual(splitRoots[r], files[i]))
@@ -148,7 +161,7 @@ public class GitCommitPanel extends VCSCommitPanel {
                                 }
                             }
                         } else {
-                            File[] files = GitUtils.flatten(splitRoots, FileInformation.STATUS_LOCAL_CHANGES);
+                            File[] files = GitUtils.flatten(splitRoots, getAcceptedStatus());
                             for (int i= 0; i<files.length; i++) {
                                 if(!fileList.contains(files[i])) {
                                     fileList.add(files[i]);
@@ -182,6 +195,20 @@ public class GitCommitPanel extends VCSCommitPanel {
         String preparingMessage = NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit");        
         startProgress(preparingMessage, support.getProgressComponent());
         support.start(rp, repository, preparingMessage);
+    }
+    
+    private EnumSet<Status> getAcceptedStatus() {
+        GitCommitParameters param = getParameters();
+        switch(param.getSelectedMode()) {
+            case INDEX_VS_WORKING_TREE :
+                return FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
+            case HEAD_VS_INDEX :
+                return FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+            case HEAD_VS_WORKING_TREE :
+                return FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;                
+            default :
+                throw new IllegalStateException("wrong modus");
+        }        
     }
     
     @Override

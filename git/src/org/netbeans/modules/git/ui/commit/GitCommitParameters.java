@@ -42,10 +42,16 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.util.logging.Level;
+import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.FileInformation.Mode;
+import java.awt.event.ActionEvent;
 import javax.swing.ButtonGroup;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.Box;
@@ -54,6 +60,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.spellchecker.api.Spellchecker;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.netbeans.modules.versioning.util.TemplateSelector;
@@ -68,14 +77,28 @@ import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
  *
  * @author Tomas Stupka
  */
-public class GitCommitParameters extends DefaultCommitParameters {
-
+public class GitCommitParameters extends DefaultCommitParameters {    
+    
     private String commitMessage;
+    private final List<ChangeListener> listeners = new LinkedList<ChangeListener>();
+    
     public GitCommitParameters(Preferences preferences, String commitMessage) {
         super(preferences, commitMessage);
         this.commitMessage = commitMessage;
     }
 
+    void addChangeListener(ChangeListener l) {
+        synchronized(listeners) {
+            listeners.add(l);
+        }
+    }
+    
+    void removeChangeListener(ChangeListener l) {
+        synchronized(listeners) {
+            listeners.remove(l);
+        }
+    }
+    
     @Override
     protected JPanel createPanel() {
         ParametersPanel p = new ParametersPanel();
@@ -94,19 +117,27 @@ public class GitCommitParameters extends DefaultCommitParameters {
         return (ParametersPanel) super.getPanel();
     }
 
-    boolean isHeadVsIndex() {
+    Mode getSelectedMode() {
+        if(isHeadVsIndex()) return Mode.HEAD_VS_INDEX;
+        if(isHeadVsWorking()) return Mode.HEAD_VS_WORKING_TREE;
+        if(isIndexVsWorking()) return Mode.INDEX_VS_WORKING_TREE;
+        // how is this?
+        throw new IllegalStateException("no modus selected");
+    }
+    
+    private boolean isHeadVsIndex() {
         return getPanel().tgbHeadVsIndex.isSelected();
     }
     
-    boolean isHeadVsWorking() {
+    private boolean isHeadVsWorking() {
         return getPanel().tgbHeadVsWorking.isSelected();
     }
     
-    boolean isIndexVsWorking() {
+    private boolean isIndexVsWorking() {
         return getPanel().tgbIndexVsWorking.isSelected();
     }
 
-    private class ParametersPanel extends JPanel {
+    private class ParametersPanel extends JPanel implements ActionListener {
         private JScrollPane scrollpane = new JScrollPane();
         private final JLabel messageLabel = new JLabel();        
         private final JTextArea messageTextArea = new JTextArea();
@@ -132,18 +163,37 @@ public class GitCommitParameters extends DefaultCommitParameters {
             tgbHeadVsWorking.setFocusable(false);
             toolbar.add(tgbHeadVsWorking);
             bg.add(tgbHeadVsWorking);
+            tgbHeadVsWorking.addActionListener(this);
             
             tgbHeadVsIndex.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_index.png"))); // NOI18N
             tgbHeadVsIndex.setToolTipText(bundle.getString("ParametersPanel.tgbHeadVsIndex.toolTipText")); // NOI18N
             tgbHeadVsIndex.setFocusable(false);
             toolbar.add(tgbHeadVsIndex);
             bg.add(tgbHeadVsIndex);
+            tgbHeadVsIndex.addActionListener(this);
 
             tgbIndexVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/index_vs_working.png"))); // NOI18N
             tgbIndexVsWorking.setToolTipText(bundle.getString("ParametersPanel.tgbIndexVsWorking.toolTipText")); // NOI18N
             tgbIndexVsWorking.setFocusable(false);
             toolbar.add(tgbIndexVsWorking);
             bg.add(tgbIndexVsWorking);
+            tgbIndexVsWorking.addActionListener(this);
+            
+            Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
+            switch(mode) {
+                case INDEX_VS_WORKING_TREE:
+                    tgbIndexVsWorking.setSelected(true);
+                    break;
+                case HEAD_VS_INDEX:
+                    tgbHeadVsIndex.setSelected(true);
+                    break;
+                case HEAD_VS_WORKING_TREE:
+                    tgbHeadVsWorking.setSelected(true);
+                    break;
+                default:
+                    Git.LOG.log(Level.WARNING, "wrong mode in commit: {0}", mode);
+                    tgbHeadVsWorking.setSelected(true);                    
+            }
             
             messageTextArea.setColumns(60);    //this determines the preferred width of the whole dialog
             messageTextArea.setLineWrap(true);
@@ -218,6 +268,24 @@ public class GitCommitParameters extends DefaultCommitParameters {
 
         private String getMessage(String msgKey) {
             return NbBundle.getMessage(ParametersPanel.class, msgKey);
-        }         
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if(e.getSource() == tgbHeadVsWorking ||
+               e.getSource() == tgbHeadVsIndex || 
+               e.getSource() == tgbIndexVsWorking) 
+            {
+                ChangeListener[] la;
+                synchronized(listeners) {
+                    la = listeners.toArray(new ChangeListener[listeners.size()]);
+                }
+                for (ChangeListener l : la) {
+                    l.stateChanged(new ChangeEvent(this));
+                }
+                GitModuleConfig.getDefault().setLastUsedModificationContext(getSelectedMode());
+            }
+            
+        }
     }
 }
