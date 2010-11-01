@@ -45,5 +45,5 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
 public interface StateListener {
-    public void update(State state);
+    void update(State state);
 }

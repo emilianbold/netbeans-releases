@@ -47,14 +47,13 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.actions;
 import java.util.Set;
 import java.util.Collections;
 
-import org.openide.text.Line;
 
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.EditorContextBridge;
 
 import org.netbeans.spi.debugger.ContextProvider;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineCapability;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
@@ -73,12 +72,12 @@ public class RunToCursorActionProvider extends NativeActionsProvider {
 
     /* abstract in ActionsProviderSupport */
     public void doAction(Object action) {
-	Line l = EditorBridge.getCurrentLine();
-	if (l != null) {
-	    String src = EditorBridge.filenameFor(l);
-	    int line = l.getLineNumber();
-	    getDebugger().runToCursor(src, line);
-	}
+        String fileName = EditorContextBridge.getCurrentFilePath();
+        if (fileName.trim().equals("")) {
+            return;
+        }
+	int lineNo = EditorContextBridge.getCurrentLineNumber();
+        getDebugger().runToCursor(fileName, lineNo);
     }
 
     /* interface NativeActionsProvider */

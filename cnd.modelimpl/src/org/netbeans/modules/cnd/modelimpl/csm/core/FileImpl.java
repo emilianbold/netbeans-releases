@@ -1640,17 +1640,18 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                         }
                                         cls.fixFakeRender(file, visibility, ast, false);
                                         fakeIncludePair.markFixed();
+                                        wereFakes = true;
                                     } else if (container instanceof NamespaceDefinitionImpl) {
                                         NamespaceDefinitionImpl ns = (NamespaceDefinitionImpl) container;
                                         parser.external_declaration();
                                         AST ast = parser.getAST();
                                         ns.fixFakeRender(file, ast, false);
                                         fakeIncludePair.markFixed();
+                                        wereFakes = true;
                                     }
                                 } else {
                                     APTUtils.LOG.log(Level.WARNING, "fixFakeIncludeRegistrations: file {0} has not tokens, probably empty or removed?", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N                            
                                 }
-                                wereFakes = true;
                             }
                         }
                     }
