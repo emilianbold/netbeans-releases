@@ -56,8 +56,6 @@ import org.netbeans.modules.maven.model.pom.Project;
  * @author mkleint
  */
 class AddOSGiParamToNbmPluginConfiguration implements ModelOperation<POMModel> {
-    private static final String GROUPID_MOJO = "org.codehaus.mojo";
-    private static final String NBM_PLUGIN = "nbm-maven-plugin";
     private final boolean useOsgi;
     private final MavenProject mp;
 
@@ -75,19 +73,19 @@ class AddOSGiParamToNbmPluginConfiguration implements ModelOperation<POMModel> {
             bld = model.getFactory().createBuild();
             p.setBuild(bld);
         }
-        Plugin plg = bld.findPluginById(GROUPID_MOJO, NBM_PLUGIN);
+        Plugin plg = bld.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
         if (plg == null) {
             //how come the plugin is not there? maybe using on wrong project?
             //check plugin management first.
             PluginManagement pm = bld.getPluginManagement();
             if (pm != null) {
-                plg = pm.findPluginById(GROUPID_MOJO, NBM_PLUGIN);
+                plg = pm.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
             }
             if (plg == null) { // should not happen to begin with
                 plg = model.getFactory().createPlugin();
                 bld.addPlugin(plg);
-                plg.setGroupId(GROUPID_MOJO);
-                plg.setArtifactId(NBM_PLUGIN);
+                plg.setGroupId(MavenNbModuleImpl.GROUPID_MOJO);
+                plg.setArtifactId(MavenNbModuleImpl.NBM_PLUGIN);
                 plg.setVersion("3.3");
             }
         }

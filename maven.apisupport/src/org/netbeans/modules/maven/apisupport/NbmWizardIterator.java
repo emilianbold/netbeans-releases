@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
@@ -364,16 +365,16 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             }
             Build b = p.getBuild();
             if (b != null) {
-                Plugin pl = b.findPluginById("org.codehaus.mojo", "nbm-maven-plugin");
+                Plugin pl = b.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
                 if (pl != null) {
                     pl.setConfiguration(null);
                     pl.setVersion(null);
                 }
-                pl = b.findPluginById("org.apache.maven.plugins", "maven-compiler-plugin");
+                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
                 if (pl != null) {
                     b.removePlugin(pl);
                 }
-                pl = b.findPluginById("org.apache.maven.plugins", "maven-jar-plugin");
+                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR);
                 if (pl != null) {
                     pl.setVersion(null);
                 }
