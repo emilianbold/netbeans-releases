@@ -155,7 +155,6 @@ public class InnerToOuterPanel extends JPanel implements CustomRefactoringPanel 
         fieldNameField = new javax.swing.JTextField();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
-        setName(org.openide.util.NbBundle.getMessage(InnerToOuterPanel.class, "LBL_InnerToOuterHeader", new Object[] {UIUtilities.getDisplayText(refactoring.getSourceType())}) /* NOI18N */); // NOI18N
         setLayout(new java.awt.BorderLayout());
 
         dataPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));

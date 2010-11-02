@@ -7,11 +7,6 @@
         <EmptyBorder bottom="11" left="12" right="11" top="12"/>
       </Border>
     </Property>
-    <Property name="name" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/refactoring/experimental/ui/Bundle.properties" key="LBL_InnerToOuterHeader" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;, {arguments}) /* NOI18N */">
-        <Argument index="0" javacode="UIUtilities.getDisplayText(refactoring.getSourceType())"/>
-      </ResourceString>
-    </Property>
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
