@@ -143,8 +143,9 @@ public final class CndLexerUtilities {
         return null;
     }
 
+    private static final Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
+
     public static boolean isCppLanguage(Language<?> lang, boolean allowPrepoc) {
-        Collection<? extends CndLexerLanguageEmbeddingProvider> providers = Lookup.getDefault().lookupAll(CndLexerLanguageEmbeddingProvider.class);
         for (CndLexerLanguageEmbeddingProvider provider : providers) {
             Map<CppTokenId, LanguageEmbedding<?>> embeddings = provider.getEmbeddings();
             for (CppTokenId cppTokenId : embeddings.keySet()) {
