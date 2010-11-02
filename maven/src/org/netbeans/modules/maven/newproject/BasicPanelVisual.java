@@ -81,7 +81,7 @@ import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -116,6 +116,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     private static final Object MAVEN_VERSION_LOCK = new Object();
 
     private BasicWizardPanel panel;
+    private final Archetype arch;
 
     private String lastProjectName = ""; //NOI18N
     private final ValidationGroup vg;
@@ -127,8 +128,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     
     /** Creates new form PanelProjectLocationVisual */
     @SuppressWarnings("unchecked")
-    public BasicPanelVisual(BasicWizardPanel panel) {
+    BasicPanelVisual(BasicWizardPanel panel, Archetype arch) {
         this.panel = panel;
+        this.arch = arch;
 
         initComponents();
 
@@ -643,6 +645,9 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
 
     private Archetype getArchetype (WizardDescriptor settings) {
+        if (arch != null) {
+            return arch;
+        }
         Archetype[] archs = panel.getArchetypes();
         if (archs == null) {
             return (Archetype)settings.getProperty(ChooseArchetypePanel.PROP_ARCHETYPE);
