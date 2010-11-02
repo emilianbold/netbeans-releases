@@ -448,23 +448,12 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         if (className[0].length() > 0) {
             Set superTypeNames = new HashSet<String>();
             This thisVar = currentFrame.getThisVariable();
-            // [TODO] how to obtain class name in static context?
             if (thisVar != null) {
                 String fqn = thisVar.getType();
-                // remove anonymous inner class part
-                int index = fqn.lastIndexOf('$');
-                while (index >= 0) {
-                    if ((index < fqn.length() - 1) && Character.isDigit(fqn.charAt(index + 1))) {
-                        fqn = fqn.substring(0, index);
-                        index = fqn.lastIndexOf('$');
-                    } else {
-                        break;
-                    }
-                }
-                superTypeNames.add(fqn.replace('$', '.'));
+                superTypeNames.add(fqn);
                 ObjectVariable superTypeVar = thisVar.getSuper();
                 while (superTypeVar != null) {
-                    fqn = superTypeVar.getType().replace('$', '.');
+                    fqn = superTypeVar.getType();
                     superTypeNames.add(fqn);
                     superTypeVar = superTypeVar.getSuper();
                 }
