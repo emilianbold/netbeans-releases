@@ -343,20 +343,10 @@ public final class ModuleSystem {
         for (Module module : mgr.getModules()) {
             if (module.getJarFile() != null) {
                 if (jar.equals(module.getJarFile())) {
-                    try {
-                        // Hah, found it.
-                        m = module;
-                        tm = mgr.createJaveleonModule(jar, new ModuleHistory(jar.getAbsolutePath()));
-                        break;
-                        /*
-                         * TODO - We need to examine the difference interface XML layer
-                         * and refresh according to the new module if layer files have
-                         * changed
-                         */
-
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    // Hah, found it.
+                    m = module;
+                    tm = mgr.createJaveleonModule(jar, new ModuleHistory(jar.getAbsolutePath()));
+                    break;
                 }
             }
         }
@@ -365,25 +355,11 @@ public final class ModuleSystem {
 
         // now find dependent modules which need to be class loader migrated
         dependents = mgr.simulateJaveleonReload(m);
-            
+                  
         // setup the class loader for the new Javeleon module
         // That's all we need to do to update the module with Javeleon!
         mgr.setupClassLoaderForJaveleonModule(tm);
-
-        // before reloading the module, check declarative layer files for changes
-        boolean changed = (CRC32Layer(m) != CRC32Layer(tm)) ||
-                (CRC32GeneratedLayer(m) != CRC32GeneratedLayer(tm));
-        if(changed)
-            // OK, refresh layer
-            installer.unload(Collections.singletonList(m));
-
-        mgr.replaceJaveleonModule(m, tm);
-        MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
-
-        if (changed) {
-            installer.prepare(tm);          
-            installer.load(Collections.singletonList(tm));
-        }
+        checkForLayerChanges(m, tm);
 
         // OK so far, then create new Javeleon modules for the
         // dependent modules and create new classloaders for
@@ -391,26 +367,28 @@ public final class ModuleSystem {
         for (Module m3 : dependents) {
             File moduleJar = m3.getJarFile();
             Module toRefresh = mgr.createJaveleonModule(moduleJar, new ModuleHistory(moduleJar.getAbsolutePath()));
-            mgr.setupClassLoaderForJaveleonModule(toRefresh);
-            changed = CRC32Layer(m3) != CRC32Layer(toRefresh) ||
-                (CRC32GeneratedLayer(m) != CRC32GeneratedLayer(tm));;
-            if (changed) // OK, refresh layer
-            {
-                installer.unload(Collections.singletonList(m3));
-            }
-
-            mgr.replaceJaveleonModule(m3, toRefresh);
-            MainLookup.systemClassLoaderChanged(mgr.getClassLoader());
-
-            if (changed) {
-                installer.prepare(toRefresh);
-                installer.load(Collections.singletonList(toRefresh));
-            }
+            mgr.setupClassLoaderForJaveleonModule(toRefresh);          
+            checkForLayerChanges(m3, toRefresh);
         }
         // done...
         System.err.println("Javeleon finished module update...");
         ev.log(Events.FINISH_DEPLOY_TEST_MODULE, jar);
         return true;
+    }
+
+    private void checkForLayerChanges(Module m, Module tm) throws InvalidException {
+        // before reloading the module, check declarative layer files for changes
+        boolean changed = (CRC32Layer(m) != CRC32Layer(tm)) ||
+                (CRC32GeneratedLayer(m) != CRC32GeneratedLayer(tm));
+        if(changed)
+            // OK, refresh layer
+            installer.unload(Collections.singletonList(m));
+        mgr.replaceJaveleonModule(m, tm);
+        MainLookup.systemClassLoaderChangedForJaveleon(mgr.getClassLoader());
+        if (changed) {
+            installer.prepare(tm);          
+            installer.load(Collections.singletonList(tm));
+        }
     }
 
     private long CRC32Layer(Module m) {
