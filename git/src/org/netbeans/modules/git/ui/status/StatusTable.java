@@ -296,7 +296,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
     }
 
     private void setSelectedNodes (File[] selectedFiles) {
-        Set<File> files = new HashSet(Arrays.asList(selectedFiles));
+        Set<File> files = new HashSet<File>(Arrays.asList(selectedFiles));
         ListSelectionModel selection = table.getSelectionModel();
         selection.setValueIsAdjusting(true);
         selection.clearSelection();
