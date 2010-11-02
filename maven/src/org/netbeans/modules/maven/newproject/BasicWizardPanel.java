@@ -61,6 +61,7 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
     private final boolean isFinish;
     private boolean additional;
     private final ValidationGroup validationGroup;
+    private Archetype arch;
     
     public BasicWizardPanel(ValidationGroup vg, String[] eeLevels, Archetype[] archs, boolean isFinish, boolean additional) {
         this.archs = archs;
@@ -78,13 +79,18 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
         this(vg, new String[0], null, isFinish, false);
     }
 
+    public BasicWizardPanel(ValidationGroup vg, boolean isFinish, Archetype arch) {
+        this(vg, new String[0], null, isFinish, false);
+        this.arch = arch;
+    }
+
     ValidationGroup getValidationGroup() {
         return validationGroup;
     }
     
     public @Override BasicPanelVisual getComponent() {
         if (component == null) {
-            component = new BasicPanelVisual(this);
+            component = new BasicPanelVisual(this, arch);
             component.setName(NbBundle.getMessage(BasicWizardPanel.class, "LBL_CreateProjectStep2"));
         }
         return component;
