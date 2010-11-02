@@ -137,7 +137,12 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         File[] files = (File[]) in.readObject();
         List<Node> nodes = new LinkedList<Node>();
         for (File file : files) {
-            nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)));
+            nodes.add(new AbstractNode(Children.LEAF, Lookups.singleton(file)) {
+                @Override
+                public String getDisplayName() {
+                    return getLookup().lookup(File.class).getName();
+                }
+            });
         }
         VCSContext ctx = VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]));
         setContext(ctx);

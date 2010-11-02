@@ -75,6 +75,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
@@ -180,7 +181,6 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     }
 
     private void onDisplayedStatusChanged () {
-        // TODO persist selection
         if (panel.tgbHeadVsWorking.isSelected()) {
             mode = Mode.HEAD_VS_WORKING_TREE;
             GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
@@ -209,23 +209,25 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         if (e.getSource() == panel.tgbHeadVsIndex || e.getSource() == panel.tgbHeadVsWorking 
                 || e.getSource() == panel.tgbIndexVsWorking) {
             onDisplayedStatusChanged();
-            return;
-        }
-        Utils.postParallel(new Runnable() {
-            @Override
-            public void run() {
-                if (e.getSource() == panel.btnCheckout) {
-                    SystemAction.get(CheckoutPathsAction.class).performAction(context);
-                } else if (e.getSource() == panel.btnCommit) {
-                    SystemAction.get(CommitAction.class).performAction(context);
-                } else if (e.getSource() == panel.btnRefresh) {
-                    GitProgressSupport supp = SystemAction.get(StatusAction.class).scanStatus(context);
-                    if (!(supp == null || supp.isCanceled())) {
-                        refreshNodes();
+        } else if (e.getSource() == panel.btnDiff) {
+            SystemAction.get(DiffAction.class).diff(context);
+        } else {
+            Utils.postParallel(new Runnable() {
+                @Override
+                public void run() {
+                    if (e.getSource() == panel.btnCheckout) {
+                        SystemAction.get(CheckoutPathsAction.class).performAction(context);
+                    } else if (e.getSource() == panel.btnCommit) {
+                        SystemAction.get(CommitAction.class).performAction(context);
+                    } else if (e.getSource() == panel.btnRefresh) {
+                        GitProgressSupport supp = SystemAction.get(StatusAction.class).scanStatus(context);
+                        if (!(supp == null || supp.isCanceled())) {
+                            refreshNodes();
+                        }
                     }
                 }
-            }
-        }, 0);
+            }, 0);
+        }
     }
 
     private void initDisplayStatus () {
