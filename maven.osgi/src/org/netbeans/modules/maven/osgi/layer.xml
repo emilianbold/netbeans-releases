@@ -26,7 +26,7 @@
                     <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
                     <attr name="artifactId" stringvalue="osgi-archetype"/>
                     <attr name="version" stringvalue="1.1"/>
-                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/OSGiDescription.html"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/osgi/templates/OSGiDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/maven_osgi_16.png"/>
                     <attr name="template" boolvalue="true"/>
                 </file>
