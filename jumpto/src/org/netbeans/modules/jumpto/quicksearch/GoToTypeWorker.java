@@ -77,7 +77,7 @@ public class GoToTypeWorker implements Runnable {
     private List<? extends TypeDescriptor> types;
 
     public List<? extends TypeDescriptor> getTypes() {
-        return types;
+        return types==null?Collections.<TypeDescriptor>emptyList():types;
     }
 
     public void run() {

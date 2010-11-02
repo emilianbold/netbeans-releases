@@ -81,7 +81,7 @@ public class GoToSymbolWorker implements Runnable {
     private List<? extends SymbolDescriptor> types;
 
     public List<? extends SymbolDescriptor> getTypes() {
-        return types;
+        return types==null?Collections.<SymbolDescriptor>emptyList():types;
     }
 
     public void run() {
