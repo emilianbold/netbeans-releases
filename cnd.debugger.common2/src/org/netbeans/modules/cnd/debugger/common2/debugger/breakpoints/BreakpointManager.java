@@ -1260,7 +1260,6 @@ public final class BreakpointManager {
         if (hc.isError()) {
 	    BreakpointJob bj = getBreakpointJob(routingToken);
             newBrokenHandler(template, mid, handlerError(template, hc), bj);
-
         } else {
 	    provider().postCreateHandlerImpl(routingToken, hc);
 	    // We'll come back either via newHandler() or noteBreakpointError().
@@ -1276,13 +1275,15 @@ public final class BreakpointManager {
 
         rememberChangingBreakpoint(targetBreakpoint, editedBreakpoint, gen);
 
-        // this will show up as a handler_replace or error
-        int rt = targetBreakpoint.getRoutingToken();
-	provider().postChangeHandlerImpl(rt, hc);
+        if (!hc.isError()) {
+            // this will show up as a handler_replace or error
+            int rt = targetBreakpoint.getRoutingToken();
+            provider().postChangeHandlerImpl(rt, hc);
+        }
     }
 
     public void postRepairHandler(NativeBreakpoint editedBreakpoint,
-                                  HandlerCommand cmd,
+                                  HandlerCommand hc,
                                   NativeBreakpoint targetBreakpoint,
                                   Gen gen) {
 
@@ -1290,9 +1291,11 @@ public final class BreakpointManager {
 
         rememberRepairedBreakpoint(targetBreakpoint, editedBreakpoint, gen);
 
-        // this will show up as a handler_new or error
-        int rt = targetBreakpoint.getRoutingToken();
-	provider().postRepairHandlerImpl(rt, cmd);
+        if (!hc.isError()) {
+            // this will show up as a handler_new or error
+            int rt = targetBreakpoint.getRoutingToken();
+            provider().postRepairHandlerImpl(rt, hc);
+        }
     }
 
     // interface NativeDebugger

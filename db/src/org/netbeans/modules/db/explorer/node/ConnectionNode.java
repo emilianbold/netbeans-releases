@@ -399,7 +399,7 @@ public class ConnectionNode extends BaseNode {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ConnectionNode.class);
+        return null;
     }
 
 }

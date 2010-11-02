@@ -1359,4 +1359,11 @@ public class PHPBracketCompleterTest extends PHPTestBase {
     public void testAlternativeSyntaxFor_01()throws Exception {
         testIndentInFile("testfiles/indent/switch_09.php");
     }
+    
+    public void testIsseu191443() throws Exception {
+        String testString = "$test = (string^) ahoj;";
+        String result  = "$test = (string)^ ahoj;";
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, ')', result, null, false, options);
+    }
 }

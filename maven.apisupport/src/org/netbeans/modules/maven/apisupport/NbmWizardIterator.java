@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
@@ -84,6 +85,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+
+    public static final String NBM_ARTIFACTID = "nbm_artifactId";
     
     static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
     static {
@@ -154,7 +157,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         ArchetypeWizards.logUsage(archetype.getGroupId(), archetype.getArtifactId(), archetype.getVersion());
 
         try {
-            String nbm_artifactId = (String) wiz.getProperty("nbm_artifactId");
+            String nbm_artifactId = (String) wiz.getProperty(NBM_ARTIFACTID);
             int max = nbm_artifactId != null ? 7 : 4;
             handle.start(max);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
@@ -364,16 +367,16 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             }
             Build b = p.getBuild();
             if (b != null) {
-                Plugin pl = b.findPluginById("org.codehaus.mojo", "nbm-maven-plugin");
+                Plugin pl = b.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
                 if (pl != null) {
                     pl.setConfiguration(null);
                     pl.setVersion(null);
                 }
-                pl = b.findPluginById("org.apache.maven.plugins", "maven-compiler-plugin");
+                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
                 if (pl != null) {
                     b.removePlugin(pl);
                 }
-                pl = b.findPluginById("org.apache.maven.plugins", "maven-jar-plugin");
+                pl = b.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR);
                 if (pl != null) {
                     pl.setVersion(null);
                 }

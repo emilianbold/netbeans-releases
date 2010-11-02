@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.values.Action;
@@ -71,6 +72,8 @@ public class GdbHandlerExpert implements HandlerExpert {
     static final Integer infinity = new Integer(0x7fffffff);
 
     private final GdbDebuggerImpl debugger;
+
+    private static final Logger LOG = Logger.getLogger(GdbHandlerExpert.class.toString());
 
     public GdbHandlerExpert(GdbDebuggerImpl debugger) {
         this.debugger = debugger;
@@ -131,15 +134,22 @@ public class GdbHandlerExpert implements HandlerExpert {
 
 	//
 	// First, weed out options gdb doesn't support
-	//
-	if (breakpoint.getAction() != Action.STOP)
-	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
+        // but do not fail, see IZ 191537
+        //
+	if (breakpoint.getAction() != Action.STOP) {
+            LOG.warning(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
+        }
 
-	if (!IpeUtils.isEmpty(breakpoint.getWhileIn()))
-	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb")); // NOI18N
+	if (!IpeUtils.isEmpty(breakpoint.getWhileIn())) {
+            LOG.warning(Catalog.get("MSG_NoWhileGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb")); // NOI18N
+        }
 
-	if (!IpeUtils.isEmpty(breakpoint.getLwp()))
-	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb")); // NOI18N
+	if (!IpeUtils.isEmpty(breakpoint.getLwp())) {
+            LOG.warning(Catalog.get("MSG_NoLwpGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb")); // NOI18N
+        }
 
 
 	//
