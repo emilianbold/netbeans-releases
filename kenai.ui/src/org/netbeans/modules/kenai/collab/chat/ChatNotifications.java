@@ -74,11 +74,11 @@ public class ChatNotifications {
     private static ImageIcon NEWMSG = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/newmessage.png", true); // NOI18N
     private static ChatNotifications instance;
 
-    //key is FQN (e.g. anagram-game@muc.kenai.com)
+    //key is FQN (e.g. anagram-game@java.net)
     private HashMap<String, MessagingHandleImpl> groupMessages = new HashMap<String, MessagingHandleImpl>();
-    //key is FQN (e.g. john@kenai.com)
+    //key is FQN (e.g. john@java.net)
     private HashMap<String, Notification> privateNotifications = new HashMap();
-    //key is FQN (e.g. john@kenai.com)
+    //key is FQN (e.g. john@java.net)
     private HashMap<String, Integer> privateMessagesCounter = new HashMap();
     private Preferences preferences = NbPreferences.forModule(ChatNotifications.class);
     
