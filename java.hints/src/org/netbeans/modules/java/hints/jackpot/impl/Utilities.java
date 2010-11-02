@@ -681,7 +681,7 @@ public class Utilities {
         SourceUtils.waitScanFinished();
     }
 
-    public static Set<? extends String> findSuppressedWarnings(CompilationInfo info, TreePath path) {
+    public static @NonNull Set<? extends String> findSuppressedWarnings(@NonNull CompilationInfo info, @NonNull TreePath path) {
         //TODO: cache?
         Set<String> keys = new HashSet<String>();
 

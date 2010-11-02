@@ -175,12 +175,13 @@ public final class NamingFactory {
             final boolean isList = (value instanceof List);
             if (cachedElement != null || isList) {
                 // List impl.
-                if (isList) {
+                if (isList) { // more than one preexisting entry, just add another one
                     ((List) value).add(refRetVal);
-                } else {
+                } else { // just one entry, convert from entry to list of entries
                     final List l = new ArrayList();
-                    l.add(refRetVal);
-                    NamingFactory.nameMap.put(retVal.getId(), l);
+                    l.add(ref); // add the original one
+                    l.add(refRetVal); // add the new one
+                    NamingFactory.nameMap.put(retVal.getId(), l); // replace the direct entry with the list
                 }
             } else {
                 // Reference impl.

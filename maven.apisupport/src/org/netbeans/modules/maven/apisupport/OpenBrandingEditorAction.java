@@ -96,7 +96,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         }
 
         String brandingPath = PluginPropertyUtils.getPluginProperty(mproject.getMavenProject(),
-                BRANDING_GROUP_ID, BRANDING_ARTIFACT_ID, "brandingSources", BRANDING_GOAL); //NOI18N
+                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, "brandingSources", BRANDING_GOAL); //NOI18N
         if( null == brandingPath ) {
             brandingPath = "src/main/nbm-branding"; //NOI18N
         }
@@ -120,8 +120,6 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         setEnabled(enable);
     }
 
-    private static final String BRANDING_GROUP_ID = "org.codehaus.mojo"; //NOI18N
-    private static final String BRANDING_ARTIFACT_ID = "nbm-maven-plugin"; //NOI18N
     private static final String BRANDING_GOAL = "branding"; //NOI18N
 
     private static boolean isBrandingProject(MavenProject prj) {
@@ -129,8 +127,8 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
             return false;
         }
         for (Plugin plug : prj.getBuildPlugins()) {
-            if (BRANDING_ARTIFACT_ID.equals(plug.getArtifactId()) &&
-                   BRANDING_GROUP_ID.equals(plug.getGroupId())) {
+            if (MavenNbModuleImpl.NBM_PLUGIN.equals(plug.getArtifactId()) &&
+                   MavenNbModuleImpl.GROUPID_MOJO.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null) {
                     for (Object obj2 : plug.getExecutions()) {
                         PluginExecution exe = (PluginExecution)obj2;

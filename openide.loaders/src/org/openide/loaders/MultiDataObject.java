@@ -481,12 +481,24 @@ public class MultiDataObject extends DataObject {
         if (suffix == null)
             throw new org.openide.util.UserCancelException();
 
-        Iterator it = secondaryEntries().iterator();
+        boolean template = isTemplate();
+        Iterator<Entry> it = secondaryEntries().iterator();
         while (it.hasNext ()) {
-            ((Entry)it.next()).copy (df.getPrimaryFile (), suffix);
+            Entry e = it.next();
+            fo = e.copy (df.getPrimaryFile (), suffix);
+            if (template) {
+                FileUtil.copyAttributes(e.getFile(), fo);
+                copyAttributes(e.getFile(), fo, TEMPLATE_ATTRIBUTES);
+            }
         }
         //#33244 - copy primary file after the secondary ones
         fo = getPrimaryEntry ().copy (df.getPrimaryFile (), suffix);
+
+        if (template) {
+            FileObject source = getPrimaryEntry().getFile();
+            FileUtil.copyAttributes(source, fo);
+            copyAttributes(source, fo, TEMPLATE_ATTRIBUTES);
+        }
 
         boolean fullRescan = getMultiFileLoader() == null ||
             getMultiFileLoader().findPrimaryFile(fo) != fo ||
@@ -495,6 +507,23 @@ public class MultiDataObject extends DataObject {
             return fullRescan ? DataObject.find(fo) : createMultiObject (fo);
         } catch (DataObjectExistsException ex) {
             return ex.getDataObject ();
+        }
+    }
+
+    private static final String[] TEMPLATE_ATTRIBUTES = {
+        "templateCategory",          // NOI18N
+        "iconBase",                  // NOI18N
+        "SystemFileSystem.icon",     // NOI18N
+        "SystemFileSystem.icon32",   // NOI18N
+    };
+
+    private static void copyAttributes(FileObject source, FileObject dest,
+                                       String[] attrNames) throws IOException {
+        for (String attr : attrNames) {
+            Object value = source.getAttribute(attr);
+            if (value != null) {
+                dest.setAttribute(attr, value);
+            }
         }
     }
 

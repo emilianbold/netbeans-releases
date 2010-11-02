@@ -167,9 +167,9 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
          File parent = (File) d.getProperty("projdir");
          if (isApp || isSuite) {
              if (cbAddModule.isSelected()) {
-                 d.putProperty("nbm_artifactId", txtAddModule.getText().trim());
+                 d.putProperty(NbmWizardIterator.NBM_ARTIFACTID, txtAddModule.getText().trim());
              } else {
-                 d.putProperty("nbm_ArtifactId", null);
+                 d.putProperty(NbmWizardIterator.NBM_ARTIFACTID, null);
              }
          }
          if (isApp || isSuite) {
@@ -189,7 +189,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         }
         if (isApp || isSuite) {
             String artifId = (String) d.getProperty("artifactId");
-            String val = (String) d.getProperty("nbm_artifactid");
+            String val = (String) d.getProperty(NbmWizardIterator.NBM_ARTIFACTID);
             cbAddModule.setSelected(val != null);
             if (val == null) {
                 val = artifId + "-sample";

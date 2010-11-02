@@ -1,0 +1,203 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ */
+
+package org.netbeans.modules.git.ui.repository;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.libs.git.GitBranch;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.Git;
+import org.openide.util.RequestProcessor;
+
+/**
+ *
+ * @author ondra
+ */
+public class RepositoryInfo {
+
+    /**
+     * fired when the active branch for the repository changed. Old and new values are instances of {@link GitBranch}.
+     */
+    public static final String PROPERTY_ACTIVE_BRANCH = "prop.activeBranch"; //NOI18N
+    /**
+     * fired when the HEAD changes, old and new values are instances of {@link java.lang.String}.
+     */
+    public static final String PROPERTY_HEAD = "prop.head"; //NOI18N
+
+    private final Reference<File> rootRef;
+    private static final WeakHashMap<File, RepositoryInfo> cache = new WeakHashMap<File, RepositoryInfo>(5);
+    private static final Logger LOG = Logger.getLogger(RepositoryInfo.class.getName());
+    private GitBranch activeBranch;
+    private static final RequestProcessor rp = new RequestProcessor("RepositoryInfo", 1, true); //NOI18N
+    private static final RequestProcessor.Task refreshTask = rp.create(new RepositoryRefreshTask());
+    private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
+    private final PropertyChangeSupport propertyChangeSupport;
+
+    private RepositoryInfo (File root) {
+        this.rootRef = new WeakReference<File>(root);
+        propertyChangeSupport = new PropertyChangeSupport(this);
+    }
+
+    /**
+     * Do NOT call from EDT
+     * @param repositoryRoot existing repository root
+     * @return null if repositoryRoot is not an existing git repository
+     */
+    public static RepositoryInfo getInstance (File repositoryRoot) {
+        RepositoryInfo info = null;
+        // this should return alwaus the same instance, so the cache can be implemented as a weak map.
+        File repositoryRootSingleInstance = Git.getInstance().getRepositoryRoot(repositoryRoot);
+        if (repositoryRoot.equals(repositoryRootSingleInstance)) {
+            synchronized (cache) {
+                info = cache.get(repositoryRootSingleInstance);
+                if (info == null) {
+                    cache.put(repositoryRootSingleInstance, info = new RepositoryInfo(repositoryRootSingleInstance));
+                    info.refresh();
+                }
+            }
+        }
+        return info;
+    }
+
+    /**
+     * Do NOT call from EDT
+     * @param repositoryRoot
+     * @return
+     */
+    public void refresh () {
+        assert !java.awt.EventQueue.isDispatchThread();
+        try {
+            File root = rootRef.get();
+            if (root == null) {
+                LOG.log(Level.WARNING, "refresh (): root is null, it has been collected in the meantime"); //NOI18N
+            } else {
+                LOG.log(Level.FINE, "refresh (): starting for {0}", root); //NOI18N
+                GitClient client = Git.getInstance().getClient(root);
+                setActiveBranch(client);
+            }
+        } catch (GitException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+    }
+
+    private void setActiveBranch (GitClient client) throws GitException {
+        Map<String, GitBranch> branches = client.getBranches(false, ProgressMonitor.NULL_PROGRESS_MONITOR);
+        for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
+            if (e.getValue().isActive()) {
+                GitBranch oldActiveBranch = activeBranch;
+                activeBranch = e.getValue();
+                if (oldActiveBranch == null || !oldActiveBranch.getName().equals(activeBranch.getName())) {
+                    LOG.log(Level.FINE, "active branch changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getName() }); //NOI18N
+                    propertyChangeSupport.firePropertyChange(PROPERTY_ACTIVE_BRANCH, oldActiveBranch, activeBranch);
+                }
+                if (oldActiveBranch == null || !oldActiveBranch.getId().equals(activeBranch.getId())) {
+                    LOG.log(Level.FINE, "current HEAD changed: {0} --- {1}", new Object[] { rootRef, activeBranch.getId() }); //NOI18N
+                    propertyChangeSupport.firePropertyChange(PROPERTY_HEAD, oldActiveBranch == null ? null : oldActiveBranch.getId(), activeBranch.getId());
+                }
+            }
+        }
+    }
+
+    public void addPropertyChangeListener (PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public GitBranch getActiveBranch () {
+        return activeBranch;
+    }
+
+    public static void refreshAsync (File repositoryRoot) {
+        RepositoryInfo info = null;
+        synchronized (cache) {
+            info = cache.get(repositoryRoot);
+        }
+        if (info != null) {
+            boolean start = false;
+            synchronized (repositoriesToRefresh) {
+                start = repositoriesToRefresh.add(info);
+            }
+            if (start) {
+                LOG.log(Level.FINE, "Planning refresh for {0}", repositoryRoot); //NOI18N
+                refreshTask.schedule(3000);
+            }
+        }
+    }
+
+    private static class RepositoryRefreshTask implements Runnable {
+        @Override
+        public void run() {
+            RepositoryInfo info;
+            while ((info = getNextRepositoryInfo()) != null) {
+                info.refresh();
+            }
+        }
+
+        private RepositoryInfo getNextRepositoryInfo () {
+            RepositoryInfo info = null;
+            synchronized (repositoriesToRefresh) {
+                Iterator<RepositoryInfo> it = repositoriesToRefresh.iterator();
+                if (it.hasNext()) {
+                    info = it.next();
+                    it.remove();
+                }
+            }
+            return info;
+        }
+    }
+}
