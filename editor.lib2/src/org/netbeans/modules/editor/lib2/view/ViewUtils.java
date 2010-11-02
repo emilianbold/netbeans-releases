@@ -49,7 +49,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -67,6 +66,11 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
  */
 
 public final class ViewUtils {
+    
+    /**
+     * To how big fractions the sizes (fonts, ascents etc.) are ceil-ed/floor-ed.
+     */
+    private static final double ROUND_FRACTION = 8d;
 
     // -J-Dorg.netbeans.modules.editor.lib2.view.ViewUtils.level=FINE
     private static final Logger LOG = Logger.getLogger(ViewUtils.class.getName());
@@ -311,25 +315,41 @@ public final class ViewUtils {
     }
 
     /**
-     * Round given float number to maximum of 1/8 of fractional parts for
+     * Ceil (round up) given float number to maximum of 1/8 of fractional parts for
      * bound-related operations to partly eliminate rounding errors.
-     *
-     * @param f
-     * @return
      */
-    public static float cutFractions(float f) {
-        return (float) (Math.ceil(f * 8f) / 8f);
+    public static float ceilFractions(float f) {
+        return (float) (Math.ceil(f * ROUND_FRACTION) / ROUND_FRACTION);
     }
 
     /**
-     * Round given double number to maximum of 1/8 of fractional parts for
+     * Ceil (round up) given double number to maximum of 1/8 of fractional parts for
      * bound-related operations to partly eliminate rounding errors.
-     *
-     * @param d
-     * @return
+     * <br/>
+     * Return float since after ceiling to fractions the mantissa should be reasonably small
+     * (for numbers used in rendering).
      */
-    public static float cutFractions(double d) {
-        return (float) (Math.ceil(d * 8d) / 8d);
+    public static float ceilFractions(double d) {
+        return (float) (Math.ceil(d * ROUND_FRACTION) / ROUND_FRACTION);
+    }
+
+    /**
+     * Floor (round down) given float number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     */
+    public static float floorFractions(float f) {
+        return (float) (Math.floor(f * ROUND_FRACTION) / ROUND_FRACTION);
+    }
+
+    /**
+     * Floor (round down) given double number to maximum of 1/8 of fractional parts for
+     * bound-related operations to partly eliminate rounding errors.
+     * <br/>
+     * Return float since after flooring to fractions the mantissa should be reasonably small
+     * (for numbers used in rendering).
+     */
+    public static float floorFractions(double d) {
+        return (float) (Math.floor(d * ROUND_FRACTION) / ROUND_FRACTION);
     }
 
 }

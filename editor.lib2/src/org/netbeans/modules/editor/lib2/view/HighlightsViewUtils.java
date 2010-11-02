@@ -812,11 +812,11 @@ public class HighlightsViewUtils {
     static void paintTextLayout(Graphics2D g, Rectangle2D bounds,
             TextLayout textLayout, DocumentView docView)
     {
-        float baselineOffset = docView.getDefaultAscent();
         float x = (float) bounds.getX();
-        float y = (float) bounds.getY();
+        float ascentedY = ViewUtils.floorFractions(bounds.getY() + docView.getDefaultAscent());
+//        System.err.println("paintTextLayout: x=" + x + ", ascentedY=" + ascentedY);
         // TextLayout is unable to do a partial render
-        textLayout.draw(g, x, y + baselineOffset);
+        textLayout.draw(g, x, ascentedY);
     }
 
     static View breakView(int axis, int breakPartStartOffset, float x, float len,
