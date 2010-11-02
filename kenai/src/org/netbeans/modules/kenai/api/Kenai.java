@@ -226,9 +226,10 @@ public final class Kenai implements Comparable<Kenai> {
 //    }
 
     private String name;
+    
     /**
      * name of this kenai instance
-     * @return e.g. kenai.com, testkenai.com, odftoolkit.org, netbeans.org
+     * @return e.g. java.net, odftoolkit.org, netbeans.org
      */
     public String getName() {
         if (name!=null) {
