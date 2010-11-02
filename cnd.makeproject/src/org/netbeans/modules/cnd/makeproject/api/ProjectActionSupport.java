@@ -445,7 +445,11 @@ public class ProjectActionSupport {
             if (consoleType == RunProfile.CONSOLE_TYPE_DEFAULT) {
                 consoleType = RunProfile.getDefaultConsoleType();
             }
-            if (consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
+            // Always show build log in regular output (IZ 191555)
+            if ((pae.getType() != PredefinedType.BUILD &&
+                 pae.getType() != PredefinedType.CLEAN &&
+                 pae.getType() != PredefinedType.BUILD_TESTS) &&
+                    consoleType == RunProfile.CONSOLE_TYPE_INTERNAL) {
                 io = getRunIO(pae, reuseTabs);
                 if (io == null) {
                     io = ioTab;

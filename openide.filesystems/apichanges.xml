@@ -121,7 +121,7 @@ made subject to such option by the copyright holder.
 &lt;filesystem>
     &lt;folder name="my-snippets">
         &lt;file name="common.xml" url="special-snippet.xml">
-            &lt;attribute name="weight" intvalue="100"/>
+            &lt;attr name="weight" intvalue="100"/>
         &lt;/file>
     &lt;/folder>
 &lt;/filesystem>

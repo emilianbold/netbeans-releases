@@ -42,11 +42,12 @@
 
 package org.netbeans.modules.maven.newproject;
 
+import org.netbeans.modules.maven.api.archetype.ProjectInfo;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
@@ -105,20 +106,14 @@ public final class EAVisualPanel extends JPanel  {
         File parent = (File) d.getProperty("projdir");
         String earText = tfEar.getText().trim();
         d.putProperty("ear_projdir", new File(parent, earText));
-        ProjectInfo pi = new ProjectInfo();
-        pi.groupId = (String)d.getProperty("groupId");
-        pi.artifactId = earText;
-        pi.version = (String)d.getProperty("version");
+        ProjectInfo pi = new ProjectInfo((String) d.getProperty("groupId"), earText, (String) d.getProperty("version"), null);
         d.putProperty("ear_versionInfo", pi);
         d.putProperty("ear_archetype", ArchetypeWizardUtils.EAR_ARCHS[eeLevelIdx]);
 
         if (chkEjb.isSelected()) {
             String ejbText = tfEjb.getText().trim();
             d.putProperty("ejb_projdir", new File(parent, ejbText));
-            pi = new ProjectInfo();
-            pi.groupId = (String)d.getProperty("groupId");
-            pi.artifactId = ejbText;
-            pi.version = (String)d.getProperty("version");
+            pi = new ProjectInfo((String) d.getProperty("groupId"), ejbText, (String) d.getProperty("version"), null);
             d.putProperty("ejb_versionInfo", pi);
             d.putProperty("ejb_archetype", ArchetypeWizardUtils.EJB_ARCHS[eeLevelIdx]);
         } else {
@@ -130,10 +125,7 @@ public final class EAVisualPanel extends JPanel  {
         if (chkWeb.isSelected()) {
             String webText = tfWeb.getText().trim();
             d.putProperty("web_projdir", new File(parent, webText));
-            pi = new ProjectInfo();
-            pi.groupId = (String)d.getProperty("groupId");
-            pi.artifactId = webText;
-            pi.version = (String)d.getProperty("version");
+            pi = new ProjectInfo((String) d.getProperty("groupId"), webText, (String) d.getProperty("version"), null);
             d.putProperty("web_versionInfo", pi);
             d.putProperty("web_archetype", ArchetypeWizardUtils.WEB_APP_ARCHS[eeLevelIdx]);
 

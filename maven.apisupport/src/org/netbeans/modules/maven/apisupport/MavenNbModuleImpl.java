@@ -79,7 +79,6 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
@@ -118,6 +117,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      */ 
     public static final String PROP_NETBEANS_INSTALL = "netbeans.installation"; //NOI18N
     
+    /**
+     * Name of element in auxiliary properties configuration of a NetBeans module project
+     * which defines relative path to NB application module project.
+     * Element's namespace is the same as for project properties.
+     */
+    public static final String PROP_PATH_NB_APPLICATION_MODULE = "pathToNbApplicationModule"; //NOI18N
+
     /** Creates a new instance of MavenNbModuleImpl 
      * @param project 
      */
@@ -542,7 +548,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
 
     static Project findAppProject(Project nbmProject) {
         AuxiliaryProperties props = nbmProject.getLookup().lookup(AuxiliaryProperties.class);
-        String strPathToApp = props.get(Constants.PROP_PATH_NB_APPLICATION_MODULE, true); //TODO do we want the props to be shareable or not?
+        String strPathToApp = props.get(PROP_PATH_NB_APPLICATION_MODULE, true); //TODO do we want the props to be shareable or not?
         if (strPathToApp == null || strPathToApp.isEmpty()) {
             return null;
         }

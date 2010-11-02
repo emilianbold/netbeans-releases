@@ -50,7 +50,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.dlight.api.impl.DLightToolAccessor;
+import org.netbeans.modules.dlight.spi.tool.ContextAwareDLightToolConfigurationProvider;
 import org.netbeans.modules.dlight.spi.tool.DLightToolConfigurationProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -173,7 +175,7 @@ final class ToolsConfiguration {
      * Returns tools set which will be used to run {@link org.netbeans.modules.dlight.core.execution.model.DLightTarget} with
      * @return tools set
      */
-    final List<DLightTool> getToolsSet() {
+    final List<DLightTool> getToolsSet(ExecutionEnvironment env) {
         synchronized(this){
             List<DLightTool> result = new ArrayList<DLightTool>();
 
@@ -210,6 +212,11 @@ final class ToolsConfiguration {
 
 //                    DLightToolConfigurationProvider configurationProvider = clazz.getConstructor().newInstance();
                     DLightToolConfigurationProvider configurationProvider = (DLightToolConfigurationProvider)ic.instanceCreate();
+
+                    if (configurationProvider instanceof ContextAwareDLightToolConfigurationProvider) {
+                        ((ContextAwareDLightToolConfigurationProvider)configurationProvider).setExecutionEnvironment(env);
+                    }
+
                     DLightTool tool = DLightToolAccessor.getDefault().newDLightTool(configurationProvider.create());
                     toolsProviders.put(tool.getID(), child);
                     boolean enabledByDefault = true;
@@ -245,5 +252,9 @@ final class ToolsConfiguration {
             }
             return result;
         }
+    }
+
+    final List<DLightTool> getToolsSet() {
+        return getToolsSet(null);
     }
 }
