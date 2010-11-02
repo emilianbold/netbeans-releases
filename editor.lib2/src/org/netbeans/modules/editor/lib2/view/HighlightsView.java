@@ -95,7 +95,7 @@ public class HighlightsView extends EditorView {
         float span = (axis == View.X_AXIS)
             ? TextLayoutUtils.getWidth(layout(), length)
             : TextLayoutUtils.getHeight(layout());
-        return ViewUtils.cutFractions(span);
+        return ViewUtils.ceilFractions(span);
     }
     
     @Override

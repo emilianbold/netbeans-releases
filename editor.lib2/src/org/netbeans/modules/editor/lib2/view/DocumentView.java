@@ -512,8 +512,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     protected void initChildren(int startIndex, int endIndex) {
-        if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("DocumentView.initChildren(): <" + startIndex + "," + endIndex + ">\n");
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("DocumentView.initChildren(): <" + startIndex + "," + endIndex + ">\n");
         }
         viewUpdates.initChildren(startIndex, endIndex);
     }
@@ -763,30 +763,32 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         assert (defaultFont != null) : "Null defaultFont"; // NOI18N
         if (frc != null) {
             char defaultChar = 'A';
-            String defaultText = String.valueOf(defaultChar);
-            TextLayout textLayout = new TextLayout(defaultText, defaultFont, frc); // NOI18N
-            defaultLineHeight = textLayout.getAscent() + textLayout.getDescent() +
-                    textLayout.getLeading(); // Leading: end of descent till next line's start distance
+            String defaultCharText = String.valueOf(defaultChar);
+            TextLayout defaultCharTextLayout = new TextLayout(defaultCharText, defaultFont, frc); // NOI18N
+            TextLayout lineHeightTextLayout = new TextLayout("A_|B", defaultFont, frc);
+            defaultLineHeight = lineHeightTextLayout.getAscent() + lineHeightTextLayout.getDescent() +
+                    lineHeightTextLayout.getLeading(); // Leading: end of descent till next line's start distance
             // Round up line height to one decimal place which is reasonable for layout
             // but it also has an important effect that it allows eliminate problems
             // caused by using a [float,float] point that does not fit into views boundaries
             // maintained as doubles.
-            defaultLineHeight = ViewUtils.cutFractions(defaultLineHeight);
-            defaultAscent = textLayout.getAscent();
-            LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultText, frc);
+            defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
+            defaultAscent = lineHeightTextLayout.getAscent();
+            LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
             defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
             defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
             defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
             defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
-            defaultCharWidth = ViewUtils.cutFractions(textLayout.getAdvance());
+            defaultCharWidth = ViewUtils.ceilFractions(defaultCharTextLayout.getAdvance());
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
             if (LOG.isLoggable(Level.FINE)) {
                 FontMetrics fm = textComponent.getFontMetrics(defaultFont);
-                LOG.fine("Font: " + defaultFont + "\nLine-height=" + defaultLineHeight + // NOI18N
-                        ", ascent=" + textLayout.getAscent() + ", descent=" + textLayout.getDescent() + // NOI18N
-                        ", leading=" + textLayout.getLeading() + "\nChar-width=" + defaultCharWidth + // NOI18N
+                LOG.fine("Font: " + defaultFont + "\nSize2D: " + defaultFont.getSize2D() + // NOI18N
+                        ", Line-height=" + defaultLineHeight + // NOI18N
+                        ", ascent=" + defaultAscent + ", descent=" + lineHeightTextLayout.getDescent() + // NOI18N
+                        ", leading=" + lineHeightTextLayout.getLeading() + "\nChar-width=" + defaultCharWidth + // NOI18N
                         ", underlineOffset=" + defaultUnderlineOffset + // NOI18N
                         "\nFontMetrics (for comparison): fm-line-height=" + // NOI18N
                         fm.getHeight() + ", fm-ascent=" + fm.getAscent() + // NOI18N
@@ -862,9 +864,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             try {
                 checkDocumentLocked();
                 checkViewsInited();
-                if (LOG.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     String msg = "DocumentView.modelToViewChecked(): offset=" + offset + "\n"; // NOI18N
-                    LOG.fine(msg); // NOI18N
+                    LOG.finer(msg); // NOI18N
 //                    LOG.log(Level.INFO, "Cause of " + msg, new Exception()); // NOI18N
                 }
                 if (isActive()) {
@@ -919,9 +921,9 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             try {
                 checkDocumentLocked();
                 checkViewsInited();
-                if (LOG.isLoggable(Level.FINE)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     String msg = "DocumentView.viewToModelChecked(): x=" + x + ", y=" + y + "\n"; // NOI18N
-                    LOG.fine(msg);
+                    LOG.finer(msg);
 //                    LOG.log(Level.INFO, "Cause of " + msg, new Exception()); // NOI18N
                 }
                 if (isActive()) {
