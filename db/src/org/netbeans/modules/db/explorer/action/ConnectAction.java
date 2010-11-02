@@ -168,6 +168,8 @@ public class ConnectAction extends BaseAction {
             }
         };
 
+        private static HelpCtx CONNECT_ACTION_HELPCTX = new HelpCtx(ConnectAction.class);
+
         public void showDialog(final ConnectionNode model, boolean showDialog) {
             DatabaseConnection dbcon = model.getLookup().lookup(DatabaseConnection.class);
             showDialog(dbcon, showDialog);
@@ -275,7 +277,7 @@ public class ConnectAction extends BaseAction {
                     }
                 };
 
-                dlg = new ConnectionDialog(this, basePanel, basePanel.getTitle(), new HelpCtx("db_save_password"), actionListener);  // NOI18N
+                dlg = new ConnectionDialog(this, basePanel, basePanel.getTitle(), CONNECT_ACTION_HELPCTX, actionListener);
                 dlg.setVisible(true);
             } else { // without dialog with connection data (username, password), just with progress dlg
                 try {
