@@ -72,7 +72,10 @@ final class TextLayoutUtils {
         if (layout instanceof TextLayoutPart) {
             TextLayoutPart part = (TextLayoutPart) layout;
             TextLayout textLayout = part.textLayout();
-            return index2X(textLayout, part.offsetShift() + textLength) - part.xShift();
+            float endX = part.isLast()
+                    ? textLayout.getAdvance()
+                    : index2X(textLayout, part.offsetShift() + textLength);
+            return endX - part.xShift();
         } else {
             return ((TextLayout)layout).getAdvance();
         }
