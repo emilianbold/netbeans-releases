@@ -78,11 +78,32 @@ public final class CollectorRunner implements Runnable {
         this.collectorTask = NativeProcessExecutionService.newService(
                 npb, wrappedOutProcessor, null, taskName).start(); // NOI18N
 
-        DLightExecutorService.submit(this, "Monitoring task " + taskName); // NOI18N
+        DLightExecutorService.submit(CollectorRunner.this, "Monitoring task " + taskName); // NOI18N
     }
 
+    /**
+     * Stops the runner always trying to wait for end of output produced by the
+     * process and doesn't cancel the collector process until BIG_TIMEOUT is over.
+     *
+     * This leads to the following situation (see CR6996748, CR6996760):
+     * when user wants to stop data collection (stop button is pressed in a UI),
+     * this method doesn't lead to collector termination (for example dtrace
+     * when it is not binded to any specific process (that will be terminated 
+     * from 'outside')) => after 'stop' is pressed user has to wait for
+     * BIG_TIMEOUT to this method to take effect ...
+     *
+     * to force immediate shutdown use shutdown(true)
+     */
     public void shutdown() {
+        shutdown(false);
+    }
+
+    public void shutdown(boolean forceTerminate) {
         shutdownFlag.set(true);
+        
+        if (forceTerminate) {
+            shutdownImmediately();
+        }
     }
 
     @Override

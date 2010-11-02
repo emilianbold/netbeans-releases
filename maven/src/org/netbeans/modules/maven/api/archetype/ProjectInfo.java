@@ -40,46 +40,20 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven;
-
-import org.netbeans.validation.api.Validator;
-import org.netbeans.validation.api.builtin.Validators;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.maven.api.archetype;
 
 /**
- *
- * @author mkleint
+ * Information about one project to be created.
  */
-public class MavenValidators {
-
-    @SuppressWarnings("unchecked")
-    public static Validator<String> createArtifactIdValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               );
+public final class ProjectInfo {
+    public final String groupId;
+    public final String artifactId;
+    public final String version;
+    public final String packageName;
+    public ProjectInfo(String groupId, String artifactId, String version, String packageName) {
+        this.groupId = groupId;
+        this.artifactId = artifactId;
+        this.version = version;
+        this.packageName = packageName;
     }
-
-    @SuppressWarnings("unchecked")
-    public static Validator<String> createGroupIdValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
-               );
-    }
-
-    @SuppressWarnings("unchecked")
-    public static Validator<String> createVersionValidators() {
-        return Validators.merge(true,
-                    Validators.REQUIRE_NON_EMPTY_STRING,
-//                        Validators.MAY_NOT_START_WITH_DIGIT,
-                    Validators.NO_WHITESPACE,
-                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
-               );
-    }
-
 }
