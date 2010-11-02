@@ -571,8 +571,8 @@ public final class NbMavenProjectImpl implements Project {
         }
     });
 
-    public static Image getIcon(MavenProject mPrj) {
-        String iconPath = pkg2Icon.get(mPrj.getPackaging().toLowerCase());
+    private static Image getIcon(MavenProject mPrj) {
+        String iconPath = pkg2Icon.get(mPrj.getPackaging());
         if (iconPath == null) {
             iconPath = "org/netbeans/modules/maven/resources/Maven2Icon.gif"; //NOI18N
         }
