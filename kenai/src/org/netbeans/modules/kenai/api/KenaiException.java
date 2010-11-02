@@ -197,7 +197,7 @@ public class KenaiException extends IOException {
 
     /**
      * get status according to
-     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * <a href="http://kenai.com/projects/kenaiapis/pages/API#Errors">spec</a>
      * @return status
      */
     public String getStatus() {
@@ -211,7 +211,7 @@ public class KenaiException extends IOException {
 
     /**
      * get errors according to
-     * <a href="http://kenai.com/projects/kenai/pages/API#Errors">spec</a>
+     * <a href="http://kenai.com/projects/kenaiapis/pages/API#Errors">spec</a>
      * @return keay-value map of errors
      */
     public Map<String, String> getErrors() {

@@ -67,7 +67,7 @@ import org.openide.util.actions.Presenter;
 public class SetMainProject extends ProjectAction implements Presenter.Menu, PropertyChangeListener {
     
     private static final String namePattern = NbBundle.getMessage( SetMainProject.class, "LBL_SetAsMainProjectAction_Name" ); // NOI18N
-        
+
     /** Key for remembering project in JMenuItem
      */
     private static final String PROJECT_KEY = "org.netbeans.modules.project.ui.MainProjectItem"; // NOI18N
@@ -93,8 +93,13 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
     protected void actionPerformed( Lookup context ) {
         Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
-        if ( projects != null && projects.length > 0 ) 
-        OpenProjectList.getDefault().setMainProject( projects[0] );
+        if (projects != null && projects.length == 1) {
+            if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+                OpenProjectList.getDefault().setMainProject(null);
+            } else {
+                OpenProjectList.getDefault().setMainProject(projects[0]);
+            }
+        }
         
     }
     
@@ -108,6 +113,11 @@ public class SetMainProject extends ProjectAction implements Presenter.Menu, Pro
         }
         else {
             setEnabled( true );
+            if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+                putValue("popupText", NbBundle.getMessage(SetMainProject.class, "LBL_UnSetAsMainProjectAction_Name"));
+            } else {
+                putValue("popupText", null);
+            }
         }        
     }
     

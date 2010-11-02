@@ -124,6 +124,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
      */
     public static final String PROP_PATH_NB_APPLICATION_MODULE = "pathToNbApplicationModule"; //NOI18N
 
+    public static final String GROUPID_MOJO = "org.codehaus.mojo";
+    public static final String NBM_PLUGIN = "nbm-maven-plugin";
+
     /** Creates a new instance of MavenNbModuleImpl 
      * @param project 
      */
@@ -133,8 +136,8 @@ public class MavenNbModuleImpl implements NbModuleProvider {
     
     private File getModuleXmlLocation() {
         String file = PluginPropertyUtils.getPluginProperty(project, 
-                "org.codehaus.mojo", //NOI18N
-                "nbm-maven-plugin", //NOI18N
+                GROUPID_MOJO,
+                NBM_PLUGIN, //NOI18N
                 "descriptor", null); //NOI18N
         if (file == null) {
             file = "src/main/nbm/module.xml"; //NOI18N
@@ -368,7 +371,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
             public @Override void performOperation(POMModel model) {
                 Build build = model.getProject().getBuild();
                 if (build != null) {
-                    Plugin nbmPlugin = build.findPluginById("org.codehaus.mojo", "nbm-maven-plugin"); // XXX introduce constant (used in several places in maven{,.apisupport})
+                    Plugin nbmPlugin = build.findPluginById(GROUPID_MOJO, NBM_PLUGIN);
                     if (nbmPlugin != null) {
                         Configuration configuration = nbmPlugin.getConfiguration();
                         if (configuration == null) {
@@ -535,7 +538,7 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         String installProp = watch.getMavenProject().getProperties().getProperty(PROP_NETBEANS_INSTALL);
         if (installProp == null) {
             installProp = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(), 
-                    "org.codehaus.mojo", "nbm-maven-plugin", "netbeansInstallation", "run-ide"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "netbeansInstallation", "run-ide"); //NOI18N
         }
         if (installProp != null) {
             File fil = FileUtilities.convertStringToFile(installProp);
@@ -582,13 +585,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                 return null; //not a maven project.
             }
             String outputDir = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
-                    "org.codehaus.mojo", "nbm-maven-plugin", "outputDirectory", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "outputDirectory", "cluster-app"); //NOI18N
             if( null == outputDir ) {
                 outputDir = "target"; //NOI18N
             }
 
             String brandingToken = PluginPropertyUtils.getPluginProperty(watch.getMavenProject(),
-                    "org.codehaus.mojo", "nbm-maven-plugin", "brandingToken", "cluster-app"); //NOI18N
+                    GROUPID_MOJO, NBM_PLUGIN, "brandingToken", "cluster-app"); //NOI18N
              return FileUtilities.resolveFilePath(FileUtil.toFile(appProject.getProjectDirectory()), outputDir + File.separator + brandingToken);
     }
 }

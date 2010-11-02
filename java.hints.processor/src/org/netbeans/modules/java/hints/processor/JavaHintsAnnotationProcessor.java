@@ -92,15 +92,10 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
     
     private static final Logger LOG = Logger.getLogger(JavaHintsAnnotationProcessor.class.getName());
     
-    private final Set<String> hintTypes = new HashSet<String>();
-    
-
     @Override
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
         if (!roundEnv.processingOver()) {
-            generateTypeList("org.netbeans.modules.java.hints.jackpot.code.spi.Hint", roundEnv, hintTypes);
-        } else {
-            generateTypeFile(hintTypes);
+            generateTypeList("org.netbeans.modules.java.hints.jackpot.code.spi.Hint", roundEnv);
         }
 
         return false;
@@ -111,7 +106,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
         "org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern"
     };
 
-    private void generateTypeList(String annotationName, RoundEnvironment roundEnv, Set<String> hintTypes) {
+    private void generateTypeList(String annotationName, RoundEnvironment roundEnv) {
         TypeElement hint = processingEnv.getElementUtils().getTypeElement(annotationName);
 
         if (hint == null) return ;
@@ -137,25 +132,7 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
                 continue;
             }
 
-            TypeElement current = (TypeElement) annotated;
-            hintTypes.add(current.getQualifiedName().toString());
-        }
-
-        for (String ann : TRIGGERS) {
-            TypeElement annRes = processingEnv.getElementUtils().getTypeElement(ann);
-
-            if (annRes == null) continue;
-
-            for (ExecutableElement method : ElementFilter.methodsIn(roundEnv.getElementsAnnotatedWith(hint))) {
-                verifyHintMethod(method);
-            }
-        }
-
-    }
-
-    private void generateTypeFile(Set<String> types) {
-        for (String fqn : types) {
-            TypeElement clazz = processingEnv.getElementUtils().getTypeElement(fqn);
+            TypeElement clazz = (TypeElement) annotated;
             LayerBuilder builder = layer(clazz);
 
             File clazzFolder = builder.folder("org-netbeans-modules-java-hints/code-hints/" + getFQN(clazz).replace('.', '-') + ".class");
@@ -178,6 +155,17 @@ public class JavaHintsAnnotationProcessor extends LayerGeneratingProcessor {
 
             clazzFolder.write();
         }
+
+        for (String ann : TRIGGERS) {
+            TypeElement annRes = processingEnv.getElementUtils().getTypeElement(ann);
+
+            if (annRes == null) continue;
+
+            for (ExecutableElement method : ElementFilter.methodsIn(roundEnv.getElementsAnnotatedWith(hint))) {
+                verifyHintMethod(method);
+            }
+        }
+
     }
 
     private void dumpAnnotation(LayerBuilder builder, File folder, AnnotationMirror annotation) {

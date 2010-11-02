@@ -40,12 +40,6 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-/*
- * PublicPackagesPanel.java
- *
- * Created on Jan 19, 2010, 3:30:05 PM
- */
-
 package org.netbeans.modules.maven.apisupport;
 
 import java.util.HashSet;
@@ -81,8 +75,6 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
     private static final String ALL_SUBPACKAGES = ".*";
     private static final String ALL_SUBPACKAGES_2 = ".**";
     private static final int COALESCE_LIMIT = 2;
-    private static final String NBM_ARTIFACT_ID = "nbm-maven-plugin";
-    private static final String NBM_GROUP_ID = "org.codehaus.mojo";
     private static final String PUBLIC_PACKAGE = "publicPackage";
     private static final String PUBLIC_PACKAGES = "publicPackages";
 
@@ -154,7 +146,7 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
         }
 
         String[] publicPkgs = PluginPropertyUtils.getPluginPropertyList(project,
-                NBM_GROUP_ID, NBM_ARTIFACT_ID, PUBLIC_PACKAGES, PUBLIC_PACKAGE,
+                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, PUBLIC_PACKAGES, PUBLIC_PACKAGE,
                 "manifest"); //NOI18N
 
         if (publicPkgs != null) {
@@ -195,7 +187,7 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
 
         Plugin nbmPlugin = null;
         if (build != null) {
-            nbmPlugin = build.findPluginById(NBM_GROUP_ID, NBM_ARTIFACT_ID);
+            nbmPlugin = build.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
         } else {
             build = pomModel.getFactory().createBuild();
             pomModel.getProject().setBuild(build);
@@ -205,8 +197,8 @@ public class PublicPackagesPanel extends javax.swing.JPanel implements SelectedI
             config = nbmPlugin.getConfiguration();
         } else {
             nbmPlugin = pomModel.getFactory().createPlugin();
-            nbmPlugin.setGroupId(NBM_GROUP_ID);
-            nbmPlugin.setArtifactId(NBM_ARTIFACT_ID);
+            nbmPlugin.setGroupId(MavenNbModuleImpl.GROUPID_MOJO);
+            nbmPlugin.setArtifactId(MavenNbModuleImpl.NBM_PLUGIN);
             nbmPlugin.setExtensions(Boolean.TRUE);
             build.addPlugin(nbmPlugin);
         }

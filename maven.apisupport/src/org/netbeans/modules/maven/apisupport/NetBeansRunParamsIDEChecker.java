@@ -78,8 +78,6 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
 
     private static final String MASTER_PROPERTY = "netbeans.run.params"; // NOI18N
     private static final String PROPERTY = "netbeans.run.params.ide"; // NOI18N
-    private static final String ARTIFACT_ID = "nbm-maven-plugin";
-    private static final String GROUP_ID = "org.codehaus.mojo";
     private static final String ADDITIONAL_ARGUMENTS = "additionalArguments"; // NOI18N
 
     public @Override boolean checkRunConfig(RunConfig config) {
@@ -97,7 +95,7 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
         }
         String text = null;
         for (String goal : config.getGoals()) {
-            text = PluginPropertyUtils.getPluginProperty(prj, GROUP_ID, ARTIFACT_ID, ADDITIONAL_ARGUMENTS, goal);
+            text = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, ADDITIONAL_ARGUMENTS, goal);
             if (text != null) {
                 break;
             }
