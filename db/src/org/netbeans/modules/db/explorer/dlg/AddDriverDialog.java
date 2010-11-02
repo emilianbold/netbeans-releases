@@ -691,7 +691,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         String message = null;
         if (drvs.isEmpty()) {
             if (wd != null && wd.getDownloadFrom() != null) {
-                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom());
+                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom(), wd.getPrivilegedName());
             } else {
                 message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
             }
