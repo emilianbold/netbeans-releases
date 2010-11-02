@@ -167,8 +167,8 @@ public class DependencyNode extends AbstractNode {
         return Children.LEAF;
     }
 
-    public DependencyNode(NbMavenProjectImpl project, Artifact art, Dependency dependency, boolean isLongLiving) {
-        super(createChildren(art, isLongLiving), Lookups.fixed(project, art, dependency));
+    public DependencyNode(NbMavenProjectImpl project, Artifact art, boolean isLongLiving) {
+        super(createChildren(art, isLongLiving), Lookups.fixed(project, art));
         this.project = project;
         this.art = art;
         longLiving = isLongLiving;
