@@ -77,6 +77,10 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
 
     protected abstract URL file() throws IOException;
 
+    protected String repository() {
+        return null;
+    }
+
     public @Override List<Archetype> getArchetypes() {
         List<Archetype> toRet = new ArrayList<Archetype>();
         try {
@@ -103,6 +107,8 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
                         archetype.setVersion(ver);
                         if (repo != null) {
                             archetype.setRepository(repo);
+                        } else {
+                            archetype.setRepository(repository());
                         }
                         if (desc != null) {
                             archetype.setName(desc);

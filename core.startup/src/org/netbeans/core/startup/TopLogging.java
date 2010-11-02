@@ -320,12 +320,9 @@ public final class TopLogging {
         } else {
             StringBuilder sb = new StringBuilder("loaded by "); // NOI18N
             if (l instanceof URLClassLoader) {
-                sb.append("URLClassLoader "); // NOI18N
-                String pref = "";
+                sb.append("URLClassLoader"); // NOI18N
                 for (URL u : ((URLClassLoader)l).getURLs()) {
-                    sb.append(pref);
-                    sb.append(u.toExternalForm());
-                    pref = File.pathSeparator;
+                    sb.append(' ').append(u);
                 }
             } else {
                 sb.append(l);

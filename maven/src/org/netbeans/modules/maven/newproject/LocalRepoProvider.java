@@ -81,6 +81,7 @@ public class LocalRepoProvider implements ArchetypeProvider {
                 arch.setVersion(art.getVersion());
                 arch.setName(art.getProjectName());
                 arch.setDescription(art.getProjectDescription());
+                arch.setRepository(RepositoryPreferences.LOCAL_REPO_ID);
                 lst.add(arch);
             }
        

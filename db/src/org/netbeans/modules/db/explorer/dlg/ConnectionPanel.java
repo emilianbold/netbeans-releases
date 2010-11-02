@@ -91,6 +91,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     @Override
     public Component getComponent() {
         if (component == null || (oldDriver != null && ! oldDriver.equals(drv))) {
+            component = null;
             if (pw == null) {
                 return null;
             }
