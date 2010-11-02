@@ -142,18 +142,6 @@ public final class Kenai implements Comparable<Kenai> {
 
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
-    /**
-     * This method is deprecated and will be removed
-     * Kenai is not singleton any more. Use {@link KenaiManager} instead.
-     * @deprecated
-     * @return instance of Kenai representing https://kenai.com
-     */
-    @Deprecated
-     public static synchronized Kenai getDefault() {
-        new Throwable("Kenai.getDefault() is deprecated. See http://wiki.netbeans.org/ParallelKenais").printStackTrace();
-        return KenaiManager.getDefault().getKenai("https://kenai.com");
-    }
-
      static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
          assert urlString.startsWith("https://") : "the only supported protocol is https";
          if (urlString.endsWith("/")) {
