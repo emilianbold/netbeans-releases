@@ -449,7 +449,7 @@ public final class J2EEProjectProperties {
     }
     
     @SuppressWarnings("deprecated")
-    public static Map<String, String> extractPlatformLibrariesRootHeuristic(J2eePlatform j2eePlatform) {
+    private static Map<String, String> extractPlatformLibrariesRootHeuristic(J2eePlatform j2eePlatform) {
         if (j2eePlatform.getPlatformRoots() == null) {
             return null;
         }
