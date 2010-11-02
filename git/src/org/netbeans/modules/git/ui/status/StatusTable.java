@@ -93,7 +93,7 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Maros Sandor
  */
-class StatusTable extends ETable implements MouseListener, ListSelectionListener {
+class StatusTable implements MouseListener, ListSelectionListener {
 
     private ETable          table;
     private JScrollPane     component;
