@@ -610,6 +610,9 @@ public class FmtOptions {
             try {
                 int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
                 jep.putClientProperty("TextLimitLine", rm); //NOI18N
+                jep.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                jep.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                jep.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
             }
             catch( NumberFormatException e ) {
                 // Ignore it
