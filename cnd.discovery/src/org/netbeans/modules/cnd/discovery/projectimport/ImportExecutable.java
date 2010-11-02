@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.Language;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -572,7 +573,9 @@ public class ImportExecutable implements PropertyChangeListener {
                             item = normalizedItems.get(path);
                         }
                         boolean isLineDirective = false;
-                        if (!file.isSourceFile() && (p instanceof ProjectBase)) {
+                        if (item != null &&
+                            item.getLanguage() == Language.C_HEADER &&
+                            (p instanceof ProjectBase)) {
                             ProjectBase pb = (ProjectBase) p;
                             Set<CsmFile> parentFiles = pb.getGraph().getParentFiles(file);
                             if (parentFiles.isEmpty()) {

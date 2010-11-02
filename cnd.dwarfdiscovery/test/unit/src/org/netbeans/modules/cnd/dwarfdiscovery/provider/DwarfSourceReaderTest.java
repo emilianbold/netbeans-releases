@@ -54,6 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
@@ -785,11 +788,8 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                         @Override
-                        public String getCompileFlavor() {
-                            if (cygwinPath != null) {
-                                return "Cygwin";
-                            }
-                            return super.getCompileFlavor();
+                        public CompilerFlavor getCompileFlavor() {
+                            return CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
                         }
 
                         @Override

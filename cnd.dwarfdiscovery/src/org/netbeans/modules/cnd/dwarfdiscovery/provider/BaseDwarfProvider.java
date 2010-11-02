@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.api.ApplicableImpl;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface.Position;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
@@ -508,7 +509,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         private final Map<String,String> systemMacroDefinitionsC;
         private final Map<String,String> systemMacroDefinitionsCpp;
         private Map<String,String> normalizedPaths = new ConcurrentHashMap<String, String>();
-        private final String compileFlavor;
+        private final CompilerFlavor compileFlavor;
         private final String cygwinDriveDirectory;
         private final boolean isWindows;
         
@@ -561,7 +562,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             return path;
         }
 
-        public String getCompileFlavor() {
+        public CompilerFlavor getCompileFlavor() {
             return compileFlavor;
         }
 

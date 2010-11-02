@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.apisupport;
 
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
@@ -50,7 +50,6 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginManagement;
 import org.netbeans.modules.maven.model.pom.Project;
-import org.netbeans.modules.maven.options.MavenVersionSettings;
 
 /**
  *
@@ -89,7 +88,7 @@ class AddOSGiParamToNbmPluginConfiguration implements ModelOperation<POMModel> {
                 bld.addPlugin(plg);
                 plg.setGroupId(GROUPID_MOJO);
                 plg.setArtifactId(NBM_PLUGIN);
-                plg.setVersion(MavenVersionSettings.getDefault().getVersion("3.3"));
+                plg.setVersion("3.3");
             }
         }
         Configuration cnf = plg.getConfiguration();

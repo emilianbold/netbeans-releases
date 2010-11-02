@@ -56,7 +56,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.AuxiliaryProperties;
@@ -237,7 +236,7 @@ final class SelectPlatformAppModulePanel extends javax.swing.JPanel {
             File projectDir = FileUtil.toFile(project.getProjectDirectory());
             String relPath = FileUtilities.relativizeFile(projectDir, appDir);
             AuxiliaryProperties props = project.getLookup().lookup(AuxiliaryProperties.class);
-            props.put(Constants.PROP_PATH_NB_APPLICATION_MODULE, relPath, true); //TODO do we want the props to be shareable or not?
+            props.put(MavenNbModuleImpl.PROP_PATH_NB_APPLICATION_MODULE, relPath, true); //TODO do we want the props to be shareable or not?
             return true;
         }
         return false;
