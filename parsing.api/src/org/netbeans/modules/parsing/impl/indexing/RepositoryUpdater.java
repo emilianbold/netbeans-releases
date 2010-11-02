@@ -3434,7 +3434,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         public boolean isWorking() {
             synchronized (todo) {
-                return scheduled || !protectedOwners.isEmpty();
+                return scheduled;
             }
         }
 
