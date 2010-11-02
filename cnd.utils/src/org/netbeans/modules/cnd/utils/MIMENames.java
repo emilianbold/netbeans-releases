@@ -113,6 +113,9 @@ public final class MIMENames {
     /** ELF Shared Object files */
     public static final String ELF_SHOBJ_MIME_TYPE = "application/x-shobj+elf"; //NOI18N
 
+    /** ELF Static Object files */
+    public static final String ELF_STOBJ_MIME_TYPE = "application/x-stobj+elf"; //NOI18N
+
     /** ELF Object files */
     public static final String ELF_OBJECT_MIME_TYPE = "application/x-object+elf"; //NOI18N
 
@@ -132,15 +135,20 @@ public final class MIMENames {
     public static final String QT_TRANSLATION_MIME_TYPE = "text/qttranslation+xml"; // NOI18N
 
     public static final Set<String> CND_TEXT_MIME_TYPES;
+    public static final Set<String> CND_SOURCE_MIME_TYPES;
+    public static final Set<String> CND_SCRIPT_MIME_TYPES;
 
     static {
-        CND_TEXT_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
-                    HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,
+        CND_SOURCE_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
+                    HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,ASM_MIME_TYPE}));
+        CND_SCRIPT_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
                     MAKEFILE_MIME_TYPE, CMAKE_MIME_TYPE, QTPROJECT_MIME_TYPE, SHELL_MIME_TYPE, BAT_MIME_TYPE,
                     VISU_MIME_TYPE,
-                    LEX_MIME_TYPE, YACC_MIME_TYPE, ASM_MIME_TYPE,
+                    LEX_MIME_TYPE, YACC_MIME_TYPE,
                     QT_UI_MIME_TYPE, QT_RESOURCE_MIME_TYPE, QT_TRANSLATION_MIME_TYPE
                 }));
+        
+        CND_TEXT_MIME_TYPES = new HashSet<String>(CND_SOURCE_MIME_TYPES);
     }
 
     public static boolean isCppOrC(String mime) {
@@ -187,6 +195,7 @@ public final class MIMENames {
                 mime.equals(ELF_EXE_MIME_TYPE) ||
                 mime.equals(ELF_CORE_MIME_TYPE) ||
                 mime.equals(ELF_SHOBJ_MIME_TYPE) ||
+                mime.equals(ELF_STOBJ_MIME_TYPE) ||
                 mime.equals(ELF_GENERIC_MIME_TYPE) ||
                 mime.equals(ELF_OBJECT_MIME_TYPE);
     }

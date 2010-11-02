@@ -60,14 +60,15 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.DocumentAdapter;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -85,8 +86,8 @@ public class SelectModePanel extends javax.swing.JPanel {
     private volatile boolean initialized = false;
 
     /** Creates new form SelectModePanel */
-    public SelectModePanel(SelectModeDescriptorPanel wizard) {
-        this.controller = wizard;
+    public SelectModePanel(SelectModeDescriptorPanel controller) {
+        this.controller = controller;
         initComponents();
         sourceFolderLabel.setVisible(controller.isFullRemote());
         sourceFolder.setVisible(controller.isFullRemote());
@@ -110,8 +111,8 @@ public class SelectModePanel extends javax.swing.JPanel {
                 controller.getWizardStorage().setProjectPath(path);
                 if (!controller.isFullRemote()) {
                     if (!path.isEmpty()) {
-                        File file = FileUtil.normalizeFile(new File(path));
-                        controller.getWizardStorage().setSourcesFileObject(FileUtil.toFileObject(file));
+                        String normalizedPath = CndFileUtils.normalizeAbsolutePath(path);
+                        controller.getWizardStorage().setSourcesFileObject(CndFileUtils.toFileObject(normalizedPath));
                     }
                 }
                 updateInstruction();
@@ -129,13 +130,13 @@ public class SelectModePanel extends javax.swing.JPanel {
                     //fileObject = RemoteFileUtil.getFileObject(path, env,
                     ExecutionEnvironment env = getSelectedExecutionEnvironment();
                     fileObject = RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
-                    projectName = (fileObject == null) ? null : fileObject.getName();
+                    projectName = (fileObject == null) ? null : fileObject.getNameExt();
                 }
                 controller.getWizardStorage().setSourcesFileObject(fileObject);
                 if (projectFolder.getText().isEmpty()) {
                     if (projectName != null && ! projectName.isEmpty() ) {
                         File projectLocation = ProjectChooser.getProjectsFolder();
-                        File projectFile = new File(projectLocation, projectName);
+                        File projectFile = CndFileUtils.createLocalFile(projectLocation, projectName);
                         projectFolder.setText(projectFile.getAbsolutePath());
                     }
                 }
@@ -168,9 +169,9 @@ public class SelectModePanel extends javax.swing.JPanel {
                 if (configure != null) {
                     toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_Configure"); // NOI18N
                     tool = configure;
-                    File confFile = FileUtil.normalizeFile(new File(configure));
-                    FileObject fo = FileUtil.toFileObject(confFile);
-                    if (fo != null) {
+                    String normalizedPath = CndFileUtils.normalizeAbsolutePath(configure);
+                    FileObject fo = CndFileUtils.toFileObject(normalizedPath);
+                    if (fo != null && fo.isValid()) {
                         String mimeType = fo.getMIMEType();
                         if (MIMENames.CMAKE_MIME_TYPE.equals(mimeType)) {
                             toolsInfo = NbBundle.getMessage(SelectModePanel.class, "SelectModeSimpleInstructionExtraText_CMake"); // NOI18N
@@ -381,7 +382,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         String seed = projectFolder.getText();
         JFileChooser fileChooser;
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_BUTTON_TXT"); // NOI18N
-        fileChooser = new FileChooser(
+        fileChooser = new FileChooser( // Sic! - project is always local
                 NbBundle.getMessage(SelectModePanel.class, "PROJECT_DIR_CHOOSER_TITLE_TXT"), // NOI18N
                 approveButtonText,
                 JFileChooser.DIRECTORIES_ONLY,
@@ -413,24 +414,16 @@ public class SelectModePanel extends javax.swing.JPanel {
     private void sourceBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceBrowseButtonActionPerformed
         CndUtils.assertTrue(controller.isFullRemote());
         String seed = sourceFolder.getText();
-        JFileChooser fileChooser;
         String approveButtonText = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_BUTTON_TXT"); // NOI18N
-        if (controller.isFullRemote()) {
-            WizardDescriptor wd = controller.getWizardDescriptor();
-            String hostUID = (String) wd.getProperty("hostUID");
-            ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-            fileChooser = new FileChooserBuilder(execEnv).createFileChooser(seed);
-            fileChooser.setApproveButtonText(approveButtonText);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        } else {
-            fileChooser = new FileChooser(
-                    NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"), // NOI18N
-                    approveButtonText,
-                    JFileChooser.DIRECTORIES_ONLY,
-                    null,
-                    seed,
-                    false);
-        }
+        String title = NbBundle.getMessage(SelectModePanel.class, "SOURCES_DIR_CHOOSER_TITLE_TXT"); //NOI18N
+        JFileChooser fileChooser = NewProjectWizardUtils.createFileChooser(
+                controller.getWizardDescriptor(),
+                title,
+                approveButtonText,
+                JFileChooser.DIRECTORIES_ONLY,
+                null,
+                seed,
+                false);
         int ret = fileChooser.showOpenDialog(this);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return;
@@ -445,10 +438,10 @@ public class SelectModePanel extends javax.swing.JPanel {
     void read(WizardDescriptor wizardDescriptor) {
         initialized = false;
         updateControls();
-        String hostUID = (String) wizardDescriptor.getProperty("hostUID");
-        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty("toolchain");
+        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
+        CompilerSet cs = (CompilerSet) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
         RequestProcessor.getDefault().post(new DevHostsInitializer(hostUID, cs, false,
-                (ToolsCacheManager) wizardDescriptor.getProperty("ToolsCacheManager")) {
+                (ToolsCacheManager) wizardDescriptor.getProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER)) { // NOI18N
             @Override
             public void updateComponents(Collection<ServerRecord> records, ServerRecord srToSelect, CompilerSet csToSelect, boolean enabled) {
                 boolean enableHost = enabled;
@@ -481,24 +474,27 @@ public class SelectModePanel extends javax.swing.JPanel {
 
     void store(WizardDescriptor wizardDescriptor) {
         if (simpleMode.isSelected()) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
-            wizardDescriptor.putProperty("setAsMain",  Boolean.TRUE); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SET_AS_MAIN,  Boolean.TRUE);
         } else {
-            wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
-        wizardDescriptor.putProperty("simpleModeFolder", projectFolder.getText().trim()); // NOI18N
-        wizardDescriptor.putProperty("readOnlyToolchain", Boolean.TRUE); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE_FOLDER, projectFolder.getText().trim()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, CndFileUtils.createLocalFile(projectFolder.getText().trim())); //NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_READ_ONLY_TOOLCHAIN, Boolean.TRUE);
 
         ExecutionEnvironment ee = getSelectedExecutionEnvironment();
-        wizardDescriptor.putProperty("hostUID", ExecutionEnvironmentFactory.toUniqueID(ee)); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_HOST_UID, ExecutionEnvironmentFactory.toUniqueID(ee));
         controller.getWizardStorage().setExecutionEnvironment(ee);
 
         Object tc = toolchainComboBox.getSelectedItem();
         if (tc != null && tc instanceof CompilerSet) {
-            wizardDescriptor.putProperty("toolchain", tc); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_TOOLCHAIN, tc);
             controller.getWizardStorage().setCompilerSet((CompilerSet) tc);
         }
-        wizardDescriptor.putProperty("nativeProjFO", controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); // NOI18N
+        FileObject fo = controller.getWizardStorage().getSourcesFileObject();
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); // NOI18N
         initialized = false;
     }
 
@@ -508,6 +504,7 @@ public class SelectModePanel extends javax.swing.JPanel {
     private static final byte cannotWriteFolder = 3;
     private static final byte alreadyNbPoject = 4;
     private static final byte notFoundMakeAndConfigure = 5;
+    private static final byte notRoot = 6;
     private byte messageKind = noMessage;
 
     boolean valid() {
@@ -517,17 +514,20 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            File projectDirFile = FileUtil.normalizeFile(new File(path));
+            File projectDirFile = FileUtil.normalizeFile(CndFileUtils.createLocalFile(path)); // it's project folder - always local
             File projectDirParent = projectDirFile.getParentFile();
             // in the cse of full remote the directory should not necessarily exist, but its parent should
             File fileToCheck = controller.isFullRemote() ? projectDirParent : projectDirFile;
-            if (!(fileToCheck.isDirectory() && fileToCheck.canRead())) {
-                if (fileToCheck.isDirectory()) {
+            if (fileToCheck == null || !fileToCheck.isDirectory() || !fileToCheck.canRead()) {
+                if (fileToCheck == null) {
+                    messageKind = notRoot;
+                }
+                else if(fileToCheck.isDirectory()) {
                     messageKind = cannotReadFolder;
                 } else {
                     messageKind = notFolder;
                 }
-                path = fileToCheck.getAbsolutePath();
+                path = (fileToCheck == null) ? "" : fileToCheck.getAbsolutePath(); //NOI18N
                 return false;
             }
 
@@ -537,14 +537,16 @@ public class SelectModePanel extends javax.swing.JPanel {
                     path = fileToCheck.getAbsolutePath();
                     return false;
                 }
-                File nbFile = new File(new File(path, MakeConfiguration.NBPROJECT_FOLDER), MakeConfiguration.PROJECT_XML); // NOI18N
+                File nbFile = CndFileUtils.createLocalFile(
+                        CndFileUtils.createLocalFile(path, MakeConfiguration.NBPROJECT_FOLDER),
+                        MakeConfiguration.PROJECT_XML);
                 if (nbFile.exists()) {
                     messageKind = alreadyNbPoject;
                     return false;
                 }
                 if (projectDirFile.isDirectory()) {
-                    FileObject fo = FileUtil.toFileObject(projectDirFile);
-                    if (fo != null) {
+                    FileObject fo = CndFileUtils.toFileObject(projectDirFile);
+                    if (fo != null && fo.isValid()) {
                         try {
                             if (ProjectManager.getDefault().findProject(fo) != null) {
                                 messageKind = alreadyNbPoject;

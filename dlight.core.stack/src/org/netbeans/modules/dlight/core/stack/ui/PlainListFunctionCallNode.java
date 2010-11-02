@@ -100,6 +100,7 @@ import org.openide.util.ImageUtilities;
         return super.getHtmlDisplayName();
     }
 
+    @Override
     public void ready() {
         fireDisplayNameChange(getDisplayName() + "_", getDisplayName()); // NOI18N
     }

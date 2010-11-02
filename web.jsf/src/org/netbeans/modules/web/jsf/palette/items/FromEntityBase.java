@@ -306,8 +306,8 @@ public abstract class FromEntityBase {
         //
         String keyBodyValue = null;
         String keyStringBodyValue = null;
-        String keyGetterValue = "UNDEFINED";
-        String keyTypeValue = "UNDEFINED";
+        String keyGetterValue = "UNDEFINED_PK_GETTER";
+        String keyTypeValue = "UNDEFINED_PK_TYPE";
         Boolean keyEmbeddedValue = Boolean.FALSE;        //
         Boolean keyDerivedValue = Boolean.FALSE;
         if(primaryGetter != null) {
@@ -380,6 +380,7 @@ public abstract class FromEntityBase {
         params.put("keyBody", keyBodyValue!=null ? keyBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
         params.put("keyStringBody", keyStringBodyValue!=null ? keyStringBodyValue : NbBundle.getMessage(FromEntityBase.class, "ERR_NO_GETTERS", new String[]{INDENT, bean.getQualifiedName().toString(), "Converter.getKey()"}));
         params.put("keyGetter", keyGetterValue);//NOI18N
+        params.put("keySetter", "s" + keyGetterValue.substring(1));//NOI18N
         params.put("keyType", keyTypeValue);//NOI18N
         params.put("keyEmbedded", keyEmbeddedValue);//NOI18N
         params.put("keyDerived", keyDerivedValue);//NOI18N
@@ -443,7 +444,7 @@ public abstract class FromEntityBase {
             } else if ("Short".equals(idType.toString()) || "java.lang.Short".equals(idType.toString())) {
                 return "Short.valueOf("+param+")";
             } else if ("BigDecimal".equals(idType.toString()) || "java.math.BigDecimal".equals(idType.toString())) {
-                return "new BigDecimal("+param+")";
+                return "new java.math.BigDecimal("+param+")";
             }
         }
         return param;

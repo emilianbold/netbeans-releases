@@ -47,7 +47,9 @@ import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-/** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com) */
+/** @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
+ * @deprecated use {@link CslActions#createSelectCamelCasePositionAction(javax.swing.Action, boolean) } instead.
+ */
 public class SelectPreviousCamelCasePosition extends PreviousCamelCasePosition {
     public static final String selectPreviousCamelCasePosition = "select-previous-camel-case-position"; //NOI18N
 

@@ -72,7 +72,7 @@ public class RenameHandlerImpl implements RenameHandler {
         Lookup l = new AbstractLookup(ic);
         DataObject dob = node.getCookie(DataObject.class);
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(l);
-        if (a.isEnabled()) {
+        if (Boolean.TRUE.equals(a.getValue("applicable"))) {//NOI18N
             a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
         } else {
             try {

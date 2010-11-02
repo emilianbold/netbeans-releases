@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetUtils;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
@@ -182,7 +184,7 @@ public class ProjectBridge {
         if (canonicalItems == null) {
             canonicalItems = new HashMap<String,Item>();
             for(Item item : makeConfigurationDescriptor.getProjectItems()){
-                canonicalItems.put(item.getCanonicalFile().getAbsolutePath(),item);
+                canonicalItems.put(item.getCanonicalPath(),item);
             }
         }
         return canonicalItems.get(path);
@@ -296,6 +298,56 @@ public class ProjectBridge {
         }
         return folder;
     }
+
+    public Map<String,Folder> prefferedFolders(){
+        Map<String,Folder> folders = new HashMap<String,Folder>();
+        for(Item item : getAllSources()){
+            String path = item.getAbsPath();
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            if (path.indexOf("/../")>=0 || path.indexOf("/./")>=0) { // NOI18N
+                path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+                if (Utilities.isWindows()) {
+                    path = path.replace('\\', '/');
+                }
+            }
+            int i = path.lastIndexOf('/');
+            if (i >= 0){
+                String folder = path.substring(0,i);
+                folders.put(folder,item.getFolder());
+            }
+        }
+        Folder root = makeConfigurationDescriptor.getLogicalFolders();
+        Set<Folder> roots = new HashSet<Folder>(root.getFolders());
+        roots.add(root);
+        while(true) {
+            Map<String,Folder> delta = new HashMap<String,Folder>();
+            for(Map.Entry<String,Folder> entry : folders.entrySet()) {
+                String path = entry.getKey();
+                Folder folder = entry.getValue();
+                Folder parent = folder.getParent();
+                if (parent != null && !roots.contains(parent)) {
+                    String name = folder.getName();
+                    int i = path.lastIndexOf('/');
+                    if (i >= 0){
+                        String pathName = path.substring(i+1);
+                        if (name.equals(pathName)) {
+                            String needCheck = path.substring(0,i);
+                            if (!folders.containsKey(needCheck)) {
+                                delta.put(needCheck, parent);
+                            }
+                        }
+                    }
+                }
+            }
+            if (delta.isEmpty()) {
+                break;
+            }
+            folders.putAll(delta);
+        }
+        return folders;
+    }
     
     public void save(){
         makeConfigurationDescriptor.save();
@@ -388,24 +440,45 @@ public class ProjectBridge {
         }
     }
 
-    public void setSourceTool(Item item, ItemProperties.LanguageKind lang){
+    public void setSourceTool(Item item, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard languageStandard){
         MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null) {
             return;
         }
-        if (lang == ItemProperties.LanguageKind.CPP) {
-            if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
-                itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
-            }
-        } else if (lang == ItemProperties.LanguageKind.C) {
-            if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
-                itemConfiguration.setTool(PredefinedToolKind.CCompiler);
-            }
-        } else if (lang == ItemProperties.LanguageKind.Fortran) {
-            if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
-                itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
-            }
+        switch (lang) {
+            case C:
+                if (itemConfiguration.getTool() != PredefinedToolKind.CCompiler) {
+                    itemConfiguration.setTool(PredefinedToolKind.CCompiler);
+                }
+                if (languageStandard == ItemProperties.LanguageStandard.C) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C);
+                } else if(languageStandard == ItemProperties.LanguageStandard.C89) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C89);
+                } else if(languageStandard == ItemProperties.LanguageStandard.C99) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.C99);
+                }
+                break;
+            case CPP:
+                if (itemConfiguration.getTool() != PredefinedToolKind.CCCompiler) {
+                    itemConfiguration.setTool(PredefinedToolKind.CCCompiler);
+                }
+                if (languageStandard == ItemProperties.LanguageStandard.CPP) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.CPP);
+                }
+                break;
+            case Fortran:
+                if (itemConfiguration.getTool() != PredefinedToolKind.FortranCompiler) {
+                    itemConfiguration.setTool(PredefinedToolKind.FortranCompiler);
+                }
+                if (languageStandard == ItemProperties.LanguageStandard.F77) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F77);
+                } else if(languageStandard == ItemProperties.LanguageStandard.F90) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F90);
+                } else if(languageStandard == ItemProperties.LanguageStandard.F95) {
+                    itemConfiguration.setLanguageFlavor(LanguageFlavor.F95);
+                }
+                break;
         }
     }
     

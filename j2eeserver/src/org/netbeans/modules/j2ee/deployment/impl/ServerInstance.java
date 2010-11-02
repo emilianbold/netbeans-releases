@@ -65,6 +65,7 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.openide.filesystems.*;
 import java.util.*;
@@ -965,19 +966,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
         
         return cd;
     }
-    
-    /**
-     * Returns true if this server is started in debug mode AND debugger is attached to it
-     * AND threads are suspended (e.g. debugger stopped on breakpoint)
-     */
-    public boolean isSuspended() {
+
+    private JPDADebugger getDebugger() {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
 
         Target target = _retrieveTarget(null);
         ServerDebugInfo sdi = getServerDebugInfo(target);
         if (sdi == null) {
             LOGGER.log(Level.FINE, "DebuggerInfo cannot be found for: " + this.toString());
-            return false; // give user a chance to start server even if we don't know whether she will success
+            return null; // give user a chance to start server even if we don't know whether she will success
         }
 
         for (int i = 0; i < sessions.length; i++) {
@@ -999,28 +996,34 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 if (shmem.equalsIgnoreCase(sdi.getShmemName())) {
                     Object d = s.lookupFirst(null, JPDADebugger.class);
                     if (d != null) {
-                        JPDADebugger jpda = (JPDADebugger) d;
-                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                            return true;
-                        }
+                        return (JPDADebugger) d;
                     }
                 }
             } else {
                 String host = attCookie.getHostName();
                 if (host != null && isSameHost(host, sdi.getHost())
                         && attCookie.getPortNumber() == sdi.getPort()) {
-                    
+
                     Object d = s.lookupFirst(null, JPDADebugger.class);
                     if (d != null) {
-                        JPDADebugger jpda = (JPDADebugger) d;
-                        if (jpda.getState() == JPDADebugger.STATE_STOPPED) {
-                            return true;
-                        }
+                        return (JPDADebugger) d;
                     }
                 }
             }
         }
-        return false;
+        return null;
+    }
+    
+    /**
+     * Returns true if this server is started in debug mode AND debugger is attached to it
+     * AND threads are suspended (e.g. debugger stopped on breakpoint)
+     */
+    public boolean isSuspended() {
+        JPDADebugger jpda = getDebugger();
+        if (jpda == null) {
+            return false;
+        }
+        return jpda.getState() == JPDADebugger.STATE_STOPPED;
     }
 
     /**
@@ -1679,6 +1682,18 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public static boolean hasFailed(ProgressObject po) {
         StateType state = po.getDeploymentStatus().getState();
         return (state == StateType.FAILED);
+    }
+
+    void notifyUpdated(Iterable<Artifact> artifacts) {
+        JPDADebugger jpda = getDebugger();
+        if (jpda != null) {
+            try {
+                java.lang.reflect.Method fixBreakpointsMethod = jpda.getClass().getMethod("fixBreakpoints", new Class[] {});
+                fixBreakpointsMethod.invoke(jpda, new Object[] {});
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     // StateListener ----------------------------------------------------------

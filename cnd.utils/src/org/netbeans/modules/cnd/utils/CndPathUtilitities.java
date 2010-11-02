@@ -74,6 +74,9 @@ public class CndPathUtilitities {
      * the file is in the current directory rather than ".".
      */
     public static String getDirName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -88,6 +91,9 @@ public class CndPathUtilitities {
      * its filename.
      */
     public static String getBaseName(String path) {
+        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
+            path = path.substring(0,path.length()-1);
+        }
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
@@ -177,6 +183,11 @@ public class CndPathUtilitities {
     public static String toAbsolutePath(FileObject base, String path) {
         return toAbsolutePath(base.getPath(), path);
     }
+
+    public static String toAbsolutePath(FileObject base, FileObject path) {
+        return toAbsolutePath(base, path.getPath()); // TODO: use smarter logic (compare file systems, etc)
+    }
+
     /*
      * From PicklistUtils
      */
@@ -204,12 +215,22 @@ public class CndPathUtilitities {
         return newPath;
     }
 
+    public static String toRelativePath(FileObject base, FileObject path) {
+        return toRelativePath(base.getPath(), path.getPath()); // TODO: use smarter logic (compare file systems, etc)
+    }
+
     public static String toRelativePath(FileObject base, String path) {
         return toRelativePath(base.getPath(), path);
     }
+
     /*
      * From PicklistUtils
      */
+
+    public static String toRelativePath(String base, FileObject path) {
+        return toRelativePath(base, path.getPath());
+    }
+
     public static String toRelativePath(String base, String path) {
         String relPath = path;
         if (relPath == null || relPath.length() == 0) {
@@ -226,6 +247,10 @@ public class CndPathUtilitities {
             }
         }
         return relPath;
+    }
+
+    public static String toAbsoluteOrRelativePath(FileObject base, FileObject path) {
+        return toAbsoluteOrRelativePath(base, path.getPath()); // TODO: use smarter logic (compare file systems, etc)
     }
 
     public static String toAbsoluteOrRelativePath(FileObject base, String path) {

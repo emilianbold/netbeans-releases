@@ -46,6 +46,7 @@ import java.awt.Component;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -70,14 +71,10 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
     private final Archetype archetype;
-    private boolean isNBM = false;
     private final List<ChangeListener> listeners;
 
     private SimpleWizardIterator(Archetype archetype) {
         this.archetype = archetype;
-        isNBM = archetype.equals(ArchetypeWizardUtils.NB_APP_ARCH) ||
-                archetype.equals(ArchetypeWizardUtils.NB_MODULE_ARCH) ||
-                archetype.equals(ArchetypeWizardUtils.NB_SUITE_ARCH);
         listeners = new ArrayList<ChangeListener>();
     }
     
@@ -92,34 +89,20 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
     public static SimpleWizardIterator createNbSuiteIterator() {
         return new SimpleWizardIterator(ArchetypeWizardUtils.NB_SUITE_ARCH);
     }
-
-    public static SimpleWizardIterator createOSGiIterator() {
-        return new SimpleWizardIterator(ArchetypeWizardUtils.OSGI_ARCH);
-    }
     
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
-        if (isNBM) {
             return new WizardDescriptor.Panel[] {
                 new BasicWizardPanel(vg, true),
                 new NbmWizardPanel(vg, archetype)
             };
-        }
-        return new WizardDescriptor.Panel[] {
-            new BasicWizardPanel(vg, true)
-        };
     }
     
     private String[] createSteps() {
-        if (isNBM) {
             return new String[] {
                 NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStep2"),
                 NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStepNbm")
             };
-        }
-        return new String[] {
-            NbBundle.getMessage(SimpleWizardIterator.class, "LBL_CreateProjectStep2")
-        };
     }
     
     @Override
@@ -142,6 +125,8 @@ public class SimpleWizardIterator implements WizardDescriptor.ProgressInstantiat
         this.wiz = wiz;
         // set archetype to run
         this.wiz.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, archetype);
+        // XXX perhaps should display a GUI listing possible versions of org.netbeans.cluster:platform as choices?
+        wiz.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, Collections.singletonMap("netbeansVersion", "RELEASE691")); // NOI18N
 
         // Make sure list of steps is accurate.
         String[] steps = createSteps();

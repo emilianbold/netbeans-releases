@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -119,9 +120,20 @@ public final class ConfigureUtils {
         return null;
     }
 
+    public static boolean isRunnable(FileObject fileObject) {
+        if (fileObject != null && fileObject.isValid()) {
+            File file = FileUtil.toFile(fileObject);
+            if (file != null) {
+                return isRunnable(file); // XXX:fullRemote: a temporary fixup
+            }
+            return true;
+        }
+        return false;
+    }
+
     public static boolean isRunnable(File file) {
         if (file.exists() && file.isFile() && (file.canRead()||file.canExecute())) {
-            FileObject configureFileObject = FileUtil.toFileObject(file);
+            FileObject configureFileObject = CndFileUtils.toFileObject(file);
             if (configureFileObject == null || !configureFileObject.isValid()) {
                 return false;
             }
@@ -159,7 +171,7 @@ public final class ConfigureUtils {
         }
         for (String name : pattern) {
             FileObject makeFO = projDirFo.getFileObject(name); // NOI18N
-            if (makeFO != null && !makeFO.isVirtual() && makeFO.isData() && makeFO.canRead()) {
+            if (makeFO != null && makeFO.isValid() && makeFO.isData() && makeFO.canRead()) {
                 return makeFO;
             }
         }

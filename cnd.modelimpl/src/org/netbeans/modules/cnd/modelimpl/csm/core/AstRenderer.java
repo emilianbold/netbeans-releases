@@ -100,6 +100,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_NAMESPACE_DECLARATION:
                     NamespaceDefinitionImpl ns = NamespaceDefinitionImpl.findOrCreateNamespaceDefionition(container, token, currentNamespace, file);
                     render(token, (NamespaceImpl) ns.getNamespace(), ns);
+                    checkInnerIncludes(ns);
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
@@ -590,6 +591,24 @@ public class AstRenderer {
         return false;
     }
 
+    protected void checkInnerIncludes(CsmOffsetableDeclaration inclContainer) {
+        // Check for include directives in class
+        if (!isRenderingLocalContext() && CsmKindUtilities.isOffsetable(inclContainer)) {
+            CsmOffsetable offs = (CsmOffsetable) inclContainer;
+            CsmFile curFile = getContainingFile();
+            if (curFile instanceof FileImpl) {
+                for (CsmInclude include : curFile.getIncludes()) {
+                    if (include instanceof IncludeImpl) {
+                        if (include.getStartOffset() > offs.getStartOffset()
+                                && include.getEndOffset() < offs.getEndOffset()) {
+                            ((FileImpl) curFile).onFakeRegisration((IncludeImpl) include, inclContainer);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     /**
      * In the case of the "function-like variable" - construct like
      * int a(b) 
@@ -1811,7 +1830,8 @@ public class AstRenderer {
                         type == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         type == CPPTokenTypes.LITERAL_struct ||
                         type == CPPTokenTypes.LITERAL_class ||
-                        type == CPPTokenTypes.LITERAL_union) {
+                        type == CPPTokenTypes.LITERAL_union ||
+                        type == CPPTokenTypes.LITERAL_enum) {
                     return ConditionDeclarationImpl.create(ast, file, scope);
                 }
             }

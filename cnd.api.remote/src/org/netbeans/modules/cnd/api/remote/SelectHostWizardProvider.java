@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.spi.remote.SelectHostWizardProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -73,14 +74,14 @@ public abstract class SelectHostWizardProvider {
      * @param propertyChangeListener listener to be notified if user choice changed
      * @return
      */
-    public abstract WizardDescriptor.Panel getSelectHostPanel();
+    public abstract WizardDescriptor.Panel<WizardDescriptor> getSelectHostPanel();
 
     /**
      * Gets additional panels
      * (in the case user decided to add a new host)
      * @return
      */
-    public abstract WizardDescriptor.Panel[] getAdditionalPanels();
+    public abstract List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalPanels();
 
     public abstract boolean isNewHost();
     public abstract ExecutionEnvironment getSelectedHost();

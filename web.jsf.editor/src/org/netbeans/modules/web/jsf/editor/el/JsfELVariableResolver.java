@@ -114,6 +114,16 @@ public final class JsfELVariableResolver implements ELVariableResolver {
         return result;
     }
 
+    @Override
+    public List<VariableInfo> getBeansInScope(String scope, FileObject context) {
+       List<VariableInfo> result = new ArrayList<VariableInfo>();
+       for (FacesManagedBean bean : getJsfManagedBeans(context)) {
+           if (scope.equals(bean.getManagedBeanScopeString())) {
+                result.add(new VariableInfo(bean.getManagedBeanName(), bean.getManagedBeanClass()));
+           }
+       }
+       return result;
+    }
 
     private List<FacesManagedBean> getJsfManagedBeans(FileObject context) {
         WebModule webModule = WebModule.getWebModule(context);

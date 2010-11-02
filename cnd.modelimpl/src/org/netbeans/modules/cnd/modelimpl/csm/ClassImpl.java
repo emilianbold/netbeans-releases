@@ -709,17 +709,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         break;
                 }
             }
-
-            // Check for include directives in class
-            if (!renderingLocalContext) {
-                CsmFile file = getContainingFile();
-                for (CsmInclude include : file.getIncludes()) {
-                    if (include.getStartOffset() > getStartOffset()
-                            && include.getEndOffset() < getEndOffset()) {
-                        ((FileImpl) file).onFakeRegisration((IncludeImpl) include, ClassImpl.this);
-                    }
-                }
-            }
+            checkInnerIncludes(ClassImpl.this);
         }
 
         private void setTemplateDescriptor(List<CsmTemplateParameter> params, String name) {

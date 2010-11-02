@@ -41,43 +41,33 @@
  */
 
 package org.netbeans.modules.maven.spi.nodes;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.event.ChangeEvent;
+
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.openide.util.ChangeSupport;
 
 /**
  *
  * @author mkleint
  */
 public abstract class AbstractMavenNodeList<K> implements NodeList<K> {
-    private List<ChangeListener> listeners;
-    /** Creates a new instance of AbstractMavenNodeFactory */
-    protected AbstractMavenNodeList() {
-        listeners = new ArrayList<ChangeListener>();
+
+    private final ChangeSupport cs = new ChangeSupport(this);
+
+    public @Override void addChangeListener(ChangeListener list) {
+        cs.addChangeListener(list);
     }
     
-    
-    public void addChangeListener(ChangeListener list) {
-        listeners.add(list);
-    }
-    
-    public void removeChangeListener(ChangeListener list) {
-        listeners.remove(list);
+    public @Override void removeChangeListener(ChangeListener list) {
+        cs.removeChangeListener(list);
     }
     
     protected void fireChange() {
-        ChangeEvent event = new ChangeEvent(this);
-        for (ChangeListener list : listeners) {
-            list.stateChanged(event);
-        }
+        cs.fireChange();
     }
     
-    public void addNotify() {
-    }
+    public @Override void addNotify() {}
     
-    public void removeNotify() {
-    }
+    public @Override void removeNotify() {}
     
 }

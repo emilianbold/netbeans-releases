@@ -67,9 +67,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
@@ -78,6 +76,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
@@ -161,7 +160,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
         private TreePathHandle tph;
         private JavaSource js;
         private FileObject file;
-        private Position instantRenamePosition;
         
         public FixImpl(TreePathHandle tph, JavaSource js, FileObject file) {
             this.tph = tph;
@@ -174,9 +172,13 @@ public class ConvertAnonymousToInner extends AbstractHint {
         }
 
         public ChangeInfo implement() throws IOException {
-            js.runModificationTask(this).commit();
+            ModificationResult mr = js.runModificationTask(this);
             
-            if (instantRenamePosition != null) {
+            mr.commit();
+            
+            final int[] newClassNameSpan = mr.getSpan(NEW_CLASS_TREE_TAG);
+            
+            if (newClassNameSpan != null) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
                         try {
@@ -185,7 +187,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                             if (arr == null) {
                                 return;
                             }
-                            arr[0].setCaretPosition(instantRenamePosition.getOffset());
+                            arr[0].setCaretPosition((newClassNameSpan[0] + newClassNameSpan[1]) / 2);
                             InstantRenamePerformer.invokeInstantRename(arr[0]);
                         } catch (DataObjectNotFoundException ex) {
                             Exceptions.printStackTrace(ex);
@@ -202,22 +204,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
             TreePath tp = tph.resolve(parameter);
             
             convertAnonymousToInner(parameter, tp);
-            
-            final int instantRenamePositionOffset = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), ((NewClassTree) tp.getLeaf()).getIdentifier());
-            
-            final Document doc = parameter.getDocument();
-            
-            if (doc != null) {
-                doc.render(new Runnable() {
-                    public void run() {
-                        try {
-                            instantRenamePosition = doc.createPosition(instantRenamePositionOffset);
-                        } catch (BadLocationException ex) {
-                            Logger.getLogger(ConvertAnonymousToInner.class.getName()).log(Level.INFO, null, ex);
-                        }
-                    }
-                });
-            }
         }
     }
 
@@ -336,7 +322,7 @@ public class ConvertAnonymousToInner extends AbstractHint {
                 
         TreePath tp = newClassToConvert;
 
-        while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+        while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             tp = tp.getParentPath();
         }
         
@@ -494,10 +480,12 @@ public class ConvertAnonymousToInner extends AbstractHint {
         ClassTree clazz = make.Class(classModifiers, newClassName, Collections.<TypeParameterTree>emptyList(), superTypeElement.getKind().isClass() ? superTypeTree : null, superTypeElement.getKind().isClass() ? Collections.<Tree>emptyList() : Collections.<Tree>singletonList(superTypeTree), members);
         
         copy.rewrite(target, make.addClassMember(target, clazz));
-        
-        NewClassTree nueNCT = make.NewClass(/*!!!*/null, Collections.<ExpressionTree>emptyList(), make.Identifier(newClassName), constrRealArguments, null);
+
+        IdentifierTree classNameTree = make.Identifier(newClassName);
+        NewClassTree nueNCT = make.NewClass(/*!!!*/null, Collections.<ExpressionTree>emptyList(), classNameTree, constrRealArguments, null);
         
         copy.rewrite(nct, nueNCT);
+        copy.tag(classNameTree, NEW_CLASS_TREE_TAG);
     }
 
     public void cancel() {
@@ -537,4 +525,6 @@ public class ConvertAnonymousToInner extends AbstractHint {
         
         return new FindSuperConstructorCall().scan(nct, null);
     }
+
+    private static final String NEW_CLASS_TREE_TAG = "new-class-tree-tag";
 }

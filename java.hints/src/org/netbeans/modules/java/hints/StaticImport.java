@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.imports.ComputeImports;
 import org.netbeans.modules.java.editor.imports.ComputeImports.Pair;
@@ -347,7 +348,7 @@ public class StaticImport extends AbstractHint {
      * @return the first path which is a CLASS or null if none found
      */
     public static TreePath getContainingClass(TreePath tp) {
-        while (tp != null && tp.getLeaf().getKind() != Kind.CLASS) {
+        while (tp != null && !TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
             tp = tp.getParentPath();
         }
         return tp;

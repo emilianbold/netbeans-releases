@@ -43,11 +43,9 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -68,6 +66,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     private String wizardACSD;
     private boolean initialized = false;
     private boolean showMakefileTextField;
+    private boolean finishPanel = true;
 
     /** Create the wizard panel descriptor. */
     public PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
@@ -94,7 +93,7 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
 
     @Override
     public HelpCtx getHelp() {
-        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
+        if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
             return new HelpCtx("NewAppWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_DYNAMIC_LIB) {
             return new HelpCtx("NewDynamicLibWizard"); // NOI18N
@@ -102,6 +101,8 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
             return new HelpCtx("NewStaticLibWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
             return new HelpCtx("NewMakeWizardP1"); // NOI18N
+        } else if (type == NewMakeProjectWizardIterator.TYPE_BINARY) {
+            return new HelpCtx("NewBinaryWizard"); // NOI18N
         } else {
             return new HelpCtx("CreatingCorC++Project"); // NOI18N
         }
@@ -128,13 +129,13 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
     }
 
     protected final void fireChangeEvent() {
-        Iterator it;
+        Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
+            (it.next()).stateChanged(ev);
         }
     }
 
@@ -161,8 +162,16 @@ public class PanelConfigureProject implements WizardDescriptor.Panel<WizardDescr
         initialized = false;
     }
 
+    public void setFinishPanel(boolean finishPanel) {
+        this.finishPanel = finishPanel;
+    }
+
+    WizardDescriptor getWizardDescriptor(){
+        return wizardDescriptor;
+    }
+
     @Override
     public boolean isFinishPanel() {
-        return true;
+        return finishPanel;
     }
 }

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.core.syntax.completion.api;
 import java.awt.Color;
 
 import javax.swing.ImageIcon;
+import org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.Type;
 
 import org.openide.util.ImageUtilities;
 
@@ -53,7 +54,7 @@ import org.openide.util.ImageUtilities;
  */
 public class ElCompletionItem {
 
-    public static JspCompletionItem createELImplicitObject(String name, int substitutionOffset, int type) {
+    public static JspCompletionItem createELImplicitObject(String name, int substitutionOffset, Type type) {
         return new ELImplicitObject(name, substitutionOffset, type);
     }
 
@@ -75,9 +76,9 @@ public class ElCompletionItem {
 
         private static final String OBJECT_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/class_16.png"; //NOI18N
         private static final String MAP_PATH = "org/netbeans/modules/web/core/syntax/completion/resources/map_16.png";      //NOI18N
-        int type;
+        Type type;
 
-        ELImplicitObject(String text, int substitutionOffset, int type) {
+        ELImplicitObject(String text, int substitutionOffset, org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.Type type) {
             super(text, substitutionOffset);
             this.type = type;
         }
@@ -91,10 +92,10 @@ public class ElCompletionItem {
         protected ImageIcon getIcon() {
             ImageIcon icon = null;
             switch (type) {
-                case org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.OBJECT_TYPE:
+                case OBJECT_TYPE:
                     icon = ImageUtilities.loadImageIcon(OBJECT_PATH, false);
                     break;
-                case org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE:
+                case MAP_TYPE:
                     icon = ImageUtilities.loadImageIcon(MAP_PATH, false);
                     break;
             }
@@ -109,7 +110,7 @@ public class ElCompletionItem {
         @Override
         public String getItemText() {
             String result = text;
-            if (type == org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE) {
+            if (type == Type.MAP_TYPE) {
                 result = result + "[]";
             }
             return result;    //NOI18N
@@ -117,7 +118,7 @@ public class ElCompletionItem {
 
         @Override
         protected int getMoveBackLength() {
-            return type == org.netbeans.modules.web.core.syntax.spi.ELImplicitObject.MAP_TYPE ? 1 : 0;
+            return type == Type.MAP_TYPE ? 1 : 0;
         }
     }
 
@@ -139,6 +140,10 @@ public class ElCompletionItem {
          * Collection
          */
         private void parseType(String t) {
+            if (t == null) {
+                return;
+            }
+
             int ltIndex = t.indexOf("<");
 
             String mainType = ltIndex == -1 ? t : t.substring(0, ltIndex);

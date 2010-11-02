@@ -44,18 +44,27 @@
 
 package org.netbeans.modules.progress.ui;
 
+import javax.swing.JMenuItem;
 import org.netbeans.modules.progress.spi.Controller;
 import javax.swing.AbstractAction;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListDataListener;
 import org.netbeans.modules.progress.spi.ProgressUIWorkerWithModel;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author mkleint
  */
-public class ProgressListAction extends AbstractAction implements ListDataListener, Runnable {
+@ActionID(id = "org.netbeans.modules.progress.ui.ProgressListAction", category = "Window")
+@ActionRegistration(displayName = "#CTL_ProcessListAction")
+@ActionReference(position = 1900, name = "ProgressListAction", path = "Menu/Window")
+public class ProgressListAction extends AbstractAction implements ListDataListener, Runnable, Presenter.Menu {
 
     /** Creates a new instance of ProcessListAction */
     public ProgressListAction() {
@@ -93,6 +102,13 @@ public class ProgressListAction extends AbstractAction implements ListDataListen
 
     public void intervalRemoved(javax.swing.event.ListDataEvent listDataEvent) {
         updateEnabled();
+    }
+
+    // XXX could remove impl of this interface; then it would be "always enabled" (until first selected, then enablement would update)
+    public @Override JMenuItem getMenuPresenter() {
+        JMenuItem presenter = new JMenuItem();
+        Actions.connect(presenter, this, false);
+        return presenter;
     }
     
     

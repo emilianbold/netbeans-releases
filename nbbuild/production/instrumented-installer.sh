@@ -40,7 +40,7 @@ BASENAME=${BUILD_DESC}-${BUILD_NUMBER}
 export DIST=${WORKSPACE}/dist/zip
 mkdir -p ${DIST}
 #cd ${NB_EXTRACTED}
-#expat='extra|testtools'
+#expat='extra'
 #for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy webcommon websvccommon; do
 #    find * | egrep "^$c[0-9]*/" | zip -q $DIST/$BASENAME-$c.zip -@ || exit
 #    expat="$expat|$c[0-9]*"

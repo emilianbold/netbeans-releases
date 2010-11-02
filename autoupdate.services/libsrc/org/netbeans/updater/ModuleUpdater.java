@@ -49,6 +49,7 @@ import java.util.*;
 import java.util.jar.*;
 
 //import org.openide.util.NbBundle;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 /** Class used by autoupdate module for the work with module files and
@@ -144,7 +145,7 @@ public final class ModuleUpdater extends Thread {
             }
 
         } catch (Exception x) {
-            x.printStackTrace ();
+            XMLUtil.LOG.log(Level.SEVERE, "Error while upgrading", x);
         } finally {
             if (UpdaterFrame.isFromIDE ()) {
                 UpdaterFrame.getUpdaterFrame ().runningFinished ();
@@ -233,7 +234,7 @@ public final class ModuleUpdater extends Thread {
             
             cluster = nbm.getParentFile ().getParentFile ().getParentFile ();
         } catch (NullPointerException npe) {
-            System.out.println("Error: getCluster (" + nbm + ") throws " + npe);
+            XMLUtil.LOG.log(Level.SEVERE, "getCluster (" + nbm + ") throws an exception", npe);
         }
         return cluster;
     }
@@ -287,7 +288,7 @@ public final class ModuleUpdater extends Thread {
                 }
                 UpdaterFrame.setProgressValue (i ++);
             } catch (java.io.IOException e) {
-                System.out.println ("Error: Counting size of entries in " + f + " throws " + e);
+                XMLUtil.LOG.log(Level.WARNING, "Cannot count size of entries in " + f, e);
             } finally {
                 try {
                     if (jarFile != null) {
@@ -295,7 +296,7 @@ public final class ModuleUpdater extends Thread {
                     }
                 } catch (java.io.IOException e) {
                     // We can't close the file do nothing
-                    System.out.println ("Error: Closing " + jarFile + " input stream throws " + e); // NOI18N
+                    XMLUtil.LOG.log(Level.WARNING, "While closing " + jarFile + " input stream", e); // NOI18N
                 }
             }
         }
@@ -338,7 +339,7 @@ public final class ModuleUpdater extends Thread {
                 } catch (RuntimeException re) {
                     if (nbm.exists ()) {
                         if (! nbm.delete ()) {
-                            System.out.println("Error: File " + nbm + " cannot be deleted. Propably file lock on the file."); // NOI18N
+                            XMLUtil.LOG.log(Level.WARNING, "File " + nbm + " cannot be deleted. Propably file lock on the file."); // NOI18N
                             assert false : "Error: File " + nbm + " cannot be deleted. Propably file lock on the file.";
                             nbm.deleteOnExit ();
                         }
@@ -374,23 +375,27 @@ public final class ModuleUpdater extends Thread {
                         //OSGi bundle
                         File osgiJar = nbm;
                         
+                        Long touch;
                         File destFile = new File(cluster, "modules/" + osgiJar.getName());
                         if (destFile.exists()) {
                             File bckFile = new File(getBackupDirectory(cluster), osgiJar.getName());
                             bckFile.getParentFile().mkdirs();
-                            // System.out.println("Backing up" ); // NOI18N
+                            // XMLUtil.LOG.info("Backing up" ); // NOI18N
                             copyStreams(new FileInputStream(destFile), new FileOutputStream(bckFile), -1);
                             if (!destFile.delete() && isWindows()) {
                                 trickyDeleteOnWindows(destFile);
                             }
+                            touch = destFile.lastModified();
                         } else {
                             destFile.getParentFile().mkdirs();
+                            touch = null;
                         }
 
                         bytesRead = copyStreams(new FileInputStream(osgiJar), new FileOutputStream(destFile), bytesRead);
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
+                        XMLUtil.touch(destFile, touch);
 
                         UpdaterFrame.setProgressValue(bytesRead);
                         modtrack.setOSGi(true);
@@ -411,15 +416,18 @@ public final class ModuleUpdater extends Thread {
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                 // path without netbeans prefix
                                 File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
+                                Long touch;
                                 if ( destFile.exists() ) {
+                                    touch = destFile.lastModified();
                                     File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                     bckFile.getParentFile ().mkdirs ();
-                                    // System.out.println("Backing up" ); // NOI18N
+                                    // XMLUtil.LOG.info("Backing up" ); // NOI18N
                                     copyStreams( new FileInputStream( destFile ), new FileOutputStream( bckFile ), -1 );
                                     if (!destFile.delete() && isWindows()) {
                                         trickyDeleteOnWindows(destFile);
                                     }
                                 } else {
+                                    touch = null;
                                     destFile.getParentFile ().mkdirs ();
                                 }
                                 
@@ -427,15 +435,18 @@ public final class ModuleUpdater extends Thread {
                                 if(executableFiles.contains(pathTo)) {
                                     filesToChmod.add(destFile);
                                 }
+                                XMLUtil.touch(destFile, touch);
                                 long crc = entry.getCrc();
                                 if(pathTo.endsWith(".jar.pack.gz") &&
                                         jarFile.getEntry(entry.getName().substring(0, entry.getName().lastIndexOf(".pack.gz")))==null) {
                                      //check if file.jar.pack.gz does not exit for file.jar - then unpack current .pack.gz file
                                     File unpacked = new File(destFile.getParentFile(), destFile.getName().substring(0, destFile.getName().lastIndexOf(".pack.gz")));
+                                    Long touchUnpacked = unpacked.exists() ? unpacked.lastModified() : null;
                                     unpack200(destFile, unpacked);
                                     destFile.delete();
                                     pathTo = pathTo.substring(0, pathTo.length() - ".pack.gz".length());
                                     crc = UpdateTracking.getFileCRC(unpacked);
+                                    XMLUtil.touch(unpacked, touchUnpacked);
                                 }
                                 if ( mu.isL10n() ) {
                                     version.addL10NFileWithCrc( pathTo, Long.toString(crc), mu.getSpecification_version());
@@ -456,6 +467,7 @@ public final class ModuleUpdater extends Thread {
                             destFile.getParentFile ().mkdirs ();
                             hasMainClass = true;
                             bytesRead = copyStreams( jarFile.getInputStream( entry ), new FileOutputStream( destFile ), bytesRead );
+                            XMLUtil.touch(destFile, null);
                             UpdaterFrame.setProgressValue( bytesRead );
                         }
                     }
@@ -476,7 +488,7 @@ public final class ModuleUpdater extends Thread {
                 }
                 catch ( java.io.IOException e ) {
                     // Ignore non readable files
-                    e.printStackTrace ();
+                    XMLUtil.LOG.log(Level.INFO, "Ignore non-readable files ", e);
                 }
                 finally {
                     try {
@@ -485,12 +497,12 @@ public final class ModuleUpdater extends Thread {
                     }
                     catch ( java.io.IOException e ) {
                         // We can't close the file do nothing
-                        // System.out.println("Can't close : " + e ); // NOI18N
+                        // XMLUtil.LOG.info("Can't close : " + e ); // NOI18N
                     }
-                    //System.out.println("Dleting :" + nbmFiles[i].getName() + ":" + nbmFiles[i].delete() ); // NOI18N
+                    //XMLUtil.LOG.info("Dleting :" + nbmFiles[i].getName() + ":" + nbmFiles[i].delete() ); // NOI18N
 
                     if (! nbm.delete ()) {
-                        System.out.println("Error: Cannot delete " + nbm); // NOI18N
+                        XMLUtil.LOG.log(Level.WARNING, "Error: Cannot delete {0}", nbm); // NOI18N
                         nbm.deleteOnExit ();
                     }
                 }
@@ -536,9 +548,9 @@ public final class ModuleUpdater extends Thread {
             result = process.waitFor();
             process.destroy();
         } catch (IOException e) {
-            e.printStackTrace();
+            XMLUtil.LOG.log(Level.WARNING, null, e);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            XMLUtil.LOG.log(Level.WARNING, null, e);
         }
         return result == 0;
     }
@@ -556,7 +568,7 @@ public final class ModuleUpdater extends Thread {
                 }
                 reader.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                XMLUtil.LOG.log(Level.WARNING, null, e);
             } finally {
                 if (reader != null) {
                     try {
@@ -616,17 +628,17 @@ public final class ModuleUpdater extends Thread {
                         do {
                             vystup = reader.readLine();
                             if (vystup!=null)
-                                System.out.println(vystup);
+                                XMLUtil.LOG.info(vystup);
                         } while (vystup != null);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        XMLUtil.LOG.log(Level.INFO, null, e);
                   }
                 }
             }.start();
             int x=proces.waitFor();
         }
         catch (Exception e){
-          e.printStackTrace();
+            XMLUtil.LOG.log(Level.INFO, null, e);
         }
     }
     
@@ -735,7 +747,7 @@ public final class ModuleUpdater extends Thread {
                 deleteDir( files[j] );
             }
             if (! files[j].delete()) {
-                    System.out.println("Error: Cannot delete " + files [j]); //NOI18N
+                    XMLUtil.LOG.log(Level.WARNING, "Cannot delete {0}", files [j]); //NOI18N
                     assert false : "Cannot delete " + files [j];
             }            
         }

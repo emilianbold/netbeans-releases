@@ -44,10 +44,10 @@
 
 package org.netbeans.modules.apisupport.project;
 
-import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -76,6 +76,7 @@ import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.swing.text.PlainDocument;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -1136,37 +1137,34 @@ public final class CreatedModifiedFiles {
         return new PackageInfo(project, packageName, annotations);
     }
     private static class PackageInfo extends AbstractOperation {
-        private final String packageName;
         private final Map<String,Map<String,Object>> annotations;
-        private final String srcFilePath;
+        private final String srcRootPath, folderRelPath, srcRelPath;
         PackageInfo(Project project, String packageName, Map<String,Map<String,Object>> annotations) {
             super(project);
-            this.packageName = packageName;
             this.annotations = annotations;
-            srcFilePath = getModuleInfo().getResourceDirectoryPath(false) + "/" + packageName.replace('.', '/') + "/package-info.java";
-            addCreatedOrModifiedPath(srcFilePath, true);
+            srcRootPath = getModuleInfo().getResourceDirectoryPath(false);
+            folderRelPath = packageName.replace('.', '/');
+            srcRelPath = folderRelPath + "/package-info.java"; // NOI18N
+            addCreatedOrModifiedPath(srcRootPath + '/' + srcRelPath, true);
         }
-        public void run() throws IOException {
+        public @Override void run() throws IOException {
             final FileObject top = getProject().getProjectDirectory();
             top.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileObject srcFile = top.getFileObject(srcFilePath);
-                    final Charset encoding = FileEncodingQuery.getEncoding(srcFile != null ? srcFile : top);
+                public @Override void run() throws IOException {
+                    FileObject srcRoot = FileUtil.createFolder(top, srcRootPath);
+                    FileObject srcFile = srcRoot.getFileObject(srcRelPath);
                     if (srcFile == null) {
-                        srcFile = FileUtil.createData(top, srcFilePath);
-                        OutputStream os = srcFile.getOutputStream();
-                        try {
-                            Writer w = new OutputStreamWriter(os, encoding);
-                            w.write("package " + packageName + ";\n");
-                            w.close();
-                        } finally {
-                            os.close();
-                        }
+                        // Cf. #119887; any better way to add license header? Otherwise could use:
+                        // nue = make.CompilationUnit(anns, srcRoot, srcRelPath, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList());
+                        srcFile = DataObject.find(FileUtil.getConfigFile("Templates/Classes/package-info.java")).createFromTemplate(DataFolder.findFolder(FileUtil.createFolder(srcRoot, folderRelPath))).getPrimaryFile(); // NOI18N
                     }
-                    final FileObject _srcFile = srcFile;
                     if (!annotations.isEmpty()) {
-                        JavaSource.forFileObject(srcFile).runModificationTask(new Task<WorkingCopy>() {
-                            public void run(WorkingCopy wc) throws Exception {
+                        JavaSource source = JavaSource.forFileObject(srcFile);
+                        if (source == null) {
+                            throw new IOException("unparsable: " + srcFile);
+                        }
+                        source.runModificationTask(new Task<WorkingCopy>() {
+                            public @Override void run(WorkingCopy wc) throws Exception {
                                 wc.toPhase(JavaSource.Phase.RESOLVED);
                                 CompilationUnitTree old = wc.getCompilationUnit();
                                 CompilationUnitTree nue = old;
@@ -1181,25 +1179,16 @@ public final class CreatedModifiedFiles {
                                     for (Map.Entry<String,Object> attr : ann.getValue().entrySet()) {
                                         arguments.add(make.Assignment(make.Identifier(attr.getKey()), make.Literal(attr.getValue())));
                                     }
-                                    AnnotationTree annTree = make.Annotation(annotationTypeTree, arguments);
-                                    // XXX #157760 should give some way to attach annTree to nue; in the meantime:
-                                    String text = _srcFile.asText(encoding.name());
-                                    text = text.replaceFirst("(?m)^(package )", annTree + "\n$1");
-                                    OutputStream os = _srcFile.getOutputStream();
-                                    try {
-                                        Writer w = new OutputStreamWriter(os, encoding);
-                                        w.write(text);
-                                        w.close();
-                                    } finally {
-                                        os.close();
-                                    }
+                                    nue = make.addPackageAnnotation(nue, make.Annotation(annotationTypeTree, arguments));
                                 }
-                                /* XXX #157760:
                                 nue = GeneratorUtilities.get(wc).importFQNs(nue);
                                 wc.rewrite(old, nue);
-                                 */
                             }
-                        })/*.commit()*/;
+                        }).commit();
+                        SaveCookie sc = DataObject.find(srcFile).getLookup().lookup(SaveCookie.class);
+                        if (sc != null) {
+                            sc.save();
+                        }
                     }
                 }
             });

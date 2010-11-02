@@ -428,6 +428,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * @param classes a map from class names to be fixed to byte[]
      */
     public void fixClasses (Map<String, byte[]> classes) {
+        PropertyChangeEvent evt = null;
         accessLock.writeLock().lock();
         try {
             // 1) redefine classes
@@ -476,7 +477,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     if (frame.isObsolete () && ((CallStackFrameImpl) frame).canPop()) {
                         frame.popFrame ();
                         setState (STATE_RUNNING);
-                        updateCurrentCallStackFrame (t);
+                        evt = updateCurrentCallStackFrameNoFire (t);
                         setState (STATE_STOPPED);
                     }
                 } catch (InvalidStackFrameException ex) {
@@ -485,6 +486,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
         } finally {
             accessLock.writeLock().unlock();
+        }
+        if (evt != null) {
+            firePropertyChange(evt);
         }
     }
 
@@ -611,13 +615,14 @@ public class JPDADebuggerImpl extends JPDADebugger {
     // internal interface ......................................................
 
     public void popFrames (ThreadReference thread, StackFrame frame) {
+        PropertyChangeEvent evt = null;
         accessLock.readLock().lock();
         try {
             JPDAThreadImpl threadImpl = getThread(thread);
             setState (STATE_RUNNING);
             try {
                 threadImpl.popFrames(frame);
-                updateCurrentCallStackFrame (threadImpl);
+                evt = updateCurrentCallStackFrameNoFire(threadImpl);
             } catch (IncompatibleThreadStateException ex) {
                 ErrorManager.getDefault().notify(ex);
             } finally {
@@ -625,6 +630,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
             }
         } finally {
             accessLock.readLock().unlock();
+        }
+        if (evt != null) {
+            firePropertyChange(evt);
         }
     }
 
@@ -1898,16 +1906,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
         return thread;
     }
 
-    private void updateCurrentCallStackFrame (JPDAThread thread) {
+    private PropertyChangeEvent updateCurrentCallStackFrameNoFire (JPDAThread thread) {
+        CallStackFrame oldSF;
+        CallStackFrame newSF;
         if ((thread == null) || (thread.getStackDepth () < 1)) {
-            setCurrentCallStackFrame (null);
+            newSF = null;
         } else {
             try {
-                setCurrentCallStackFrame (thread.getCallStack (0, 1) [0]);
+                newSF = thread.getCallStack(0, 1)[0];
             } catch (AbsentInformationException e) {
-                setCurrentCallStackFrame (null);
+                newSF = null;
             }
         }
+        oldSF = setCurrentCallStackFrameNoFire(newSF);
+        if (oldSF == newSF) return null;
+        else return new PropertyChangeEvent(this, PROP_CURRENT_CALL_STACK_FRAME,
+                                            oldSF, newSF);
     }
 
     private CallStackFrame getTopFrame(JPDAThread thread) {
@@ -2015,6 +2029,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
     }*/
 
     public List<JPDAClassType> getAllClasses() {
+        //assert !java.awt.EventQueue.isDispatchThread() : "All classes retrieving in AWT Event Queue!";
         List<ReferenceType> classes;
         synchronized (virtualMachineLock) {
             if (virtualMachine == null) {
@@ -2040,6 +2055,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
 
     @Override
     public long[] getInstanceCounts(List<JPDAClassType> classTypes) throws UnsupportedOperationException {
+            //assert !java.awt.EventQueue.isDispatchThread() : "Instance counts retrieving in AWT Event Queue!";
             VirtualMachine vm;
             synchronized (virtualMachineLock) {
                 vm = virtualMachine;

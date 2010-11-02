@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -62,9 +63,17 @@ public class ItemNodeFactory {
 
         PredefinedToolKind tool = context.getItemTool();
 
+        boolean procFile = false;
+
         int count = 1;
         if (tool != PredefinedToolKind.UnknownTool) {
             count++;
+            if(context.getItem() != null) {
+                if(ItemConfiguration.isProCFile(context.getItem().getItem(), tool)) {
+                    procFile = true;
+                    count++;
+                }
+            }
         }
         descriptions = new CustomizerNode[count];
         int index = 0;
@@ -72,8 +81,14 @@ public class ItemNodeFactory {
         if (tool != PredefinedToolKind.UnknownTool) {
             if (tool == PredefinedToolKind.CCompiler) {
                 descriptions[index++] = createCCompilerDescription(lookup);
+                if(procFile) {
+                    descriptions[index++] = createCustomBuildItemDescription(lookup);
+                }
             } else if (tool == PredefinedToolKind.CCCompiler) {
                 descriptions[index++] = createCCCompilerDescription(lookup);
+                if(procFile) {
+                    descriptions[index++] = createCustomBuildItemDescription(lookup);
+                }
             } else if (tool == PredefinedToolKind.FortranCompiler) {
                 descriptions[index++] = createFortranCompilerDescription(lookup);
             } else if (tool == PredefinedToolKind.Assembler) {

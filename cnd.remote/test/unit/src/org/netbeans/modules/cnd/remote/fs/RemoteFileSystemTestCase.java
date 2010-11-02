@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.fs;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,9 +52,13 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicLong;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.openide.filesystems.FileObject;
@@ -71,6 +76,8 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
     }
 
     @ForAllEnvironments
+    // Disabled, see IZ 190453
+    @RandomlyFails
     public void testSyncDirStruct() throws Exception {
         sleep(200); // FIXUP: a workaround for a very instable test failure
         String dirName = "/usr/include";
@@ -111,22 +118,24 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         removeDirectory(localDir);
     }
 
-    //@ForAllEnvironments
+    @ForAllEnvironments
     // Disabled, see IZ 190453
-    public void DISABLEDtestRemoteStdioH() throws Exception {
+    @RandomlyFails
+    public void testRemoteStdioH() throws Exception {
         String absPath = "/usr/include/stdio.h";
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         CharSequence content = readFile(absPath);
         CharSequence text2search = "printf";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 CharSequenceUtils.indexOf(content, text2search) >= 0);
     }
 
-    //@ForAllEnvironments
+    @ForAllEnvironments
     // Disabled, see IZ 190453
-    public void DISABLEDtestMultipleRead() throws Exception {
+    @RandomlyFails
+    public void testMultipleRead() throws Exception {
         removeDirectory(fs.getCache());
         final String absPath = "/usr/include/errno.h";
         long firstTime = -1;
@@ -134,7 +143,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             long time = System.currentTimeMillis();
             FileObject fo = rootFO.getFileObject(absPath);
             assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-            assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+            assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
             InputStream is = fo.getInputStream();
             assertNotNull("Got null input stream for " + getFileName(execEnv, absPath), is);
             is.close();
@@ -231,9 +240,36 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
         String path = "/dev/qwe/asd/zxc";
         FileObject fo = rootFO.getFileObject(path);
         assertTrue("File " + getFileName(execEnv, path) + " does not exist, but is reported as existent",
-                fo == null || fo.isVirtual());
+                fo == null || !fo.isValid());
     }
 
+    @ForAllEnvironments
+    public void testWrite() throws Exception {
+        String tempFile = null;
+        try {
+            FileObject fo;
+            String stdio_h = "/usr/include/stdio.h";
+            fo = rootFO.getFileObject(stdio_h);
+            assertNotNull("null file object for " + stdio_h, fo);
+            assertFalse("FileObject should NOT be writable: " + fo.getPath(), fo.canWrite());
+            ExitStatus res = ProcessUtils.execute(execEnv, "mktemp");
+            assertEquals("mktemp failed", 0, res.exitCode);
+            tempFile = res.output;
+            fo = rootFO.getFileObject(tempFile);
+            assertTrue("FileObject should be writable: " + fo.getPath(), fo.canWrite());
+            String content = "a quick brown fox...";
+            writeFile(fo, content);
+            CharSequence readContent = readFile(fo);
+            assertEquals("File content differ", content.toString(), readContent.toString());
+            WritingQueue.getInstance(execEnv).waitFinished(null);
+            readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
+            assertEquals("File content differ", content.toString(), readContent.toString());
+        } finally {
+            if (tempFile != null) {
+                CommonTasksSupport.rmFile(execEnv, tempFile, new OutputStreamWriter(System.err));
+            }
+        }
+    }
     
     public static Test suite() {
         return new RemoteDevelopmentTest(RemoteFileSystemTestCase.class);

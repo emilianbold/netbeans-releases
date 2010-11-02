@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.remote.fs;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
+import java.io.OutputStreamWriter;
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 
@@ -81,12 +83,24 @@ public class RemoteFileTestBase extends RemoteTestBase {
     protected CharSequence readFile(String absPath) throws Exception {
         FileObject fo = rootFO.getFileObject(absPath);
         assertNotNull("Null file object for " + getFileName(execEnv, absPath), fo);
-        assertFalse("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isVirtual());
+        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
         return readFile(fo);
     }
 
+    protected void writeFile(FileObject fo, CharSequence content) throws Exception {
+        BufferedWriter bw = null;
+        try {
+            bw = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream()));
+            bw.append(content);
+        } finally {
+            if (bw != null) {
+                bw.close();
+            }
+        }
+    }
+
     protected CharSequence readFile(FileObject fo) throws Exception {
-        assertFalse("File " +  fo.getPath() + " does not exist", fo.isVirtual());
+        assertTrue("File " +  fo.getPath() + " does not exist", fo.isValid());
         InputStream is = fo.getInputStream();
         BufferedReader rdr = new BufferedReader(new InputStreamReader(new BufferedInputStream(is)));
         try {

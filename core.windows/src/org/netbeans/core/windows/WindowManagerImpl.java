@@ -1272,7 +1272,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     }
 
     public final void mainWindowPainted () {
-        if (!exclusivesCompleted) {
+        if (!exclusivesCompleted && WindowManagerImpl.getInstance().isVisible()) {
             exclusivesCompleted = true;
             paintedTimer.stop();
 

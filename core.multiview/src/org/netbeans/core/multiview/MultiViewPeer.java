@@ -45,19 +45,29 @@
 package org.netbeans.core.multiview;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.*;
-import java.util.logging.Level;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.undo.CannotRedoException;
@@ -89,6 +99,8 @@ import org.openide.windows.TopComponent;
 public final class MultiViewPeer  {
 
     static final String MULTIVIEW_ID = "MultiView-"; //NOI18N
+
+    private static final String TOOLBAR_VISIBLE_PROP = /* org.netbeans.api.editor.settings.SimpleValueNames.TOOLBAR_VISIBLE_PROP */ "toolbarVisible"; // NOI18N
     
     MultiViewModel model;
     TabsComponent tabs;
@@ -99,14 +111,24 @@ public final class MultiViewPeer  {
     private ActionRequestObserverFactory factory;
     private MultiViewActionMap delegatingMap;
     private boolean activated = false;
-    private Object editorSettingsListener;
+    private final PreferenceChangeListener editorSettingsListener = new PreferenceChangeListener() {
+        public @Override void preferenceChange(PreferenceChangeEvent evt) {
+            if (evt.getKey().equals(TOOLBAR_VISIBLE_PROP)) {
+                EventQueue.invokeLater(new Runnable() {
+                    public @Override void run() {
+                        tabs.setToolbarBarVisible(isToolbarVisible());
+                    }
+                });
+            }
+        }
+    };
+    private final Preferences editorSettingsPreferences = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
     private DelegateUndoRedo delegateUndoRedo;
     
     public MultiViewPeer(TopComponent pr, ActionRequestObserverFactory fact) {
         selListener = new SelectionListener();
         peer = pr;
         factory = fact;
-        editorSettingsListener = createEditorListener();
         delegateUndoRedo = new DelegateUndoRedo();
     }
     
@@ -207,16 +229,12 @@ public final class MultiViewPeer  {
         jc.setOpaque(false);
         tabs.setInnerToolBar(jc);
         tabs.setToolbarBarVisible(isToolbarVisible());
-        if (editorSettingsListener != null) {
-            addEditorListener(editorSettingsListener);
-        }
+        editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);
     }
     
     void peerComponentHidden() {
         model.getActiveElement().componentHidden();
-        if (editorSettingsListener != null) {
-            removeEditorListener(editorSettingsListener);
-        }
+        editorSettingsPreferences.removePreferenceChangeListener(editorSettingsListener);
     }
     
     void peerComponentDeactivated() {
@@ -577,69 +595,7 @@ public final class MultiViewPeer  {
     }
     
     
-//-------------------------------------------------------------------------------
-//---------------------------------------------------------------------------
-//--------------- editor reflection stuff to retrieve the toolbar visibility setting
-//----------------------------------------------------------------------------------    
-    void addEditorListener(Object listener) {
-        try {
-            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class settingsClass = Class.forName(
-                    "org.netbeans.editor.Settings", false, loader); //NOI18N
-            Class listenerClass = Class.forName(
-                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
-            Method addSettingsListener = settingsClass.getMethod(
-                    "addSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
-                    addSettingsListener.invoke(settingsClass, new Object[] { listener });
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-    
-    void removeEditorListener(Object listener) {
-        try {
-            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class settingsClass = Class.forName(
-                    "org.netbeans.editor.Settings", false, loader); //NOI18N
-            Class listenerClass = Class.forName(
-                    "org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
-            Method addSettingsListener = settingsClass.getMethod(
-                    "removeSettingsChangeListener",new Class[ ] { listenerClass });//NOI18N
-                    addSettingsListener.invoke(settingsClass, new Object[] { listener });
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
-    }
-    
-    Object createEditorListener() {
-        try {
-            final ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
-            Class listenerClass;
-            try {
-                listenerClass = Class.forName("org.netbeans.editor.SettingsChangeListener", false, loader); //NOI18N
-            } catch (ClassNotFoundException  ex) {
-                Logger.getLogger(MultiViewPeer.class.getName()).log(Level.CONFIG, "Disabling interaction with editor/lib", ex); // NOI18N
-                return null;
-            }
-            InvocationHandler ih =  new InvocationHandler() {
-                public Object invoke(Object proxy, Method method, Object[] args) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            tabs.setToolbarBarVisible(isToolbarVisible());
-                        }
-                    });
-                    return null;
-                }
-            };
-            return Proxy.newProxyInstance(loader,
-                    new Class[] { listenerClass }, ih);
-        } catch (Throwable t) {
-            Logger.getLogger(MultiViewPeer.class.getName()).log(Level.WARNING, null, t); 
-        }
-        return null;
-    }
-    
-    boolean isToolbarVisible() {
+    private boolean isToolbarVisible() {
         //TODO need some way to restrict the validity of this swicth only to multiviews that contain
         // sources in some form..
         // Only permit hiding of the editor toolbar in case there's just the editor component
@@ -654,10 +610,10 @@ public final class MultiViewPeer  {
         } else {
             return true;
         }
-        Preferences prefs = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
-        if( null != prefs )
-            return prefs.getBoolean("toolbarVisible", true); //NOI18N
-        return true;
+        if (editorSettingsPreferences == null) {
+            return true;
+        }
+        return editorSettingsPreferences.getBoolean(TOOLBAR_VISIBLE_PROP, true);
     }
 
     

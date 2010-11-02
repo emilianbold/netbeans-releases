@@ -58,6 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -84,9 +85,13 @@ import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
+import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -97,12 +102,13 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
+public final class MakeConfigurationDescriptor extends ConfigurationDescriptor implements ChangeListener {
 
     public static final String EXTERNAL_FILES_FOLDER = "ExternalFiles"; // NOI18N
     public static final String TEST_FILES_FOLDER = "TestFiles"; // NOI18N
@@ -113,6 +119,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public static final String ICON = "org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif"; // NOI18N
     public static final Icon MAKEFILE_ICON = ImageUtilities.loadImageIcon(ICON, false); // NOI18N
     public static final String DEFAULT_IGNORE_FOLDERS_PATTERN = "^(nbproject|build|test|tests)$"; // NOI18N
+    public static final String DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT = "^(nbproject)$"; // NOI18N
     public static final String DEFAULT_NO_IGNORE_FOLDERS_PATTERN = "^$"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
@@ -231,7 +238,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 // in fact ProjectManager should solve such problems in more general way
                 // because even for java it's possible to open the same project from two different
                 // locations /set/ide/mars/... and /net/endif/export/home1/deimos/dev/...
-                FileObject fo = FileUtil.toFileObject(new File(location));
+                FileObject fo = CndFileUtils.toFileObject(location);
                 project = ProjectManager.getDefault().findProject(fo);
             } catch (Exception e) {
                 // Should not happen
@@ -258,7 +265,8 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         initTask = null;
     }
 
-    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath) {
+    public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders, 
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -268,7 +276,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         externalFileItems = rootFolder.addNewFolder(EXTERNAL_FILES_FOLDER, getString("ImportantFilesTxt"), false, Folder.Kind.IMPORTANT_FILES_FOLDER);
 //        if (sourceFileFolders != null)
 //            setExternalFileItems(sourceFileFolders); // From makefile wrapper wizard
-        externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+        if (!addGeneratedMakefileToLogicalView) {
+            externalFileItems.addItem(new Item(getProjectMakefileName())); // NOI18N
+        }
         if (importantItems != null) {
             while (importantItems.hasNext()) {
                 externalFileItems.addItem(new Item(importantItems.next()));
@@ -304,6 +314,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void setProjectMakefileName(String projectMakefileName) {
+        CndUtils.assertNotNull(projectMakefileName, "project makefile name should not be null"); //NOI18N
         this.projectMakefileName = projectMakefileName;
     }
 
@@ -363,6 +374,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public void setBaseDirFileObject(FileObject baseDirFO) {
+        CndUtils.assertNotNull(baseDirFO, "null base dir file object"); //NOI18N
         this.baseDirFO = baseDirFO;
     }
 
@@ -433,23 +445,29 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     }
 
     public Item findItemByFile(File file) {
+        return findItemByPathImpl(file.getPath());
+    }
+
+    private Item findItemByPathImpl(String path) {
         Collection<Item> coll = projectItems.values();
         Iterator<Item> it = coll.iterator();
         Item canonicalItem = null;
         while (it.hasNext()) {
             Item item = it.next();
-            File itemFile = item.getNormalizedFile();
-            if (itemFile == file || itemFile.getPath().equals(file.getPath())) {
+            if (item.getNormalizedPath().equals(path)) {
                 return item;
             }
             if (canonicalItem == null) {
-                File canonicalItemFile = item.getCanonicalFile();
-                if (canonicalItemFile == file || canonicalItemFile.getPath().equals(file.getPath())) {
+                if (item.getCanonicalPath().equals(path)) {
                     canonicalItem = item;
                 }
             }
         }
         return canonicalItem;
+    }
+
+    public Item findItemByFileObject(FileObject fileObject) {
+        return findItemByPathImpl(fileObject.getPath());
     }
 
     public Item findProjectItemByPath(String path) {
@@ -627,7 +645,15 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public boolean save(final String extraMessage) {
         SaveRunnable saveRunnable = new SaveRunnable(extraMessage);
         RequestProcessor.Task task = RP.post(saveRunnable);
-        task.waitFinished();
+        if (SwingUtilities.isEventDispatchThread()){
+            ModalMessageDlg.runLongTask(
+            WindowManager.getDefault().getMainWindow(),
+            task, null, null,
+            getString("MakeConfigurationDescriptor.SaveConfigurationTitle"), // NOI18N
+            getString("MakeConfigurationDescriptor.SaveConfigurationText")); // NOI18N
+        } else {
+            task.waitFinished();
+        }
         return saveRunnable.ret;
     }
 
@@ -709,7 +735,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         } // NOI18N
         boolean allOk = true;
         for (int i = 0; i < metadataFiles.size(); i++) {
-            File file = new File(metadataFiles.get(i));
+            File file = CndFileUtils.createLocalFile(metadataFiles.get(i));
             if (!file.exists()) {
                 continue;
             }
@@ -930,9 +956,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1000,9 +1026,9 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             }
             if (addPath) {
                 String usePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+                if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
                     usePath = CndPathUtilitities.normalize(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+                } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
                     usePath = absPath;
@@ -1246,20 +1272,13 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     public Folder addFilesFromRoot(Folder folder, FileObject dir, boolean attachListeners, boolean asDiskFolder, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
         Folder top;
-        top = folder.findFolderByName(dir.getName());
+        top = folder.findFolderByName(dir.getNameExt());
         if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
             folder.addFolder(top, true);
         }
         if (asDiskFolder) {
-            String rootPath;
-            if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                rootPath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, dir.getPath());
-            } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                rootPath = CndPathUtilitities.toRelativePath(baseDirFO, dir.getPath());
-            } else {
-                rootPath = CndPathUtilitities.toAbsolutePath(baseDirFO, dir.getPath());
-            }
+            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalize(rootPath);
             top.setRoot(rootPath);
         }
@@ -1282,12 +1301,12 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
 
     public Folder addFilesFromDir(Folder folder, File dir, boolean attachListeners, boolean setModified) {
         // XXX:fullRemote
-        return addFilesFromDir(folder, FileUtil.toFileObject(dir), attachListeners, setModified, null);
+        return addFilesFromDir(folder, CndFileUtils.toFileObject(dir), attachListeners, setModified, null);
     }
 
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getName(), dir.getName(), true);
+        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true);
         folder.addFolder(top, setModified);
         addFiles(top, dir, null, filesAdded, true, setModified, fileFilter);
         if (getNativeProject() != null) { // once not null, it never becomes null
@@ -1315,7 +1334,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
             if (fileFilter != null && !fileFilter.accept(file)) {
                 continue;
             }
-            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getName())) {
+            if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
             if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
@@ -1335,30 +1354,32 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                     continue;
                 }
                 Folder dirfolder = folder;
-                dirfolder = folder.findFolderByName(file.getName());
+                dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
-                        dirfolder = folder.addNewFolder(file.getName(), file.getName(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getName(), file.getName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
                     }
                 }
                 addFiles(dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
             } else {
-                String filePath;
-                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
-                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, file.getPath());
-                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
-                    filePath = CndPathUtilitities.toRelativePath(baseDirFO, file.getPath());
-                } else {
-                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
-                }
-                Item item = new Item(CndPathUtilitities.normalize(filePath));
+//  All the logic below moved to Item constructor
+//                String filePath;
+//                if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL_OR_ABS) {
+//                    filePath = CndPathUtilitities.toAbsoluteOrRelativePath(baseDirFO, file.getPath());
+//                } else if (MakeProjectOptions.getPathMode() == MakeProjectOptions.REL) {
+//                    filePath = CndPathUtilitities.toRelativePath(baseDirFO, file.getPath());
+//                } else {
+//                    filePath = CndPathUtilitities.toAbsolutePath(baseDirFO, file.getPath());
+//                }
+//                Item item = new Item(CndPathUtilitities.normalize(filePath));
+                Item item = new Item(file, baseDirFO, ProjectSupport.getPathMode(project));
                 if (folder.addItem(item, notify, setModified) != null) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {
-                    handle.progress(filePath);
+                    handle.progress(item.getPath());
                 }
             }
         }

@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Lookup;
@@ -185,4 +186,6 @@ public abstract class RemoteSyncFactory {
     public boolean isPathMappingCustomizable() {
         return false;
     }
+
+    public abstract PathMap getPathMap(ExecutionEnvironment executionEnvironment);
 }

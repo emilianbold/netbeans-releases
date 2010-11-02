@@ -63,7 +63,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -71,9 +70,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractAction;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -88,13 +87,13 @@ import javax.swing.ListModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.type.Models;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -153,6 +152,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         return OpenProjects.getDefault().getOpenProjects().length > 0;
     }
     
+    @Override
     public void actionPerformed(ActionEvent arg0) {
         FileDescriptor[] typeDescriptors = getSelectedFiles();
         if (typeDescriptors != null) {
@@ -165,11 +165,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     // Implementation of content provider --------------------------------------
 
 
+    @Override
     public ListCellRenderer getListCellRenderer( JList list ) {
         return new Renderer( list );
     }
 
 
+    @Override
     public void setListModel( FileSearchPanel panel, String text ) {
         if (openBtn != null) {
             openBtn.setEnabled (false);
@@ -203,7 +205,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
         else if (wildcard != -1) {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
-            text = wildcards2regexp(text);
         }
         else if ((GoToTypeAction.isAllUpper(text) && text.length() > 1) || GoToTypeAction.isCamelCase(text)) {
             nameKind = QuerySupport.Kind.CAMEL_CASE;
@@ -218,16 +219,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             running = new Worker(text , nameKind, panel.getCurrentProject());
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
-                LOGGER.fine( "Worker posted after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );
+                LOGGER.log( Level.FINE, "Worker posted after {0} ms.",  System.currentTimeMillis() - panel.time );
             }
         }
     }
 
+    @Override
     public void closeDialog() {
         dialog.setVisible( false );
         cleanup();
     }
 
+    @Override
     public boolean hasValidContent () {
         return this.openBtn != null && this.openBtn.isEnabled();
     }
@@ -378,11 +381,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             return providers;
         }
     }
-
-    private static String wildcards2regexp(String pattern) {
-        return pattern.replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ).concat(".*"); //NOI18N
-    }
-
+    
     // Private classes ---------------------------------------------------------
 
 
@@ -402,16 +401,30 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             this.searchType = searchType;
             this.currentProject = currentProject;
             this.createTime = System.currentTimeMillis();
-            LOGGER.fine( "Worker for " + text + ", " + searchType + " - created after " + ( System.currentTimeMillis() - panel.time ) + " ms."  );
+            LOGGER.log( Level.FINE, "Worker for {0}, {1} - created after {2} ms.",
+                    new Object[]{
+                        text,
+                        searchType,
+                        System.currentTimeMillis() - panel.time
+            });
        }
 
+        @Override
         public void run() {
 
-            LOGGER.fine( "Worker for " + text + " - started " + ( System.currentTimeMillis() - createTime ) + " ms."  );
-
+            LOGGER.log( Level.FINE, "Worker for {0} - started {1} ms.",
+                    new Object[]{
+                        text,
+                        System.currentTimeMillis() - createTime
+            });
+            
             final List<? extends FileDescriptor> files = getFileNames( text );
             if ( isCanceled ) {
-                LOGGER.fine( "Worker for " + text + " exited after cancel " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",
+                        new Object[]{
+                            text,
+                            System.currentTimeMillis() - createTime
+                });
                 return;
             }
             final ListModel model = Models.fromList(files);
@@ -425,8 +438,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 //            }
 
             if ( !isCanceled && model != null ) {
-                LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",
+                        new Object[]{
+                            text,
+                            System.currentTimeMillis() - createTime
+                });
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         panel.setModel(model);
                         if (openBtn != null && !files.isEmpty()) {
@@ -441,7 +459,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         public void cancel() {
             if ( panel.time != -1 ) {
-                LOGGER.fine( "Worker for text " + text + " canceled after " + ( System.currentTimeMillis() - createTime ) + " ms."  );
+                LOGGER.log( Level.FINE, "Worker for text {0} canceled after {1} ms.",
+                        new Object[]{
+                            text,
+                            System.currentTimeMillis() - createTime
+                });
             }
             FileProvider provider;
             synchronized (this) {
@@ -453,20 +475,33 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             }
         }
 
-        private List<? extends FileDescriptor> getFileNames(String text) {
-            String searchField;
-            switch (searchType) {
-                case CASE_INSENSITIVE_PREFIX:
-                case CASE_INSENSITIVE_REGEXP:
-                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; break;
-                default:
-                    searchField = FileIndexer.FIELD_NAME; break;
-            }
-
+        private List<? extends FileDescriptor> getFileNames(final String text) {
             final Collection<FileObject> roots = new ArrayList<FileObject>(QuerySupport.findRoots((Project) null, null, Collections.<String>emptyList(), Collections.<String>emptyList()));
             try {
+                String searchField;
+                String indexQueryText;
+                switch (searchType) {
+                    case CASE_INSENSITIVE_PREFIX:
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME; 
+                        indexQueryText = text;
+                        break;
+                    case CASE_INSENSITIVE_REGEXP:
+                        searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
+                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
+                        Pattern.compile(indexQueryText);    //Verify the pattern
+                        break;
+                    case REGEXP:                        
+                        searchField = FileIndexer.FIELD_NAME;
+                        indexQueryText = NameMatcherFactory.wildcardsToRegexp(text,true);
+                        Pattern.compile(indexQueryText);    //Verify the pattern
+                        break;
+                    default:
+                        searchField = FileIndexer.FIELD_NAME;
+                        indexQueryText = text;
+                        break;
+                }
                 QuerySupport q = QuerySupport.forRoots(FileIndexer.ID, FileIndexer.VERSION, roots.toArray(new FileObject [roots.size()]));
-                Collection<? extends IndexResult> results = q.query(searchField, text, searchType);
+                Collection<? extends IndexResult> results = q.query(searchField, indexQueryText, searchType);
                 ArrayList<FileDescriptor> files = new ArrayList<FileDescriptor>();
                 for(IndexResult r : results) {
                     FileObject file = r.getFile();
@@ -483,7 +518,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         project);
                     FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
                     files.add(fd);
-                    LOGGER.finer("Found: " + file.getPath() + ", project=" + project + ", currentProject=" + currentProject + ", preferred=" + preferred);
+                    LOGGER.log(Level.FINER, "Found: {0}, project={1}, currentProject={2}, preferred={3}",
+                            new Object[]{
+                                file.getPath(),
+                                project, currentProject, preferred
+                    });
                 }
                 if (isCanceled) {
                     return files;
@@ -560,7 +599,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                         }
                     }
                 }
-                Collections.sort(files, new FDComarator(panel.isPreferedProject(), panel.isCaseSensitive()));
+                Collections.sort(files, 
+                                 new FileComarator(panel.isPreferedProject(),
+                                                   panel.isCaseSensitive()));
                 return files;
             } catch (PatternSyntaxException pse) {
                 return Collections.<FileDescriptor>emptyList();
@@ -568,8 +609,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 LOGGER.log(Level.WARNING, null, ioe);
                 return Collections.<FileDescriptor>emptyList();
             }
-        }
-
+        }                
+        
         private SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
             switch (searchType) {
                 case CAMEL_CASE:
@@ -622,6 +663,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             this.panel = panel;
         }
         
+        @Override
         public void actionPerformed(ActionEvent e) {       
             if ( e.getSource() == openBtn) {
                 panel.setSelectedFile();
@@ -630,60 +672,6 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     //Inner classes
-    public static class FDComarator implements Comparator<FileDescriptor> {
-
-        private boolean usePrefered;
-        private boolean caseSensitive;
-
-        public FDComarator(boolean usePrefered, boolean caseSensitive ) {
-            this.usePrefered = usePrefered;
-            this.caseSensitive = caseSensitive;
-        }
-
-        public int compare(FileDescriptor o1, FileDescriptor o2) {
-
-            // If prefered prefer prefered
-            if ( usePrefered ) {
-                if (FileProviderAccessor.getInstance().isFromCurrentProject(o1) && !FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
-                    return -1;
-                }
-                if (!FileProviderAccessor.getInstance().isFromCurrentProject(o1) && FileProviderAccessor.getInstance().isFromCurrentProject(o2)) {
-                    return 1;
-                }
-            }
-
-            // File name
-            int cmpr = compareStrings( o1.getFileName(), o2.getFileName(), caseSensitive );
-            if ( cmpr != 0 ) {
-                return cmpr;
-            }
-
-            // Project name
-            cmpr = compareStrings( o1.getProjectName(), o2.getProjectName(), caseSensitive );
-            if ( cmpr != 0 ) {
-                return cmpr;
-            }
-
-            // Relative location
-            cmpr = compareStrings( o1.getOwnerPath(), o2.getOwnerPath(), caseSensitive );
-
-            return cmpr;
-
-        }
-
-        private int compareStrings(String s1, String s2, boolean caseSensitive) {
-            if( s1 == null ) {
-                s1 = "";    //NOI18N
-            }
-            if ( s2 == null ) {
-                s2 = "";    //NOI18N
-            }
-
-
-            return caseSensitive ? s1.compareTo( s2 ) : s1.compareToIgnoreCase( s2 );
-        }
-    }
-
     private static class RendererComponent extends JPanel {
 	private FileDescriptor fd;
 
@@ -705,7 +693,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	}
     }
 
-    public static class Renderer extends DefaultListCellRenderer implements ChangeListener {
+    public static class Renderer extends EntitiesListCellRenderer {
 
         public  static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
 
@@ -826,7 +814,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);
                 jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
-                jlPrj.setText(fd.getProjectName());
+                setProjectName(jlPrj, fd.getProjectName());
                 jlPrj.setIcon(fd.getProjectIcon());
                 if ( !isSelected ) {
                     rendererComponent.setBackground( index % 2 == 0 ?

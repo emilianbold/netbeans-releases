@@ -47,7 +47,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,7 +63,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
@@ -70,6 +74,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
@@ -78,6 +83,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 
 
 /** 
@@ -95,6 +101,9 @@ import org.openide.text.NbDocument;
  * @author Tor Norbye
  */
 public final class UiUtils {
+
+    private static final int AWT_TIMEOUT = 1000;
+    private static final int NON_AWT_TIMEOUT = 2000;
 
     public static boolean open(Source source, ElementHandle handle) {
         assert source != null;
@@ -273,7 +282,7 @@ public final class UiUtils {
         return false;
     }
 
-    private static DeclarationLocation getElementLocation(Source source, final ElementHandle handle) {
+    private static DeclarationLocation getElementLocation(final Source source, final ElementHandle handle) {
         if (source.getFileObject() == null) {
             return DeclarationLocation.NONE;
         }
@@ -286,9 +295,12 @@ public final class UiUtils {
         }
 
         final DeclarationLocation[] result = new DeclarationLocation[] { null };
-        try {
-            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singleton(source), new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws ParseException {
+        final AtomicBoolean cancel = new AtomicBoolean();
+        final UserTask t = new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws ParseException {
+                    if (cancel.get()) {
+                        return;
+                    }
                     if (resultIterator.getSnapshot().getMimeType().equals(handle.getMimeType())) {
                         Parser.Result r = resultIterator.getParserResult();
                         if (r instanceof ParserResult) {
@@ -308,16 +320,60 @@ public final class UiUtils {
                         }
                     }
                 }
-            });
-            //#169806: Do not block when parsing is in progress
-            if (!f.isDone()) {
-                f.cancel(true);
-                return new DeclarationLocation(source.getFileObject(), -1);
-            }
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
-        }
+            };
 
-        return result[0] == null ? DeclarationLocation.NONE : result[0];
+            if (IndexingManager.getDefault().isIndexing()) {
+                int timeout = SwingUtilities.isEventDispatchThread() ? AWT_TIMEOUT : NON_AWT_TIMEOUT;
+                Future<Void> f;
+                try {
+                    f = ParserManager.parseWhenScanFinished(Collections.singleton(source), t);
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                    return DeclarationLocation.NONE;
+                }
+
+                try {
+                    f.get(timeout, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    return DeclarationLocation.NONE;
+                } catch (ExecutionException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                    return DeclarationLocation.NONE;
+                } catch (TimeoutException ex) {
+                    f.cancel(true);
+                    LOG.info("Skipping location of element offset within file, Scannig in progress"); // NOI18N
+                    return DeclarationLocation.NONE; //we are opening @ 0 position. Fix #160478
+                }
+
+                if (!f.isDone()) {
+                    f.cancel(true);
+                    LOG.info("Skipping location of element offset within file, Scannig in progress"); // NOI18N
+                    return DeclarationLocation.NONE; //we are opening @ 0 position. Fix #160478
+                }
+            } else if (SwingUtilities.isEventDispatchThread()) {
+                ProgressUtils.runOffEventDispatchThread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ParserManager.parse(Collections.singleton(source), t);
+                            } catch (ParseException ex) {
+                                LOG.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    },
+                    NbBundle.getMessage(UiUtils.class, "TXT_CalculatingDeclPos"),
+                    cancel,
+                    false);
+            } else {
+                try {
+                    ParserManager.parse(Collections.singleton(source), t);
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                    return DeclarationLocation.NONE;
+                }
+            }
+            return result[0] != null ? result[0] : DeclarationLocation.NONE;
+        }
     }
-}

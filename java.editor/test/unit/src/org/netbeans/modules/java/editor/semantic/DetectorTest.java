@@ -402,6 +402,10 @@ public class DetectorTest extends TestBase {
         performTest("StaticImport189226");
     }
 
+    public void testReadUseElseTernary191230() throws Exception {
+        performTest("ReadUseElseTernary191230");
+    }
+
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

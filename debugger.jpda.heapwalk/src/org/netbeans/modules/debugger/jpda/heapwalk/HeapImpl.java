@@ -68,6 +68,9 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 public class HeapImpl implements Heap {
     
     private JPDADebugger debugger;
+    private final Object classesCacheAccessLock = new Object();
+    private List<JavaClass> classesCache;
+    private long[] instanceTotalCountPtr = new long[] { -1 };
     
     /** Creates a new instance of HeapImpl */
     public HeapImpl(JPDADebugger debugger) {
@@ -79,18 +82,39 @@ public class HeapImpl implements Heap {
     }
 
     public HeapSummary getSummary() {
-        return new DebuggerHeapSummary(debugger);
+        return new DebuggerHeapSummary(debugger, instanceTotalCountPtr);
     }
 
-    public List<JavaClass> getAllClasses() {
+    public void computeClasses() {
         List<JPDAClassType> allClasses = debugger.getAllClasses();
         long[] counts = debugger.getInstanceCounts(allClasses);
+        long sum = 0;
+        for (long c : counts) {
+            sum += c;
+        }
+        instanceTotalCountPtr[0] = sum;
         List<JavaClass> javaClasses = new ArrayList<JavaClass>(allClasses.size());
         int i = 0;
         for (JPDAClassType clazz : allClasses) {
             javaClasses.add(new JavaClassImpl(this, clazz, counts[i++]));
         }
-        return javaClasses;
+        synchronized (classesCacheAccessLock) {
+            this.classesCache = javaClasses;
+        }
+    }
+
+    public List<JavaClass> getAllClasses() {
+        List<JavaClass> javaClasses;
+        synchronized (classesCacheAccessLock) {
+            javaClasses = classesCache;
+            classesCache = null;
+        }
+        if (javaClasses != null) {
+            return javaClasses;
+        } else {
+            computeClasses();
+            return getAllClasses();
+        }
     }
     
     public List getBiggestObjectsByRetainedSize(int number) {
@@ -143,9 +167,11 @@ public class HeapImpl implements Heap {
     private static final class DebuggerHeapSummary implements HeapSummary {
         
         private JPDADebugger debugger;
+        private long[] instanceTotalCountPtr;
         
-        public DebuggerHeapSummary(JPDADebugger debugger) {
+        public DebuggerHeapSummary(JPDADebugger debugger, long[] instanceTotalCountPtr) {
             this.debugger = debugger;
+            this.instanceTotalCountPtr = instanceTotalCountPtr;
         }
         
         public long getTotalLiveBytes() {
@@ -153,8 +179,12 @@ public class HeapImpl implements Heap {
         }
 
         public long getTotalLiveInstances() {
+            long sum = instanceTotalCountPtr[0];
+            if (sum >= 0) {
+                return sum;
+            }
             long[] counts = debugger.getInstanceCounts(debugger.getAllClasses());
-            long sum = 0;
+            sum = 0;
             for (long c : counts) {
                 sum += c;
             }

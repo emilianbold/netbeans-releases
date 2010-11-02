@@ -66,11 +66,15 @@ public final class DLightSessionConfiguration {
 
     public DLightSessionConfiguration(){
         this(Mode.ALL);
-    }
+    }    
 
 
     public DLightSessionConfiguration(Mode sessionMode){
         this.sesionMode = sessionMode;
+    }
+    
+    public String getSessionName(){
+        return sessionName;
     }
 
     public void setSharedStorageKey(String storageUniqueID){

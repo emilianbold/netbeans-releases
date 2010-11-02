@@ -44,9 +44,14 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
+import org.netbeans.modules.cnd.remote.fs.WritingQueue;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -56,15 +61,43 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
     private final File[] files;
     private final ExecutionEnvironment executionEnvironment;
+    private final PrintWriter out;
+    private final PrintWriter err;
 
     public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, File... files) {
         this.files = files;
         this.executionEnvironment = executionEnvironment;
+        this.out = out;
+        this.err = err;
     }
     
     @Override
     public boolean startup(Map<String, String> env2add) {
-        return true;
+        try {
+            String hostName = RemoteUtil.getDisplayName(executionEnvironment);
+            if (out != null && WritingQueue.getInstance(executionEnvironment).isBusy()) {
+                out.println(NbBundle.getMessage(getClass(), "FULL_Synchronizing_Message", hostName));
+            }
+            List<String> failedList = new ArrayList<String>();
+            if( WritingQueue.getInstance(executionEnvironment).waitFinished(failedList) ) {
+                return true;
+            } else {
+                if (err != null) {
+                    StringBuilder failedText = new StringBuilder();
+                    for (String file : failedList) {
+                        if (failedText.length() > 0) {
+                            failedText.append('\n');
+                        }
+                        failedText.append(file);
+                    }
+                    err.println(NbBundle.getMessage(getClass(), "FULL_Failed_Message", hostName, failedText.toString()));
+                }
+                return false;
+            }
+        } catch (InterruptedException ex) {
+            // don't report InterruptedException
+            return false;
+        }
     }
 
     @Override

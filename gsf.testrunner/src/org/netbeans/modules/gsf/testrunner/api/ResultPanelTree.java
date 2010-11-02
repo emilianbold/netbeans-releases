@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import javax.accessibility.AccessibleContext;
 import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
@@ -102,11 +103,13 @@ final class ResultPanelTree extends JPanel
         treeView = new ResultTreeView();
         treeView.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_TestResults"));
         treeView.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_TestResults"));
+        treeView.setBorder(BorderFactory.createEtchedBorder());
 //        resultBar.setPassedPercentage(0.0f);
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        toolBar.addSeparator(new Dimension(1, 0));
         toolBar.add(resultBar);
+        toolBar.setBorder(BorderFactory.createEtchedBorder());
+
         add(toolBar, BorderLayout.NORTH);
         add(treeView, BorderLayout.CENTER);
 

@@ -181,6 +181,132 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         return true;
     }
 
+    private PHPTokenId findContextForEnd(TokenSequence<?extends PHPTokenId> ts, int offset, int[] startOfContext) {
+        if (ts == null) {
+            return null;
+        }
+        if (ts.offset() != offset) {
+            ts.move(offset);
+
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return null;
+            }
+        }
+
+        PHPTokenId returnValeu = null;
+        // at fist there should be find a bracket  '{' or column ':'
+        Token <?extends PHPTokenId> bracketColumnToken = LexUtilities.findPrevious(ts,
+                Arrays.asList(PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
+                PHPTokenId.PHP_LINE_COMMENT, PHPTokenId.WHITESPACE, PHPTokenId.PHP_CLOSETAG));
+        if (bracketColumnToken != null
+                && (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN
+                || (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && ":".equals(ts.token().text().toString())))) {
+            startOfContext[0] = ts.offset();
+            // we are interested only in adding end for { or alternative syntax :
+            List<PHPTokenId> lookFor = Arrays.asList(PHPTokenId.PHP_CURLY_CLOSE, //PHPTokenId.PHP_SEMICOLON,
+                PHPTokenId.PHP_CLASS, PHPTokenId.PHP_FUNCTION,
+                PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF,
+                PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,
+                PHPTokenId.PHP_DO, PHPTokenId.PHP_WHILE,
+                PHPTokenId.PHP_SWITCH, PHPTokenId.PHP_CASE, PHPTokenId.PHP_OPENTAG);
+            Token <?extends PHPTokenId> keyToken = LexUtilities.findPreviousToken(ts, lookFor);
+            if (keyToken.id() == PHPTokenId.PHP_CASE) {
+                return null;
+            }
+            if (bracketColumnToken.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                if (keyToken.id() == PHPTokenId.PHP_CLASS || keyToken.id() == PHPTokenId.PHP_FUNCTION) {
+                    returnValeu = keyToken.id();
+                } else {
+                    returnValeu = PHPTokenId.PHP_CURLY_OPEN;
+                }
+            } else {
+                if (bracketColumnToken.id() == PHPTokenId.PHP_TOKEN && ":".equals(bracketColumnToken.text().toString())) {
+                    if (keyToken.id() != PHPTokenId.PHP_OPENTAG
+                            && keyToken.id() != PHPTokenId.PHP_CLASS
+                            && keyToken.id() != PHPTokenId.PHP_FUNCTION) {
+                        returnValeu = keyToken.id();
+                    }
+                }
+            }
+            if (keyToken.id() != PHPTokenId.PHP_CURLY_CLOSE && keyToken.id() != PHPTokenId.PHP_SEMICOLON) {
+                startOfContext[0] = ts.offset();
+            }
+        }
+        ts.move(offset);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+        return returnValeu;
+    }
+
+    private boolean isEndMissing(BaseDocument doc, int offset, PHPTokenId startTokenId) throws BadLocationException {
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
+        if (ts == null) {
+            return false;
+        }
+        ts.move(0);
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return false;
+        }
+        Token<?extends PHPTokenId> token;
+        int curlyBalance = 0;
+        if (startTokenId == PHPTokenId.PHP_CURLY_OPEN || startTokenId == PHPTokenId.PHP_FUNCTION
+                || startTokenId == PHPTokenId.PHP_CLASS) {
+            do {
+                token = ts.token();
+                if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    curlyBalance --;
+                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    curlyBalance ++;
+                }
+            } while (ts.moveNext());
+        } else {
+            // complete alternative syntax.
+            PHPTokenId endTokenId = null;
+            if (startTokenId == PHPTokenId.PHP_FOR) {
+                endTokenId = PHPTokenId.PHP_ENDFOR;
+            } else if (startTokenId == PHPTokenId.PHP_FOREACH) {
+                endTokenId = PHPTokenId.PHP_ENDFOREACH;
+            } else if (startTokenId == PHPTokenId.PHP_WHILE) {
+                endTokenId = PHPTokenId.PHP_ENDWHILE;
+            } else if (startTokenId == PHPTokenId.PHP_SWITCH) {
+                endTokenId = PHPTokenId.PHP_ENDSWITCH;
+            } else if (startTokenId == PHPTokenId.PHP_IF) {
+                endTokenId = PHPTokenId.PHP_ENDIF;
+            } else if (startTokenId == PHPTokenId.PHP_ELSE || startTokenId == PHPTokenId.PHP_ELSEIF) {
+                startTokenId = PHPTokenId.PHP_IF;
+                endTokenId = PHPTokenId.PHP_ENDIF;
+            }
+            ts.move(0);
+            if (!ts.moveNext() && !ts.movePrevious()) {
+                return false;
+            }
+            int balance = 0;
+            boolean checkAlternativeSyntax = false;
+            do {
+                token = ts.token();
+                if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    curlyBalance --;
+                } else if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    curlyBalance ++;
+                    checkAlternativeSyntax = false;
+                } else if (token.id() == startTokenId) {
+                    checkAlternativeSyntax = true;
+                } else if (token.id() == PHPTokenId.PHP_TOKEN
+                        && ":".equals(token.text().toString())
+                        && checkAlternativeSyntax) {
+                    balance ++;
+                    checkAlternativeSyntax = false;
+                } else if (token.id() == endTokenId) {
+                    balance --;
+                }
+            } while (ts.moveNext() && curlyBalance > -1 && balance > -1);
+            return balance > 0;
+
+        }
+        return curlyBalance > 0;
+    }
+
     @Override
     public int beforeBreak(Document document, int offset, JTextComponent target)
         throws BadLocationException {
@@ -275,7 +401,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         if (ts == null) {
             return -1;
         }
-
         ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
@@ -284,25 +409,26 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         Token<?extends PHPTokenId> token = ts.token();
         TokenId id = token.id();
+        int tokenOffsetOnCaret = ts.offset();
 
         // Insert an end statement? Insert a } marker?
-        boolean[] insertEndResult = new boolean[1];
-        boolean[] insertRBraceResult = new boolean[1];
-        int[] indentResult = new int[1];
-        boolean insert = insertMatching &&
-            isEndMissing(doc, offset, false, insertEndResult, insertRBraceResult, null, indentResult);
+        int[] startOfContext = new int[1];
+        PHPTokenId completeIn =  insertMatching ? findContextForEnd(ts, offset, startOfContext) : null;
+        boolean insert = completeIn != null && isEndMissing(doc, offset, completeIn);
 
         if (insert) {
-            boolean insertEnd = insertEndResult[0];
-            boolean insertRBrace = insertRBraceResult[0];
-            int indent = indentResult[0];
+
+
+            int indent = IndentUtils.lineIndent(doc, IndentUtils.lineStartOffset(document, startOfContext[0]));
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
 
             // We've either encountered a further indented line, or a line that doesn't
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
-            if (offset > afterLastNonWhite) {
+            if (offset > afterLastNonWhite || id == PHPTokenId.PHP_CLOSETAG
+                    || (offset < afterLastNonWhite && "?>".equals(doc.getText(afterLastNonWhite - 1, 2)))) {
+                // don't put php close tag iside. see #167816
                 sb.append("\n"); //NOI18N
                 sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 
@@ -315,14 +441,32 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 sb.append(IndentUtils.createIndentString(doc, countIndent(doc, offset, indent)));
                 doc.remove(offset, restOfLine.length());
             }
-            
-            if (insertEnd) {
-                sb.append("end"); // NOI18N
-            } else {
-                assert insertRBrace;
-                sb.append("}"); // NOI18N
+
+            if (completeIn == PHPTokenId.PHP_CURLY_OPEN || completeIn == PHPTokenId.PHP_CLASS || completeIn == PHPTokenId.PHP_FUNCTION) {
+                if (id == PHPTokenId.PHP_CLOSETAG && offset > tokenOffsetOnCaret) {
+                    token = LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_OPENTAG));
+                    String begin = token != null ? token.text().toString() : "<?php"; //NOI18N
+                    sb.append(begin);
+                    sb.append(" } ?>"); // NOI18N
+                } else {
+                    sb.append("}"); // NOI18N
+                }
+            } else if (completeIn == PHPTokenId.PHP_IF || completeIn == PHPTokenId.PHP_ELSE || completeIn == PHPTokenId.PHP_ELSEIF) {
+                sb.append("endif;"); // NOI18N
+            } else if (completeIn == PHPTokenId.PHP_FOR) {
+                sb.append("endfor;"); // NOI18N
+            } else if (completeIn == PHPTokenId.PHP_FOREACH) {
+                sb.append("endforeach;"); // NOI18N
+            } else if (completeIn == PHPTokenId.PHP_WHILE) {
+                sb.append("endwhile;"); // NOI18N
+            } else if (completeIn == PHPTokenId.PHP_SWITCH) {
+                sb.append("endswitch;"); // NOI18N
             }
 
+            if (id == PHPTokenId.PHP_CLOSETAG) {
+                // place the close tag on the new line.
+                sb.append("\n"); //NOI18N
+            }
             int insertOffset = offset;
             doc.insertString(insertOffset, sb.toString(), null);
             caret.setDot(insertOffset);
@@ -713,105 +857,51 @@ public class PHPBracketCompleter implements KeystrokeHandler {
      */
     static boolean isEndMissing(BaseDocument doc, int offset, boolean skipJunk,
         boolean[] insertEndResult, boolean[] insertRBraceResult, int[] startOffsetResult,
-        int[] indentResult) throws BadLocationException {
+        int[] indentResult, PHPTokenId insertingEnd) throws BadLocationException {
         int length = doc.getLength();
 
-        // Insert an end statement? Insert a } marker?
-        // Do so if the current line contains an unmatched begin marker,
-        // AND a "corresponding" marker does not exist.
-        // This will be determined as follows: Look forward, and check
-        // that we don't have "indented" code already (tokens at an
-        // indentation level higher than the current line was), OR that
-        // there is no actual end or } coming up.
         if (startOffsetResult != null) {
             startOffsetResult[0] = Utilities.getRowFirstNonWhite(doc, offset);
         }
+        
+        TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
 
-        int beginEndBalance = LexUtilities.getBeginEndLineBalance(doc, offset, true);
-        int braceBalance =
-            LexUtilities.getLineBalance(doc, offset, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
-            LineBalance.UP_FIRST);
-
-        if ((beginEndBalance == 1) || (braceBalance == 1)) {
-            // There is one more opening token on the line than a corresponding
-            // closing token.  (If there's is more than one we don't try to help.)
-            int indent = GsfUtilities.getLineIndent(doc, offset);
-            if (braceBalance == 1) {
-                TokenSequence<?extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-
-                if (ts != null) {
-                    ts.move(offset);
-                    if (ts.moveNext() && ts.movePrevious()) {
-                        Token<?extends PHPTokenId> token = LexUtilities.findPrevious(ts, Arrays.asList(
-                                PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.WHITESPACE,
-                                PHPTokenId.PHPDOC_COMMENT, PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHPDOC_COMMENT_START,
-                                PHPTokenId.PHP_COMMENT, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_COMMENT_START,
-                                PHPTokenId.PHP_LINE_COMMENT));
-                        int startExpression = PHPNewLineIndenter.findStartTokenOfExpression(ts);
-                        indent = GsfUtilities.getLineIndent(doc, startExpression);
-                    }
-                }
-            }
-
-            // Look for the next nonempty line, and if its indent is > indent,
-            // or if its line balance is -1 (e.g. it's an end) we're done
-            boolean insertEnd = beginEndBalance > 0;
-            boolean insertRBrace = braceBalance > 0;
-            int next = Utilities.getRowEnd(doc, offset) + 1;
-
-            for (; next < length; next = Utilities.getRowEnd(doc, next) + 1) {
-                if (Utilities.isRowEmpty(doc, next) || Utilities.isRowWhite(doc, next) ||
-                        LexUtilities.isCommentOnlyLine(doc, next)) {
-                    continue;
-                }
-
-                int nextIndent = GsfUtilities.getLineIndent(doc, next);
-
-                if (nextIndent > indent) {
-                    insertEnd = false;
-                    insertRBrace = false;
-                } else if (nextIndent == indent) {
-                    if (insertEnd) {
-                        if (LexUtilities.getBeginEndLineBalance(doc, next, false) < 0) {
-                            insertEnd = false;
-                        } else {
-                            // See if I have a structure word like "else", "ensure", etc.
-                            // (These are indent words that are not also begin words)
-                            // and if so refrain from inserting the end
-                            int lineBegin = Utilities.getRowFirstNonWhite(doc, next);
-
-                            Token<?extends PHPTokenId> token =
-                                LexUtilities.getToken(doc, lineBegin);
-
-                            if ((token != null) && LexUtilities.isIndentEndToken(token.id())) {
-                                insertEnd = false;
-                            }
-                        }
-                    } else if (insertRBrace &&
-                            (LexUtilities.getLineBalance(doc, next, PHPTokenId.PHP_CURLY_OPEN,
-                                PHPTokenId.PHP_CURLY_CLOSE, LineBalance.DOWN_FIRST) < 0)) {
-                        insertRBrace = false;
-                    }
-                }
-
-                break;
-            }
-
-            if (insertEndResult != null) {
-                insertEndResult[0] = insertEnd;
-            }
-
-            if (insertRBraceResult != null) {
-                insertRBraceResult[0] = insertRBrace;
-            }
-
-            if (indentResult != null) {
-                indentResult[0] = indent;
-            }
-
-            return insertEnd || insertRBrace;
+        if (ts == null) {
+            return false;
         }
 
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return false;
+        }
+
+        Token<?extends PHPTokenId> token = ts.token();
+        int balance = 1;
+        boolean EOF = false;
+        if (insertingEnd == PHPTokenId.PHP_CURLY_CLOSE) {
+            while((token.id() == PHPTokenId.PHP_CURLY_OPEN
+                    || token.id() == PHPTokenId.PHP_CURLY_CLOSE
+                    || token.id() == PHPTokenId.WHITESPACE)
+                    && !EOF) {
+                if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                    balance++;
+                } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                    balance--;
+                } 
+                if (ts.moveNext()) {
+                    token = ts.token();
+                } else {
+                    EOF = true;
+                }
+            }
+
+            if (EOF) {
+                if (balance == 1) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -1269,7 +1359,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     int currentIndent = Utilities.getRowIndent(doc, offset);
                     int newIndent = countIndent(doc, offset, previousIndent);
                     if (newIndent != currentIndent) {
-                        GsfUtilities.setLineIndentation(doc, offset, newIndent);
+                        GsfUtilities.setLineIndentation(doc, offset, Math.max(newIndent, 0));
                         return;
                     }
                 }

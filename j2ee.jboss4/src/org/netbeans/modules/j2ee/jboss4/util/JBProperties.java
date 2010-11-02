@@ -112,6 +112,17 @@ public class JBProperties {
         version = JBPluginUtils.getServerVersion(new File(ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR)));
     }
 
+    public boolean supportsJavaEE6() {
+        // FIXME detect properly
+        return version != null
+                && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_6_0_0) >= 0; // NOI18N
+    }
+
+    public boolean supportsJavaEE6Web() {
+        // FIXME
+        return supportsJavaEE6();
+    }
+    
     public boolean supportsJavaEE5ejb3() {
         return new File(getServerDir(), "deploy/ejb3.deployer").exists() // JBoss 4 // NOI18N
                 || new File(getServerDir(), "deployers/ejb3.deployer").exists(); // JBoss 5 // NOI18N

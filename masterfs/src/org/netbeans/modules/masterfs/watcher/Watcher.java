@@ -73,6 +73,12 @@ public class Watcher extends AnnotationProvider {
     private final Ext ext;
 
     public Watcher() {
+        // Watcher disabled manually or for some tests
+        if (Boolean.getBoolean("org.netbeans.modules.masterfs.watcher.disable")) {
+            ext = null;
+            return;
+        }
+        
         Notifier<?> notifier = getNotifierForPlatform();
         ext = notifier == null ? null : new Ext(notifier);
 
@@ -83,13 +89,13 @@ public class Watcher extends AnnotationProvider {
     }
 
     public @Override String annotateName(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Image annotateIcon(Image icon, int iconType, Set<? extends FileObject> files) {
-        return icon;
+        return null;
     }
     public @Override String annotateNameHtml(String name, Set<? extends FileObject> files) {
-        return name;
+        return null;
     }
     public @Override Action[] actions(Set<? extends FileObject> files) {
         return null;
@@ -122,6 +128,10 @@ public class Watcher extends AnnotationProvider {
             FileObject fo = FileUtil.toFileObject(dir);
             String path = dir.getAbsolutePath();
 
+            if (fo == null && !dir.exists()) return -1;
+
+            assert fo != null : "No fileobject for " + path;
+
             if (map.containsKey(fo)) return -1;
 
             try {
@@ -142,7 +152,7 @@ public class Watcher extends AnnotationProvider {
 
                     // XXX: handle the all-dirty message
                     if (path == null) { // all dirty
-
+                        enqueueAll(map.keySet());
                     } else {
                         // don't ask for nonexistent FOs
                         File file = new File(path);
@@ -183,12 +193,26 @@ public class Watcher extends AnnotationProvider {
 
 
     private void enqueue(FileObject fo) {
+        assert fo != null;
+
         synchronized(lock) {
             if (pending == null) {
                 refreshTask.schedule(1500);
                 pending = new HashSet();
             }
             pending.add(fo);
+        }
+    }
+
+    private void enqueueAll(Set<FileObject> fos) {
+        assert fos != null;
+
+        synchronized(lock) {
+            if (pending == null) {
+                refreshTask.schedule(1500);
+                pending = new HashSet();
+            }
+            pending.addAll(fos);
         }
     }
 
@@ -206,7 +230,24 @@ public class Watcher extends AnnotationProvider {
                 return new LinuxNotifier();
             }
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                return new OSXNotifier();
+                try {
+                    final OSXNotifier notifier = new OSXNotifier();
+                    notifier.start();
+                    return notifier;
+                } catch (IOException ioe) {
+                    LOG.log(Level.INFO, null, ioe);
+                } catch (InterruptedException ie) {
+                    LOG.log(Level.INFO, null, ie);
+                }
+            }
+            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
+                try {
+                    return new FAMNotifier();
+                } catch (Exception e) {
+                    LOG.log(Level.INFO, null, e);
+                } catch (LinkageError x) {
+                    //this is normal not to have fam in the system, do not report
+                }
             }
         } catch (LinkageError x) {
             LOG.log(Level.INFO, null, x);

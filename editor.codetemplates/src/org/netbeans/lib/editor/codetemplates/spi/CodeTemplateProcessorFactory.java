@@ -44,6 +44,8 @@
 
 package org.netbeans.lib.editor.codetemplates.spi;
 
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
+
 /**
  * Factory constructs code template processor for a given insert request.
  * <br/>
@@ -54,6 +56,7 @@ package org.netbeans.lib.editor.codetemplates.spi;
  *
  * @author Miloslav Metelka
  */
+@MimeLocation(subfolderName="CodeTemplateProcessorFactories")
 public interface CodeTemplateProcessorFactory {
 
     /**

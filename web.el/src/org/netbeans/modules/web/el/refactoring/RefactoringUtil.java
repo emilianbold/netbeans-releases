@@ -152,6 +152,9 @@ public final class RefactoringUtil {
         Parameters.notEmpty("accessor", accessor); //NO18N
         int prefixLength = getPrefixLength(accessor, includeSetter);
         String withoutPrefix = accessor.substring(prefixLength);
+        if (withoutPrefix.isEmpty()) { // method name is simply is/get/set
+            return accessor;
+        }
         char firstChar = withoutPrefix.charAt(0);
 
         if (!Character.isUpperCase(firstChar)) {

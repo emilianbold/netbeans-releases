@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.makefile.MakefileInclude;
 import org.netbeans.modules.cnd.api.makefile.MakefileMacro;
 import org.netbeans.modules.cnd.api.makefile.MakefileRule;
 import org.netbeans.modules.cnd.makefile.MakefileApiAccessor;
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -84,11 +84,17 @@ public class MakefileParser extends Parser {
         return result;
     }
 
+    @Deprecated
     @Override
     public void cancel() {
         cancelled.set(true);
     }
 
+    @Override
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
+        cancelled.set(true);
+    }
+    
     @Override
     public void addChangeListener(ChangeListener changeListener) {
         // nothing to listen to => no reason to register listeners

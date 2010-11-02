@@ -49,6 +49,8 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -57,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTElif;
@@ -272,7 +275,12 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CharSequence getText() {
             return text;
-        }        
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return getContainingFile();
+        }
     }
 
     private static final class MacroReference extends OffsetableBase implements CsmReference {
@@ -292,6 +300,17 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CsmObject getReferencedObject() {
             CsmMacro refObj = ref;
+            if (refObj == null) {
+                CsmReference candidate = CsmReferenceStorage.getDefault().get(this);
+                if (candidate != null) {
+                    CsmObject referencedObject = candidate.getReferencedObject();
+                    if (referencedObject instanceof CsmMacro) {
+                        refObj = (CsmMacro) referencedObject;
+                    } else if (referencedObject != null){
+                        Logger.getLogger("xRef").log(Level.INFO, "Reference storage returns {0} where is expected macro\n", referencedObject); //NOI18N
+                    }
+                }
+            }
             if (refObj == null && macro != null) {
                 synchronized (this) {
                     refObj = ref;
@@ -369,6 +388,11 @@ public final class APTFindMacrosWalker extends APTSelfWalker {
         @Override
         public CharSequence getText() {
             return macroName;
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return (kind == CsmReferenceKind.DECLARATION) ? getContainingFile() : getReferencedObject();
         }
     }
 }

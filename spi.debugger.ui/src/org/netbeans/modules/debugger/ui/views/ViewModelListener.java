@@ -152,8 +152,12 @@ public class ViewModelListener extends DebuggerManagerAdapter {
     private SessionProvider providerToDisplay;
     private List<ViewModelListener> subListeners = new ArrayList<ViewModelListener>();
 
+    private boolean isUp;
+
     private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
     private ViewPreferenceChangeListener prefListener = new ViewPreferenceChangeListener();
+
+    private static final RequestProcessor RP = new RequestProcessor(ViewModelListener.class.getName(), 1);
     
     // <RAVE>
     // Store the propertiesHelpID to pass to the Model object that is
@@ -193,19 +197,19 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         preferences.removePreferenceChangeListener(prefListener);
         boolean haveTreeModels = false;
         for (List tms : treeModels) {
-            if (tms.size() > 0) {
+            if (tms != null && tms.size() > 0) {
                 haveTreeModels = true;
                 break;
             }
         }
         boolean haveNodeModels = false;
         for (List nms : nodeModels) {
-            if (nms.size() > 0) {
+            if (nms != null && nms.size() > 0) {
                 haveNodeModels = true;
                 break;
             }
         }
-        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels.size() > 0;
+        final boolean haveModels = haveTreeModels || haveNodeModels || tableModels != null && tableModels.size() > 0;
         if (haveModels && view.getComponentCount() > 0) {
             JComponent tree = (JComponent) view.getComponent(0);
             if (!(tree instanceof javax.swing.JTabbedPane)) {
@@ -237,6 +241,7 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             l.destroy();
         }
         subListeners.clear();
+        isUp = false;
     }
 
     @Override
@@ -258,7 +263,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         //System.err.println("\ngetMultiModels("+viewPath+") = "+Arrays.asList(models)+"\n");
     }
 
-     private synchronized void updateModel() {
+    private synchronized void updateModel() {
+        isUp = true;
+        RP.post(new Runnable() {
+            public void run() {
+                updateModelLazily();
+            }
+        });
+    }
+
+    private synchronized void updateModelLazily() {
+        if (!isUp) return ;    // Destroyed in between
         DebuggerManager dm = DebuggerManager.getDebuggerManager ();
         DebuggerEngine e = dm.getCurrentEngine ();
         if (e == null) {
@@ -366,16 +381,17 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
 
         List<? extends AbstractButton> bList = cp.lookup(viewPath, AbstractButton.class);
-        buttons = new ArrayList<AbstractButton>();
+        List<AbstractButton> theButtons = new ArrayList<AbstractButton>();
         List tempList = new ArrayList<AbstractButton>();
         for (AbstractButton b : bList) {
             if (b instanceof JToggleButton) { // [TODO]
-                buttons.add(b);
+                theButtons.add(b);
             } else {
                 tempList.add(b);
             }
         }
-        buttons.addAll(tempList);
+        theButtons.addAll(tempList);
+        buttons = theButtons;
         tabbedPane = cp.lookupFirst(viewPath, javax.swing.JTabbedPane.class);
 
         ModelsChangeRefresher mcr = new ModelsChangeRefresher();
@@ -489,48 +505,6 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             models.add(rp);
         }*/
 
-        final JComponent buttonsSubPane;
-        synchronized (buttons) {
-            buttonsPane.removeAll();
-            if (buttons.size() == 0 && sessionProviders.size() == 0) {
-                buttonsPane.setVisible(false);
-                buttonsSubPane = null;
-            } else {
-                buttonsPane.setVisible(true);
-                int i = 0;
-                if (sessionProviders.size() > 0) {
-                    javax.swing.AbstractButton b = createSessionsSwitchButton();
-                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
-                    buttonsPane.add(b, c);
-                    i++;
-                    javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
-                    c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 0, 5, 0), 0, 0);
-                    buttonsPane.add(s, c);
-                    i++;
-                }
-                if (tabbedPane != null) {
-                    buttonsSubPane = new javax.swing.JPanel();
-                    buttonsSubPane.setLayout(new java.awt.GridBagLayout());
-                    GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 0, 5, 0), 0, 0);
-                    buttonsPane.add(buttonsSubPane, c);
-                    i++;
-                } else {
-                    buttonsSubPane = null;
-                    for (javax.swing.AbstractButton b : buttons) {
-                        GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
-                        buttonsPane.add(b, c);
-                        i++;
-                    }
-                }
-                //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
-                //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
-
-                // [TODO]
-                //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
-                //buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
-            }
-        }
-        
         // <RAVE>
         // Store the propertiesHelpID in the tree model to be retrieved later
         // by the TreeModelNode objects
@@ -565,6 +539,50 @@ public class ViewModelListener extends DebuggerManagerAdapter {
         }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                final JComponent buttonsSubPane;
+                List<AbstractButton> theButtons = buttons;
+                if (theButtons == null) return ; // Destroyed in between
+                synchronized (theButtons) {
+                    buttonsPane.removeAll();
+                    if (theButtons.size() == 0 && sessionProviders.size() == 0) {
+                        buttonsPane.setVisible(false);
+                        buttonsSubPane = null;
+                    } else {
+                        buttonsPane.setVisible(true);
+                        int i = 0;
+                        if (sessionProviders.size() > 0) {
+                            javax.swing.AbstractButton b = createSessionsSwitchButton();
+                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                            buttonsPane.add(b, c);
+                            i++;
+                            javax.swing.JSeparator s = new javax.swing.JSeparator(SwingConstants.HORIZONTAL);
+                            c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 0, 5, 0), 0, 0);
+                            buttonsPane.add(s, c);
+                            i++;
+                        }
+                        if (tabbedPane != null) {
+                            buttonsSubPane = new javax.swing.JPanel();
+                            buttonsSubPane.setLayout(new java.awt.GridBagLayout());
+                            GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 0, 5, 0), 0, 0);
+                            buttonsPane.add(buttonsSubPane, c);
+                            i++;
+                        } else {
+                            buttonsSubPane = null;
+                            for (javax.swing.AbstractButton b : buttons) {
+                                GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 0.0, GridBagConstraints.NORTH, 0, new Insets(5, 5, 5, 5), 0, 0);
+                                buttonsPane.add(b, c);
+                                i++;
+                            }
+                        }
+                        //GridBagConstraints c = new GridBagConstraints(0, i, 1, 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(5, 5, 5, 5), 0, 0);
+                        //buttonsPane.add(new javax.swing.JPanel(), c); // Push-panel
+
+                        // [TODO]
+                        //GridBagConstraints c = new GridBagConstraints(1, 0, 1, i + 1, 0.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.VERTICAL, new Insets(0, 0, 0, 0), 0, 0);
+                        //buttonsPane.add(new javax.swing.JSeparator(SwingConstants.VERTICAL), c); // Components separator, border-like
+                    }
+                }
+                
                 if (view.getComponentCount() > 0) {
                     if (tabbedPane == null && view.getComponent(0) instanceof javax.swing.JTabbedPane) {
                         view.removeAll();

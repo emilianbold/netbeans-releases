@@ -324,8 +324,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteExpression(completionResult, request);
                     break;
                 case HTML:
-                    completionResult.add(new PHPCompletionItem.KeywordItem("<?php", request)); //NOI18N
-                    completionResult.add(new PHPCompletionItem.KeywordItem("<?=", request)); //NOI18N
+                case OPEN_TAG:
+                    completionResult.add(new PHPCompletionItem.TagItem("<?php", 1, request)); //NOI18N
+                    completionResult.add(new PHPCompletionItem.TagItem("<?=", 2, request)); //NOI18N
                     break;
                 case NEW_CLASS:
                     autoCompleteNamespaces(completionResult, request);
@@ -983,13 +984,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 int lineOffset = caretOffset - lineBegin;
                 int start = lineOffset;
                 if (lineOffset > 0) {
+                    char c = 0;
                     for (int i = lineOffset - 1; i >= 0; i--) {
-                        char c = line.charAt(i);
+                        c = line.charAt(i);
                         if (!isPHPIdentifierPart(c) && c != '\\') {
                             break;
                         } else {
                             start = i;
                         }
+                    }
+                    if (start == lineOffset && c == '?'
+                            && lineOffset - 2 >= 0 && line.charAt(lineOffset - 2) == '<') {
+                        start -= 2;
                     }
                 }
 
@@ -1045,7 +1051,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         if (isPrefixBreaker(c)) {
                             return null;
                         }
-                    } else {
+                    } else if (!"<?".equals(prefix))    {    //NOI18N
                         for (int i = prefix.length() - 2; i >= 0; i--) { // -2: the last position (-1) can legally be =, ! or ?
 
                             char c = prefix.charAt(i);
@@ -1077,7 +1083,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             }
         // Else: normal identifier: just return null and let the machinery do the rest
         } catch (BadLocationException ble) {
-            Exceptions.printStackTrace(ble);
+            //Exceptions.printStackTrace(ble);
         }
 
         return null;

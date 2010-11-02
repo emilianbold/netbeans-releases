@@ -81,6 +81,7 @@ import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.profiler.spi.ProjectTypeProfiler;
 
 
 /**
@@ -733,7 +734,8 @@ public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.pro
         ps.load(props);
         ss.load(props);
 
-        if (!J2EEProjectTypeProfiler.isSupportedProject(projectToUse)) {
+        ProjectTypeProfiler ptp = projectToUse.getLookup().lookup(ProjectTypeProfiler.class);
+        if (ptp == null || !ptp.isProfilingSupported(projectToUse)) { // unsupported project
             lastServerInstanceProperties = null;
 
             return false;

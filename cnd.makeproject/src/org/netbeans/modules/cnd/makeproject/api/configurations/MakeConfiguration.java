@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -73,8 +72,8 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryN
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -492,7 +491,7 @@ public class MakeConfiguration extends Configuration {
     }
 
     private void fixupMasterLinks(MakeConfiguration makeConf) {
-        FileObject projectDirFO = FileUtil.toFileObject(new File(getBaseDir()));
+        FileObject projectDirFO = CndFileUtils.toFileObject(getBaseDir());
         Project project = null;
         try {
             project = ProjectManager.getDefault().findProject(projectDirFO);
@@ -643,6 +642,14 @@ public class MakeConfiguration extends Configuration {
 
     public RemoteProject.Mode getRemoteMode() {
         return remoteMode;
+    }
+
+    public ExecutionEnvironment getFileSystemHost() {
+        if (remoteMode == RemoteProject.Mode.REMOTE_SOURCES) {
+            return getDevelopmentHost().getExecutionEnvironment();
+        } else {
+            return ExecutionEnvironmentFactory.getLocal();
+        }
     }
 
     public void setRemoteMode(RemoteProject.Mode mode) {

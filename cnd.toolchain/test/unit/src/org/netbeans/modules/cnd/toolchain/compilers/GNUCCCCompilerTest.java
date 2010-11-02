@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.toolchain.compilers.GNUCCCompiler;
 import java.io.BufferedReader;
 import java.io.StringReader;
 import java.util.ArrayList;

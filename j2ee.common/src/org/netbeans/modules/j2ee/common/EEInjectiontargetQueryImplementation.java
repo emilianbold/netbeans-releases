@@ -73,7 +73,11 @@ public class EEInjectiontargetQueryImplementation implements InjectionTargetQuer
         }
         FileObject fo = controller.getFileObject();
         Project project = FileOwnerQuery.getOwner(fo);
-        boolean ejb31 = J2eeProjectCapabilities.forProject(project).isEjb31Supported() || J2eeProjectCapabilities.forProject(project).isEjb31LiteSupported();//it's foe ee6 only or common annotations 1.1
+        J2eeProjectCapabilities j2eeProjectCapabilities = J2eeProjectCapabilities.forProject(project);
+        if (j2eeProjectCapabilities == null) {
+            return false;
+        }
+        boolean ejb31 = j2eeProjectCapabilities.isEjb31Supported() || j2eeProjectCapabilities.isEjb31LiteSupported();//it's foe ee6 only or common annotations 1.1
 
         if (ejb31 && !(ElementKind.INTERFACE==typeElement.getKind())) {
             

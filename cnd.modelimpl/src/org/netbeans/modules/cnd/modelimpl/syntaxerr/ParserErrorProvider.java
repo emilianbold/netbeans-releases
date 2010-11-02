@@ -70,7 +70,10 @@ public class ParserErrorProvider extends CsmErrorProvider {
     protected  void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
         Collection<CsmErrorInfo> errorInfos = new ArrayList<CsmErrorInfo>();
         Collection<RecognitionException> recognitionExceptions = new ArrayList<RecognitionException>();
-        ReadOnlyTokenBuffer buffer = ((FileImpl) request.getFile()).getErrors(recognitionExceptions);
+        Thread currentThread = Thread.currentThread();
+        FileImpl file = (FileImpl) request.getFile();
+        currentThread.setName("Provider "+getName()+" prosess "+file.getAbsolutePath()); // NOI18N
+        ReadOnlyTokenBuffer buffer = file.getErrors(recognitionExceptions);
         if (buffer != null) {
             ParserErrorFilter.getDefault().filter(recognitionExceptions, errorInfos, buffer, request.getFile());
             for (Iterator<CsmErrorInfo> iter = errorInfos.iterator(); iter.hasNext() && ! request.isCancelled(); ) {
@@ -79,6 +82,7 @@ public class ParserErrorProvider extends CsmErrorProvider {
         }
     }
 
+    @Override
     public String getName() {
         return "syntax-error"; //NOI18N
     }

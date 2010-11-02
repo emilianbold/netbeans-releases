@@ -176,7 +176,9 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < servers.size(); i++) {
             if (servers.get(i).equals(execEnv)) {
                 value = i;
-                setBuildPlatform(CompilerSetManager.get(execEnv).getPlatform());
+                CompilerSetManager compilerSetmanager = CompilerSetManager.get(execEnv);
+                int platform = compilerSetmanager.getPlatform();
+                setBuildPlatform(platform);
                 if (getBuildPlatform() == -1) {
                     // TODO: CompilerSet is not reliable about platform; it must be.
                     setBuildPlatform(PlatformTypes.PLATFORM_NONE);

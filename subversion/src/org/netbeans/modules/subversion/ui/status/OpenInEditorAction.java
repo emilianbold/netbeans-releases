@@ -45,6 +45,7 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import org.netbeans.modules.subversion.util.*;
+import org.openide.cookies.EditorCookie.Observable;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.cookies.*;
@@ -94,8 +95,8 @@ public class OpenInEditorAction extends AbstractAction {
     private final boolean openDataObjectByCookie(DataObject dataObject) {
         Node.Cookie cookie;
         Class cookieClass;
-        if ((((cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
-                            || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
+        if ((((     cookie = dataObject.getCookie(cookieClass = EditorCookie.Observable.class)) != null
+                || (cookie = dataObject.getCookie(cookieClass = EditorCookie.class)) != null))
                 || (cookie = dataObject.getCookie(cookieClass = OpenCookie.class)) != null
                 || (cookie = dataObject.getCookie(cookieClass = EditCookie.class)) != null
                 || (cookie = dataObject.getCookie(cookieClass = ViewCookie.class)) != null) {

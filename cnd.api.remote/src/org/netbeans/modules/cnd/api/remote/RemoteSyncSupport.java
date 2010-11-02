@@ -50,7 +50,9 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncService;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 
 /**
@@ -63,11 +65,13 @@ public final class RemoteSyncSupport {
     }
 
     public static RemoteSyncWorker createSyncWorker(Project project, PrintWriter out, PrintWriter err) {
-        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
-        if (remoteProject != null) {
-            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
-            if (syncFactory != null) {
-                return syncFactory.createNew(project, out, err);
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+                if (syncFactory != null) {
+                    return syncFactory.createNew(project, out, err);
+                }
             }
         }
         return null;
@@ -76,6 +80,30 @@ public final class RemoteSyncSupport {
     public static RemoteProject.Mode getRemoteMode(Project project) {
         RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
         return (remoteProject == null) ? RemoteProject.DEFAULT_MODE : remoteProject.getRemoteMode();
+    }
+
+    public static PathMap getPathMap(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        CndUtils.assertNotNull(remoteProject, "null RemoteProject"); //NOI18N
+        if (remoteProject == null) {
+            return null;
+        } else {
+            PathMap pathMap = null;
+            ExecutionEnvironment execEnv = remoteProject.getDevelopmentHost();
+            RemoteSyncFactory syncFactory = remoteProject.getSyncFactory();
+            if (syncFactory != null) {
+                pathMap = syncFactory.getPathMap(execEnv);
+            }
+            if (pathMap == null) {
+                pathMap = HostInfoProvider.getMapper(execEnv);
+            }
+            return pathMap;
+        }
+    }
+
+    public static ExecutionEnvironment getRemoteFileSystemHost(Project project) {
+        RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+        return (remoteProject == null) ? ExecutionEnvironmentFactory.getLocal() : remoteProject.getSourceFileSystemHost();
     }
 
 //    /**

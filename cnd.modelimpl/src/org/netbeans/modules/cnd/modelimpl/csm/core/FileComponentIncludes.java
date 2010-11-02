@@ -118,7 +118,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         }
     }
 
-    void addInclude(IncludeImpl includeImpl, boolean broken) {
+    boolean addInclude(IncludeImpl includeImpl, boolean broken) {
         CsmUID<CsmInclude> inclUID = RepositoryUtils.put((CsmInclude)includeImpl);
         assert inclUID != null;
         try {
@@ -133,6 +133,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
             includesLock.writeLock().unlock();
         }
         put();
+        return !brokenIncludes.isEmpty();
     }
 
     Collection<CsmInclude> getIncludes() {

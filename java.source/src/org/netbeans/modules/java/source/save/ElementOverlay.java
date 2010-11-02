@@ -47,6 +47,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,6 +65,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
@@ -80,7 +82,7 @@ import org.netbeans.modules.java.source.builder.QualIdentTree;
 public class ElementOverlay {
 
     private final Map<String, List<String>> class2Enclosed = new HashMap<String, List<String>>();
-    private final Map<String, List<Tree>> class2SuperElementTrees = new HashMap<String, List<Tree>>();
+    private final Map<String, List<String>> class2SuperElementTrees = new HashMap<String, List<String>>();
     private final Set<String> packages = new HashSet<String>();
     private final Set<String> classes = new HashSet<String>();
     private final Map<String, Element> elementCache = new HashMap<String, Element>();
@@ -159,18 +161,30 @@ public class ElementOverlay {
         List<String> c = class2Enclosed.get(parent);
 
         if (c == null) {
-            class2Enclosed.put(parent, c = new LinkedList<String>());
+            class2Enclosed.put(parent, c = new ArrayList<String>());
         }
 
         c.add(clazz);
 
-        List<Tree> superTree = new LinkedList<Tree>();
+        List<String> superFQNs = new ArrayList<String>(impl.size() + 1);
 
-        if (ext != null) superTree.add(ext);
+        if (ext != null) {
+            String fqn = fqnFor(ext);
 
-        superTree.addAll(impl);
+            if (fqn != null) {
+                superFQNs.add(fqn);
+            }
+        }
 
-        class2SuperElementTrees.put(clazz, superTree);
+        for (Tree i : impl) {
+            String fqn = fqnFor(i);
+
+            if (fqn != null) {
+                superFQNs.add(fqn);
+            }
+        }
+
+        class2SuperElementTrees.put(clazz, superFQNs);
     }
 
     public void registerPackage(String currentPackage) {
@@ -180,16 +194,13 @@ public class ElementOverlay {
     public Iterable<? extends Element> getAllSuperElements(ASTService ast, Elements elements, Element forElement) {
         List<Element> result = new LinkedList<Element>();
         if (forElement instanceof FakeTypeElement) {
-
-            for (Tree t : class2SuperElementTrees.get(((FakeTypeElement) forElement).fqnString)) {
-                Element el = ast.getElement(t);
+            for (String fqn : class2SuperElementTrees.get(((FakeTypeElement) forElement).fqnString)) {
+                Element el = resolve(ast, elements, fqn);
 
                 if (el != null) {
                     result.add(el);
-                } else if (t instanceof QualIdentTree) {
-                    result.add(resolve(ast, elements, ((QualIdentTree) t).getFQN()));
                 } else {
-                    Logger.getLogger(ElementOverlay.class.getName()).log(Level.SEVERE, "No element and no QualIdent");
+                    Logger.getLogger(ElementOverlay.class.getName()).log(Level.SEVERE, "Cannot resolve {0} to element", fqn);
                 }
             }
         } else if (forElement.getKind().isClass() || forElement.getKind().isInterface()) {
@@ -200,6 +211,24 @@ public class ElementOverlay {
         }
 
         return result;
+    }
+
+    private String fqnFor(Tree t) {
+        Element el = ASTService.getElementImpl(t);
+
+        if (el != null) {
+            if (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE) {
+                return ((QualifiedNameable) el).getQualifiedName().toString();
+            } else {
+                Logger.getLogger(ElementOverlay.class.getName()).log(Level.SEVERE, "Not a QualifiedNameable: {0}", el);
+                return null;
+            }
+        } else if (t instanceof QualIdentTree) {
+            return ((QualIdentTree) t).getFQN();
+        } else {
+            Logger.getLogger(ElementOverlay.class.getName()).log(Level.SEVERE, "No element and no QualIdent");
+            return null;
+        }
     }
 
     private void addElement(TypeMirror tm, List<Element> result) {

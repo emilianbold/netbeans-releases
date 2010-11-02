@@ -20,7 +20,7 @@
 --OWNER:
     FUNCTION_DEFINITION System()  [48:1/2227-50:2/2270] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    FUNCTION System()  [54:5/2273-54:14/2282] ReferencesTestCase/system.h
+    FUNCTION_DEFINITION System()  [48:1/2227-50:2/2270] ReferencesTestCase/system.cc
 ==============================================================
 'supportMetric', tokenID=identifier, offset=2250 [49:5/2250-49:18/2263]
 --OWNER:
@@ -38,7 +38,7 @@
 --OWNER:
     FUNCTION_DEFINITION AddModule(Module*)  [52:1/2272-55:2/2397] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    FUNCTION AddModule(Module*)  [58:5/2386-58:36/2417] ReferencesTestCase/system.h
+    FUNCTION_DEFINITION AddModule(Module*)  [52:1/2272-55:2/2397] ReferencesTestCase/system.cc
 ==============================================================
 'Module', tokenID=identifier, offset=2295 [52:24/2295-52:30/2301]
 --OWNER:
@@ -104,7 +104,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetModule(int) const  [57:1/2399-61:2/2530] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    FUNCTION GetModule(int) const  [57:5/2346-57:40/2381] ReferencesTestCase/system.h
+    FUNCTION_DEFINITION GetModule(int) const  [57:1/2399-61:2/2530] ReferencesTestCase/system.cc
 ==============================================================
 'i', tokenID=identifier, offset=2429 [57:31/2429-57:32/2430]
 --OWNER:
@@ -164,7 +164,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetModuleCount() const  [63:1/2532-65:2/2600] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    FUNCTION GetModuleCount() const  [60:5/2431-60:32/2458] ReferencesTestCase/system.h
+    FUNCTION_DEFINITION GetModuleCount() const  [63:1/2532-65:2/2600] ReferencesTestCase/system.cc
 ==============================================================
 'moduleList', tokenID=identifier, offset=2580 [64:12/2580-64:22/2590]
 --OWNER:
@@ -188,7 +188,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetSupportMetric() const  [67:1/2602-69:2/2668] ReferencesTestCase/system.cc
 --RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [61:5/2463-61:34/2492] ReferencesTestCase/system.h
+    FUNCTION_DEFINITION GetSupportMetric() const  [67:1/2602-69:2/2668] ReferencesTestCase/system.cc
 ==============================================================
 'supportMetric', tokenID=identifier, offset=2652 [68:12/2652-68:25/2665]
 --OWNER:

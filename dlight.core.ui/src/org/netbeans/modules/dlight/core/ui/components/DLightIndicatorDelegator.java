@@ -19,29 +19,32 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = IndicatorComponentDelegator.class, position = 10000)
 public final class DLightIndicatorDelegator implements IndicatorComponentDelegator {
 
+    @Override
     public void activeSessionChanged(DLightSession oldSession, final DLightSession newSession) {
         if (oldSession == newSession) {
             return;
         }
+
         if (oldSession != null) {
             oldSession.removeSessionStateListener(this);
         }
-         if (newSession == null) {
-             return;
-         }
+
         if (newSession != null) {
             newSession.addSessionStateListener(this);
-        }     
+        }
     }
 
+    @Override
     public void sessionStateChanged(final DLightSession session, SessionState oldState, SessionState newState) {
+        if (!needToHandle(session)) {
+            session.removeSessionStateListener(this);
+            return;
+        }
+
         if (newState == SessionState.STARTING) {
-            if (!needToHandle(session)) {
-                session.removeSessionStateListener(this);
-                return;
-            }
             UIThread.invoke(new Runnable() {
 
+                @Override
                 public void run() {
                     DLightIndicatorsTopComponent indicators = DLightIndicatorsTopComponent.findInstance();
                     indicators.setSession(session);
@@ -52,17 +55,20 @@ public final class DLightIndicatorDelegator implements IndicatorComponentDelegat
         }
     }
 
+    @Override
     public void sessionAdded(DLightSession newSession) {
         //System.out.println("Session added");
     }
 
+    @Override
     public void sessionRemoved(DLightSession removedSession) {
     }
 
     private boolean needToHandle(DLightSession session) {
-        if (session == null){
+        if (session == null) {
             return false;
         }
+
         ServiceInfoDataStorage serviceInfoStorage = session.getServiceInfoDataStorage();
         return serviceInfoStorage != null && serviceInfoStorage.getValue(DLightServiceInfo.DLIGHT_RUN) != null;
     }

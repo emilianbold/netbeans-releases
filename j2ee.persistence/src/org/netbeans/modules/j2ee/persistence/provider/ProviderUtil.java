@@ -496,6 +496,7 @@ public class ProviderUtil {
         Parameters.notNull("persistenceUnit", persistenceUnit); //NOI18N
         String version = persistenceUnit instanceof org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit ? Persistence.VERSION_1_0 : Persistence.VERSION_2_0;
         long top_version=Math.round(Double.parseDouble(version)*100);
+        long longVersion = top_version;
         Provider top_provider=null;
         if(providers == null) providers = getAllProviders();
         for (Provider each : providers){
@@ -505,7 +506,13 @@ public class ProviderUtil {
                 else
                 {
                     long cur_version=Math.round(Double.parseDouble(provVersion)*100);
-                    if(cur_version>=top_version)
+                    if(longVersion == cur_version){
+                        //exact match with jpa version, suppose provider to use based on persistence.xml version
+                        top_provider=each;
+                        top_version=cur_version;
+                        break;
+                    }
+                    else if(cur_version >= top_version)
                     {
                         top_provider=each;
                         top_version=cur_version;

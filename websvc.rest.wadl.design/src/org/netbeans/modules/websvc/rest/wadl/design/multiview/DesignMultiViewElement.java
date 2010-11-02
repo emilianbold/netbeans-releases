@@ -194,6 +194,7 @@ public class DesignMultiViewElement extends TopComponent
      * error message.
      */
     private void initUI() {
+        toolbar = null;
         removeAll();
         setLayout(new BorderLayout());
         MultiViewSupport mvSupport = dataObject.getCookie(MultiViewSupport.class);

@@ -177,6 +177,7 @@ public class InstancesView extends TopComponent {
         header.getComponent(1).setVisible(false);
         hfwPanel = hfw.getInstancesController().getPanel();
         add(hfwPanel, "Center");
+        revalidate();
         repaint();
     }
     

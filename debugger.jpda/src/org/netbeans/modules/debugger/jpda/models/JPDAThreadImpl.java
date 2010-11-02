@@ -1560,7 +1560,6 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                     return Collections.unmodifiableList(mis);
                 }
             } catch (IncompatibleThreadStateException ex) {
-                org.openide.ErrorManager.getDefault().notify(ex);
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, getThreadStateLog(), ex);
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 // Thrown when thread has exited

@@ -62,7 +62,7 @@ public interface IndexImpl {
 
     public void store (boolean optimize, Iterable<Indexable> indexedIndexables) throws IOException;
 
-    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException;
+    public Collection<? extends IndexDocumentImpl> query (String fieldName, String value, QuerySupport.Kind kind, String... fieldsToLoad) throws IOException, InterruptedException;
 
     public void fileModified(String relativePath);
 

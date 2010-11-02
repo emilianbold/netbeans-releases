@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.openide.util.CharSequences;
 
 /**
  * @author Vladimir Kvasihn
@@ -189,7 +188,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         } else {
             decls = findByNameAndParamsNumber(prjDecls.iterator(), getName(), getParameters().size());
         }
-        CsmFunction decl = chooseDecl(decls);
+        CsmFunction decl = chooseDeclaration(decls);
         return decl;
     }
 
@@ -277,27 +276,5 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
 
         // read cached declaration
         this.declarationUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }
-
-    private CsmFunction chooseDecl(Collection<CsmDeclaration> decls) {
-        CsmFunction out = null;
-        if (decls.size() == 1) {
-            out = (CsmFunction) decls.iterator().next();
-        } else {
-            // choose declaration based on file name
-            CsmFile sortFile = null;
-            for (CsmDeclaration decl : decls) {
-                CsmFunction fun = (CsmFunction) decl;
-                CsmFile containingFile = fun.getContainingFile();
-                if (sortFile == null) {
-                    sortFile = containingFile;
-                    out = fun;
-                } else if (CharSequences.comparator().compare(sortFile.getAbsolutePath(), containingFile.getAbsolutePath()) < 0) {
-                    sortFile = containingFile;
-                    out = fun;
-                }
-            }
-        }
-        return out;
     }
 }

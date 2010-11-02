@@ -235,24 +235,6 @@ public class WindowsNotifier extends Notifier<Void> {
 
 
     public WindowsNotifier() { // prepare port, start thread?
-        watcher = new Thread("W32 File Monitor") {
-            public void run() {
-                FileInfo finfo;
-                while (true) {
-                   finfo = waitForChange();
-                   if (finfo == null) continue;
-
-                    try {
-                        handleChanges(finfo);
-                    } catch(IOException e) {
-                        Exceptions.printStackTrace(e);
-                    }
-                }
-            }
-        };
-
-        watcher.setDaemon(true);
-        watcher.start();
     }
 
     public @Override void removeWatch(Void key) throws IOException {}
@@ -352,7 +334,26 @@ public class WindowsNotifier extends Notifier<Void> {
                                   + finfo.path + ", handle " + handle
                                   + ": " + err);
         }
-        
+        if (watcher == null) {
+            watcher = new Thread("W32 File Monitor") {
+                public void run() {
+                    FileInfo finfo;
+                    while (true) {
+                        finfo = waitForChange();
+                        if (finfo == null) continue;
+
+                        try {
+                            handleChanges(finfo);
+                        } catch(IOException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                }
+            };
+            watcher.setDaemon(true);
+            watcher.start();
+        }
+
         return null;
     }
 

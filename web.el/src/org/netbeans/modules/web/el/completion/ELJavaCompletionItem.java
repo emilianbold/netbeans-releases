@@ -41,10 +41,18 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.swing.ImageIcon;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -56,6 +64,8 @@ import org.netbeans.modules.web.el.ELElement;
 import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.netbeans.modules.web.el.refactoring.RefactoringUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -63,12 +73,15 @@ import org.openide.filesystems.FileObject;
  */
 final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/jsf_bean_16.png";//NOI18N
+
     private final Element javaElement;
     private final ELElement elElement;
     private final ELTypeUtilities typeUtilities;
     private final ElementHandleAdapter adapter;
 
     public ELJavaCompletionItem(Element javaElement, ELElement elElement, ELTypeUtilities typeUtilities) {
+        assert javaElement != null;
         this.javaElement = javaElement;
         this.elElement = elElement;
         this.typeUtilities = typeUtilities;
@@ -107,14 +120,31 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
-        Element type = typeUtilities.getTypeFor(javaElement);
-        if (type != null) {
-            return type.getSimpleName().toString();
-        }
-        return "";
+        return typeUtilities.getTypeNameFor(javaElement);
     }
 
-    final class ElementHandleAdapter implements ElementHandle {
+    @Override
+    public ImageIcon getIcon() {
+        if (adapter.getKind() == ElementKind.CLASS) {
+            return ImageUtilities.loadImageIcon(ICON_PATH, false);
+        }
+        return super.getIcon();
+    }
+
+    @Override
+    public List<String> getInsertParams() {
+        if (!adapter.isMethod()) {
+            return null;
+        }
+        return typeUtilities.getParameterNames((ExecutableElement) javaElement);
+    }
+
+    @Override
+    public String[] getParamListDelimiters() {
+        return new String[]{"(", ")"};
+    }
+
+    final class ElementHandleAdapter extends ELElementHandle {
 
         @Override
         public FileObject getFileObject() {
@@ -165,6 +195,30 @@ final class ELJavaCompletionItem extends DefaultCompletionProposal {
 
         private boolean isMethod() {
             return javaElement.getKind() == javax.lang.model.element.ElementKind.METHOD;
+        }
+
+        @Override
+        String document(ParserResult info) {
+            final String[] result = new String[1];
+            try {
+                ClasspathInfo cp = ClasspathInfo.create(info.getSnapshot().getSource().getFileObject());
+                JavaSource source = JavaSource.create(cp);
+                if (source == null) {
+                    return null;
+                }
+                source.runUserActionTask(new Task<CompilationController>() {
+
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        ElementJavadoc javadoc = ElementJavadoc.create(parameter, getOriginalElement());
+                        result[0] = javadoc.getText();
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+            return result[0];
         }
     }
 }

@@ -57,33 +57,45 @@ import org.openide.util.actions.CookieAction;
 * @author Jan Jancura, Dafe Simonek
 */
 public class ViewAction extends CookieAction {
+    @Override
     protected boolean surviveFocusChange() {
         return false;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getBundle(ViewAction.class).getString("View");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ViewAction.class);
     }
 
+    @Override
     protected int mode() {
         return MODE_ALL;
     }
 
+    @Override
     protected Class[] cookieClasses() {
         return new Class[] { ViewCookie.class };
     }
 
+    @Override
     protected void performAction(final Node[] activatedNodes) {
+        if (activatedNodes == null) {
+            return;
+        }
         for (int i = 0; i < activatedNodes.length; i++) {
             ViewCookie es = (ViewCookie) activatedNodes[i].getCookie(ViewCookie.class);
-            es.view();
+            if (es != null) {
+                es.view();
+            }
         }
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }

@@ -63,7 +63,6 @@ class SuperVariable extends AbstractObjectVariable implements Super {
     // init ....................................................................
     private ClassType classType;
 
-
     SuperVariable (
         JPDADebuggerImpl debugger,
         ObjectReference value,
@@ -72,7 +71,8 @@ class SuperVariable extends AbstractObjectVariable implements Super {
     ) {
         super (
             debugger, 
-            value, 
+            value,
+            classType,
             parentID + ".super^"
         );
         this.classType = classType;
@@ -81,27 +81,6 @@ class SuperVariable extends AbstractObjectVariable implements Super {
     
     // Super impl ..............................................................
     
-    public Super getSuper () {
-        if (getInnerValue () == null) 
-            return null;
-        ClassType superType;
-        try {
-            superType = ClassTypeWrapper.superclass(this.classType);
-        } catch (InternalExceptionWrapper ex) {
-            return null;
-        } catch (VMDisconnectedExceptionWrapper ex) {
-            return null;
-        }
-        if (superType == null) 
-            return null;
-        return new SuperVariable(
-                this.getDebugger(), 
-                (ObjectReference) this.getInnerValue(),
-                superType,
-                this.getID()
-                );
-    }
-
     public SuperVariable clone() {
         return new SuperVariable(getDebugger(), (ObjectReference) getJDIValue(), classType,
                 getID().substring(0, getID().length() - ".super^".length()));
@@ -113,7 +92,4 @@ class SuperVariable extends AbstractObjectVariable implements Super {
         return "SuperVariable " + getType();
     }
     
-    public String getType () {
-        return this.classType.name ();
-    }
 }

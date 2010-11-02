@@ -71,6 +71,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -2032,8 +2034,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     // Default version
                     List<String> versions = repository.getConfiguration().getVersions(product);
                     String defaultVersion = getCurrentNetBeansVersion();
-                    if (versions.contains(defaultVersion)) {
-                        issue.setFieldValue(IssueField.VERSION, defaultVersion);
+                    for (String v : versions) {
+                        if (v.trim().toLowerCase().equals(defaultVersion.toLowerCase())) {
+                            issue.setFieldValue(IssueField.VERSION, v);
+                        }                        
                     }
                 }
                 initialValues.remove(IssueField.COMPONENT.getKey());
@@ -2620,8 +2624,29 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return unitIncrement;
     }
 
-    private String getCurrentNetBeansVersion() {
-        return "dev"; // NOI18N
+    private static final String CURRENT_NB_VERSION = "6.10";                    // NOI18N
+    private String getCurrentNetBeansVersion() {        
+        String version = parseProductVersion(getProductVersionValue());        
+        if(version != null) {
+            if(version.toLowerCase().equals("dev")) {                           // NOI18N
+                return CURRENT_NB_VERSION;
+            } else {                
+                return version;
+            }
+        }
+        return CURRENT_NB_VERSION;
+    }
+
+    static String parseProductVersion(String productVersionValue) {
+        Pattern p = Pattern.compile("NetBeans IDE\\s([a-zA-Z0-9\\.?]*)\\s?.*");                      // NOI18N
+        Matcher m = p.matcher(productVersionValue);
+        if(m.matches()) {
+            String version = m.group(1);
+            if(version != null && !version.trim().isEmpty()) {
+                return version;
+            }
+        }
+        return null;
     }
 
     private void addNetbeansInfo() {

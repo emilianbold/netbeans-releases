@@ -188,6 +188,10 @@ public final class FunctionNameUtils {
         }
         return functionSignature.substring(start);
     }
+    
+    public static String getFullFunctionName(String functionSignature){
+        return getFunctionModule(functionSignature) + "`" + getFunctionName(functionSignature); // NOI18N
+    }
 
     public static String getFunctionName(String functionSignature) {
         int start = 0;

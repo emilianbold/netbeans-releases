@@ -131,6 +131,7 @@ public class CCGoToDeclarationAction extends BaseAction {
         final String taskName = "Go to declaration"; //NOI18N
         Runnable run = new Runnable() {
 
+            @Override
             public void run() {
                 if (target != null && (target.getDocument() instanceof BaseDocument)) {
                     BaseDocument doc = (BaseDocument) target.getDocument();

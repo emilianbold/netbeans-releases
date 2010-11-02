@@ -43,9 +43,7 @@ package org.netbeans.modules.cnd.highlight.semantic;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -91,7 +89,7 @@ public final class SemanticEntitiesProvider {
         return new AbstractSemanticEntity(FontColorProvider.Entity.CLASS_FIELD) {
             @Override
             public String getName() {
-                return "class-fields"; // NOI18N
+                return "fast-class-fields"; // NOI18N
             }
             @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
@@ -128,12 +126,11 @@ public final class SemanticEntitiesProvider {
         };
     }
 
-    private static final Set<CsmReferenceKind> FUN_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
     private SemanticEntity getFastFunctions(){
         return new AbstractSemanticEntity(FontColorProvider.Entity.FUNCTION) {
             @Override
             public String getName() {
-                return "functions-names"; // NOI18N
+                return "fast-functions-names"; // NOI18N
             }
             @Override
             public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile) {
@@ -160,7 +157,7 @@ public final class SemanticEntitiesProvider {
                     return color;
                 }
                 // check if we are in the function declaration
-                if (CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS)) {
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                     return color;
                 } else {
                     return funUsageColors;
@@ -198,7 +195,7 @@ public final class SemanticEntitiesProvider {
                     return color;
                 }
                 // check if we are in the function declaration
-                if (CsmReferenceResolver.getDefault().isKindOf(ref, FUN_DECLARATION_KINDS)) {
+                if (CsmReferenceResolver.getDefault().isKindOf(ref, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
                     return color;
                 } else {
                     return funUsageColors;

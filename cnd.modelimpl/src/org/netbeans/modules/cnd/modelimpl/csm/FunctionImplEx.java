@@ -99,12 +99,18 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     protected CsmObject findOwner(Resolver parent) {
 	CharSequence[] cnn = classOrNspNames;
 	if( cnn != null ) {
-	    CsmObject obj = ResolverFactory.createResolver(this, parent).resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
-	    if( obj instanceof CsmClass ) {
-                return (CsmClass) obj;
-	    }
-	    else if( obj instanceof CsmNamespace ) {
-		return (CsmNamespace) obj;
+            final Resolver resolver = ResolverFactory.createResolver(this, parent);
+	    CsmObject obj = resolver.resolve(cnn, Resolver.CLASSIFIER | Resolver.NAMESPACE);
+            if (CsmKindUtilities.isClassifier(obj)) {
+                CsmClassifier cls = resolver.getOriginalClassifier((CsmClassifier)obj);
+                if (cls != null) {
+                    obj = cls;
+                }
+                if (CsmKindUtilities.isClass(obj)) {
+                    return obj;
+                }
+            } else if(CsmKindUtilities.isNamespace(obj)) {
+		return obj;
 	    }
 	}
 	return null;
@@ -167,10 +173,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                         level--;
                         break;
                     case CPPTokenTypes.LESSTHAN:
-                        // getTemplateParameters does not work for constructors and destructors...
-                        if(!CsmKindUtilities.isConstructor(this) && !CsmKindUtilities.isDestructor(this)) {
-                            TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
-                        }
+                        TemplateUtils.addSpecializationSuffix(token, id, !getInheritedTemplateParameters().isEmpty() ? getInheritedTemplateParameters() : getTemplateParameters(), true);
                         level++;
                         break;
                     case CPPTokenTypes.SCOPE:
@@ -219,7 +222,6 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         if( sb.length() == 0 ) {
             sb.append("unknown>"); // NOI18N
         }
-        sb.append(getScopeSuffix());
         sb.append("::"); // NOI18N
         sb.append(getQualifiedNamePostfix());
         return sb.toString();

@@ -56,7 +56,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.EventListenerList;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.editor.DocumentUtilities;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
@@ -84,23 +83,29 @@ public class FileBufferDoc extends AbstractFileBuffer {
         resetLastModified();
     }
     
-    private void resetLastModified() {
-        lastModified = System.currentTimeMillis();
-        clearLineCache();
+    private boolean resetLastModified() {
+        final long documentTimestamp = org.netbeans.lib.editor.util.swing.DocumentUtilities.getDocumentTimestamp(doc);
+        if (documentTimestamp != lastModified) {
+            lastModified = documentTimestamp;
+            clearLineCache();
+            return true;
+        }
+        return false;
     }
     
     private void fireDocumentChanged() {
-        resetLastModified();
-        EventListener[] list = listeners.getListeners(ChangeListener.class);
-        if( list.length > 0 ) {
-            ChangeEvent ev = new ChangeEvent(this);
-            for( int i = 0; i < list.length; i++ ) {
-                ((ChangeListener) list[i]).stateChanged(ev);
+        if (resetLastModified()) {
+            EventListener[] list = listeners.getListeners(ChangeListener.class);
+            if( list.length > 0 ) {
+                ChangeEvent ev = new ChangeEvent(this);
+                for( int i = 0; i < list.length; i++ ) {
+                    ((ChangeListener) list[i]).stateChanged(ev);
+                }
             }
+            // TODO: think over when do invalidate? before informing listeners or after
+            APTDriver.getInstance().invalidateAPT(this);
+            APTFileCacheManager.invalidate(this);
         }
-        // TODO: think over when do invalidate? before informing listeners or after
-        APTDriver.getInstance().invalidateAPT(this);
-        APTFileCacheManager.invalidate(this);
     }
 
     @Override
@@ -160,7 +165,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
                         changedSegmentTaken = lastModified;
                         if (TRACE) {
                             System.err.println("Take last changed segment: "+lastChangedSegment.toString());
-                            new Exception().printStackTrace();
+                            new Exception().printStackTrace(System.err);
                         }
                     }
                 } catch( BadLocationException e ) {
@@ -232,7 +237,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
                 try {
                     final int length = doc.getLength();
                     char[] buf = new char[length];
-                    DocumentUtilities.copyText(doc, 0, length, buf, 0);
+                    org.netbeans.editor.DocumentUtilities.copyText(doc, 0, length, buf, 0);
                     res[0] = buf;
 
                 } catch( BadLocationException e ) {

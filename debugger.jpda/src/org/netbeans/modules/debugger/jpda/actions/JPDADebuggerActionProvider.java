@@ -196,7 +196,9 @@ implements PropertyChangeListener {
                     //System.err.println("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
                     //Logger.getLogger(JPDADebuggerActionProvider.class.getName()).fine("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
                     run.run();
-                    threadWithActionsPending.setPendingAction(null);
+                    if (threadWithActionsPending != null) {
+                        threadWithActionsPending.setPendingAction(null);
+                    }
                     for (Iterator<JPDADebuggerActionProvider> it = disabledActions.iterator(); it.hasNext(); ) {
                         JPDADebuggerActionProvider ap = it.next();
                         Set actions = ap.getActions();

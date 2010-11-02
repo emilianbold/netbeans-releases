@@ -207,7 +207,8 @@ final class MatchingObject
      * @see  DataObject#isValid
      */
     boolean isObjectValid() {
-        return valid ? getDataObject().isValid() : false;
+        DataObject data = getDataObject();
+        return valid && data != null ? data.isValid() : false; // #190819
     }
     
     FileObject getFileObject() {
@@ -310,14 +311,17 @@ final class MatchingObject
     /**
      */
     boolean isSubnodeSelected(int index) {
-        // #177812
-        assert (matchesSelection == null)
-               || ((index >= 0) && (index < matchesSelection.length)) :
-               "Illegal index=" + index + "in the case matchesSelection" +
-               ((matchesSelection == null) ? "=null" :
-                   ".length=" + matchesSelection.length); // NOI18N
-        return (matchesSelection == null) ? selected
-                                         : matchesSelection[index];
+        // See #189617, #177812, #129232
+        if(matchesSelection == null) {
+            return selected;
+        }
+        if((index >= 0) && (index < matchesSelection.length)) {
+            return matchesSelection[index];
+        }
+        LOG.log(Level.FINE,
+          "Illegal index={0} in the case matchesSelection.length={1}", // NOI18N
+          new Object[] { index, matchesSelection.length });
+        return false; // An associated checkbox won't be selected.
     }
     
     /**

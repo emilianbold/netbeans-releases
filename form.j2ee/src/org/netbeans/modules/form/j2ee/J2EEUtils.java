@@ -74,6 +74,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -762,7 +763,7 @@ public class J2EEUtils {
                     CompilationUnitTree cu = wc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                 clazz = candidate;
@@ -858,7 +859,7 @@ public class J2EEUtils {
                     CompilationUnitTree cu = wc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                 clazz = candidate;
@@ -903,7 +904,7 @@ public class J2EEUtils {
                     CompilationUnitTree cu = wc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                 clazz = candidate;
@@ -960,7 +961,7 @@ public class J2EEUtils {
                     CompilationUnitTree cu = cc.getCompilationUnit();
                     ClassTree clazz = null;
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (candidate.getModifiers().getFlags().contains(javax.lang.model.element.Modifier.PUBLIC)) {
                                 clazz = candidate;

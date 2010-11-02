@@ -248,31 +248,48 @@ public abstract class AbstractSvnTestCase extends NbTestCase {
     }
     
     protected void update(File file, SVNRevision rev) throws SVNClientException {
-        getFullWorkingClient().update(new File[] { file }, rev, Depth.infinity, true, false, true);
+        try {
+            String[] cmd = new String[]{"svn", "update", file.getAbsolutePath(), "--set-depth", "infinity"};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
+        } catch (IOException iOException) {
+            throw new SVNClientException(iOException);
+        } catch (InterruptedException interruptedException) {
+            throw new SVNClientException(interruptedException);
+        }
+//         getFullWorkingClient().update(new File[] { file }, rev, Depth.infinity, true, false, true);
     }    
     
-    protected void cleanUpRepo() throws SVNClientException {
+    protected void cleanUpRepo() throws SVNClientException, IOException, InterruptedException {
         ISVNClientAdapter client = getFullWorkingClient();
         ISVNDirEntry[] entries = client.getList(repoUrl, SVNRevision.HEAD, false);
         SVNUrl[] urls = new SVNUrl[entries.length];
         for (int i = 0; i < entries.length; i++) {
             urls[i] = repoUrl.appendPath(entries[i].getPath());            
         }        
-        client.remove(urls, "cleanup");
+        cliRemove(urls);
     }
     
-    protected void cleanUpRepo(String[] paths) throws SVNClientException {
+    protected void cleanUpRepo(String[] paths) throws SVNClientException, IOException, InterruptedException {
         ISVNClientAdapter client = getFullWorkingClient();
         SVNUrl[] urls = new SVNUrl[paths.length];
         for (int i = 0; i < paths.length; i++) {
             urls[i] = getTestUrl().appendPath(paths[i]);
         }
         try {
-            client.remove(urls, "cleanup");
+            cliRemove(urls);
         } catch (SVNClientException e) {
             if(e.getMessage().indexOf("does not exist") < 0) {
                 throw e; 
             }
+        }
+    }
+
+    private void cliRemove(SVNUrl... urls) throws SVNClientException, IOException, InterruptedException {
+        for (SVNUrl url : urls) {
+            String[] cmd = new String[] {"svn", "remove", url.toString(), "-m", "remove"};
+            Process p = Runtime.getRuntime().exec(cmd);
+            p.waitFor();
         }
     }
 

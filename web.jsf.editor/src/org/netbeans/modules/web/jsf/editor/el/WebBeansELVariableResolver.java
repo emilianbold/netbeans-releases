@@ -98,6 +98,11 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
         return Collections.emptyList();
     }
 
+    @Override
+    public List<VariableInfo> getBeansInScope(String scope, FileObject context) {
+        return Collections.emptyList();
+    }
+
     private List<WebBean> getWebBeans(FileObject context) {
         JsfSupport jsfSupport = JsfSupport.findFor(context);
         return jsfSupport != null 

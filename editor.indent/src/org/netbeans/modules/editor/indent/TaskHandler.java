@@ -422,15 +422,14 @@ public final class TaskHandler {
             Document doc = handler.document();
             List<Context.Region> indentRegions = new ArrayList<Context.Region>();
             try {
-                if (languagePath != null) {
-                    int endOffset = handler.endPos().getOffset();
-                    if (endOffset >= doc.getLength())
-                        endOffset = Integer.MAX_VALUE;
-                    int startOffset = handler.startPos().getOffset();
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("indentRegions: startOffset=" + startOffset + ", endOffset=" + endOffset + '\n'); //NOI18N
-                    }
-
+                int startOffset = handler.startPos().getOffset();
+                int endOffset = handler.endPos().getOffset();
+                if (endOffset > doc.getLength())
+                    endOffset = Integer.MAX_VALUE;
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("indentRegions: startOffset=" + startOffset + ", endOffset=" + endOffset + '\n'); //NOI18N
+                }
+                if (languagePath != null && startOffset < endOffset) {
                     List<TokenSequence<?>> tsl = TokenHierarchy.get(doc).tokenSequenceList(languagePath,
                             startOffset, endOffset);
                     for (TokenSequence<?> ts : tsl) {

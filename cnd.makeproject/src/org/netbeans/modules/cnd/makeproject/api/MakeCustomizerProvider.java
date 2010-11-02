@@ -195,7 +195,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         if (item != null) {
             dialogTitle = MessageFormat.format(
                     NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_File_Customizer_Title"),
-                    new Object[]{item.getFile().getName()}); // NOI18N 
+                    new Object[]{item.getName()}); // NOI18N 
         } else if (folder != null) {
             dialogTitle = MessageFormat.format(
                     NbBundle.getMessage(MakeCustomizerProvider.class, "LBL_Folder_Customizer_Title"),

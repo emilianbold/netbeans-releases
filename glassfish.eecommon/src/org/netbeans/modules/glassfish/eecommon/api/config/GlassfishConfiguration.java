@@ -698,9 +698,11 @@ public abstract class GlassfishConfiguration implements
                     } else if (sunDDRoot instanceof SunApplicationClient) {
                         ref = ((SunApplicationClient) sunDDRoot).newResourceRef();
                     }
-                    ref.setResRefName(referenceName);
-                    ref.setJndiName(jndiName);
-                    sunDDRoot.addValue(SunWebApp.RESOURCE_REF, ref);
+                    if (null != ref) {
+                        ref.setResRefName(referenceName);
+                        ref.setJndiName(jndiName);
+                        sunDDRoot.addValue(SunWebApp.RESOURCE_REF, ref);
+                    }
                 }
 
                 // if changes, save file.
@@ -941,9 +943,11 @@ public abstract class GlassfishConfiguration implements
                     } else if (sunDDRoot instanceof SunApplicationClient) {
                         ref = ((SunApplicationClient) sunDDRoot).newEjbRef();
                     }
-                    ref.setEjbRefName(referenceName);
-                    ref.setJndiName(jndiName);
-                    sunDDRoot.addValue(SunWebApp.EJB_REF, ref);
+                    if (ref != null) {
+                        ref.setEjbRefName(referenceName);
+                        ref.setJndiName(jndiName);
+                        sunDDRoot.addValue(SunWebApp.EJB_REF, ref);
+                    }
                 }
 
                 // if changes, save file.
@@ -1173,9 +1177,11 @@ public abstract class GlassfishConfiguration implements
                     } else if (sunDDRoot instanceof SunApplicationClient) {
                         destRef = ((SunApplicationClient) sunDDRoot).newMessageDestinationRef();
                     }
-                    destRef.setJndiName(referenceName);
-                    destRef.setMessageDestinationRefName(referenceName);
-                    sunDDRoot.addValue(SunWebApp.MESSAGE_DESTINATION_REF, destRef);
+                    if (null != destRef) {
+                        destRef.setJndiName(referenceName);
+                        destRef.setMessageDestinationRefName(referenceName);
+                        sunDDRoot.addValue(SunWebApp.MESSAGE_DESTINATION_REF, destRef);
+                    }
                 }
 
                 ResourceRef factoryRef = findNamedBean(sunDDRoot, connectionFactoryName,
@@ -1191,9 +1197,11 @@ public abstract class GlassfishConfiguration implements
                     } else if (sunDDRoot instanceof SunApplicationClient) {
                         factoryRef = ((SunApplicationClient) sunDDRoot).newResourceRef();
                     }
-                    factoryRef.setResRefName(connectionFactoryName);
-                    factoryRef.setJndiName(connectionFactoryName);
-                    sunDDRoot.addValue(SunWebApp.RESOURCE_REF, factoryRef);
+                    if (null != factoryRef) {
+                        factoryRef.setResRefName(connectionFactoryName);
+                        factoryRef.setJndiName(connectionFactoryName);
+                        sunDDRoot.addValue(SunWebApp.RESOURCE_REF, factoryRef);
+                    }
                 }
 
                 // if changes, save file.

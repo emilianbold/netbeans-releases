@@ -54,27 +54,21 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.nbbuild.PublicPackagesInProjectizedXMLTest.ExecutionError;
 
 /**
  * @author Jaroslav Tulach
  */
-public class MakeNBMTest extends NbTestCase {
+public class MakeNBMTest extends TestBase {
     public MakeNBMTest (String name) {
         super (name);
     }
     
-    protected @Override void setUp() throws Exception {
-        clearWorkDir();
-    }
-
     @RandomlyFails // NB-Core-Build #2570
     public void testGenerateNBMForSimpleModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar (new String[0], m);
 
@@ -98,7 +92,7 @@ public class MakeNBMTest extends NbTestCase {
         w.write(UTfile);
         w.close();
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"makenbm\" classname=\"org.netbeans.nbbuild.MakeNBM\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -120,7 +114,7 @@ public class MakeNBMTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertTrue ("Output exists", output.exists ());
         assertTrue ("Output directory created", output.isDirectory());
@@ -139,19 +133,19 @@ public class MakeNBMTest extends NbTestCase {
         Thread.sleep(1300);
 
         // execute once again
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-debug", "-Ddo.fail=true"});
+        execute (f, new String[] { "-debug", "-Ddo.fail=true"});
         
         long newTime = output.listFiles()[0].lastModified();
         
-        assertEquals("The file has not been modified:\n" + PublicPackagesInProjectizedXMLTest.getStdOut(), time, newTime);
+        assertEquals("The file has not been modified:\n" + getStdOut(), time, newTime);
         
         
         CHECK_SIGNED: {
             File jar = output.listFiles()[0];
             JarFile signed = new JarFile(jar);
-            Enumeration it = signed.entries();
+            Enumeration<JarEntry> it = signed.entries();
             while (it.hasMoreElements()) {
-                JarEntry entry = (JarEntry)it.nextElement();
+                JarEntry entry = it.nextElement();
                 if (entry.getName().endsWith(".SF")) {
                     break CHECK_SIGNED;
                 }
@@ -161,7 +155,7 @@ public class MakeNBMTest extends NbTestCase {
         
     }
     
-    private final File createNewJarFile (String prefix) throws IOException {
+    private File createNewJarFile(String prefix) throws IOException {
         if (prefix == null) {
             prefix = "modules";
         }
@@ -173,7 +167,9 @@ public class MakeNBMTest extends NbTestCase {
         int i = 0;
         for (;;) {
             File f = new File (dir, ss + i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists ()) {
+                return f;
+            }
         }
     }
     
@@ -207,7 +203,7 @@ public class MakeNBMTest extends NbTestCase {
         return f;
     }
     
-    private final File generateKeystore(String alias, String password) throws Exception {
+    private File generateKeystore(String alias, String password) throws Exception {
         File where = new File(getWorkDir(), "key.ks");
         
         String script = 
@@ -222,9 +218,9 @@ public class MakeNBMTest extends NbTestCase {
             "/>\n" +
             "</target></project>\n";
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
+        java.io.File f = extractString (script);
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+            execute (f, new String[] { });
         } catch (ExecutionError err) {
             if (err.getMessage().indexOf("java.security.ProviderException") != -1) {
                 // common error on Sun OS:

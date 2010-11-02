@@ -45,8 +45,10 @@ package org.netbeans.api.java.source;
 
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
@@ -451,5 +453,17 @@ public class TreeUtilitiesTest extends NbTestCase {
     
     private void performExoticIdentiferEncodeTest(String exotic, String golden) throws Exception {
         assertEquals(golden, TreeUtilities.encodeIdentifierInternal(exotic).toString());
+    }
+
+    public void testNPEFromIsStatic() throws Exception {
+        prepareTest("Test", "package test; public enum Test {A; private void m() { String s = \"a\"; } }");
+
+        TreePath tp = info.getTreeUtilities().pathFor(97 - 30);
+
+        assertEquals(Kind.STRING_LITERAL, tp.getLeaf().getKind());
+
+        Scope s = info.getTrees().getScope(tp);
+
+        assertFalse(info.getTreeUtilities().isStaticContext(s));
     }
 }

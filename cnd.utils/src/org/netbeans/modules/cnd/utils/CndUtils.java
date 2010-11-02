@@ -91,6 +91,10 @@ public class CndUtils {
         return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
     }
 
+    public static boolean isCodeCompletionUnitTestMode() {
+        return Boolean.getBoolean("cnd.mode.completion.unittest"); // NOI18N
+    }
+
     public static boolean getBoolean(String name, boolean result) {
         String text = System.getProperty(name);
         if (text != null) {
@@ -142,7 +146,7 @@ public class CndUtils {
 
     private static final class FileNamePrefixAccessor {
         // use always Unix path, because java.io.File on windows understands it well
-        private static final String path = System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
+        private static final String path = System.getProperty("netbeans.user") == null ? null : System.getProperty("netbeans.user").replace('\\', '/') + "/var/cache/cnd/remote-includes/"; //NOI18N
     }
 
     public static String getIncludeFileBase() {
@@ -179,6 +183,34 @@ public class CndUtils {
         return lastAssertion;
     }
 
+    public static void assertAbsolutePathInConsole(String path) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
+            }
+        }
+    }
+
+    public static void assertAbsolutePathInConsole(String path, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! CndPathUtilitities.isPathAbsolute(path)) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + path);
+            }
+        }
+    }
+
+    public static void assertAbsoluteFileInConsole(File file) {
+        assertAbsoluteFileInConsole(file, "Absolute path should be used"); //NOI18N
+    }
+
+    public static void assertAbsoluteFileInConsole(File file, String message) {
+        if (CndUtils.isDebugMode()) {
+            if (! file.isAbsolute()) {
+                CndUtils.assertTrueInConsole(false, message + ' ' + file.getPath());
+            }
+        }
+    }
+
     public static void assertNonUiThread() {
         assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
     }
@@ -194,5 +226,9 @@ public class CndUtils {
                 assertTrueInConsole(false, "Parameter file was not normalized. Was " + file + " instead of " + normFile); // NOI18N
             }
         }
+    }
+
+    public static Logger getLogger() {
+        return LOG;
     }
 }

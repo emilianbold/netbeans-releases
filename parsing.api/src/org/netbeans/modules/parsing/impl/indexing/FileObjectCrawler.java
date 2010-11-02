@@ -187,7 +187,7 @@ public final class FileObjectCrawler extends Crawler {
 
                     FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
                     allResources.add(indexable);
-                    if (!isUpToDate(fo, relativePath) && resources != null) {
+                    if (!isUpToDate(fo, relativePath)) {
                         resources.add(indexable);
                     }
                 }

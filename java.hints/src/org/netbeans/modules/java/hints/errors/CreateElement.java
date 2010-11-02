@@ -72,16 +72,15 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -142,7 +141,7 @@ public final class CreateElement implements ErrorRule<Void> {
         boolean lookupMethodInvocation = true;
         boolean lookupNCT = true;
 
-        TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        TreePath path = info.getTreeUtilities().pathFor(Math.max((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf()), offset) + 1);
 
         while(path != null) {
             Tree leaf = path.getLeaf();
@@ -152,12 +151,12 @@ public final class CreateElement implements ErrorRule<Void> {
                 parent = path;
             if (leaf == errorPath.getLeaf() && parent == null)
                 parent = path;
-            if (leafKind == Kind.CLASS && firstClass == null)
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) && firstClass == null)
                 firstClass = path;
             if (leafKind == Kind.METHOD && firstMethod == null && firstClass == null)
                 firstMethod = path;
             //static/dynamic initializer:
-            if (   leafKind == Kind.BLOCK && path.getParentPath().getLeaf().getKind() == Kind.CLASS
+            if (   leafKind == Kind.BLOCK && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())
                 && firstMethod == null && firstClass == null)
                 firstInitializer = path;
 
@@ -337,7 +336,7 @@ public final class CreateElement implements ErrorRule<Void> {
         }
 
         //XXX: should reasonably consider all the found type candidates, not only the one:
-        TypeMirror type = Utilities.resolveCapturedType(info, types.get(0));
+        final TypeMirror type = types.get(0) != null ? Utilities.resolveCapturedType(info, types.get(0)) : null;
 
         if (type == null || type.getKind() == TypeKind.VOID || type.getKind() == TypeKind.EXECUTABLE) {
             return result;
@@ -385,20 +384,18 @@ public final class CreateElement implements ErrorRule<Void> {
             }
         }
 
-        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || types.contains(ElementKind.PARAMETER))) {
+        if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || fixTypes.contains(ElementKind.PARAMETER))) {
             ExecutableElement ee = null;
 
             if (firstMethod != null) {
                 ee = (ExecutableElement) info.getTrees().getElement(firstMethod);
             }
 
-            if ((ee != null) && type != null) {
-                int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
-                if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
-                if (fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
-                    result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
-            }
+            int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
+            if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
+            if ((firstMethod != null || firstInitializer != null) && fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
+                result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
         }
 
         return result;
@@ -511,7 +508,8 @@ public final class CreateElement implements ErrorRule<Void> {
      * @return true if target's file is writable
      */
     private static boolean isTargetWritable(TypeElement target, CompilationInfo info) {
-	FileObject fo = SourceUtils.getFile(ElementHandle.create(target.getEnclosingElement()), info.getClasspathInfo());
+        TypeElement outermostType = info.getElementUtilities().outermostTypeElement(target);
+        FileObject fo = SourceUtils.getFile(ElementHandle.create(outermostType), info.getClasspathInfo());
 	if(fo != null && fo.canWrite())
 	    return true;
 	else

@@ -43,10 +43,15 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.io.File;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
@@ -60,25 +65,72 @@ import org.openide.filesystems.FileUtil;
 /*package*/ class NewProjectWizardUtils {
 
     public static boolean isFullRemote(WizardDescriptor wizardDescriptor) {
-        Boolean b = (Boolean) wizardDescriptor.getProperty("fullRemote");
+        Boolean b = (Boolean) wizardDescriptor.getProperty(WizardConstants.PROPERTY_FULL_REMOTE);
         return b != null && b.booleanValue();
     }
 
     public static FileObject getFileObject(String path, WizardDescriptor wizardDescriptor) {
         if (isFullRemote(wizardDescriptor)) {
-            String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+            String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
             CndUtils.assertNotNull(hostUID, "Null host UID"); //NOI18N
             ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
             return RemoteFileUtil.getFileObject(path, env, RemoteProject.Mode.REMOTE_SOURCES);
         } else {
-            return FileUtil.toFileObject(new File(path));
+            return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
         }
     }
 
     public static ExecutionEnvironment getExecutionEnvironment(WizardDescriptor wizardDescriptor) {
-        String hostUID = (String) wizardDescriptor.getProperty("hostUID");  //NOI18N
+        String hostUID = (String) wizardDescriptor.getProperty(WizardConstants.PROPERTY_HOST_UID);
         return (hostUID == null) ?
             ServerList.getDefaultRecord().getExecutionEnvironment() :
             ExecutionEnvironmentFactory.fromUniqueID(hostUID);
     }
+
+    public static boolean fileExists(String absolutePath, WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            return RemoteFileUtil.fileExists(absolutePath, getExecutionEnvironment(wizardDescriptor));
+        } else {
+            return new File(absolutePath).exists();
+        }
+    }
+
+    public static boolean isDirectory(String absolutePath, WizardDescriptor wizardDescriptor) {
+        if (isFullRemote(wizardDescriptor)) {
+            return RemoteFileUtil.isDirectory(absolutePath, getExecutionEnvironment(wizardDescriptor));
+        } else {
+            return new File(absolutePath).isDirectory();
+        }
+    }
+
+    public static JFileChooser createFileChooser(Project project,
+            String titleText, String buttonText,
+            int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+        
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        if (project != null) {
+            RemoteProject remoteProject = project.getLookup().lookup(RemoteProject.class);
+            if (remoteProject != null) {
+                execEnv = remoteProject.getSourceFileSystemHost();
+            }
+        }
+        return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+    public static JFileChooser createFileChooser(WizardDescriptor wd, String titleText,
+            String buttonText, int mode, FileFilter[] filters,
+            String initialPath, boolean useParent) {
+
+        ExecutionEnvironment execEnv = ExecutionEnvironmentFactory.getLocal();
+        if (isFullRemote(wd)) {
+            String hostUID = (String) wd.getProperty(WizardConstants.PROPERTY_HOST_UID);
+            if (hostUID != null) {
+                execEnv = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+            }
+        }
+        return RemoteFileUtil.createFileChooser(execEnv, titleText, buttonText, mode, filters, initialPath, useParent);
+    }
+
+
 }

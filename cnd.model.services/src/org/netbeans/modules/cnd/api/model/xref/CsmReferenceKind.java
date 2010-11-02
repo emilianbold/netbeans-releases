@@ -59,6 +59,11 @@ public enum CsmReferenceKind {
     UNKNOWN;
 
     /**
+     * declaration of definition of functions
+     */
+    public static final Set<CsmReferenceKind> FUNCTION_DECLARATION_KINDS = EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION);
+    
+    /**
      * all references in active code
      */
     public static final Set<CsmReferenceKind> ANY_REFERENCE_IN_ACTIVE_CODE;

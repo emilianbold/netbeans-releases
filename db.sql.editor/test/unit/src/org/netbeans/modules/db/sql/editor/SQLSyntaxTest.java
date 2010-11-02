@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -68,7 +68,7 @@ public class SQLSyntaxTest extends NbTestCase {
             SQLTokenContext.OPERATOR,
             SQLTokenContext.INT_LITERAL,
         });
-        
+
         assertTokens("10foo", new TokenID[] {
             SQLTokenContext.INT_LITERAL,
             SQLTokenContext.IDENTIFIER,
@@ -110,7 +110,7 @@ public class SQLSyntaxTest extends NbTestCase {
     }
 
     public void testComments() {
-        assertTokens("select /* block comment */ * from #notLineComment -- line comment", new TokenID[] {
+        assertTokens("select /* block comment */ * from #notLineComment -- line comment",
             SQLTokenContext.KEYWORD,
             SQLTokenContext.WHITESPACE,
             SQLTokenContext.BLOCK_COMMENT,
@@ -121,9 +121,43 @@ public class SQLSyntaxTest extends NbTestCase {
             SQLTokenContext.WHITESPACE,
             SQLTokenContext.IDENTIFIER,
             SQLTokenContext.WHITESPACE,
-            SQLTokenContext.LINE_COMMENT
-        });
+            SQLTokenContext.LINE_COMMENT);
+        // https://netbeans.org/bugzilla/show_bug.cgi?id=172904
         assertTokens("# MySQL Line Comment", SQLTokenContext.LINE_COMMENT);
+        // https://netbeans.org/bugzilla/show_bug.cgi?id=181020
+        assertTokens("# my line comment \nselect * from mytable",
+                SQLTokenContext.LINE_COMMENT,
+                SQLTokenContext.WHITESPACE,
+                SQLTokenContext.KEYWORD,
+                SQLTokenContext.WHITESPACE,
+                SQLTokenContext.OPERATOR,
+                SQLTokenContext.WHITESPACE,
+                SQLTokenContext.KEYWORD,
+                SQLTokenContext.WHITESPACE,
+                SQLTokenContext.IDENTIFIER
+                );
+        // https://netbeans.org/bugzilla/show_bug.cgi?id=191188
+        assertTokens("select * from mytable where id# = 1",
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.KEYWORD,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.IDENTIFIER,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.OPERATOR,
+            SQLTokenContext.WHITESPACE,
+            SQLTokenContext.INT_LITERAL);
+    }
+
+    
+    public void testHashInIdentifier() {
+        assertTokens("id# = 1", SQLTokenContext.IDENTIFIER, SQLTokenContext.WHITESPACE, SQLTokenContext.OPERATOR, SQLTokenContext.WHITESPACE, SQLTokenContext.INT_LITERAL);
     }
 
     private void assertTokens(String m, TokenID... tokens) {

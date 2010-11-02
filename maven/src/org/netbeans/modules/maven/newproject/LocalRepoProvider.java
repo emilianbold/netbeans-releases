@@ -45,10 +45,7 @@ package org.netbeans.modules.maven.newproject;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeProvider;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
@@ -62,11 +59,10 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
  */
 public class LocalRepoProvider implements ArchetypeProvider {
     
-    /** Creates a new instance of LocalRepoProvider */
     public LocalRepoProvider() {
     }
 
-    public List<Archetype> getArchetypes() {
+    public @Override List<Archetype> getArchetypes() {
         List<Archetype> lst = new ArrayList<Archetype>();
             RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById(RepositoryPreferences.LOCAL_REPO_ID);
             if (info == null) {
@@ -78,24 +74,14 @@ public class LocalRepoProvider implements ArchetypeProvider {
             if (archs == null) {
                 return lst;
             }
-            Set<Archetype> prohibited = new HashSet<Archetype>();
-            prohibited.addAll(Arrays.asList(ArchetypeWizardUtils.WEB_APP_ARCHS));
-            prohibited.addAll(Arrays.asList(ArchetypeWizardUtils.EAR_ARCHS));
-            prohibited.addAll(Arrays.asList(ArchetypeWizardUtils.EJB_ARCHS));
-            prohibited.add(ArchetypeWizardUtils.EA_ARCH);
-
             for (NBVersionInfo art : archs) {
-               //TODO FINDout  how to get contain matadata 
-               // boolean ng = artifact.getFiles().contains("META-INF/maven/archetype-metadata.xml");
                 Archetype arch = new Archetype(!"maven-archetype".equalsIgnoreCase(art.getPackaging())); //NOI18N
                 arch.setArtifactId(art.getArtifactId());
                 arch.setGroupId(art.getGroupId());
                 arch.setVersion(art.getVersion());
                 arch.setName(art.getProjectName());
                 arch.setDescription(art.getProjectDescription());
-                if (prohibited.contains(arch)) {
-                    continue;
-                }
+                arch.setRepository(RepositoryPreferences.LOCAL_REPO_ID);
                 lst.add(arch);
             }
        

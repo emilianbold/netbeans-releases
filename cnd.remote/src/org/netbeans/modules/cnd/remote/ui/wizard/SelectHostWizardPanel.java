@@ -43,12 +43,15 @@
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -77,6 +80,7 @@ public class SelectHostWizardPanel implements
     private final CreateHostWizardPanel1 delegate;
     private final AtomicBoolean setupNewHost;
     private WizardDescriptor wizardDescriptor;
+    private volatile boolean needsValidation;
 
     public SelectHostWizardPanel(boolean allowLocal, ChangeListener changeListener) {
         this.allowLocal = allowLocal;
@@ -91,6 +95,7 @@ public class SelectHostWizardPanel implements
         } else {
             setupNewHost.set(ServerList.getRecords().size() <= 1);
         }
+        needsValidation = false;
     }
 
     @Override
@@ -103,11 +108,11 @@ public class SelectHostWizardPanel implements
         return component;
     }
 
-    public WizardDescriptor.Panel[] getAdditionalPanels() {
-        return new WizardDescriptor.Panel[] {
-            new CreateHostWizardPanel2(createHostData),
-            new CreateHostWizardPanel3(createHostData)
-        };
+    public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalPanels() {
+        List<WizardDescriptor.Panel<WizardDescriptor>> list = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>(2);
+        list.add(new CreateHostWizardPanel2(createHostData));
+        list.add(new CreateHostWizardPanel3(createHostData));
+        return list;
     }
 
     public boolean isNewHost() {
@@ -121,24 +126,29 @@ public class SelectHostWizardPanel implements
 
     @Override
     public void prepareValidation() {
-        getComponent().enableControls(false);
+        if (needsValidation) {
+            getComponent().enableControls(false);
+        }
     }
 
     @Override
     public void validate() throws WizardValidationException {
-        ExecutionEnvironment execEnv = getComponent().getSelectedHost();
-        try {
-            if (execEnv != null) {
-                ConnectionManager.getInstance().connectTo(execEnv);
-                RemoteUtil.checkSetupAfterConnection(execEnv);
+        if (needsValidation) {
+            ExecutionEnvironment execEnv = getComponent().getSelectedHost();
+            try {
+                if (execEnv != null) {
+                    ConnectionManager.getInstance().connectTo(execEnv);
+                    RemoteUtil.checkSetupAfterConnection(execEnv);
+                }
+            } catch (IOException ex) {
+                String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");
+                throw new WizardValidationException(getComponent(), message, message);
+            } catch (CancellationException ex) {
+                String message = NbBundle.getMessage(getClass(), "ConnectCancelledMessage");
+                throw new WizardValidationException(getComponent(), message, message);
+            } finally {
+                getComponent().enableControls(true);
             }
-        } catch (IOException ex) {
-            String message = NbBundle.getMessage(getClass(), "CannotConnectMessage");
-            throw new WizardValidationException(getComponent(), message, message);
-        } catch (CancellationException ex) {
-            // nothing
-        } finally {
-            getComponent().enableControls(true);
         }
     }
 
@@ -174,15 +184,18 @@ public class SelectHostWizardPanel implements
     public void readSettings(WizardDescriptor settings) {
         delegate.readSettings(settings);
         this.wizardDescriptor = settings;
-        getComponent().reset();
+        getComponent().onReadSettings();
+        needsValidation = false;
     }
 
     @Override
     public void storeSettings(WizardDescriptor settings) {
         delegate.storeSettings(settings);
         ExecutionEnvironment env = getComponent().isExistent() ? getComponent().getSelectedHost() : null;
-        settings.putProperty("hostUID", (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
-        settings.putProperty("ToolsCacheManager", createHostData.getCacheManager()); // NOI18N
+        settings.putProperty(WizardConstants.PROPERTY_HOST_UID, (env == null) ? null : ExecutionEnvironmentFactory.toUniqueID(env)); // NOI18N
+        settings.putProperty(WizardConstants.PROPERTY_TOOLS_CACHE_MANAGER, createHostData.getCacheManager()); // NOI18N
+        getComponent().onStoreSettings();
+        needsValidation = true;
     }
 
     ExecutionEnvironment getSelectedHost() {

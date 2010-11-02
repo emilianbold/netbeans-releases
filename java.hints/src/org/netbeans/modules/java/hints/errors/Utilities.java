@@ -43,9 +43,14 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.TypeParameterElement;
-import java.util.HashSet;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.util.TreePathScanner;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -75,6 +80,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +89,9 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
@@ -108,6 +116,8 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.text.PositionRef;
@@ -228,6 +238,12 @@ public class Utilities {
             List<? extends TypeMirror> typeArguments = ((DeclaredType) iteratorMethodType.getReturnType()).getTypeArguments();
             if (!typeArguments.isEmpty()) {
                 designedType = typeArguments.get(0);
+            } else {
+                TypeElement jlObject = info.getElements().getTypeElement("java.lang.Object");
+
+                if (jlObject != null) {
+                    designedType = jlObject.asType();
+                }
             }
         } else if (iterableType.getKind() == TypeKind.ARRAY) {
             designedType = ((ArrayType) iterableType).getComponentType();
@@ -340,6 +356,13 @@ public class Utilities {
      * @throws java.io.IOException
      */
     public static ChangeInfo commitAndComputeChangeInfo(FileObject target, final ModificationResult diff, final Object tag) throws IOException {
+        if (!target.canWrite()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(Utilities.class, "ERR_ReadOnlyTargetFile", FileUtil.getFileDisplayName(target)), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            
+            return null;
+        }
+        
         List<? extends Difference> differences = diff.getDifferences(target);
         ChangeInfo result = null;
         
@@ -591,7 +614,11 @@ public class Utilities {
 
         switch (parentPath.getLeaf().getKind()) {
             case BLOCK: children = ((BlockTree) parentPath.getLeaf()).getStatements(); break;
-            case CLASS: children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                children = ((ClassTree) parentPath.getLeaf()).getMembers(); break;
             case CASE:  children = ((CaseTree) parentPath.getLeaf()).getStatements(); break;
             default:    children = Collections.singleton(leaf); break;
         }
@@ -735,7 +762,7 @@ public class Utilities {
     }
 
     public static TreePath findEnclosingMethodOrConstructor(HintContext ctx, TreePath from) {
-        while (from != null && from.getLeaf().getKind() != Kind.METHOD && from.getLeaf().getKind() != Kind.CLASS) {
+        while (from != null && from.getLeaf().getKind() != Kind.METHOD && !TreeUtilities.CLASS_TREE_KINDS.contains(from.getLeaf().getKind())) {
             from = from.getParentPath();
         }
 
@@ -842,6 +869,53 @@ public class Utilities {
         }
     }
 
+    public static boolean exitsFromAllBranchers(CompilationInfo info, TreePath from) {
+        ExitsFromAllBranches efab = new ExitsFromAllBranches(info);
+
+        return efab.scan(from, null) == Boolean.TRUE;
+    }
+
+    private static final class ExitsFromAllBranches extends TreePathScanner<Boolean, Void> {
+
+        private CompilationInfo info;
+        private Set<Tree> seenTrees = new HashSet<Tree>();
+
+        public ExitsFromAllBranches(CompilationInfo info) {
+            this.info = info;
+        }
+
+        @Override
+        public Boolean scan(Tree tree, Void p) {
+            seenTrees.add(tree);
+            return super.scan(tree, p);
+        }
+
+        @Override
+        public Boolean visitIf(IfTree node, Void p) {
+            return scan(node.getThenStatement(), null) == Boolean.TRUE && scan(node.getElseStatement(), null) == Boolean.TRUE;
+        }
+
+        @Override
+        public Boolean visitReturn(ReturnTree node, Void p) {
+            return true;
+        }
+
+        @Override
+        public Boolean visitBreak(BreakTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitContinue(ContinueTree node, Void p) {
+            return !seenTrees.contains(info.getTreeUtilities().getBreakContinueTarget(getCurrentPath()));
+        }
+
+        @Override
+        public Boolean visitClass(ClassTree node, Void p) {
+            return false;
+        }
+    }
+
     public static @NonNull Collection<TypeVariable> containedTypevarsRecursively(@NullAllowed TypeMirror tm) {
         if (tm == null) {
             return Collections.emptyList();
@@ -861,7 +935,6 @@ public class Utilities {
                 break;
             case DECLARED:
                 DeclaredType type = (DeclaredType) tm;
-
                 for (TypeMirror t : type.getTypeArguments()) {
                     containedTypevarsRecursively(t, typeVars);
                 }

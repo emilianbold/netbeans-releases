@@ -91,6 +91,7 @@ import org.tigris.subversion.svnclientadapter.ISVNAnnotations;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNConflictResolver;
 import org.tigris.subversion.svnclientadapter.ISVNDirEntry;
+import org.tigris.subversion.svnclientadapter.ISVNDirEntryWithLock;
 import org.tigris.subversion.svnclientadapter.ISVNInfo;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessageCallback;
@@ -165,6 +166,21 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
         } catch (IOException ex) {
             Subversion.LOG.log(Level.FINE, null, ex);
             throw new SVNClientException(ERR_CLI_NOT_AVALABLE);
+        }
+    }
+
+    public String getVersion() throws SVNClientException {
+        VersionCommand cmd = new VersionCommand();
+        try {
+            config(cmd);
+            cli.exec(cmd);
+            checkErrors(cmd);
+            return cmd.getOutput();
+        } catch (IOException ex) {
+            Subversion.LOG.log(Level.FINE, null, ex);
+            SVNClientException e = new SVNClientException(ex.getMessage());
+            e.wrapException(ex);
+            throw e;
         }
     }
 
@@ -961,19 +977,67 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
        }
     }
 
-    public void getLogMessages(File arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+    @Override
+    public ISVNDirEntryWithLock[] getListWithLocks(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, boolean bln) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public void getLogMessages(SVNUrl arg0, SVNRevision arg1, SVNRevision arg2, SVNRevision arg3, boolean arg4, boolean arg5, long arg6, boolean arg7, String[] arg8, ISVNLogMessageCallback arg9) throws SVNClientException {
+    @Override
+    public void copy(SVNUrl svnurl, File file, SVNRevision svnr, SVNRevision svnr1, boolean bln, boolean bln1) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public ISVNInfo[] getInfo(File arg0, boolean arg1) throws SVNClientException {
+    @Override
+    public long[] update(File[] files, SVNRevision svnr, int i, boolean bln, boolean bln1, boolean bln2) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     // unsupported start
+    @Override
+    public void getLogMessages(File file, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1, long l, boolean bln2, String[] strings, ISVNLogMessageCallback i) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void getLogMessages(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1, long l, boolean bln2, String[] strings, ISVNLogMessageCallback i) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getRevProperty(SVNUrl svnurl, Number number, String string) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNAnnotations annotate(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNAnnotations annotate(File file, SVNRevision svnr, SVNRevision svnr1, SVNRevision svnr2, boolean bln, boolean bln1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNProperty[] getProperties(SVNUrl svnurl, SVNRevision svnr, SVNRevision svnr1) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNProperty[] getRevProperties(SVNUrl svnurl, Number number) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public ISVNInfo[] getInfo(File file, boolean bln) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public SVNDiffSummary[] diffSummarize(File file, SVNUrl svnurl, SVNRevision svnr, boolean bln) throws SVNClientException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
 
     class NotificationHandler extends SVNNotificationHandler {   }
 
@@ -1031,10 +1095,6 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
     }
 
     public long update(File arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public long[] update(File[] arg0, SVNRevision arg1, int arg2, boolean arg3, boolean arg4, boolean arg5) throws SVNClientException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

@@ -3,7 +3,7 @@ ${licenseFirst}
 </#if>
 ${licensePrefix}The MIT License
 ${licensePrefix?replace(" +$", "", "r")}
-${licensePrefix}Copyright ${date?date?string("yyyy")} ${user}.
+${licensePrefix}Copyright ${date?date?string("yyyy")} ${project.organization!user}.
 ${licensePrefix?replace(" +$", "", "r")}
 ${licensePrefix}Permission is hereby granted, free of charge, to any person obtaining a copy
 ${licensePrefix}of this software and associated documentation files (the "Software"), to deal

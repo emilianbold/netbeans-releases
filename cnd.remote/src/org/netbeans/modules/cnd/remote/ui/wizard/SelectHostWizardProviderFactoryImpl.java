@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.spi.remote.SelectHostWizardProviderFactory;
@@ -74,12 +75,12 @@ public class SelectHostWizardProviderFactoryImpl implements SelectHostWizardProv
         }
 
         @Override
-        public WizardDescriptor.Panel getSelectHostPanel() {
+        public WizardDescriptor.Panel<WizardDescriptor> getSelectHostPanel() {
             return panel;
         }
 
         @Override
-        public WizardDescriptor.Panel[] getAdditionalPanels() {
+        public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalPanels() {
             return panel.getAdditionalPanels();
         }
 

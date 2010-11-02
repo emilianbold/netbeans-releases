@@ -423,6 +423,10 @@ public final class DeployOnSaveManager {
                 state = server.notifyArtifactsUpdated(provider, artifacts);
             }
 
+            if (state == DeploymentState.MODULE_UPDATED) {
+                deploymentTarget.getServer().getServerInstance().notifyUpdated(artifacts);
+            }
+
             String message = null;
             switch (state) {
                 case MODULE_UPDATED:

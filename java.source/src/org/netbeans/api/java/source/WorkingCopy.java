@@ -130,7 +130,9 @@ public class WorkingCopy extends CompilationController {
         textualChanges = new HashSet<Diff>();
         userInfo = new HashMap<Integer, String>();
 
-        getContext().put(ElementOverlay.class, overlay);
+        if (getContext().get(ElementOverlay.class) == null) {
+            getContext().put(ElementOverlay.class, overlay);
+        }
     }
     
     private Context getContext() {
@@ -452,7 +454,7 @@ public class WorkingCopy extends CompilationController {
                         ia.setImports(cut.getImports());
                         importsFilled = true;
                     }
-                    if (t.getKind() == Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         classes.add((ClassTree) t);
                     }
                 }

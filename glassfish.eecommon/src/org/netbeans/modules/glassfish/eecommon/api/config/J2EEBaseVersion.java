@@ -145,4 +145,20 @@ public abstract class J2EEBaseVersion implements Comparable {
         return result;
     }
     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (null == obj) {
+            return false;
+        }
+        if (this.getClass().isInstance(obj)) {
+            return compareTo(obj) == 0;
+        }
+        return false;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return numericSpecVersion;
+    }
 }

@@ -579,9 +579,6 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
         if (isNewer(stamp, prjDir.getFileObject("pom.xml"))) { //NOI18N
             return true;
         }
-        if (isNewer(stamp, prjDir.getFileObject("profiles.xml"))) { //NOI18N
-            return true;
-        }
         if (isNewer(stamp, prjDir.getFileObject("nbactions.xml"))) { //NOI18N
             return true;
         }

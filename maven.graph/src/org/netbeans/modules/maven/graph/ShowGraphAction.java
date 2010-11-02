@@ -49,6 +49,10 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -57,6 +61,12 @@ import org.openide.util.Lookup;
  *
  * @author mkleint
  */
+@ActionID(id = "org.netbeans.modules.maven.graph.ShowGraphAction", category = "Project")
+@ActionRegistration(displayName = "#ACT_Show_Graph")
+@ActionReferences({
+    @ActionReference(position = 1650, path = "Projects/org-netbeans-modules-maven/Actions", separatorAfter=1655),
+    @ActionReference(position = 113, path = "Editors/text/x-maven-pom+xml/Popup", separatorAfter=213)
+})
 public class ShowGraphAction extends AbstractAction implements ContextAwareAction {
     public ShowGraphAction() {
         putValue(Action.NAME, org.openide.util.NbBundle.getMessage(ShowGraphAction.class, "ACT_Show_Graph"));

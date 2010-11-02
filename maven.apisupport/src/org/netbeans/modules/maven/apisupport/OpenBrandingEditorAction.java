@@ -52,6 +52,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.BrandingUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -62,6 +65,9 @@ import org.openide.util.NbBundle;
  * 
  * @author S. Aubrecht
  */
+@ActionID(id = "org.netbeans.modules.maven.apisupport.OpenBrandingEditorAction", category = "Project")
+@ActionRegistration(displayName = "#LBL_OpenBrandingEditor")
+@ActionReference(position = 3150, path = "Projects/org-netbeans-modules-maven/Actions")
 public class OpenBrandingEditorAction extends AbstractAction implements ContextAwareAction {
 
     private final Lookup context;
@@ -80,12 +86,14 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
     @Override
     public void actionPerformed(ActionEvent e) {
         Project project = context.lookup(Project.class);
-        if( null == project )
+        if (null == project) {
             return;
+        }
         
         NbMavenProject mproject = project.getLookup().lookup(NbMavenProject.class);
-        if( null == mproject )
+        if (null == mproject) {
             return;
+        }
 
         String brandingPath = PluginPropertyUtils.getPluginProperty(mproject.getMavenProject(),
                 BRANDING_GROUP_ID, BRANDING_ARTIFACT_ID, "brandingSources", BRANDING_GOAL); //NOI18N
@@ -120,8 +128,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         if (prj.getBuildPlugins() == null) {
             return false;
         }
-        for (Object obj : prj.getBuildPlugins()) {
-            Plugin plug = (Plugin)obj;
+        for (Plugin plug : prj.getBuildPlugins()) {
             if (BRANDING_ARTIFACT_ID.equals(plug.getArtifactId()) &&
                    BRANDING_GROUP_ID.equals(plug.getGroupId())) {
                 if (plug.getExecutions() != null) {

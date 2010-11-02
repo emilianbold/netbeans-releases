@@ -44,7 +44,6 @@ package org.netbeans.modules.java.hints;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
-import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.options.HintsSettings;
@@ -117,7 +116,7 @@ public class WrongStringComparisonTest extends TreeRuleTestBase {
                             "    }" +
                             "}",
                             "0:114-0:120:verifier:Comparing Strings using == or !=",
-                            "[WrongStringComparisonFix:Use equals() without null check]",
+                            "[WrongStringComparisonFix:Use equals()]",
                             "package test;public class Test { private String s; private void test() { String t = null; if (s.equals(t)); }}");
     }
 
@@ -135,6 +134,77 @@ public class WrongStringComparisonTest extends TreeRuleTestBase {
                             "0:114-0:120:verifier:Comparing Strings using == or !=",
                             "[WrongStringComparisonFix:Use equals() with null check]",
                             "package test;public class Test { private String s; private void test() { String t = null; if ((s == null && t == null) || (s != null && s.equals(t))); }}");
+    }
+
+    public void testFixWithStringLiteralFirst() throws Exception {
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        if (\"\" =|= s);" +
+                            "    }" +
+                            "}",
+                            "0:90-0:97:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals()]",
+                            "package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
+    }
+
+    public void testFixWithStringLiteralSecondReverseOperands() throws Exception {
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        if (s =|= \"\");" +
+                            "    }" +
+                            "}",
+                            "0:90-0:97:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals() and reverse operands]",
+                            "package test;public class Test { private String s; private void test() { if (\"\".equals(s)); }}");
+    }
+
+    public void testFixWithStringLiteralSecondNullCheck() throws Exception {
+        WrongStringComparison.setStringLiteralsFirst(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        if (s =|= \"\");" +
+                            "    }" +
+                            "}",
+                            "0:90-0:97:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals() with null check]",
+                            "package test;public class Test { private String s; private void test() { if (s != null && s.equals(\"\")); }}");
+    }
+
+    public void testFixWithStringLiteralSecondNoNullCheck() throws Exception {
+        WrongStringComparison.setStringLiteralsFirst(wsc.getPreferences(HintsSettings.getCurrentProfileId()), false);
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private String s;" +
+                            "    private void test() {" +
+                            "        if (s =|= \"\");" +
+                            "    }" +
+                            "}",
+                            "0:90-0:97:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals()]",
+                            "package test;public class Test { private String s; private void test() { if (s.equals(\"\")); }}");
+    }
+
+    public void testFixWithTwoStringLiterals() throws Exception {
+        performFixTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {" +
+                            "    private void test() {" +
+                            "        if (\"\" =|= \"\");" +
+                            "    }" +
+                            "}",
+                            "0:69-0:77:verifier:Comparing Strings using == or !=",
+                            "[WrongStringComparisonFix:Use equals()]",
+                            "package test;public class Test { private void test() { if (\"\".equals(\"\")); }}");
     }
 
     @Override

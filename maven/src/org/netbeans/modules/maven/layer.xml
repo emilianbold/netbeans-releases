@@ -46,9 +46,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Maven2Templates">
-        <file name="profiles.xml" url="profiles.xml">
-            <attr name="template" boolvalue="true"/>
-        </file>
         <file name="settings.xml" url="settings.xml">
             <attr name="template" boolvalue="true"/>
         </file>
@@ -67,10 +64,32 @@ made subject to such option by the copyright holder.
             <folder name="Maven2">
                 <attr name="position" intvalue="513"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                <file name="Archetypes">
+                <file name="quickstart">
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
+                    <attr name="groupId" stringvalue="org.apache.maven.archetypes"/>
+                    <attr name="artifactId" stringvalue="maven-archetype-quickstart"/>
+                    <attr name="version" stringvalue="1.1"/>
                     <attr name="position" intvalue="100"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/jaricon.png"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/quickstart.html"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="pom-root">
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.definedArchetype"/>
+                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
+                    <attr name="artifactId" stringvalue="pom-root"/>
+                    <attr name="version" stringvalue="1.1"/>
+                    <attr name="position" intvalue="980"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/pom-root.html"/>
+                    <attr name="template" boolvalue="true"/>
+                </file>
+                <file name="Archetypes">
+                    <attr name="position" intvalue="990"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.newproject.Bundle"/>
-                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.createIterator"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.newproject.MavenWizardIterator.pickArchetype"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/newproject/MavenDescription.html"/>
                     <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/resources/Maven2Icon.gif"/>
                     <attr name="template" boolvalue="true"/>
@@ -107,26 +126,6 @@ made subject to such option by the copyright holder.
         
     </folder>
 
-    <folder name="Actions">
-        <folder name="Project">
-            <file name="org-netbeans-modules-maven-buildWithDependencies.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.ActionProviderImpl.buildWithDependenciesAction"/>
-            </file>
-            <file name="org-netbeans-modules-maven-customPopup.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.ActionProviderImpl.customPopupActions"/>
-            </file>
-            <file name="org-netbeans-modules-maven-refresh.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.NbMavenProjectImpl.createRefreshAction"/>
-            </file>
-            <file name="org-netbeans-modules-maven-closeSubprojects.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.ActionProviderImpl.closeSubprojectsAction"/>
-            </file>
-            <file name="org-netbeans-modules-maven-showProblems.instance">
-                <attr name="instanceCreate" methodvalue="org.netbeans.modules.maven.ActionProviderImpl.showProblemsAction"/>
-            </file>
-        </folder>
-    </folder>
-    
     <folder name="Projects">
         <folder name="org-netbeans-modules-maven">
             <folder name="Nodes"/>
@@ -146,10 +145,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-project-ui-RebuildProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RebuildProject.instance"/>
                     <attr name="position" intvalue="400"/>
-                </file>
-                <file name="org-netbeans-modules-maven-buildWithDependencies.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-buildWithDependencies.instance"/>
-                    <attr name="position" intvalue="500"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-CleanProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CleanProject.instance"/>
@@ -183,10 +178,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1300"/>
                 </file>
-                <file name="org-netbeans-modules-maven-customPopup.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-customPopup.instance"/>
-                    <attr name="position" intvalue="1400"/>
-                </file>
                 <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-ActiveConfigAction.instance"/>
                     <attr name="position" intvalue="1500"/>
@@ -195,10 +186,6 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1600"/>
                 </file>
-                <file name="org-netbeans-modules-maven-refresh.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-refresh.instance"/>
-                    <attr name="position" intvalue="1700"/>
-                </file>
                 <file name="org-netbeans-modules-project-ui-SetMainProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-SetMainProject.instance"/>
                     <attr name="position" intvalue="1800"/>
@@ -206,10 +193,6 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-project-ui-actions-OpenSubprojects.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions-OpenSubprojects.instance"/>
                     <attr name="position" intvalue="1900"/>
-                </file>
-                <file name="org-netbeans-modules-maven-closeSubprojects.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-closeSubprojects.instance"/>
-                    <attr name="position" intvalue="2000"/>
                 </file>
                 <file name="org-netbeans-modules-project-ui-CloseProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CloseProject.instance"/>
@@ -251,32 +234,9 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="3000"/>
                 </file>
-                <file name="org-netbeans-modules-maven-showProblems.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-maven-showProblems.instance"/>
-                    <attr name="position" intvalue="3100"/>
-                </file>
                 <file name="org-netbeans-modules-project-ui-CustomizeProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-CustomizeProject.instance"/>
                     <attr name="position" intvalue="3200"/>
-                </file>
-            </folder>
-            <folder name="Archetypes">
-                <file name="maven-quickstart-archetype">
-                    <attr name="position" intvalue="100"/>
-                    <attr name="groupId" stringvalue="org.apache.maven.archetypes"/>
-                    <attr name="artifactId" stringvalue="maven-archetype-quickstart"/>
-                    <attr name="version" stringvalue="1.0"/>
-                    <!--attr name="repository" stringvalue=""/-->
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_Quickstart_Archetype"/>
-                    <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_MavenQuickStart"/>
-                </file>
-                <file name="maven-pom-archetype">
-                    <attr name="position" intvalue="200"/>
-                    <attr name="groupId" stringvalue="org.codehaus.mojo.archetypes"/>
-                    <attr name="artifactId" stringvalue="pom-root"/>
-                    <attr name="version" stringvalue="1.0"/>
-                    <attr name="displayName" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#LBL_Maven_POM_Archetype"/>
-                    <attr name="description" bundlevalue="org.netbeans.modules.maven.newproject.Bundle#HINT_Maven_POM_Archetype"/>
                 </file>
             </folder>
             <file name="nbactions.xml" url="nbactions.xml"/>

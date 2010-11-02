@@ -56,6 +56,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,8 +67,8 @@ import org.openide.util.NbBundle;
  */
 public class AddOperationAction extends AbstractAction implements AddOperationCookie {
     
-    private FileObject implementationClass;
     private Service service;
+    private DataObject dataObject;
     /**
      * Creates a new instance of AddOperationAction
      * @param implementationClass fileobject of service implementation class
@@ -78,7 +79,12 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(AddOperationAction.class, "Hint_AddOperation"));
         putValue(MNEMONIC_KEY, Integer.valueOf(NbBundle.getMessage(AddOperationAction.class, "LBL_AddOperation_mnem_pos")));
         this.service=service;
-        this.implementationClass = implementationClass;
+        try {
+            dataObject = DataObject.find( implementationClass );
+        }
+        catch (DataObjectNotFoundException  e) {
+            ErrorManager.getDefault().notify(e);
+        }
     }
     
     private static String getName() {
@@ -94,20 +100,19 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
         }
     }
     
-    private void saveImplementationClass(FileObject implementationClass) throws IOException{
-        DataObject dobj = DataObject.find(implementationClass);
-        if(dobj.isModified()) {
-            SaveCookie cookie = dobj.getCookie(SaveCookie.class);
+    private void saveImplementationClass() throws IOException{
+        if(dataObject.isModified()) {
+            SaveCookie cookie = dataObject.getCookie(SaveCookie.class);
             if(cookie!=null) cookie.save();
         }
     }
     
     private void addJavaMethod() throws IOException{
         AddWsOperationHelper strategy = new AddWsOperationHelper(getName());
-        String className = _RetoucheUtil.getMainClassName(implementationClass);
+        String className = _RetoucheUtil.getMainClassName(dataObject.getPrimaryFile());
         if (className != null) {
-            strategy.addMethod(implementationClass, className);
-            saveImplementationClass(implementationClass);
+            strategy.addMethod(dataObject.getPrimaryFile(), className);
+            saveImplementationClass();
         }
     }
 

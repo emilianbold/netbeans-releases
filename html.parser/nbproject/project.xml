@@ -100,10 +100,34 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.validation</friend>
+                <package>com.ibm.icu.impl</package>
+                <package>com.ibm.icu.impl.data</package>
+                <package>com.ibm.icu.impl.duration</package>
+                <package>com.ibm.icu.impl.duration.impl</package>
+                <package>com.ibm.icu.lang</package>
+                <package>com.ibm.icu.math</package>
+                <package>com.ibm.icu.text</package>
+                <package>com.ibm.icu.util</package>
+                <package>nu.validator.htmlparser.annotation</package>
+                <package>nu.validator.htmlparser.common</package>
+                <package>nu.validator.htmlparser.dom</package>
+                <package>nu.validator.htmlparser.extra</package>
+                <package>nu.validator.htmlparser.impl</package>
+                <package>nu.validator.htmlparser.io</package>
+                <package>nu.validator.htmlparser.rewindable</package>
+                <package>nu.validator.htmlparser.sax</package>
+                <package>nu.validator.htmlparser.xom</package>
+                <package>nu.validator.saxtree</package>
+            </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/html5-parser.jar</runtime-relative-path>
                 <binary-origin>external/htmlparser-1.2.1.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/icu4j-4_0.jar</runtime-relative-path>
+                <binary-origin>external/icu4j-4_0.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

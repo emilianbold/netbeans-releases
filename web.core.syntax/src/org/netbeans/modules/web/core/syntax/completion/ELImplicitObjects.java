@@ -76,7 +76,7 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
     static class PageContextObject extends ELImplicitObject{
         public PageContextObject(String name){
             super(name);
-            setType(OBJECT_TYPE);
+            setType(Type.OBJECT_TYPE);
             setClazz("javax.servlet.jsp.PageContext"); //NOI18N
         }
         
@@ -93,20 +93,32 @@ public class ELImplicitObjects implements ImplicitObjectProvider {
     private Collection<ELImplicitObject> getELImplicitObjects() {
         Collection<ELImplicitObject> implicitELObjects;
         implicitELObjects = new ArrayList<ELImplicitObject>(11);
+        implicitELObjects.addAll(getScopeObjects());
         implicitELObjects.add(new PageContextObject("pageContext")); // NOI18N
-        implicitELObjects.add(new ELImplicitObject("pageScope")); // NOI18N
-        implicitELObjects.add(new ELImplicitObject("sessionScope")); // NOI18N
-        implicitELObjects.add(new ELImplicitObject("applicationScope")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("param")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("paramValues")); // NOI18N
-        implicitELObjects.add(new ELImplicitObject("requestScope"));
         implicitELObjects.add(new ELImplicitObject("header")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("headerValues")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("initParam")); // NOI18N
         implicitELObjects.add(new ELImplicitObject("cookie")); // NOI18N
         return implicitELObjects;
     }
-    
+
+    /**
+     * @return the implicit scope objects, i.e. {@code requestScope, sessionScope} etc.
+     */
+    private static Collection<ELImplicitObject> getScopeObjects() {
+        Collection<ELImplicitObject> result = new ArrayList<ELImplicitObject>(4);
+        result.add(new ELImplicitObject("pageScope")); // NOI18N
+        result.add(new ELImplicitObject("sessionScope")); // NOI18N
+        result.add(new ELImplicitObject("applicationScope")); // NOI18N
+        result.add(new ELImplicitObject("requestScope"));
+        for (ELImplicitObject each : result) {
+            each.setType(ELImplicitObject.Type.SCOPE_TYPE);
+        }
+        return result;
+
+    }
     /** Returns implicit objects that starts with the prefix.
      */
     public static Collection <ELImplicitObject> getELImplicitObjects(

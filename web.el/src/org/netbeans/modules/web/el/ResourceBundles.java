@@ -233,7 +233,11 @@ public final class ResourceBundles {
         return result;
     }
     
-    private List<String> getBundles() {
+    /**
+     * Gets the base names of the defined bundles (such as {@code i18n}.
+     * @return a list of the base names; never {@code null}.
+     */
+    public List<String> getBundles() {
         if (bundles == null) {
             bundles = initJSFResourceBundles();
         }

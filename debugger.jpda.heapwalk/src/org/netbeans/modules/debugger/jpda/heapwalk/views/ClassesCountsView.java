@@ -106,7 +106,8 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
             listener.start();
         }
         if (content == null) {
-            setContent();
+            listener.getRefreshContentTask().schedule(10);
+            //setContent();
         }
     }
     
@@ -290,6 +291,12 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                 refreshTask = RequestProcessor.getDefault().create(new Runnable() {
                     public void run() {
                         try {
+                        HeapFragmentWalker fragmentWalker = ClassesCountsView.this.hfw;
+                        if (fragmentWalker != null) {
+                            Heap heap = fragmentWalker.getHeapFragment();
+                            ((HeapImpl) heap).computeClasses();
+                        }
+
                         javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
                             public void run() {
                                 refreshContent();
@@ -308,7 +315,7 @@ public class ClassesCountsView extends TopComponent implements org.openide.util.
                             if (debugger.getState() == JPDADebugger.STATE_RUNNING) {
                                 synchronized (ClassesCountsView.this) {
                                     if (refreshTask != null) {
-                                        refreshTask.schedule(500);
+                                        refreshTask.schedule(2000);
                                     }
                                 }
                             }

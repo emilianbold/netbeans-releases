@@ -258,25 +258,30 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         }
 
         if (tooltipVariable != null) {
-            final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTipText);
             final ObjectVariable var = tooltipVariable;
-            et.addExpansionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
-                    et.removeAll();
-                    et.setWidthCheck(false);
-                    et.add(ToolTipView.getToolTipView(expression, var));
-                    et.revalidate();
-                    et.repaint();
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public @Override void run() {
-                            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+            final String toolTip = toolTipText;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    final ToolTipView.ExpandableTooltip et = ToolTipView.createExpandableTooltip(toolTip);
+                    et.addExpansionListener(new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            et.setBorder(BorderFactory.createLineBorder(et.getForeground()));
+                            et.removeAll();
+                            et.setWidthCheck(false);
+                            et.add(ToolTipView.getToolTipView(expression, var));
+                            et.revalidate();
+                            et.repaint();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                public @Override void run() {
+                                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et, PopupManager.ViewPortBounds, PopupManager.AbovePreferred, 0, 0, ToolTipSupport.FLAGS_HEAVYWEIGHT_TOOLTIP);
+                                }
+                            });
                         }
                     });
+                    Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
                 }
             });
-            Utilities.getEditorUI(ep).getToolTipSupport().setToolTip(et);
         } else {
             firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
         }
@@ -428,7 +433,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                             isValid[0] = false;
                             return;
                         }
-                        if (kind == Tree.Kind.CLASS && className[0].length() == 0) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(kind) && className[0].length() == 0) {
                             TypeElement typeElement = (TypeElement)controller.getTrees().getElement(path);
                             className[0] = ElementUtilities.getBinaryName(typeElement);
                         }

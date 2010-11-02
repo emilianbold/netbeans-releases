@@ -47,28 +47,33 @@ package org.netbeans.modules.java.source.usages;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.WhitespaceTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldSelector;
-import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -80,7 +85,6 @@ public class DocumentUtil {
     
     
     static final String FIELD_PACKAGE_NAME = "packageName";     //NOI18N
-    private static final String FIELD_REFERENCES = "references";        //NOI18N
     static final String FIELD_SIMPLE_NAME = "simpleName";       //NOI18N
     static final String FIELD_CASE_INSENSITIVE_NAME = "ciName"; //NOI18N    
     static final String FIELD_IDENTS = "ids";                           //NOI18N
@@ -88,12 +92,13 @@ public class DocumentUtil {
     static final String FIELD_CASE_INSENSITIVE_FEATURE_IDENTS = "cifids"; //NOI18N
     private static final String FIELD_BINARY_NAME = "binaryName";         //NOI18N
     private static final String FIELD_SOURCE = "source";                //NOI18N
+    private static final String FIELD_REFERENCES = "references";        //NOI18N
     
+    private static final char PKG_SEPARATOR = '.';                              //NOI18N
+    private static final char WILDCARD = '?';                                   //NOI18N
     private static final char NO = '-';                                 //NOI18N
     private static final char YES = '+';                                //NOI18N
-    private static final char WILDCARD = '?';                           //NOI18N
-    private static final char PKG_SEPARATOR = '.';                      //NOI18N
-    
+        
     private static final char EK_CLASS = 'C';                           //NOI18N
     private static final char EK_INTERFACE = 'I';                       //NOI18N
     private static final char EK_ENUM = 'E';                            //NOI18N
@@ -109,22 +114,42 @@ public class DocumentUtil {
     private DocumentUtil () {
     }
     
+    public static Analyzer createAnalyzer() {
+        final PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(new KeywordAnalyzer());
+        analyzer.addAnalyzer(DocumentUtil.FIELD_IDENTS, new WhitespaceAnalyzer());
+        analyzer.addAnalyzer(DocumentUtil.FIELD_FEATURE_IDENTS, new WhitespaceAnalyzer());
+        analyzer.addAnalyzer(DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS, new DocumentUtil.LCWhitespaceAnalyzer());
+        return analyzer;
+    }
+    
     //Convertor factories
-    public static ResultConvertor<Document,FileObject> fileObjectConvertor (final FileObject... roots) {
+    public static Convertor<Document,FileObject> fileObjectConvertor (final FileObject... roots) {
         assert roots != null;
         return new FileObjectConvertor (roots);
     }
     
-    public static ResultConvertor<Document,ElementHandle<TypeElement>> elementHandleConvertor () {
+    public static Convertor<Document,ElementHandle<TypeElement>> elementHandleConvertor () {
         return new ElementHandleConvertor ();
     }
     
-    public static ResultConvertor<Document,String> binaryNameConvertor () {
+    public static Convertor<Document,String> binaryNameConvertor () {
         return new BinaryNameConvertor ();
     }
     
-    static ResultConvertor<Document,String> sourceNameConvertor () {
+    static Convertor<Document,String> sourceNameConvertor () {
         return new SourceNameConvertor();
+    }
+    
+    static Convertor<Pair<Pair<String,String>,Object[]>,Document> documentConvertor() {
+        return new DocumentConvertor();
+    }
+    
+    static Convertor<Pair<String,String>,Query> queryClassWithEncConvertor() {
+        return new QueryClassesWithEncConvertor();
+    }
+    
+    static Convertor<Pair<String,String>,Query> queryClassConvertor() {
+        return new QueryClassConvertor();
     }
     
     //Document field getters
@@ -191,45 +216,7 @@ public class DocumentUtil {
         query.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName)),BooleanClause.Occur.MUST);
         return query;
     }
-    
-    static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
-        assert binaryNameSourceNamePair != null;
-        final String binaryName = binaryNameSourceNamePair.first;
-        final String sourceName = binaryNameSourceNamePair.second;
-        final Query query = binaryNameQuery(binaryName);
-        if (sourceName != null) {
-            assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
-            final BooleanQuery bq = (BooleanQuery) query;
-            bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
-        }
-        return query;
-    }
-    
-    static Query binaryContentNameQuery (final Pair<String,String> binaryNameSourceNamePair) {
-        final String resourceName = binaryNameSourceNamePair.first;
-        final String sourceName = binaryNameSourceNamePair.second;
-        int index = resourceName.lastIndexOf(PKG_SEPARATOR);  // NOI18N
-        String pkgName, sName;
-        if (index < 0) {
-            pkgName = "";   // NOI18N
-            sName = resourceName;
-        }
-        else {
-            pkgName = resourceName.substring(0,index);
-            sName = resourceName.substring(index+1);
-        }
-        BooleanQuery query = new BooleanQuery ();
-        BooleanQuery subQuery = new BooleanQuery();
-        subQuery.add (new WildcardQuery (new Term (FIELD_BINARY_NAME, sName + WILDCARD)),BooleanClause.Occur.SHOULD);
-        subQuery.add (new PrefixQuery (new Term (FIELD_BINARY_NAME, sName + '$')),BooleanClause.Occur.SHOULD);
-        query.add (new TermQuery (new Term (FIELD_PACKAGE_NAME, pkgName)),BooleanClause.Occur.MUST);
-        query.add (subQuery,BooleanClause.Occur.MUST);
-        if (sourceName != null) {
-            query.add (new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
-        }
-        return query;
-    }
-                               
+                                    
     static Term referencesTerm (String resourceName, final Set<ClassIndexImpl.UsageType> usageType) {
         assert resourceName  != null;
         if (usageType != null) {
@@ -244,7 +231,7 @@ public class DocumentUtil {
     }
         
     //Factories for lucene document
-    static Document createDocument (final String binaryName,
+    private static Document createDocument (final String binaryName,
             List<String> references,
             String featureIdents,
             String idents,
@@ -369,36 +356,27 @@ public class DocumentUtil {
     
     
     static FieldSelector declaredTypesFieldSelector () {
-        return new FieldSelectorImpl(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
+        return Queries.createFieldSelector(FIELD_PACKAGE_NAME,FIELD_BINARY_NAME);
     }
     
     static FieldSelector sourceNameFieldSelector () {
-        return new FieldSelectorImpl(FIELD_SOURCE);
+        return Queries.createFieldSelector(FIELD_SOURCE);
     }
-            
-    private static class FieldSelectorImpl implements FieldSelector {
-        
-        private final Term[] terms;
-        
-        FieldSelectorImpl(String... fieldNames) {
-            terms = new Term[fieldNames.length];
-            for (int i=0; i< fieldNames.length; i++) {
-                terms[i] = new Term (fieldNames[i],""); //NOI18N
-            }
-        }
-        
-        @Override
-        public FieldSelectorResult accept(String fieldName) {
-            for (Term t : terms) {
-                if (fieldName == t.field()) {
-                    return FieldSelectorResult.LOAD;
-                }
-            }
-            return FieldSelectorResult.NO_LOAD;
-        }
-    }
-        
     
+    static Queries.QueryKind translateQueryKind(final ClassIndex.NameKind kind) {
+        switch (kind) {
+            case SIMPLE_NAME: return Queries.QueryKind.EXACT;
+            case PREFIX: return Queries.QueryKind.PREFIX;
+            case CASE_INSENSITIVE_PREFIX: return Queries.QueryKind.CASE_INSENSITIVE_PREFIX;
+            case CAMEL_CASE: return Queries.QueryKind.CAMEL_CASE;
+            case CAMEL_CASE_INSENSITIVE: return Queries.QueryKind.CASE_INSENSITIVE_CAMEL_CASE;
+            case REGEXP: return Queries.QueryKind.REGEXP;
+            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_REGEXP;
+            default: throw new IllegalArgumentException();
+        }
+    }
+         
+    //<editor-fold defaultstate="collapsed" desc="Analyzers Implementation">                
     private static class LCWhitespaceTokenizer extends WhitespaceTokenizer {
         LCWhitespaceTokenizer (final Reader r) {
             super (r);
@@ -415,7 +393,11 @@ public class DocumentUtil {
         }
     }
     
-    private static class FileObjectConvertor implements ResultConvertor<Document,FileObject> {                
+    //</editor-fold>
+    
+    
+    // <editor-fold defaultstate="collapsed" desc="Result Convertors Implementation">
+    private static class FileObjectConvertor implements Convertor<Document,FileObject> {                
         
         private FileObject[] roots;
         
@@ -490,7 +472,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class ElementHandleConvertor implements ResultConvertor<Document,ElementHandle<TypeElement>> {
+    private static class ElementHandleConvertor implements Convertor<Document,ElementHandle<TypeElement>> {
         
         private final ElementKind[] kindHolder = new ElementKind[1];
 
@@ -505,7 +487,7 @@ public class DocumentUtil {
         }
     }
     
-    private static class BinaryNameConvertor implements ResultConvertor<Document,String> {
+    private static class BinaryNameConvertor implements Convertor<Document,String> {
         
         @Override
         public String convert (final Document doc) {
@@ -513,12 +495,81 @@ public class DocumentUtil {
         }
     }
     
-    private static class SourceNameConvertor implements ResultConvertor<Document,String> {
+    private static class SourceNameConvertor implements Convertor<Document,String> {
 
         @Override
         public String convert(Document doc) {
             Field field = doc.getField(FIELD_SOURCE);
             return field == null ? null : field.stringValue();
         }
-    }       
+    }
+    
+    private static class DocumentConvertor implements Convertor<Pair<Pair<String,String>,Object[]>,Document> {
+        @Override
+        public Document convert(Pair<Pair<String, String>, Object[]> entry) {
+            final Pair<String,String> pair = entry.first;
+            final String cn = pair.first;
+            final String srcName = pair.second;
+            final Object[] data = entry.second;
+            final List<String> cr = (List<String>) data[0];
+            final String fids = (String) data[1];
+            final String ids = (String) data[2];
+            return DocumentUtil.createDocument(cn,cr,fids,ids,srcName);
+        }
+    }
+    
+    private static class QueryClassesWithEncConvertor implements Convertor<Pair<String,String>,Query> {
+        @Override
+        public Query convert(Pair<String, String> p) {
+            return createClassWithEnclosedQuery(p);
+        }
+        
+        private static Query createClassWithEnclosedQuery (final Pair<String,String> binaryNameSourceNamePair) {
+            final String resourceName = binaryNameSourceNamePair.first;
+            final String sourceName = binaryNameSourceNamePair.second;
+            int index = resourceName.lastIndexOf(DocumentUtil.PKG_SEPARATOR);
+            String pkgName, sName;
+            if (index < 0) {
+                pkgName = "";   // NOI18N
+                sName = resourceName;
+            }
+            else {
+                pkgName = resourceName.substring(0,index);
+                sName = resourceName.substring(index+1);
+            }
+            BooleanQuery query = new BooleanQuery ();
+            BooleanQuery subQuery = new BooleanQuery();
+            subQuery.add (new WildcardQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + DocumentUtil.WILDCARD)),Occur.SHOULD);
+            subQuery.add (new PrefixQuery (new Term (DocumentUtil.FIELD_BINARY_NAME, sName + '$')),Occur.SHOULD);
+            query.add (new TermQuery (new Term (DocumentUtil.FIELD_PACKAGE_NAME, pkgName)),Occur.MUST);
+            query.add (subQuery,Occur.MUST);
+            if (sourceName != null) {
+                query.add (new TermQuery(new Term (DocumentUtil.FIELD_SOURCE,sourceName)), Occur.MUST);
+            }
+            return query;
+        }
+        
+    }
+    
+    private static class QueryClassConvertor implements Convertor<Pair<String,String>,Query> {
+        @Override
+        public Query convert(Pair<String, String> p) {
+            return binaryNameSourceNamePairQuery(p);
+        }
+        
+        private static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
+            assert binaryNameSourceNamePair != null;
+            final String binaryName = binaryNameSourceNamePair.first;
+            final String sourceName = binaryNameSourceNamePair.second;
+            final Query query = binaryNameQuery(binaryName);
+            if (sourceName != null) {
+                assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N
+                final BooleanQuery bq = (BooleanQuery) query;
+                bq.add(new TermQuery(new Term (FIELD_SOURCE,sourceName)), BooleanClause.Occur.MUST);
+            }
+            return query;
+        }
+    }
+    
+    //</editor-fold>
 }

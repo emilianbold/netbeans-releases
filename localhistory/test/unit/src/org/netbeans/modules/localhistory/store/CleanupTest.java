@@ -33,6 +33,8 @@ package org.netbeans.modules.localhistory.store;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LogHandler;
 
 /**
  *
@@ -43,8 +45,13 @@ public class CleanupTest extends LHTestCase {
     public CleanupTest(String testName) {
         super(testName);      
     }
-    
-    public void xtestCleanUp() throws Exception { 
+
+    @Override
+    protected Level logLevel() {
+        return Level.ALL;
+    }
+
+    public void xtestCleanUp() throws Exception {
         LocalHistoryTestStore store = createStore();
         File folder = new File(getDataDir(), "datafolder");        
         folder.mkdirs();
@@ -166,6 +173,7 @@ public class CleanupTest extends LHTestCase {
     
     public void testCleanUp() throws Exception {
         LocalHistoryTestStore store = createStore();
+        LogHandler lh = new LogHandler("copied file", LogHandler.Compare.STARTS_WITH);
         File folder = new File(getDataDir(), "datafolder");        
         folder.mkdirs();
         
@@ -181,8 +189,8 @@ public class CleanupTest extends LHTestCase {
 
         // 2 days ago
         ts = System.currentTimeMillis() - 2 * 24 * 60 * 60 * 1000;
-        changeFile(store, file1, ts, "data1.1");
-        changeFile(store, file2, ts, "data2.1");        
+        lh.reset(); changeFile(store, file1, ts, "data1.1"); lh.waitUntilDone();
+        lh.reset(); changeFile(store, file2, ts, "data2.1"); lh.waitUntilDone();
         
         // check the files created in storage
         assertFile(file1, store, ts, -1, 3, 1, "data1.1", TOUCHED);

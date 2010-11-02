@@ -71,11 +71,11 @@ public class ObserversPanel extends InjectablesPanel {
         "javax.enterprise.event.Observes";                      // NOI18N
 
 
-    public ObserversPanel( ElementHandle<VariableElement> var, 
+    public ObserversPanel( Object[] subject, 
             MetadataModel<WebBeansModel> metaModel , WebBeansModel model , 
             ObserversModel uiModel )
     {
-        super(var, metaModel, model , uiModel );
+        super(subject, metaModel, model , uiModel );
         initLabels();
     }
 

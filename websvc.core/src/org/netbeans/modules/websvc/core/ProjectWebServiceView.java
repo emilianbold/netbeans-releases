@@ -64,7 +64,6 @@ public final class ProjectWebServiceView {
 
     private static final Lookup.Result<ProjectWebServiceViewProvider> implementations;
 //    private static final LookupListener lookupListener;
-    private static Map<Project, ProjectWebServiceView> views;
 
     static {
         implementations = Lookup.getDefault().lookup(new Lookup.Template<ProjectWebServiceViewProvider>(ProjectWebServiceViewProvider.class));
@@ -197,10 +196,6 @@ public final class ProjectWebServiceView {
      * Subclasses may add listeners here
      */
     void addNotify() {
-        if (views == null) {
-            views = new WeakHashMap<Project, ProjectWebServiceView>();
-        }
-        views.put(getProject(),this);
         initImpls();
         for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
             impl.addNotify();
@@ -214,9 +209,6 @@ public final class ProjectWebServiceView {
      * Subclasses may remove listeners here.
      */
     void removeNotify() {
-        if (views != null && views.get(getProject()) == this) {
-            views.remove(getProject());
-        }
         if (getWebServiceViews() != null) {
             for (ProjectWebServiceViewImpl impl : getWebServiceViews()) {
                 impl.removeChangeListener(serviceListener, ViewType.SERVICE);
@@ -244,7 +236,7 @@ public final class ProjectWebServiceView {
         }
     }
 
-    private void updateImpls(boolean fireEvents) {
+    /*private void updateImpls(boolean fireEvents) {
         if (getWebServiceViews() == null) {
             initImpls();
             if (fireEvents) {
@@ -300,7 +292,7 @@ public final class ProjectWebServiceView {
             }
             impls.add(impl);
         }
-    }
+    }*/
 
     private final class ChangeListenerDelegate implements ChangeListener {
 
@@ -323,12 +315,8 @@ public final class ProjectWebServiceView {
         return implementations;
     }
 
-    static ProjectWebServiceView getProjectWebServiceView(Project project) {
-        ProjectWebServiceView result;
-        if (views == null || (result = views.get(project)) == null) {
-            return new ProjectWebServiceView(project);
-        }
-        return result;
+    static ProjectWebServiceView getProjectWebServiceView(Project project) {    
+        return new ProjectWebServiceView(project);
     }
 
     /**

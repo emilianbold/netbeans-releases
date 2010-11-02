@@ -273,6 +273,16 @@ public class AstUtil {
         return null;
     }
 
+    public static AST findLastSiblingOfType(AST ast, int type) {
+        AST result = null;
+        for( AST token = ast; token != null; token = token.getNextSibling() ) {
+            if( token.getType() == type ) {
+                result = token;
+            }
+        }
+        return result;
+    }
+
     public static AST getLastChild(AST token) {
         if( token == null ) {
             return null;

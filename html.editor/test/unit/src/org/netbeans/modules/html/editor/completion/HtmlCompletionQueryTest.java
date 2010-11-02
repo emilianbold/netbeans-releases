@@ -72,6 +72,7 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
         MockServices.setServices(MockMimeLookup.class);
     }
 

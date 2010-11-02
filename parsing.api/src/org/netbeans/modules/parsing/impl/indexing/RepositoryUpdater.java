@@ -1827,24 +1827,6 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
             
             FileObjectCrawler crawler = null;
-            boolean isFolder = false;
-            boolean isUpToDate = false;
-            if ("file".equals(root.getProtocol())) { //NOI18N
-                FileObject rootFo = URLMapper.findFileObject(root);
-                if (rootFo != null && rootFo.isFolder()) {
-                    isFolder = true;
-                    crawler = new FileObjectCrawler(rootFo, true, null, getShuttdownRequest());
-                    Collection<IndexableImpl> modified = crawler.getResources();
-                    Collection<IndexableImpl> deleted = crawler.getDeletedResources();
-                    if (crawler.isFinished()) {
-                        if (deleted.isEmpty() && modified.isEmpty()) {
-                            // no files have been deleted or modified since we have seen the folder
-                            isUpToDate = true;
-                            LOGGER.log(Level.FINE, "Binary folder {0} is up-to-date", root); //NOI18N
-                        }
-                    } // XXX: we should now quit and let the work to be restarted
-                }
-            }
 
             List<Context> transactionContexts = new LinkedList<Context>();
             try {
@@ -1860,7 +1842,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final Context ctx = SPIAccessor.getInstance().createContext(
                             cacheRoot, root, f.getIndexerName(), f.getIndexVersion(), null, false, false,
                             false, getShuttdownRequest());
-                    SPIAccessor.getInstance().setAllFilesJob(ctx, !isFolder || !isUpToDate || !votes.get(f)); // XXX: I am abusing this parameter to signal that the binary folder is up-to-date and does not have to be rescanned
+                    SPIAccessor.getInstance().setAllFilesJob(ctx, true);
                     transactionContexts.add(ctx);
 
                     final BinaryIndexer indexer = f.createIndexer();
@@ -1998,7 +1980,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         boolean indexResult=true;
                         try {
-                            indexResult=index(resources, files.isEmpty() && forceRefresh ? resources : null, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
+                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, null);
                             if (indexResult) {
                                 crawler.storeTimestamps();
                                 return true;
@@ -2885,8 +2867,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     depCtx.oldRoots.clear();
                     depCtx.oldRoots.addAll(removed.keySet());
-                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());
-                    depCtx.fullRescanSourceRoots = depCtx.newRoots2Deps.keySet();
+                    depCtx.newRootsToScan.retainAll(addedOrChanged.keySet());                                                
+//                    depCtx.fullRescanSourceRoots = new HashSet<URL>(addedOrChanged.keySet()); - probably unneeded, only hurts performance. The indexer should be responsible for dependencies.
                 }
             } else {
                 restarted = true;

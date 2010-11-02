@@ -96,6 +96,14 @@ public class SlowRefreshInterruptibleTest extends NbTestCase {
             fld = fld.createFolder("fld" + i);
         }
         FileObject fileObject1 = fld.createData("fileObject1");
+
+        // Create some more to fool the queues and maps. The test could fail
+        // otherwise, as the WeakSet used in FileObjectFactory.collectForRefresh
+        // keeps certain order of the entries.
+        fld.createData("fileObject2");
+        fld.createData("fileObject3");
+        fld.createData("fileObject4");
+        
         assertNotNull("Just to initialize the stamp", lm);
         FileObject[] arr = testFolder.getChildren();
         assertEquals("One child", 1, arr.length);

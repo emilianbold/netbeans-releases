@@ -79,7 +79,7 @@ import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
 import org.netbeans.modules.dlight.spi.storage.DataStorage;
 import org.netbeans.modules.dlight.spi.storage.DataStorageType;
 import org.netbeans.modules.dlight.spi.support.DataStorageTypeFactory;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListenersSupport;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorNotificationsListener;

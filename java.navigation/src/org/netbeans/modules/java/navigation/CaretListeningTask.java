@@ -423,7 +423,10 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             
             switch( tp.getLeaf().getKind()) {
                 case METHOD:
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                 case COMPILATION_UNIT:
                     e = ci.getTrees().getElement(tp);                    
                     break;

@@ -46,6 +46,8 @@ package org.netbeans.modules.debugger.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
+import java.awt.event.ContainerEvent;
+import java.awt.event.ContainerListener;
 import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import java.lang.ref.Reference;
@@ -96,6 +98,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     private final Map<DebuggerEngine, List<? extends Component>> usedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
     private final Map<Mode, Reference<TopComponent>> lastSelectedTopComponents = new WeakHashMap<Mode, Reference<TopComponent>>();
+    private ToolbarContainerListener toolbarContainerListener;
 
     private static final List<Component> OPENED_COMPONENTS = new LinkedList<Component>();
 
@@ -266,6 +269,25 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
     }
 
+    private DebuggerAction getDebuggerAction(Component c) {
+        if (c instanceof AbstractButton) {
+            Action a = ((AbstractButton) c).getAction();
+            if (a == null) {
+                ActionListener[] actionListeners = ((AbstractButton) c).getActionListeners();
+                for (ActionListener l : actionListeners) {
+                    if (l instanceof Action) {
+                        a = (Action) l;
+                        break;
+                    }
+                };
+            }
+            if (a != null && a instanceof DebuggerAction) {
+                return (DebuggerAction) a;
+            }
+        }
+        return null;
+    }
+
     private final void setupToolbar(final DebuggerEngine engine) {
         List<? extends ActionsProvider> actionsProviderList = engine.lookup(null, ActionsProvider.class);
         final Set engineActions = new HashSet();
@@ -289,42 +311,32 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     }
                     Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
                     if (debugToolbar == null) return ;
+                    registerToolbarListener(debugToolbar);
                     for (Component c : debugToolbar.getComponents()) {
-                        if (c instanceof AbstractButton) {
-                            Action a = ((AbstractButton) c).getAction();
-                            if (a == null) {
-                                ActionListener[] actionListeners = ((AbstractButton) c).getActionListeners();
-                                for (ActionListener l : actionListeners) {
-                                    if (l instanceof Action) {
-                                        a = (Action) l;
-                                        break;
-                                    }
-                                };
+                        DebuggerAction a = getDebuggerAction(c);
+                        if (a != null) {
+                            Object action = a.getAction();
+                            //System.err.println("Engine "+engine+" contains action "+a+"("+action+") = "+engineActions.contains(action));
+                            boolean containsAction = engineActions.contains(action);
+                            if (isFirst && !containsAction) {
+                                // For the first engine disable toolbar buttons for actions that are not provided
+                                c.setVisible(false);
+                                buttonsClosed.add(c);
+                                toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
+                                c.setPreferredSize(new Dimension(0, 0));
                             }
-                            if (a != null && a instanceof DebuggerAction) {
-                                Object action = ((DebuggerAction) a).getAction();
-                                //System.err.println("Engine "+engine+" contains action "+a+"("+action+") = "+engineActions.contains(action));
-                                boolean containsAction = engineActions.contains(action);
-                                if (isFirst && !containsAction) {
-                                    // For the first engine disable toolbar buttons for actions that are not provided
-                                    c.setVisible(false);
-                                    buttonsClosed.add(c);
-                                    toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
-                                    c.setPreferredSize(new Dimension(0, 0));
+                            if (!isFirst && containsAction) {
+                                // For next engine enable toolbar buttons that could be previously disabled
+                                // and are used for actions that are provided.
+                                Dimension d = toolbarButtonsPrefferedSize.remove(c);
+                                if (d != null) {
+                                    c.setPreferredSize(d);
                                 }
-                                if (!isFirst && containsAction) {
-                                    // For next engine enable toolbar buttons that could be previously disabled
-                                    // and are used for actions that are provided.
-                                    Dimension d = toolbarButtonsPrefferedSize.remove(c);
-                                    if (d != null) {
-                                        c.setPreferredSize(d);
-                                    }
-                                    c.setVisible(true);
-                                }
-                                if (containsAction) {
-                                    // Keep track of buttons used by individual engines.
-                                    buttonsUsed.add(c);
-                                }
+                                c.setVisible(true);
+                            }
+                            if (containsAction) {
+                                // Keep track of buttons used by individual engines.
+                                buttonsUsed.add(c);
                             }
                         }
                     }
@@ -479,9 +491,25 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         if (doCloseToolbar) {
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
+                    Toolbar debugToolbar = ToolbarPool.getDefault ().findToolbar("Debug");
+                    unregisterToolbarListener(debugToolbar);
                     ToolbarPool.getDefault ().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION); // NOI18N
                 }
             });
+        }
+    }
+
+    private void registerToolbarListener(Toolbar debugToolbar) {
+        if (toolbarContainerListener == null) {
+            toolbarContainerListener = new ToolbarContainerListener();
+            debugToolbar.addContainerListener(toolbarContainerListener);
+        }
+    }
+
+    private void unregisterToolbarListener(Toolbar debugToolbar) {
+        if (toolbarContainerListener != null) {
+            debugToolbar.removeContainerListener(toolbarContainerListener);
+            toolbarContainerListener = null;
         }
     }
 
@@ -525,6 +553,96 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         if (ToolbarPool.getDefault().getConfiguration().equals("Debugging")) { // NOI18N
             ToolbarPool.getDefault().setConfiguration(ToolbarPool.DEFAULT_CONFIGURATION);
         }
+    }
+
+    private class ToolbarContainerListener implements ContainerListener {
+
+        private final Map<DebuggerAction, Set<DebuggerEngine>> buttonActionsUsed = new HashMap<DebuggerAction, Set<DebuggerEngine>>();
+        private final Map<DebuggerAction, Set<DebuggerEngine>> buttonActionsClosed = new HashMap<DebuggerAction, Set<DebuggerEngine>>();
+        private boolean clearScheduled = false;
+        
+        @Override
+        public void componentAdded(ContainerEvent e) {
+            Component c = e.getChild();
+            DebuggerAction action = getDebuggerAction(c);
+            if (action != null) {
+                Set<DebuggerEngine> usedEngines = buttonActionsUsed.get(action);
+                if (usedEngines != null) {
+                    for (DebuggerEngine engine : usedEngines) {
+                        List<Component> buttonsUsed = (List<Component>) usedToolbarButtons.get(engine);
+                        buttonsUsed.add(c);
+                    }
+                }
+                Set<DebuggerEngine> closedEngines = buttonActionsClosed.get(action);
+                if (closedEngines != null) {
+                    for (DebuggerEngine engine : closedEngines) {
+                        List<Component> buttonsClosed = (List<Component>) closedToolbarButtons.get(engine);
+                        buttonsClosed.add(c);
+                    }
+                }
+                if (usedEngines == null && closedEngines != null) {
+                    // Disable toolbar buttons for actions that are not provided
+                    c.setVisible(false);
+                    toolbarButtonsPrefferedSize.put(c, c.getPreferredSize());
+                    c.setPreferredSize(new Dimension(0, 0));
+                }
+                if (usedEngines == null && closedEngines == null) { // Unknown
+                    for (DebuggerEngine engine : usedToolbarButtons.keySet()) {
+                        List<Component> buttonsUsed = (List<Component>) usedToolbarButtons.get(engine);
+                        // The button was explicitly added to the toolbar.
+                        // We do not want to remove it right away if it's not supported by the engine.
+                        // Thus add it as used by the engine...
+                        buttonsUsed.add(c);
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public void componentRemoved(ContainerEvent e) {
+            Component c = e.getChild();
+            DebuggerAction action = getDebuggerAction(c);
+            if (action != null) {
+                Set<DebuggerEngine> usedEngines = null;
+                Set<DebuggerEngine> closedEngines = null;
+                for (DebuggerEngine engine : usedToolbarButtons.keySet()) {
+                    if (usedToolbarButtons.get(engine).remove(c)) {
+                        if (usedEngines == null) {
+                            usedEngines = new HashSet<DebuggerEngine>();
+                        }
+                        usedEngines.add(engine);
+                    }
+                }
+                for (DebuggerEngine engine : closedToolbarButtons.keySet()) {
+                    if (closedToolbarButtons.get(engine).remove(c)) {
+                        if (closedEngines == null) {
+                            closedEngines = new HashSet<DebuggerEngine>();
+                        }
+                        closedEngines.add(engine);
+                    }
+                }
+                if (usedEngines != null) {
+                    buttonActionsUsed.put(action, usedEngines);
+                }
+                if (closedEngines != null) {
+                    buttonActionsClosed.put(action, closedEngines);
+                }
+            }
+            toolbarButtonsPrefferedSize.remove(c);
+
+            if (!clearScheduled) {
+                // Component with that action will be added back soon, if not, clear the map
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        buttonActionsUsed.clear();
+                        buttonActionsClosed.clear();
+                        clearScheduled = false;
+                    }
+                });
+            }
+        }
+        
     }
 
 }

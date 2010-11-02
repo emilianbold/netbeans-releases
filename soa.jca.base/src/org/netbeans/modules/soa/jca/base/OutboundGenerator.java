@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.soa.jca.base;
 
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.soa.jca.base.generator.api.GeneratorUtil;
 import org.netbeans.modules.soa.jca.base.generator.api.JavacTreeModel;
 import com.sun.source.tree.AnnotationTree;
@@ -898,7 +899,7 @@ public class OutboundGenerator {
 
     private boolean hasType(ClassTree classTree, String type) {
         for (Tree t : classTree.getMembers()) {
-            if (t.getKind() == Tree.Kind.CLASS) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                 ClassTree ct = (ClassTree) t;
                 if (ct.getSimpleName().contentEquals(type)) {
                     return true;

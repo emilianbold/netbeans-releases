@@ -69,8 +69,8 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.MakefileWriter;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PostProjectCreationProcessor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -115,13 +115,13 @@ public class MakeSampleProjectGenerator {
         }
         if (mainProject != null) {
             File parentFolderLocation = prjParams.getProjectFolder();
-            File mainProjectLocation = new File(parentFolderLocation, mainProject);
+            File mainProjectLocation = CndFileUtils.createLocalFile(parentFolderLocation, mainProject);
             File[] subProjectLocations = null;
             if (subProjects != null) {
                 List<File> subProjectsFiles = new ArrayList<File>();
                 StringTokenizer st = new StringTokenizer(subProjects, ","); // NOI18N
                 while (st.hasMoreTokens()) {
-                    subProjectsFiles.add(new File(parentFolderLocation, st.nextToken()));
+                    subProjectsFiles.add(CndFileUtils.createLocalFile(parentFolderLocation, st.nextToken()));
                 }
                 subProjectLocations = subProjectsFiles.toArray(new File[subProjectsFiles.size()]);
             }
@@ -134,7 +134,7 @@ public class MakeSampleProjectGenerator {
     private static void postProcessProject(FileObject prjLoc, String name, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         // update project.xml
         try {
-            File prjFile = FileUtil.toFile(prjLoc);
+            File prjFile = FileUtil.toFile(prjLoc); // File & FileUtil are ok here - projects are always local
             if (prjFile != null) {
                 // we can not refresh full system as was done orriginally for IZ124952
                 // prjLoc.getFileSystem().refresh(false); // IZ124952
@@ -302,7 +302,7 @@ public class MakeSampleProjectGenerator {
     public static Set<DataObject> createProjectFromTemplate(InputStream inputStream, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         FileObject prjLoc;
         unzip(inputStream, prjParams.getProjectFolder());
-        prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
+        prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
 
         postProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
@@ -315,7 +315,7 @@ public class MakeSampleProjectGenerator {
     private static void addToSet(List<DataObject> set, File projectFile, ProjectGenerator.ProjectParameters prjParams) throws IOException {
         try {
             FileObject prjLoc = null;
-            prjLoc = FileUtil.toFileObject(projectFile);
+            prjLoc = CndFileUtils.toFileObject(projectFile);
             postProcessProject(prjLoc, null, prjParams);
             prjLoc.refresh(false);
             set.add(DataObject.find(prjLoc));
@@ -334,7 +334,7 @@ public class MakeSampleProjectGenerator {
                 addToSet(set, subProjectLocations[i], prjParams);
             }
         }
-        FileObject prjLoc = FileUtil.toFileObject(prjParams.getProjectFolder());
+        FileObject prjLoc = CndFileUtils.toFileObject(prjParams.getProjectFolder());
         customPostProcessProject(prjLoc, prjParams.getProjectName(), prjParams);
         return new LinkedHashSet<DataObject>(set);
     }
@@ -389,7 +389,7 @@ public class MakeSampleProjectGenerator {
         try {
             ZipEntry ent;
             while ((ent = zip.getNextEntry()) != null) {
-                File f = new File(targetFolder, ent.getName());
+                File f = CndFileUtils.createLocalFile(targetFolder, ent.getName());
                 if (ent.isDirectory()) {
                     FileUtil.createFolder(f);//f.mkdirs();
                 } else {

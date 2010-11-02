@@ -67,7 +67,7 @@ public class MercurialApi extends AbstractHgTest {
         super.setUp();
 
         // create
-        workDir = getWorkDir();
+        workDir = getWorkTreeDir();
     }
 
     public void testIsRepository () {

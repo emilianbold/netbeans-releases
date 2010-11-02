@@ -76,6 +76,7 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.csl.api.GoToMarkOccurrencesAction;
 import org.netbeans.modules.csl.api.InstantRenameAction;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
@@ -145,16 +146,16 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             createDefaultKeyTypedAction(),
             createDeletePrevAction(),
             new HtmlDeleteCharAction(deleteNextCharAction, true),
-            new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
-            new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
-            new InstantRenameAction(),
-            new ToggleBlockCommentAction(),
+            CslActions.createSelectCodeElementAction(true),
+            CslActions.createSelectCodeElementAction(false),
+            CslActions.createInstantRenameAction(),
+            CslActions.createToggleBlockCommentAction(),
             new ExtKit.CommentAction(""), //NOI18N
             new ExtKit.UncommentAction(""), //NOI18N
             new HtmlNextWordAction(nextWordAction),
             new HtmlPreviousWordAction(previousWordAction),
-            new GoToMarkOccurrencesAction(false),
-            new GoToMarkOccurrencesAction(true)
+            CslActions.createGoToMarkOccurrencesAction(false),
+            CslActions.createGoToMarkOccurrencesAction(true)
         };
         return TextAction.augmentList(super.createActions(), HtmlActions);
     }

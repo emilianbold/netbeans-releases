@@ -177,6 +177,52 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 Thread.currentThread().interrupt();
             }
         }
+        loadAllTypes(o); // Initialize all types, implemented interfaces and super classes
+    }
+
+    private static boolean hasAllTypes(Object o) {
+        if (!(o instanceof ObjectVariable)) return true;
+        ObjectVariable ov = (ObjectVariable) o;
+        boolean hasAllInterfaces;
+        try {
+            java.lang.reflect.Method hasAllInterfacesMethod = ov.getClass().getMethod("hasAllTypes");
+            hasAllInterfacesMethod.setAccessible(true);
+            hasAllInterfaces = (Boolean) hasAllInterfacesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            hasAllInterfaces = true;
+        }
+        return hasAllInterfaces;
+        
+    }
+
+    private static void loadAllTypes(Object o) {
+        if (!(o instanceof ObjectVariable)) return ;
+        ObjectVariable ov = (ObjectVariable) o;
+        // TODO: List<JPDAClassType> ov.loadAllTypes();
+        try {
+            java.lang.reflect.Method loadAllTypesMethod = ov.getClass().getMethod("loadAllTypes");
+            loadAllTypesMethod.setAccessible(true);
+            loadAllTypesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static List<JPDAClassType> getAllInterfaces(Object o) {
+        if (!(o instanceof ObjectVariable)) return null;
+        ObjectVariable ov = (ObjectVariable) o;
+        // TODO: List<JPDAClassType> ov.getAllInterfaces();
+        List<JPDAClassType> allInterfaces;
+        try {
+            java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
+            allInterfacesMethod.setAccessible(true);
+            allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            allInterfaces = null;
+        }
+        return allInterfaces;
     }
     
     private void postEvaluationMonitor(Object o, Runnable whenEvaluated) {
@@ -558,21 +604,17 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
 
         Variable v = (Variable) o;
 
-        String type;
         if (checkEvaluated) {
             boolean evaluated;
             if (v instanceof Refreshable) {
                 synchronized (v) { // Do the test and retrieve of type in synch
                     evaluated = ((Refreshable) v).isCurrent();
-                    if (evaluated) {
-                        type = v.getType();
-                    } else {
-                        type = null;
-                    }
                 }
             } else {
                 evaluated = true;
-                type = v.getType();
+            }
+            if (!hasAllTypes(v)) {
+                evaluated = false;
             }
             if (!evaluated) {
                 if (whenEvaluated != null) {
@@ -580,25 +622,16 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
                 }
                 return null;
             }
-        } else {
-            type = v.getType();
         }
+        String type = v.getType();
 
         VariablesFilter vf = (VariablesFilter) typeToFilterL.get (type);
         if (vf != null) return vf;
 
         if (!(o instanceof ObjectVariable)) return null;
         ObjectVariable ov = (ObjectVariable) o;
-        // TODO: List<JPDAClassType> ov.getAllInterfaces();
-        List<JPDAClassType> allInterfaces;
-        try {
-            java.lang.reflect.Method allInterfacesMethod = ov.getClass().getMethod("getAllInterfaces");
-            allInterfacesMethod.setAccessible(true);
-            allInterfaces = (List<JPDAClassType>) allInterfacesMethod.invoke(ov);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-            allInterfaces = null;
-        }
+        
+        List<JPDAClassType> allInterfaces = getAllInterfaces(o);
         if (allInterfaces != null) {
             for (JPDAClassType ct : allInterfaces) {
                 type = ct.getName();
@@ -607,7 +640,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             }
         }
         // Consider ancestors as the type + it's ancestors
-        while (ov != null) {
+        while ((ov = ov.getSuper ()) != null) {
             type = null;
             // Check for evaluation before type is retrieved:
             if (checkEvaluated) {
@@ -636,7 +669,6 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
             }
             vf = (VariablesFilter) ancestorToFilterL.get (type);
             if (vf != null) return vf;
-            ov = ov.getSuper ();
         }
         return null;
     }

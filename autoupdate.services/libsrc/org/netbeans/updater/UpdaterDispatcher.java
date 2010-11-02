@@ -46,6 +46,7 @@ package org.netbeans.updater;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
 /**
@@ -91,11 +92,11 @@ public final class UpdaterDispatcher implements Runnable {
                     mu.start ();
                     mu.join ();
                 } catch (InterruptedException ex) {
-                    System.out.println("Error: " + ex);
+                    XMLUtil.LOG.log(Level.SEVERE, "Error", ex);
                 }
             }
         } catch (Exception x) {
-            System.out.println ("Error: Handling delete throws " + x);
+            XMLUtil.LOG.log (Level.WARNING, "Handling delete throws", x);
         } finally {
             UpdaterFrame.getUpdaterFrame ().unpackingFinished ();
         }
@@ -168,7 +169,7 @@ public final class UpdaterDispatcher implements Runnable {
                 stamp.setLastModified (System.currentTimeMillis ());
             }
         } catch (IOException ex) {
-            ex.printStackTrace ();
+            XMLUtil.LOG.log(Level.WARNING, null, ex);
         }
     }
     

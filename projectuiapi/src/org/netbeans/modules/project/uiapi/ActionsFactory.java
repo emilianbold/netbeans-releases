@@ -47,6 +47,7 @@ package org.netbeans.modules.project.uiapi;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
+import org.openide.util.ContextAwareAction;
 
 /**
  * Factory to be implemented bu the ui implementation
@@ -76,7 +77,7 @@ public interface ActionsFactory {
             
     // Actions sensitive to project selection
     
-    public Action projectCommandAction( String command, String namePattern, Icon icon );
+    public ContextAwareAction projectCommandAction( String command, String namePattern, Icon icon );
     
     public Action projectSensitiveAction( ProjectActionPerformer performer, String name, Icon icon );
     

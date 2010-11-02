@@ -72,6 +72,7 @@ public class WebServicesClientConstants {
     public static final String J2EE_PLATFORM_WSIMPORT_CLASSPATH="j2ee.platform.wsimport.classpath"; //NOI18N
     public static final String [] WSCOMPILE_JARS = {
         "${" + J2EE_PLATFORM_WSCOMPILE_CLASSPATH + "}", //NOI18N
+        "${javac.classpath}",
         "${wscompile.tools.classpath}" //NOI18N
     };
 }

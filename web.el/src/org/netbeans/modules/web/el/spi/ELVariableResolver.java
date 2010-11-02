@@ -87,7 +87,15 @@ public interface ELVariableResolver {
      * @return a list of variable infos; never {@code null}.
      */
     List<VariableInfo> getVariables(Snapshot snapshot, int offset);
-    
+
+    /**
+     * Gets the managed beans in the given {@code scope}.
+     * @param scope the scope to search, e.g. {@code "session"} or {@code "application"}.
+     * @param context
+     * @return a list of bean infos; never {@code null}.
+     */
+    List<VariableInfo> getBeansInScope(String scope, FileObject context);
+
     public static final class VariableInfo {
 
         public final String name;

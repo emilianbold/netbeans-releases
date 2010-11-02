@@ -57,7 +57,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
@@ -88,8 +87,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
             fileName = fileName.replace('/', '\\'); // NOI18N
         }
         fileName = HostInfoProvider.getMapper(execEnv).getLocalPath(fileName, true);
-        File file = CndFileUtils.normalizeFile(new File(fileName));
-        return FileUtil.toFileObject(file);
+        return CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(fileName));
     }
 
     protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
@@ -121,7 +119,7 @@ public abstract class ErrorParser implements ErrorParserProvider.ErrorParser {
                             file = new File(includePrefix + absPath2);
                         }
                         if (CndFileUtils.exists(file)) {
-                            FileObject fo = FileUtil.toFileObject(CndFileUtils.normalizeFile(file));
+                            FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeFile(file));
                             return fo;
                         }
                     }

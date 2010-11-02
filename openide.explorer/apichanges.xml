@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView.defaultActionAllowed">
+        <api name="explorer"/>
+        <summary>It's possible to define whether the default action is allowed or not in OutlineView.</summary>
+        <version major="6" minor="32"/>
+        <date day="4" month="10" year="2010"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Methods <code>setDefaultActionAllowed()</code> and <code>isDefaultActionAllowed()</code>
+            added to OutlineView to control invocation of the default action.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <issue number="190258"/>
+    </change>
     <change id="OutlineView.setTreeHorizontalScrollBarPolicy">
         <api name="explorer"/>
         <summary>OutlineView can provide horizontal scroll bar in the tree column.</summary>

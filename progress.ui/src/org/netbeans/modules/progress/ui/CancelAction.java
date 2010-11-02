@@ -43,38 +43,24 @@
  */
 package org.netbeans.modules.progress.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.netbeans.modules.progress.spi.Controller;
 import org.netbeans.modules.progress.spi.InternalHandle;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 
-public final class CancelAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.modules.progress.ui.CancelAction", category = "System")
+@ActionRegistration(displayName = "#CTL_CancelAction", iconInMenu=false, asynchronous=true)
+@ActionReference(name = "DS-DELETE", path = "Shortcuts")
+public final class CancelAction implements ActionListener {
     
-    public void performAction() {
-        // TODO implement action body
+    public @Override void actionPerformed(ActionEvent e) {
         InternalHandle handle = Controller.getDefault().getModel().getSelectedHandle();
         if (handle != null) {
             handle.requestCancel();
         }
-    }
-    
-    public String getName() {
-        return NbBundle.getMessage(CancelAction.class, "CTL_CancelAction");
-    }
-    
-    protected void initialize() {
-        super.initialize();
-        // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
-        putValue("noIconInMenu", Boolean.TRUE);
-    }
-    
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    protected boolean asynchronous() {
-        return true;
     }
     
 }

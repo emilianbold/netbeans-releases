@@ -50,16 +50,17 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Vita Stejskal
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-public final class PopupMenuActionsProvider extends ActionsList implements Class2LayerFolder<PopupMenuActionsProvider>, InstanceProvider<PopupMenuActionsProvider> {
+@MimeLocation(subfolderName=PopupMenuActionsProvider.POPUP_MENU_ACTIONS_FOLDER_NAME, instanceProviderClass=PopupMenuActionsProvider.class)
+public final class PopupMenuActionsProvider extends ActionsList implements InstanceProvider<PopupMenuActionsProvider> {
 
-    private static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
+    static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N
     
     public static List getPopupMenuItems(String mimeType) {
         MimePath mimePath = MimePath.parse(mimeType);
@@ -73,18 +74,6 @@ public final class PopupMenuActionsProvider extends ActionsList implements Class
 
     private PopupMenuActionsProvider(List<FileObject> keys) {
         super(keys, false, false);
-    }
-    
-    public Class<PopupMenuActionsProvider> getClazz(){
-        return PopupMenuActionsProvider.class;
-    }
-
-    public String getLayerFolderName(){
-        return POPUP_MENU_ACTIONS_FOLDER_NAME;
-    }
-
-    public InstanceProvider<PopupMenuActionsProvider> getInstanceProvider() {
-        return new PopupMenuActionsProvider();
     }
     
     public PopupMenuActionsProvider createInstance(List<FileObject> fileObjectList) {

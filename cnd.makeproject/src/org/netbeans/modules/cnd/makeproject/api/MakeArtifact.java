@@ -174,6 +174,10 @@ public class MakeArtifact {
         return subsituteMake(getBuildCommand(), makeCommand, makeFlags);
     }
 
+    public String getBuildCommand(String buildCommandFromProjectProperties, String makeCommand, String makeFlags) {
+        return subsituteMake(buildCommandFromProjectProperties, makeCommand, makeFlags);
+    }
+
     public String getCleanCommand() {
 	return cleanCommand;
     }

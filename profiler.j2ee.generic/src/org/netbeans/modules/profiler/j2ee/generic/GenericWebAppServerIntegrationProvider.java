@@ -63,19 +63,33 @@ import org.netbeans.modules.profiler.attach.wizard.steps.WizardStep;
 public class GenericWebAppServerIntegrationProvider extends AbstractIntegrationProvider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.generic.Bundle"); // NOI18N
-    private static final String GENERIC_WEBAPP_SERVER_STRING = messages.getString("GenericWebAppServerIntegrationProvider_GenericWebappServerString"); // NOI18N
-    private static final String PATH_TO_JDK_DIRECTORY_STRING = messages.getString("GenericWebAppServerIntegrationProvider_PathToJdkDirectory"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP4_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
-    private static final String MANUAL_REMOTE_STEP5_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep1Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep2Message"); // NOI18N
-    private static final String MANUAL_DIRECT_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep3Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
-    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep2Message"); // NOI18N
-    private static final String DYNAMIC_WARNING_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    private static final String GENERIC_WEBAPP_SERVER_STRING;
+    private static final String PATH_TO_JDK_DIRECTORY_STRING;
+    private static final String MANUAL_REMOTE_STEP3_MESSAGE;
+    private static final String MANUAL_REMOTE_STEP4_MESSAGE;
+    private static final String MANUAL_REMOTE_STEP5_MESSAGE;
+    private static final String MANUAL_DIRECT_STEP1_MESSAGE;
+    private static final String MANUAL_DIRECT_STEP2_MESSAGE;
+    private static final String MANUAL_DIRECT_STEP3_MESSAGE;
+    private static final String MANUAL_DYNAMIC_STEP1_MESSAGE;
+    private static final String MANUAL_DYNAMIC_STEP2_MESSAGE;
+    private static final String DYNAMIC_WARNING_MESSAGE;
     private static final WizardStep NULL_WIZARD_STEP = new NullWizardStep();
+    
+    static {
+        ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.modules.profiler.j2ee.generic.Bundle"); // NOI18N
+        GENERIC_WEBAPP_SERVER_STRING = messages.getString("GenericWebAppServerIntegrationProvider_GenericWebappServerString"); // NOI18N
+        PATH_TO_JDK_DIRECTORY_STRING = messages.getString("GenericWebAppServerIntegrationProvider_PathToJdkDirectory"); // NOI18N
+        MANUAL_REMOTE_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep3Message"); // NOI18N
+        MANUAL_REMOTE_STEP4_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep4Message"); // NOI18N
+        MANUAL_REMOTE_STEP5_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualRemoteStep5Message"); // NOI18N
+        MANUAL_DIRECT_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep1Message"); // NOI18N
+        MANUAL_DIRECT_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep2Message"); // NOI18N
+        MANUAL_DIRECT_STEP3_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDirectStep3Message"); // NOI18N
+        MANUAL_DYNAMIC_STEP1_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep1Message"); // NOI18N
+        MANUAL_DYNAMIC_STEP2_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_ManualDynamicStep2Message"); // NOI18N
+        DYNAMIC_WARNING_MESSAGE = messages.getString("GenericWebAppServerIntegrationProvider_DynamicWarningMessage"); // NOI18N  
+    }
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 

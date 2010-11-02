@@ -72,6 +72,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.debugger.ui.WatchPanel;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.spi.viewmodel.ColumnModel;
@@ -599,7 +600,8 @@ public class ColumnModels {
             int line = EditorContextDispatcher.getDefault().getMostRecentLineNumber();
             String mimeType = file != null ? file.getMIMEType() : "text/plain"; // NOI18N
             editorPane = new WatchesEditorPane(mimeType, "");
-            if (file != null && line >= 0) {
+            if (file != null) {
+                line = WatchPanel.adjustLine(file, line);
                 DialogBinding.bindComponentToFile(file, line, 0, 0, editorPane);
             }
 

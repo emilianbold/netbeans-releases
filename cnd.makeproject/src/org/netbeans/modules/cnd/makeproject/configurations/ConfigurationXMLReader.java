@@ -133,7 +133,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         return configurationDescriptor;
     }
 
-    public ConfigurationDescriptor _read(String relativeOffset,
+    private ConfigurationDescriptor _read(String relativeOffset,
             String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
 
         boolean success;

@@ -157,7 +157,7 @@ public final class ImportWizard implements ChangeListener {
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
      */
-    private class PanelsIterator extends WizardDescriptor.ArrayIterator {                
+    private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
 
         PanelsIterator() {            
         }

@@ -757,6 +757,24 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testIndexOutOfBoundsInMultiList() throws Exception {
+        performVariablesTest("package test;" +
+                             "public class Test {" +
+                             "    public void test() {" +
+                             "        int i = 0;" +
+                             "        int j = 0;" +
+                             "        i++;" +
+                             "        j++;" +
+                             "    }" +
+                             "}",
+                             "{$type $i = $init; $stms$; $i++;}",
+                             new Pair[0],
+                             new Pair[0],
+                             new Pair[0],
+                             true,
+                             false);
+    }
+
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

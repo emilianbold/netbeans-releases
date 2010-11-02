@@ -69,6 +69,8 @@ import javax.swing.JViewport;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.table.TableCellEditor;
@@ -206,6 +208,9 @@ public class Outline extends ETable {
     private ComponentListener componentListener = null;
     private boolean selectionDisabled = false;
     private boolean rowHeightIsSet = false;
+    private int selectedRow = -1;
+    private int[] lastEditPosition;
+
     /** Creates a new instance of Outline */
     public Outline() {
         init();
@@ -225,6 +230,16 @@ public class Outline extends ETable {
         am.put("selectNextColumn", new ExpandAction(true, a)); //NOI18N
         a = am.get("selectPreviousColumn"); //NOI18N
         am.put("selectPreviousColumn", new ExpandAction(false, a)); //NOI18N
+        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (getSelectedRowCount() == 1) {
+                    selectedRow = getSelectedRow();
+                } else {
+                    selectedRow = -1;
+                }
+            }
+        });
     }
     
     /** Always returns the default renderer for Object.class for the tree column */
@@ -449,7 +464,8 @@ public class Outline extends ETable {
                     Comparable c1 = (Comparable) obj1;
                     return ascending ? c1.compareTo(obj2) : - c1.compareTo(obj2);
                 }
-                return 0;
+                return ascending ? obj1.toString().compareTo(obj2.toString()) :
+                                   obj2.toString().compareTo(obj1.toString());
             }
         }
     }
@@ -611,7 +627,7 @@ public class Outline extends ETable {
         }
             
         boolean res = false;
-        if (!isTreeColumn || e instanceof MouseEvent && ((MouseEvent)e).getClickCount() > 1) {
+        if (!isTreeColumn || e instanceof MouseEvent && isEditEvent(row, column, (MouseEvent) e)) {
             res = super.editCellAt(row, column, e);
         }
         if( res && isTreeColumn && null != getEditorComponent() ) {
@@ -622,6 +638,36 @@ public class Outline extends ETable {
             checkAt(row, column, null);
         }
         return res;
+    }
+
+    private boolean isEditEvent(int row, int column, MouseEvent me) {
+        if (me.getClickCount() > 1) {
+            return true;
+        }
+        boolean noModifiers = me.getModifiersEx() == me.BUTTON1_DOWN_MASK;
+        if (lastEditPosition != null && selectedRow == row && noModifiers &&
+            lastEditPosition[0] == row && lastEditPosition[1] == column) {
+
+            int handleWidth = DefaultOutlineCellRenderer.getExpansionHandleWidth();
+            Insets ins = getInsets();
+            TreePath path = getLayoutCache().getPathForRow(convertRowIndexToModel(row));
+            int nd = path.getPathCount() - (isRootVisible() ? 1 : 2);
+            if (nd < 0) {
+                nd = 0;
+            }
+            int handleStart = ins.left + (nd * DefaultOutlineCellRenderer.getNestingWidth());
+            int handleEnd = ins.left + handleStart + handleWidth;
+            // Translate 'x' to position of column if non-0:
+            int columnStart = getCellRect(row, column, false).x;
+            handleStart += columnStart;
+            handleEnd += columnStart;
+            if (me.getX() >= handleEnd) {
+                lastEditPosition = null;
+                return true;
+            }
+        }
+        lastEditPosition = new int[] { row, column };
+        return false;
     }
 
     private boolean checkAt(int row, int column, MouseEvent me) {

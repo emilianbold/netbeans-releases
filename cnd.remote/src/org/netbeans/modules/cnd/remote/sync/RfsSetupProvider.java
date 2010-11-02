@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.remote.sync;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.text.ParseException;
@@ -60,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 
 
@@ -71,7 +73,7 @@ import org.openide.util.Exceptions;
 public class RfsSetupProvider implements SetupProvider {
     public static final String POSTFIX_64 = "_64"; // NOI18N
 
-    private Map<String, String> binarySetupMap;
+    private Map<String, File> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
     private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
@@ -84,16 +86,17 @@ public class RfsSetupProvider implements SetupProvider {
             ,"SunOS-sparc" // NOI18N
             ,"SunOS-sparc_64" // NOI18N
         };
-        binarySetupMap = new HashMap<String, String>();
+        binarySetupMap = new HashMap<String, File>();
+        File file;
         for (String dir : dirs) {
-            binarySetupMap.put(dir + "/" + PRELOAD, "bin/" +  dir + "/" + PRELOAD); // NOI18N
-            binarySetupMap.put(dir + "/" + CONTROLLER, "bin/" +  dir + "/" + CONTROLLER); // NOI18N
+            binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" +  dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
+            binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" +  dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
         }
     }
 
     @Override
-    public Map<String, String> getBinaryFiles(ExecutionEnvironment env) {
-        Map<String, String> result = new LinkedHashMap<String, String>();
+    public Map<String, File> getBinaryFiles(ExecutionEnvironment env) {
+        Map<String, File> result = new LinkedHashMap<String, File>();
         Boolean applicable = isApplicable(env);
         if (applicable == null) {
             RemoteUtil.LOGGER.log(Level.WARNING, "Can not determine whether RFS is applicable for {0}", env.getDisplayName());
@@ -108,7 +111,7 @@ public class RfsSetupProvider implements SetupProvider {
             String osName = getOsName(env);
             String dir32 = osName + '/';
             String dir64 = getOsName(env) + POSTFIX_64 + '/';
-            for (Map.Entry<String, String> entry : binarySetupMap.entrySet()) {
+            for (Map.Entry<String, File> entry : binarySetupMap.entrySet()) {
                 boolean add = false;
                 if (entry.getKey().startsWith(dir32)) {
                     add = true;

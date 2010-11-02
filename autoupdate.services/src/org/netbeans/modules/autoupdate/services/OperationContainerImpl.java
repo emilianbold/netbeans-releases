@@ -51,6 +51,7 @@ import java.util.HashSet;
 import org.netbeans.api.autoupdate.*;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
@@ -66,7 +67,7 @@ public final class OperationContainerImpl<Support> {
     private boolean upToDate = false;
     private OperationContainerImpl () {}
     private static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
-    private List<OperationInfo<Support>> operations = new ArrayList<OperationInfo<Support>>();
+    private List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
     private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
@@ -150,6 +151,7 @@ public final class OperationContainerImpl<Support> {
         synchronized(this) {
             if (!contains (updateUnit, updateElement)) {
                 retval = Trampoline.API.createOperationInfo (new OperationInfoImpl<Support> (updateUnit, updateElement));
+                assert retval != null : "Null support for " + updateUnit + " and " + updateElement;
                 changeState (operations.add (retval));
             }
         }
@@ -194,7 +196,7 @@ public final class OperationContainerImpl<Support> {
     }
     
     private List<OperationInfo<Support>> listAll () {
-        return new ArrayList<OperationInfo<Support>>(operations);
+        return Collections.unmodifiableList(operations);
     }
     
     synchronized public List<OperationInfo<Support>> listAllWithPossibleEager () {

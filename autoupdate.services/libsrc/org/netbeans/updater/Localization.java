@@ -217,7 +217,7 @@ class Localization {
                     "lib" + FILE_SEPARATOR + "branding");  // NOI18N
             in = new BufferedReader(new FileReader(brandf));
             if (in.ready()) {
-                System.out.println("Warning - It's obsolete. Use --branding <branding> instead 'branding' file.");
+                XMLUtil.LOG.warning("It's obsolete. Use --branding <branding> instead 'branding' file.");
                 s = in.readLine();
             }
         } 

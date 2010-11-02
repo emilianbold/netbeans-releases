@@ -99,6 +99,9 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoWrongUrlWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoWrongUrl("@bancha");
         testInfoWrongUrl("ban@cha");
         testInfoWrongUrl("bancha@");
@@ -130,18 +133,27 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoNotManagedFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoNotManaged("folder", "@file");
         testInfoNotManaged("folder", "fi@le");
         testInfoNotManaged("folder", "file@");
     }
 
     public void testInfoNotManagedFolderWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoNotManaged("@folder", "file");
         testInfoNotManaged("fol@der", "file");
         testInfoNotManaged("folder@", "file");
     }
 
     public void testInfoNotManagedFolderAndFileWithAtSigns() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoNotManaged("@folder", "@file");
         testInfoNotManaged("@folder", "fi@le");
         testInfoNotManaged("@folder", "file@");
@@ -159,24 +171,27 @@ public class InfoTestHidden extends AbstractCommandTestCase {
         notManaged(folder);
         notManaged(file);
     }
-  
-//    XXX fails but we use the implemenation since ever, doesn't seem to be a problem    
-//    public void testInfoUnversioned() throws Exception {                                
+
+//    XXX fails but we use the implemenation since ever, doesn't seem to be a problem
+//    public void testInfoUnversioned() throws Exception {
 //        File unversioned = createFile("unversioned");
-//        
+//
 //        ISVNClientAdapter c = getNbClient();
 //
 //        ISVNInfo info1 = c.getInfo(unversioned);
 //        ISVNInfo info2 = getInfo(unversioned);
-//                        
+//
 //        assertInfos(info1, info2);
-//    }    
-    
+//    }
+
     public void testInfoFile() throws Exception {
         testInfoFile("file");
     }
 
     public void testInfoFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoFile("@file");
         testInfoFile("fi@le");
         testInfoFile("file@");
@@ -187,6 +202,9 @@ public class InfoTestHidden extends AbstractCommandTestCase {
     }
 
     public void testInfoFileWithAtSignInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoFile("folder/@file");
         testInfoFile("folder/fi@le");
         testInfoFile("folder/file@");
@@ -197,84 +215,102 @@ public class InfoTestHidden extends AbstractCommandTestCase {
         File file = createFile(filePath);
         add(file);
         commit(file);
-        
+
         ISVNClientAdapter c = getNbClient();
 
-        ISVNInfo info1 = c.getInfo(getFileUrl(file));        
+        ISVNInfo info1 = c.getInfo(getFileUrl(file));
         ISVNInfo info2 = getInfo(getFileUrl(file));
-        
+
         assertInfos(info1, info2);
-    }       
-    
-    public void testInfoRepo() throws Exception {                                        
-        
+    }
+
+    public void testInfoRepo() throws Exception {
+
         ISVNClientAdapter c = getNbClient();
 
         ISVNInfo info1 = c.getInfo(getRepoUrl());
         ISVNInfo info2 = getInfo(getRepoUrl());
-        
+
         assertInfos(info1, info2);
-    }       
-    
+    }
+
     public void testInfoLocked() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoLocked("lockfile");
     }
 
     public void testInfoLockedWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoLocked("@lockfile");
         testInfoLocked("lock@file");
         testInfoLocked("lockfile@");
     }
 
     public void testInfoLockedInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoLocked("folder/lockfile");
     }
 
     public void testInfoLockedWithAtSignInDir() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoLocked("folder/@lockfile");
         testInfoLocked("folder/lock@file");
         testInfoLocked("folder/lockfile@");
     }
 
     private void testInfoLocked(String filePath) throws Exception {
+        if(!isCommandLine()) {
+            return;
+        }
         createAndCommitParentFolders(filePath);
         File file = createFile(filePath);
         add(file);
         commit(file);
-        String msg = 
+        String msg =
             "Tamaryokucha and other types of sencha are made in essentially the same way.\n" +
-            "Slight differences in processing, however, give tamaryokucha its characteristic\n" + 
-            "fresh taste and reduced astringency.";        
+            "Slight differences in processing, however, give tamaryokucha its characteristic\n" +
+            "fresh taste and reduced astringency.";
         lock(file, msg, true);
-        
+
         ISVNClientAdapter c = getNbClient();
-       
-        ISVNInfo info1 = c.getInfo(getFileUrl(file));        
+
+        ISVNInfo info1 = c.getInfo(getFileUrl(file));
         ISVNInfo info2 = getInfo(getFileUrl(file));
-        
+
         assertTrue(info1.getLockComment().startsWith("Tamaryokucha"));
         assertInfos(info1, info2);
-    }       
-  
-//    XXX not supported yet    
-//    public void testInfoAdded() throws Exception {                                        
+    }
+
+//    XXX not supported yet
+//    public void testInfoAdded() throws Exception {
 //        File file = createFile("file");
 //        add(file);
-//                
+//
 //        ISVNClientAdapter c = getNbClient();
-//       
-//        ISVNInfo info1 = c.getInfo(file);        
+//
+//        ISVNInfo info1 = c.getInfo(file);
 //        ISVNInfo info2 = getInfo(file);
-//        
+//
 //        assertEquals(info1.getSchedule(), SVNScheduleKind.ADD);
 //        assertInfos(info1, info2);
-//    }       
-    
+//    }
+
     public void testInfoDeleted() throws Exception {
         testInfoDeleted("file");
     }
 
     public void testInfoDeletedWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoDeleted("@file");
         testInfoDeleted("fi@le");
         testInfoDeleted("file@");
@@ -285,41 +321,56 @@ public class InfoTestHidden extends AbstractCommandTestCase {
         add(file);
         commit(file);
         remove(file);
-        
+
         ISVNClientAdapter c = getNbClient();
-       
-        ISVNInfo info1 = c.getInfo(getFileUrl(file));        
+
+        ISVNInfo info1 = c.getInfo(getFileUrl(file));
         ISVNInfo info2 = getInfo(getFileUrl(file));
-        
+
         assertInfos(info1, info2);
-    }    
-    
+    }
+
     public void testInfoCopied() throws Exception {
         testInfoCopied("file", "filecopy");
     }
 
     public void testInfoCopiedToFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
 //        testInfoCopied("file", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
         testInfoCopied("file", "file@copy");
         testInfoCopied("file", "filecopy@");
     }
 
     public void testInfoCopiedFromFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testInfoCopied("@file", "filecopy");
-        testInfoCopied("fi@le", "filecopy");
-        testInfoCopied("file@", "filecopy");
+        if(shouldBeTestedWithCurrentClient(false, true)) { // doesn't work with javahl, we don't call that scenario anyway
+            testInfoCopied("fi@le", "filecopy");
+            testInfoCopied("file@", "filecopy");
+        }
     }
 
     public void testInfoCopiedFilesWithAtSigns() throws Exception {
-//        testInfoCopied("@file", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;        
+        }
+        if(shouldBeTestedWithCurrentClient(false, true)) {
+            testInfoCopied("@file", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+        }
         testInfoCopied("@file", "file@copy");
         testInfoCopied("@file", "filecopy@");
-//        testInfoCopied("fi@le", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
-        testInfoCopied("fi@le", "file@copy");
-        testInfoCopied("fi@le", "filecopy@");
-//        testInfoCopied("file@", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
-        testInfoCopied("file@", "file@copy");
-        testInfoCopied("file@", "filecopy@");
+        if(shouldBeTestedWithCurrentClient(false, true)) { // doesn't work with javahl, we don't call that scenario anyway
+            testInfoCopied("fi@le", "@filecopy"); // fails until fixed in svn - http://subversion.tigris.org/issues/show_bug.cgi?id=3416
+            testInfoCopied("fi@le", "file@copy");
+            testInfoCopied("fi@le", "filecopy@");
+            testInfoCopied("file@", "@filecopy");
+            testInfoCopied("file@", "file@copy");
+            testInfoCopied("file@", "filecopy@");
+        }
     }
 
     private void testInfoCopied(String srcFileName,

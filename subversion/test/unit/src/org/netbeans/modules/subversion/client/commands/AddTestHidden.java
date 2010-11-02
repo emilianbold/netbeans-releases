@@ -63,6 +63,9 @@ public class AddTestHidden extends AbstractCommandTestCase {
     }
 
     public void testAddFileWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testAddFile("@file");
         testAddFile("fi@le");
         testAddFile("file@");
@@ -73,6 +76,9 @@ public class AddTestHidden extends AbstractCommandTestCase {
     }
 
     public void testAddFileInDirWithAtSign() throws Exception {
+        if(!shouldBeTestedWithCurrentClient(true, false)) {
+            return;
+        }
         testAddFile("dir/@file");
         testAddFile("dir/fi@le");
         testAddFile("dir/file@");

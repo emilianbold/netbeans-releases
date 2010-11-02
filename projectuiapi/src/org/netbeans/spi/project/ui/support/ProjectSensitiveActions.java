@@ -71,7 +71,7 @@ public class ProjectSensitiveActions {
      * @param icon icon of the action (or null)
      * @return an action sensitive to the current project
      */    
-    public static Action projectCommandAction( String command, String namePattern, Icon icon ) {
+    public static /* TBD: declare as ContextAwareAction */Action projectCommandAction( String command, String namePattern, Icon icon ) {
         return Utilities.getActionsFactory().projectCommandAction( command, namePattern, icon );
     }
     

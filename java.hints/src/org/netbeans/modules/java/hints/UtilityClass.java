@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -181,7 +182,11 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
 
         switch (treePath.getLeaf().getKind()) {
             case METHOD: span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) treePath.getLeaf()); break;
-            case CLASS: span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                span = compilationInfo.getTreeUtilities().findNameSpan((ClassTree) treePath.getLeaf()); break;
             case VARIABLE: span = compilationInfo.getTreeUtilities().findNameSpan((VariableTree) treePath.getLeaf()); break;
         }
 
@@ -302,7 +307,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
             }
             Tree outer = wc.getTrees().getTree(e);
             if (clazz) {
-                if (outer == null || outer.getKind() != Kind.CLASS) {
+                if (outer == null || !TreeUtilities.CLASS_TREE_KINDS.contains(outer.getKind())) {
                     return;
                 }
                 ClassTree cls = (ClassTree)outer;

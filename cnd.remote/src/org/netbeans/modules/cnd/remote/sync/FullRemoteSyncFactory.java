@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.sync;
 
 import java.io.File;
 import java.io.PrintWriter;
+import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.NbBundle;
@@ -56,7 +57,8 @@ import org.openide.util.NbBundle;
 public class FullRemoteSyncFactory extends BaseSyncFactory {
 
     /** this factory ID -  public for test purposes */
-    public static final String ID = "full"; //NOI18N
+    private static final String ID = "full"; //NOI18N
+    private final PathMap pathMapper = new FullRemotePathMap();
 
     @Override
     public RemoteSyncWorker createNew( ExecutionEnvironment executionEnvironment,
@@ -89,5 +91,28 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     @Override
     public boolean isPathMappingCustomizable() {
         return false;
+    }
+
+    @Override
+    public PathMap getPathMap(ExecutionEnvironment executionEnvironment) {
+        return pathMapper;
+    }
+
+    private final static class FullRemotePathMap extends PathMap {
+
+        @Override
+        public boolean checkRemotePath(String path, boolean fixMissingPath) {
+            return true;
+        }
+
+        @Override
+        public String getLocalPath(String rpath, boolean useDefault) {
+            return rpath;
+        }
+
+        @Override
+        public String getRemotePath(String lpath, boolean useDefault) {
+            return lpath;
+        }
     }
 }

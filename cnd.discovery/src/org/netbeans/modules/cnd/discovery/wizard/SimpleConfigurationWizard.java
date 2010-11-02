@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SimpleConfigurationWizard implements WizardDescriptor.Panel, ChangeListener {
+public class SimpleConfigurationWizard implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
     
     private DiscoveryDescriptor wizardDescriptor;
     private SimpleConfigurationPanel component;
@@ -73,6 +73,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SimpleConfigurationPanel(this);
@@ -81,10 +82,12 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
         return component;
     }
     
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(DiscoveryWizardAction.HELP_CONTEXT_SIMPLE_CONFIGURATION);
     }
     
+    @Override
     public boolean isValid() {
         boolean valid = ((SimpleConfigurationPanel)getComponent()).valid();
         if (valid) {
@@ -94,11 +97,13 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     }
     
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -115,6 +120,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
         }
     }
     
+    @Override
     public void stateChanged(ChangeEvent e) {
         fireChangeEvent();
     }
@@ -124,7 +130,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings(Object settings) {
+    public void readSettings(WizardDescriptor settings) {
         if (!inited) {
             wizardDescriptor = DiscoveryWizardDescriptor.adaptee(settings);
             component.read(wizardDescriptor);
@@ -132,7 +138,7 @@ public class SimpleConfigurationWizard implements WizardDescriptor.Panel, Change
         }
     }
     
-    public void storeSettings(Object settings) {
+    public void storeSettings(WizardDescriptor settings) {
         component.store(DiscoveryWizardDescriptor.adaptee(settings));
     }
 }

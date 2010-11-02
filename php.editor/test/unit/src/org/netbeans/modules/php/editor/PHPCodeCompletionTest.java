@@ -725,6 +725,14 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testIssue157534_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue157534.php", "$v157534->add^", false);
     }
+    
+    public void testIssue171232_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue171232_01.php", "$this->^", false);
+    }
+
+    public void testIssue171232_02() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue171232_02.php", "$this->^", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

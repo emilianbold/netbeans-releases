@@ -79,6 +79,8 @@ public class OSXNotifier extends Notifier<Void> {
     private ExecutorService worker;
     //@GuardedBy("this")
     private Pointer[] rtData;
+    
+    private static final String ALL_CHANGE = "ALL-CHANGE";  //xxx - shouldn't be global in Notifier rather than using null?
 
     public OSXNotifier() {
         cf = (CoreFoundation) Native.loadLibrary("CoreFoundation",CoreFoundation.class);    //NOI18N
@@ -98,7 +100,8 @@ public class OSXNotifier extends Notifier<Void> {
 
     public @Override String nextEvent() throws IOException {
         try {
-            return events.take();
+            final String event = events.take();
+            return event == ALL_CHANGE ? null : event;
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -263,7 +266,13 @@ public class OSXNotifier extends Notifier<Void> {
             final long st = System.currentTimeMillis();
             final int length = numEvents.intValue();
             final Pointer[] pointers = eventPaths.getPointerArray(0, length);
-            final int[] flags = eventFlags.getIntArray(0, length);
+            int flags[];
+            if (eventFlags == null) {
+                flags = new int[length];
+                LOG.log(DEBUG_LOG_LEVEL, "FSEventStreamCallback eventFlags == null, expected int[] of size {0}", length); //NOI18N
+            } else {
+                flags = eventFlags.getIntArray(0, length);
+            }
             for (int i=0; i<length; i++) {
                 final Pointer p = pointers[i];
                 int flag = flags[i];
@@ -272,7 +281,7 @@ public class OSXNotifier extends Notifier<Void> {
                 if ((flag & kFSEventStreamEventFlagMustScanSubDirs) ==  kFSEventStreamEventFlagMustScanSubDirs ||
                     (flag & kFSEventStreamEventFlagMount) == kFSEventStreamEventFlagMount ||
                     (flag & kFSEventStreamEventFlagUnmount) == kFSEventStreamEventFlagUnmount) {
-                    events.add(null);
+                    events.add(ALL_CHANGE);
                 } else {
                     events.add(path);
                 }

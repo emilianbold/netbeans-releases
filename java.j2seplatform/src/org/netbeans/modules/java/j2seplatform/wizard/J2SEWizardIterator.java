@@ -102,10 +102,12 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         return installFolder.getPrimaryFile();
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
         listeners.addChangeListener(l);
     }
 
+    @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         switch (this.currentIndex) {
             case 0:
@@ -115,14 +117,17 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         }
     }
 
+    @Override
     public boolean hasNext() {
         return false;
     }
 
+    @Override
     public boolean hasPrevious() {
         return false;
     }
 
+    @Override
     public void initialize(WizardDescriptor wiz) {
         this.wizard = wiz;
         this. detectPanel = new DetectPanel.WizardPanel(this);
@@ -134,6 +139,7 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
      * platform's properties. The XML is returned in the resulting Set.
      * @return singleton Set with java platform's instance DO inside.
      */
+    @Override
     public java.util.Set instantiate() throws IOException {
         //Workaround #44444
         this.detectPanel.storeSettings (this.wizard);
@@ -156,22 +162,27 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
         
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(J2SEWizardIterator.class, "TITLE_PlatformName");
     }
 
+    @Override
     public void nextPanel() {
         this.currentIndex++;
     }
 
+    @Override
     public void previousPanel() {
         this.currentIndex--;
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         listeners.removeChangeListener(l);
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wiz) {
         this.wizard = null;        
         this.detectPanel = null;

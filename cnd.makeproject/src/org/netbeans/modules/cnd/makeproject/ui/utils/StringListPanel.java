@@ -183,9 +183,8 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         inheritTextArea.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(StringListPanel.class, "INHERITED_VALUES_AN")); // NOI18N
         inheritTextArea.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(StringListPanel.class, "INHERITED_VALUES_AD")); // NOI18N
 
-        inheritCheckBox.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/ui/utils/Bundle").getString("INHERIT_CHECKBOX_MN").charAt(0));
         inheritCheckBox.setSelected(true);
-        inheritCheckBox.setText(bundle.getString("INHERIT_CHECKBOX_LBL")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(inheritCheckBox, bundle.getString("INHERIT_CHECKBOX_LBL")); // NOI18N
         inheritCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 inheritCheckBoxActionPerformed(evt);

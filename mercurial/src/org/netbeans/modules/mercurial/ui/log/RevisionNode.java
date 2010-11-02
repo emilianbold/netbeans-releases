@@ -59,6 +59,7 @@ import java.awt.event.ActionEvent;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * Visible in the Search History Diff view.
@@ -157,7 +158,7 @@ class RevisionNode extends AbstractNode {
         @Override
         public PropertyEditor getPropertyEditor() {
             try {
-                return new RevisionPropertyEditor((String) getValue());
+                return new RevisionPropertyEditor(getValue());
             } catch (Exception e) {
                 return super.getPropertyEditor();
             }
@@ -191,10 +192,15 @@ class RevisionNode extends AbstractNode {
         @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             if (event == null) {
-                return DateFormat.getDateTimeInstance().format(container.getLog().getDate());
+                return container.getLog().getDate();
             } else {
                 return ""; // NOI18N
             }
+        }
+
+        @Override
+        public Class getValueType() {
+            return Date.class;
         }
     }
 
@@ -279,14 +285,18 @@ class RevisionNode extends AbstractNode {
             renderer.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
         }
 
-        public RevisionPropertyEditor(String value) {
+        public RevisionPropertyEditor(Object value) {
             setValue(value);
         }
 
         @Override
         public void paintValue(Graphics gfx, Rectangle box) {
             renderer.setForeground(gfx.getColor());
-            renderer.setText((String) getValue());
+            Object val = getValue();
+            if (val instanceof Date) {
+                val = DateFormat.getDateTimeInstance().format((Date) val);
+            }
+            renderer.setText(val.toString());
             renderer.setBounds(box);
             renderer.paint(gfx);
         }

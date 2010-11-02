@@ -136,10 +136,6 @@ public class AddDependencyPanel extends javax.swing.JPanel {
     private NotificationLineSupport nls;
     private RepositoryInfo nbRepo;
 
-    /** Creates new form AddDependencyPanel */
-    public AddDependencyPanel(MavenProject mavenProject, Project prj) {
-        this(mavenProject, true, prj);
-    }
     public AddDependencyPanel(MavenProject mavenProject, boolean showDepMan, Project prj) {
         this.project = mavenProject;
         this.nbRepo = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans");

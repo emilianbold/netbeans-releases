@@ -47,11 +47,13 @@ package org.netbeans.modules.editor.errorstripe;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.WeakHashMap;
@@ -65,6 +67,7 @@ import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationType.Severity;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProviderCreator;
@@ -75,10 +78,11 @@ import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
 import org.openide.ErrorManager;
 import org.netbeans.modules.editor.errorstripe.apimodule.SPIAccessor;
-import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -161,7 +165,12 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
         }
         
         // Collect mark providers
-        String mimeType = pane.getUI().getEditorKit(pane).getContentType();
+        String mimeType = DocumentUtilities.getMimeType(pane);
+
+        if (mimeType == null) {
+            mimeType = pane.getUI().getEditorKit(pane).getContentType();
+        }
+        
         Collection<? extends MarkProviderCreator> creators = 
             mime2Creators.get(mimeType);
 
@@ -332,41 +341,11 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     }
     
     private Mark getMainMarkForBlockAnnotations(int startLine, int endLine) {
-        int line = startLine;
         AnnotationDesc foundDesc = null;
-        Annotations annotations = document.getAnnotations();
-        int last = (-1);
-        int unchagedLoops = 0;
-        
-        while ((line = annotations.getNextLineWithAnnotation(line)) <= endLine && line != (-1)) {
-            if (last == line) {
-                unchagedLoops++;
-                LOG.log(Level.WARNING, "Please add the following info to https://netbeans.org/bugzilla/show_bug.cgi?id=188843 : Possible infinite loop in getMainMarkForBlockAnnotations, debug data: {0}, unchaged loops: {1}", new Object[]{annotations.toString(), unchagedLoops});
-                if (unchagedLoops >= 100) break;
-            } else {
-                last = line;
-                unchagedLoops = 0;
-            }
 
-            AnnotationDesc desc = annotations.getActiveAnnotation(line);
-            
-            if (desc != null) {
-                if ((foundDesc == null || isMoreImportant(desc, foundDesc)) && isValidForErrorStripe(desc))
-                    foundDesc = desc;
-            }
-            
-            if (annotations.getNumberOfAnnotations(line) > 1) {
-                AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
-
-                if (descriptions != null) {
-                    for (int cntr = 0; cntr < descriptions.length; cntr++) {
-                        if ((foundDesc == null || isMoreImportant(descriptions[cntr], foundDesc)) && isValidForErrorStripe(descriptions[cntr]))
-                            foundDesc = descriptions[cntr];
-                    }
-                }
-            }
-            
-            line++;
+        for (AnnotationDesc desc : NbCollections.iterable(listAnnotations(startLine, endLine))) {
+            if ((foundDesc == null || isMoreImportant(desc, foundDesc)) && isValidForErrorStripe(desc))
+                foundDesc = desc;
         }
         
         if (foundDesc != null)
@@ -465,29 +444,11 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             targetStatus = Status.getCompoundStatus(s, targetStatus);
         }
 
-        Annotations annotations = document.getAnnotations();
-        int line = -1;
-        
-        while ((line = annotations.getNextLineWithAnnotation(line)) != (-1)) {
-            AnnotationDesc desc = annotations.getActiveAnnotation(line);
-            
-            if (desc != null) {
-                Status s = get(desc.getAnnotationTypeInstance());
-                
-                if (s != null)
-                    targetStatus = Status.getCompoundStatus(s, targetStatus);
-            }
-            
-            AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
-            if(descriptions!=null) {
-                for (int cntr = 0; cntr < descriptions.length; cntr++) {
-                    Status s = get(descriptions[cntr].getAnnotationTypeInstance());
+        for (AnnotationDesc desc : NbCollections.iterable(listAnnotations(-1, Integer.MAX_VALUE))) {
+            Status s = get(desc.getAnnotationTypeInstance());
 
-                    if (s != null)
-                        targetStatus = Status.getCompoundStatus(s, targetStatus);
-                }
-            }
-            line++;
+            if (s != null)
+                targetStatus = Status.getCompoundStatus(s, targetStatus);
         }
         
         return targetStatus;
@@ -581,35 +542,13 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             warnings += s == Status.STATUS_WARNING ? 1 : 0;
         }
         
-        Annotations annotations = document.getAnnotations();
-        int line = -1;
-        
-        while ((line = annotations.getNextLineWithAnnotation(line)) != (-1)) {
-            AnnotationDesc desc = annotations.getActiveAnnotation(line);
-            
-            if (desc != null) {
-                Status s = get(desc.getAnnotationTypeInstance());
-                
-                if (s != null) {
-                    errors += s == Status.STATUS_ERROR ? 1 : 0;
-                    warnings += s == Status.STATUS_WARNING ? 1 : 0;
-                }
+        for (AnnotationDesc desc : NbCollections.iterable(listAnnotations(-1, Integer.MAX_VALUE))) {
+            Status s = get(desc.getAnnotationTypeInstance());
+
+            if (s != null) {
+                errors += s == Status.STATUS_ERROR ? 1 : 0;
+                warnings += s == Status.STATUS_WARNING ? 1 : 0;
             }
-            
-            if (annotations.getNumberOfAnnotations(line) > 1) {
-                AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
-                
-                for (int cntr = 0; cntr < descriptions.length; cntr++) {
-                    Status s = get(descriptions[cntr].getAnnotationTypeInstance());
-                    
-                    if (s != null) {
-                        errors += s == Status.STATUS_ERROR ? 1 : 0;
-                        warnings += s == Status.STATUS_WARNING ? 1 : 0;
-                    }
-                }
-            }
-            
-            line++;
         }
         
         return new int[] {errors, warnings};
@@ -637,52 +576,67 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
     static Status get(AnnotationType ann) {
         return get(ann.getSeverity());
     }
-    
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class UpToDateStatusProviderFactoriesProvider implements Class2LayerFolder {
 
-        public UpToDateStatusProviderFactoriesProvider() {
-            
-        }
-        
-        public Class getClazz() {
-            return UpToDateStatusProviderFactory.class;
-        }
+    private Iterator<? extends AnnotationDesc> listAnnotations(final int startLine, final int endLine) {
+        final Annotations annotations = document.getAnnotations();
 
-        public String getLayerFolderName() {
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
+        return new Iterator<AnnotationDesc>() {
+            private final List<AnnotationDesc> remaining = new ArrayList<AnnotationDesc>();
+            private int line = startLine;
+            private int last = (-1);
+            private int unchagedLoops = 0;
+            @Override public boolean hasNext() {
+                if (remaining.isEmpty()) {
+                    if ((line = annotations.getNextLineWithAnnotation(line)) <= endLine && line != (-1)) {
+                        if (last == line) {
+                            unchagedLoops++;
+                            if (unchagedLoops >= 100) {
+                                LOG.log(Level.WARNING, "Please add the following info to https://netbeans.org/bugzilla/show_bug.cgi?id=188843 : Possible infinite loop in getMainMarkForBlockAnnotations, debug data: {0}, unchaged loops: {1}", new Object[]{annotations.toString(), unchagedLoops});
+                                return false;
+                            }
+                        } else {
+                            last = line;
+                            unchagedLoops = 0;
+                        }
 
-        public InstanceProvider getInstanceProvider() {
-            return null;
-        }
-    } // End of UpToDateStatusProviderFactoriesProvider class
+                        AnnotationDesc desc = annotations.getActiveAnnotation(line);
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class MarkProviderCreatorsProvider implements Class2LayerFolder {
+                        if (desc != null) {
+                            remaining.add(desc);
+                        }
 
-        public MarkProviderCreatorsProvider() {
-            
-        }
-        
-        public Class getClazz() {
-            return MarkProviderCreator.class;
-        }
+                        if (annotations.getNumberOfAnnotations(line) > 1) {
+                            AnnotationDesc[] descriptions = annotations.getPasiveAnnotations(line);
 
-        public String getLayerFolderName() {
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
+                            if (descriptions != null) {
+                                remaining.addAll(Arrays.asList(descriptions));
+                            }
+                        }
 
-        public InstanceProvider getInstanceProvider() {
-            return null;
-        }
-    } // End of UpToDateStatusProviderFactoriesProvider class
+                        line++;
+                    }
+                }
+
+                return !remaining.isEmpty();
+            }
+            @Override public AnnotationDesc next() {
+                if (hasNext()) {
+                    return remaining.remove(0);
+                } else {
+                    throw new NoSuchElementException();
+                }
+            }
+            @Override public void remove() {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+    }
     
     // XXX: This is here to help to deal with legacy code
     // that registered stuff in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
-    public static final class LegacyCrapProvider implements Class2LayerFolder, InstanceProvider {
+    @MimeLocation(subfolderName=UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME, instanceProviderClass=LegacyCrapProvider.class)
+    public static final class LegacyCrapProvider implements InstanceProvider {
 
         private final List<FileObject> instanceFiles;
         private List<MarkProviderCreator> creators;
@@ -710,18 +664,6 @@ final class AnnotationViewDataImpl implements PropertyChangeListener, Annotation
             return factories;
         }
         
-        public Class getClazz(){
-            return LegacyCrapProvider.class;
-        }
-
-        public String getLayerFolderName(){
-            return UP_TO_DATE_STATUS_PROVIDER_FOLDER_NAME;
-        }
-
-        public InstanceProvider getInstanceProvider() {
-            return new LegacyCrapProvider();
-        }
-
         public Object createInstance(List fileObjectList) {
             ArrayList<FileObject> textBaseFilesList = new ArrayList<FileObject>();
 

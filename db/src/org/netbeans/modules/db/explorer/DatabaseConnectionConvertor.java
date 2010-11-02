@@ -209,6 +209,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 reader.parse(is);
             } catch (SAXException ex) {
                 Exception x = ex.getException();
+                LOGGER.log(Level.FINE, "Cannot read " + obj + ". Cause: " + ex.getLocalizedMessage(), ex);
                 if (x instanceof java.io.IOException)
                     throw (IOException)x;
                 else
@@ -243,6 +244,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         if (handler.displayName != null) {
             dbconn.setDisplayName(handler.displayName);
         }
+        LOGGER.fine("Created DatabaseConnection[" + dbconn.toString() + "] from file: " + handler.connectionFileName);
 
         return dbconn;
     }

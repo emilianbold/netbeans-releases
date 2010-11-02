@@ -46,7 +46,9 @@ package org.netbeans.modules.cnd.makeproject.api;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -56,6 +58,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 
 public class ProjectGenerator {
 
@@ -77,6 +81,8 @@ public class ProjectGenerator {
         private String postCreationClassName;
         private String mainProject;
         private String subProjects;
+        private Map<String, Object> templateParams;
+        private String databaseConnection;
 
         /**
          *
@@ -85,7 +91,7 @@ public class ProjectGenerator {
          *          where project folder is to be created
          */
         public ProjectParameters(String projectFolderName, String projectParentFolderPath) {
-            this(projectFolderName, new File(projectParentFolderPath, projectFolderName));
+            this(projectFolderName, CndFileUtils.createLocalFile(projectParentFolderPath, projectFolderName));
         }
 
         /**
@@ -106,9 +112,11 @@ public class ProjectGenerator {
             this.mainFile = "";
             this.postCreationClassName = null;
             this.mainProject = null;
+            this.templateParams = Collections.<String, Object>emptyMap();
         }
 
         public ProjectParameters setMakefileName(String makefile) {
+            CndUtils.assertNotNull(makefile, "project makefile name should not be null"); //NOI18N
             this.makefile = makefile;
             return this;
         }
@@ -171,6 +179,16 @@ public class ProjectGenerator {
             return fullRemote ? RemoteProject.Mode.REMOTE_SOURCES : RemoteProject.Mode.LOCAL_SOURCES;
         }
 
+        public ProjectParameters setTemplateParams(Map<String, Object> params) {
+            this.templateParams = params;
+            return this;
+        }
+
+        public ProjectParameters setDatabaseConnection(String connection) {
+            this.databaseConnection = connection;
+            return this;
+        }
+
         public File getProjectFolder() {
             return projectFolder;
         }
@@ -213,6 +231,10 @@ public class ProjectGenerator {
 
         public String getHostUID() {
             return hostUID;
+        }
+
+        public void setHostUID(String hostUID) {
+            this.hostUID = hostUID;
         }
 
         public CompilerSet getToolchain() {
@@ -260,6 +282,15 @@ public class ProjectGenerator {
         public void setSubProjects(String subProjects) {
             this.subProjects = subProjects;
         }
+
+        public Map<String, Object> getTemplateParams() {
+            return templateParams;
+        }
+
+        public String getDatabaseConnection() {
+            return databaseConnection;
+        }
+
     }
     
     public static String getDefaultProjectFolder() {

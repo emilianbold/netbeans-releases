@@ -48,6 +48,7 @@ import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationController;
@@ -102,7 +103,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
         final TreePathHandle treePathHandle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         FileObject fo = null;
         if (treePathHandle != null &&
-                (treePathHandle.getKind() == Kind.CLASS ||
+                (TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind()) ||
                 treePathHandle.getKind() == Kind.VARIABLE ||
                 treePathHandle.getKind() == Kind.MEMBER_SELECT ||
                 treePathHandle.getKind() == Kind.IDENTIFIER)) {
@@ -138,7 +139,7 @@ public class HibernateRenamePlugin implements RefactoringPlugin {
 
         try {
             if (treePathHandle != null) {
-                if (treePathHandle.getKind() == Kind.CLASS) {
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
                     // A Java class is being renamed
                     renameJavaClass(refactoringElements, treePathHandle, fo);
                 } else if (treePathHandle.getKind() == Kind.VARIABLE ||

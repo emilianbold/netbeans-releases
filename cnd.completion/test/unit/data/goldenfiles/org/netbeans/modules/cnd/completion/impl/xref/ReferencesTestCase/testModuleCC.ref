@@ -20,7 +20,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module()  [47:1/2207-50:2/2288] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module()  [53:5/2232-53:14/2241] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION Module()  [47:1/2207-50:2/2288] ReferencesTestCase/module.cc
 ==============================================================
 'SetDescription', tokenID=identifier, offset=2230 [48:5/2230-48:19/2244]
 --OWNER:
@@ -44,7 +44,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [52:1/2290-58:2/2521] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module(const char*,const char*,int,int,int)  [54:5/2246-54:92/2333] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION Module(const char*,const char*,int,int,int)  [52:1/2290-58:2/2521] ReferencesTestCase/module.cc
 ==============================================================
 '_description', tokenID=identifier, offset=2317 [52:28/2317-52:40/2329]
 --OWNER:
@@ -146,7 +146,7 @@
 --OWNER:
     FUNCTION_DEFINITION Module(const Module&)  [61:1/2542-67:2/2747] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION Module(const Module&)  [57:5/2437-57:31/2463] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION Module(const Module&)  [61:1/2542-67:2/2747] ReferencesTestCase/module.cc
 ==============================================================
 'Module', tokenID=identifier, offset=2563 [61:22/2563-61:28/2569]
 --OWNER:
@@ -386,7 +386,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetDescription(const char*)  [82:1/3014-84:2/3109] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetDescription(const char*)  [60:5/2569-60:50/2614] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetDescription(const char*)  [82:1/3014-84:2/3109] ReferencesTestCase/module.cc
 ==============================================================
 'new_description', tokenID=identifier, offset=3054 [82:41/3054-82:56/3069]
 --OWNER:
@@ -416,7 +416,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetDescription() const  [86:1/3111-88:2/3189] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetDescription() const  [61:5/2619-61:40/2654] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetDescription() const  [86:1/3111-88:2/3189] ReferencesTestCase/module.cc
 ==============================================================
 'description', tokenID=identifier, offset=3167 [87:12/3167-87:23/3178]
 --OWNER:
@@ -440,7 +440,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetVendor(const char*)  [90:1/3191-92:2/3266] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetVendor(const char*)  [63:5/2660-63:35/2690] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetVendor(const char*)  [90:1/3191-92:2/3266] ReferencesTestCase/module.cc
 ==============================================================
 'new_vendor', tokenID=identifier, offset=3226 [90:36/3226-90:46/3236]
 --OWNER:
@@ -470,7 +470,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetVendor() const  [94:1/3268-96:2/3336] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetVendor() const  [64:5/2695-64:35/2725] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetVendor() const  [94:1/3268-96:2/3336] ReferencesTestCase/module.cc
 ==============================================================
 'vendor', tokenID=identifier, offset=3319 [95:12/3319-95:18/3325]
 --OWNER:
@@ -494,7 +494,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetType(int)  [98:1/3338-100:2/3397] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetType(int)  [66:5/2731-66:28/2754] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetType(int)  [98:1/3338-100:2/3397] ReferencesTestCase/module.cc
 ==============================================================
 'new_type', tokenID=identifier, offset=3363 [98:26/3363-98:34/3371]
 --OWNER:
@@ -524,7 +524,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetTypeID() const  [102:1/3399-104:2/3449] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetTypeID() const  [67:5/2759-67:27/2781] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetTypeID() const  [102:1/3399-104:2/3449] ReferencesTestCase/module.cc
 ==============================================================
 'type', tokenID=identifier, offset=3442 [103:12/3442-103:16/3446]
 --OWNER:
@@ -542,7 +542,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetCategory(int)  [106:1/3451-108:2/3526] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetCategory(int)  [70:5/2832-70:36/2863] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetCategory(int)  [106:1/3451-108:2/3526] ReferencesTestCase/module.cc
 ==============================================================
 'new_category', tokenID=identifier, offset=3480 [106:30/3480-106:42/3492]
 --OWNER:
@@ -572,7 +572,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetCategoryID() const  [110:1/3528-112:2/3586] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetCategoryID() const  [71:5/2868-71:31/2894] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetCategoryID() const  [110:1/3528-112:2/3586] ReferencesTestCase/module.cc
 ==============================================================
 'category', tokenID=identifier, offset=3575 [111:12/3575-111:20/3583]
 --OWNER:
@@ -590,7 +590,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetUnits(int)  [114:1/3588-116:2/3651] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetUnits(int)  [74:5/2949-74:26/2970] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetUnits(int)  [114:1/3588-116:2/3651] ReferencesTestCase/module.cc
 ==============================================================
 'new_units', tokenID=identifier, offset=3614 [114:27/3614-114:36/3623]
 --OWNER:
@@ -620,7 +620,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetUnits() const  [118:1/3653-120:2/3703] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetUnits() const  [75:5/2975-75:26/2996] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetUnits() const  [118:1/3653-120:2/3703] ReferencesTestCase/module.cc
 ==============================================================
 'units', tokenID=identifier, offset=3695 [119:12/3695-119:17/3700]
 --OWNER:
@@ -638,7 +638,7 @@
 --OWNER:
     FUNCTION_DEFINITION SetSupportMetric(int)  [122:1/3705-124:2/3786] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION SetSupportMetric(int)  [77:5/3002-77:34/3031] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION SetSupportMetric(int)  [122:1/3705-124:2/3786] ReferencesTestCase/module.cc
 ==============================================================
 'new_metric', tokenID=identifier, offset=3739 [122:35/3739-122:45/3749]
 --OWNER:
@@ -668,7 +668,7 @@
 --OWNER:
     FUNCTION_DEFINITION GetSupportMetric() const  [126:1/3788-128:2/3854] ReferencesTestCase/module.cc
 --RESOLVED TO:
-    FUNCTION GetSupportMetric() const  [78:5/3036-78:34/3065] ReferencesTestCase/module.h
+    FUNCTION_DEFINITION GetSupportMetric() const  [126:1/3788-128:2/3854] ReferencesTestCase/module.cc
 ==============================================================
 'supportMetric', tokenID=identifier, offset=3838 [127:12/3838-127:25/3851]
 --OWNER:

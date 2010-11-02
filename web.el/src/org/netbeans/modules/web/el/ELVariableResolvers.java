@@ -129,6 +129,14 @@ public final class ELVariableResolvers {
         return result;
     }
 
+    public static List<ELVariableResolver.VariableInfo> getBeansInScope(String scope, FileObject context) {
+        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+        for (ELVariableResolver resolver : getResolvers()) {
+            result.addAll(resolver.getBeansInScope(scope, context));
+        }
+        return result;
+    }
+
     private static Collection<? extends ELVariableResolver> getResolvers() {
         return Lookup.getDefault().lookupAll(ELVariableResolver.class);
     }

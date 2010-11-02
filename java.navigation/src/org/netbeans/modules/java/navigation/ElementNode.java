@@ -47,6 +47,7 @@ package org.netbeans.modules.java.navigation;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -324,7 +325,7 @@ public class ElementNode extends AbstractNode {
     
     private static final class ElementChilren extends Children.Keys<Description> {
             
-        public ElementChilren(List<Description> descriptions, ClassMemberFilters filters ) {
+        public ElementChilren(Collection<Description> descriptions, ClassMemberFilters filters ) {
             resetKeys( descriptions, filters );            
         }
         
@@ -332,7 +333,7 @@ public class ElementNode extends AbstractNode {
             return new Node[] {new  ElementNode(key)};
         }
         
-        void resetKeys( List<Description> descriptions, ClassMemberFilters filters ) {            
+        void resetKeys( Collection<Description> descriptions, ClassMemberFilters filters ) {            
             setKeys( filters.filter(descriptions) );
         }
         
@@ -358,7 +359,7 @@ public class ElementNode extends AbstractNode {
         final TreePathHandle treePathHandle;
         final ElementKind kind;
         Set<Modifier> modifiers;        
-        List<Description> subs; 
+        Collection<Description> subs; 
         String htmlHeader;
         long pos;
         boolean isInherited;

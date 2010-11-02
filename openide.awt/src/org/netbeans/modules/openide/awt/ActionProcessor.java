@@ -70,6 +70,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -167,13 +168,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         TypeMirror p1 = type(Presenter.Menu.class);
         TypeMirror p2 = type(Presenter.Toolbar.class);
         TypeMirror p3 = type(Presenter.Popup.class);
+        TypeMirror caa = type(ContextAwareAction.class);
         for (Element e : roundEnv.getElementsAnnotatedWith(ActionRegistration.class)) {
             ActionRegistration ar = e.getAnnotation(ActionRegistration.class);
             ActionID aid = e.getAnnotation(ActionID.class);
             if (aid == null) {
                 throw new LayerGenerationException("@ActionRegistration can only be used together with @ActionID annotation", e);
             }
-            if (aid.category().contains("/")) {
+            if (aid.category().startsWith("Actions/")) {
                 throw new LayerGenerationException("@ActionID category() cannot contain /", e);
             }
             if (!FQN.matcher(aid.id()).matches()) {
@@ -215,12 +217,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
                 layer(e).instanceFile("dummy", null, ActionListener.class);
                 key = ar.key();
             }
-            
-            boolean direct = e.getKind() == ElementKind.CLASS &&
-                (isAssignable(e.asType(), p1) ||
-                 isAssignable(e.asType(), p2) ||
-                 isAssignable(e.asType(), p3));
-            
+
+            boolean direct;
+            if (e.getKind() == ElementKind.FIELD) {
+                direct = false;
+            } else {
+                TypeMirror type = e.getKind() == ElementKind.CLASS ? e.asType() : ((ExecutableElement) e).getReturnType();
+                direct = isAssignable(type, p1) || isAssignable(type, p2) || isAssignable(type, p3) || isAssignable(type, caa);
+            }
             
             if (direct) {
                 if (key.length() != 0) {

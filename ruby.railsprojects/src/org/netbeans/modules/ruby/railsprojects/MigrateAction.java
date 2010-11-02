@@ -140,6 +140,13 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
         //menuitem.setToolTipText(target.getDescription());
         menu.add(menuitem);
 
+        // Also hardcode in version 0 - drop everything
+        menuitem = new JMenuItem(NbBundle.getMessage(MigrateAction.class,
+                      "RedoLastStep", 0));
+        menuitem.addActionListener(new MigrateMenuItemHandler(project, -2));
+        //menuitem.setToolTipText(target.getDescription());
+        menu.add(menuitem);
+
         List<Migration> migrations = Migrations.getMigrations(project);
 
         // TODO: should use the list of migrations directly
@@ -317,10 +324,14 @@ public final class MigrateAction extends SystemAction implements ContextAwareAct
             runner.setDisplayName(displayName);
             runner.setFileLocator(fileLocator);
             runner.showWarnings(true);
-            if (version != -1) {
+            if (version >= 0) {
                 runner.setParameters("VERSION=" + Long.toString(version)); // NOI18N
             }
-            runner.run("db:migrate");
+	    if (version == -2) {
+		runner.run("db:migrate:redo");
+	    } else {
+                runner.run("db:migrate");
+            }
         }
         
         /**

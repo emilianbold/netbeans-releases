@@ -1,7 +1,0 @@
-
-# Test 1
-<Module><Expr><Attribute><Name>foo</Name>.bar</Attribute></Expr>
-
-# Test 2
-<Expr><Call><Attribute><Name>foo</Name>.bar</Attribute>()</Call></Expr></Module>
-

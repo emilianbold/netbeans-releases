@@ -83,7 +83,7 @@ public class FruchtermanReingoldLayout extends SceneLayout {
         this.panel = panel;
     }
     
-    public void performLayout() {
+    public @Override void performLayout() {
         performLayout(true);
         scene.validate();
         Rectangle rectangle = new Rectangle (0, 0, 1, 1);
@@ -103,7 +103,9 @@ public class FruchtermanReingoldLayout extends SceneLayout {
             while (true) {
                 
             for (ArtifactGraphNode n : scene.getNodes()) {
-                if (n.isFixed()) continue;
+                if (n.isFixed()) {
+                    continue;
+                }
 //                if (i < iterations / 5) {
 //                    if (scene.findNodeEdges(n, false, true).size() == 1 
 //                       && scene.findNodeEdges(n, true, false).size() == 0) {
@@ -118,7 +120,9 @@ public class FruchtermanReingoldLayout extends SceneLayout {
                 calcAttraction(e);
             }
             for (ArtifactGraphNode n : scene.getNodes()) {
-                if (n.isFixed()) continue;
+                if (n.isFixed()) {
+                    continue;
+                }
                 calcPositions(n);
             }
             if (areAllFixed() || repeats > 2) {
@@ -297,14 +301,19 @@ public class FruchtermanReingoldLayout extends SceneLayout {
     
     private boolean isThereFreeSpace(Point pnt, ArtifactGraphNode node) {
         Rectangle bnds = scene.findWidget(node).getBounds();
-        bnds = new Rectangle(pnt.x, pnt.y, bnds != null ? bnds.width : 0,
-                bnds != null ? bnds.height : 0);
+        if (bnds == null) {
+            return true;
+        }
+        bnds = new Rectangle(pnt.x, pnt.y, bnds.width, bnds.height);
         for (ArtifactGraphNode nd : scene.getNodes()) {
-            Rectangle bounds = scene.findWidget(nd).getBounds();
+            Rectangle bnds2 = scene.findWidget(nd).getBounds();
+            if (bnds2 == null) {
+                return true;
+            }
             Point point = new Point();
             point.setLocation(nd.locX, nd.locY);
-            bounds = new Rectangle(point, bounds.getSize());
-            if (bnds.intersects((bounds))) {
+            bnds2 = new Rectangle(point, bnds2.getSize());
+            if (bnds.intersects((bnds2))) {
                 return false;
             }
         }
@@ -329,15 +338,21 @@ public class FruchtermanReingoldLayout extends SceneLayout {
     
     private boolean isThereFreeSpaceNonFixedSpace(ArtifactGraphNode node) {
         Rectangle bnds = scene.findWidget(node).getBounds();
+        if (bnds == null) {
+            return true;
+        }
         Point pnt = new Point();
         pnt.setLocation(node.locX, node.locY);
         bnds = new Rectangle(pnt, bnds.getSize());
         for (ArtifactGraphNode nd : scene.getNodes()) {
-            Rectangle bounds = scene.findWidget(nd).getBounds();
+            Rectangle bnds2 = scene.findWidget(nd).getBounds();
+            if (bnds2 == null) {
+                return true;
+            }
             Point point = new Point();
             point.setLocation(nd.locX, nd.locY);
-            bounds = new Rectangle(point, bounds.getSize());
-            if (nd.isFixed() && bnds.intersects((bounds))) {
+            bnds2 = new Rectangle(point, bnds2.getSize());
+            if (nd.isFixed() && bnds.intersects((bnds2))) {
                 return false;
             }
         }

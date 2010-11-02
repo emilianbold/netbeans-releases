@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.web.el.completion;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import javax.swing.ImageIcon;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
-import org.netbeans.modules.web.el.ELElement;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -53,25 +57,18 @@ import org.netbeans.modules.web.el.ELElement;
  */
 final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
 
-    private final String key;
-    private final String value;
-    private final ELElement element;
+    private static final String ICON_PATH = "org/netbeans/modules/web/el/completion/resources/propertiesLocale.gif";//NOI18N
+    private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
-    public ELResourceBundleCompletionItem(String key, String value, ELElement element) {
-        this.key = key;
-        this.value = value;
-        this.element = element;
+    private final String bundle;
+
+    public ELResourceBundleCompletionItem(String bundle) {
+        this.bundle = bundle;
     }
 
     @Override
     public String getName() {
-        return key;
-    }
-
-    @Override
-    public String getRhsHtml(HtmlFormatter formatter) {
-        formatter.appendHtml("<font color='#ce7b00'>" + value + "</font>");
-        return formatter.getText();
+        return bundle;
     }
 
     @Override
@@ -89,4 +86,29 @@ final class ELResourceBundleCompletionItem extends DefaultCompletionProposal {
         return null;
     }
 
+    @Override
+    public ImageIcon getIcon() {
+        return ImageUtilities.loadImageIcon(ICON_PATH, false);
+    }
+
+    @Override
+    public String getCustomInsertTemplate() {
+        StringBuilder result = new StringBuilder();
+        result.append(getInsertPrefix())
+                .append("['")
+                .append("${cursor}")
+                .append("']");
+        scheduleShowingCompletion();
+        return result.toString();
+    }
+
+    private static void scheduleShowingCompletion() {
+        service.schedule(new Runnable() {
+
+            @Override
+            public void run() {
+                Completion.get().showCompletion();
+            }
+        }, 250, TimeUnit.MILLISECONDS);
+    }
 }

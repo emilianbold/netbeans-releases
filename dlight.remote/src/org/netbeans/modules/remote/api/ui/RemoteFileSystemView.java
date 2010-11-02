@@ -56,7 +56,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
-import org.netbeans.modules.remote.impl.spi.FileSystemProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -71,12 +71,11 @@ import org.openide.util.Exceptions;
     public static final String LOADING_STATUS = "ls"; //  NOI18N
     private final FileSystem fs;
     private final PropertyChangeSupport changeSupport;
-     final ExecutionEnvironment env;
+    private final ExecutionEnvironment env;
     private static final String newFolderString =
             UIManager.getString("FileChooser.other.newFolder");//  NOI18N
     private static final String newFolderNextString  =
             UIManager.getString("FileChooser.other.newFolder.subsequent");//  NOI18N
-
 
     public RemoteFileSystemView(final String root, final ExecutionEnvironment execEnv) {
         this.env = execEnv;
@@ -121,7 +120,7 @@ import org.openide.util.Exceptions;
 
     @Override
     public String getSystemDisplayName(File f) {
-        return "".equals(f.getName()) ? "/" : f.getName(); // NOI18N
+        return "".equals(f.getName()) ? "/" : f.getName();// NOI18N
     }
 
     @Override
@@ -132,7 +131,7 @@ import org.openide.util.Exceptions;
     @Override
     public File getHomeDirectory() {
         try {
-            if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)){
+            if (!HostInfoUtils.isHostInfoAvailable(env) && !ConnectionManager.getInstance().isConnectedTo(env)) {
                 return getDefaultDirectory();
             }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
@@ -149,7 +148,6 @@ import org.openide.util.Exceptions;
     public boolean isFileSystem(File f) {
         return true;
     }
-    
     
     @Override
     public File getParentDirectory(File dir) {
@@ -179,13 +177,12 @@ import org.openide.util.Exceptions;
         return result;
     }
 
-
-
     /**
      * Creates a new folder with a default folder name.
      */
+    @Override
     public File createNewFolder(File containingDir) throws IOException {
-	if(containingDir == null) {
+        if (containingDir == null) {
 	    throw new IOException("Containing directory is null:");//  NOI18N
 	}
 	File newFolder = null;
@@ -194,20 +191,17 @@ import org.openide.util.Exceptions;
 	int i = 1;
 	while (newFolder.exists() && (i < 100)) {
 	    newFolder = createFileObject(containingDir, MessageFormat.format(
-                    newFolderNextString, new Object[] { new Integer(i) }));
+                    newFolderNextString, new Object[]{new Integer(i)}));
 	    i++;
 	}
 
-	if(newFolder.exists()) {
+        if (newFolder.exists()) {
 	    throw new IOException("Directory already exists:" + newFolder.getAbsolutePath());//  NOI18N
 	} else {
 	    newFolder.mkdirs();
 	}
 	return newFolder;
     }
-
-    
-    
 
     @Override
     protected File createFileSystemRoot(File f) {
@@ -223,5 +217,7 @@ import org.openide.util.Exceptions;
         return UIManager.getIcon(f == null || f.isDirectory() ? "FileView.directoryIcon" : "FileView.fileIcon");//NOI18N
     }
 
-
+    public ExecutionEnvironment getExecutionEnvironment() {
+        return env;
+    }
 }
