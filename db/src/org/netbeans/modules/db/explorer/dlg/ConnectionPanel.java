@@ -73,9 +73,10 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     private DatabaseConnection databaseConnection;
     private JDBCDriver drv;
     private JDBCDriver oldDriver;
+    private static HelpCtx CONNECTION_PANEL_HELPCTX = new HelpCtx(ConnectionPanel.class);
 
-    public ConnectionPanel() {
-    }
+    public ConnectionPanel() {}
+
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -90,6 +91,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
     @Override
     public Component getComponent() {
         if (component == null || (oldDriver != null && ! oldDriver.equals(drv))) {
+            component = null;
             if (pw == null) {
                 return null;
             }
@@ -123,10 +125,7 @@ public class ConnectionPanel implements AddConnectionWizard.Panel, WizardDescrip
 
     @Override
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return CONNECTION_PANEL_HELPCTX;
     }
 
     @Override

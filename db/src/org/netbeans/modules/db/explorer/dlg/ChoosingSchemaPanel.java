@@ -54,6 +54,7 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
      */
     private SchemaPanel component;
     private AddConnectionWizard pw;
+    private static HelpCtx CHOOSING_SCHEMA_PANEL_HELPCTX = new HelpCtx(ChoosingSchemaPanel.class);
 
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
@@ -80,10 +81,7 @@ public class ChoosingSchemaPanel implements AddConnectionWizard.Panel {
 
     @Override
     public HelpCtx getHelp() {
-        // Show no Help button for this panel:
-        return HelpCtx.DEFAULT_HELP;
-        // If you have context help:
-        // return new HelpCtx(SampleWizardPanel1.class);
+        return CHOOSING_SCHEMA_PANEL_HELPCTX;
     }
 
     @Override
