@@ -167,7 +167,7 @@ public final class Kenai implements Comparable<Kenai> {
      }
 
     /**
-     * url of kenai.com instance
+     * url of the kenai instance
      * @return
      */
     public URL getUrl() {
