@@ -53,6 +53,7 @@ import org.netbeans.modules.dlight.api.tool.impl.DLightConfigurationAccessor;
 import org.netbeans.modules.dlight.spi.collector.DataCollector;
 import org.netbeans.modules.dlight.spi.indicator.Indicator;
 import org.netbeans.modules.dlight.spi.indicator.IndicatorDataProvider;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -175,6 +176,13 @@ public final class DLightConfiguration {
         synchronized (toolsConfiguration) {
             // FIXME: use getToolsSet(true) ?
             return toolsConfiguration.getToolsSet();
+        }
+    }
+
+    public List<DLightTool> getToolsSet(ExecutionEnvironment env) {
+        synchronized (toolsConfiguration) {
+            // FIXME: use getToolsSet(true) ?
+            return toolsConfiguration.getToolsSet(env);
         }
     }
 
