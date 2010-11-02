@@ -40,16 +40,46 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.api;
+
+import org.netbeans.validation.api.Validator;
+import org.netbeans.validation.api.builtin.Validators;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author mkleint
  */
-public class ProjectInfo {
-      public String groupId;
-      public String artifactId;
-      public String version;
-      public String packageName;
-      
+public class MavenValidators {
+
+    @SuppressWarnings("unchecked")
+    public static Validator<String> createArtifactIdValidators() {
+        return Validators.merge(true,
+                    Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.MAY_NOT_START_WITH_DIGIT,
+                    Validators.NO_WHITESPACE,
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+               );
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Validator<String> createGroupIdValidators() {
+        return Validators.merge(true,
+                    Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.MAY_NOT_START_WITH_DIGIT,
+                    Validators.NO_WHITESPACE,
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"), false)
+               );
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Validator<String> createVersionValidators() {
+        return Validators.merge(true,
+                    Validators.REQUIRE_NON_EMPTY_STRING,
+//                        Validators.MAY_NOT_START_WITH_DIGIT,
+                    Validators.NO_WHITESPACE,
+                    Validators.regexp("[a-zA-Z0-9_\\-.]+", NbBundle.getMessage(MavenValidators.class, "ERR_Coordinate_Invalid"),  false)
+               );
+    }
+
 }

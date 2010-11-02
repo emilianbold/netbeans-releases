@@ -40,17 +40,11 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-/*
- * NbmWizardPanelVisual.java
- *
- * Created on Mar 6, 2010, 3:42:08 PM
- */
-
-package org.netbeans.modules.maven.newproject;
+package org.netbeans.modules.maven.apisupport;
 
 import java.io.File;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.maven.MavenValidators;
+import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
@@ -70,8 +64,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
-        isApp = ArchetypeWizardUtils.NB_APP_ARCH.equals(panel.getArchetype());
-        isSuite = ArchetypeWizardUtils.NB_SUITE_ARCH.equals(panel.getArchetype());
+        isApp = NbmWizardIterator.NB_APP_ARCH.equals(panel.getArchetype());
+        isSuite = NbmWizardIterator.NB_SUITE_ARCH.equals(panel.getArchetype());
         if (isApp || isSuite) {
             vg.add(txtAddModule, Validators.merge(true,
                     MavenValidators.createArtifactIdValidators(),
@@ -169,7 +163,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
 
      void store(WizardDescriptor d) {
-        d.putProperty(ArchetypeWizardUtils.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
+        d.putProperty(NbmWizardIterator.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
          File parent = (File) d.getProperty("projdir");
          if (isApp || isSuite) {
              if (cbAddModule.isSelected()) {
@@ -189,7 +183,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     }
 
     void read(WizardDescriptor d) {
-        Boolean b = (Boolean) d.getProperty(ArchetypeWizardUtils.OSGIDEPENDENCIES);
+        Boolean b = (Boolean) d.getProperty(NbmWizardIterator.OSGIDEPENDENCIES);
         if (b != null) {
             cbOsgiDeps.setSelected(b.booleanValue());
         }
