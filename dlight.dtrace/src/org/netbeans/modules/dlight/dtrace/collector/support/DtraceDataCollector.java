@@ -386,7 +386,7 @@ public final class DtraceDataCollector
                 // as well... But, if not - terminate it.
                 log.log(Level.FINE, "Stopping DtraceDataCollector: {0}", dtraceRunner.toString());
 
-                dtraceRunner.shutdown();
+                dtraceRunner.shutdown(terminated);
             }
         }
         if (isDeploymentTarget && terminated) {

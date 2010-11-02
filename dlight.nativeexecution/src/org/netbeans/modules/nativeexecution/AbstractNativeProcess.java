@@ -185,7 +185,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         } catch (Throwable ex) {
             setState(State.ERROR);
             destroy();
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text"), ex); // NOI18N
+            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
             errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
         }

@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.wizard.bridge.ProjectBridge;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
@@ -76,7 +77,7 @@ public class DiscoveryUtils {
         return new ArrayList<String>();
     }
     
-    public static String getCompilerFlavor(ProjectProxy project){
+    public static CompilerFlavor getCompilerFlavor(ProjectProxy project){
         Project p = project.getProject();
         if (p != null){
             ProjectBridge bridge = new ProjectBridge(p);
@@ -84,7 +85,7 @@ public class DiscoveryUtils {
                 return bridge.getCompilerFlavor();
             }
         }
-        return ""; // NOI18N
+        return null;
     }
 
     public static String getCygwinDrive(ProjectProxy project){
