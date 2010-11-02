@@ -150,6 +150,11 @@ public final class JaveleonModule extends Module {
     }
 
     @Override
+    public File getJarFile() {
+        return jar;
+    }
+    
+    @Override
     protected void classLoaderUp(Set<Module> parents) throws IOException {
         if (Util.err.isLoggable(Level.FINE)) {
             Util.err.fine("classLoaderUp on " + this + " with parents " + parents);
