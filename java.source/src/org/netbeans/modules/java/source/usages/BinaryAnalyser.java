@@ -491,6 +491,12 @@ public class BinaryAnalyser {
                     ClassPathSupport.createClassPath(new URL[0]));
                 final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
                 TreeLoader.preRegister(jt.getContext(), cpInfo);
+                //Force JTImpl.prepareCompiler to get JTImpl into Context
+                try {
+                    jt.parse(new JavaFileObject[0]);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
                 if (jc != null) {
                     List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
