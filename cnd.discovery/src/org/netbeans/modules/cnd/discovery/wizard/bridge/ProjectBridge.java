@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -585,8 +586,8 @@ public class ProjectBridge {
         return res;
     }
 
-    public String getCompilerFlavor(){
-        return getCompilerSet().getCompilerFlavor().toString();
+    public CompilerFlavor getCompilerFlavor(){
+        return getCompilerSet().getCompilerFlavor();
     }
 
     public String getCompilerDirectory(){

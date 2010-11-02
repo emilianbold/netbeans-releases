@@ -135,7 +135,7 @@ public class DwarfSource implements SourceFileProperties{
            //}
            if (compilerSettings.isWindows()) {
                if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
-               if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
+               if (compilerSettings.getCompileFlavor() != null && compilerSettings.getCompileFlavor().isCygwinCompiler()) {
                    cygwinPath = compilerSettings.getCygwinDrive();
                    if (cygwinPath == null) {
                        for(String path:list){

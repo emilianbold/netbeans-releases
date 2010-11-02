@@ -142,6 +142,7 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         mainClassTextFieldWithinEar.getDocument().addDocumentListener( this );
         mainClassTextField.getDocument().addDocumentListener( this );
         jTextFieldContextPath.getDocument().addDocumentListener( this );
+        serverLibraryCheckbox.setVisible(false);
     }
     
     /** This method is called from within the constructor to

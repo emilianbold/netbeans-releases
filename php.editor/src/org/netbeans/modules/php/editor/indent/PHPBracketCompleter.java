@@ -1203,7 +1203,10 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 } else if ((ch == '[') || (ch == '(')) {//  || (ch == '{')
                     completeOpeningBracket(doc, dotPos, caret, ch);
                 }
+            } else if (id == PHPTokenId.PHP_CASTING && ch == ')') {
+                skipClosingBracket(doc, caret, ch);
             }
+            
 
             // Reindent blocks (won't do anything if } is not at the beginning of a line
             if (ch == '}') {
