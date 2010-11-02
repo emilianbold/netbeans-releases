@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.lang.model.element.Element;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -118,7 +119,7 @@ public class HintsUtils {
         
         Tree startSearchingForNameIndentifierBehindThisTree = null;
         
-        if (tree.getKind() == Tree.Kind.CLASS){
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())){
             startSearchingForNameIndentifierBehindThisTree = ((ClassTree)tree).getModifiers();
             
         } else if (tree.getKind() == Tree.Kind.METHOD){

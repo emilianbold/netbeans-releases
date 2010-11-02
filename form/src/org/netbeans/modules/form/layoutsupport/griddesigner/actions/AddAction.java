@@ -165,7 +165,7 @@ public class AddAction extends AbstractGridAction {
                 context.setSelectedComponents(Collections.singleton(comp));
             }
 
-            gridManager.updateLayout();
+            gridManager.updateLayout(false);
             GridUtils.revalidateGrid(gridManager);
             GridUtils.addPaddingComponents(gridManager, columns, rows);
             GridUtils.revalidateGrid(gridManager);

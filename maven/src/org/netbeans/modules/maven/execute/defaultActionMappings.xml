@@ -63,7 +63,6 @@ made subject to such option by the copyright holder.
             <goal>install</goal>
         </goals>
         <reactor>also-make</reactor>
-        <basedir>../</basedir>
     </action>
     <action>
         <actionName>clean</actionName>

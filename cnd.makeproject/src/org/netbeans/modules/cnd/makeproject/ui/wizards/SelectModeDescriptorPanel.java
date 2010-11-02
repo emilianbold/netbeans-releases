@@ -43,16 +43,19 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
-import java.awt.Component;
+import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -60,34 +63,50 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
-    
+public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor>, NewMakeProjectWizardIterator.Name, ChangeListener {
+
     private WizardDescriptor wizardDescriptor;
     private SelectModePanel component;
     private String name;
-    private WizardStorage wizardStorage= new WizardStorage();
-    private boolean isValid = false;;
+    private final WizardStorage wizardStorage;
+    private boolean isValid = false;
+    private final boolean fullRemote;
 
-    public SelectModeDescriptorPanel(){
+    public SelectModeDescriptorPanel(boolean fullRemote) {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
+        this.fullRemote = fullRemote;
+        wizardStorage = new WizardStorage(fullRemote);
     }
-    
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+
+    public boolean isFullRemote() {
+        return fullRemote;
+    }
+
     // Get the visual component for the panel. In this template, the component
     // is kept separate. This can be more efficient: if the wizard is created
     // but never displayed, or not all panels are displayed, it is better to
     // create only those which really need to be visible.
-    public Component getComponent() {
+    @Override
+    public SelectModePanel getComponent() {
         if (component == null) {
             component = new SelectModePanel(this);
       	    component.setName(name);
         }
         return component;
     }
-    
+
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx("NewMakeWizardP0"); // NOI18N
     }
-    
+
+    @Override
     public boolean isValid() {
         return isValid;
     }
@@ -99,19 +118,21 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     private void setMode(boolean isSimple) {
         if (isSimple) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         } else {
-            wizardDescriptor.putProperty("simpleMode", Boolean.FALSE); // NOI18N
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.FALSE);
         }
         validate();
     }
 
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -127,16 +148,17 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             it.next().stateChanged(ev);
         }
     }
-    
+
     WizardDescriptor getWizardDescriptor(){
         return wizardDescriptor;
     }
 
+    @Override
     public void stateChanged(ChangeEvent e) {
         String[] res;
         Object o = component.getClientProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] names = (String[]) o;
-        if (Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode"))){
+        if (Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE))){
             res = new String[]{names[0]};
         } else {
             res = new String[]{names[0], "..."}; // NOI18N
@@ -145,24 +167,27 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
       	fireChangeEvent();
     }
 
+    @Override
     public boolean isFinishPanel() {
-        return  Boolean.TRUE.equals(wizardDescriptor.getProperty("simpleMode")); // NOI18N
+        return  Boolean.TRUE.equals(wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE));
     }
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor)settings;
-        if (wizardDescriptor.getProperty("simpleMode") == null) {
-            wizardDescriptor.putProperty("simpleMode", Boolean.TRUE); // NOI18N
+    @Override
+    public void readSettings(WizardDescriptor settings) {
+        wizardDescriptor = settings;
+        if (wizardDescriptor.getProperty(WizardConstants.PROPERTY_SIMPLE_MODE) == null) {
+            wizardDescriptor.putProperty(WizardConstants.PROPERTY_SIMPLE_MODE, Boolean.TRUE);
         }
-        component.read(wizardDescriptor);
+        getComponent().read(wizardDescriptor);
     }
-    
-    public void storeSettings(Object settings) {
-        component.store((WizardDescriptor)settings);
+
+    @Override
+    public void storeSettings(WizardDescriptor settings) {
+        getComponent().store(settings);
     }
 
     public WizardStorage getWizardStorage(){
@@ -171,12 +196,18 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
 
     public class WizardStorage {
         private String path = ""; // NOI18N
+        private FileObject fileObject;
         private String flags = ""; // NOI18N
         private boolean setMain = true;
         private boolean buildProject = true;
         private CompilerSet cs;
         private ExecutionEnvironment env;
-        public WizardStorage(){
+        private final boolean fullRemote;
+        private FileObject makefileFO;
+
+        public WizardStorage(boolean fullRemote) {
+            this.fullRemote = fullRemote;
+            env = ServerList.getDefaultRecord().getExecutionEnvironment();
         }
 
         /**
@@ -186,18 +217,31 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
             SelectModeDescriptorPanel.this.setMode(isSimple);
         }
 
+        public boolean isFullRemote() {
+            return fullRemote;
+        }
+
         /**
          * @return the path
          */
-        public String getPath() {
+        public String getProjectPath() {
             return path;
+        }
+
+        public FileObject getSourcesFileObject() {
+            return fileObject;
         }
 
         /**
          * @param path the path to set
          */
-        public void setPath(String path) {
+        public void setProjectPath(String path) {
             this.path = path.trim();
+            validate();
+        }
+
+        public void setSourcesFileObject(FileObject fileObject) {
+            this.fileObject = fileObject;
             validate();
         }
 
@@ -209,10 +253,11 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
 
         public String getMake(){
-            if (path.length() == 0) {
-                return null;
-            }
-            return ConfigureUtils.findMakefile(path);
+            return (makefileFO == null) ? null : makefileFO.getPath();
+        }
+
+        public void setMake(FileObject makefileFO) {
+            this.makefileFO = makefileFO;
         }
 
         /**
@@ -283,9 +328,7 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
         }
         @Override
         public synchronized Object getProperty(String name) {
-            if ("path".equals(name)) { // NOI18N
-                return storage.getPath();
-            } else if ("realFlags".equals(name)) { // NOI18N
+            if ("realFlags".equals(name)) { // NOI18N
                 return storage.getRealFlags();
             } else if ("buildProject".equals(name)) { // NOI18N
                 if (storage.isBuildProject()) {
@@ -299,16 +342,25 @@ public class SelectModeDescriptorPanel implements WizardDescriptor.FinishablePan
                 } else {
                     return Boolean.FALSE;
                 }
-            } else if ("simpleMode".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_SIMPLE_MODE.equals(name)) { // NOI18N
                 return Boolean.TRUE;
-            } else if ("makefileName".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_USER_MAKEFILE_PATH.equals(name)) { // NOI18N
                 return storage.getMake();
-            } else if ("configureName".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_CONFIGURE_SCRIPT_PATH.equals(name)) { // NOI18N
                 return storage.getConfigure();
-            } else if ("hostUID".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_HOST_UID.equals(name)) { // NOI18N
                 return ExecutionEnvironmentFactory.toUniqueID(storage.env);
-            } else if ("toolchain".equals(name)) { // NOI18N
+            } else if (WizardConstants.PROPERTY_TOOLCHAIN.equals(name)) { // NOI18N
                 return storage.cs;
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_FULL_REMOTE.equals(name)) { // NOI18N
+                return storage.fullRemote;
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_DIR.equals(name)) { // NOI18N
+                return storage.getSourcesFileObject().getPath();
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_NATIVE_PROJ_FO.equals(name)) { // NOI18N
+                return storage.getSourcesFileObject();
+            } else if (/*XXX Define somewhere*/WizardConstants.PROPERTY_PROJECT_FOLDER.equals(name)) { // NOI18N
+                //Object o = super.getProperty(name);
+                return new File(storage.getProjectPath());
             }
             return super.getProperty(name);
         }

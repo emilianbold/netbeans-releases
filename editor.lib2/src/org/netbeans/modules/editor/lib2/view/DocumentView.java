@@ -52,6 +52,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -68,16 +69,19 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.TabExpander;
 import javax.swing.text.View;
@@ -113,19 +117,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     private static final Logger LOG = Logger.getLogger(DocumentView.class.getName());
 
     private static final Logger REPAINT_LOG = Logger.getLogger(DebugRepaintManager.class.getName());
-
-    /**
-     * How many lines should be inited at once at minimum. For some embedded editor panes
-     * this may be a reasonable value although generally the batch is derived
-     * from visible number of lines in a viewport.
-     */
-    private static final int LAZY_CHILDREN_MIN_BATCH = 10; // How many lines init at once
-
-    /**
-     * Maximum number of lines that a ViewUpdates.checkRebuild() may span
-     * for a rebuild to be non-lazy. Otherwise the whole rebuild will become lazy.
-     */
-    static final int MAX_NON_LAZY_REBUILD = 3;
 
     static final boolean REQUIRE_EDT = Boolean.getBoolean("org.netbeans.editor.linewrap.edt");
 
@@ -201,6 +192,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return null;
     }
 
+    static DocumentView get(View view) {
+        while (view != null && !(view instanceof DocumentView)) {
+            view = view.getParent();
+        }
+        return (DocumentView) view;
+    }
+
     private PriorityMutex pMutex;
 
     private JTextComponent textComponent;
@@ -215,6 +213,14 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     private TextLayoutCache textLayoutCache;
 
     private boolean incomingModification;
+    
+    /**
+     * Whether the "children" is currently reflecting the document state.
+     * <br/>
+     * The children may hold a semi-valid view hierarchy which may still be partly used
+     * to resolve queries in some cases.
+     */
+    private boolean childrenValid;
 
     private Position startPos;
 
@@ -295,8 +301,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     private Map<?, ?> renderingHints;
 
-    private int lazyChildrenBatch = LAZY_CHILDREN_MIN_BATCH;
-
     private int lengthyAtomicEdit; // Long atomic edit being performed
 
     public DocumentView(Element elem) {
@@ -307,7 +311,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public float getPreferredSpan(int axis) {
-        if (lineWrapType == null) {
+        checkViewsInited();
+        if (!childrenValid) {
             return 0f; // Return zero until parent and etc. gets initialized
         }
         float span = super.getPreferredSpan(axis);
@@ -350,6 +355,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     @Override
     public int getEndOffset() {
         return (endPos != null) ? endPos.getOffset() : super.getEndOffset();
+    }
+
+    @Override
+    public void setLength(int length) {
+        // Do nothing (no raw-offset maintenance)
     }
 
     @Override
@@ -450,8 +460,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         }
     }
 
-    void checkViewsInited() {
-        if (children == null && textComponent != null) {
+    void checkViewsInited() { // Must be called under mutex
+        if (!childrenValid && textComponent != null) {
             // Check whether Graphics can be constructed (only if component is part of hierarchy)
             Graphics graphics = textComponent.getGraphics();
             if (graphics != null) {
@@ -464,18 +474,25 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 }
                 fontRenderContext = ((Graphics2D) graphics).getFontRenderContext();
                 updateCharMetrics(); // Explicitly update char metrics since fontRenderContext affects them
-                reinitViews();
+
+                ((EditorTabExpander) tabExpander).updateTabSize();
+                if (isBuildable()) {
+                    LOG.fine("viewUpdates.reinitViews()\n");
+                    viewUpdates.reinitViews();
+                    childrenValid = true;
+                }
             }
         }
     }
 
     @Override
-    protected void releaseChildren(boolean resetSpans) {
-        textLayoutCache.clear();
-        super.releaseChildren(resetSpans);
+    protected void releaseChildren() { // It should be called with acquired mutex
+        // Do not set children == null like in super.releaseChildren()
+        // Instead mark them as invalid but allow to use them in certain limited cases
+        childrenValid = false;
     }
-
-    public void reinitViews() {
+    
+    public void releaseChildrenLocked() { // It acquires document readlock and VH mutex first
         getDocument().render(new Runnable() {
             @Override
             public void run() {
@@ -484,12 +501,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                     mutex.lock();
                     // checkDocumentLocked() - unnecessary - doc.render() called
                     try {
-                        ((EditorTabExpander) tabExpander).updateTabSize();
-                        if (isReinitable()) { // Not in lengthy atomic edit
-                            viewUpdates.reinitViews();
-                        } else if (children != null) {
-                            releaseChildren(false);
-                        }
+                        releaseChildren();
                     } finally {
                         mutex.unlock();
                     }
@@ -500,18 +512,13 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     protected void initChildren(int startIndex, int endIndex) {
-        viewUpdates.initChildren(startIndex, endIndex, lazyChildrenBatch);
-    }
-
-    private void updateLazyChildrenBatch() {
-        if (defaultLineHeight > 0f) {
-            lazyChildrenBatch = Math.max((int) (visibleHeight / defaultLineHeight + 2),
-                    LAZY_CHILDREN_MIN_BATCH);
-            LOG.log(Level.FINE, "lazyChildrenBatch={0}\n", lazyChildrenBatch);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("DocumentView.initChildren(): <" + startIndex + "," + endIndex + ">\n");
         }
+        viewUpdates.initChildren(startIndex, endIndex);
     }
 
-    void recomputeSpans() {
+    void recomputeLayout() {
         checkDocumentLocked();
         int viewCount = getViewCount();
         boolean heightChange = false;
@@ -521,7 +528,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             ParagraphView paragraphView = getEditorView(i);
             double origChildWidth = paragraphView.getMajorAxisSpan();
             float origChildHeight = paragraphView.getMinorAxisSpan();
-            paragraphView.recomputeSpans();
+            paragraphView.recomputeLayout();
             double childWidth = paragraphView.getMajorAxisSpan();
             boolean childWidthChange = (origChildWidth != childWidth);
             if (childWidth > newWidth) {
@@ -542,8 +549,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     /**
-     * Whether the view should compute
-     * @return
+     * Whether the view should compute accurate spans (no lazy children views computation).
+     * This is handy e.g. for fold preview computation.
+     *
+     * @return whether accurate span measurements should be performed.
      */
     boolean isAccurateSpan() {
         return accurateSpan;
@@ -575,12 +584,8 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         if (heightDiffers) {
             visibleHeight = newSize.height;
         }
-        // After visible* vars are updated update other things
-        if (heightDiffers) {
-            updateLazyChildrenBatch();
-        }
         if (widthDiffers) {
-            recomputeSpans();
+            recomputeLayout();
         }
     }
 
@@ -617,7 +622,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 public void resultChanged(LookupEvent ev) {
                     @SuppressWarnings("unchecked")
                     final Lookup.Result<FontColorSettings> result = (Lookup.Result<FontColorSettings>) ev.getSource();
-                    SwingUtilities.invokeLater(new Runnable() {
+                    SwingUtilities.invokeLater(new Runnable() { // Must run in AWT to apply fonts/colors to comp.
                         @Override
                         public void run() {
                             getDocument().render(new Runnable() {
@@ -644,7 +649,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             String mimeType = DocumentUtilities.getMimeType(textComponent);
             Lookup lookup = MimeLookup.getLookup(mimeType);
             Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
+            // Called without explicitly acquiring mutex but it's called only when lookup listener is null
+            // so it should be acquired.
             updateDefaultFontAndColors(result);
+
             result.addLookupListener(WeakListeners.create(LookupListener.class,
                     lookupListener, result));
         }
@@ -657,7 +665,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 public void preferenceChange(PreferenceChangeEvent evt) {
                     String key = evt.getKey();
                     if (key ==  null || key.equals(SimpleValueNames.NON_PRINTABLE_CHARACTERS_VISIBLE)) {
-                        reinitViews();
+                        releaseChildrenLocked();
                     }
                 }
             };
@@ -694,6 +702,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     /*private*/ void updateDefaultFontAndColors(Lookup.Result<FontColorSettings> result) {
+        // This should be called with mutex acquired
         // Called only with textComponent != null
         Font font = textComponent.getFont();
         Color foreColor = textComponent.getForeground();
@@ -740,7 +749,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
         updateCharMetrics(); // Update metrics with just updated font
 
-        reinitViews();
+        releaseChildren();
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.fine(getDumpId() + ": Updated DEFAULTS: font=" + defaultFont + // NOI18N
@@ -773,7 +782,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             tabTextLayout = null;
             singleCharTabTextLayout = null;
             lineContinuationTextLayout = null;
-            updateLazyChildrenBatch();
             if (LOG.isLoggable(Level.FINE)) {
                 FontMetrics fm = textComponent.getFontMetrics(defaultFont);
                 LOG.fine("Font: " + defaultFont + "\nLine-height=" + defaultLineHeight + // NOI18N
@@ -834,7 +842,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 checkViewsInited();
                 if (isActive()) {
                     // Use rendering hints (antialiasing etc.)
-                    if (renderingHints != null) {
+                    if (g != null) {
                         g.setRenderingHints(renderingHints);
                     }
                     super.paint(g, alloc, clipBounds);
@@ -846,27 +854,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     @Override
-    public int getNextVisualPositionFromChecked(int offset, Position.Bias bias, Shape alloc,
-            int direction, Position.Bias[] biasRet)
-    {
-        PriorityMutex mutex = getMutex();
-        if (mutex != null) {
-            mutex.lock();
-            try {
-                checkDocumentLocked();
-                checkViewsInited();
-                if (isActive()) {
-                    offset = super.getNextVisualPositionFromChecked(offset, bias, alloc, direction, biasRet);
-                }
-            } finally {
-                mutex.unlock();
-            }
-        }
-        return offset;
-    }
-
-    @Override
-    public Shape modelToViewChecked(int offset, Shape alloc, Position.Bias bias) {
+    public Shape modelToViewChecked(int offset, Shape alloc, Bias bias) {
         Rectangle2D.Double rect = ViewUtils.shape2Bounds(alloc);
         PriorityMutex mutex = getMutex();
         if (mutex != null) {
@@ -874,6 +862,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             try {
                 checkDocumentLocked();
                 checkViewsInited();
+                if (LOG.isLoggable(Level.FINE)) {
+                    String msg = "DocumentView.modelToViewChecked(): offset=" + offset + "\n"; // NOI18N
+                    LOG.fine(msg); // NOI18N
+//                    LOG.log(Level.INFO, "Cause of " + msg, new Exception()); // NOI18N
+                }
                 if (isActive()) {
                     return super.modelToViewChecked(offset, alloc, bias);
                 } else if (children != null) {
@@ -919,13 +912,18 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
     }
 
     @Override
-    public int viewToModelChecked(double x, double y, Shape alloc, Position.Bias[] biasReturn) {
+    public int viewToModelChecked(double x, double y, Shape alloc, Bias[] biasReturn) {
         PriorityMutex mutex = getMutex();
         if (mutex != null) {
             mutex.lock();
             try {
                 checkDocumentLocked();
                 checkViewsInited();
+                if (LOG.isLoggable(Level.FINE)) {
+                    String msg = "DocumentView.viewToModelChecked(): x=" + x + ", y=" + y + "\n"; // NOI18N
+                    LOG.fine(msg);
+//                    LOG.log(Level.INFO, "Cause of " + msg, new Exception()); // NOI18N
+                }
                 if (isActive()) {
                     return super.viewToModelChecked(x, y, alloc, biasReturn);
                 }
@@ -936,6 +934,99 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return 0;
     }
 
+    @Override
+    public int getNextVisualPositionFromChecked(int offset, Bias bias, Shape alloc,
+            int direction, Bias[] biasRet)
+    {
+        PriorityMutex mutex = getMutex();
+        if (mutex != null) {
+            mutex.lock();
+            try {
+                checkDocumentLocked();
+                checkViewsInited();
+                if (isActive()) {
+                    int retOffset;
+                    switch (direction) {
+                        case SwingConstants.EAST:
+                        case SwingConstants.WEST:
+                            retOffset = getNextVisualPositionX(offset, bias, alloc, direction, biasRet);
+                            break;
+                        case SwingConstants.NORTH:
+                        case SwingConstants.SOUTH:
+                            retOffset = getNextVisualPositionY(offset, bias, alloc, direction, biasRet);
+                            break;
+                        default:
+                            throw new IllegalArgumentException("Bad direction " + direction); // NOI18N
+                    }
+                    // Since BaseCaret does not handle bias translate backward bias to prev-pos and forward bias
+                    if (retOffset > 0 && biasRet[0] == Bias.Backward) {
+                        retOffset--;
+                        biasRet[0] = Bias.Forward;
+                    }
+                    if (retOffset == -1) { // Return original offset
+                        retOffset = offset;
+                    }
+                    offset = retOffset;
+                }
+            } finally {
+                mutex.unlock();
+            }
+        }
+        return offset;
+    }
+    
+    private int getNextVisualPositionY(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
+        // NORTH or SOUTH
+        assert (direction == SwingConstants.NORTH || direction == SwingConstants.SOUTH) : "Invalid direction " + direction;
+        if (textComponent == null) {
+            return -1;
+        }
+        Caret caret = textComponent.getCaret();
+        Point magicCaretPoint = (caret != null) ? caret.getMagicCaretPosition() : null;
+        double x;
+        if (magicCaretPoint == null) {
+            Shape offsetBounds = modelToViewChecked(offset, alloc, bias);
+            if (offsetBounds == null) {
+                x = 0d;
+            } else {
+                x = offsetBounds.getBounds2D().getX();
+            }
+        } else {
+            x = magicCaretPoint.x;
+        }
+        int pIndex = getViewIndex(offset, bias);
+        int viewCount = getViewCount(); // Should always be >0
+        int increment = (direction == SwingConstants.SOUTH) ? 1 : -1;
+        int retOffset = -1;
+        for (; retOffset == -1 && pIndex >= 0 && pIndex < viewCount; pIndex += increment) {
+            ParagraphView pView = getEditorViewChildrenValid(pIndex); // Ensure valid children
+            Shape pAlloc = getChildAllocation(pIndex, alloc);
+            retOffset = pView.getNextVisualPositionY(offset, bias, pAlloc, direction, biasRet, x);
+            if (retOffset == -1) {
+                offset = -1; // Continue by entering the paragraph from outside
+            }
+        }
+        return retOffset;
+    }
+
+    private int getNextVisualPositionX(int offset, Bias bias, Shape alloc, int direction, Bias[] biasRet) {
+        // EAST or WEST
+        assert (direction == SwingConstants.EAST || direction == SwingConstants.WEST) : "Invalid direction " + direction;
+        int pIndex = getViewIndex(offset);
+        int viewCount = getViewCount(); // Should always be >0
+        int increment = (direction == SwingConstants.EAST) ? 1 : -1;
+        int retOffset = -1;
+        for (; retOffset == -1 && pIndex >= 0 && pIndex < viewCount; pIndex += increment) {
+            ParagraphView pView = getEditorViewChildrenValid(pIndex); // Ensure valid children
+            Shape pAlloc = getChildAllocation(pIndex, alloc);
+            retOffset = pView.getNextVisualPositionFromChecked(offset, bias, pAlloc, direction, biasRet);
+            if (retOffset == -1) {
+                offset = -1; // Continue by entering the paragraph from outside
+            }
+        }
+        return retOffset;
+    }
+
     void setIncomingModification(boolean incomingModification) {
         this.incomingModification = incomingModification;
     }
@@ -944,11 +1035,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return isUpdatable() && !incomingModification;
     }
 
-    boolean isUpdatable() {
-        return textComponent != null && children != null && (lengthyAtomicEdit <= 0);
+    boolean isUpdatable() { // Whether the view hierarchy can be updated (by insertUpdate() etc.)
+        return textComponent != null && childrenValid && (lengthyAtomicEdit <= 0);
     }
     
-    boolean isReinitable() {
+    boolean isBuildable() {
         return textComponent != null && fontRenderContext != null && 
                 (lengthyAtomicEdit <= 0) && !incomingModification;
     }
@@ -966,18 +1057,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             LOG.log(Level.INFO, "updateLengthyAtomicEdit() stack", new Exception("updateLengthyAtomicEdit()")); // NOI18N
         }
         if (lengthyAtomicEdit == 0) {
-            // Release the existing children
-            PriorityMutex mutex = getMutex();
-            if (mutex != null) {
-                mutex.lock();
-                try {
-                    checkDocumentLocked();
-                    // Release all the children - they will be reinited upon a first request
-                    releaseChildren(true);
-                } finally {
-                    mutex.unlock();
-                }
-            }
+            releaseChildrenLocked();
         }
     }
 
@@ -1006,11 +1086,6 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     TextLayoutCache getTextLayoutCache() {
         return textLayoutCache;
-    }
-
-    @Override
-    public TextLayout getTextLayout(TextLayoutView textLayoutView) {
-        return null;
     }
 
     @Override
@@ -1124,12 +1199,19 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
         return lineContinuationTextLayout;
     }
 
-    private TextLayout createTextLayout(String text, Font font) {
+    TextLayout createTextLayout(String text, Font font) {
         checkSettingsInfo();
         if (fontRenderContext != null && font != null) {
+//            LOG.log(Level.INFO, "New TextLayout for text=" + text, new Exception());
+            ViewStats.incrementTextLayoutCreated(text.length());
             return new TextLayout(text, font, fontRenderContext);
         }
         return null;
+    }
+    
+    TextLayout createTextLayout(String text, AttributeSet attrs) {
+        Font font = ViewUtils.getFont(attrs, defaultFont);
+        return createTextLayout(text, font);
     }
 
     void checkDocumentLocked() {
@@ -1145,30 +1227,27 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        boolean releaseChildren = false;
         if (evt.getSource() instanceof Document) {
-            boolean reinitViews = false;
             String propName = evt.getPropertyName();
             if (propName == null || SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 LineWrapType origLineWrapType = lineWrapType;
                 updateLineWrapType();
                 if (origLineWrapType != lineWrapType) {
                     LOG.log(Level.FINE, "Changing lineWrapType from {0} to {1}", new Object [] { origLineWrapType, lineWrapType }); //NOI18N
-                    reinitViews = true;
+                    releaseChildren = true;
                 }
             }
             if (propName == null || SimpleValueNames.TAB_SIZE.equals(propName)) {
-                reinitViews = true;
+                releaseChildren = true;
             }
             if (propName == null || SimpleValueNames.TEXT_LIMIT_WIDTH.equals(propName)) {
                 int llw = (Integer) getDocument().getProperty(SimpleValueNames.TEXT_LIMIT_WIDTH);
                 if (llw != defaultLimitLineWidth) {
                     LOG.log(Level.FINE, "Changing defaultLimitLineWidth from {0} to {1}", new Object [] { defaultLimitLineWidth, llw }); //NOI18N
                     defaultLimitLineWidth = llw;
-                    reinitViews = true;
+                    releaseChildren = true;
                 }
-            }
-            if (reinitViews) {
-                reinitViews();
             }
         } else { // an event from JTextComponent
             String propName = evt.getPropertyName();
@@ -1181,7 +1260,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                             mutex.lock();
                             // checkDocumentLocked() - unnecessary - doc.render() called
                             try {
-                                checkViewsInited();
+//                                checkViewsInited();
                             } finally {
                                 mutex.unlock();
                             }
@@ -1193,18 +1272,26 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 if (!customFont && defaultFont != null) {
                     customFont = !defaultFont.equals(textComponent.getFont());
                 }
+                releaseChildren = true;
             } else if ("foreground".equals(propName)) { //NOI18N
                 if (!customForeground && defaultForeground != null) {
                     customForeground = !defaultForeground.equals(textComponent.getForeground());
                 }
+                // Release children since TextLayoutPart caches foreground and background
+                releaseChildren = true;
             } else if ("background".equals(propName)) { //NOI18N
                 if (!customBackground && defaultBackground != null) {
                     customBackground = !defaultBackground.equals(textComponent.getBackground());
                 }
+                // Release children since TextLayoutPart caches foreground and background
+                releaseChildren = true;
             } else if (SimpleValueNames.TEXT_LINE_WRAP.equals(propName)) {
                 updateLineWrapType();
-                reinitViews();
+                releaseChildren = true;
             }
+        }
+        if (releaseChildren) {
+            releaseChildrenLocked();
         }
     }
 
@@ -1215,6 +1302,10 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
 
     @Override
     public String findIntegrityError() {
+        String err = super.findIntegrityError();
+        if (err != null) {
+            return err;
+        }
         int startOffset = getStartOffset();
         int endOffset = getEndOffset();
         int viewCount = getViewCount();

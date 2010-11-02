@@ -84,13 +84,12 @@ class AddOSGiParamToNbmPluginConfiguration implements ModelOperation<POMModel> {
             if (pm != null) {
                 plg = pm.findPluginById(GROUPID_MOJO, NBM_PLUGIN);
             }
-            if (plg == null) {
+            if (plg == null) { // should not happen to begin with
                 plg = model.getFactory().createPlugin();
                 bld.addPlugin(plg);
                 plg.setGroupId(GROUPID_MOJO);
                 plg.setArtifactId(NBM_PLUGIN);
-                //just set 3.2 here, so that we don't need to update before 6.9 release.
-                plg.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_NBM));
+                plg.setVersion(MavenVersionSettings.getDefault().getVersion("3.3"));
             }
         }
         Configuration cnf = plg.getConfiguration();

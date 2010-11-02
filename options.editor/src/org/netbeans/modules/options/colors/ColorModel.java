@@ -339,6 +339,9 @@ public final class ColorModel {
          * Sets given mime type to preview and loads proper example text.
          */
         private void updateMimeType(String mimeType) {
+            if (editorPane != null && mimeType.equals(currentMimeType)) {
+                return;
+            }
             fireChanges = false;
             currentMimeType = mimeType;
             

@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
@@ -87,13 +86,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     // keep enclosing typeds and enclosing variables in one collection
     private final List<CsmUID<CsmOffsetableDeclaration>> enclosingElements;
 
-    protected ClassEnumBase(String name, CsmFile file, AST ast) {
+    protected ClassEnumBase(NameHolder name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
-        this.name = (name == null) ? CharSequences.empty() : NameCache.getManager().getString(name);
+        assert name != null;
+        this.name = NameCache.getManager().getString(name.getName());
     }
 
-    protected ClassEnumBase(String name, String qName, CsmFile file, int startOffset, int endOffset) {
+    protected ClassEnumBase(CharSequence name, String qName, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         enclosingElements = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(0));
         this.name = NameCache.getManager().getString(name);
@@ -226,7 +226,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
     }
 
-    private boolean registerInProject() {
+    @Override
+    protected boolean registerInProject() {
         ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
         if (fd != null && CsmKindUtilities.isClass(this)) {
             fd.setCsmClass((CsmClass) this);

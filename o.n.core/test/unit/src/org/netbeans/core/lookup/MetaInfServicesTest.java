@@ -55,6 +55,7 @@ import org.netbeans.ModuleManager;
 import org.netbeans.core.startup.ModuleHistory;
 import org.netbeans.SetupHid;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -149,6 +150,7 @@ public class MetaInfServicesTest extends NbTestCase {
     /** Fails to work if you have >1 method per class, because setUp gets run more
      * than once (XTest bug I suppose).
      */
+    @RandomlyFails // NB-Core-Build #5333: wrong instance (of Implementation1)
     public void testEverything() throws Exception {
         twiddle(m1, TWIDDLE_ENABLE);
         ClassLoader systemClassLoader = Lookup.getDefault().lookup(ClassLoader.class);
@@ -175,7 +177,7 @@ public class MetaInfServicesTest extends NbTestCase {
         assertTrue(l.gotSomething());
         instances = new ArrayList<Object>(r.allInstances());
         assertEquals(1, instances.size());
-        assertEquals(instance1, instances.get(0));
+        assertEquals("wrong instance", instance1, instances.get(0));
         // Expect to lose Impl1 too.
         l.count = 0;
         twiddle(m1, TWIDDLE_DISABLE);

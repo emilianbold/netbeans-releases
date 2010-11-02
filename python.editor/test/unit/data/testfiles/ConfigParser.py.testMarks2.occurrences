@@ -1,5 +1,0 @@
-            for (|>MARK_OCCURRENCES:key<|, value) in self._defaults.items():
-                fp.write("%s = %s\n" % (|>MARK_OCCURRENCES:key<|, str(value).replace('\n', '\n\t')))
-            for (|>MARK_OCCURRENCES:ke^y<|, value) in self._sections[section].items():
-                if |>MARK_OCCURRENCES:key<| != "__name__":
-                             (|>MARK_OCCURRENCES:key<|, str(value).replace('\n', '\n\t')))

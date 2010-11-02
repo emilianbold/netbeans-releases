@@ -271,7 +271,7 @@ final class WrapInfoUpdater {
         if (childViewPart == null) {
             double childWidth = nextVisualOffset - visualOffset;
             WrapLine wl = wrapLine();
-            if (!wl.noFullViews()) {
+            if (!wl.isInited()) {
                 wl.startViewIndex = childIndex;
             }
             wl.endViewIndex = childIndex + 1;
@@ -343,7 +343,7 @@ final class WrapInfoUpdater {
     
     private void removeStartPart() {
         assert (wrapLine.startViewPart != null);
-        assert (wrapLine.noFullViews());
+        assert (wrapLine.isInited());
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  Removed startViewPart x=" + x + " => 0."); // NOI18N
             logWrapLineAndX(0f, x);

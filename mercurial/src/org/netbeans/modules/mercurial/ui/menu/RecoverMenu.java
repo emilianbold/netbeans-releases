@@ -63,8 +63,8 @@ import org.netbeans.modules.versioning.util.SystemActionBridge;
  */
 public class RecoverMenu extends DynamicMenu {
 
-    public RecoverMenu(VCSContext ctx) {
-        super(ctx, NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
+    public RecoverMenu() {
+        super(NbBundle.getMessage(RecoverMenu.class, "CTL_MenuItem_RecoverMenu"));
     }
 
     @Override

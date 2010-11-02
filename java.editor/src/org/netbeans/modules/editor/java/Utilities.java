@@ -78,6 +78,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -336,7 +337,7 @@ public final class Utilities {
         return getPathElementOfKind(EnumSet.of(kind), path);
     }
     
-    public static TreePath getPathElementOfKind(EnumSet<Tree.Kind> kinds, TreePath path) {
+    public static TreePath getPathElementOfKind(Set<Tree.Kind> kinds, TreePath path) {
         while (path != null) {
             if (kinds.contains(path.getLeaf().getKind()))
                 return path;
@@ -419,12 +420,15 @@ public final class Utilities {
         while(path != null) {
             switch(path.getLeaf().getKind()) {
                 case BLOCK:
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     return refs;
                 case VARIABLE:
                     refs.add(trees.getElement(path));
                     TreePath parent = path.getParentPath();
-                    if (parent.getLeaf().getKind() == Tree.Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind())) {
                         boolean isStatic = ((VariableTree)path.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC);
                         for(Tree member : ((ClassTree)parent.getLeaf()).getMembers()) {
                             if (member.getKind() == Tree.Kind.VARIABLE && sourcePositions.getStartPosition(path.getCompilationUnit(), member) >= pos &&
@@ -498,7 +502,7 @@ public final class Utilities {
         if (path == null)
             return false;
         TreePath parentPath = path.getParentPath();
-        if (path.getLeaf().getKind() == Tree.Kind.CLASS && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && parentPath.getLeaf().getKind() != Tree.Kind.CLASS)                
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind()))                
             return true;
         return inAnonymousOrLocalClass(parentPath);
     }

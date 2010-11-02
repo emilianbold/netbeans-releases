@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008-2010 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.sql.lexer;
 
@@ -69,6 +69,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         this.factory = info.tokenFactory();
     }
 
+    @Override
     public Token<SQLTokenId> nextToken() {
         for (;;) {
             int actChar = input.read();
@@ -187,7 +188,7 @@ public class SQLLexer implements Lexer<SQLTokenId> {
                             break;
                         }
                     } else {
-                        if (Character.isLetterOrDigit(actChar) || actChar == '_') {
+                        if (Character.isLetterOrDigit(actChar) || actChar == '_' || actChar == '#') {
                             break;
                         } else {
                             input.backup(1);
@@ -369,10 +370,12 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         return null;
     }
 
+    @Override
     public Object state() {
         return null;
     }
 
+    @Override
     public void release() {
     }
 

@@ -158,7 +158,19 @@ public class APTStdCppFilter extends APTBaseLanguageFilter {
         filter("__complex__", APTTokenTypes.LITERAL___complex__); // NOI18N
         filter("__imag__", APTTokenTypes.LITERAL___imag); // NOI18N
         filter("__real__", APTTokenTypes.LITERAL___real); // NOI18N      
-        filter("export", APTTokenTypes.LITERAL_export); // NOI18N            
+        filter("export", APTTokenTypes.LITERAL_export); // NOI18N
+
+        filter("and", APTTokenTypes.AND); // NOI18N
+        filter("bitor", APTTokenTypes.BITWISEOR); // NOI18N
+        filter("or", APTTokenTypes.OR); // NOI18N
+        filter("xor", APTTokenTypes.BITWISEXOR); // NOI18N
+        filter("compl", APTTokenTypes.TILDE); // NOI18N
+        filter("bitand", APTTokenTypes.AMPERSAND); // NOI18N
+        filter("and_eq", APTTokenTypes.BITWISEANDEQUAL); // NOI18N
+        filter("or_eq", APTTokenTypes.BITWISEOREQUAL); // NOI18N
+        filter("xor_eq", APTTokenTypes.BITWISEXOREQUAL); // NOI18N
+        filter("not", APTTokenTypes.NOT); // NOI18N
+        filter("not_eq", APTTokenTypes.NOTEQUAL); // NOI18N
     }
     
 }

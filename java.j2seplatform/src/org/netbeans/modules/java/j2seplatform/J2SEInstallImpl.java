@@ -53,7 +53,6 @@ import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import java.io.IOException;
 import java.util.Collections;
 
-import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.WizardDescriptor;
 
 /**
@@ -75,6 +74,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
      * The method looks into the folder for something, which - depending on 
      * the platform's conventions - has name "java.exe" or "java"
      */
+    @Override
     public boolean accept(FileObject dir) {
         if (!dir.isFolder()) {
             return false;
@@ -87,6 +87,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
         return tool != null;
     }
     
+    @Override
     public WizardDescriptor.InstantiatingIterator<WizardDescriptor> createIterator(FileObject baseFolder) {
         try {
             return new J2SEWizardIterator(baseFolder);
@@ -96,6 +97,7 @@ class J2SEInstallImpl extends org.netbeans.spi.java.platform.PlatformInstall {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(J2SEInstallImpl.class,"TXT_J2SEPlatform");
     }

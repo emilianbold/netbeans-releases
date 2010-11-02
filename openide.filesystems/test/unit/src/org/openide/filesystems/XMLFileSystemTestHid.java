@@ -50,15 +50,18 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
+import java.util.zip.ZipEntry;
 import org.openide.util.Enumerations;
 
 public class XMLFileSystemTestHid extends TestBaseHid {
@@ -294,7 +297,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             Thread.sleep(3000);
             assertTrue(f2.createNewFile());
         }
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f.toURI().toURL());
         FileObject fo = xfs.findResource ("TestModule/sample.txt");
         assertNotNull(fo);
         assertEquals(fo.lastModified().getTime(), f.lastModified());        
@@ -699,8 +702,8 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         assertNotNull("Returned", instance);
         assertEquals("Right class", expClass, instance.getClass());
     }
-    
-    
+
+
     private File writeFile(String name, String content) throws IOException {
         File f = new File (getWorkDir (), name);
         java.io.FileWriter w = new java.io.FileWriter (f);
@@ -709,6 +712,89 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         return f;
     }
     
+    
+    public void testOverridingReferencedFilesInMultipleLayers() throws Exception {
+
+        File jar1 = writeJarFile("jar1.jar",
+            new JEntry("layer.xml",
+                "<filesystem>\n" +
+                "  <folder name='dir'>\n" +
+                "    <file name='file' url='file1.txt'/>" +
+                "  </folder>" +
+                "</filesystem>"
+                ),
+            new JEntry("file1.txt",
+                "file1.txt content"
+            )
+        );
+        
+        File jar2 = writeJarFile("jar2.jar",
+            new JEntry("layer.xml",
+                "<filesystem>\n" +
+                "  <folder name='dir'>\n" +
+                "    <file name='file' url='file2.txt'/>" +
+                "  </folder>" +
+                "</filesystem>"
+                ),
+            new JEntry("file2.txt",
+                "file2.txt content"
+            )
+        );
+
+        URL url1 = new URL("jar:" + jar1.toURI() + "!/layer.xml");
+        URL url2 = new URL("jar:" + jar2.toURI() + "!/layer.xml");
+
+        FileSystem xfs1 = FileSystemFactoryHid.createXMLSystem(getName(), this, url1);
+        FileObject fo1 = xfs1.findResource("dir/file");
+        assertNotNull(fo1);
+
+        FileSystem xfs2 = FileSystemFactoryHid.createXMLSystem(getName(), this, url2);
+        FileObject fo2 = xfs2.findResource("dir/file");
+        assertNotNull(fo2);
+
+        FileSystem xfs12 = FileSystemFactoryHid.createXMLSystem(getName(), this, url1, url2);
+        FileObject fo12 = xfs12.findResource("dir/file");
+        assertNotNull(fo12);
+        assertEqualContent("content of " + fo1 + " and " + fo12 + " differ", fo1, fo12);
+
+        FileSystem xfs21 = FileSystemFactoryHid.createXMLSystem(getName(), this, url2, url1);
+        FileObject fo21 = xfs21.findResource("dir/file");
+        assertNotNull(fo21);
+        assertEqualContent("content of " + fo2 + " and " + fo21 + " differ", fo2, fo21);
+    }
+
+    private void assertEqualContent(String msg, FileObject fo1, FileObject fo2) throws IOException {
+        assertEquals(msg, fo1.asText(), fo2.asText());
+    }
+
+    static class JEntry {
+        String name, content;
+
+        JEntry(String name, String content)
+        {
+            this.name = name;
+            this.content = content;
+        }
+    }
+
+    private File writeJarFile(String name, JEntry... entries) throws IOException {
+        File f = new File(getWorkDir(), name);
+
+        JarOutputStream jarOut = new JarOutputStream(new FileOutputStream(f));
+        try {
+            for (JEntry entry : entries) {
+                JarEntry jarEntry = new JarEntry(entry.name);
+                jarOut.putNextEntry(jarEntry);
+                jarOut.write(entry.content.getBytes("UTF-8"));
+                jarOut.closeEntry();
+            }
+        }
+        finally {
+            jarOut.close();
+        }
+
+        return f;
+    }
 
     public void testAttribute08 () throws Exception {
       URL fsURLDef = XMLFileSystemTestHid.class.getResource("data/Attributes.xml");
@@ -911,19 +997,19 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         String layers2 = layers(just2);
         String layersB = layers(both);
 
-        if (!layersR.contains(f1.toURI().toString())) {
+        if (!layersR.contains(f1.toString())) {
             fail("Missing " + f1 + "\ninside: " + layersR);
         }
-        if (!layersR.contains(f2.toURI().toString())) {
+        if (!layersR.contains(f2.toString())) {
             fail("Missing " + f2 + "\ninside: " + layersR);
         }
 
         assertEquals(f1.toURL().toExternalForm(), layers1);
         assertEquals(f2.toURL().toExternalForm(), layers2);
-        if (!layersB.contains(f1.toURI().toString())) {
+        if (!layersB.contains(f1.toString())) {
             fail("Missing " + f1 + "\ninside: " + layersB);
         }
-        if (!layersB.contains(f2.toURI().toString())) {
+        if (!layersB.contains(f2.toString())) {
             fail("Missing " + f2 + "\ninside: " + layersB);
         }
     }

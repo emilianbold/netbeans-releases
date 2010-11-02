@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,7 +65,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
     public Project getOwner(URI uri) {
         try {
             if ("file".equals(uri.getScheme())) { // NOI18N
-                return getOwner(new File(uri));
+                return getOwner(CndFileUtils.createLocalFile(uri));
             }
         } catch (IllegalArgumentException x) {/* skip it */}
         return null;

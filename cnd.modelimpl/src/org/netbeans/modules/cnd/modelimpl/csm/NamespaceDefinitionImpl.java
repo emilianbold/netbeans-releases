@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -77,11 +78,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     private /*final*/ NamespaceImpl namespaceRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmNamespace> namespaceUID;
     
-    public NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
+    private NamespaceDefinitionImpl(AST ast, CsmFile file, NamespaceImpl parent) {
         super(ast, file);
         declarations = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
         assert ast.getType() == CPPTokenTypes.CSM_NAMESPACE_DECLARATION;
-        name = NameCache.getManager().getString(ast.getText());
+        name = NameCache.getManager().getString(AstUtil.getText(ast));
         NamespaceImpl nsImpl = ((ProjectBase) file.getProject()).findNamespaceCreateIfNeeded(parent, name);
         
         // set parent ns, do it in constructor to have final fields
@@ -95,7 +96,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public static NamespaceDefinitionImpl findOrCreateNamespaceDefionition(MutableDeclarationsContainer container, AST ast, NamespaceImpl parentNamespace, FileImpl containerfile) {
         int start = getStartOffset(ast);
         int end = getEndOffset(ast);
-        CharSequence name = NameCache.getManager().getString(ast.getText()); // otherwise equals returns false
+        CharSequence name = NameCache.getManager().getString(AstUtil.getText(ast)); // otherwise equals returns false
         // #147376 Strange navigator behavior in header
         CsmOffsetableDeclaration candidate = container.findExistingDeclaration(start, end, name);
         if (CsmKindUtilities.isNamespaceDefinition(candidate)) {
@@ -150,7 +151,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (decl instanceof VariableImpl<?>) {
             VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
-                v.setScope(this, true);
+                v.setScope(this);
             }
         }
         if (decl instanceof FunctionImpl<?>) {
@@ -298,5 +299,14 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         if (getName().length() == 0) {
             readUID(input);
         }
-    }      
+    }
+
+    public void fixFakeRender(FileImpl file, AST ast, boolean b) {
+        final CsmNamespace ns = getNamespace();
+        if (ast != null && ns instanceof NamespaceImpl) {
+            CsmAST root = new CsmAST();
+            root.addChild(ast);
+            new AstRenderer(file).render(root, (NamespaceImpl)ns, this);
+        }
+    }
 }

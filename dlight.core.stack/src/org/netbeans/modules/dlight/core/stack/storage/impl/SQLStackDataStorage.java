@@ -81,7 +81,7 @@ import org.netbeans.modules.dlight.core.stack.api.ThreadState.MSAState;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionDatatableDescription;
 import org.netbeans.modules.dlight.core.stack.api.support.FunctionMetricsFactory;
 import org.netbeans.modules.dlight.core.stack.storage.StackDataStorage;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 import org.netbeans.modules.dlight.api.datafilter.support.TimeIntervalDataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilter;
 import org.netbeans.modules.dlight.api.storage.DataTableMetadataFilterSupport;
@@ -483,9 +483,16 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         // Need an immutable copy of fname. Otherwise will use
         // wrong key in funcCache (mutuable fname)
         String funcName = fname.toString();
+        String fullFuncName  = funcName;
         int source_file_index = -1;
         //check if there is a source file name information        
         if (sourceFileInfo != null && sourceFileInfo.getFileName() != null){
+            //funcName = FunctionNameUtils.getFullFunctionName(funcName);
+            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+            if (0 <= plusPos) {
+                funcName = funcName.substring(0, plusPos);
+            }            
+            
             try {
                 PreparedStatement ps = getPreparedStatement(
                         "SELECT id from SourceFiles where source_file=?"); // NOI18N
@@ -509,6 +516,12 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             } catch (SQLException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }else{
+            int plusPos = lastIndexOf(funcName, '+'); // NOI18N
+            if (0 <= plusPos) {
+                funcName = funcName.substring(0, plusPos);
+            }            
+            fullFuncName = funcName;
         }
 
         
@@ -519,6 +532,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 AddFunction cmd = new AddFunction();
                 cmd.id = funcId;
                 cmd.name = funcName;
+                cmd.full_name = fullFuncName;
                 cmd.sourceFileIndex = source_file_index;
                 executor.submitCommand(cmd);
                 funcCache.put(funcName, funcId);
@@ -860,7 +874,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             long nodeID = stackId;
             while (0 < nodeID) {
                 PreparedStatement ps = getPreparedStatement(
-                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name, SourceFiles.source_file " + // NOI18N
+                        "SELECT Node.node_id, Node.caller_id, Node.func_id, Node.offset, Func.func_name, Func.func_full_name, SourceFiles.source_file " + // NOI18N
                         "FROM Node LEFT JOIN Func ON Node.func_id = Func.func_id LEFT JOIN SourceFiles ON Func.func_source_file_id = SourceFiles.id " + // NOI18N
                         "WHERE node_id = ?"); // NOI18N
                 ps.setLong(1, nodeID);
@@ -869,7 +883,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                 try {
                     if (rs.next()) {
                         String funcName = rs.getString(5);
-                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, funcName, rs.getString(6));
+                        String fullFuncName = rs.getString(6);
+                        FunctionImpl func = new FunctionImpl(rs.getInt(3), funcName, fullFuncName, rs.getString(7));
                         result.add(new FunctionCallImpl(func, rs.getLong(4), new HashMap<FunctionMetric, Object>()));
                         nodeID = rs.getInt(2);
                     } else {
@@ -1013,6 +1028,10 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             return FunctionNameUtils.getFunctionModule(name);
         }
 
+        
+        String getFullName(){
+            return FunctionNameUtils.getFullFunctionName(quilifiedName);
+        }
         @Override
         public String getModuleOffset() {
             return module_offset;
@@ -1022,6 +1041,24 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         public String getSourceFile() {
             return source_file;
         }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof FunctionImpl)) {
+                return false;
+            }
+
+            FunctionImpl that = (FunctionImpl) obj;
+            return (this.id == that.id && this.getFullName().equals(that.getFullName()));
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 29 * hash + (this.getFullName() != null ? this.getFullName().hashCode() : 0);
+            hash = 29 * hash + (int) (this.id ^ (this.id >>> 32));
+            return hash;
+        }        
     }
 
     protected static class FunctionCallImpl extends FunctionCallWithMetric {
@@ -1034,6 +1071,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
             this.metrics = metrics;
             SourceFileInfo sourceFileInfo = FunctionNameUtils.getSourceFileInfo(function.getSignature());
             lineNumber = sourceFileInfo == null ? -1 : sourceFileInfo.getLine();
+            setLineNumber(lineNumber);
             
         }
 
@@ -1044,7 +1082,8 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public String getDisplayedName() {
             if (hasLineNumber()){
-                return FunctionNameUtils.getFunctionName(getFunction().getName()) + "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
+                return FunctionNameUtils.getFunctionName(getFunction().getSignature()) ;
+                        //+ "  " + getFunction().getSourceFile() + ":" + getLineNumber();//NOI18N
             }
             return getFunction().getName() + (hasOffset() ? ("+0x" + Long.toHexString(getOffset())) : ""); //NOI18N
         }
@@ -1086,7 +1125,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         @Override
         public int getLineNumber() {
             
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            return lineNumber;
         }
     }
     
@@ -1100,7 +1139,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
         public long id;
         public CharSequence name;
         public int sourceFileIndex;
-//        public CharSequence full_name;
+        public CharSequence full_name;
     }
 
     private static class AddNode {
@@ -1214,7 +1253,7 @@ public class SQLStackDataStorage implements ProxyDataStorage, StackDataStorage, 
                                             + "func_source_file_id) " //NOI18N
                                             + "VALUES (?, ?, ?, ?)"); //NOI18N
                                     stmt.setLong(1, addFunctionCmd.id);
-                                    stmt.setString(2, truncateString(addFunctionCmd.name.toString()));
+                                    stmt.setString(2, truncateString(addFunctionCmd.full_name.toString()));
                                     stmt.setString(3, truncateString(addFunctionCmd.name.toString()));
                                     stmt.setInt(4, addFunctionCmd.sourceFileIndex);
                                     stmt.executeUpdate();

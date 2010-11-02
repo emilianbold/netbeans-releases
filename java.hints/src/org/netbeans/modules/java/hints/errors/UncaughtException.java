@@ -82,6 +82,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
@@ -325,7 +326,7 @@ public final class UncaughtException implements ErrorRule<Void> {
      */ 
     private boolean isThisParameter(TreePath path) {
 	//anonymous class must not be on the path to top
-	while(path.getLeaf().getKind() != Kind.CLASS && path.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+	while(!TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && path.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
 	    if (path.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
 		MethodInvocationTree mi = (MethodInvocationTree) path.getParentPath().getLeaf();
 		if(mi.getMethodSelect().getKind() == Kind.IDENTIFIER) {
@@ -342,7 +343,7 @@ public final class UncaughtException implements ErrorRule<Void> {
     private static boolean isInsideMethodOrInitializer(TreePath tp) {
         while (tp != null) {
             if (tp.getLeaf().getKind() == Kind.METHOD || 
-                    (tp.getLeaf().getKind() == Kind.BLOCK && tp.getParentPath().getLeaf().getKind() == Kind.CLASS))
+                    (tp.getLeaf().getKind() == Kind.BLOCK && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getParentPath().getLeaf().getKind())))
                 return true;
             
             tp = tp.getParentPath();

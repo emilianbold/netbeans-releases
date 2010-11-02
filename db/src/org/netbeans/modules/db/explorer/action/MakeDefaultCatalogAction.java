@@ -37,12 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
 
 import java.util.logging.Logger;
+import org.netbeans.lib.ddl.CommandNotSupportedException;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
@@ -84,13 +86,16 @@ public class MakeDefaultCatalogAction extends BaseAction {
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(
             new Runnable() {
+                @Override
                 public void run() {
                     DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
                     String name = activatedNodes[0].getLookup().lookup(CatalogNode.class).getName();
 
                     try {
                         connection.setDefaultCatalog(name);
-                    } catch (Exception e) {
+                    } catch (CommandNotSupportedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (DDLException e) {
                         Exceptions.printStackTrace(e);
                     }
                 }

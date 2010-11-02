@@ -89,7 +89,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -294,7 +293,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     protected static String getBuildDirectory(Node node, PredefinedToolKind tool) {
         DataObject dataObject = node.getCookie(DataObject.class);
         FileObject fileObject = dataObject.getPrimaryFile();
-        File makefile = FileUtil.toFile(fileObject);
+        File makefile = CndFileUtils.toFile(fileObject);
         // Build directory
         String bdir = null;
         if (tool == PredefinedToolKind.MakeTool) {
@@ -382,12 +381,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
         String defaultPath = pi.getPathAsString();
         CompilerSet cs = getCompilerSet(node);
         if (cs != null) {
-            defaultPath += pi.pathSeparator() + cs.getDirectory();
+            defaultPath = cs.getDirectory() + pi.pathSeparator() + defaultPath;
             // TODO Provide platform info
             String cmdDir = cs.getCompilerFlavor().getCommandFolder(pi.getPlatform());
             if (cmdDir != null && 0 < cmdDir.length()) {
                 // Also add msys to path. Thet's where sh, mkdir, ... are.
-                defaultPath += pi.pathSeparator() + cmdDir;
+                defaultPath = cmdDir + pi.pathSeparator() + defaultPath;
             }
         }
         return Collections.singletonMap(pi.getPathName(), defaultPath);
@@ -497,6 +496,12 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
                 argsFlat.append(args[i]);
             }
             traceExecutable(executable, buildDir, argsFlat, envMap);
+        }
+    }
+
+    protected static void trace(String message) {
+        if (TRACE) {
+            logger.log(Level.INFO, message);
         }
     }
 

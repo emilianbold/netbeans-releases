@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
 
@@ -144,7 +145,7 @@ public class FQNImporter {
                     ClassTree clazz = null;
                     String fileName = javaFile.getName();
                     for (Tree typeDecl : cu.getTypeDecls()) {
-                        if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                        if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                             ClassTree candidate = (ClassTree) typeDecl;
                             if (fileName.equals(candidate.getSimpleName().toString())) {
                                 clazz = candidate;
@@ -175,7 +176,7 @@ public class FQNImporter {
                     // form listener
                     if (formListener != null) {
                         for (Tree tree : clazz.getMembers()) {
-                            if (Tree.Kind.CLASS == tree.getKind()) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                                 ClassTree klass = (ClassTree)tree;
                                 if (formListener.equals(klass.getSimpleName().toString())) {
                                     Tree newTree = utils.importFQNs(klass);

@@ -77,6 +77,8 @@ public final class J2EEProjectProperties {
 
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String J2EE_SERVER_HOME = "j2ee.server.home"; //NOI18N
+    public static final String J2EE_DOMAIN_HOME = "j2ee.server.domain"; //NOI18N
+    public static final String J2EE_MIDDLEWARE_HOME = "j2ee.server.middleware"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
     public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
@@ -89,6 +91,8 @@ public final class J2EEProjectProperties {
     public static final String J2EE_PLATFORM_WSGEN_CLASSPATH = "j2ee.platform.wsgen.classpath"; //NOI18N
     public static final String J2EE_PLATFORM_WSIMPORT_CLASSPATH = "j2ee.platform.wsimport.classpath"; //NOI18N
     public static final String J2EE_PLATFORM_JSR109_SUPPORT = "j2ee.platform.is.jsr109"; //NOI18N
+    
+    private static final Logger LOGGER = Logger.getLogger(J2EEProjectProperties.class.getName());
     
     /**
      * Remove obsolete properties from private properties.
@@ -167,10 +171,10 @@ public final class J2EEProjectProperties {
                 setSharableServerProperties(ep, epPriv, serverLibraryName);
             }
         } else {
-            String root = extractPlatformLibrariesRoot(j2eePlatform);
-            if (root != null) {
+            Map<String, String> roots = extractPlatformLibrariesRoot(j2eePlatform);
+            if (roots != null) {
                 // path will be relative and therefore stored in project.properties:
-                setLocalServerProperties(project, epPriv, ep, j2eePlatform, root);
+                setLocalServerProperties(project, epPriv, ep, j2eePlatform, roots);
             } else {
                 // store absolute paths in private.properties:
                 setLocalServerProperties(project, ep, epPriv, j2eePlatform, null);
@@ -332,27 +336,27 @@ public final class J2EEProjectProperties {
         ep.remove(J2EE_SERVER_HOME);
     }    
 
-    private static void setLocalServerProperties(Project project, EditableProperties epToClean, EditableProperties epTarget, J2eePlatform j2eePlatform, String root) {
+    private static void setLocalServerProperties(Project project, EditableProperties epToClean,
+            EditableProperties epTarget, J2eePlatform j2eePlatform, Map<String, String> roots) {
         // remove all props first:
         removeServerClasspathProperties(epTarget);
 
-        String classpath = project == null
-                ? toClasspathString(j2eePlatform.getClasspathEntries(), root)
-                : toClasspathString(Util.getJ2eePlatformClasspathEntries(project), root);
+        String classpath = toClasspathString(
+                Util.getJ2eePlatformClasspathEntries(project, j2eePlatform), roots);
         epTarget.setProperty(J2EE_PLATFORM_CLASSPATH, classpath);
 
         // set j2ee.platform.embeddableejb.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_EMBEDDABLE_EJB)) {
             File[] ejbClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_EMBEDDABLE_EJB);
             epTarget.setProperty(J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                    toClasspathString(ejbClasspath, root));
+                    toClasspathString(ejbClasspath, roots));
         }
 
         // set j2ee.platform.wscompile.classpath
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSCOMPILE)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSCOMPILE);
             epTarget.setProperty(J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                    toClasspathString(wsClasspath, root));
+                    toClasspathString(wsClasspath, roots));
         }
 
         // set j2ee.platform.wsimport.classpath, j2ee.platform.wsgen.classpath
@@ -360,7 +364,7 @@ public final class J2EEProjectProperties {
         if (wsStack != null) {
             WSTool wsTool = wsStack.getWSTool(JaxWs.Tool.WSIMPORT); // the same as for WSGEN
             if (wsTool!= null && wsTool.getLibraries().length > 0) {
-                String librariesList = toClasspathString(wsTool.getLibraries(), root);
+                String librariesList = toClasspathString(wsTool.getLibraries(), roots);
                 epTarget.setProperty(J2EE_PLATFORM_WSGEN_CLASSPATH, librariesList);
                 epTarget.setProperty(J2EE_PLATFORM_WSIMPORT_CLASSPATH, librariesList);
             }
@@ -369,28 +373,88 @@ public final class J2EEProjectProperties {
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSIT)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIT);
             epTarget.setProperty(J2EE_PLATFORM_WSIT_CLASSPATH,
-                    toClasspathString(wsClasspath, root));
+                    toClasspathString(wsClasspath, roots));
         }
 
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JWSDP)) {
             File[] wsClasspath = j2eePlatform.getToolClasspathEntries(J2eePlatform.TOOL_JWSDP);
             epTarget.setProperty(J2EE_PLATFORM_JWSDP_CLASSPATH,
-                    toClasspathString(wsClasspath, root));
+                    toClasspathString(wsClasspath, roots));
         }
 
         // remove everything from shared project properties
         removeServerClasspathProperties(epToClean);
 
-        if (root != null) {
-            epToClean.setProperty(J2EE_SERVER_HOME, root);
+        if (roots != null) {
+            for (Map.Entry<String, String> entry : roots.entrySet()) {
+                    epToClean.setProperty(entry.getValue(), entry.getKey());
+            }
         }
     }
 
-    public static String extractPlatformLibrariesRoot(J2eePlatform j2eePlatform) {
+    public static Map<String, String> extractPlatformLibrariesRoot(J2eePlatform j2eePlatform) {
+        Set<FileObject> toCheck = new HashSet<FileObject>();
+        Map<String, String> roots = new HashMap<String, String>();
+        File serverFile = j2eePlatform.getServerHome();
+        if (serverFile != null) {
+            serverFile = FileUtil.normalizeFile(serverFile);
+            FileObject server = FileUtil.toFileObject(serverFile);
+            if (server != null) {
+                roots.put(serverFile.getAbsolutePath(), J2EE_SERVER_HOME);
+                toCheck.add(server);
+            }
+        }
+        File domainFile = j2eePlatform.getDomainHome();
+        if (domainFile != null) {
+            domainFile = FileUtil.normalizeFile(domainFile);
+            FileObject domain = FileUtil.toFileObject(domainFile);
+            if (domain != null) {
+                roots.put(domainFile.getAbsolutePath(), J2EE_DOMAIN_HOME);
+                toCheck.add(domain);
+            }
+        }
+        File middlewareFile = j2eePlatform.getMiddlewareHome();
+        if (middlewareFile != null) {
+            middlewareFile = FileUtil.normalizeFile(middlewareFile);
+            FileObject middleware = FileUtil.toFileObject(middlewareFile);
+            if (middleware != null) {
+                roots.put(middlewareFile.getAbsolutePath(), J2EE_MIDDLEWARE_HOME);
+                toCheck.add(middleware);
+            }
+        }
+        
+        if (roots.isEmpty()) {
+            return extractPlatformLibrariesRootHeuristic(j2eePlatform);
+        }
+        
+        boolean ok = true;
+        for (File file : j2eePlatform.getClasspathEntries()) {
+            FileObject fo = FileUtil.toFileObject(file);
+            boolean hit = false;
+            for (FileObject root : toCheck) {
+                if (FileUtil.isParentOf(root, fo)) {
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit) {
+                ok = false;
+                break;
+            }
+        }
+        if (!ok) {
+            return null;
+        }
+        return roots;
+    }
+    
+    @SuppressWarnings("deprecated")
+    public static Map<String, String> extractPlatformLibrariesRootHeuristic(J2eePlatform j2eePlatform) {
         if (j2eePlatform.getPlatformRoots() == null) {
             return null;
         }
-        FileObject root = FileUtil.toFileObject(j2eePlatform.getPlatformRoots()[0]);
+        File rootFile = FileUtil.normalizeFile(j2eePlatform.getPlatformRoots()[0]);
+        FileObject root = FileUtil.toFileObject(rootFile);
         boolean ok = true;
         for (File file : j2eePlatform.getClasspathEntries()) {
             FileObject fo = FileUtil.toFileObject(file);
@@ -402,14 +466,14 @@ public final class J2EEProjectProperties {
         if (!ok) {
             return null;
         }
-        return j2eePlatform.getPlatformRoots()[0].getAbsolutePath();
+        return Collections.singletonMap(rootFile.getAbsolutePath(), J2EE_SERVER_HOME);
     }
 
     public static String toClasspathString(File[] classpathEntries) {
         if (classpathEntries == null) {
             return "";
         }
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
             classpath.append(classpathEntries[i].getAbsolutePath());
             if (i + 1 < classpathEntries.length) {
@@ -419,20 +483,32 @@ public final class J2EEProjectProperties {
         return classpath.toString();
     }
 
-    public static String toClasspathString(File[] classpathEntries, String root) {
+    public static String toClasspathString(File[] classpathEntries, Map<String, String> roots) {
         if (classpathEntries == null) {
             return "";
         }
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
             String path = classpathEntries[i].getAbsolutePath();
-            if (root != null && path.startsWith(root)) {
-                path = "${" + J2EE_SERVER_HOME + "}" + path.substring(root.length());
+            
+            if (roots != null) {
+                Map.Entry<String,String> replacement = null;
+                for (Map.Entry<String, String> entry : roots.entrySet()) {
+                    if (path.startsWith(entry.getKey())
+                            && (replacement == null || replacement.getKey().length() < entry.getKey().length())) {
+                        replacement = entry;
+                    }                
+                }
+                if (replacement != null) {
+                    path = "${" + replacement.getValue() + "}"  // NOI18N
+                            + path.substring(replacement.getKey().length());
+                }
             }
-            classpath.append(path);
-            if (i + 1 < classpathEntries.length) {
+           
+            if (classpath.length() > 0) {
                 classpath.append(':'); // NOI18N
-            }
+            }            
+            classpath.append(path);
         }
         return classpath.toString();
     }
@@ -441,7 +517,7 @@ public final class J2EEProjectProperties {
         if (classpathEntries == null) {
             return "";
         }
-        StringBuffer classpath = new StringBuffer();
+        StringBuilder classpath = new StringBuilder();
         for (int i = 0; i < classpathEntries.length; i++) {
             try {
                 classpath.append(new File(classpathEntries[i].toURI()).getAbsolutePath());
@@ -455,26 +531,21 @@ public final class J2EEProjectProperties {
         return classpath.toString();
     }
 
-    public static String toClasspathString(URL[] classpathEntries, String root) {
+    public static String toClasspathString(URL[] classpathEntries, Map<String, String> roots) {
         if (classpathEntries == null) {
             return "";
         }
-        StringBuffer classpath = new StringBuffer();
-        for (int i = 0; i < classpathEntries.length; i++) {
+        List<File> files = new ArrayList<File>();
+        for (URL url : classpathEntries) {
             try {
-                String path = new File(classpathEntries[i].toURI()).getAbsolutePath();
-                if (root != null && path.startsWith(root)) {
-                    path = "${" + J2EE_SERVER_HOME + "}" + path.substring(root.length());
-                }
-                classpath.append(path);
+                File file = new File(url.toURI()).getAbsoluteFile();
+                files.add(file);
             } catch (URISyntaxException ex) {
-
-            }
-            if (i + 1 < classpathEntries.length) {
-                classpath.append(':'); // NOI18N
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
-        return classpath.toString();
+        
+        return toClasspathString(files.toArray(new File[files.size()]), roots);
     }
 
 

@@ -186,14 +186,16 @@ public class Utils {
                         TypeElement seiClassEl = null;
                         if (serviceModel.endpointInterface!=null) {
                             seiClassEl = controller.getElements().getTypeElement(serviceModel.endpointInterface);
-                            if (seiClassEl != null) classEl = seiClassEl;
+                            if (seiClassEl != null) {
+                                classEl = seiClassEl;
+                            }
                         }
 
                         boolean foundWebMethodAnnotation=false;
                         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
                         List<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                         for (Element member : classEl.getEnclosedElements()) {
-                            if (member.getKind() == ElementKind.METHOD/* && member.getSimpleName().contentEquals("min")*/) {
+                            if (member.getKind() == ElementKind.METHOD) {
                                 ExecutableElement methodEl = (ExecutableElement) member;
                                 if (methodEl.getModifiers().contains(Modifier.PUBLIC)) {
                                     List<? extends AnnotationMirror> methodAnnotations = methodEl.getAnnotationMirrors();

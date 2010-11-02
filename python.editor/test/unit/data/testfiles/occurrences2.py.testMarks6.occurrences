@@ -1,2 +1,0 @@
-import module3 as |>MARK_OCCURRENCES:modu^le4<|
-        |>MARK_OCCURRENCES:module4<|.y

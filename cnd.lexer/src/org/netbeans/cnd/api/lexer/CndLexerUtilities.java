@@ -408,6 +408,7 @@ public final class CndLexerUtilities {
     private static Filter<CppTokenId> FILTER_GCC_C;
     private static Filter<CppTokenId> FILTER_STD_CPP;
     private static Filter<CppTokenId> FILTER_GCC_CPP;
+    private static Filter<CppTokenId> FILTER_HEADER;
     private static Filter<CppTokenId> FILTER_PREPRPOCESSOR;
     private static Filter<CppTokenId> FILTER_OMP;
     private static Filter<FortranTokenId> FILTER_FORTRAN;
@@ -472,6 +473,19 @@ public final class CndLexerUtilities {
         return FILTER_GCC_CPP;
     }
 
+    public static Filter<CppTokenId> getHeaderFilter() {
+        if (FILTER_HEADER == null) {
+            FILTER_HEADER = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_HEADER);
+            addCppOnlyKeywords(FILTER_HEADER);
+            addGccOnlyCommonCCKeywords(FILTER_HEADER);
+            addGccOnlyCppOnlyKeywords(FILTER_HEADER);
+            // for header add all C keywords as well
+            addCOnlyKeywords(FILTER_HEADER);
+        }
+        return FILTER_HEADER;
+    }
+    
     public synchronized static Filter<FortranTokenId> getFortranFilter() {
         if (FILTER_FORTRAN == null) {
             FILTER_FORTRAN = new Filter<FortranTokenId>();
@@ -615,6 +629,18 @@ public final class CndLexerUtilities {
 
             CppTokenId.TRUE, // C++
             CppTokenId.FALSE, // C++
+
+            CppTokenId.ALTERNATE_AND, // C++
+            CppTokenId.ALTERNATE_BITOR, // C++
+            CppTokenId.ALTERNATE_OR, // C++
+            CppTokenId.ALTERNATE_XOR, // C++
+            CppTokenId.ALTERNATE_COMPL, // C++
+            CppTokenId.ALTERNATE_BITAND, // C++
+            CppTokenId.ALTERNATE_AND_EQ, // C++
+            CppTokenId.ALTERNATE_OR_EQ, // C++
+            CppTokenId.ALTERNATE_XOR_EQ, // C++
+            CppTokenId.ALTERNATE_NOT, // C++
+            CppTokenId.ALTERNATE_NOT_EQ, // C++
         };
         addToFilter(ids, filterToModify);
     }

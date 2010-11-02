@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
@@ -55,6 +58,8 @@ public class CallGraphState {
     private CallModel model;
     private CallGraphScene scene;
     private Action[] actions;
+    private Map<Function, Boolean> calleesExpanded = new HashMap<Function, Boolean>();
+    private Map<Function, Boolean> callersExpanded = new HashMap<Function, Boolean>();
     
     public CallGraphState(CallModel model, CallGraphScene scene, Action[] actions){
         this.model = model;
@@ -62,8 +67,14 @@ public class CallGraphState {
         this.actions = actions;
     }
 
-    public CallModel getModel() {
-        return model;
+    public List<Call> getCallers(Function declaration, boolean showOverriding) {
+        callersExpanded.put(declaration, true);
+        return model.getCallers(declaration, showOverriding);
+    }
+
+    public List<Call> getCallees(Function definition, boolean showOverriding) {
+        calleesExpanded.put(definition, true);
+        return model.getCallees(definition, showOverriding);
     }
 
     public void doLayout(){
@@ -82,6 +93,22 @@ public class CallGraphState {
         if (scene != null) {
             scene.addFunctionToScene(element);
         }
+    }
+
+    public boolean isCalleesExpanded(Function element) {
+        Boolean expanded = calleesExpanded.get(element);
+        if (expanded == null) {
+            return false;
+        }
+        return expanded;
+    }
+
+    public boolean isCallersExpanded(Function element) {
+        Boolean expanded = callersExpanded.get(element);
+        if (expanded == null) {
+            return false;
+        }
+        return expanded;
     }
 
     public Action[] getActions() {

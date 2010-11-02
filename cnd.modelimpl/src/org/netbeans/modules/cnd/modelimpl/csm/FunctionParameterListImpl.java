@@ -67,10 +67,30 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  */
 public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionParameterList, CsmParameter> implements CsmFunctionParameterList {
 
-    public FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    protected FunctionParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
         super(file, start, end, parameters);
     }
 
+    public static FunctionParameterListImpl create(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+        return new FunctionParameterListImpl(file, start, end, parameters);
+    }
+
+    private static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
+        if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
+            return null;
+        }
+        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, scope, isLocal);
+        Collection<CsmUID<CsmParameter>> paramUIDs = UIDCsmConverter.objectsToUIDs(parameters);
+        return FunctionParameterListImpl.create(file, getStartOffset(lParen), getEndOffset(rParen), paramUIDs);
+    }
+
+    /*package*/ static FunctionParameterListImpl create(CsmFunctionParameterList originalParamList, Collection<CsmParameter> parameters) {
+        return FunctionParameterListImpl.create(originalParamList.getContainingFile(), originalParamList.getStartOffset(),
+                originalParamList.getEndOffset(), parameters);
+    }
+
+
+    @Override
     public CsmParameterList<CsmKnRName> getKernighanAndRitchieParameterList() {
         return null;
     }
@@ -119,20 +139,6 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
             return null;
         }
         return create(file, lParen, rParen, paramList, krList, scope, isLocal);
-    }
-
-    private static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
-        if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
-            return null;
-        }
-        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, scope, isLocal);
-        Collection<CsmUID<CsmParameter>> paramUIDs = UIDCsmConverter.objectsToUIDs(parameters);
-        return new FunctionParameterListImpl(file, getStartOffset(lParen), getEndOffset(rParen), paramUIDs);
-    }
-
-    /*package*/ static FunctionParameterListImpl create(CsmFunctionParameterList originalParamList, Collection<CsmParameter> parameters) {
-        return new FunctionParameterListImpl(originalParamList.getContainingFile(), originalParamList.getStartOffset(),
-                originalParamList.getEndOffset(), parameters);
     }
 
     ////////////////////////////////////////////////////////////////////////////

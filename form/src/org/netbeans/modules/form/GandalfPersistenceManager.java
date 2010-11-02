@@ -48,6 +48,7 @@ import java.beans.*;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
+import org.netbeans.api.java.source.TreeUtilities;
 
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
@@ -630,7 +631,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree formClass = null;
                 for (Tree t: controller.getCompilationUnit().getTypeDecls()) {
-                    if (t.getKind() == Tree.Kind.CLASS) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                         ClassTree ct = (ClassTree) t;
                         if (isClass(ct, controller)) {
                             if (javaFileName.equals(ct.getSimpleName().toString())) {

@@ -298,6 +298,50 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                  "}\n").replaceAll("[ \t\n]+", " "));
     }
 
+    public void test189687a() throws Exception {
+        parameter = false;
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "public class Test {\n" +
+                "     {\n" +
+                "         i|i = 1;\n" +
+                "     }\n" +
+                "}\n",
+                "AddParameterOrLocalFix:ii:int:false",
+                ("package test;\n" +
+                 "public class Test {\n" +
+                 "     {\n" +
+                 "         int ii = 1;\n" +
+                 "     }\n" +
+                 "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    public void test189687b() throws Exception {
+        final boolean oldUse55 = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+
+        try {
+            parameter = false;
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+            performFixTest("test/Test.java",
+                    "package test;\n" +
+                    "public class Test {\n" +
+                    "     {\n" +
+                    "         i|i = 1;\n" +
+                    "     }\n" +
+                    "}\n",
+                    "AddParameterOrLocalFix:ii:int:false",
+                    ("package test;\n" +
+                     "public class Test {\n" +
+                     "     {\n" +
+                     "         int ii;\n" +
+                     "         ii = 1;\n" +
+                     "     }\n" +
+                     "}\n").replaceAll("[ \t\n]+", " "));
+        } finally {
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(oldUse55);
+        }
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

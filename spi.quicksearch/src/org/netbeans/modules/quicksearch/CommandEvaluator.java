@@ -76,7 +76,7 @@ public class CommandEvaluator {
     /** Temporary narrow evaluation to only specified category **/
     private static boolean isCatTemporary;
 
-    private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator", 10); // NOI18N
     
     /**
      * Runs evaluation.
@@ -195,12 +195,6 @@ public class CommandEvaluator {
 
     private static Task runEvaluation (final SearchProvider provider, final SearchRequest request,
                                 final SearchResponse response, final ProviderModel.Category cat) {
-        // actions are not happy outside EQ at all
-        if ("Actions".equals(cat.getName())) {
-            provider.evaluate(request, response);
-            return null;
-        }
-        
         return RP.post(new Runnable() {
             @Override
             public void run() {

@@ -41,8 +41,8 @@
  */
 package org.netbeans.editor.ext.html.parser;
 
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
@@ -56,6 +56,7 @@ import javax.swing.text.BadLocationException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersionTest;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.test.TestBase;
 import org.openide.filesystems.FileObject;
@@ -72,9 +73,17 @@ public class SyntaxTreeBuilderTest extends TestBase {
         super(testName);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+
+
+
     public static Test xsuite(){
 	TestSuite suite = new TestSuite();
-        suite.addTest(new SyntaxTreeBuilderTest("testIssue185837"));
+        suite.addTest(new SyntaxTreeBuilderTest("testUnclosedDivTag_Issue191286"));
         return suite;
     }
 
@@ -304,7 +313,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
     }
 
     public void testEmptyXhtmlTags() throws Exception{
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\"><head><meta content=''></meta><title></title></head><body></body></html>");
     }
 
     public void testOptinalEndTagsInTable() throws Exception{
@@ -383,7 +392,7 @@ public class SyntaxTreeBuilderTest extends TestBase {
 
 
     public void testXhtmlNamespaceAttrs() throws Exception {
-        assertAST("<html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
+        assertAST("<!doctype public \"-//W3C//DTD XHTML 1.0 Strict//EN\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:ui="+
                 "\"http://java.sun.com/jsf/facelets\"><head><meta content=\"\"></meta>"+
                 "<title></title></head><body></body></html>",
                 "-//W3C//DTD XHTML 1.0 Strict//EN");
@@ -481,6 +490,26 @@ public class SyntaxTreeBuilderTest extends TestBase {
     public void testIssue185837() throws Exception {
         String code = "<html><head><title></title></head><body><b><del></del></b></body></html>";
         assertAST(code);
+    }
+
+    public void testUnclosedDivTag_Issue191286() throws Exception {
+        //         0123456789
+        assertAST("<div</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 4, 6, ProblemDescription.ERROR));
+
+        //         0123456789
+        assertAST("<div </div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 5, 7, ProblemDescription.ERROR));
+
+        //         01234567890
+        assertAST("<div name</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR));
+
+        //         012345678901
+        assertAST("<div id=</div>",
+                desc(SyntaxTreeBuilder.UNEXPECTED_SYMBOL_IN_OPEN_TAG, 9, 11, ProblemDescription.ERROR),
+                desc(SyntaxTreeBuilder.UNMATCHED_TAG, 0, 4, ProblemDescription.ERROR));
+
     }
 
     //------------------------ private methods ---------------------------

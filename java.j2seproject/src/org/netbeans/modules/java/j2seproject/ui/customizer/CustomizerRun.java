@@ -44,39 +44,13 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.io.File;
-import java.text.Collator;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.ListCellRenderer;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
+import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.OptionsDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -87,7 +61,24 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.plaf.UIResource;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.text.Collator;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
+    public static final Logger log = Logger.getLogger(CustomizerRun.class.getName());
     
     private J2SEProject project;
     
@@ -210,6 +201,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVMOptions = new javax.swing.JLabel();
         jTextVMOptions = new javax.swing.JTextField();
         jLabelVMOptionsExample = new javax.swing.JLabel();
+        customizeOptionsButton = new javax.swing.JButton();
         extPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -292,6 +284,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(jButtonMainClass, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_MainClass_JButton")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         mainPanel.add(jButtonMainClass, gridBagConstraints);
@@ -337,6 +330,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         mainPanel.add(jButtonWorkingDirectoryBrowse, gridBagConstraints);
@@ -365,6 +359,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
         mainPanel.add(jLabelVMOptionsExample, gridBagConstraints);
         jLabelVMOptionsExample.getAccessibleContext().setAccessibleDescription(bundle.getString("LBL_CustomizeRun_Run_VM_Options_Example")); // NOI18N
+
+        customizeOptionsButton.setText("Customize");
+        customizeOptionsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customizeVMOptionsByDialog(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        mainPanel.add(customizeOptionsButton, gridBagConstraints);
+        customizeOptionsButton.getAccessibleContext().setAccessibleDescription("Customize set of VM Options"); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -476,6 +485,17 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
     }//GEN-LAST:event_jButtonWorkingDirectoryBrowseActionPerformed
 
+    private void customizeVMOptionsByDialog(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeVMOptionsByDialog
+        String origin = jTextVMOptions.getText();
+        try {
+            String result = OptionsDialog.showCustomizer(SwingUtilities.getWindowAncestor(this), origin);
+            jTextVMOptions.setText(result);
+        } catch (Exception e) {
+            log.log(Level.WARNING, "Cannot parse vm options.", e);
+        }
+
+    }//GEN-LAST:event_customizeVMOptionsByDialog
+
     private void configChanged(String activeConfig) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         model.addElement("");
@@ -527,6 +547,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private javax.swing.JButton configNew;
     private javax.swing.JPanel configPanel;
     private javax.swing.JSeparator configSep;
+    private javax.swing.JButton customizeOptionsButton;
     private javax.swing.JPanel extPanel;
     private javax.swing.JButton jButtonMainClass;
     private javax.swing.JButton jButtonWorkingDirectoryBrowse;

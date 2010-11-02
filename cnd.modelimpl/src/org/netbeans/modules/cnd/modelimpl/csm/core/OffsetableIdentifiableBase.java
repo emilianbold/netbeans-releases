@@ -88,6 +88,7 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     }
 
     @SuppressWarnings("unchecked")
+    @Override
     public CsmUID<T> getUID() {
         if (uid == null) {
             uid = createUID();
@@ -97,10 +98,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
 
     protected final void setSelfUID() {
         if (uid != null) {
-            new Exception("replacing " + uid + " to self UID").printStackTrace(); // NOI18N
             if (UIDProviderIml.isSelfUID(uid)) {
                 return;
             }
+            new Exception("replacing " + uid + " to self UID").printStackTrace(); // NOI18N
         }
         uid = UIDProviderIml.createSelfUID(this);
     }

@@ -987,6 +987,15 @@ public final class NbModuleProject implements Project {
         public boolean prepareContext(String featureDisplayName) throws IllegalStateException {
             return true;
         }
+        
+        public @Override String getReleaseDirectoryPath() {
+            return evaluator().getProperty("release.dir");
+        }
+        
+        public @Override FileObject getReleaseDirectory() throws IOException {
+            return FileUtil.createFolder(getProjectDirectory(), getReleaseDirectoryPath());
+        }
+        
     }
     
     private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates, RecommendedTemplates {
@@ -1023,7 +1032,6 @@ public final class NbModuleProject implements Project {
             "junit",                // NOI18N                    
             "simple-files",         // NOI18N
             "nbm-specific",         // NOI18N
-            "nbm-specific2",         // NOI18N
         };
         
         public String[] getPrivilegedTemplates() {

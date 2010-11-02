@@ -59,13 +59,17 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * Implementation of CsmDeclarationStatement
  * @author Vladimir Kvashin
  */
-public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
+public final class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
     private volatile List<CsmDeclaration> declarators;
     private static final List<CsmDeclaration> EMPTY = Collections.<CsmDeclaration>emptyList();
     
-    public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
+    }
+
+    public static DeclarationStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new DeclarationStatementImpl(ast, file, scope);
     }
 
     @Override
@@ -115,17 +119,17 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
         }
 
         @Override
-        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
-            VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, getScope());
+        protected VariableImpl<?> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
+            VariableImpl<?> var = super.createVariable(offsetAst, file, type, name, _static, _extern, container1, container2, getScope());
             declarators.add(var);
             return var;
         }
 
         @Override
-        protected FunctionImpl createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
-            FunctionImpl fun = null;
+        protected FunctionImpl<?> createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
+            FunctionImpl<?> fun = null;
             try {
-                fun = new FunctionImpl(ast, file, type, getScope(), !isRenderingLocalContext(), !isRenderingLocalContext());
+                fun = FunctionImpl.create(ast, file, type, getScope(), !isRenderingLocalContext());
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -150,13 +154,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                         }
                         break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-                        declarators.add(new NamespaceAliasImpl(token, getContainingFile(), null, !isRenderingLocalContext()));
+                        declarators.add(NamespaceAliasImpl.create(token, getContainingFile(), null, !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DIRECTIVE:
-                        declarators.add(new UsingDirectiveImpl(token, getContainingFile(), !isRenderingLocalContext()));
+                        declarators.add(UsingDirectiveImpl.create(token, getContainingFile(), !isRenderingLocalContext()));
                         break;
                     case CPPTokenTypes.CSM_USING_DECLARATION:
-                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
+                        declarators.add(UsingDeclarationImpl.create(token, getContainingFile(), null, !isRenderingLocalContext(), CsmVisibility.PUBLIC));
                         break;
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
@@ -206,10 +210,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-            ClassForwardDeclarationImpl cfdi = new ClassForwardDeclarationImpl(ast, file, !isRenderingLocalContext());
-            if (isRenderingLocalContext()) {
-                Utils.setSelfUID(cfdi);
-            }
+            ClassForwardDeclarationImpl cfdi = ClassForwardDeclarationImpl.create(ast, file, !isRenderingLocalContext());
             ForwardClass fc = ForwardClass.create(cfdi.getName().toString(), getContainingFile(), ast, scope, !isRenderingLocalContext());
             if(fc != null) {
                 declarators.add(fc);

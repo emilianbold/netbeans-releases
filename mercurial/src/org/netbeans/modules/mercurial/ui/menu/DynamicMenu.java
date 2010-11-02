@@ -55,15 +55,9 @@ import org.openide.awt.DynamicMenuContent;
  * @author ondra
  */
 public abstract class DynamicMenu extends AbstractAction implements DynamicMenuContent {
-    private final VCSContext ctx;
     
-    public DynamicMenu (VCSContext ctx, String name) {
+    public DynamicMenu (String name) {
         super(name);
-        this.ctx = ctx;
-    }
-    
-    protected final VCSContext getContext () {
-        return ctx;
     }
     
     @Override

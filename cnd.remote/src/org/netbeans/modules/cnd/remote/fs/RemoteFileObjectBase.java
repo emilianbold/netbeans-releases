@@ -74,7 +74,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
     public RemoteFileObjectBase(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             FileObject parent, String remotePath, File cache) {
         CndUtils.assertTrue(execEnv.isRemote());
-        CndUtils.assertTrue(cache.exists());
+        CndUtils.assertTrue(cache.exists(), "Cache should exist for " + execEnv + "@" + remotePath); //NOI18N
         this.fileSystem = fileSystem;
         this.execEnv = execEnv;
         this.parent = parent;
@@ -122,9 +122,9 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public Object getAttribute(String attrName) {
-        if (attrName.equals("java.io.File")) { // NOI18N
-            return cache;
-        }
+//        if (attrName.equals("java.io.File")) { // NOI18N
+//            return cache;
+//        }
         return null;
     }
 
@@ -197,7 +197,7 @@ public abstract class RemoteFileObjectBase extends FileObject {
 
     @Override
     public boolean isVirtual() {
-        return ! cache.exists();
+        return false;
     }
 
     @Override

@@ -65,6 +65,7 @@ import org.netbeans.core.startup.MainLookup;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 /**
@@ -131,7 +132,10 @@ public class InstallOSGiBundleTest extends NbTestCase {
         assertNotNull(i);
         Restarter r = null;
         try {
+            Thread.sleep(1000);
             r = support.doInstall(i, null);
+        } catch (InterruptedException ex) {
+            fail("Interrupted: " + ex.getMessage());
         } catch (OperationException ex) {
             if (OperationException.ERROR_TYPE.INSTALL == ex.getErrorType()) {
                 // can ingore

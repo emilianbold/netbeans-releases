@@ -405,9 +405,6 @@ final class JavadocCompletionItem implements CompletionItem {
                     case '.':
                         JTextComponent comp = (JTextComponent) evt.getSource();
                         delegate.defaultAction(comp);
-                        // ugly but should work for now
-                        complete(comp, String.valueOf(evt.getKeyChar()), comp.getCaretPosition());
-                        evt.consume();
                         break;
                 }
             }

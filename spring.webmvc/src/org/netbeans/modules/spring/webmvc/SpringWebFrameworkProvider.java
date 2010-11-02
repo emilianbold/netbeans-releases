@@ -98,7 +98,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new SpringWebModuleExtender(this, controller, !defaultValue); // NOI18N
+        panel = new SpringWebModuleExtender(this, controller, webModule, !defaultValue); // NOI18N
         return panel;
     }  
 }

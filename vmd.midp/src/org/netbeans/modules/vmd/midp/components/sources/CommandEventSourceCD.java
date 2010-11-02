@@ -64,11 +64,13 @@ import org.netbeans.modules.vmd.midp.screen.CommandEventSourceSRItemPresenter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.vmd.api.model.presenters.actions.ActionsPresenter;
 import org.netbeans.modules.vmd.midp.codegen.ui.RenameCommandAction;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.general.ClassCode;
+import org.netbeans.modules.vmd.midp.components.general.RootCode;
 import org.openide.util.actions.SystemAction;
 
 
@@ -115,6 +117,15 @@ public final class CommandEventSourceCD extends ComponentDescriptor {
         return Arrays.asList (
             // info
             InfoPresenter.create (EventSourceSupport.createCommandEventSourceInfoResolver ()),
+            // code
+            new RootCode.CodeComponentDependencyPresenter () {
+                protected void collectRequiredComponents (Collection<DesignComponent> requiredComponents) {
+                    PropertyValue propertyValue = getComponent ().readProperty (PROP_COMMAND);
+                    DesignComponent component = propertyValue.getComponent();
+                    if (component != null)
+                        requiredComponents.add(component);
+                }
+            },
             // general
             new GoToSourcePresenter() {
                 protected boolean matches (GuardedSection section) {

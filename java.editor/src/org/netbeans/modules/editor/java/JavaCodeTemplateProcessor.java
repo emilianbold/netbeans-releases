@@ -769,7 +769,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private String owningClassName() {
         try {
             if (cInfo != null) {
-                TreePath path = Utilities.getPathElementOfKind (Kind.CLASS, treePath);
+                TreePath path = Utilities.getPathElementOfKind (TreeUtilities.CLASS_TREE_KINDS, treePath);
                 if (path != null) {
                     ClassTree tree = (ClassTree) path.getLeaf();
                     String result = tree.getSimpleName().toString();

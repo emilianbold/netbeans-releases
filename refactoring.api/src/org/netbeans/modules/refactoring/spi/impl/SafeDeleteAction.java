@@ -207,4 +207,9 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
 
         return NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(desc));
     }
+
+    @Override
+    protected boolean applicable(Lookup context) {
+        return ActionsImplementationFactory.canDelete(context);
+    }
 }

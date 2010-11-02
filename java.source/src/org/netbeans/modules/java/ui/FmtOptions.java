@@ -131,6 +131,7 @@ public class FmtOptions {
     public static final String alignMultilineBinaryOp = "alignMultilineBinaryOp"; //NOI18N
     public static final String alignMultilineTernaryOp = "alignMultilineTernaryOp"; //NOI18N
     public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
+    public static final String alignMultilineTryResources = "alignMultilineTryResources"; //NOI18N
     public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
     public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
@@ -148,6 +149,7 @@ public class FmtOptions {
     public static final String wrapAnnotationArgs = "wrapAnnotationArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
+    public static final String wrapTryResources = "wrapTryResources"; //NOI18N
     public static final String wrapFor = "wrapFor"; //NOI18N
     public static final String wrapForStatement = "wrapForStatement"; //NOI18N
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
@@ -183,6 +185,7 @@ public class FmtOptions {
     public static final String spaceBeforeIfParen = "spaceBeforeIfParen"; //NOI18N
     public static final String spaceBeforeForParen = "spaceBeforeForParen"; //NOI18N
     public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
+    public static final String spaceBeforeTryParen = "spaceBeforeTryParen"; //NOI18N
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
     public static final String spaceBeforeSynchronizedParen = "spaceBeforeSynchronizedParen"; //NOI18N
@@ -212,6 +215,7 @@ public class FmtOptions {
     public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
     public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
     public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
+    public static final String spaceWithinTryParens = "spaceWithinTryParens"; //NOI18N
     public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
     public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
     public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
@@ -364,6 +368,7 @@ public class FmtOptions {
             { alignMultilineBinaryOp, FALSE}, //NOI18N
             { alignMultilineTernaryOp, FALSE}, //NOI18N
             { alignMultilineAssignment, FALSE}, //NOI18N
+            { alignMultilineTryResources, FALSE}, //NOI18N
             { alignMultilineFor, FALSE}, //NOI18N
             { alignMultilineArrayInit, FALSE}, //NOI18N
             { placeElseOnNewLine, FALSE}, //NOI18N 
@@ -381,6 +386,7 @@ public class FmtOptions {
             { wrapAnnotationArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
+            { wrapTryResources, WRAP_NEVER}, //NOI18N
             { wrapFor, WRAP_NEVER}, //NOI18N
             { wrapForStatement, WRAP_ALWAYS}, //NOI18N
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
@@ -416,6 +422,7 @@ public class FmtOptions {
             { spaceBeforeIfParen, TRUE}, //NOI18N
             { spaceBeforeForParen, TRUE}, //NOI18N
             { spaceBeforeWhileParen, TRUE}, //NOI18N
+            { spaceBeforeTryParen, TRUE}, //NOI18N
             { spaceBeforeCatchParen, TRUE}, //NOI18N
             { spaceBeforeSwitchParen, TRUE}, //NOI18N
             { spaceBeforeSynchronizedParen, TRUE}, //NOI18N
@@ -445,6 +452,7 @@ public class FmtOptions {
             { spaceWithinForParens, FALSE}, //NOI18N
             { spaceWithinWhileParens, FALSE}, //NOI18N
             { spaceWithinSwitchParens, FALSE}, //NOI18N
+            { spaceWithinTryParens, FALSE}, //NOI18N
             { spaceWithinCatchParens, FALSE}, //NOI18N
             { spaceWithinSynchronizedParens, FALSE}, //NOI18N
             { spaceWithinTypeCastParens, FALSE}, //NOI18N

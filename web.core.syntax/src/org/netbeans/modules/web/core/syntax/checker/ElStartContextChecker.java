@@ -51,8 +51,8 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.JspUtils;
-import org.netbeans.modules.web.core.syntax.completion.ELFunctions;
-import org.netbeans.modules.web.core.syntax.completion.ELFunctions.Function;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions;
+import org.netbeans.modules.web.core.syntax.completion.api.ELFunctions.Function;
 import org.netbeans.modules.web.core.syntax.completion.ELImplicitObjects;
 import org.netbeans.modules.web.core.syntax.completion.JspELExpression;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo.BeanData;
@@ -96,7 +96,7 @@ public class ElStartContextChecker implements ElContextChecker {
                 }
             }
             // Functions
-            List<Function> functions = ELFunctions.getFunctions(support,
+            List<Function> functions = ELFunctions.getFunctions(support.getFileObject(),
                     expression.getExpression());
             Iterator<Function> iter = functions.iterator();
             while (iter.hasNext()) {

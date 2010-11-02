@@ -130,7 +130,7 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals("", block.getDescription());
         assertEquals("Nunber of tags", 2, tags.size());
         assertEquals(PHPDocTag.Type.AUTHOR, tags.get(0).getKind());
-        assertEquals("Petr", tags.get(0).getValue());
+        assertEquals(" Petr", tags.get(0).getValue());
         assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
         assertEquals(comment.indexOf("@author Petr  ") + "@author Petr  ".length(), tags.get(0).getEndOffset() - 3);
         assertEquals(PHPDocTag.Type.SINCE, tags.get(1).getKind());
@@ -149,11 +149,11 @@ public class PHPDocCommentParserTest extends CslTestBase {
         assertEquals("", block.getDescription());
         assertEquals("Nunber of tags", 3, tags.size());
         assertEquals(PHPDocTag.Type.AUTHOR, tags.get(0).getKind());
-        assertEquals("Petr", tags.get(0).getValue());
+        assertEquals(" Petr", tags.get(0).getValue());
         assertEquals(comment.indexOf("@author"), tags.get(0).getStartOffset());
         assertEquals(comment.indexOf("@author Petr  ") + "@author Petr  ".length(), tags.get(0).getEndOffset() - 3);
         assertEquals(PHPDocTag.Type.SINCE, tags.get(1).getKind());
-        assertEquals("1.5", tags.get(1).getValue());
+        assertEquals(" 1.5", tags.get(1).getValue());
         assertEquals(comment.indexOf("@since 1.5") + 3 , tags.get(1).getStartOffset());
         assertEquals(comment.indexOf("@since 1.5") + "@since 1.5  ".length(), tags.get(1).getEndOffset() - 3);
         assertEquals(PHPDocTag.Type.LICENSE, tags.get(2).getKind());
@@ -169,11 +169,11 @@ public class PHPDocCommentParserTest extends CslTestBase {
 
         PHPDocBlock block = parser.parse(0, comment.length(), comment);
         assertNotNull(block);
-        assertEquals("hello this is a * very simple comment\nand seccond line\n\nlast line of description", block.getDescription());
+        assertEquals("hello this is a * very simple comment\nand seccond line\n\nlast line of description", block.getDescription().trim());
         List<PHPDocTag> tags = block.getTags();
         assertEquals("Nunber of tags", 2, tags.size());
         assertEquals(PHPDocTag.Type.LINK, tags.get(0).getKind());
-        assertEquals("http://www.seznam.cz", tags.get(0).getValue());
+        assertEquals("   http://www.seznam.cz", tags.get(0).getValue());
         assertEquals(comment.indexOf("@link") + 3, tags.get(0).getStartOffset());
         assertEquals(comment.indexOf("@link   http://www.seznam.cz   ") + "@link   http://www.seznam.cz   ".length(), tags.get(0).getEndOffset() - 3);
         assertEquals(PHPDocTag.Type.AUTHOR, tags.get(1).getKind());

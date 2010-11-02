@@ -1,0 +1,17 @@
+<xsl:comment>ojec-debug</xsl:comment>
+
+    <target name="ojec-debug" if="ojec-platform.trigger">
+         <taskdef name="ojecEmulatorExec" classname="org.netbeans.modules.j2me.cdc.project.ojec.OJECToolkitEmulatorExecTask" classpath="${{libs.ojec-ant-utils.classpath}}"/>
+         <parallel>
+            <ojecEmulatorExec home="${{platform.home}}" mainclass="${{main.class}}" args="${{application.args}}" jvmargs="${{run.cmd.options}}" device="${{platform.device}}" profile="${{platform.profile}}" xlet="${{main.class.xlet}}" applet="${{main.class.applet}}" debug="true" debuggeraddressproperty="jpda.port">
+                <fileset dir="${{dist.dir}}">
+                    <exclude name="javadoc/**"/>
+                </fileset>
+            </ojecEmulatorExec>
+            <sequential>
+                <sleep seconds="1"/>
+                <antcall target="nbdebug"/>
+            </sequential>
+         </parallel>
+    </target>
+

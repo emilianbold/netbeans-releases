@@ -59,10 +59,13 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import javax.xml.namespace.QName;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.netbeans.modules.maven.model.settings.Activation;
+import org.netbeans.modules.maven.model.settings.Profile;
 import org.netbeans.modules.maven.options.MavenCommandSettings;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -70,6 +73,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -77,6 +81,8 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Repository;
+import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsQName;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -99,8 +105,12 @@ import org.xml.sax.SAXException;
  */
 public class ArchetypeWizardUtils {
 
+    /** {@code Map<String,String>} of custom archetype properties to define. */
+    public static final String ADDITIONAL_PROPS = "additionalProps"; // NOI18N
+
     //set in Nbmwizard
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
+    static final String DEFINE_NETBEANS_INSTALLATION = "define.netbeans.installation";
     
     private static final String USER_DIR_PROP = "user.dir"; //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ArchetypeWizardUtils.class);
@@ -111,15 +121,14 @@ public class ArchetypeWizardUtils {
     private ArchetypeWizardUtils() {
     }
 
-    public static Archetype[] WEB_APP_ARCHS;
-    public static Archetype[] EJB_ARCHS;
-    public static Archetype[] EAR_ARCHS;
-    public static final Archetype EA_ARCH;
+    static final Archetype[] WEB_APP_ARCHS;
+    static final Archetype[] EJB_ARCHS;
+    static final Archetype[] EAR_ARCHS;
+    static final Archetype EA_ARCH;
     
-    public static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
-    public static final Archetype OSGI_ARCH;
+    static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
 
-    public static final String[] EE_LEVELS = new String[] {
+    static final String[] EE_LEVELS = {
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE6"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_JEE5"), //NOI18N
         NbBundle.getMessage(BasicEEWizardIterator.class, "LBL_J2EE14") //NOI18N
@@ -130,93 +139,79 @@ public class ArchetypeWizardUtils {
 
         Archetype arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("webapp-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         WEB_APP_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-jee5"); //NOI18N
         WEB_APP_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("webapp-j2ee14"); //NOI18N
         WEB_APP_ARCHS[2] = arch;
 
         EJB_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ejb-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EJB_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-jee5"); //NOI18N
         EJB_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.0.1"); //NOI18N
+        arch.setVersion("1.1"); //NOI18N
         arch.setArtifactId("ejb-j2ee14"); //NOI18N
         EJB_ARCHS[2] = arch;
 
         EAR_ARCHS = new Archetype[3];
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.3"); //NOI18N
         arch.setArtifactId("ear-javaee6"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[0] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ear-jee5"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[1] = arch;
 
         arch = new Archetype();
         arch.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        arch.setVersion("1.1"); //NOI18N
+        arch.setVersion("1.2"); //NOI18N
         arch.setArtifactId("ear-j2ee14"); //NOI18N
-        arch.setRepository("http://repository.codehaus.org");
         EAR_ARCHS[2] = arch;
 
         EA_ARCH = new Archetype();
         EA_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        EA_ARCH.setVersion("1.0.1"); //NOI18N
+        EA_ARCH.setVersion("1.1"); //NOI18N
         EA_ARCH.setArtifactId("pom-root"); //NOI18N
 
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_MODULE_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
+        NB_MODULE_ARCH.setVersion("1.5"); //NOI18N
         NB_MODULE_ARCH.setArtifactId("nbm-archetype"); //NOI18N
-        NB_MODULE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.3-SNAPSHOT"); //NOI18N
+        NB_APP_ARCH.setVersion("1.6"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
-        NB_APP_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
 
         NB_SUITE_ARCH = new Archetype();
         NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.0-SNAPSHOT"); //NOI18N
+        NB_SUITE_ARCH.setVersion("1.2"); //NOI18N
         NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
-        NB_SUITE_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
-
-        OSGI_ARCH = new Archetype();
-        OSGI_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        OSGI_ARCH.setVersion("1.0-beta-3-SNAPSHOT"); //NOI18N
-        OSGI_ARCH.setArtifactId("osgi-archetype"); //NOI18N
-        OSGI_ARCH.setRepository("http://snapshots.repository.codehaus.org/");
     }
 
 
@@ -246,7 +241,6 @@ public class ArchetypeWizardUtils {
         config.setExecutionName(NbBundle.getMessage(ArchetypeWizardUtils.class, "RUN_Project_Creation"));
         config.setGoals(Collections.singletonList(MavenCommandSettings.getDefault().getCommand(MavenCommandSettings.COMMAND_CREATE_ARCHETYPENG))); //NOI18N
         if (arch.getRepository() != null) {
-            props.setProperty("archetype.repository", arch.getRepository()); //NOI18N
             props.setProperty("archetypeRepository", arch.getRepository()); //NOI18N
         }
 
@@ -283,6 +277,9 @@ public class ArchetypeWizardUtils {
         try {
             jf = new JarFile(fil);
             ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
+            if (entry == null) {
+                entry = jf.getJarEntry("META-INF/maven/archetype.xml");//NOI18N
+            }
             if (entry != null) {
                 // http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-metadata.html
                 InputStream in = jf.getInputStream(entry);
@@ -331,7 +328,7 @@ public class ArchetypeWizardUtils {
         Boolean setOsgiDeps = (Boolean)wiz.getProperty(OSGIDEPENDENCIES);
         
         @SuppressWarnings("unchecked")
-        Map<String, String> additional = (Map<String, String>)wiz.getProperty("additionalProps"); //NOI18N
+        Map<String,String> additional = (Map<String,String>) wiz.getProperty(ADDITIONAL_PROPS);
 
         try {
             ProjectInfo ear_vi = (ProjectInfo)wiz.getProperty("ear_versionInfo"); //NOI18N
@@ -366,7 +363,7 @@ public class ArchetypeWizardUtils {
                 handle.start( nbm_artifactId == null ? 4 : (4 + 3));
                 File projFile = createFromArchetype(handle, (File)wiz.getProperty("projdir"), vi, //NOI18N
                         arch, additional, 0);
-                final File appDir = new File(projFile, "application"); //NOI18N
+                File appDir = null;
 
                 if (nbm_artifactId != null && projFile.exists()) {
                     //NOW we have the nbm-Platform or nbm suite template
@@ -380,12 +377,40 @@ public class ArchetypeWizardUtils {
                             ArchetypeWizardUtils.NB_MODULE_ARCH, null, 3);
                     trimInheritedFromNbmProject(nbm_folder);
                     if (ArchetypeWizardUtils.NB_APP_ARCH.equals(arch)) {
+                        appDir = new File(projFile, "application"); //NOI18N
+                        nbm.groupId = "${project.groupId}"; // NOI18N
+                        nbm.version = "${project.version}"; // NOI18N
                         addModuleToApplication(appDir, nbm, null);
                     }
                 }
                 if (setOsgiDeps != null && setOsgiDeps.booleanValue()) {
                     //now we have the nbm-archetype (or the netbeans platform one).
                     addNbmPluginOsgiParameter(projFile);
+                }
+                if (Boolean.TRUE.equals(wiz.getProperty(DEFINE_NETBEANS_INSTALLATION))) {
+                    FileObject settingsXml = FileUtil.toFileObject(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE);
+                    if (settingsXml == null) {
+                        settingsXml = FileUtil.copyFile(FileUtil.getConfigFile("Maven2Templates/settings.xml"), FileUtil.createFolder(MavenEmbedder.DEFAULT_USER_SETTINGS_FILE.getParentFile()), "settings");
+                    }
+                    Utilities.performSettingsModelOperations(settingsXml, Collections.<ModelOperation<SettingsModel>>singletonList(new ModelOperation<SettingsModel>() {
+                        public @Override void performOperation(SettingsModel model) {
+                            Profile netbeansIde = model.getSettings().findProfileById("netbeans-ide");
+                            if (netbeansIde != null) {
+                                return;
+                            }
+                            netbeansIde = model.getFactory().createProfile();
+                            netbeansIde.setId("netbeans-ide");
+                            Activation activation = model.getFactory().createActivation();
+                            // XXX why does the model not have this property??
+                            QName ACTIVE_BY_DEFAULT = SettingsQName.createQName("activeByDefault", true, false);
+                            activation.setChildElementText("activeByDefault", "true", ACTIVE_BY_DEFAULT);
+                            netbeansIde.setActivation(activation);
+                            org.netbeans.modules.maven.model.settings.Properties properties = model.getFactory().createProperties();
+                            properties.setProperty("netbeans.installation", new File(System.getProperty("netbeans.home")).getParent());
+                            netbeansIde.setProperties(properties);
+                            model.getSettings().addProfile(netbeansIde);
+                        }
+                    }));
                 }
                 Set<FileObject> projects = openProjects(handle, projFile, appDir, nbm_artifactId == null ? 3 : 3 + 3);
                 Templates.setDefinesMainProject(wiz, projects.size() > 1);
@@ -403,6 +428,9 @@ public class ArchetypeWizardUtils {
             FileObject pom = prjDir.getFileObject("pom.xml");
             if (pom != null) {
                 Project prj = ProjectManager.getDefault().findProject(prjDir);
+                if (prj == null) {
+                    return; // invalid? #184466
+                }
                 NbMavenProject mav = prj.getLookup().lookup(NbMavenProject.class);
                 ModelOperation<POMModel> op = new AddOSGiParamToNbmPluginConfiguration(true, mav.getMavenProject());
                 Utilities.performPOMModelOperations(pom, Collections.singletonList(op));
@@ -467,7 +495,7 @@ public class ArchetypeWizardUtils {
         FileObject fDir = FileUtil.toFileObject(dirF);
         if (fDir != null) {
             // the archetype generation didn't fail.
-            FileObject mainFO = FileUtil.toFileObject(mainProjectDir);
+            FileObject mainFO = mainProjectDir != null ? FileUtil.toFileObject(mainProjectDir) : null;
             resultList.add(fDir);
             processProjectFolder(fDir, null);
 
@@ -595,6 +623,7 @@ public class ArchetypeWizardUtils {
         public void performOperation(POMModel model) {
             org.netbeans.modules.maven.model.pom.Project p = model.getProject();
             p.setGroupId(null);
+            p.setVersion(null);
             List<Repository> reps = p.getRepositories();
             if (reps != null) {
                 for (Repository r : reps) {
@@ -617,6 +646,10 @@ public class ArchetypeWizardUtils {
                 pl = b.findPluginById("org.apache.maven.plugins", "maven-compiler-plugin");
                 if (pl != null) {
                     b.removePlugin(pl);
+                }
+                pl = b.findPluginById("org.apache.maven.plugins", "maven-jar-plugin");
+                if (pl != null) {
+                    pl.setVersion(null);
                 }
             }
             List<Dependency> deps = p.getDependencies();
@@ -642,12 +675,6 @@ public class ArchetypeWizardUtils {
             this.artifact = info.artifactId;
             this.version = info.version;
             this.type = type;
-        }
-        public AddDependencyOperation(String g, String a, String v, String t) {
-            group = g;
-            artifact = a;
-            version = v;
-            type = t;
         }
 
         @Override

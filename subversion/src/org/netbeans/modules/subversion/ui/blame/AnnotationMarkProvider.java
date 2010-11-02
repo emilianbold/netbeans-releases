@@ -44,8 +44,10 @@
 
 package org.netbeans.modules.subversion.ui.blame;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
 
 /**
@@ -55,15 +57,17 @@ import org.netbeans.modules.editor.errorstripe.privatespi.MarkProvider;
  */
 final class AnnotationMarkProvider extends MarkProvider {
 
-    private List<AnnotationMark> marks = Collections.emptyList();
+    private List<Mark> marks = Collections.emptyList();
 
     public void setMarks(List<AnnotationMark> marks) {
         List old = this.marks;
-        this.marks = marks;
+        this.marks = new ArrayList<Mark>(marks);        
         firePropertyChange(PROP_MARKS, old, marks);
     }
 
-    public synchronized List/*<Mark>*/ getMarks() {
+    @Override
+    public List<Mark> getMarks() {
         return marks;
-    }    
+    }
+
 }

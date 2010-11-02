@@ -77,7 +77,10 @@ made subject to such option by the copyright holder.
     
     <bind key="O-F" remove="true"/>
     <bind actionName="caret-next-word" key="M-F"/>
-    
+
+    <bind key="O-S" remove="true"/>
+    <bind actionName="find-next" key="M-S"/>
+
     <!-- Things we add only on the mac -->
     <bind key="C-P" actionName="caret-up"/>
     <bind key="C-W" actionName="cut-to-clipboard"/>

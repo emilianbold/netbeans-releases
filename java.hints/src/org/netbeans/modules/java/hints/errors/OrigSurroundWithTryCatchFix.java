@@ -111,6 +111,10 @@ class OrigSurroundWithTryCatchFix implements Fix {
                 }
 
                 StatementTree leaf = (StatementTree) p.getLeaf();
+                if (leaf.getKind() == Kind.VARIABLE && p.getParentPath().getLeaf().getKind() == Kind.FOR_LOOP) {
+                    p = p.getParentPath();
+                    leaf = (StatementTree)p.getLeaf();
+                }
 
                 GeneratorUtilities.get(parameter).importComments(p.getParentPath().getLeaf(), parameter.getCompilationUnit());
 

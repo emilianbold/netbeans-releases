@@ -66,6 +66,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -183,7 +184,7 @@ public class CreateQualifier implements ErrorRule<Void> {
         while (path != null ){
             Tree leaf = path.getLeaf();
             Kind leafKind = leaf.getKind();
-            if ( leafKind == Kind.CLASS ){
+            if ( TreeUtilities.CLASS_TREE_KINDS.contains(leafKind) ){
                 Element clazz = compilationInfo.getTrees().getElement(path);
                 if ( clazz.getKind() == ElementKind.CLASS )
                 {

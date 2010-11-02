@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzer;
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
 import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.modules.csl.api.ElementHandle;

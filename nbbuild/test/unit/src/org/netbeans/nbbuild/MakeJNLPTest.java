@@ -63,21 +63,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
 
 /** Is generation of Jnlp files correct?
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
-public class MakeJNLPTest extends NbTestCase {
+public class MakeJNLPTest extends TestBase {
     public MakeJNLPTest (String name) {
         super (name);
     }
     
-    protected void setUp() throws Exception {
-        clearWorkDir();
-    }
-
     private static void assertFilenames(File dir, String... contents) {
         assertTrue(dir + " is a directory", dir.isDirectory());
         SortedSet<String> expected = new TreeSet<String>(Arrays.asList(contents));
@@ -98,7 +93,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPAndSignedJarForSimpleModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar (new String[0], m);
 
@@ -106,7 +101,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -120,12 +115,12 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -140,9 +135,9 @@ public class MakeJNLPTest extends NbTestCase {
         CHECK_SIGNED: {
             File jar = new File(output, "org-my-module/s0.jar");
             JarFile signed = new JarFile(jar);
-            Enumeration it = signed.entries();
+            Enumeration<JarEntry> it = signed.entries();
             while (it.hasMoreElements()) {
-                JarEntry entry = (JarEntry)it.nextElement();
+                JarEntry entry = it.nextElement();
                 if (entry.getName().endsWith(".SF")) {
                     break CHECK_SIGNED;
                 }
@@ -154,7 +149,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testHandlesOSGi() throws Exception {
         Manifest m;
 
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("Bundle-SymbolicName", "org.my.module");
         File simpleJar = generateJar (new String[0], m);
 
@@ -162,7 +157,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -176,12 +171,12 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
 
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
 
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -197,7 +192,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPAndUnSignedJarForSimpleModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar (new String[0], m);
 
@@ -205,7 +200,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -219,12 +214,12 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -238,9 +233,9 @@ public class MakeJNLPTest extends NbTestCase {
 
         File jar = new File(output, "org-my-module/s0.jar");
         JarFile signed = new JarFile(jar);
-        Enumeration it = signed.entries();
+        Enumeration<JarEntry> it = signed.entries();
         while (it.hasMoreElements()) {
-            JarEntry entry = (JarEntry)it.nextElement();
+            JarEntry entry = it.nextElement();
             if (entry.getName().endsWith(".SF")) {
                 fail ("File should not be signed: " + jar);
             }
@@ -251,7 +246,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateOSOnlySimpleModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         m.getMainAttributes ().putValue ("OpenIDE-Module-Requires", "org.openide.modules.os.MacOSX, pepa.z.bota");
         File simpleJar = generateJar (new String[0], m);
@@ -260,7 +255,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -274,12 +269,12 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("Resource is os dependant: " + res, res.indexOf ("<resources os='Mac OS X'>") >= 0);
@@ -294,9 +289,9 @@ public class MakeJNLPTest extends NbTestCase {
 
         File jar = new File(output, "org-my-module/s0.jar");
         JarFile signed = new JarFile(jar);
-        Enumeration it = signed.entries();
+        Enumeration<JarEntry> it = signed.entries();
         while (it.hasMoreElements()) {
-            JarEntry entry = (JarEntry)it.nextElement();
+            JarEntry entry = it.nextElement();
             if (entry.getName().endsWith(".SF")) {
                 fail ("File should not be signed: " + jar);
             }
@@ -319,7 +314,7 @@ public class MakeJNLPTest extends NbTestCase {
             "    </module_version>" +
             "</module>";
       
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.modules.autoupdate/1");
         m.getMainAttributes ().putValue ("Class-Path", "ext/updater.jar");
         File simpleJar = generateJar ("modules/", new String[0], m, null);
@@ -328,19 +323,19 @@ public class MakeJNLPTest extends NbTestCase {
         
         File p = simpleJar.getParentFile();
         
-        simpleJar = generateJar ("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar = generateJar ("modules/locale/", new String[0], createManifest(), null);
         simpleJar.renameTo(new File(simpleJar.getParentFile(), "org-netbeans-modules-autoupdate_ja.jar"));
 
-        simpleJar = generateJar ("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar = generateJar ("modules/locale/", new String[0], createManifest(), null);
         simpleJar.renameTo(new File(simpleJar.getParentFile(), "org-netbeans-modules-autoupdate_zh_CN.jar"));
         
-        simpleJar = generateJar ("modules/ext/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar = generateJar ("modules/ext/", new String[0], createManifest(), null);
         simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater.jar"));
 
-        simpleJar = generateJar ("modules/ext/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar = generateJar ("modules/ext/locale/", new String[0], createManifest(), null);
         simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater_ja.jar"));
 
-        simpleJar = generateJar ("modules/ext/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        simpleJar = generateJar ("modules/ext/locale/", new String[0], createManifest(), null);
         simpleJar.renameTo(new File(simpleJar.getParentFile(), "updater_zh_CN.jar"));
 
         File xml = new File(p, "config/Modules/org-netbeans-modules-autoupdate.xml");
@@ -359,7 +354,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(getWorkDir(), "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -373,7 +368,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertFilenames(output, "org-netbeans-modules-autoupdate.jnlp",
                 "org-netbeans-modules-autoupdate/org-netbeans-modules-autoupdate.jar",
@@ -384,7 +379,7 @@ public class MakeJNLPTest extends NbTestCase {
                 "org-netbeans-modules-autoupdate/ext-updater.jar");
         
         File jnlp = new File(output, "org-netbeans-modules-autoupdate.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
@@ -407,9 +402,9 @@ public class MakeJNLPTest extends NbTestCase {
                 continue;
             }
             JarFile signed = new JarFile(jar);
-            Enumeration it = signed.entries();
+            Enumeration<JarEntry> it = signed.entries();
             while (it.hasMoreElements()) {
-                JarEntry entry = (JarEntry)it.nextElement();
+                JarEntry entry = it.nextElement();
                 if (entry.getName().endsWith(".SF")) {
                     continue CHECK_SIGNED;
                 }
@@ -421,7 +416,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPForMissingRegularModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.core.startup");
         File simpleJar = generateJar ("modules/", new String[0], m, null);
         File coreJar = new File(simpleJar.getParentFile(), "core.jar");
@@ -429,7 +424,7 @@ public class MakeJNLPTest extends NbTestCase {
         simpleJar = coreJar;
 
         File parent = simpleJar.getParentFile ();
-        File localizedJarCZ = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarCZ = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "core_cs.jar")));
         
         File updateTracking = new File(getWorkDir(), "update_tracking");
@@ -456,7 +451,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -470,7 +465,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertFilenames(output, "org-netbeans-core-startup.jnlp",
                 "org-netbeans-core-startup/core.jar",
@@ -480,20 +475,20 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPAndSignedJarForSimpleLocalizedModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar ("modules/", new String[0], m, null);
 
         File parent = simpleJar.getParentFile ();
-        File localizedJarCZ = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarCZ = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarCZ.getName());
         assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "0_cs.jar")));
         
-        File localizedJarZH = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarZH = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarZH.getName());
         assertTrue("Successful rename", localizedJarZH.renameTo(new File(localizedJarCZ.getParent(), "0_zh_CN.jar")));
         
-        File localizedJarJA = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarJA = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarJA.getName());
         assertTrue("Successful rename", localizedJarJA.renameTo(new File(localizedJarCZ.getParent(), "0_ja.jar")));
 
@@ -521,7 +516,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -535,7 +530,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertFilenames(output, "org-my-module.jnlp",
                 "org-my-module/0.jar",
@@ -544,7 +539,7 @@ public class MakeJNLPTest extends NbTestCase {
                 "org-my-module/locale-0_ja.jar");
 
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -566,9 +561,9 @@ public class MakeJNLPTest extends NbTestCase {
             }
             
             JarFile signed = new JarFile(jar);
-            Enumeration it = signed.entries();
+            Enumeration<JarEntry> it = signed.entries();
             while (it.hasMoreElements()) {
-                JarEntry entry = (JarEntry)it.nextElement();
+                JarEntry entry = it.nextElement();
                 if (entry.getName().endsWith(".SF")) {
                     continue CHECK_SIGNED;
                 }
@@ -579,7 +574,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPForMissingCoreIssue103301() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.netbeans.core.startup");
         File simpleJar = generateJar ("core/", new String[0], m, null);
         File coreJar = new File(simpleJar.getParentFile(), "core.jar");
@@ -587,7 +582,7 @@ public class MakeJNLPTest extends NbTestCase {
         simpleJar = coreJar;
 
         File parent = simpleJar.getParentFile ();
-        File localizedJarCZ = generateJar("core/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarCZ = generateJar("core/locale/", new String[0], createManifest(), null);
         assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "core_cs.jar")));
         
         File updateTracking = new File(getWorkDir(), "update_tracking");
@@ -614,7 +609,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -628,7 +623,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertFilenames(output, "org-netbeans-core-startup.jnlp",
                 "org-netbeans-core-startup/core.jar",
@@ -638,20 +633,20 @@ public class MakeJNLPTest extends NbTestCase {
     public void testGenerateJNLPAndUnSignedJarForSimpleLocalizedModule() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar ("modules/", new String[0], m, null);
 
         File parent = simpleJar.getParentFile ();
-        File localizedJarCZ = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarCZ = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarCZ.getName());
         assertTrue("Successful rename", localizedJarCZ.renameTo(new File(localizedJarCZ.getParent(), "0_cs.jar")));
         
-        File localizedJarZH = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarZH = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarZH.getName());
         assertTrue("Successful rename", localizedJarZH.renameTo(new File(localizedJarCZ.getParent(), "0_zh_CN.jar")));
         
-        File localizedJarJA = generateJar("modules/locale/", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File localizedJarJA = generateJar("modules/locale/", new String[0], createManifest(), null);
         assertEquals("There need to have the same name", simpleJar.getName(), localizedJarJA.getName());
         assertTrue("Successful rename", localizedJarJA.renameTo(new File(localizedJarCZ.getParent(), "0_ja.jar")));
 
@@ -679,7 +674,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -693,7 +688,7 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
 
         assertFilenames(output, "org-my-module.jnlp",
                 "org-my-module/0.jar",
@@ -702,7 +697,7 @@ public class MakeJNLPTest extends NbTestCase {
                 "org-my-module/locale-0_ja.jar");
 
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -724,9 +719,9 @@ public class MakeJNLPTest extends NbTestCase {
             }
             
             JarFile signed = new JarFile(jar);
-            Enumeration it = signed.entries();
+            Enumeration<JarEntry> it = signed.entries();
             while (it.hasMoreElements()) {
-                JarEntry entry = (JarEntry)it.nextElement();
+                JarEntry entry = it.nextElement();
                 if (entry.getName().endsWith(".SF")) {
                     fail ("File does not seem to be signed: " + jar);
                 }
@@ -743,7 +738,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testOneCanChangeTheCodeBase() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         File simpleJar = generateJar (new String[0], m);
 
@@ -751,7 +746,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -765,13 +760,13 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+        execute (f, new String[] { "-verbose" });
         
         assertFilenames(output, "org-my-module.jnlp",
                 "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
         
         assertTrue ("Component JNLP type: " + res, res.indexOf ("<component-desc/>") >= 0);
         assertTrue ("We support all permissions by default: " + res, res.indexOf ("<all-permissions/>") >= 0);
@@ -803,7 +798,7 @@ public class MakeJNLPTest extends NbTestCase {
         assertFilenames(output, "aaa-my-module.jnlp", "aaa-my-module/ext-t0.jar", "aaa-my-module/s0.jar");
         
         File jnlp = new File(output, "aaa-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
 
         
         Matcher m = Pattern.compile("<jar href='(.*)' */>").matcher(res);
@@ -840,11 +835,11 @@ public class MakeJNLPTest extends NbTestCase {
                 "aaa-my-module-ext-t0.jnlp");
         
         JarFile f = new JarFile(new File(output, "aaa-my-module/ext-t0.jar"));
-        Enumeration en = f.entries();
+        Enumeration<JarEntry> en = f.entries();
         StringBuffer sb = new StringBuffer();
         int cnt = 0;
         while (en.hasMoreElements()) {
-            JarEntry e = (JarEntry)en.nextElement();
+            JarEntry e = en.nextElement();
             if (e.getName().endsWith("SF")) {
                 cnt++;
                 if (!e.getName().equals("META-INF/EXTERNAL.SF")) {
@@ -861,12 +856,12 @@ public class MakeJNLPTest extends NbTestCase {
         
         File jnlp = new File(output, "aaa-my-module.jnlp");
         
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
 
         int first = res.indexOf("jar href");
         assertEquals("Just one jar href ", -1, res.indexOf("jar href", first + 1));
         
-        String extRes = ModuleDependenciesTest.readFile(new File(output, "aaa-my-module-ext-t0.jnlp"));
+        String extRes = readFile(new File(output, "aaa-my-module-ext-t0.jnlp"));
         
         Matcher m = Pattern.compile("<title>(.*)</title>").matcher(extRes);
         assertTrue("title is there: " + extRes, m.find());
@@ -876,7 +871,7 @@ public class MakeJNLPTest extends NbTestCase {
     public void testInformationIsTakenFromLocalizedBundle() throws Exception {
         Manifest m;
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "org.my.module/3");
         
         Properties props = new Properties();
@@ -891,7 +886,7 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -905,12 +900,12 @@ public class MakeJNLPTest extends NbTestCase {
             "</target>" +
             "</project>"
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
     
         assertFilenames(output, "org-my-module.jnlp", "org-my-module/s0.jar");
         
         File jnlp = new File(output, "org-my-module.jnlp");
-        String res = ModuleDependenciesTest.readFile (jnlp);
+        String res = readFile (jnlp);
 
         int infoBegin = res.indexOf("<information>");
         int infoEnd = res.indexOf("</information>");
@@ -948,9 +943,9 @@ public class MakeJNLPTest extends NbTestCase {
     }
     
     private void doCompareJNLPFileWithUpdateTracking(boolean useNonModule, String fakeEntry, String extraScript) throws Exception {
-        File nonModule = generateJar (new String[0], ModuleDependenciesTest.createManifest());
+        File nonModule = generateJar (new String[0], createManifest());
         
-        Manifest m = ModuleDependenciesTest.createManifest ();
+        Manifest m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "aaa.my.module/3");
         File module = generateJar (new String[0], m);
         
@@ -998,9 +993,9 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(getWorkDir(), "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
+        java.io.File f = extractString (script);
         try {
-            PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+            execute (f, new String[] { 
                 "-Dtest.output=" + output, 
                 "-Dtest.parent=" + module.getParent(), 
                 "-Dtest.name=" + module.getName(),
@@ -1018,7 +1013,7 @@ public class MakeJNLPTest extends NbTestCase {
 
             String[] files = ext.getParentFile().list();
             assertEquals("Two files are there", 2, files.length);
-        } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+        } catch (ExecutionError ex) {
             if (!useNonModule) {
                 throw ex;
             } else {
@@ -1039,9 +1034,9 @@ public class MakeJNLPTest extends NbTestCase {
     private File doClassPathModuleCheck(String script) throws Exception {
         Manifest m;
 
-        File extJar = generateJar ("modules/ext", new String[0], ModuleDependenciesTest.createManifest(), null);
+        File extJar = generateJar ("modules/ext", new String[0], createManifest(), null);
         
-        m = ModuleDependenciesTest.createManifest ();
+        m = createManifest ();
         m.getMainAttributes ().putValue ("OpenIDE-Module", "aaa.my.module/3");
         m.getMainAttributes ().putValue ("Class-Path", "ext/" + extJar.getName());
         File simpleJar = generateJar ("modules", new String[0], m, null);
@@ -1051,8 +1046,8 @@ public class MakeJNLPTest extends NbTestCase {
         File output = new File(parent, "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { 
+        java.io.File f = extractString (script);
+        execute (f, new String[] { 
             "-Dtest.output=" + output, 
             "-Dtest.parent=" + parent, 
             "-Dtest.name=" + simpleJar.getName(),
@@ -1064,7 +1059,7 @@ public class MakeJNLPTest extends NbTestCase {
     }
     
     
-    private final File createNewJarFile (String prefix) throws IOException {
+    private File createNewJarFile(String prefix) throws IOException {
         if (prefix == null) {
             prefix = "modules";
         }
@@ -1076,7 +1071,9 @@ public class MakeJNLPTest extends NbTestCase {
         int i = 0;
         for (;;) {
             File f = new File (dir, ss + i++ + ".jar");
-            if (!f.exists ()) return f;
+            if (!f.exists()) {
+                return f;
+            }
         }
     }
     
@@ -1110,7 +1107,8 @@ public class MakeJNLPTest extends NbTestCase {
         return f;
     }
     
-    private final File generateKeystore(String alias, String password) throws Exception {
+    @SuppressWarnings("SleepWhileInLoop")
+    private File generateKeystore(String alias, String password) throws Exception {
         Error lastEx = null;
         for (int i = 0; i < 10; i++) {
             File where = new File(getWorkDir(), "key" + i + ".ks");
@@ -1127,10 +1125,10 @@ public class MakeJNLPTest extends NbTestCase {
                 "/>\n" +
                 "</target></project>\n";
 
-            java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (script);
+            java.io.File f = extractString (script);
             try {
-                PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-            } catch (PublicPackagesInProjectizedXMLTest.ExecutionError ex) {
+                execute (f, new String[] { });
+            } catch (ExecutionError ex) {
                 Logger.getAnonymousLogger().log(Level.WARNING, "Failed for " + i, ex);
                 lastEx = ex;
                 if (ex.getMessage().indexOf("CKR_KEY_SIZE_RANGE") >= 0) {
@@ -1145,14 +1143,14 @@ public class MakeJNLPTest extends NbTestCase {
     }
 
     public void testIndirectJars() throws Exception {
-        Manifest m = ModuleDependenciesTest.createManifest();
+        Manifest m = createManifest();
         m.getMainAttributes().putValue("OpenIDE-Module", "me");
         generateJar(new String[0], m);
         generateJar("lib", new String[0], new Manifest(), null);
         assertTrue(new File(getWorkDir(), "lib/b0.jar").isFile());
         File output = new File(getWorkDir(), "output");
         File ks = generateKeystore("jnlp", "netbeans-test");
-        File f = PublicPackagesInProjectizedXMLTest.extractString(
+        File f = extractString(
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
                 "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
                 "  <taskdef name=\"jnlp\" classname=\"org.netbeans.nbbuild.MakeJNLP\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -1169,10 +1167,10 @@ public class MakeJNLPTest extends NbTestCase {
                 "</target>" +
                 "</project>"
                 );
-        PublicPackagesInProjectizedXMLTest.execute(f, new String[] { "-verbose" });
+        execute(f, new String[] { "-verbose" });
         assertFilenames(output, "me.jnlp", "me/s0.jar", "me/lib-b0.jar");
         File jnlp = new File(output, "me.jnlp");
-        String res = ModuleDependenciesTest.readFile(jnlp);
+        String res = readFile(jnlp);
         assertTrue(res, res.contains("me/lib-b0.jar"));
         JarFile otherJar = new JarFile(new File(output, "me/lib-b0.jar"));
         assertNotNull(otherJar.getEntry("META-INF/clusterpath/lib/b0.jar"));

@@ -86,6 +86,7 @@ import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
+import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.versioning.util.SortedTable;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.util.actions.SystemAction;
@@ -373,9 +374,9 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         
         menu.addSeparator();
 
-        item = menu.add(new SystemActionBridge(SystemAction.get(ConflictResolvedAction.class), actionString("CTL_PopupMenuItem_MarkResolved"))); //NOI18N
+        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
-                
+
         menu.addSeparator();
 
         item = menu.add(new SystemActionBridge(SystemAction.get(AnnotateAction.class),
@@ -411,23 +412,6 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         }
         item = menu.add(new SystemActionBridge(exclude, label));
         Mnemonics.setLocalizedText(item, item.getText());
-/*
-        item = menu.add(new SystemActionBridge(SystemAction.get(SearchHistoryAction.class), actionString("CTL_PopupMenuItem_SearchHistory"))); // NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-
-        menu.add(new JSeparator());                
-
-//        item = menu.add(new SystemActionBridge(SystemAction.get(ResolveConflictsAction.class), actionString("CTL_PopupMenuItem_ResolveConflicts"))); // NOI18N
-//        Mnemonics.setLocalizedText(item, item.getText());
-        
-        Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
-           actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
-           actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
-        item = menu.add(ignoreAction);
-        Mnemonics.setLocalizedText(item, item.getText());
-*/
-
         return menu;
     }
 

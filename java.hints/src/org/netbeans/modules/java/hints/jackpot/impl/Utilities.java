@@ -54,6 +54,7 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
@@ -70,6 +71,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.parser.EndPosParser;
 import com.sun.tools.javac.parser.JavacParser;
@@ -78,8 +80,11 @@ import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.Token;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.util.CancelService;
@@ -423,16 +428,9 @@ public class Utilities {
     }
 
     private static Tree fixTree(Context c, Tree patternTree) {
-        TreeFactory make = TreeFactory.instance(c);
         FixTree fixTree = new FixTree();
 
-        //TODO: workaround, ImmutableTreeTranslator needs a CompilationUnitTree (rewriteChildren(BlockTree))
-        //but sometimes no CompilationUnitTree (e.g. during BatchApply):
-        CompilationUnitTree cut = make.CompilationUnit(null, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList(), null);
-        ImportAnalysis2 ia = new ImportAnalysis2(c);
-
-        ia.setImports(Collections.<ImportTree>emptyList());
-        fixTree.attach(c, ia, null);
+        fixTree.attach(c, new NoImports(c), null);
 
         return fixTree.translate(patternTree);
     }
@@ -694,7 +692,10 @@ public class Utilities {
                 case METHOD:
                     handleSuppressWarnings(info, path, ((MethodTree) leaf).getModifiers(), keys);
                     break;
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     handleSuppressWarnings(info, path, ((ClassTree) leaf).getModifiers(), keys);
                     break;
                 case VARIABLE:
@@ -800,10 +801,6 @@ public class Utilities {
         gp.scan(original, null);
 
         GeneralizePatternITT itt = new GeneralizePatternITT(gp.tree2Variable);
-
-        //TODO: workaround, ImmutableTreeTranslator needs a CompilationUnitTree (rewriteChildren(BlockTree))
-        //but sometimes no CompilationUnitTree (e.g. during BatchApply):
-        CompilationUnitTree cut = TreeFactory.instance(c).CompilationUnit(null, Collections.<ImportTree>emptyList(), Collections.<Tree>emptyList(), null);
 
         itt.attach(c, new NoImports(c), null);
 
@@ -1168,4 +1165,50 @@ public class Utilities {
             return "";
         }
     };
+
+    /**
+     * Only for members (i.e. generated constructor):
+     */
+    public static List<? extends Tree> filterHidden(TreePath basePath, Iterable<? extends Tree> members) {
+        List<Tree> result = new LinkedList<Tree>();
+
+        for (Tree t : members) {
+            if (!isSynthetic(basePath != null ? basePath.getCompilationUnit() : null, t)) {
+                result.add(t);
+            }
+        }
+
+        return result;
+    }
+
+    private static boolean isSynthetic(CompilationUnitTree cut, Tree leaf) throws NullPointerException {
+        JCTree tree = (JCTree) leaf;
+
+        if (tree.pos == (-1))
+            return true;
+
+        if (leaf.getKind() == Kind.METHOD) {
+            //check for synthetic constructor:
+            return (((JCMethodDecl)leaf).mods.flags & Flags.GENERATEDCONSTR) != 0L;
+        }
+
+        //check for synthetic superconstructor call:
+        if (cut != null && leaf.getKind() == Kind.EXPRESSION_STATEMENT) {
+            ExpressionStatementTree est = (ExpressionStatementTree) leaf;
+
+            if (est.getExpression().getKind() == Kind.METHOD_INVOCATION) {
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+
+                if (mit.getMethodSelect().getKind() == Kind.IDENTIFIER) {
+                    IdentifierTree it = (IdentifierTree) mit.getMethodSelect();
+
+                    if ("super".equals(it.getName().toString())) {
+                        return ((JCCompilationUnit) cut).endPositions.get(tree) == (-1);
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
 }

@@ -55,6 +55,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
 import org.netbeans.spi.editor.mimelookup.InstanceProvider;
+import org.netbeans.spi.editor.mimelookup.MimeLocation;
 import org.openide.awt.Actions;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -72,9 +73,9 @@ import org.openide.util.lookup.ServiceProvider;
  * </p>
  * @author Jan Pokorsky
  */
-@ServiceProvider(service=Class2LayerFolder.class)
+@MimeLocation(subfolderName="RefactoringActions", instanceProviderClass=RefactoringContextActionsProvider.class)
 public final class RefactoringContextActionsProvider
-        implements Class2LayerFolder<RefactoringContextActionsProvider>, InstanceProvider<RefactoringContextActionsProvider> {
+        implements InstanceProvider<RefactoringContextActionsProvider> {
 
     private static final Logger LOG = Logger.getLogger(RefactoringContextActionsProvider.class.getName());
 
@@ -87,18 +88,6 @@ public final class RefactoringContextActionsProvider
 
     public RefactoringContextActionsProvider(List<FileObject> fileObjectList) {
         this.fileObjectList = fileObjectList;
-    }
-
-    public Class<RefactoringContextActionsProvider> getClazz() {
-        return RefactoringContextActionsProvider.class;
-    }
-
-    public String getLayerFolderName() {
-        return "RefactoringActions"; // NOI18N
-    }
-
-    public InstanceProvider<RefactoringContextActionsProvider> getInstanceProvider() {
-        return this;
     }
 
     public RefactoringContextActionsProvider createInstance(List<FileObject> fileObjectList) {

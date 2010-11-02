@@ -52,6 +52,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -462,8 +463,8 @@ public final class AppClientProject implements Project, FileChangeListener {
 
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
-                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
-                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
+                                Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);

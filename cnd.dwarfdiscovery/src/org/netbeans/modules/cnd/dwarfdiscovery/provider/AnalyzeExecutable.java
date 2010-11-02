@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.dwarfdiscovery.provider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -211,15 +212,19 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project) {
         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
         if (set == null || set.length() == 0) {
-            return ApplicableImpl.NotApplicable;
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "NoExecutable")));
         }
         Set<String> dlls = new HashSet<String>();
         ApplicableImpl applicable = sizeComilationUnit(set, dlls);
         if (applicable.isApplicable()) {
-            return new ApplicableImpl(true, applicable.getCompilerName(), 70, applicable.isSunStudio(),
+            return new ApplicableImpl(true, null, applicable.getCompilerName(), 70, applicable.isSunStudio(),
                     applicable.getDependencies(), applicable.getSourceRoot(), applicable.getMainFunction());
         }
-        return ApplicableImpl.NotApplicable;
+        if (applicable.getErrors().size() > 0) {
+            return ApplicableImpl.getNotApplicable(applicable.getErrors());
+        } else {
+            return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecutable.class, "CannotAnalyzeExecutable",set)));
+        }
     }
     
     @Override

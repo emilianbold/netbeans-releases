@@ -551,7 +551,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             for (int i = 0; i < mdl.getRowCount(); i++) {
                 map.put((String)mdl.getValueAt(i, 0), (String)mdl.getValueAt(i, 1));
             }
-            d.putProperty("additionalProps", map); //NOI18N
+            d.putProperty(ArchetypeWizardUtils.ADDITIONAL_PROPS, map);
         }
         if (panel.getArchetypes() != null) {
             d.putProperty(ChooseArchetypePanel.PROP_ARCHETYPE, getArchetype(d));

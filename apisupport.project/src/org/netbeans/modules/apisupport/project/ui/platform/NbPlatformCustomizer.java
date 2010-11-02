@@ -61,6 +61,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
@@ -86,6 +87,7 @@ public final class NbPlatformCustomizer extends JPanel {
 
     @ActionID(category="Tools", id="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizerAction")
     @ActionRegistration(displayName="#CTL_NbPlatformManager_Menu", iconInMenu=false)
+    @ActionReference(path="Menu/Tools", position=400)
     public static ActionListener showCustomizerAction() {
         return new ActionListener() {
             public @Override void actionPerformed(ActionEvent e) {

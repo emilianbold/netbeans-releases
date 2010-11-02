@@ -223,13 +223,15 @@ public final class CustomizerSelector {
             for(PreferencesCustomizer.Factory f : factories) {
                 PreferencesCustomizer c = f.create(prefs);
                 
-                if (c.getId().equals(PreferencesCustomizer.TABS_AND_INDENTS_ID)) {
-                    Preferences allLangPrefs = pf.getPreferences(""); //NOI18N
-                    c = new IndentationPanelController(MimePath.parse(mimeType), pf, prefs, allLangPrefs, c);
+                if (c != null) {
+                    if (c.getId().equals(PreferencesCustomizer.TABS_AND_INDENTS_ID)) {
+                        Preferences allLangPrefs = pf.getPreferences(""); //NOI18N
+                        c = new IndentationPanelController(MimePath.parse(mimeType), pf, prefs, allLangPrefs, c);
+                    }
+
+                    list.add(c);
+                    c2p.put(c, prefs);
                 }
-                
-                list.add(c);
-                c2p.put(c, prefs);
             }
             
             // if permitted, collect old controllers

@@ -65,8 +65,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormUtils;
@@ -188,10 +186,16 @@ public final class ClassSource {
                     }
                 }
             }
-            // Backward compatibility - we used ant-artifact
-            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(file);
-            if (aa != null) { // Issue 189960
-                Project project = aa.getProject();
+            // Backward compatibility for previously used ant artifacts. It resembles
+            // AntArtifactQuery.findArtifactFromFile(file).getProject()
+            while (!file.exists()) {
+                // Find some existing parent directory (hopefully in the same
+                // project) if the artifact is cleaned.
+                file = file.getParentFile();
+            }
+            FileObject fob = FileUtil.toFileObject(file);
+            if (fob != null) {
+                Project project = FileOwnerQuery.getOwner(fob);
                 if (project != null) {
                     return new ProjectEntry(project);
                 }

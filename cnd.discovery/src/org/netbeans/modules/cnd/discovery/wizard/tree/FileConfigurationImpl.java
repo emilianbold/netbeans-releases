@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.discovery.wizard.tree;
 
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.cnd.discovery.api.ItemProperties.LanguageStandard;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.FileConfiguration;
 
@@ -60,24 +61,33 @@ public class FileConfigurationImpl extends NodeConfigurationImpl implements File
         sourceFile = source;
     }
 
+    @Override
     public String getCompilePath() {
         return sourceFile.getCompilePath();
     }
 
+    @Override
     public String getFilePath() {
         return sourceFile.getItemPath();
     }
 
+    @Override
     public String getFileName() {
         return sourceFile.getItemName();
     }
 
+    @Override
     public List<String> getUserInludePaths() {
         return sourceFile.getUserInludePaths();
     }
 
+    @Override
     public Map<String,String> getUserMacros() {
         return sourceFile.getUserMacros();
     }
-    
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        return sourceFile.getLanguageStandard();
+    }    
 }

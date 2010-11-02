@@ -46,24 +46,25 @@ package org.netbeans.modules.editor.mimelookup.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author vita
  */
-public class DummySettingImpl implements DummySetting {
+public class DummySettingImpl implements DummySetting, DummySettingWithPath {
 
-    private List files = null;
+    private List<FileObject> files = null;
 
     /** Creates a new instance of DummySettingImpl */
     public DummySettingImpl() {
     }
 
-    public DummySettingImpl(List files) {
-        files = new ArrayList(files);
+    public DummySettingImpl(List<FileObject> files) {
+        this.files = new ArrayList(files);
     }
 
-    public List getFiles() {
+    public List<FileObject> getFiles() {
         return files;
     }
 }

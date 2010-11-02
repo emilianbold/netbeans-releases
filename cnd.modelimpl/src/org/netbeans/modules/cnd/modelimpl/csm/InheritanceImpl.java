@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  * CsmInheritance implementation
  * @author Vladimir Kvashin
  */
-public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance, Resolver.SafeClassifierProvider {
+public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> implements CsmInheritance, Resolver.SafeClassifierProvider {
 
     private CsmVisibility visibility;
     private boolean virtual;
@@ -72,9 +72,9 @@ public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> 
     
     private CsmType ancestorType;
     private CsmClassifier resolvedClassifier;
-    private CsmUID<CsmScope> scope;
+    private final CsmUID<CsmScope> scope;
     
-    public InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
+    private InheritanceImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file);
         this.scope = UIDCsmConverter.scopeToUID(scope);
         visibility = ((CsmDeclaration)scope).getKind() == CsmDeclaration.Kind.STRUCT?
@@ -100,8 +100,12 @@ public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> 
         }
     }
 
-    // constructot for LWM factory
-    InheritanceImpl(CsmFile file, CsmScope scope, CsmType ancestorType, CsmVisibility visibility, boolean virtual, int startOffset, int endOffset) {
+    public static InheritanceImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new InheritanceImpl(ast, file, scope);
+    }
+
+    // constructor for LWM factory
+    private InheritanceImpl(CsmFile file, CsmScope scope, CsmType ancestorType, CsmVisibility visibility, boolean virtual, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.scope = UIDCsmConverter.scopeToUID(scope);
         if (visibility == null) {
@@ -111,6 +115,10 @@ public class InheritanceImpl extends OffsetableIdentifiableBase<CsmInheritance> 
         }
         this.virtual = virtual;
         this.ancestorType = ancestorType;
+    }
+
+    public static InheritanceImpl create(CsmFile file, CsmScope scope, CsmType ancestorType, CsmVisibility visibility, boolean virtual, int startOffset, int endOffset) {
+        return new InheritanceImpl(file, scope, ancestorType, visibility, virtual, startOffset, endOffset);
     }
 
     @Override

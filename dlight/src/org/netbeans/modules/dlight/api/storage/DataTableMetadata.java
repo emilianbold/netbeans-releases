@@ -43,9 +43,7 @@ package org.netbeans.modules.dlight.api.storage;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This is virtual table description. This table description is
@@ -68,6 +66,7 @@ public final class DataTableMetadata {
     private final String statement;
     private final List<Column> primaryKeyColumns = new ArrayList<Column>();
     private final List<Column> autoIncrementList = new ArrayList<Column>();
+    
 
     /**
      * Creates new table description with the name <code>name</code> and using <code>columns</code> as table column descriptions
@@ -102,6 +101,16 @@ public final class DataTableMetadata {
         for (Column c : columns) {
             columnNames.add(c.getColumnName());
         }
+    }
+    
+    /**
+     * Adds foreign key constraint
+     * @param foreignKey the current table column which IS foreign key
+     * @param referenceTable the table foreign key column is referenced to
+     * @param referenceColumn the column foreign key column is referenced to 
+     */
+    public void addForeignKey(Column foreignKey, DataTableMetadata referenceTable, Column referenceColumn){
+        
     }
     
     public void setPrimaryKey(List<Column> primaryKeys){

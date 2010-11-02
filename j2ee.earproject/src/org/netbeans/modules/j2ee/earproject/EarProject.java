@@ -50,6 +50,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -309,8 +310,8 @@ public final class EarProject implements Project, AntProjectListener {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             if (!J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
-                                String root = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
-                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), root);
+                                Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
+                                String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -569,9 +570,11 @@ public final class EarProject implements Project, AntProjectListener {
             File projectProperties = helper.resolveFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             if (projectProperties.exists()) {
                 // file exists, log warning
-                Logger.getLogger("global").log(Level.WARNING,
-                        "Cannot resolve " + EarProjectProperties.META_INF + // NOI18N
-                        " property for " + this); // NOI18N
+                if (LOGGER.isLoggable(Level.WARNING)) {
+                    LOGGER.log(Level.WARNING,
+                            "Cannot resolve {0} property for {1}", // NOI18N
+                            new Object[] {EarProjectProperties.META_INF, this});
+                }
             }
             metaInfProp = "src/conf"; // NOI18N
         }
@@ -581,7 +584,7 @@ public final class EarProject implements Project, AntProjectListener {
             File metaInfF = PropertyUtils.resolveFile(prjDirF, metaInfProp);
             metaInfFO = FileUtil.createFolder(metaInfF);
         } catch (IOException ex) {
-            assert false : ex;
+            LOGGER.log(Level.INFO, null, ex);
         }
         return metaInfFO;
     }

@@ -413,7 +413,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         }
     }
     
-    Collection getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
+    Collection<Setup> getSetups(RepositoryRevision [] revisions, RepositoryRevision.Event [] events) {
         long fromRevision = Long.MAX_VALUE;
         long toRevision = Long.MIN_VALUE;
         Set<File> filesToDiff = new HashSet<File>();

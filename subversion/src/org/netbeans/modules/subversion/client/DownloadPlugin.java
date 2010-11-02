@@ -52,6 +52,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -104,7 +105,7 @@ public class DownloadPlugin implements ActionListener {
                 try {
                     List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
                     for (UpdateUnit u : units) {
-                        if(u.getCodeName().equals(SvnClientFactory.JAVAHL_MODULE_CODE_NAME)) {
+                        if(u.getCodeName().equals(SvnClientAdapterFactory.JAVAHL_WIN32_MODULE_CODE_NAME)) {
 
                             List<UpdateElement> elements = u.getAvailableUpdates();
                             if(elements.isEmpty()) {

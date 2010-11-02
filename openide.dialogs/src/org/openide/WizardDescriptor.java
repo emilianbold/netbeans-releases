@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -92,6 +92,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
@@ -99,6 +100,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkEvent.EventType;
+import javax.swing.event.HyperlinkListener;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
@@ -111,6 +117,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.openide.awt.HtmlBrowser.URLDisplayer;
 
 /**
  * Implements a basic "wizard" GUI system.
@@ -2472,7 +2479,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
         /** Selected index of content */
         private int selectedIndex;
-        private JLabel m_lblMessage;
+        private JTextPane messagePane;
+        private JLabel iconLabel;
 
         private Color nbErrorForeground;
         private Color nbWarningForeground;
@@ -2555,9 +2563,11 @@ public class WizardDescriptor extends DialogDescriptor {
 
             JPanel errorPanel = new JPanel(new BorderLayout());
             errorPanel.setBorder(BorderFactory.createEmptyBorder(0, 12, 12, 11));
-            m_lblMessage = new FixedHeightLabel ();
-            m_lblMessage.setForeground (nbErrorForeground);
-            errorPanel.add(m_lblMessage, BorderLayout.CENTER);
+            messagePane = new FixedHeightPane ();
+            messagePane.setForeground (nbErrorForeground);
+            iconLabel = new FixedHeightLabel ();
+            errorPanel.add(iconLabel, BorderLayout.LINE_START);
+            errorPanel.add(messagePane, BorderLayout.CENTER);
 
             progressBarPanel = new JPanel (new BorderLayout ());
             progressBarPanel.setVisible (false);
@@ -2601,30 +2611,36 @@ public class WizardDescriptor extends DialogDescriptor {
             if (msg != null && msg.trim().length() > 0) {
                 switch (msgType) {
                     case MSG_TYPE_ERROR:
-                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false),
+                        prepareMessage(msg, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/error.gif", false),
                             nbErrorForeground);
                         break;
                     case MSG_TYPE_WARNING:
-                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false),
+                        prepareMessage(msg, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/warning.gif", false),
                             nbWarningForeground);
                         break;
                     case MSG_TYPE_INFO:
-                        prepareMessage(m_lblMessage, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false),
+                        prepareMessage(msg, ImageUtilities.loadImageIcon("org/netbeans/modules/dialogs/info.png", false),
                             nbInfoForeground);
                         break;
                     default:
                 }
-                m_lblMessage.setToolTipText (msg);
             } else {
-                prepareMessage(m_lblMessage, null, null);
-                m_lblMessage.setToolTipText (null);
+                prepareMessage(null, null, null);
             }
-            m_lblMessage.setText(msg);
         }
 
-        private void prepareMessage(JLabel label, ImageIcon icon, Color fgColor) {
-            label.setIcon(icon);
-            label.setForeground(fgColor);
+        private void prepareMessage(String msg, ImageIcon icon, Color fgColor) {
+            messagePane.setToolTipText (msg);
+            if (msg != null) {
+                msg = msg.replaceAll("\\s", "&nbsp;"); // NOI18N
+                if (! msg.toUpperCase().startsWith("<HTML>")) { // NOI18N
+                    msg = "<HTML>" + msg; // NOI18N
+                }
+            }
+            iconLabel.setIcon(icon);
+            iconLabel.setForeground(fgColor);
+            messagePane.setForeground(fgColor);
+            messagePane.setText(msg);
         }
 
         private void setProgressComponent (JComponent progressComp, final JLabel progressLabel) {
@@ -2960,6 +2976,57 @@ public class WizardDescriptor extends DialogDescriptor {
 
         public FixedHeightLabel () {
             super ();
+        }
+
+        @Override
+        public Dimension getPreferredSize() {
+            Dimension preferredSize = super.getPreferredSize();
+            assert ESTIMATED_HEIGHT == ImageUtilities.loadImage ("org/netbeans/modules/dialogs/warning.gif").getHeight (null) : "Use only 16px icon.";
+            preferredSize.height = Math.max (ESTIMATED_HEIGHT, preferredSize.height);
+            return preferredSize;
+        }
+    }
+
+    private static final class FixedHeightPane extends JTextPane {
+
+        private static final int ESTIMATED_HEIGHT = 16;
+
+        public FixedHeightPane () {
+            super ();
+            setEditable(false);
+            HTMLEditorKit htmlkit = new HTMLEditorKit();
+            // override the Swing default CSS to make the HTMLEditorKit use the
+            // same font as the rest of the UI.
+
+            // XXX the style sheet is shared by all HTMLEditorKits.  We must
+            // detect if it has been tweaked by ourselves or someone else
+            // (code completion javadoc popup for example) and avoid doing the
+            // same thing again
+
+            StyleSheet css = htmlkit.getStyleSheet();
+
+            if (css.getStyleSheets() == null) {
+                StyleSheet css2 = new StyleSheet();
+                Font f = new JList().getFont();
+                int size = f.getSize();
+                css2.addRule(new StringBuffer("body { font-size: ").append(size) // NOI18N
+                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                css2.addStyleSheet(css);
+                htmlkit.setStyleSheet(css2);
+            }
+
+            setEditorKit(htmlkit);
+            setOpaque(false);
+            addHyperlinkListener(new HyperlinkListener() {
+                @Override
+                public void hyperlinkUpdate(HyperlinkEvent hlevt) {
+                    if (EventType.ACTIVATED == hlevt.getEventType()) {
+                        if (hlevt.getURL () != null) {
+                            URLDisplayer.getDefault().showURLExternal(hlevt.getURL());
+                        }
+                    }
+                }
+            });
         }
 
         @Override

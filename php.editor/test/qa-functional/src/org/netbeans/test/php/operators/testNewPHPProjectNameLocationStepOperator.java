@@ -43,6 +43,9 @@
  */
 package org.netbeans.test.php.operators;
 
+import java.awt.Component;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -50,7 +53,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.test.php.operators.NewPHPProjectNameLocationStepOperator;
 
 /**
  * Test of org.netbeans.jellytools.NewPHPProjectNameLocationStepOperator
@@ -108,6 +110,10 @@ public class testNewPHPProjectNameLocationStepOperator extends JellyTestCase {
         NewPHPProjectNameLocationStepOperator lsop = new NewPHPProjectNameLocationStepOperator();
 
         String project_name = "NewPHPProject";
+//
+//        while (lsop.getProjectName().length() > 0) {   
+//            lsop.pressKey(KeyEvent.VK_BACK_SPACE);
+//        }
         lsop.typeProjectName(project_name);
         assertEquals(project_name, lsop.getProjectName());
 
@@ -119,7 +125,7 @@ public class testNewPHPProjectNameLocationStepOperator extends JellyTestCase {
         lsop.typeSourcesFolder(folder);
         assertEquals(folder, lsop.getSelectedSourcesFolder());
         
-        String encoding = NewPHPProjectNameLocationStepOperator.ENCODING_KOI8R;
+        String encoding = NewPHPProjectNameLocationStepOperator.ENCODING_UTF8;
         lsop.selectDefaultEncoding(encoding);
         assertEquals(encoding, lsop.getSelectedDefaultEncoding());
         

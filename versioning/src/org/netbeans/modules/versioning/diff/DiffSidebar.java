@@ -149,7 +149,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
 
     private void refreshOriginalContent() {
         File file = fileObject != null ? FileUtil.toFile(fileObject) : null;
-        ownerVersioningSystem = file != null ? VersioningManager.getInstance().getOwner(file) : null;
+        ownerVersioningSystem = file != null ? VersioningManager.getInstance().getOwner(file, fileObject != null ? !fileObject.isFolder() : null) : null;
         originalContentSerial++;
         sidebarTemporarilyDisabled = false;
         refreshDiff();

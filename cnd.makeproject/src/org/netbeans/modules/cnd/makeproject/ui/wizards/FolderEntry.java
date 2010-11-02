@@ -44,21 +44,20 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
-import java.io.File;
-import javax.swing.filechooser.FileFilter;
+import org.openide.filesystems.FileObject;
 
-public class FolderEntry implements SourceFolderInfo {
+public final class FolderEntry implements SourceFolderInfo {
 
-    private final File file;
+    private final FileObject fileObject;
     private final String folderName;
     private final boolean addSubfolders;
-    private final FileFilter fileFilter;
+    //private final FileFilter fileFilter;
 
-    public FolderEntry(File file, String folderName) {
-        this.file = file;
+    public FolderEntry(FileObject fileObject, String folderName) {
+        this.fileObject = fileObject;
         this.folderName = folderName;
         addSubfolders = true;
-        fileFilter = null;
+        //fileFilter = null;
     }
 
     @Override
@@ -80,18 +79,18 @@ public class FolderEntry implements SourceFolderInfo {
 //    }
 
     @Override
-    public File getFile() {
-        return file;
+    public FileObject getFileObject() {
+        return fileObject;
     }
 
 //    public void setFile(File file) {
 //        this.file = file;
 //    }
 
-    @Override
-    public FileFilter getFileFilter() {
-        return fileFilter;
-    }
+//    @Override
+//    public FileFilter getFileFilter() {
+//        return fileFilter;
+//    }
 
 //    public void setFileFilter(FileFilter ff) {
 //        fileFilter = ff;

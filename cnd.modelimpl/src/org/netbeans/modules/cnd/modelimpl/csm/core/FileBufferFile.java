@@ -89,11 +89,9 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
 
     private String getEncoding() {
-        File file = getFile();
-        // file must be normalized
-        FileObject fo = FileUtil.toFileObject(file);
+        FileObject fo = CndFileUtils.toFileObject(getAbsolutePath());
         Charset cs = null;
-        if (fo != null) {
+        if (fo != null && fo.isValid()) {
             cs = FileEncodingQuery.getEncoding(fo);
         }
         if (cs == null) {

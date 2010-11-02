@@ -42,12 +42,18 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
+import java.io.File;
+import org.netbeans.modules.cnd.repository.api.DatabaseTable;
+
 /**
  *
- * @author Alexander Simon
+ * @author as204739
  */
 public interface DatabaseStorage {
-    String getTableName();
-    Class<?> getKeyClass();
-    Class<?> getDataClass();
+    public interface Provider {
+        DatabaseStorage create(int unitID, File unitStorageBaseDir);
+    }
+
+    DatabaseTable getTable(String tableID);
+    void close();
 }

@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.junit.NbTestCase;
@@ -114,16 +115,29 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "</html>    ", true);
     }
 
+    public void testXhtml() throws SAXException {
+        validate("<?xml version='1.0' encoding='UTF-8' ?>"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<head><title>title</title></head>"
+                + "<body>"
+                + "</body>"
+                + "</html>    ", true, HtmlVersion.XHTML5);
+    }
+
     private void validate(String code, boolean expectedPass) throws SAXException {
+        validate(code, expectedPass, HtmlVersion.HTML5);
+    }
+
+    private void validate(String code, boolean expectedPass, HtmlVersion version) throws SAXException {
         System.out.print("Validating code " + code.length() + " chars long...");
-        ValidationTransaction vt = ValidationTransaction.getInstance();
+        ValidationTransaction vt = ValidationTransaction.create(version);
         vt.validateCode(code);
 
-        Collection<ProblemDescription> problems = vt.getFoundProblems();
+        Collection<ProblemDescription> problems = vt.getFoundProblems(ProblemDescription.WARNING);
 
-        if(expectedPass && !problems.isEmpty()) {
+        if (expectedPass && !problems.isEmpty()) {
             System.err.println("There are some unexpected problems:");
-            for(ProblemDescription pd : problems) {
+            for (ProblemDescription pd : problems) {
                 System.err.println(pd);
             }
         }

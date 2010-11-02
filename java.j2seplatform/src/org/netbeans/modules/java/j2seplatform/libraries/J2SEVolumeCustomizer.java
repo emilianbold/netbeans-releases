@@ -502,6 +502,11 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                         NotifyDescriptor.ERROR_MESSAGE));
                     return null;
                 } else {
+                    if (root.getFileObject("index-files") == null && root.getFileObject("index-all.html") == null) {    //NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot2", f.getPath()), //NOI18N
+                        NotifyDescriptor.ERROR_MESSAGE));
+                    }
                     return FileUtil.getRelativePath(fo, root)+"/"; // NOI18N
                 }
             }

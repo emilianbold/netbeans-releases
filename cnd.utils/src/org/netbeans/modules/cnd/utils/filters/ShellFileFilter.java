@@ -44,13 +44,15 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public class ShellFileFilter extends javax.swing.filechooser.FileFilter {
+public class ShellFileFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     private static ShellFileFilter instance = null;
 
@@ -76,11 +78,22 @@ public class ShellFileFilter extends javax.swing.filechooser.FileFilter {
             if (f.isDirectory()) {
                 return true;
             }
-            FileObject fo = FileUtil.toFileObject(f);
-            if (fo != null) {
+            FileObject fo = CndFileUtils.toFileObject(f);
+            return accept(fo);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean accept(FileObject fo) {
+        if (fo != null) {
+            if (fo.isFolder()) {
+                return true;
+            }
+            if (fo.isValid()) {
                 return MIMENames.SHELL_MIME_TYPE.equals(FileUtil.getMIMEType(fo, MIMENames.SHELL_MIME_TYPE));
             } else {
-                return MIMEExtensions.isRegistered(MIMENames.SHELL_MIME_TYPE, FileUtil.getExtension(f.getName()));
+                return MIMEExtensions.isRegistered(MIMENames.SHELL_MIME_TYPE, FileUtil.getExtension(fo.getExt()));
             }
         }
         return false;

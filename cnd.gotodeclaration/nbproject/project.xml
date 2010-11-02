@@ -175,10 +175,7 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.cnd.makeproject</friend>
-                <package>org.netbeans.modules.cnd.gotodeclaration.matcher</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

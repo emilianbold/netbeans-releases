@@ -48,7 +48,17 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
             <code-name-base>org.netbeans.modules.editor.errorstripe.api</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.20</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages>
                 <package>org.netbeans.spi.editor.errorstripe</package>
             </public-packages>

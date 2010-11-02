@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -99,7 +100,7 @@ public class SpringFindUsagesPlugin implements RefactoringPlugin {
             return prepareMethodRefactoring(refactoringElementsBag, treePathHandle);
         }
         
-        if (treePathHandle != null && treePathHandle.getKind() == Kind.CLASS) {
+        if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
             return prepareClassRefactoring(refactoringElementsBag, treePathHandle);
         }
         

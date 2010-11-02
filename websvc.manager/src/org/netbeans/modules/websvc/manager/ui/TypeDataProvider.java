@@ -46,7 +46,7 @@
 package org.netbeans.modules.websvc.manager.ui;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import org.netbeans.modules.websvc.manager.swing.outline.RenderDataProvider;
+import org.netbeans.swing.outline.RenderDataProvider;
 
 /**
  *

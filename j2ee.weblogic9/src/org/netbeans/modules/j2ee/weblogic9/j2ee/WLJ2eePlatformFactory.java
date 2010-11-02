@@ -81,11 +81,11 @@ import org.openide.modules.InstalledFileLocator;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.weblogic9.WLDeploymentFactory;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
@@ -128,7 +128,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         return new J2eePlatformImplImpl((WLDeploymentManager)dm);
     }
     
-    private static class J2eePlatformImplImpl extends J2eePlatformImpl {
+    private static class J2eePlatformImplImpl extends J2eePlatformImpl2 {
 
         /**
          * The platform icon's URL
@@ -254,16 +254,53 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             return null;
         }
         
-        public java.io.File[] getPlatformRoots() {
-            File server = new File(getPlatformRoot());
-            File domain = new File(dm.getInstanceProperties().getProperty(
-                    WLPluginProperties.DOMAIN_ROOT_ATTR));
-
-            assert server.isAbsolute();
-            assert domain.isAbsolute();
+        @Override
+        public File[] getPlatformRoots() {
+            File server = getServerHome();
+            File domain = getDomainHome();
+            File middleware = getMiddlewareHome();
             
+            if (middleware != null) {
+                return new File[] {server, domain, middleware};
+            }
             return new File[] {server, domain};
         }
+
+        @Override
+        public File getDomainHome() {
+            File domain = new File(dm.getInstanceProperties().getProperty(
+                    WLPluginProperties.DOMAIN_ROOT_ATTR));
+            
+            assert domain.isAbsolute();
+            return domain;
+        }
+
+        @Override
+        public File getServerHome() {
+            File server = new File(getPlatformRoot());
+            
+            assert server.isAbsolute();
+            return server;
+        }
+        
+        @Override
+        public File getMiddlewareHome() {
+            File platformRootFile = new File(getPlatformRoot());
+            File middleware = null;
+            String mwHome = dm.getProductProperties().getMiddlewareHome();
+            if (mwHome != null) {
+                middleware = new File(mwHome);
+            }
+            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
+                middleware = platformRootFile.getParentFile();
+            }
+
+            // make guess :(
+            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
+                return middleware;
+            }
+            return null;
+        }        
 
         @Override
         public LibraryImplementation[] getLibraries() {
@@ -501,24 +538,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     }
                 }
             }
-        }
-
-        private File getMiddlewareHome() {
-            File platformRootFile = new File(getPlatformRoot());
-            File middleware = null;
-            String mwHome = dm.getProductProperties().getMiddlewareHome();
-            if (mwHome != null) {
-                middleware = new File(mwHome);
-            }
-            if (middleware == null || !middleware.exists() || !middleware.isDirectory()) {
-                middleware = platformRootFile.getParentFile();
-            }
-
-            // make guess :(
-            if (middleware != null && middleware.exists() && middleware.isDirectory()) {
-                return middleware;
-            }
-            return null;
         }
 
         /**

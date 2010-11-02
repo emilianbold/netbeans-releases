@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.java.navigation;
 
+import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
@@ -65,7 +66,10 @@ import org.openide.filesystems.FileObject;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 final class ResizablePopup {   
+    
     static final String HELP_COOKIE = "help"; // NOI18N
+    
+    private static final Logger LOG = Logger.getLogger(ResizablePopup.class.getName());
     
     private static final WindowListener windowListener = new WindowAdapter() {
         
@@ -104,7 +108,9 @@ final class ResizablePopup {
                     }
                 };
         //dialog.setUndecorated(true);
-        dialog.setBounds(JavaMembersAndHierarchyOptions.getLastBounds());
+        final Rectangle bounds = JavaMembersAndHierarchyOptions.getLastBounds();
+        LOG.log(Level.FINE, "Dialog bounds {0}", bounds);  //NOI18N        
+        dialog.setBounds(bounds);
         dialog.addWindowListener(windowListener);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 

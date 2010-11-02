@@ -78,7 +78,7 @@
     <property name="glassfish_v3_sun_location"        value="${glassfish.v3.sun.location.prefix}/${glassfish.v3.sun.build.type}/${glassfish.v3.sun.version}/archive/bundles/oges-3.1-${glassfish.v3.sun.version}-ml.zip"/>
     <!--<property name="glassfish_v3_sun_location"    value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}.zip"/>-->
     <!--<property name="glassfish_v3_sun_location_ml" value="${binary_cache_host}/glassfish/sges-v3-${glassfish.v3.sun.version}-ml.zip"/>-->
-    <property name="glassfish.v3.sun.subdir"       value="glassfishv3"/>
+    <property name="glassfish.v3.sun.subdir"       value="glassfish3"/>
 
 
     <!-- GlassFish V3 properties   -->   
@@ -108,7 +108,7 @@
     <property name="glassfish_v3_location"     value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}.zip"/>
     <property name="glassfish_v3_location_ml"  value="${binary_cache_host}/glassfish/glassfish-v3-b${glassfish.v3.build.number}-ml.zip"/>
     -->
-    <property name="glassfish.v3.subdir"       value="glassfishv3"/>
+    <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
     <!-- Open ESB Properties-->    
     <property name="openesb.install.dir" value="${sjsas.install.dir}/addons"/>

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
+import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -51,7 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;

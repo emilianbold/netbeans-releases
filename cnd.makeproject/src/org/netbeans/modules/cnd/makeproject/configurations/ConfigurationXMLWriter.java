@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDocWriter;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -87,7 +88,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
      */
     private void write(String relPath) {
     	File projectDirectoryFile = FileUtil.toFile(projectDirectory);
-        File projectDescriptorFile = new File(projectDirectoryFile.getPath(), relPath); // UNIX path
+        File projectDescriptorFile = CndFileUtils.createLocalFile(projectDirectoryFile.getPath(), relPath); // UNIX path
 
         if (!projectDescriptorFile.exists()) {
             try {
@@ -120,6 +121,7 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         encoder.encode(xes);
     }

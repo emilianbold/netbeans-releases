@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.io.File;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -53,8 +52,8 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class LibraryItem {
@@ -144,7 +143,7 @@ public class LibraryItem {
 	    if (project == null) {
 		String location = CndPathUtilitities.toAbsolutePath(baseDir, getMakeArtifact().getProjectLocation());
 		try {
-		    FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
+		    FileObject fo = CndFileUtils.toFileObject(CndFileUtils.getCanonicalPath(location));
                     project = ProjectManager.getDefault().findProject(fo);
 		}
 		catch (Exception e) {

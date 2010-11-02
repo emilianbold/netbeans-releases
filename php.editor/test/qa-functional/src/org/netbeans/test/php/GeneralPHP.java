@@ -536,18 +536,21 @@ public class GeneralPHP extends JellyTestCase {
     protected void CheckCompletionItems(
             CompletionJListOperator jlist,
             String[] asIdeal) {
+        String completionList = "";
         for (String sCode : asIdeal) {
             int iIndex = jlist.findItemIndex(sCode, new CFulltextStringComparator());
             if (-1 == iIndex) {
                 try {
                     List list = jlist.getCompletionItems();
                     for (int i = 0; i < list.size(); i++) {
-                        System.out.println("******" + list.get(i));
+                        
+                        completionList += list.get(i)+"\n";
                     }
                 } catch (java.lang.Exception ex) {
                     System.out.println("#" + ex.getMessage());
                 }
-                fail("Unable to find " + sCode + " completion.");
+                System.out.println("Unable to find " + sCode + " completion. Completion list is " + completionList);
+                fail("Unable to find " + sCode + " completion. Completion list is " + completionList);
             }
         }
     }
@@ -639,11 +642,13 @@ public class GeneralPHP extends JellyTestCase {
         }
         return true;
     }
-
-    public JDialogOperator selectPHPFromEditorOptions(int mode) {
     
+    public JDialogOperator selectPHPFromEditorOptions(int mode, int platform) {
+    
+        if (platform != 4096) 
             new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Tools|Options");
-        
+        else 
+            new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner|Preferences...");
         Sleep(1000);
         JDialogOperator window = new JDialogOperator("Options");
         if (mode == 0) {
@@ -673,7 +678,7 @@ public class GeneralPHP extends JellyTestCase {
 
     public void setMethodParametersWrappingOptions(int state) {
 
-        JDialogOperator window = selectPHPFromEditorOptions(1);
+        JDialogOperator window = selectPHPFromEditorOptions(1, getPlatform());
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 2);
@@ -697,7 +702,7 @@ public class GeneralPHP extends JellyTestCase {
     }
 
     public void setPHPIndentation(int initialIndentation, int contIndentation, int arrayDeclarationIndentation) {
-        JDialogOperator window = selectPHPFromEditorOptions(1);
+        JDialogOperator window = selectPHPFromEditorOptions(1, getPlatform());
 
         //categories - check if they are all present
         JComboBoxOperator category = new JComboBoxOperator(window, 1);

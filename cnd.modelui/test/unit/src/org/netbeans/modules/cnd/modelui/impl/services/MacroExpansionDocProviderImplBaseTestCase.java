@@ -70,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.UserQuestionException;
 
 /**
  * Base class for MacroExpansionDocProviderImpl tests
@@ -143,12 +142,7 @@ public class MacroExpansionDocProviderImplBaseTestCase extends TraceModelTestBas
         try {
             DataObject dob = DataObject.find(fo);
             EditorCookie ec = dob.getCookie(EditorCookie.class);
-            try {
-                doc = ec.openDocument();
-            } catch (UserQuestionException ex) {
-                ex.confirmed();
-                doc = ec.openDocument();
-            }
+            doc = CsmUtilities.openDocument(ec);
             if (doc != null) {
                 doc.putProperty(Document.StreamDescriptionProperty, dob);
             }

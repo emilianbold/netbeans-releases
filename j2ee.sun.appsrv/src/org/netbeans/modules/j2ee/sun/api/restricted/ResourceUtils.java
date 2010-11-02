@@ -1756,19 +1756,19 @@ public class ResourceUtils implements WizardConstants{
             FileObject setUpFolder = setUpExists(targetFolder);
             if (search) {
                 // look in the 'web' project place
-                FileObject metaInf = setUpFolder.getParent().getFileObject("web/META-INF");
+                FileObject metaInf = setUpFolder.getParent().getFileObject("web/WEB-INF"); // NOI18N
                 if (null == metaInf) {
                     // look in the 'ant' project place
-                    metaInf = setUpFolder.getParent().getFileObject("src/java/META-INF");
+                    metaInf = setUpFolder.getParent().getFileObject("src/java/META-INF"); // NOI18N
                     if (null == metaInf) {
                         // look in the 'maven' project place
-                        metaInf = targetFolder.getParent().getFileObject("java/META-INF");
+                        metaInf = targetFolder.getParent().getFileObject("java/META-INF"); // NOI18N
                     }
                 }
                 if (null != metaInf) {
-                    FileObject resourcesFO = metaInf.getFileObject("glassfish-resources", "xml");
+                    FileObject resourcesFO = metaInf.getFileObject(GF_RESOURCE_FILENAME);
                     if (null == resourcesFO) {
-                        resourcesFO = metaInf.getFileObject("sun-resources","xml");
+                        resourcesFO = metaInf.getFileObject(SUN_RESOURCE_FILENAME);
                     }
                     if (null != resourcesFO) {
                         return FileUtil.toFile(resourcesFO);

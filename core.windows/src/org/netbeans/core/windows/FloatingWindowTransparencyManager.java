@@ -47,6 +47,7 @@ package org.netbeans.core.windows;
 import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.core.windows.options.WinSysPrefs;
@@ -65,6 +66,9 @@ public class FloatingWindowTransparencyManager {
     private static final RequestProcessor RP = new RequestProcessor("FloatingWindowTransparencyManager"); //NOI18N
     
     private PropertyChangeListener topComponentRegistryListener;
+
+    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final Object LOCK = new Object();
     
     private FloatingWindowTransparencyManager() {
         
@@ -78,28 +82,38 @@ public class FloatingWindowTransparencyManager {
     }
     
     public void start() {
-        if( !NativeWindowSystem.getDefault().isWindowAlphaSupported() )
-            return;
-        if( null == topComponentRegistryListener ) {
-            topComponentRegistryListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    SwingUtilities.invokeLater( new Runnable() {
-                        @Override
-                        public void run() {
-                            toggleFloatingWindowTransparency();
-                        }
-                    });
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                synchronized( LOCK ) {
+                    initialized.set(true);
+                    if( !NativeWindowSystem.getDefault().isWindowAlphaSupported() )
+                        return;
+                    if( null == topComponentRegistryListener ) {
+                        topComponentRegistryListener = new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                SwingUtilities.invokeLater( new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        toggleFloatingWindowTransparency();
+                                    }
+                                });
+                            }
+                        };
+                        TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
+                    }
                 }
-            };
-            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
-        }
+            }
+        } ).start();
     }
     
     public void stop() {
-        if( null != topComponentRegistryListener ) {
-            TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
-            topComponentRegistryListener = null;
+        synchronized( LOCK ) {
+            if( null != topComponentRegistryListener ) {
+                TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
+                topComponentRegistryListener = null;
+            }
         }
     }
     
@@ -108,6 +122,9 @@ public class FloatingWindowTransparencyManager {
     }
     
     protected void toggleFloatingWindowTransparency() {
+        if( !initialized.get() )
+            return;
+        
         if( !NativeWindowSystem.getDefault().isWindowAlphaSupported() )
             return;
         

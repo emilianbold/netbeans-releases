@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.testrunner.spi.TestHandlerFactoryProvider;
 import org.netbeans.modules.cnd.testrunner.ui.CndTestRunnerNodeFactory;
 import org.netbeans.modules.cnd.testrunner.ui.CndUnitHandlerFactory;
 import org.netbeans.modules.cnd.testrunner.ui.TestRunnerLineConvertor;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
@@ -106,6 +107,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TestSession session;
     private Manager manager;
+    private InputOutput lastIO = null;
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes) {
@@ -114,6 +116,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     @Override
     public void execute(final InputOutput io) {
+        lastIO = io;
         if (SwingUtilities.isEventDispatchThread()) {
             RequestProcessor.getDefault().post(new Runnable() {
 
@@ -201,7 +204,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(true).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 errConvertorFactory(lcf).
                 outConvertorFactory(lcf);
@@ -343,8 +346,10 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     @Override
     public void rerun() {
-        refresh();
-        runExecution();
+        if(lastIO != null) {
+            refresh();
+            execute(lastIO);
+        }
     }
 
     @Override

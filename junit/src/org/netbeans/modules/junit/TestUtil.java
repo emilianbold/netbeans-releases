@@ -55,6 +55,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
@@ -291,7 +292,7 @@ public class TestUtil {
         CompilationUnitTree compUnitTree = compInfo.getCompilationUnit();
         String shortClassName = getSimpleName(className);
         for (Tree typeDecl : compUnitTree.getTypeDecls()) {
-            if (Tree.Kind.CLASS == typeDecl.getKind()) {
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                 ClassTree clazz = (ClassTree) typeDecl;
                 if (clazz.getSimpleName().toString().equals(shortClassName)) {
                     return clazz;

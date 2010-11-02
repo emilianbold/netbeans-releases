@@ -60,14 +60,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.openide.util.CharSequences;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 
 /**
  *
@@ -85,7 +84,9 @@ public class ReferenceSupportImpl {
         CsmUID<CsmObject> ownerUID = getUID((CsmObject)owner);
         CsmUID<CsmFile> fileUID = getUID(owner.getContainingFile());
         CsmReferenceKind kind = getObjectKind(target, owner);
-        return new ObjectReferenceImpl(targetUID, ownerUID, fileUID, kind, start, end);
+        CsmObject top = CsmBaseUtilities.findClosestTopLevelObject((CsmObject) owner);
+        CsmUID<CsmObject> topUID = getUID(top);
+        return new ObjectReferenceImpl(targetUID, ownerUID, topUID, fileUID, kind, start, end);
     }
 
     private CsmReferenceKind getObjectKind(CsmObject target, CsmObject owner) {
@@ -102,7 +103,7 @@ public class ReferenceSupportImpl {
                 kind = CsmReferenceKind.DIRECT_USAGE;
                 if (owner.equals(targetDef)) {
                     kind = CsmReferenceKind.DEFINITION;
-                } else if (sameDeclaration(owner, targetDecl)) {
+                } else if (CsmReferenceSupport.sameDeclaration(owner, targetDecl)) {
                     kind = CsmReferenceKind.DECLARATION;
                 }
             } else {
@@ -134,26 +135,5 @@ public class ReferenceSupportImpl {
     
     public <T extends CsmObject> CsmUID<T> getUID(T element) {
         return UIDs.get(element);
-    }
-
-    private boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
-        if (checkDecl.equals(targetDecl)) {
-            return true;
-        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
-            CharSequence fqnCheck = ((CsmQualifiedNamedElement)checkDecl).getQualifiedName();
-            CharSequence fqnTarget = ((CsmQualifiedNamedElement)targetDecl).getQualifiedName();
-            if (fqnCheck.equals(fqnTarget)) {
-                return true;
-            }
-            String strFqn = fqnCheck.toString().trim();
-            // we consider const and not const methods as the same
-            if (strFqn.endsWith("const")) { // NOI18N
-                int cutConstInd = strFqn.lastIndexOf("const"); // NOI18N
-                assert cutConstInd >= 0;
-                fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
-            }
-            return fqnCheck.equals(fqnTarget);
-        }
-        return false;
     }
 }

@@ -51,7 +51,9 @@ import java.awt.datatransfer.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.security.*;
+import java.util.logging.Level;
 import javax.swing.Action;
 
 import org.openide.ErrorManager;
@@ -178,12 +180,31 @@ public class RADComponentNode extends FormNode
     @Override
     public Node.PropertySet[] getPropertySets() {
         final Node.PropertySet[][] props = new Node.PropertySet[1][];
-        FormLAF.executeWithLAFLocks(new Runnable() {
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
-                props[0] = component.getProperties();
+                FormLAF.executeWithLAFLocks(new Runnable() {
+                    @Override
+                    public void run() {
+                       props[0] = component.getProperties();
+                    }
+                });
             }
-        });
+        };
+        if (EventQueue.isDispatchThread()) {
+            runnable.run();
+        } else {
+            try {
+                // We have made some attempts to keep initialization
+                // of properties outside AWT thread, but it always
+                // deadlocked with AWT thread for various reasons.
+                EventQueue.invokeAndWait(runnable);
+            } catch (InterruptedException iex) {
+                FormUtils.LOGGER.log(Level.INFO, iex.getMessage(), iex);
+            } catch (InvocationTargetException itex) {
+                FormUtils.LOGGER.log(Level.INFO, itex.getMessage(), itex);
+            }
+        }
         return props[0];
     }
 

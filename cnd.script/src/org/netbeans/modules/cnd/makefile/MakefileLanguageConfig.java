@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.makefile;
 
 import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.cnd.makefile.lexer.MakefileTokenId;
+import org.netbeans.modules.cnd.api.script.MakefileTokenId;
 import org.netbeans.modules.cnd.makefile.parser.MakefileParser;
 import org.netbeans.modules.cnd.makefile.parser.MakefileStructureScanner;
 import org.netbeans.modules.csl.api.StructureScanner;

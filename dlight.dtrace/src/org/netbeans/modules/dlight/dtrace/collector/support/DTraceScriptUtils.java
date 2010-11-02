@@ -88,6 +88,7 @@ public static File mergeScripts(Map<String, URL> scripts, boolean fixStarttime) 
         BufferedWriter w = new BufferedWriter(new FileWriter(result));
         try {
             w.write("#!/usr/sbin/dtrace -wZCqs\n"); // NOI18N
+            w.write("#pragma D option defaultargs\n"); // NOI18N
             w.write("BEGIN{system(\"prun %d\", $1);}\n"); // NOI18N
             for (Map.Entry<String, URL> entry : scripts.entrySet()) {
                 String prefix = entry.getKey();

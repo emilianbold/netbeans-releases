@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.nodes;
 
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.codehaus.plexus.util.StringUtils;
 import java.awt.Image;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
@@ -54,10 +53,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.prefs.PreferenceChangeListener;
@@ -68,10 +67,7 @@ import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.UIManager;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DefaultArtifact;
-import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
-import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
@@ -110,16 +106,6 @@ public class DependenciesNode extends AbstractNode {
     private NbMavenProjectImpl project;
     private int type;
 
-    static Set<String> COMPILES = new HashSet<String>();
-    static Set<String> RUNTIMES = new HashSet<String>();
-    static Set<String> TESTS = new HashSet<String>();
-    static {
-        COMPILES.add(Artifact.SCOPE_COMPILE);
-        COMPILES.add(Artifact.SCOPE_PROVIDED);
-        RUNTIMES.add(Artifact.SCOPE_RUNTIME);
-        TESTS.add(Artifact.SCOPE_TEST);
-    }
-    
     DependenciesNode(DependenciesChildren childs, NbMavenProjectImpl mavproject, int type) {
         super(childs, Lookups.fixed(mavproject));
         setName("Dependencies" + type); //NOI18N
@@ -195,7 +181,7 @@ public class DependenciesNode extends AbstractNode {
                 n.setName("No such artifact: " + art); // XXX I18N
                 return new Node[] {n};
             }
-            return new Node[] {new DependencyNode(project, art, wr.getDependency(), true)};
+            return new Node[] {new DependencyNode(project, art, true)};
         }
 
         Node getParentNode() {
@@ -231,8 +217,9 @@ public class DependenciesNode extends AbstractNode {
         int regenerateKeys() {
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
             MavenProject mp = project.getOriginalMavenProject();
+            Set<Artifact> arts = mp.getArtifacts();
             if (type == TYPE_COMPILE) {
-                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), COMPILES);
+                Tuple t = create(arts, Artifact.SCOPE_COMPILE, Artifact.SCOPE_PROVIDED, Artifact.SCOPE_SYSTEM);
                 lst.addAll(t.wrappers);
                 nonCPcount = t.nonCpCount;
                 if (t.nonCpCount > 0) {
@@ -240,7 +227,7 @@ public class DependenciesNode extends AbstractNode {
                 }
             }
             if (type == TYPE_TEST) {
-                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), TESTS);
+                Tuple t = create(arts, Artifact.SCOPE_TEST);
                 lst.addAll(t.wrappers);
                 nonCPcount = t.nonCpCount;
                 if (t.nonCpCount <= 0) {
@@ -250,7 +237,7 @@ public class DependenciesNode extends AbstractNode {
                 }
             }
             if (type == TYPE_RUNTIME) {
-                Tuple t = create(mp.getDependencies(), mp.getArtifacts(), RUNTIMES);
+                Tuple t = create(arts, Artifact.SCOPE_RUNTIME);
                 lst.addAll(t.wrappers);
                 nonCPcount = t.nonCpCount;
                 if (t.nonCpCount <= 0) {
@@ -286,43 +273,21 @@ public class DependenciesNode extends AbstractNode {
             }
         }
 
-        private Tuple create(Collection<Dependency> deps, Collection<Artifact> arts, Set<String> scopes) {
+        private Tuple create(Collection<Artifact> arts, String... scopes) {
             boolean nonCP = showNonClasspath() || showNonCP;
             int nonCPCount = 0;
             TreeSet<DependencyWrapper> lst = new TreeSet<DependencyWrapper>(new DependenciesComparator());
-            for (Dependency d : deps) {
-                if (!scopes.contains(d.getScope())) {
+            for (Artifact a : arts) {
+                if (!Arrays.asList(scopes).contains(a.getScope())) {
                     continue;
                 }
-                boolean added = false;
-                for (Artifact a : arts) {
-                    fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
-                    if (a.getGroupId().equals(d.getGroupId()) &&
-                          a.getArtifactId().equals(d.getArtifactId()) &&
-                          StringUtils.equals(a.getClassifier(), d.getClassifier())) {
-                        if (nonCP || a.getArtifactHandler().isAddedToClasspath()) {
-                            lst.add(new DependencyWrapper(a, d));
-                        } else {
-                            nonCPCount = nonCPCount + 1;
-                        }
-                        added = true;
-                        break;
-                    }
-                }
-                if (!added) { // #189691: fake it
-                    Artifact a = new DefaultArtifact(d.getGroupId(), d.getArtifactId(), d.getVersion(), d.getScope(), d.getType(), d.getClassifier(), new DefaultArtifactHandler() {
-                        public @Override boolean isAddedToClasspath() {
-                            return true;
-                        }
-                    });
-                    fixFile(a);
-                    a.setDependencyTrail(Collections.<String>emptyList());
-                    lst.add(new DependencyWrapper(a, d));
+                fixFile(a); // will be null if *any* dependency artifacts are missing, for some reason
+                if (nonCP || a.getArtifactHandler().isAddedToClasspath()) {
+                    lst.add(new DependencyWrapper(a));
+                } else {
+                    nonCPCount = nonCPCount + 1;
                 }
             }
-//            if (nonCPCount > 0) {
-//                lst.add(NULL);
-//            }
             return new Tuple(lst, nonCPCount);
         }
 
@@ -333,26 +298,20 @@ public class DependenciesNode extends AbstractNode {
         }
     }
     
-    private static final DependencyWrapper NULL = new DependencyWrapper(null, null);
+    private static final DependencyWrapper NULL = new DependencyWrapper(null);
     
     private static class DependencyWrapper {
 
         private Artifact artifact;
-        private Dependency dependency;
 
-        public DependencyWrapper(Artifact artifact, Dependency dependency) {
+        public DependencyWrapper(Artifact artifact) {
             this.artifact = artifact;
-            this.dependency = dependency;
         }
 
         public Artifact getArtifact() {
             return artifact;
         }
 
-        public Dependency getDependency() {
-            return dependency;
-        }
-        
         @Override
         public boolean equals(Object obj) {
             if (this == NULL && obj == NULL) {
@@ -390,7 +349,7 @@ public class DependenciesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), project);
+            AddDependencyPanel pnl = new AddDependencyPanel(project.getOriginalMavenProject(), true, project);
             String typeString = type == TYPE_RUNTIME ? "runtime" : (type == TYPE_TEST ? "test" : "compile"); //NOI18N
             pnl.setSelectedScope(typeString);
         

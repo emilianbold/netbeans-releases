@@ -58,8 +58,11 @@ package org.netbeans.modules.cnd.api.model.xref;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
+import org.openide.util.CharSequences;
 
 /**
  * some help methods to support CsmReference objects
@@ -101,4 +104,31 @@ public final class CsmReferenceSupport {
         }
         return out;
     }
+    
+    public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
+        if (checkDecl.equals(targetDecl)) {
+            return true;
+        } else if (CsmKindUtilities.isConstructor(checkDecl)) {
+            return false;
+        } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
+            CharSequence fqnCheck = ((CsmQualifiedNamedElement) checkDecl).getQualifiedName();
+            CharSequence fqnTarget = ((CsmQualifiedNamedElement) targetDecl).getQualifiedName();
+            if (fqnCheck.equals(fqnTarget)) {
+                return true;
+            }
+            if (IGNORE_CONST) {
+                String strFqn = fqnCheck.toString().trim();
+                // we consider const and not const methods as the same
+                if (strFqn.endsWith("const")) { // NOI18N
+                    int cutConstInd = strFqn.lastIndexOf("const"); // NOI18N
+                    assert cutConstInd >= 0;
+                    fqnCheck = CharSequences.create(strFqn.substring(cutConstInd));
+                }
+                return fqnCheck.equals(fqnTarget);
+            }
+        }
+        return false;
+    }
+    
+    private final static boolean IGNORE_CONST = true;
 }

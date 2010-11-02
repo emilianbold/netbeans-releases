@@ -938,6 +938,26 @@ made subject to such option by the copyright holder.
             <class package="org.openide.filesystems" name="FileUtil"/>
             <issue number="40410"/>
         </change>
+        <change id="FileUtil.normalizePath">
+            <api name="filesystems"/>
+            <summary>
+                <code>FileUtil.normalizePath</code> added
+            </summary>
+            <version major="7" minor="42"/>
+            <date day="30" month="9" year="2010"/>
+            <author login="vv159170"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+            <description>
+                <p>
+                    The method 
+                    <code>FileUtil.normalizePath(String)</code> was added as a refinement of 
+                    <code>FileUtil.normalizeFile</code> that does not require String to File to String conversion
+                     on client side when intention is to convert unnormalized path to normalized path presentation. 
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileUtil"/>
+            <issue number="190480"/>
+        </change>        
         <change id="FileObject.setImportant">
             <api name="filesystems"/>
             <summary>

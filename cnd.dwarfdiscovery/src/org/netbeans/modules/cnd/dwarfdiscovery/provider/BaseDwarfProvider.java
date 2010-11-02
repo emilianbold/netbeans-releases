@@ -72,11 +72,11 @@ import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
-import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.VIS;
 import org.netbeans.modules.cnd.dwarfdump.exception.WrongFileFormatException;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -168,7 +168,23 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     continue;
                 }
             }
-            if (new File(name).exists()) {
+            boolean exist = false;
+            if (!new File(name).exists()) {
+                  String fileFinder = Dwarf.fileFinder(file, name);
+                  if (fileFinder != null) {
+                      if (new File(fileFinder).exists()) {
+                          if (f instanceof DwarfSource) {
+                              ((DwarfSource)f).resetItemPath(fileFinder);
+                              name = fileFinder;
+                              exist = true;
+                          }
+                      }
+                  }
+            } else {
+                exist = true;
+            }
+
+            if (exist) {
                 SourceFileProperties existed = map.get(name);
                 if (existed == null) {
                     map.put(name, f);
@@ -198,6 +214,8 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         Dwarf dump = null;
         String commonRoot = null;
         Position position = null;
+        List<String> errors = new ArrayList<String>();
+        int foundDebug = 0;
         Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
         try{
             dump = new Dwarf(objFileName);
@@ -212,11 +230,27 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (lang == null) {
                         continue;
                     }
+                    foundDebug++;
+                    String path = cu.getSourceFileAbsolutePath();
+                    path = CndFileUtils.normalizeAbsolutePath(path);
+                    if (!CndFileUtils.isExistingFile(path)) {
+                        String fileFinder = Dwarf.fileFinder(objFileName, path);
+                        if (fileFinder != null) {
+                            fileFinder = CndFileUtils.normalizeAbsolutePath(fileFinder);
+                            if (!CndFileUtils.isExistingFile(fileFinder)) {
+                                continue;
+                            } else {
+                                path = fileFinder;
+                            }
+                        } else {
+                            continue;
+                        }
+                    }
                     ItemProperties.LanguageKind language = null;
                     if (LANG.DW_LANG_C.toString().equals(lang) ||
                             LANG.DW_LANG_C89.toString().equals(lang) ||
                             LANG.DW_LANG_C99.toString().equals(lang)) {
-                        language = ItemProperties.LanguageKind.CPP;
+                        language = ItemProperties.LanguageKind.C;
                         res++;
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
                         language = ItemProperties.LanguageKind.CPP;
@@ -229,8 +263,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         continue;
                     }
-                    String path = cu.getSourceFileAbsolutePath();
-                    path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
                     path = path.replace('\\', '/');
                     if (commonRoot == null) {
                         int i = path.lastIndexOf('/');
@@ -295,13 +327,27 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 }
             }
         } catch (FileNotFoundException ex) {
-            // Skip Exception
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "FileNotFoundException", objFileName));  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("File not found " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (WrongFileFormatException ex) {
-            // Skip Exception
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "WrongFileFormatException", objFileName));  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.out.println("Unsuported format of file " + objFileName + ": " + ex.getMessage());  // NOI18N
+            }
         } catch (IOException ex) {
-            // Skip Exception
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "IOException", objFileName, ex.toString()));  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
+                ex.printStackTrace();
+            }
         } catch (Exception ex) {
-            // Skip Exception
+            errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "Exception", objFileName, ex.toString()));  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {
+                System.err.println("Exception in file " + objFileName + ": " + ex.getMessage());  // NOI18N
+                ex.printStackTrace();
+            }
         } finally {
             if (dump != null) {
                 dump.dispose();
@@ -315,13 +361,24 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 top = entry.getKey();
             }
         }
+        ArrayList<String> dllResult = null;
         if (dlls != null) {
-            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, new ArrayList<String>(dlls), commonRoot, position);
+            dllResult = new ArrayList<String>(dlls);
+        }
+        if (res > 0) {
+            return new ApplicableImpl(true, null, top, res, sunStudio > res/2, dllResult, commonRoot, position);
         } else {
-            return new ApplicableImpl(res > 0, top, res, sunStudio > res/2, null, commonRoot, position);
+            if (errors.isEmpty()) {
+                if (foundDebug > 0) {
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "BadDebugInformation", objFileName));  // NOI18N
+                } else {
+                    errors.add(NbBundle.getMessage(BaseDwarfProvider.class, "NotFoundDebugInformation", objFileName));  // NOI18N
+                }
+            }
+            return new ApplicableImpl(false, errors, top, res, sunStudio > res/2, dllResult, commonRoot, position);
         }
     }
-    
+
     protected List<SourceFileProperties> getSourceFileProperties(String objFileName, Map<String, SourceFileProperties> map, ProjectProxy project, Set<String> dlls) {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
@@ -351,16 +408,20 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         continue;
                     }
                     DwarfSource source = null;
-                    if (LANG.DW_LANG_C.toString().equals(lang)
-                            || LANG.DW_LANG_C89.toString().equals(lang)
-                            || LANG.DW_LANG_C99.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, getCommpilerSettings(), grepBase);
+                    if (LANG.DW_LANG_C.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_C89.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C89, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_C99.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C99, getCommpilerSettings(), grepBase);
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, getCommpilerSettings(), grepBase);
-                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang) ||
-                           LANG.DW_LANG_Fortran90.toString().equals(lang) ||
-                           LANG.DW_LANG_Fortran95.toString().equals(lang)) {
-                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, getCommpilerSettings(), grepBase);
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.CPP, ItemProperties.LanguageStandard.CPP, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran77.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F77, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran90.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F90, getCommpilerSettings(), grepBase);
+                    } else if (LANG.DW_LANG_Fortran95.toString().equals(lang)) {
+                        source = new DwarfSource(cu, ItemProperties.LanguageKind.Fortran, ItemProperties.LanguageStandard.F95, getCommpilerSettings(), grepBase);
                     } else {
                         if (FULL_TRACE) {
                             System.out.println("Unknown language: " + lang);  // NOI18N
@@ -493,7 +554,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         }
 
         protected String normalizePath(String path){
-            path = CndFileUtils.normalizeFile(new File(path)).getAbsolutePath();
+            path = CndFileUtils.normalizeAbsolutePath(path);
             if (Utilities.isWindows()) {
                 path = path.replace('\\', '/');
             }
@@ -567,6 +628,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         @Override
         public int getLine() {
             return line;
+        }
+
+        @Override
+        public String toString() {
+            return path+":"+line; //NOI18N
         }
     }
 }

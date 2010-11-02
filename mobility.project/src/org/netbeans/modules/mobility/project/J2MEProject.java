@@ -441,7 +441,6 @@ public final class J2MEProject implements Project, AntProjectListener {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();
         
         Object stdLookups[]=new Object[] {
-            this,
             new Info(),
             rp,
             aux,

@@ -199,6 +199,15 @@ final class SaveAsAction extends AbstractAction implements ContextAwareAction {
                         NotifyDescriptor.INFORMATION_MESSAGE,
                         new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION );
                 DialogDisplayer.getDefault().notify( nd );
+            } else if (newFile.exists()) {
+                NotifyDescriptor nd = new NotifyDescriptor(
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_OverwriteQuestion", newFile.getName()), //NOI18N
+                        NbBundle.getMessage( DataObject.class, "MSG_SaveAs_OverwriteQuestion_Title"), //NOI18N
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[] { NotifyDescriptor.NO_OPTION, NotifyDescriptor.YES_OPTION }, NotifyDescriptor.NO_OPTION );
+                if (NotifyDescriptor.YES_OPTION == DialogDisplayer.getDefault().notify( nd ))
+                    break;
             } else {
                 break;
             }

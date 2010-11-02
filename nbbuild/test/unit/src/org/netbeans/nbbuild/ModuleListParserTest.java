@@ -57,13 +57,12 @@ import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
-import org.netbeans.junit.NbTestCase;
 
 /**
  * Test {@link ModuleListParser}.
  * @author Jesse Glick
  */
-public class ModuleListParserTest extends NbTestCase {
+public class ModuleListParserTest extends TestBase {
     public ModuleListParserTest(String name) {
         super(name);
     }
@@ -79,7 +78,7 @@ public class ModuleListParserTest extends NbTestCase {
     }
 
     protected @Override void setUp() throws Exception {
-        clearWorkDir();
+        super.setUp();
         String prop = System.getProperty("nb_all");
         assertNotNull("${nb_all} defined", prop);
         nball = new File(prop);
@@ -224,7 +223,7 @@ public class ModuleListParserTest extends NbTestCase {
 
         File osgiRepo = new File(getWorkDir(), whereTo);
         osgiRepo.mkdirs();
-        Manifest man = ModuleDependenciesTest.createManifest();
+        Manifest man = createManifest();
         man.getMainAttributes().putValue("Bundle-SymbolicName", cnb);
         String dashCnb = cnb.replace('.', '-');
         generateJar(new File(osgiRepo, dashCnb + ".jar"), new String[0], man);

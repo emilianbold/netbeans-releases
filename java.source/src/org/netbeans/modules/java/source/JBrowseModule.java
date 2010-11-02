@@ -56,10 +56,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.java.source.usages.LuceneIndexMBean;
-import org.netbeans.modules.java.source.usages.LuceneIndexMBeanImpl;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.java.source.util.LowMemoryNotifierMBeanImpl;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 
@@ -94,8 +93,9 @@ public class JBrowseModule extends ModuleInstall {
     public @Override void close () {
         super.close();
         try {
-            ClassIndexManager.getDefault().takeWriteLock(new ClassIndexManager.ExceptionAction<Void>() {
-                 public @Override Void run() throws IOException {
+            IndexManager.writeAccess(new IndexManager.Action<Void>() {
+                @Override
+                 public Void run() throws IOException {
                      ClassIndexManager.getDefault().close();
                      return null;
                  }
@@ -115,7 +115,6 @@ public class JBrowseModule extends ModuleInstall {
         try {
             MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
             mgs.registerMBean (new LowMemoryNotifierMBeanImpl(), new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
-            mgs.registerMBean( LuceneIndexMBeanImpl.getDefault(), new ObjectName (LuceneIndexMBean.OBJECT_NAME));
         } catch (NotCompliantMBeanException e) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, e.getMessage(), e);
@@ -138,7 +137,6 @@ public class JBrowseModule extends ModuleInstall {
         try {
             MBeanServer mgs = ManagementFactory.getPlatformMBeanServer();
             mgs.unregisterMBean (new ObjectName (LowMemoryNotifierMBean.OBJECT_NAME));
-            mgs.unregisterMBean (new ObjectName (LuceneIndexMBean.OBJECT_NAME));
         } catch (MalformedObjectNameException e) {
             if (log.isLoggable(Level.SEVERE))
                 log.log(Level.SEVERE, e.getMessage(), e);
