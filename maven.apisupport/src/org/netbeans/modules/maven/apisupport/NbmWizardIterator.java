@@ -85,6 +85,8 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
+
+    public static final String NBM_ARTIFACTID = "nbm_artifactId";
     
     static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
     static {
@@ -155,7 +157,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
         ArchetypeWizards.logUsage(archetype.getGroupId(), archetype.getArtifactId(), archetype.getVersion());
 
         try {
-            String nbm_artifactId = (String) wiz.getProperty("nbm_artifactId");
+            String nbm_artifactId = (String) wiz.getProperty(NBM_ARTIFACTID);
             int max = nbm_artifactId != null ? 7 : 4;
             handle.start(max);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
