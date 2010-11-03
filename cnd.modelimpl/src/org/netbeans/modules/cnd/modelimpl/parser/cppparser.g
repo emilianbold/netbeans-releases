@@ -2728,8 +2728,9 @@ template_parameter_list
  */
 template_parameter
 	:
-	(   ((LITERAL_class|LITERAL_typename) (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
+                (ELLIPSIS)? // support for variadic template params
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
