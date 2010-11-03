@@ -73,21 +73,11 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
         this.wp = panel;
         this.wizard = wizard;
         initComponents();
-        DatabaseExplorerInternalUIs.connect(cbDrivers, JDBCDriverManager.getDefault());
+        DatabaseExplorerInternalUIs.connect(cbDrivers, JDBCDriverManager.getDefault(), false);
         if (drv == null) {
             cbDrivers.setSelectedIndex(0);
         } else {
-            for (int i = 0; i < cbDrivers.getItemCount(); i++) {
-                Object item = cbDrivers.getItemAt(i);
-                if (item instanceof JdbcUrl) {
-                    JdbcUrl url = ((JdbcUrl)item);
-                    assert url.getDriver() != null;
-                    if (url.getClassName().equals(drv.getClassName()) && url.getDriver().getName().equals(drv.getName())) {
-                        cbDrivers.setSelectedIndex(i);
-                        break;
-                    }
-                }
-            }
+            cbDrivers.setSelectedItem(drv);
         }
         customizeDriverPanel = new AddDriverDialog(drv, this, wizard);
         pInter.add(customizeDriverPanel, BorderLayout.CENTER);
@@ -114,7 +104,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
 
     private void updateState() {
         Object drvO = cbDrivers.getSelectedItem();
-        if (drvO instanceof JdbcUrl) {
+        if (drvO instanceof JDBCDriver) {
             // update current with modified files if any
             if (customizeDriverPanel.getDriver() != null) {
                 JDBCDriver current = customizeDriverPanel.getDriver();
@@ -135,7 +125,7 @@ public class ChoosingDriverUI extends javax.swing.JPanel {
                     }
                 }
             }
-            drv = ((JdbcUrl) drvO).getDriver();
+            drv = (JDBCDriver) drvO;
             wizard.setDriver(drv);
             customizeDriverPanel.setDriver(drv);
         } else {
