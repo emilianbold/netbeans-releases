@@ -535,12 +535,8 @@ public class ConfigurationMakefileWriter {
             }
             if (conf.isCompileConfiguration()) {
                 makefileWriter.writeBuildTestTarget(projectDescriptor, conf, bw);
-                if (conf.isLinkerConfiguration()) {
-                    makefileWriter.writeLinkTestTarget(projectDescriptor, conf, bw);
-                }
-                if (conf.isCompileConfiguration()) {
-                    makefileWriter.writeCompileTestTargets(projectDescriptor, conf, bw);
-                }
+                makefileWriter.writeLinkTestTarget(projectDescriptor, conf, bw);
+                makefileWriter.writeCompileTestTargets(projectDescriptor, conf, bw);
             }
 //        else if (conf.isMakefileConfiguration()) {
 //            makefileWriter.writeMakefileTarget(projectDescriptor, conf, bw);
