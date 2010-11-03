@@ -51,8 +51,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -102,21 +104,17 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private static final String ACTION_TAB_IN_CELL = "tabInCell";  //NOI18N
     private static final String ACTION_SHIFT_TAB_IN_CELL = "shiftTabInCell";  //NOI18N
 
-    public static boolean showMe(ServerRecord host, List<ServerRecord> hostList) {
-        return showMe(host, null, hostList);
+    public static boolean showMe(ServerRecord host) {
+        return showMe(host, Collections.<String>emptyList());
     }
 
-    public static boolean showMe(ExecutionEnvironment execEnv, String pathToValidate) {
-        return showMe(ServerList.get(execEnv), pathToValidate);
+    public static boolean showMe(ExecutionEnvironment execEnv, List<String> pathsToValidate) {
+        return showMe(ServerList.get(execEnv), (pathsToValidate == null) ? Collections.<String>emptyList() : pathsToValidate);
     }
     
-    private static boolean showMe(ServerRecord host, String pathToValidate) {
-        return showMe(host, pathToValidate, ServerList.getRecords());
-    }
-
-    private static boolean showMe(ServerRecord host, String pathToValidate, Collection<? extends ServerRecord> hostList) {
+    private static boolean showMe(ServerRecord host, List<String> pathsToValidate) {
         JButton btnOK = new JButton(NbBundle.getMessage(EditPathMapDialog.class, "BTN_OK"));
-        EditPathMapDialog dlg = new EditPathMapDialog(host, pathToValidate, hostList, btnOK);
+        EditPathMapDialog dlg = new EditPathMapDialog(host, pathsToValidate, ServerList.getRecords(), btnOK);
 
         DialogDescriptor dd = new DialogDescriptor(dlg,
                 NbBundle.getMessage(EditPathMapDialog.class, "EditPathMapDialogTitle"),
@@ -136,14 +134,14 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private Dialog presenter;
     private final ServerRecord currentHost;
     private final DefaultComboBoxModel serverListModel;
-    private final String pathToValidate;
+    private final List<String> pathsToValidate;
     private final Map<ServerRecord, PathMapTableModel> cache = new HashMap<ServerRecord, PathMapTableModel>();
     private ProgressHandle phandle;
 
     /** Creates new form EditPathMapDialog */
-    protected EditPathMapDialog(ServerRecord defaultHost, String pathToValidate, Collection<? extends ServerRecord> hostList, JButton btnOK) {
+    protected EditPathMapDialog(ServerRecord defaultHost, List<String> pathsToValidate, Collection<? extends ServerRecord> hostList, JButton btnOK) {
         this.btnOK = btnOK;
-        this.pathToValidate = pathToValidate;
+        this.pathsToValidate = pathsToValidate;
         currentHost = defaultHost;
         serverListModel = new DefaultComboBoxModel();
 
@@ -161,8 +159,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
         initTable();
 
         String explanationText;
-        if (pathToValidate != null) {
-            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_ExplanationWithPath", pathToValidate);
+        if (!this.pathsToValidate.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
+            for (String path : this.pathsToValidate) {
+                String message = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_ExplanationOnePath", path);
+                sb.append(message);
+            }
+            explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_ExplanationWithAllPaths", sb);
         } else {
             explanationText = NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Explanation");
         }
@@ -559,7 +562,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private String validateMaps() {
         DefaultTableModel model = cache.get(currentHost);
         StringBuilder sb = new StringBuilder();
-        boolean pathIsValidated = false;
+        List<String> pathsToValidateCopy = new ArrayList<String>(pathsToValidate);
         for (int i = 0; i < model.getRowCount(); i++) {
             String local = (String) model.getValueAt(i, 0);
             String remote = (String) model.getValueAt(i, 1);
@@ -569,10 +572,13 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                     if (!HostInfoProvider.fileExists(ExecutionEnvironmentFactory.getLocal(), local)) {
                         sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_BadLocalPath", local));
                     }
-                    if (pathToValidate != null && !pathIsValidated) {
-                        if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
-                            pathIsValidated = true;
-                            //TODO: real path mapping validation (create file, check from both sides, etc)
+                    if (!pathsToValidateCopy.isEmpty()) {
+                        for (String pathToValidate : this.pathsToValidate) {
+                            if (remote != null && RemotePathMap.isSubPath(local, pathToValidate)) {
+                                pathsToValidateCopy.remove(pathToValidate);
+                                break;
+                                //TODO: real path mapping validation (create file, check from both sides, etc)
+                            }
                         }
                     }
                 }
@@ -586,8 +592,12 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
                 }
             }
         }
-        if (pathToValidate != null && !pathIsValidated) {
-            sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_PathNotResolved", pathToValidate));
+        if (!pathsToValidateCopy.isEmpty()) {
+            StringBuilder sb2 = new StringBuilder();
+            for (String path : pathsToValidateCopy) {
+                sb2.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_OnePathNotResolved", path));
+            }
+            sb.append(NbBundle.getMessage(EditPathMapDialog.class, "EPMD_AllPathsNotResolved", sb2));
         }
         return sb.toString();
     }

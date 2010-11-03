@@ -47,8 +47,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -215,16 +217,36 @@ public abstract class RemotePathMap extends PathMap {
         return null;
     }
 
-    /**
-     * See if a path is local or remote. The main use of this call is to verify a project's
-     * Development Host setting. If the project's sources are local then you should not be
-     * able to set a remote development host.
-     * 
-     * @param lpath The local path to check
-     * @return true if path is remote, false otherwise
-     */
     @Override
-    public boolean checkRemotePath(String lpath, boolean fixMissingPaths) {
+    public boolean checkRemotePaths(File[] localPaths, boolean fixMissingPaths) {
+        List<String> invalidLocalPaths = new ArrayList<String>();
+        for (File file : localPaths) {
+            String lPath = file.getAbsolutePath();
+            if (!checkRemotePath(lPath)) {
+                invalidLocalPaths.add(lPath);
+            }
+        }
+        if (invalidLocalPaths.isEmpty()) {
+            return true;
+        } else if (fixMissingPaths) {
+            if (EditPathMapDialog.showMe(execEnv, invalidLocalPaths)) {
+                // EditPathMapDialog doesn't perform check
+                for (String lPath : invalidLocalPaths) {
+                    if (!checkRemotePath(lPath)) {
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    private boolean checkRemotePath(String lpath) {
         CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
             return false;
@@ -254,13 +276,7 @@ public abstract class RemotePathMap extends PathMap {
         } catch (InterruptedException ex) {
             return false;
         }
-
-        if (fixMissingPaths) {
-            return EditPathMapDialog.showMe(execEnv, lpath) && checkRemotePath(lpath, false);
-        } else {
-            return false;
-        }
-
+        return false;
     }
 
     public void addMapping(String localParent, String remoteParent) {
