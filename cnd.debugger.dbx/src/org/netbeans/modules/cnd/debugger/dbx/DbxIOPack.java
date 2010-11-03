@@ -44,31 +44,46 @@
 
 package org.netbeans.modules.cnd.debugger.dbx;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.PioPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponentFactory;
+import org.openide.util.Utilities;
+import org.openide.windows.InputOutput;
 
-class DbxIOPack extends IOPack {
-    public DbxIOPack() {
-    }
+class DbxIOPack {
+    public static IOPack create(boolean remote, InputOutput io) {
+        TermComponent console;
+        if (remote || Utilities.isWindows()) {
+            console = IOPack.makeConsole(0);
+        } else {
+            console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
+        }
 
-    @Override
-    public void setup(boolean r) {
-	super.setup(r);
+        IOPack res;
 
-	if (isRemote()) {
-	    pio     = makePio(0);
-	    console = makeConsole(0);
-	} else {
-	    pio     = makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
-	    console = makeConsole(TermComponentFactory.PTY);
-	}
+        boolean createPio = DebuggerManager.isStandalone();
+        if (createPio) {
+            TermComponent pio;
+            if (remote || Utilities.isWindows()) {
+                pio = PioPack.makePio(0);
+            } else {
+                pio = PioPack.makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
+            }
+            res = new PioPack(console, pio);
+        } else {
+            res = new IOPack(console, io);
+        }
 
-	bringUp();
+	res.bringUp();
 	// OLD bug #181165 let "debugger" group open it
 	// OLD open();
 
 	// PioWindow multiplexes consoles so need to explicitly
 	// bring the new ones to front.
-	switchTo();
+	res.switchTo();
+
+        return res;
     }
 }

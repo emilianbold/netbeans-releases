@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcProgressManager;
 import org.netbeans.modules.cnd.debugger.dbx.spi.DbxPathProvider;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -221,6 +222,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	private Map<String, String> additionalEnv;
 	private IOPack ioPack;
 	private boolean remote;
+        private InputOutput io;
 
 	// Start out connecting to dbx in master mode. If we can't we turn
 	// 'beMaster' off and fall back on the old CONNECT_CHILD mode.
@@ -252,7 +254,8 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 			   String dbxInitFile,
 			   Host host,
 			   boolean connectExisting,
-                           String dbxName) {
+                           String dbxName,
+                           InputOutput io) {
 	    this.executor = executor;
 	    this.additionalArgv = additionalArgv;
 	    this.listener = listener;
@@ -262,9 +265,8 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    this.host = host;
 	    this.connectExisting = connectExisting;
             this.dbxname = dbxName;
+            this.io = io;
 	}
-
-	protected abstract IOPack getIOPack();
 
 	protected abstract CommonDbx getDbx(Factory fatory,
 					    Notifier n,
@@ -628,8 +630,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    // setup the IOPack
 	    //
 
-	    ioPack = getIOPack();
-	    ioPack.setup(remote);
+	    ioPack = DbxIOPack.create(remote, io);
 	    tentativeDbx.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 

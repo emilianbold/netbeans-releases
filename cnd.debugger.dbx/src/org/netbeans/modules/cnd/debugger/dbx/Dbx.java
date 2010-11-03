@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.debugger.common2.utils.ItemSelectorResult;
 import org.netbeans.modules.cnd.debugger.common2.values.EditUndo;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSession;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
@@ -74,6 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcModel;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.GpRtcUtil;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -95,17 +95,14 @@ public final class Dbx extends CommonDbx {
 			  String dbxInit,
 			  Host host,
 			  boolean connectExisting,
-                          String dbxName) {
-	    super(executor, additionalArgv, listener, exec32, shortNames, dbxInit, host, connectExisting, dbxName);
+                          String dbxName,
+                          InputOutput io) {
+	    super(executor, additionalArgv, listener, exec32, shortNames, dbxInit, host, connectExisting, dbxName, io);
 	}
 
 	protected Dbx getDbx(Factory factory,
 			     Notifier n, int flags, boolean connectExisting, Master master) {
 	    return new Dbx(factory, n, flags, connectExisting, master);
-	}
-
-	protected IOPack getIOPack() {
-	    return new DbxIOPack();
 	}
     }
 
