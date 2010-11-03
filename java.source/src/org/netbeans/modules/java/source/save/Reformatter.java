@@ -500,11 +500,18 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean scan(Tree tree, Void p) {
             int lastEndPos = endPos;
-            if (tree != null && tree.getKind() != Tree.Kind.COMPILATION_UNIT) {
+            if (tree != null && tree.getKind() != Tree.Kind.COMPILATION_UNIT) {                
                 if (tree instanceof FakeBlock) {
                     endPos = Integer.MAX_VALUE;
                 } else {
                     endPos = (int)sp.getEndPosition(getCurrentPath().getCompilationUnit(), tree);
+                }
+                if (tree.getKind() != Tree.Kind.BLOCK) {
+                    int startPos = (int)sp.getStartPosition(getCurrentPath().getCompilationUnit(), tree);
+                    if (startPos >= 0 && startPos > tokens.offset()) {
+                        tokens.move(startPos);
+                        tokens.moveNext();
+                    }
                 }
             }
             try {
@@ -546,7 +553,8 @@ public class Reformatter implements ReformatTask {
             for (Tree typeDecl : node.getTypeDecls()) {
                 if (semiRead && typeDecl.getKind() == Tree.Kind.EMPTY_STATEMENT)
                     continue;
-                blankLines(cs.getBlankLinesBeforeClass());
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
+                    blankLines(cs.getBlankLinesBeforeClass());
                 scan(typeDecl, p);
                 int index = tokens.index();
                 int c = col;
@@ -557,7 +565,8 @@ public class Reformatter implements ReformatTask {
                     rollback(index, c, d);
                     semiRead = false;
                 }
-                blankLines(cs.getBlankLinesAfterClass());
+                if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
+                    blankLines(cs.getBlankLinesAfterClass());
             }
             return true;
         }
@@ -2853,8 +2862,12 @@ public class Reformatter implements ReformatTask {
                             int idx = 0;
                             int lastIdx = 0;
                             while(count != 0 && (idx = text.indexOf('\n', lastIdx)) >= 0) { //NOI18N
-                                if (idx > 0 && idx >= lastIdx)
-                                    addDiff(new Diff(offset + lastIdx, offset + idx, templateEdit ? getIndent() : null));
+                                if (idx > 0) {
+                                    if (templateEdit && idx >= lastIdx)
+                                        addDiff(new Diff(offset + lastIdx, offset + idx, getIndent()));
+                                    else if (idx > lastIdx)
+                                        addDiff(new Diff(offset + lastIdx, offset + idx, null));
+                                }
                                 lastIdx = idx + 1;
                                 count--;
                             }

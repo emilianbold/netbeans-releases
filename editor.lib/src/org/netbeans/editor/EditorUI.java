@@ -399,9 +399,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         prefs.addPreferenceChangeListener(weakPrefsListener);
         listener.preferenceChange(null);
         
-        // fix for issue #16352
-        getDefaultColoring().apply(component);
-
+        if (!BaseKit.LINEWRAP_ENABLED) {
+            // fix for issue #16352
+            getDefaultColoring().apply(component);
+        }
         if (!GraphicsEnvironment.isHeadless()) {
             // enable drag and drop feature
             component.setDragEnabled(true);
@@ -836,9 +837,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
         Insets margin = value != null ? SettingsConversions.parseInsets(value) : null;
         component.setMargin(margin != null ? margin : NULL_INSETS);
 
-        // Apply the default coloring to the component
-        getDefaultColoring().apply(component);
-
+        if (!BaseKit.LINEWRAP_ENABLED) {
+            // Apply the default coloring to the component
+            getDefaultColoring().apply(component);
+        }
         lineNumberDigitWidth = computeLineNumberDigitWidth();
 
         // Update line height

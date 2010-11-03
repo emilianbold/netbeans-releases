@@ -110,6 +110,12 @@ public final class ProjectActionEvent {
 	this.profile = profile;
 	this.wait = wait;
         this.context = context;
+        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || 
+            type == PredefinedType.BUILD_TESTS || type == PredefinedType.TEST) {
+            if (profile != null && profile.getConsoleType().getValue() != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
+                assert false : type + " must not be run in " + profile.getConsoleType().getName() + " use OutputWindow instead";
+            }
+        }
     }
     
     public Project getProject() {

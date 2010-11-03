@@ -127,7 +127,8 @@ public class DbgActionHandler implements ProjectActionHandler {
 		    DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
-                                                io);
+                                                io,
+                                                DbgActionHandler.this);
 
                 } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
 		    dm.setAction(DebuggerManager.STEP);
@@ -135,14 +136,17 @@ public class DbgActionHandler implements ProjectActionHandler {
 		    DebuggerManager.get().debug(executable,
 						configuration,
 						CndRemote.userhostFromConfiguration(configuration),
-                                                io);
+                                                io,
+                                                DbgActionHandler.this);
 		} else {
                     assert false;
                 }
             }
         };
         javax.swing.SwingUtilities.invokeLater(loadProgram);
-	executionFinished(0);
+
+        // executionFinished is called when debugger really finish (NativeDebuggerImpl.preKill)
+//	executionFinished(0);
     }
 
     private void executionStarted() {
@@ -152,7 +156,7 @@ public class DbgActionHandler implements ProjectActionHandler {
     }
 
     public void executionFinished(int rc) {
-	// FIXUP: executionFinished should be called when debugging is really
+	// FIXED: executionFinished should be called when debugging is really
 	// done. CND hangs on to output window until released by
 	// executionFinished. Debugging is done asychronysly so
 	// executionFinished is called right after it starts releasing
@@ -167,10 +171,10 @@ public class DbgActionHandler implements ProjectActionHandler {
 	// sleep a work-arounb for now.
 	// Moving call to executionFinished to when debugger is done
 	// will also fix it.
-        try {
-	    Thread.sleep(500);
-	}
-	catch(Exception e){}
+//        try {
+//	    Thread.sleep(500);
+//	}
+//	catch(Exception e){}
 
         for (ExecutionListener listener : listeners) {
             listener.executionFinished(rc);
