@@ -76,7 +76,6 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     private void init(CsmScope scope, AST ast, boolean register) {
 	initScope(scope);
-        initQualifiedName(scope, ast);
         temporaryRepositoryRegistration(register, this);
         initEnumeratorList(ast, register);
         if (register) {
