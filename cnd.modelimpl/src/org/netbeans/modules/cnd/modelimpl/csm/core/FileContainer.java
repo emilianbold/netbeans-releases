@@ -318,7 +318,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
 
     public static CharSequence getFileKey(File file, boolean sharedText) {
         Parameters.notNull("null file", file); //NOI18N
-        //CndUtils.assertNormalized(file);
+        CndUtils.assertNormalized(file);
         String key = null;
         if (TraceFlags.USE_CANONICAL_PATH) {
             try {
