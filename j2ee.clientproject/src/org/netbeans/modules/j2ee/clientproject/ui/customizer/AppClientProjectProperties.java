@@ -431,7 +431,12 @@ final public class AppClientProjectProperties {
             });
             // and save the project
             if (result == Boolean.TRUE) {
-                ProjectManager.getDefault().saveProject(project);
+                project.setProjectPropertiesSave(true);
+                try {
+                    ProjectManager.getDefault().saveProject(project);
+                } finally {
+                    project.setProjectPropertiesSave(false);
+                }
             }
         } 
         catch (MutexException e) {
