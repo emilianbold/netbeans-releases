@@ -76,6 +76,14 @@ public final class DatabaseExplorerInternalUIs {
         DataComboBoxSupport.connect(comboBox, new DriverDataComboBoxModel(driverManager, driverClass), driverClass == null);
     }
 
+    public static void connect(JComboBox comboBox, JDBCDriverManager driverManager, boolean withUrl) {
+        if (withUrl) {
+            connect(comboBox, driverManager, null);
+        } else {
+            DataComboBoxSupport.connect(comboBox, new SimpleDriverDataModel(driverManager), true);
+        }
+    }
+
     private static final class DriverDataComboBoxModel implements DataComboBoxModel {
 
         private final JDBCDriverManager driverManager;
@@ -133,14 +141,11 @@ public final class DatabaseExplorerInternalUIs {
 
     private static final class DriverComboBoxModel extends AbstractListModel implements ComboBoxModel {
 
-        private final JDBCDriverManager driverManager;
-        private final ArrayList<JdbcUrl> driverList; 
+        private final ArrayList<JdbcUrl> driverList;
 
         private Object selectedItem; // can be anything, not just a database driver
 
         public DriverComboBoxModel(JDBCDriverManager driverManager, String driverClass) {
-            this.driverManager = driverManager;
-
             driverList = new ArrayList<JdbcUrl>();
             JDBCDriver[] drivers;
             if (driverClass != null) {
@@ -154,7 +159,7 @@ public final class DatabaseExplorerInternalUIs {
                     driverList.addAll(DriverListUtil.getJdbcUrls(driver));
                 }
             }
-            
+
             Collections.sort(driverList, new DriverTypeComparator());
         }
 
@@ -180,15 +185,15 @@ public final class DatabaseExplorerInternalUIs {
 
         public void addSelectedDriver(JDBCDriver driver) {
             List<JdbcUrl> types = DriverListUtil.getJdbcUrls(driver);
-            
+
             assert(! types.isEmpty());
             driverList.addAll(types);
             setSelectedItem(types.get(0));
-            
+
             Collections.sort(driverList, new DriverTypeComparator());
             fireContentsChanged(this, 0, driverList.size());
         }
-        
+
     }
 
     private static final class DriverTypeComparator implements Comparator<JdbcUrl> {
@@ -201,10 +206,132 @@ public final class DatabaseExplorerInternalUIs {
                     return 1;
                 }
             }
-            
+
             String dispName1 = type1.getName();
             String dispName2 = type2.getName();
-            
+
+            if (dispName1 == null) {
+                return dispName2 == null ? 0 : -1;
+            } else {
+                return dispName2 == null ? 1 : dispName1.compareToIgnoreCase(dispName2);
+            }
+        }
+    }
+    private static final class SimpleDriverDataModel implements DataComboBoxModel {
+
+        private final JDBCDriverManager driverManager;
+        private final SimpleDriverComboModel comboBoxModel;
+
+        public SimpleDriverDataModel(JDBCDriverManager driverManager) {
+            this.driverManager = driverManager;
+            this.comboBoxModel = new SimpleDriverComboModel(driverManager);
+        }
+
+        @Override
+        public String getItemTooltipText(Object item) {
+            JDBCDriver drv = (JDBCDriver)item;
+            return drv.toString();
+        }
+
+        @Override
+        public String getItemDisplayName(Object item) {
+            return ((JDBCDriver)item).getDisplayName();
+        }
+
+        @Override
+        public void newItemActionPerformed() {
+            Set<JDBCDriver> oldDrivers = new HashSet<JDBCDriver>(Arrays.asList(driverManager.getDrivers()));
+            driverManager.showAddDriverDialog();
+
+            // try to find the new driver
+            JDBCDriver[] newDrivers = driverManager.getDrivers();
+            if (newDrivers.length == oldDrivers.size()) {
+                // no new driver, so...
+                return;
+            }
+            for (int i = 0; i < newDrivers.length; i++) {
+                if (!oldDrivers.contains(newDrivers[i])) {
+                    comboBoxModel.addSelectedDriver(newDrivers[i]);
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public String getNewItemDisplayName() {
+            return NbBundle.getMessage(DatabaseExplorerInternalUIs.class, "LBL_NewDriver");
+        }
+
+        @Override
+        public ComboBoxModel getListModel() {
+            return comboBoxModel;
+        }
+    }
+
+    private static final class SimpleDriverComboModel extends AbstractListModel implements ComboBoxModel {
+
+        private final List<JDBCDriver> driverList;
+
+        private Object selectedItem; // can be anything, not just a database driver
+
+        public SimpleDriverComboModel(JDBCDriverManager driverManager) {
+            driverList = new ArrayList<JDBCDriver>();
+            JDBCDriver[] drivers;
+            drivers = driverManager.getDrivers();
+            for (int i = 0; i < drivers.length; i++) {
+                JDBCDriver driver = drivers[i];
+                if (JDBCDriverSupport.isAvailable(driver)) {
+                    driverList.add(driver);
+                }
+            }
+
+            Collections.sort(driverList, new JDBCDriverComparator());
+        }
+
+        @Override
+        public void setSelectedItem(Object anItem) {
+            selectedItem = anItem;
+        }
+
+        @Override
+        public Object getElementAt(int index) {
+            return driverList.get(index);
+        }
+
+        @Override
+        public int getSize() {
+            return driverList.size();
+        }
+
+        @Override
+        public Object getSelectedItem() {
+            return selectedItem;
+        }
+
+        public void addSelectedDriver(JDBCDriver driver) {
+            driverList.add(driver);
+            setSelectedItem(driver);
+
+            Collections.sort(driverList, new JDBCDriverComparator());
+            fireContentsChanged(this, 0, driverList.size());
+        }
+
+    }
+
+    private static final class JDBCDriverComparator implements Comparator<JDBCDriver> {
+        @Override
+        public int compare(JDBCDriver drv1, JDBCDriver dvr2) {
+            if (drv1 == null) {
+                return dvr2 == null ? 0 : -1;
+            } else {
+                if (dvr2 == null) {
+                    return 1;
+                }
+            }
+
+            String dispName1 = drv1.getName();
+            String dispName2 = dvr2.getName();
+
             if (dispName1 == null) {
                 return dispName2 == null ? 0 : -1;
             } else {
