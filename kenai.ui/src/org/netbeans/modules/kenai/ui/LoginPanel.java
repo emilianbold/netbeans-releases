@@ -110,17 +110,6 @@ public class LoginPanel extends javax.swing.JPanel {
         this.kenai = kenai;
         this.credentials = credentials;
         initComponents();
-//        lblKenaiLogoCenter.setBorder(null);
-//        lblKenaiLogoLeft.setBorder(null);
-//        lblKenaiLogoRight.setBorder(null);
-//        String hostName = kenai.getUrl().getHost();
-//        if (!hostName.equals("kenai.com")) {//NOI18N
-//            lblKenaiLogoCenter.setVisible(false);
-//            lblKenaiLogoRight.setVisible(false);
-//            lblKenaiLogoLeft.setText(NbBundle.getMessage(LoginPanel.class, "LBL_LoginTo", kenai.getName(), kenai.getUrl().toString()));
-//            lblKenaiLogoLeft.setBorder(new EmptyBorder(10, 12, 0, 10));
-//            lblKenaiLogoLeft.setIcon(null);
-//        }
         kenaiCombo.setSelectedItem(kenai);
         if (kenai!=null) {
         setUsername(credentials.getUsername(kenai));
