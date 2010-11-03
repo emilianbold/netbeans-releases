@@ -61,7 +61,10 @@ public class IOPack {
     }
 
     public boolean connectPio(Executor executor) {
-	return executor.startIO(io);
+        if (io != null) {
+            return executor.startIO(io);
+        }
+        return false;
     }
 
     public void open() {
