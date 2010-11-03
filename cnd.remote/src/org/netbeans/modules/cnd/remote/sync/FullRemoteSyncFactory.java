@@ -101,7 +101,7 @@ public class FullRemoteSyncFactory extends BaseSyncFactory {
     private final static class FullRemotePathMap extends PathMap {
 
         @Override
-        public boolean checkRemotePath(String path, boolean fixMissingPath) {
+        public boolean checkRemotePaths(File localPaths[], boolean fixMissingPath) {
             return true;
         }
 

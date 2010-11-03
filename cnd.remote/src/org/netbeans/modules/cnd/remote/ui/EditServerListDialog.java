@@ -274,10 +274,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         return defaultRecord;
     }
 
-    private void showPathMapper() {
-        EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue(), getHosts());
-    }
-
     private void setButtons(boolean enable) {
         buttonsEnabled = enable;
         if (desc != null) {
@@ -375,7 +371,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 b.setEnabled(false);
                 lstDevHosts.repaint();
             } else if (b.getActionCommand().equals(CMD_PATHMAPPER)) {
-                showPathMapper();
+                EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue());
             } else if (b.getActionCommand().equals(CMD_PROPERTIES)) {
                 RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
                 if (record.isRemote()) {
