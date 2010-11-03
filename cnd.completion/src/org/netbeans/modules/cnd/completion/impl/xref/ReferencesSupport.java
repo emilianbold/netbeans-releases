@@ -567,28 +567,6 @@ public final class ReferencesSupport {
             if (implKind != null) {
                 return implKind;
             }
-            final BaseDocument doc = getRefDocument(ref);
-            doc.readLock();
-            try {
-                int offset = ref.getStartOffset();
-                // check previous token
-                TokenItem<TokenId> token = CndTokenUtilities.getFirstNonWhiteBwd(doc, offset);
-                if (token != null) {
-                    TokenId id = token.id();
-                    if(id instanceof CppTokenId) {
-                        switch ((CppTokenId)id) {
-                            case DOT:
-                            case DOTMBR:
-                            case ARROW:
-                            case ARROWMBR:
-                            case SCOPE:
-                                kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
-                        }
-                    }
-                }
-            } finally {
-                doc.readUnlock();
-            }
         }
         return kind;
     }
