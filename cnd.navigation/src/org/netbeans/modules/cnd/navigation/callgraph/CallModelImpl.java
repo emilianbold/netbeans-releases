@@ -142,7 +142,7 @@ public class CallModelImpl implements CallModel {
                 functions.addAll(overrides);
             }
         }
-        EnumSet<CsmReferenceKind> kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.AFTER_DEREFERENCE_USAGE, CsmReferenceKind.UNKNOWN);
+        EnumSet<CsmReferenceKind> kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.UNKNOWN);
         List<Call> res = new ArrayList<Call>();
         HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
         HashMap<CsmMacro,CsmReference> macros = new HashMap<CsmMacro,CsmReference>();

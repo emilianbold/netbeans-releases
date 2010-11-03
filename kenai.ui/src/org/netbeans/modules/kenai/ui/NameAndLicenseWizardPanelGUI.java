@@ -246,7 +246,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                         licenses = panel.getKenai().getLicenses();
                 } catch (KenaiException ex) {
                     // OK, list of licenses will be null
-                    // XXX or show message that "Cannot connect to Kenai.com server" ???
+                    // XXX or show message that "Cannot connect to {url} server" ???
                 }
                 final DefaultComboBoxModel model = new DefaultComboBoxModel();
                 ArrayList<KenaiLicense> licenseList = new ArrayList<KenaiLicense>();
