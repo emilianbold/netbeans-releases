@@ -169,8 +169,6 @@ public abstract class Executor {
 	return destroyedByHand;
     }
 
-    public static final boolean CND_EXEC = System.getProperty("dbxgui.cndexec", "true").equalsIgnoreCase("true"); //NOI18N
-
     public static final int NOPTY = 1;
 
     public static Executor getDefault(String name, Host host, int flags) {
