@@ -59,7 +59,7 @@ made subject to such option by the copyright holder.
     <target name="jnlp-init-generate-master" depends="-check-for-master.jnlp" unless="master.jnlp.exists">
         <echo file="master.jnlp"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE jnlp PUBLIC "-//Sun Microsystems, Inc//DTD JNLP Descriptor 6.0//EN" "http://java.sun.com/dtd/JNLP-6.0.dtd">
-<jnlp spec="1.0+" codebase="${jnlp.codebase}">
+<jnlp spec="1.0+" codebase="${jnlp.codebase}" href="master.jnlp">
   <information>
       <title>$${app.title}</title>
       <vendor>$${app.title} vendor</vendor>
