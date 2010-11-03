@@ -69,8 +69,7 @@ import org.openide.util.*;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.impl.APIAccessor;
-import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
-        import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
+import org.netbeans.modules.refactoring.spi.impl.ProblemComponent.CallbackAction;
 import org.openide.awt.Mnemonics;
 
 
@@ -551,6 +550,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
         if (!(customComponent==null && !rui.hasParameters() && !APIAccessor.DEFAULT.hasPluginsWithProgress(rui.getRefactoring())))
             dialog.setVisible(true);
         dialog.dispose();
+        dialog = null;
         descriptor.setMessage("");
         
         if (rui != null) { 
