@@ -62,6 +62,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test191610() throws Exception {
+        // #191610 unresolved reference to class declared with outer scope 
+        performStaticTest("iz191610.cc");
+    }
+
     public void test191515() throws Exception {
         // 191515: incorrect scope resolving for typedefs
         performStaticTest("iz191515.cpp");

@@ -76,7 +76,7 @@ public final class ForwardClass extends ClassImpl {
 
     public static ForwardClass create(String name, CsmFile file, AST ast, CsmScope scope, boolean registerInProject) {
         ForwardClass fwd = new ForwardClass(NameHolder.createName(name), file, ast);
-        fwd.initQualifiedName(scope, ast);
+        fwd.initQualifiedName(scope);
         fwd.setTemplateDescriptor(TemplateDescriptor.createIfNeeded(ast, file, scope, registerInProject));
         if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
             fwd.initScope(scope);
