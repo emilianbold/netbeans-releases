@@ -717,13 +717,18 @@ public final class WebProject implements Project {
                     Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                     String classpath = J2EEProjectProperties.toClasspathString(
                             Util.getJ2eePlatformClasspathEntries(WebProject.this, null), roots);
-                    ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                }
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
-                try {
-                    ProjectManager.getDefault().saveProject(WebProject.this);
-                } catch (IOException e) {
-                    Exceptions.printStackTrace(e);
+                    if (roots != null) {
+                        projectProps.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                    } else {
+                        ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                    }
+                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);
+                    try {
+                        ProjectManager.getDefault().saveProject(WebProject.this);
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
                 }
                 return null;
             }

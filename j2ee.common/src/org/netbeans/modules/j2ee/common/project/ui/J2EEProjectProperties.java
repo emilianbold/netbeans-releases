@@ -122,7 +122,10 @@ public final class J2EEProjectProperties {
      */
     public static boolean isUsingServerLibrary(EditableProperties projectProperties, String j2eePlatformClasspathProperty) {
         String value = projectProperties.getProperty(j2eePlatformClasspathProperty);
-        return (value != null && !"".equals(value.trim()) && value.indexOf(J2EE_SERVER_HOME) == -1);
+        return (value != null && !"".equals(value.trim())
+                && value.indexOf(J2EE_SERVER_HOME) == -1
+                && value.indexOf(J2EE_DOMAIN_HOME) == -1
+                && value.indexOf(J2EE_MIDDLEWARE_HOME) == -1);
     }
 
     /**
