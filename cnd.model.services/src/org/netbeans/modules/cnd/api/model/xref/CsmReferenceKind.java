@@ -52,8 +52,7 @@ import java.util.Set;
 public enum CsmReferenceKind {
     DEFINITION,
     DECLARATION,        
-    DIRECT_USAGE, // references like "var" in var.foo or var->foo are interested
-    AFTER_DEREFERENCE_USAGE, // references like "foo" in var.foo or var->foo are interested
+    DIRECT_USAGE, // references like "var" in "var" or "var.foo" or "foo->var" are interested
     IN_PREPROCESSOR_DIRECTIVE, // references in #preprocessor directives are interested
     IN_DEAD_BLOCK, // references in dead code are interested
     UNKNOWN;
@@ -79,7 +78,7 @@ public enum CsmReferenceKind {
     public static final Set<CsmReferenceKind> ALL;
     
     static {
-        ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, AFTER_DEREFERENCE_USAGE);
+        ANY_REFERENCE_IN_ACTIVE_CODE = EnumSet.range(DEFINITION, DIRECT_USAGE);
         ANY_REFERENCE_IN_ACTIVE_CODE_AND_PREPROCESSOR = EnumSet.range(DEFINITION, IN_PREPROCESSOR_DIRECTIVE);
         ALL = EnumSet.range(DEFINITION, IN_DEAD_BLOCK);
     }
