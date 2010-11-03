@@ -803,26 +803,6 @@ public class ChatTopComponent extends TopComponent {
             }
         }
     }
-    
-//    private final class OpenChatAction extends AbstractAction {
-//
-//        private KenaiFeature f;
-//
-//        public OpenChatAction(KenaiFeature f) {
-//            super();
-//            try {
-//                String name = KenaiManager.getDefault().getKenai("https://kenai.com").getProject(f.getName()).getDisplayName();
-//                putValue(Action.NAME, name);
-//            } catch (KenaiException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//            this.f = f;
-//        }
-//
-//        public void actionPerformed(ActionEvent e) {
-//            addChat(new ChatPanel(kec.getChat(f)));
-//        }
-//    }
 
     private class Close extends AbstractAction {
 
