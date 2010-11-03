@@ -168,6 +168,7 @@ public final class SvnProperties implements ActionListener {
         return loadedValueFile;
     }
 
+    @Override
     public void actionPerformed(ActionEvent event) {
         Object source = event.getSource();
 
@@ -241,9 +242,11 @@ public final class SvnProperties implements ActionListener {
 
         chooser.setCurrentDirectory(roots[0].getParentFile()); // NOI18N
         chooser.addChoosableFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
             public boolean accept(File f) {
                 return f.exists();
             }
+            @Override
             public String getDescription() {
                 return "";
             }
@@ -257,6 +260,7 @@ public final class SvnProperties implements ActionListener {
         final Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
 
         chooser.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 String state = e.getActionCommand();
                 if (state.equals(JFileChooser.APPROVE_SELECTION)) {
@@ -296,6 +300,7 @@ public final class SvnProperties implements ActionListener {
         try {
             support = new SvnProgressSupport() {
                 HashMap<String, String> properties;
+                @Override
                 protected void perform() {
                     try {
                         SvnClient client = Subversion.getInstance().getClient(false);
@@ -311,6 +316,7 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             String[] propNames = new String[properties.size()];
                             SvnPropertiesNode[] svnProps = new SvnPropertiesNode[properties.size()];
@@ -371,6 +377,7 @@ public final class SvnProperties implements ActionListener {
         try {
             support = new SvnProgressSupport() {
                 ISVNProperty[] isvnProps;
+                @Override
                 protected void perform() {
                     SvnClient client;
                     try {
@@ -400,6 +407,7 @@ public final class SvnProperties implements ActionListener {
                         return;
                     }
                     EventQueue.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             panel.comboName.getEditor().setItem("");
                             panel.txtAreaValue.setText("");
@@ -462,6 +470,7 @@ public final class SvnProperties implements ActionListener {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
+                @Override
                 protected void perform() {
                     SvnClient client;
                     try {
@@ -520,6 +529,7 @@ public final class SvnProperties implements ActionListener {
         assert isLoadedFromFile();
         panel.removePropertyValueChangeListener();
         EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 panel.txtAreaValue.setText("");
             }
