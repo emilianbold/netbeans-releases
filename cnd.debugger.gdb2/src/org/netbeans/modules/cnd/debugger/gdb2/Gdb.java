@@ -278,7 +278,7 @@ public class Gdb {
 	    // We need the slave name ahead of time
 	    boolean havePio = false;
 	    if (!connectExisting) {
-                havePio = executor.startIO(gdi.getInputOutput());
+                havePio = ioPack.connectPio(executor);
 	    }
 	    if (!havePio) {
 		// SHOULD do something

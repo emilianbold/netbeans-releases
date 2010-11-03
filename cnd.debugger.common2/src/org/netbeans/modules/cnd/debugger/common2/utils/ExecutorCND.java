@@ -313,11 +313,16 @@ import org.openide.windows.InputOutput;
 
     public String readlink(long pid) {
 	// throw new UnsupportedOperationException();
-	String Pid = Long.toString(pid);
-	String procid = "/proc/" + Pid + "/exe"; // NOI18N
+	String procid = "/proc/" + pid + "/exe"; // NOI18N
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
-        return status.output; //NOI18N
+        if (status.isOK()) {
+            return status.output;
+        }
 
+        // try /proc/PID/path/a.out (Solaris)
+        procid = "/proc/" + pid + "/path/a.out"; // NOI18N
+	status = ProcessUtils.execute(exEnv, "/usr/bin/readlink", procid); //NOI18N
+        return status.output;
     }
 
     public boolean is_64(String filep) {
