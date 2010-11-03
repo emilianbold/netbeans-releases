@@ -2728,8 +2728,9 @@ template_parameter_list
  */
 template_parameter
 	:
-	(   ((LITERAL_class|LITERAL_typename) (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
+                (ELLIPSIS)? // support for variadic template params
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
@@ -3396,6 +3397,9 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL___real
             |   LITERAL___imag
 
+            |   LITERAL_alignof
+            |   LITERAL___alignof__
+
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
@@ -3570,6 +3574,9 @@ lazy_expression_predicate
     |   LITERAL_sizeof
     |   LITERAL___real
     |   LITERAL___imag
+
+    |   LITERAL_alignof
+    |   LITERAL___alignof__
 
     |   GREATERTHAN lazy_expression_predicate
     ;

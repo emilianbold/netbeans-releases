@@ -73,6 +73,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test191598() throws Exception {
+        // #191598 -  parser errors in /usr/include/tr1_impl/type_traits
+        performTest("iz191598.cc");
+    }
+    
     public void testIZ191085() throws Exception {
         // #191085:Parser fails in sy_defined_(node) macro
         performTest("iz191085.cc");
