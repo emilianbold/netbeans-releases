@@ -221,8 +221,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         } catch (Exception ie) {
             openingProjects = true;
         }
-
-        return (beforeInitialScanStarted && openingProjects) || getWorker().isWorking() || !PathRegistry.getDefault().isFinished();
+        final boolean starting = (beforeInitialScanStarted && openingProjects);
+        final boolean working = getWorker().isWorking();
+        final boolean pathChanging = !PathRegistry.getDefault().isFinished();
+        final boolean result =  starting || working || pathChanging;
+        LOGGER.log(Level.FINE,
+                "IsScanInProgress: {0} = (starting: {1} | working: {2} | path are changing: {3})",  //NOI18N
+                new Object[] {
+                    result,
+                    starting,
+                    working,
+                    pathChanging
+                });
+        return result;
     }
 
     public boolean isProtectedModeOwner(final Thread thread) {
@@ -3383,6 +3394,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         
                         if (!scheduled && protectedOwners.isEmpty()) {
                             scheduled = true;
+                            LOGGER.fine("scheduled = true");    //NOI18N
                             Utilities.scheduleSpecialTask(this);
                         }
                         waitForWork = wait;
@@ -3581,6 +3593,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     if (todo.isEmpty()) {
                         scheduled = false;
+                        LOGGER.fine("scheduled = false");   //NOI18N
                     } else {
                         Utilities.scheduleSpecialTask(this);
                     }
