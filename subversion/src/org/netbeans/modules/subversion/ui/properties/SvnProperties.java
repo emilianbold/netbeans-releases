@@ -295,11 +295,10 @@ public final class SvnProperties implements ActionListener {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
-                SvnClient client;
                 HashMap<String, String> properties;
                 protected void perform() {
                     try {
-                        client = Subversion.getInstance().getClient(repositoryUrl);
+                        SvnClient client = Subversion.getInstance().getClient(false);
                         properties = new HashMap<String, String>();
                         for (File f : roots) {
                             ISVNStatus status = client.getSingleStatus(f);
@@ -371,11 +370,11 @@ public final class SvnProperties implements ActionListener {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
-                SvnClient client;
                 ISVNProperty[] isvnProps;
                 protected void perform() {
+                    SvnClient client;
                     try {
-                        client = Subversion.getInstance().getClient(repositoryUrl);
+                        client = Subversion.getInstance().getClient(false);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
@@ -463,10 +462,10 @@ public final class SvnProperties implements ActionListener {
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repositoryUrl);
         try {
             support = new SvnProgressSupport() {
-                SvnClient client;
                 protected void perform() {
+                    SvnClient client;
                     try {
-                        client = Subversion.getInstance().getClient(repositoryUrl);
+                        client = Subversion.getInstance().getClient(false);
                     } catch (SVNClientException ex) {
                         SvnClientExceptionHandler.notifyException(ex, true, true);
                         return;
