@@ -712,7 +712,7 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             FontColorSettings fcs = result.allInstances().iterator().next();
             AttributeSet attributes = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
             if (attributes != null) {
-                font = ViewUtils.getFont(attributes, font);
+                font = ViewUtils.getFont(attributes, new Font(font.getFamily(), 0, font.getSize()));
                 Color c = (Color) attributes.getAttribute(StyleConstants.Foreground);
                 if (c != null) {
                     foreColor = c;

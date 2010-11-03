@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1030,6 +1031,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
         if (DebuggerManager.isPerTargetBpts()) {
             bm().breakpointBag().cleanupBpts();
+        }
+        DbgActionHandler dah = getNDI().getDah();
+        if (dah != null) {
+            dah.executionFinished(0);
         }
     }
 

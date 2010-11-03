@@ -143,7 +143,9 @@ function main() {
 		fi
 	fi
 	if [ ${quiet} == "y" ]; then 
-		tail -3 ${log}
+		echo ""
+		echo "Here is the bottom of the build log (${log})"; 
+		tail -16 ${log}
 		echo "See full log in ${log}"; 
 	fi
 }

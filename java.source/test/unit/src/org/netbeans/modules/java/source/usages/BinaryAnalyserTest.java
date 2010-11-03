@@ -123,23 +123,23 @@ public class BinaryAnalyserTest extends NbTestCase {
     public void testCRCDiff () throws Exception {
         final List<Pair<ElementHandle<TypeElement>,Long>> first = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
         final List<Pair<ElementHandle<TypeElement>,Long>> second = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
-        BinaryAnalyser.Changes c = BinaryAnalyser.diff(first, second);
+        BinaryAnalyser.Changes c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
         first.add(create("test/afirst",10));
         first.add(create("test/bsecond",10));
         first.add(create("test/cthird",10));
-        c = BinaryAnalyser.diff(first, first);
+        c = BinaryAnalyser.diff(first, first, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.removed.size());
         assertEquals((create("test/afirst", "test/bsecond", "test/cthird")), c.removed);
-        c = BinaryAnalyser.diff(second, first);
+        c = BinaryAnalyser.diff(second, first, false);
         assertTrue(c.removed.isEmpty());
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.added.size());
@@ -150,7 +150,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         second.add(create("test/cthird",10));
         second.add(create("test/efifth",10));
         second.add(create("test/fsixth",10));
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.changed.isEmpty());
         assertEquals(3,c.added.size());
         assertEquals((create("test/bsecond_and_half", "test/efifth", "test/fsixth")), c.added);
@@ -161,7 +161,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         second.add(create("test/bsecond",15));
         second.add(create("test/cthird",10));
         second.add(create("test/dfourth",15));
-        c = BinaryAnalyser.diff(first, second);
+        c = BinaryAnalyser.diff(first, second, false);
         assertTrue(c.added.isEmpty());
         assertTrue(c.removed.isEmpty());
         assertEquals(2,c.changed.size());

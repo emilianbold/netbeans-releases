@@ -486,4 +486,39 @@ ${cursor}]]></code></codetemplate>
 ${cursor}]]></code>
     </codetemplate>
 
+    <!-- Added in 7.0 -->
+
+    <!-- Logging contributed by krissco@netbeans.org -->
+    
+    <codetemplate abbreviation="logr">
+        <code>
+<![CDATA[private static final ${loggerType type="java.util.logging.Logger" default="Logger" editable="false"} logger = ${loggerType}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName());]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logrb">
+        <code>
+<![CDATA[private static final ${loggerType type="java.util.logging.Logger" default="Logger" editable="false"} logger = ${loggerType}.getLogger(${classVar editable="false" currClassName default="getClass()"}.class.getName(), ${classVar}.class.getPackage().getName() + "${bundleName default=".Log" editable="true"}");]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logb">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}");]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logbp">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}", ${args instanceof="java.lang.Object" default="args"});]]>
+        </code>
+    </codetemplate>
+    
+    <codetemplate abbreviation="logbps">
+        <code>
+<![CDATA[${loggerInst instanceof="java.util.logging.Logger" default="logger" editable="false"}.log(${levelType type="java.util.logging.Level" editable="false" default="Level"}.${logLevel default="INFO" completionInvoke}, "${bundle_key}", new Object [] {${args default="null"}});]]>
+        </code>
+    </codetemplate>
+    
+
 </codetemplates>

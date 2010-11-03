@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
+import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
 import org.netbeans.modules.cnd.makeproject.api.configurations.*;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
@@ -184,6 +185,16 @@ public abstract class NativeDebuggerInfo {
 
     public void setInputOutput(InputOutput io) {
         this.io = io;
+    }
+
+    private DbgActionHandler dah = null;
+
+    public DbgActionHandler getDah() {
+        return dah;
+    }
+
+    public void setDah(DbgActionHandler dah) {
+        this.dah = dah;
     }
 
     public final EngineType debuggerType() {
