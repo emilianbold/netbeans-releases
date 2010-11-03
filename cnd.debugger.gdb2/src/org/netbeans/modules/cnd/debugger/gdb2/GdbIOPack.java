@@ -44,39 +44,34 @@
 
 package org.netbeans.modules.cnd.debugger.gdb2;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
+import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponent;
 import org.openide.util.Utilities;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.TermComponentFactory;
+import org.openide.windows.InputOutput;
 
 // OLD import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 
-class GdbIOPack extends IOPack {
-    public GdbIOPack() {
-    }
-
-    @Override
-    public void setup(boolean remote) {
-	super.setup(remote);
-	if (isRemote()) {
-	    pio        = makePio(0);
-	    console	= makeConsole(0);
-
-	} else if (Utilities.isWindows() || Log.Startup.nopty /* OLD || Executor.CND_EXEC */) {
-	    pio        = makePio(0);
-	    console	= makeConsole(0);
-
+class GdbIOPack {
+    public static IOPack create(boolean remote, InputOutput io) {
+        TermComponent console;
+        if (remote || Utilities.isWindows() || Log.Startup.nopty) {
+	    console = IOPack.makeConsole(0);
 	} else {
-	    pio     = makePio(TermComponentFactory.PTY | TermComponentFactory.PACKET_MODE);
-	    console = makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
+	    console = IOPack.makeConsole(TermComponentFactory.PTY | TermComponentFactory.RAW_PTY);
 	}
 
-	bringUp();
+        IOPack res = new IOPack(console, io);
+
+	res.bringUp();
 	// OLD bug #181165 let "debugger" group open it
 	// OLD open();
 
 	// PioWindow multiplexes consoles so need to explicitly
 	// bring the new ones to front.
-	switchTo();
+	res.switchTo();
+
+        return res;
     }
 }

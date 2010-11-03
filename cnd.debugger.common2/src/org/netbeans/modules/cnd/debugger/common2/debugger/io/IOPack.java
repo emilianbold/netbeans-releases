@@ -45,62 +45,42 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+import org.openide.windows.InputOutput;
 
 public class IOPack {
-    private boolean remote;
+    private final TermComponent console;
+    private final InputOutput io;
 
-    protected TermComponent console = null;
-    protected TermComponent pio = null;
-
-    protected IOPack() {
-    }
-
-    public void setup(boolean remote) {
-	this.remote = remote;
+    public IOPack(TermComponent console, InputOutput io) {
+        this.console = console;
+        this.io = io;
     }
 
     public TermComponent console() {
 	return console;
     }
 
-    public TermComponent pio() {
-	return pio;
-    }
-
-    public boolean isRemote() {
-	return remote;
-    }
-
     public boolean connectPio(Executor executor) {
-	return executor.startIO(pio);
+	return executor.startIO(io);
     }
 
     public void open() {
-	pio.open();
 	console.open();
     }
 
     public void bringDown() {
-	pio.bringDown();
 	console.bringDown();
     }
 
     public void bringUp() {
-	pio.bringUp();
 	console.bringUp();
     }
 
     public void switchTo() {
-	pio.switchTo();
 	console.switchTo();
     }
 
-    protected final TermComponent makeConsole(int flags) {
+    public static TermComponent makeConsole(int flags) {
 	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
-    }
-
-    protected final TermComponent makePio(int flags) {
-	return TermComponentFactory.createNewTermComponent(PioTopComponent.getDefault(), flags);
-
     }
 }

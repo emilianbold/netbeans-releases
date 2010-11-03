@@ -273,10 +273,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         this.gdi = gdi;
     }
 
-    GdbDebuggerInfo getGDI() {
-        return gdi;
-    }
-
     // interface NativeDebugger
     public NativeDebuggerInfo getNDI() {
         return gdi;

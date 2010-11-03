@@ -125,6 +125,6 @@ public final class ShellSession {
             }
         }
 
-        return resultBuffer.toArray(new String[0]);
+        return resultBuffer.toArray(new String[resultBuffer.size()]);
     }
 }

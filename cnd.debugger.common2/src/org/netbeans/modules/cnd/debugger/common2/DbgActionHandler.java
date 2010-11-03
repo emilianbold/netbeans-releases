@@ -97,7 +97,7 @@ public class DbgActionHandler implements ProjectActionHandler {
     }
 
     // interface CustomProjectActionHandler
-    public void execute(InputOutput io) {
+    public void execute(final InputOutput io) {
 
 	// The executable file is already checked and adjusted by the
 	// Project system, ProjectActionSupport$HandleEvents.checkExecutable(),
@@ -108,12 +108,12 @@ public class DbgActionHandler implements ProjectActionHandler {
 	String hostName = CndRemote.userhostFromConfiguration(pae.getConfiguration());
 	CndRemote.validate(hostName, new Runnable() {
 		public void run() {
-			doExecute(executable, dm);
+			doExecute(executable, dm, io);
 		}
 	});
     }
 
-    private void doExecute(final String executable, final DebuggerManager dm) {
+    private void doExecute(final String executable, final DebuggerManager dm, final InputOutput io) {
 	final Configuration configuration = pae.getConfiguration();
 	// DefaultProjectActionHandler's executionStarted is a no-op.
 
@@ -126,14 +126,16 @@ public class DbgActionHandler implements ProjectActionHandler {
 		    dm.removeAction(DebuggerManager.STEP);
 		    DebuggerManager.get().debug(executable,
 						configuration,
-						CndRemote.userhostFromConfiguration(configuration));
+						CndRemote.userhostFromConfiguration(configuration),
+                                                io);
 
                 } else if (pae.getType() == ProjectActionEvent.PredefinedType.DEBUG_STEPINTO) {
 		    dm.setAction(DebuggerManager.STEP);
 		    dm.removeAction(DebuggerManager.RUN);
 		    DebuggerManager.get().debug(executable,
 						configuration,
-						CndRemote.userhostFromConfiguration(configuration));
+						CndRemote.userhostFromConfiguration(configuration),
+                                                io);
 		} else {
                     assert false;
                 }

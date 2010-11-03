@@ -204,10 +204,6 @@ public class Gdb {
 	    return connectExisting;
 	}
 
-	private IOPack getIOPack() {
-	    return new GdbIOPack();
-	}
-
         public static interface Listener {
             public void connectFailed(String toWhom, String why, IOPack ioPack);
             public void assignGdb(Gdb tentativeGdb);
@@ -269,21 +265,20 @@ public class Gdb {
 	    //
 	    // setup the IOPack
 	    //
-	    ioPack = getIOPack();
-	    ioPack.setup(remote);
+	    ioPack = GdbIOPack.create(remote, gdi.getInputOutput());
 	    tentativeGdb.setIOPack(ioPack);
 	    listener.assignIOPack(ioPack);
 
 	    if (Log.Startup.nopty) {
 		// We only need a line discipline for pio because 
 		// the console has it's own "Tap".
-		ioPack.pio().getTerm().pushStream(new LineDiscipline());
+//		ioPack.pio().getTerm().pushStream(new LineDiscipline());
 	    }
 
 	    // We need the slave name ahead of time
 	    boolean havePio = false;
 	    if (!connectExisting) {
-		havePio = ioPack.connectPio(executor);
+                havePio = executor.startIO(gdi.getInputOutput());
 	    }
 	    if (!havePio) {
 		// SHOULD do something
@@ -491,19 +486,19 @@ public class Gdb {
 		// a flag. However, there's no way such a flag can be reliable
 		// given the asynchroous nature of things.
 
-		final PrintWriter pw =
-		    new PrintWriter(executor.getOutputStream());
-		ioPack.pio().getTerm().
-		    addInputListener(new TermInputListener() {
-			public void sendChars(char c[], int offset, int count) {
-			    pw.write(c, offset, count);
-			    pw.flush();
-			}
-			public void sendChar(char c) {
-			    pw.write(c);
-			    pw.flush();
-			}
-		    } );
+//		final PrintWriter pw =
+//		    new PrintWriter(executor.getOutputStream());
+//		ioPack.pio().getTerm().
+//		    addInputListener(new TermInputListener() {
+//			public void sendChars(char c[], int offset, int count) {
+//			    pw.write(c, offset, count);
+//			    pw.flush();
+//			}
+//			public void sendChar(char c) {
+//			    pw.write(c);
+//			    pw.flush();
+//			}
+//		    } );
 	    }
 
 
@@ -605,7 +600,7 @@ public class Gdb {
 
     public final void setDebugger(GdbDebuggerImpl debugger) {
         this.debugger = debugger;
-	debugger.getGDI().setLoadSuccess(false);
+	debugger.getNDI().setLoadSuccess(false);
     }
 
     /* OLD
@@ -1047,8 +1042,8 @@ public class Gdb {
         @Override
 	protected void errorBadLine(String data) {
 	    if (Log.Startup.nopty) {
-		Term term = ioPack.pio().getTerm();
-		term.putChars(data.toCharArray(), 0, data.length());
+//		Term term = ioPack.pio().getTerm();
+//		term.putChars(data.toCharArray(), 0, data.length());
 	    } else {
 		super.errorBadLine(data);
 	    }
