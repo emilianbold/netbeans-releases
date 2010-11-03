@@ -1187,11 +1187,13 @@ public final class DebuggerManager extends DebuggerManagerAdapter {
     /**
      * Start debugging by loading program.
      */
-    public void debug(String executable, Configuration configuration, String host) {
+    public void debug(String executable, Configuration configuration, String host,
+            InputOutput io) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
         ndi.setHostName(host);
         ndi.setConfiguration(configuration);
+        ndi.setInputOutput(io);
         if (isStandalone() || !DebuggerOption.RUN_AUTOSTART.isEnabled(globalOptions())) {
             ndi.setAction(LOAD);
         } else {

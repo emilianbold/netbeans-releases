@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.support.HelperUtility;
 import org.netbeans.modules.nativeexecution.support.ShellSession;
@@ -53,6 +55,8 @@ import org.openide.util.Exceptions;
  * @author Egor Ushakov
  */
 public final class Stat {
+    private static final Logger LOG = org.netbeans.modules.nativeexecution.support.Logger.getInstance();
+
     private final long inode;
     private final long ctime;
 
@@ -68,8 +72,12 @@ public final class Stat {
     public static Stat get(String filename, ExecutionEnvironment exEnv) {
         try {
             String[] res = ShellSession.execute(exEnv, statHelperUtility.getPath(exEnv) + " " + filename); //NOI18N
-            return new Stat(Long.valueOf(res[0].split(": ")[1].trim()), //NOI18N
+            if (res.length > 1) {
+                return new Stat(Long.valueOf(res[0].split(": ")[1].trim()), //NOI18N
                     Long.valueOf(res[1].split(": ")[1].trim())); //NOI18N
+            } else {
+                LOG.log(Level.WARNING, "stat result for file {0} is incorrect: {1}", new Object[]{filename, res}); //NOI18N
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

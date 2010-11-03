@@ -74,6 +74,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.openide.windows.InputOutput;
 
 /* package */ class ExecutorCND extends Executor {
     private NativeProcess engineProc;
@@ -298,14 +299,14 @@ import org.netbeans.modules.nativeexecution.api.util.Signal;
 
     private Pty pty = null;
 
-    public synchronized boolean startIO(TermComponent genericPio) {
+    public synchronized boolean startIO(InputOutput io) {
         try {
             pty = PtySupport.allocate(exEnv);
         } catch (IOException ex) {
             slaveName = "";
             return false;
         }
-        PtySupport.connect(genericPio.getIO(), pty);
+        PtySupport.connect(io, pty);
         slaveName = pty.getSlaveName();
         return true;
     }
