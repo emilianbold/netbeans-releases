@@ -3396,6 +3396,9 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL___real
             |   LITERAL___imag
 
+            |   LITERAL_alignof
+            |   LITERAL___alignof__
+
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
                         optor_simple_tokclass
@@ -3570,6 +3573,9 @@ lazy_expression_predicate
     |   LITERAL_sizeof
     |   LITERAL___real
     |   LITERAL___imag
+
+    |   LITERAL_alignof
+    |   LITERAL___alignof__
 
     |   GREATERTHAN lazy_expression_predicate
     ;
