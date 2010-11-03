@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.source.usages;
 
-import com.sun.tools.javac.api.JavacTaskImpl;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -79,15 +78,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.Annotation;
@@ -112,15 +104,12 @@ import org.netbeans.modules.classfile.NestedElementValue;
 import org.netbeans.modules.classfile.Variable;
 import org.netbeans.modules.classfile.Parameter;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
-import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.java.source.util.LMListener;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -149,11 +138,17 @@ public class BinaryAnalyser {
         public final List<ElementHandle<TypeElement>> added;
         public final List<ElementHandle<TypeElement>> removed;
         public final List<ElementHandle<TypeElement>> changed;
+        public final boolean preBuildArgs;
 
-        private Changes (final List<ElementHandle<TypeElement>> added, final List<ElementHandle<TypeElement>> removed, final List<ElementHandle<TypeElement>> changed) {
+        private Changes (
+                final List<ElementHandle<TypeElement>> added,
+                final List<ElementHandle<TypeElement>> removed,
+                final List<ElementHandle<TypeElement>> changed,
+                final boolean preBuildArgs) {
             this.added = added;
             this.removed = removed;
             this.changed = changed;
+            this.preBuildArgs = preBuildArgs;
         }
 
     }
@@ -162,7 +157,8 @@ public class BinaryAnalyser {
     private static final String TIME_STAMPS = "timestamps.properties";   //NOI18N
     private static final String CRC = "crc.properties"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
-    static final String OBJECT = Object.class.getName();
+    private static final String JCOMPONENT = javax.swing.JComponent.class.getName();
+    static final String OBJECT = Object.class.getName();    
 
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
 
@@ -215,21 +211,22 @@ public class BinaryAnalyser {
 
     public Changes finish () throws IOException {
         if (cont == null) {
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
         }
         if (!cont.hasChanges() && timeStamps.second.isEmpty()) {
             assert refs.isEmpty();
             assert toDelete.isEmpty();
-            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES);
+            return new Changes(Changes.NO_CHANGES, Changes.NO_CHANGES, Changes.NO_CHANGES, false);
         }
         final List<Pair<ElementHandle<TypeElement>,Long>> newState = cont.finish();
         final List<Pair<ElementHandle<TypeElement>,Long>> oldState = loadCRCs(cacheRoot);
+        final boolean preBuildArgs = cont.preBuildArgs();
         cont = null;
         store();
         storeCRCs(cacheRoot, newState);
         storeTimeStamps(cacheRoot,timeStamps);
         timeStamps = null;
-        return diff(oldState,newState);
+        return diff(oldState,newState, preBuildArgs);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
@@ -248,7 +245,6 @@ public class BinaryAnalyser {
                         writer.clear();
                         try {
                             final ZipFile zipFile = new ZipFile(archive);
-                            prebuildArgs(zipFile, root);
                             final Enumeration<? extends ZipEntry> e = zipFile.entries();
                             cont = new ZipContinuation (zipFile, e, ctx);
                             return cont.execute();
@@ -342,7 +338,7 @@ public class BinaryAnalyser {
         PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
         try {
             for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
-                StringBuilder sb = new StringBuilder(pair.first.getQualifiedName());
+                StringBuilder sb = new StringBuilder(pair.first.getBinaryName());
                 sb.append('='); //NOI18N
                 sb.append(pair.second.longValue());
                 out.println(sb.toString());
@@ -401,7 +397,11 @@ public class BinaryAnalyser {
         return oldTime == timeStamp;
     }
 
-    static Changes diff (List<Pair<ElementHandle<TypeElement>,Long>> oldState, List<Pair<ElementHandle<TypeElement>,Long>> newState) {
+    static Changes diff (
+            final List<Pair<ElementHandle<TypeElement>,Long>> oldState,
+            final List<Pair<ElementHandle<TypeElement>,Long>> newState,
+            final boolean preBuildArgs
+            ) {
         final List<ElementHandle<TypeElement>> changed = new LinkedList<ElementHandle<TypeElement>>();
         final List<ElementHandle<TypeElement>> removed = new LinkedList<ElementHandle<TypeElement>>();
         final List<ElementHandle<TypeElement>> added = new LinkedList<ElementHandle<TypeElement>>();
@@ -417,7 +417,7 @@ public class BinaryAnalyser {
             if (newE == null) {
                 newE = newIt.next();
             }
-            int ni = oldE.first.getQualifiedName().compareTo(newE.first.getQualifiedName());
+            int ni = oldE.first.getBinaryName().compareTo(newE.first.getBinaryName());
             if (ni == 0) {
                 if (oldE.second.longValue() == 0 || oldE.second.longValue() != newE.second.longValue()) {
                     changed.add(oldE.first);
@@ -445,7 +445,7 @@ public class BinaryAnalyser {
         while (newIt.hasNext()) {
             added.add(newIt.next().first);
         }
-        return new Changes(added, removed, changed);
+        return new Changes(added, removed, changed, preBuildArgs);
     }
 
     private static String nameToString( ClassName name ) {
@@ -464,53 +464,6 @@ public class BinaryAnalyser {
         uset.add(usage);
     }
 
-    /**
-     * Prebuilds argument names for {@link javax.swing.JComponent} to speed up first
-     * call of code completion on swing classes. Has no semantic impact only improves performance,
-     * so it's can be safely disabled.
-     * @param archiveFile the archive
-     * @param archiveUrl url of an archive
-     */
-    private static void prebuildArgs (final ZipFile archiveFile, final URL archiveUrl) {
-        final ZipEntry jce = archiveFile.getEntry(FileObjects.convertPackage2Folder(javax.swing.JComponent.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
-        if (jce != null) {                                   //NOI18N
-            //On the IBM VMs the swing is in separate jar (graphics.jar) where no j.l package exists, don't prebuild such an archive.
-            //The param names will be created on deamand
-            final ZipEntry oe = archiveFile.getEntry(FileObjects.convertPackage2Folder(Object.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
-            if (oe != null) {
-                class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
-                    @Override
-                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
-                        if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.log(Level.FINE, "Diagnostic reported during prebuilding args: {0}", diagnostic.toString()); //NOI18N
-                        }
-                    }
-                }
-                ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
-                    ClassPathSupport.createClassPath(new URL[0]),
-                    ClassPathSupport.createClassPath(new URL[0]));
-                final JavacTaskImpl jt = JavacParser.createJavacTask(cpInfo, new DevNullDiagnosticListener(), null, null, null, null, null);
-                TreeLoader.preRegister(jt.getContext(), cpInfo);
-                //Force JTImpl.prepareCompiler to get JTImpl into Context
-                try {
-                    jt.parse(new JavaFileObject[0]);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
-                if (jc != null) {
-                    List<ExecutableElement> methods = ElementFilter.methodsIn(jc.getEnclosedElements());
-                    for (ExecutableElement method : methods) {
-                        List<? extends VariableElement> params = method.getParameters();
-                        if (!params.isEmpty()) {
-                            params.get(0).getSimpleName();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     private void store() throws IOException {
         try {
@@ -803,6 +756,7 @@ public class BinaryAnalyser {
 
         private List<Pair<ElementHandle<TypeElement>,Long>> result;
         private boolean changed;
+        private byte preBuildArgsState;
 
         protected Continuation () {
             this.result = new ArrayList<Pair<ElementHandle<TypeElement>, Long>>();
@@ -814,6 +768,14 @@ public class BinaryAnalyser {
 
         protected final void report (final ElementHandle<TypeElement> te, final long crc) {
             this.result.add(Pair.of(te, crc));
+            //On the IBM VMs the swing is in separate jar (graphics.jar) where no j.l package exists, don't prebuild such an archive.
+            //The param names will be created on deamand
+            final String binName = te.getBinaryName();
+            if (OBJECT.equals(binName)) {
+                preBuildArgsState|=1;
+            } else if (JCOMPONENT.equals(binName)) {
+                preBuildArgsState|=2;
+            }
         }
         
         protected final void markChanged() {
@@ -831,7 +793,7 @@ public class BinaryAnalyser {
                 public int compare(Object o1, Object o2) {
                     final Pair<ElementHandle<TypeElement>,Long> p1 = (Pair<ElementHandle<TypeElement>,Long>) o1;
                     final Pair<ElementHandle<TypeElement>,Long> p2 = (Pair<ElementHandle<TypeElement>,Long>) o2;
-                    return p1.first.getQualifiedName().compareTo(p2.first.getQualifiedName());
+                    return p1.first.getBinaryName().compareTo(p2.first.getBinaryName());
                 }
             });
             return result;
@@ -839,6 +801,10 @@ public class BinaryAnalyser {
         
         public final boolean hasChanges() {
             return changed;
+        }
+        
+        public final boolean preBuildArgs() {
+            return preBuildArgsState == 3;
         }
     }
 
