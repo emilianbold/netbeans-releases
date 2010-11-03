@@ -121,6 +121,18 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         this.wp = panel;
         this.wd = wd;
         initComponents();
+        
+        // hide abundant fields in New Connection wizard
+        if (wd != null) {
+            drvClassLabel.setVisible(false);
+            drvClassComboBox.setVisible(false);
+            findButton.setVisible(false);
+            nameLabel.setVisible(false);
+            nameTextField.setVisible(false);
+            progressMessageLabel.setVisible(false);
+            progressContainerPanel.setVisible(false);
+        }
+
         // hack to force the progressContainerPanel honor its preferred height
         // without it, the preferred height is sometimes ignored during resize
         // progressContainerPanel.add(Box.createVerticalStrut(progressContainerPanel.getPreferredSize().height), BorderLayout.EAST);
@@ -679,7 +691,7 @@ public final class AddDriverDialog extends javax.swing.JPanel {
         String message = null;
         if (drvs.isEmpty()) {
             if (wd != null && wd.getDownloadFrom() != null) {
-                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom());
+                message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverDownloadMissingFile", wd.getDownloadFrom(), wd.getPrivilegedName());
             } else {
                 message = NbBundle.getMessage(AddDriverDialog.class, "AddDriverMissingFile");
             }
