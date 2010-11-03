@@ -151,7 +151,7 @@ public abstract class Executor {
     public abstract List<String> getCmdOutputLines();
 
 
-    public abstract boolean startIO(TermComponent pio);
+    public abstract boolean startIO(InputOutput io);
 
     protected void destroyEngine() {
 	destroyedByHand = true;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,47 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.io;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
-import org.openide.windows.InputOutput;
+/**
+ *
+ * @author Egor Ushakov
+ */
+public class PioPack extends IOPack {
+    private final TermComponent pio;
 
-public class IOPack {
-    private final TermComponent console;
-    private final InputOutput io;
-
-    public IOPack(TermComponent console, InputOutput io) {
-        this.console = console;
-        this.io = io;
+    public PioPack(TermComponent console, TermComponent pio) {
+        super(console, pio.getIO());
+        this.pio = pio;
     }
 
-    public TermComponent console() {
-	return console;
+    public TermComponent pio() {
+	return pio;
     }
 
-    public boolean connectPio(Executor executor) {
-	return executor.startIO(io);
-    }
-
+    @Override
     public void open() {
-	console.open();
+	pio.open();
+	super.open();
     }
 
+    @Override
     public void bringDown() {
-	console.bringDown();
+	pio.bringDown();
+	super.bringDown();
     }
 
+    @Override
     public void bringUp() {
-	console.bringUp();
+	pio.bringUp();
+	super.bringUp();
     }
 
+    @Override
     public void switchTo() {
-	console.switchTo();
+	pio.switchTo();
+	super.switchTo();
     }
 
-    public static TermComponent makeConsole(int flags) {
-	return TermComponentFactory.createNewTermComponent(ConsoleTopComponent.getDefault(), flags);
+    public static TermComponent makePio(int flags) {
+	return TermComponentFactory.createNewTermComponent(PioTopComponent.getDefault(), flags);
     }
 }

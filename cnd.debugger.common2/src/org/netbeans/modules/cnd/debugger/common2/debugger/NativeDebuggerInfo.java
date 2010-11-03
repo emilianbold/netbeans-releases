@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
+import org.openide.windows.InputOutput;
 
 
 /**
@@ -173,6 +174,16 @@ public abstract class NativeDebuggerInfo {
 
     public final void setProfile(RunProfile profile) {
 	this.profile = profile;
+    }
+
+    private InputOutput io = null;
+
+    public InputOutput getInputOutput() {
+        return io;
+    }
+
+    public void setInputOutput(InputOutput io) {
+        this.io = io;
     }
 
     public final EngineType debuggerType() {
