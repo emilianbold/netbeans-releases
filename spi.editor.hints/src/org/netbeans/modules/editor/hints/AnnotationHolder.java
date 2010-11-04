@@ -84,10 +84,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -104,6 +107,9 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 
 /**
@@ -114,15 +120,12 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
     private static final Logger LOG = Logger.getLogger(AnnotationHolder.class.getName());
     
-    final static Map<Severity, AttributeSet> COLORINGS;
-
-    static {
-        COLORINGS = new EnumMap<Severity, AttributeSet>(Severity.class);
-        COLORINGS.put(Severity.ERROR, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.WARNING, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.VERIFIER, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55), EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.HINT, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
-    };
+    // mimte-type --> coloring
+    private static Map<String, Map<Severity, AttributeSet>> COLORINGS =
+        Collections.synchronizedMap(new HashMap<String, Map<Severity, AttributeSet>>());
+    // mime-type --> listener
+    private static Map<String, LookupListener> COLORINGS_LISTENERS =
+        Collections.synchronizedMap(new HashMap<String, LookupListener>());
 
     private Map<ErrorDescription, List<Position>> errors2Lines;
     private Map<Position, List<ErrorDescription>> line2Errors;
@@ -769,7 +772,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
 
             for (int[] h : currentHighlights) {
                 if (h[0] <= h[1]) {
-                    bag.addHighlight(h[0], h[1], COLORINGS.get(s));
+                    bag.addHighlight(h[0], h[1], getColoring(s, doc));
                 } else {
                     //see issue #112566
                     StringBuilder sb = new StringBuilder();
@@ -800,6 +803,94 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         return bag;
     }
 
+    private static AttributeSet getColoring(Severity s, Document d) {
+        final String mimeType = DocumentUtilities.getMimeType(d);
+        Map<Severity, AttributeSet> coloring = COLORINGS.get(mimeType);
+        if (coloring == null) {
+            coloring = new EnumMap<Severity, AttributeSet>(Severity.class);
+            Lookup lookup = MimeLookup.getLookup(mimeType);
+            Lookup.Result<FontColorSettings> result = lookup.lookupResult(FontColorSettings.class);
+            
+            LookupListener lookupListener = COLORINGS_LISTENERS.get(mimeType);
+            if (lookupListener == null) {
+                lookupListener = new LookupListener() {
+                    @Override
+                    public void resultChanged(LookupEvent ev) {
+                        COLORINGS.remove(mimeType);
+                    }
+                };
+                COLORINGS_LISTENERS.put(mimeType, lookupListener);
+                result.addLookupListener(
+                    WeakListeners.create(
+                        LookupListener.class,
+                        lookupListener,
+                        result
+                    )
+                );
+            }
+            final Iterator<? extends FontColorSettings> it = result.allInstances().iterator();
+            if (it.hasNext()) {
+                FontColorSettings fcs = it.next();
+                AttributeSet attributes = fcs.getTokenFontColors("errors"); // NOI18N
+                if (attributes != null) {
+                    coloring.put(Severity.ERROR, attributes);
+                } else {
+                    attributes = fcs.getTokenFontColors(Severity.ERROR.toString());
+                    if (attributes != null) {
+                        coloring.put(Severity.ERROR, attributes);
+                    } else {
+                        coloring.put(Severity.ERROR, AttributesUtilities.createImmutable(
+                            EditorStyleConstants.WaveUnderlineColor, 
+                            new Color(0xFF, 0x00, 0x00),
+                            EditorStyleConstants.Tooltip, new TooltipResolver()));
+                    }
+                }
+                attributes = fcs.getTokenFontColors(Severity.WARNING.toString());
+                if (attributes != null) {
+                    coloring.put(Severity.WARNING, attributes);
+                } else {
+                    coloring.put(Severity.WARNING, AttributesUtilities.createImmutable(
+                        EditorStyleConstants.WaveUnderlineColor,
+                        new Color(0xC0, 0xC0, 0x00), 
+                        EditorStyleConstants.Tooltip, new TooltipResolver()));
+                }
+                attributes = fcs.getTokenFontColors(Severity.VERIFIER.toString());
+                if (attributes != null) {
+                    coloring.put(Severity.VERIFIER, attributes);
+                } else {
+                    coloring.put(Severity.VERIFIER, AttributesUtilities.createImmutable(
+                        EditorStyleConstants.WaveUnderlineColor, 
+                        new Color(0xFF, 0xD5, 0x55), 
+                        EditorStyleConstants.Tooltip, new TooltipResolver()));
+                }
+                attributes = fcs.getTokenFontColors(Severity.HINT.toString());
+                if (attributes != null) {
+                    coloring.put(Severity.HINT, attributes);
+                } else {
+                    coloring.put(Severity.HINT, AttributesUtilities.createImmutable(
+                        EditorStyleConstants.Tooltip, new TooltipResolver()));
+                }
+            } else {
+                coloring.put(Severity.ERROR, AttributesUtilities.createImmutable(
+                    EditorStyleConstants.WaveUnderlineColor, 
+                    new Color(0xFF, 0x00, 0x00), 
+                    EditorStyleConstants.Tooltip, new TooltipResolver()));
+                coloring.put(Severity.WARNING, AttributesUtilities.createImmutable(
+                    EditorStyleConstants.WaveUnderlineColor,
+                    new Color(0xC0, 0xC0, 0x00), 
+                    EditorStyleConstants.Tooltip, new TooltipResolver()));
+                coloring.put(Severity.VERIFIER, AttributesUtilities.createImmutable(
+                    EditorStyleConstants.WaveUnderlineColor,
+                    new Color(0xFF, 0xD5, 0x55), 
+                    EditorStyleConstants.Tooltip, new TooltipResolver()));
+                coloring.put(Severity.HINT, AttributesUtilities.createImmutable(
+                    EditorStyleConstants.Tooltip, new TooltipResolver()));
+            }
+            COLORINGS.put(mimeType, coloring);
+        }
+        return coloring.get(s);
+    }
+    
     private static int detectCollisions(int[] h1, int[] h2) {
         if (h2[1] < h1[0])
             return 0;//no collision
