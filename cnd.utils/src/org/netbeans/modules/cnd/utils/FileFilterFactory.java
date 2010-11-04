@@ -69,66 +69,72 @@ import org.netbeans.modules.cnd.utils.filters.WorkshopProjectFilter;
  * @author Alexander Simon
  */
 public final class FileFilterFactory {
+
+    /* A combination of FileFilter and FileObjectFilter */
+    public static abstract class FileAndFileObjectFilter
+            extends FileFilter implements FileObjectFilter {
+    }
+
     private FileFilterFactory() {
     }
-    public static FileFilter getAllFileFilter(){
+    public static FileAndFileObjectFilter getAllFileFilter(){
         return AllFileFilter.getInstance();
     }
-    public static FileFilter getAllSourceFileFilter(){
+    public static FileAndFileObjectFilter getAllSourceFileFilter(){
         return AllSourceFileFilter.getInstance();
     }
-    public static FileFilter getCCSourceFileFilter(){
+    public static FileAndFileObjectFilter getCCSourceFileFilter(){
         return CCSourceFileFilter.getInstance();
     }
-    public static FileFilter getCSourceFileFilter(){
+    public static FileAndFileObjectFilter getCSourceFileFilter(){
         return CSourceFileFilter.getInstance();
     }
-    public static FileFilter getConfigureFileFilter(){
+    public static FileAndFileObjectFilter getConfigureFileFilter(){
         return ConfigureFileFilter.getInstance();
     }
-    public static FileFilter getElfDynamicLibraryFileFilter(){
+    public static FileAndFileObjectFilter getElfDynamicLibraryFileFilter(){
         return ElfDynamicLibraryFileFilter.getInstance();
     }
-    public static FileFilter getElfExecutableFileFilter(){
+    public static FileAndFileObjectFilter getElfExecutableFileFilter(){
         return ElfExecutableFileFilter.getInstance();
     }
-    public static FileFilter getElfStaticLibraryFileFilter(){
+    public static FileAndFileObjectFilter getElfStaticLibraryFileFilter(){
         return ElfStaticLibraryFileFilter.getInstance();
     }
-    public static FileFilter getFortranSourceFileFilter(){
+    public static FileAndFileObjectFilter getFortranSourceFileFilter(){
         return FortranSourceFileFilter.getInstance();
     }
-    public static FileFilter getHeaderSourceFileFilter(){
+    public static FileAndFileObjectFilter getHeaderSourceFileFilter(){
         return HeaderSourceFileFilter.getInstance();
     }
-    public static FileFilter getMacOSXDynamicLibraryFileFilter(){
+    public static FileAndFileObjectFilter getMacOSXDynamicLibraryFileFilter(){
         return MacOSXDynamicLibraryFileFilter.getInstance();
     }
-    public static FileFilter getMacOSXExecutableFileFilter(){
+    public static FileAndFileObjectFilter getMacOSXExecutableFileFilter(){
         return MacOSXExecutableFileFilter.getInstance();
     }
-    public static FileFilter getMakefileFileFilter(){
+    public static FileAndFileObjectFilter getMakefileFileFilter(){
         return MakefileFileFilter.getInstance();
     }
-    public static FileFilter getPeDynamicLibraryFileFilter(){
+    public static FileAndFileObjectFilter getPeDynamicLibraryFileFilter(){
         return PeDynamicLibraryFileFilter.getInstance();
     }
-    public static FileFilter getPeExecutableFileFilter(){
+    public static FileAndFileObjectFilter getPeExecutableFileFilter(){
         return PeExecutableFileFilter.getInstance();
     }
-    public static FileFilter getPeStaticLibraryFileFilter(){
+    public static FileAndFileObjectFilter getPeStaticLibraryFileFilter(){
         return PeStaticLibraryFileFilter.getInstance();
     }
-    public static FileFilter getQtFileFilter(){
+    public static FileAndFileObjectFilter getQtFileFilter(){
         return QtFileFilter.getInstance();
     }
-    public static FileFilter getResourceFileFilter(){
+    public static FileAndFileObjectFilter getResourceFileFilter(){
         return ResourceFileFilter.getInstance();
     }
-    public static FileFilter getShellFileFilter(){
+    public static FileAndFileObjectFilter getShellFileFilter(){
         return ShellFileFilter.getInstance();
     }
-    public static FileFilter getWorkshopProjectFilter(){
+    public static FileAndFileObjectFilter getWorkshopProjectFilter(){
         return WorkshopProjectFilter.getInstance();
     }
 }

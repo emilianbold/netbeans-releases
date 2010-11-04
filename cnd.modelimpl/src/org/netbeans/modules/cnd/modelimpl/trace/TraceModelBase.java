@@ -35,9 +35,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Cancellable;
@@ -230,7 +229,7 @@ public class TraceModelBase {
         NativeProject np = null;
         if (files.size() == 1 && files.get(0).getName().equals("project.xml")) { // NOI18N
             try {
-                FileObject projectDir = FileUtil.toFileObject(
+                FileObject projectDir = CndFileUtils.toFileObject(
                         files.get(0).getParentFile().getParentFile());
                 Project p = ProjectManager.getDefault().findProject(projectDir);
                 np = p.getLookup().lookup(NativeProject.class);
@@ -602,8 +601,8 @@ public class TraceModelBase {
                     try {
                         FileImpl impl = (FileImpl) csmFile;
                         NativeFileItem item = impl.getNativeFileItem();
-                        FileObject fo = item == null ? FileUtil.toFileObject(impl.getFile()) : FileUtil.toFileObject(item.getFile());
-                        DataObject dobj = fo == null ? null : DataObject.find(fo);
+                        FileObject fo = (item == null) ? CndFileUtils.toFileObject(impl.getAbsolutePath()) : item.getFileObject();
+                        DataObject dobj = (fo == null || !fo.isValid()) ? null : DataObject.find(fo);
                         //if (dobj == null){
                         //    System.err.println("no DO for " + item + " of file " + impl);
                         //}

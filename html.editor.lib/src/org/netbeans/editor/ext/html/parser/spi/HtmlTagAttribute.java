@@ -58,4 +58,6 @@ public interface HtmlTagAttribute {
 
     public Collection<String> getPossibleValues();
 
+    public HelpItem getHelp();
+    
 }

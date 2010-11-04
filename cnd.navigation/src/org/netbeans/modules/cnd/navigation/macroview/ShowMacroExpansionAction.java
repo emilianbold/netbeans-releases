@@ -63,6 +63,7 @@ import org.openide.util.actions.CookieAction;
  */
 public final class ShowMacroExpansionAction extends CookieAction {
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         Document mainDoc = getDocument(activatedNodes);
         int offset = getOffset(activatedNodes);
@@ -72,7 +73,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
     private Document getDocument(Node[] activatedNodes) {
         EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
         if (c != null) {
-            return c.getDocument();
+            return CsmUtilities.openDocument(c);
         }
         return null;
     }
@@ -91,26 +92,23 @@ public final class ShowMacroExpansionAction extends CookieAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
-            if (ContextUtils.USE_REFERENCE_RESOLVER) {
-                CsmReference ref = ContextUtils.findReference(activatedNodes[0]);
-                if (ref != null && CsmKindUtilities.isInclude(ref.getOwner())) {
-                    return true;
-                }
-            }
             return ContextUtils.findFile(activatedNodes[0]) != null;
         }
         return false;
     }
 
+    @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ShowMacroExpansionAction"); // NOI18N
     }
 
-    protected Class[] cookieClasses() {
+    @Override
+    protected Class<?>[] cookieClasses() {
         return new Class[]{
                     EditorCookie.class
                 };
@@ -122,6 +120,7 @@ public final class ShowMacroExpansionAction extends CookieAction {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

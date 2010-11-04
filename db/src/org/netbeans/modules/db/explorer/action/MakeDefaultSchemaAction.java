@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -84,12 +84,14 @@ public class MakeDefaultSchemaAction extends BaseAction {
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(
             new Runnable() {
+                @Override
                 public void run() {
                     DatabaseConnection connection = activatedNodes[0].getLookup().lookup(DatabaseConnection.class);
                     String name = activatedNodes[0].getLookup().lookup(SchemaNode.class).getName();
 
                     try {
                         connection.setDefaultSchema(name);
+                        connection.setSchema(name);
                     } catch (Exception e) {
                         Exceptions.printStackTrace(e);
                     }

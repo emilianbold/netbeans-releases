@@ -168,10 +168,15 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
             final char c = projectName.charAt(i);
             if (first) {
                 if (!Character.isJavaIdentifierStart(c)) {
-                    needsEscape = true;                    
-                } 
-                sb.append(c);
-                first = false;
+                    if (Character.isJavaIdentifierPart(c)) {
+                        needsEscape = true;
+                        sb.append(c);
+                        first = false;
+                    }
+                } else {
+                    sb.append(c);
+                    first = false;
+                }
             } else {
                 if (Character.isJavaIdentifierPart(c) ) {
                     sb.append(c);

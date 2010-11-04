@@ -43,36 +43,48 @@ package org.netbeans.modules.maven.apisupport;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-import javax.swing.Action;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author mkleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=55)
+@ServiceProvider(service=MavenActionsProvider.class, position=55)
 public class NbmActionGoalProvider implements MavenActionsProvider {
     static final String NBMRELOAD = "nbmreload";
+    private static final String RELOAD_TARGET = "reload-target"; // #190469
     
     private AbstractMavenActionsProvider platformDelegate = new AbstractMavenActionsProvider() {
 
-        protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/apisupport/platformActionMappings.xml"; //NOI18N
+        protected @Override InputStream getActionDefinitionStream() {
+            String path = "platformActionMappings.xml"; //NOI18N
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
@@ -85,8 +97,8 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     };
     private AbstractMavenActionsProvider ideDelegate = new AbstractMavenActionsProvider() {
 
-        protected InputStream getActionDefinitionStream() {
-            String path = "/org/netbeans/modules/maven/apisupport/ideActionMappings.xml"; //NOI18N
+        protected @Override InputStream getActionDefinitionStream() {
+            String path = "ideActionMappings.xml"; //NOI18N
             InputStream in = getClass().getResourceAsStream(path);
             assert in != null : "no instream for " + path; //NOI18N
             return in;
@@ -99,39 +111,68 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
     };
 
 
-    /** Creates a new instance of NbmActionGoalProvider */
-    public NbmActionGoalProvider() {
-    }
-    
-    public Set<String> getSupportedDefaultActions() {
-        return Collections.singleton(NBMRELOAD);
+    public @Override Set<String> getSupportedDefaultActions() {
+        return new HashSet<String>(Arrays.asList(NBMRELOAD, RELOAD_TARGET));
     }
     
     
-    public static Action createReloadAction() {
-        Action a = ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
+    @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReload", category = "Project")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload")
+    @ActionReference(position = 1250, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction createReloadAction() {
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(NBMRELOAD, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload"), null);
         a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
         return a;
     }
 
-    public synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
-        if (!ActionProvider.COMMAND_RUN.equals(action) &&
-                !ActionProvider.COMMAND_DEBUG.equals(action) &&
-                !NBMRELOAD.equals(action)) {
-            return false;
-        }
-        if (isPlatformApp(project)) {
-            return true;
-        } else if (hasNbm(project)) {
-            return true;
-        }
+    @ActionID(id = "org.netbeans.modules.maven.apisupport.NBMReloadTarget", category = "Project")
+    @ActionRegistration(displayName = "#ACT_NBM_Reload_Target")
+    @ActionReference(position = 1225, path = "Projects/org-netbeans-modules-maven/Actions")
+    public static ContextAwareAction createReloadTargetAction() {
+        ContextAwareAction a = (ContextAwareAction) ProjectSensitiveActions.projectCommandAction(RELOAD_TARGET, NbBundle.getMessage(NbmActionGoalProvider.class, "ACT_NBM_Reload_Target"), null);
+        a.putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        return a;
+    }
 
+    public @Override synchronized boolean isActionEnable(String action, Project project, Lookup lookup) {
+        if (RELOAD_TARGET.equals(action) || NBMRELOAD.equals(action)) {
+            return hasNbm(project);
+        }
+        if (ActionProvider.COMMAND_RUN.equals(action) || ActionProvider.COMMAND_DEBUG.equals(action)) {
+            return hasNbm(project) || isPlatformApp(project);
+        }
         return false;
     }
 
-    public RunConfig createConfigForDefaultAction(String actionName,
+    public @Override RunConfig createConfigForDefaultAction(String actionName,
             Project project,
             Lookup lookup) {
+        if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
+            // Cf. ModuleActions.createReloadAction.
+            Project app = MavenNbModuleImpl.findAppProject(project);
+            if (app == null) {
+                if (SelectPlatformAppModulePanel.findAppModule(project)) {
+                    app = MavenNbModuleImpl.findAppProject(project);
+                }
+            }
+            if (app != null) {
+                if (!FileUtilities.resolveFilePath(FileUtil.toFile(app.getProjectDirectory()), "target/userdir/lock").isFile()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(NbmActionGoalProvider.class, "NbmActionGoalProvider.target_platform_not_running"), NotifyDescriptor.WARNING_MESSAGE));
+                    return null;
+                }
+                RunConfig rc = createConfig(actionName, app, lookup, platformDelegate);
+                assert rc != null;
+                rc.setPreExecution(RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, rc.getTaskDisplayName(), Collections.singletonList("package")));
+                MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+                String outputDir = PluginPropertyUtils.getPluginProperty(prj, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_JAR, "directory", "jar"); // NOI18N
+                if (outputDir == null) {
+                    outputDir = "target"; // NOI18N
+                }
+                // XXX why does getPluginProperty(prj, GROUP_APACHE_PLUGINS, PLUGIN_JAR, "finalName", "jar") not work?
+                rc.setProperty("module", FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), outputDir + "/" + prj.getArtifactId() + "-" + prj.getVersion() + ".jar").getAbsolutePath()); // NOI18N
+                return rc;
+            }
+        }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {
@@ -146,8 +187,14 @@ public class NbmActionGoalProvider implements MavenActionsProvider {
         return null;
     }
 
-    public NetbeansActionMapping getMappingForAction(String actionName,
+    public @Override NetbeansActionMapping getMappingForAction(String actionName,
             Project project) {
+        if (RELOAD_TARGET.equals(actionName) && hasNbm(project)) {
+            Project app = MavenNbModuleImpl.findAppProject(project);
+            if (app != null) {
+                return createMapping(actionName, app, platformDelegate);
+            }
+        }
         if (!ActionProvider.COMMAND_RUN.equals(actionName) &&
                 !ActionProvider.COMMAND_DEBUG.equals(actionName) &&
                 !NBMRELOAD.equals(actionName)) {

@@ -70,11 +70,9 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
     private static final String URI_SCHEME = "https";
     
     /** Creates a new instance of SecureURLResourceRetriever */
-    public SecureURLResourceRetriever() {
-    }
+    public SecureURLResourceRetriever() {}
 
     public boolean accept(String baseAddr, String currentAddr) throws URISyntaxException {
-        
         URI currURI = new URI(currentAddr);
         if( (currURI.isAbsolute()) && (currURI.getScheme().equalsIgnoreCase(URI_SCHEME)))
             return true;
@@ -86,28 +84,22 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
         return false;
     }
     
-    public HashMap<String, InputStream> retrieveDocument(String baseAddress,
-            String documentAddress) throws IOException,URISyntaxException{
-        
+    public HashMap<String, InputStream> retrieveDocument(String baseAddress, String documentAddress) throws IOException,URISyntaxException{
         String effAddr = getEffectiveAddress(baseAddress, documentAddress);
         if(effAddr == null)
             return null;
         URI currURI = new URI(effAddr);
         HashMap<String, InputStream> result = null;
-        
         if (acceptedCertificates==null) acceptedCertificates = new HashSet();
-        setRetrieverTrustManager();
-        
-        InputStream is = getInputStreamOfURL(currURI.toURL(), ProxySelector.
-                getDefault().select(currURI).get(0));
+        setRetrieverTrustManager((HttpsURLConnection) currURI.toURL().openConnection());
+        InputStream is = getInputStreamOfURL(currURI.toURL(), ProxySelector.getDefault().select(currURI).get(0));
         result = new HashMap<String, InputStream>();
         result.put(effectiveURL.toString(), is);
         return result;
-        
     }
     
     // Install the trust manager for retriever
-    private void setRetrieverTrustManager() {
+    private void setRetrieverTrustManager(HttpsURLConnection con) {
         TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {
                 public X509Certificate[] getAcceptedIssuers() {
@@ -140,13 +132,12 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
                 }
             }
         };
-        
-        
+
         try {
             SSLContext sslContext = SSLContext.getInstance("SSL"); //NOI18N
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+            con.setSSLSocketFactory(sslContext.getSocketFactory());
+            con.setHostnameVerifier(new HostnameVerifier() {
                 public boolean verify(String string, SSLSession sSLSession) {
                     // accept all hosts
                     return true;
@@ -177,5 +168,4 @@ public class SecureURLResourceRetriever extends URLResourceRetriever {
             }
         }
     }
-    
 }

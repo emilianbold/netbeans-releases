@@ -60,6 +60,7 @@ import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.openide.filesystems.FileObject;
 
 /**
  * @todo Test that if you insert x="" and then DELETE the ", it wipes out BOTH of them!
@@ -198,6 +199,43 @@ public class PHPBracketCompleterTest extends PHPTestBase {
         if (reformattedPos != -1) {
             assertEquals(reformattedPos, caret.getDot());
         }
+    }
+
+    protected void testIndentInFile(String file) throws Exception {
+        testIndentInFile(file, null, 0);
+    }
+
+    protected void testIndentInFile(String file, IndentPrefs preferences, int initialIndent) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+        String source = readFile(fo);
+
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
+        Formatter formatter = getFormatter(preferences);
+
+        JEditorPane ta = getPane(sourceWithoutMarker);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, true);
+        }
+
+        setupDocumentIndentation(doc, preferences);
+
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        prefs.putInt(FmtOptions.initialIndent, initialIndent);
+
+        runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+
+        doc.getText(0, doc.getLength());
+        doc.insertString(caret.getDot(), "^", null);
+
+        String target = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, target, false, ".indented");
     }
 
     @Override
@@ -1317,4 +1355,15 @@ public class PHPBracketCompleterTest extends PHPTestBase {
 //    public void testBackspacePipes3() throws Exception {
 //        deleteChar("x=|^", "x=^");
 //    }
+
+    public void testAlternativeSyntaxFor_01()throws Exception {
+        testIndentInFile("testfiles/indent/switch_09.php");
+    }
+    
+    public void testIsseu191443() throws Exception {
+        String testString = "$test = (string^) ahoj;";
+        String result  = "$test = (string)^ ahoj;";
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar(testString, ')', result, null, false, options);
+    }
 }

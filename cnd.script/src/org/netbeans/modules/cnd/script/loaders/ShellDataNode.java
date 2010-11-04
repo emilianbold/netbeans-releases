@@ -86,6 +86,7 @@ public class ShellDataNode extends DataNode {
 
     @Override
     public Action getPreferredAction() {
-        return SystemAction.get(OpenAction.class);
+        Action result = super.getPreferredAction();
+        return result == null ? SystemAction.get(OpenAction.class) : result;
     }
 }

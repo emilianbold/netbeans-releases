@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.*;
 
 import java.util.*;
@@ -728,4 +729,20 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final Set<Object> disabledProjects = new HashSet<Object>();
     private final RequestProcessor modelProcessor = new RequestProcessor("Code model request processor", 1); // NOI18N
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
+    
+    /////////// 
+    // tracing
+    public void dumpInfo(PrintWriter printOut) {
+        printOut.printf("ModelImpl: disabled=%d, projects=%d\n", disabledProjects.size(), platf2csm.size());// NOI18N
+        int ind = 1;
+        for (Object prj : disabledProjects) {
+            printOut.printf("D[%d] %s\n", ind++, prj);// NOI18N
+        }
+        ind=1;
+        for (Map.Entry<Object, CsmUID<CsmProject>> entry : platf2csm.entrySet()) {
+            final Object key = entry.getKey();
+            CsmUID<CsmProject> value = entry.getValue();
+            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind++, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+        }
+    }
 }

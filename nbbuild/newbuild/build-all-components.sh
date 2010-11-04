@@ -261,7 +261,6 @@ if [ $ML_BUILD == 1 ]; then
     rm -f netbeans-ml/nb.cluster.*
 #    rm -f netbeans-ml/build_info
     rm -rf netbeans-ml/extra
-    rm -rf netbeans-ml/testtools
 fi
 
 cd $NB_ALL/nbbuild
@@ -287,4 +286,3 @@ fi
 rm -f netbeans/nb.cluster.*
 #rm -f netbeans/build_info
 #rm -rf netbeans/extra
-rm -rf netbeans/testtools

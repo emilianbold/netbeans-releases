@@ -150,7 +150,7 @@ public class ModelSource implements SourceFileProperties {
     
     @Override
     public String getItemName() {
-        return item.getFile().getName();
+        return item.getName();
     }
     
     @Override
@@ -352,12 +352,13 @@ public class ModelSource implements SourceFileProperties {
     
     @Override
     public ItemProperties.LanguageKind getLanguageKind() {
-        if (item.getLanguage() == Language.C){
-            return LanguageKind.C;
-        } else if (item.getLanguage() == Language.CPP){
-            return LanguageKind.CPP;
-        } else if (item.getLanguage() == Language.FORTRAN){
-            return LanguageKind.Fortran;
+        switch(item.getLanguage()) {
+            case C:
+                return LanguageKind.C;
+            case CPP:
+                return LanguageKind.CPP;
+            case FORTRAN:
+                return LanguageKind.Fortran;
         }
         return LanguageKind.Unknown;
     }
@@ -365,6 +366,11 @@ public class ModelSource implements SourceFileProperties {
     @Override
     public String getCompilerName() {
         return null;
+    }
+
+    @Override
+    public LanguageStandard getLanguageStandard() {
+        return LanguageStandard.Unknown;
     }
 }
 

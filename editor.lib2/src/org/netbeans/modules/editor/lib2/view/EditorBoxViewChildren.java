@@ -51,6 +51,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.SwingConstants;
 import javax.swing.text.Position;
 import javax.swing.text.TabExpander;
 import javax.swing.text.TabableView;
@@ -109,56 +110,37 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
     }
 
     /**
-     * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int, java.awt.Shape, float)}
+     * @see {@link EditorBoxView#replace(int, int, javax.swing.text.View[], int) }
      */
-    public EditorBoxView.ReplaceResult replace(EditorBoxView<V> boxView, EditorBoxView.ReplaceResult result,
-            int index, int removeCount, View[] addedViews,
-            int offsetDelta, Shape alloc)
+    VisualUpdate<V> replace(EditorBoxView<V> boxView,
+            int index, int removeCount, View[] addedViews, int offsetDelta)
     {
-        boolean modified = false;
-        int viewCount = size();
+        VisualUpdate<V> visualUpdate = new VisualUpdate<V>(boxView);
         if (index < 0) {
             throw new IllegalArgumentException("index=" + index + " < 0"); // NOI18N
         }
         if (removeCount < 0) {
             throw new IllegalArgumentException("removeCount=" + removeCount + " < 0"); // NOI18N
         }
-        if (index + removeCount > viewCount) {
+        if (index + removeCount > size()) {
             throw new IllegalArgumentException("index=" + index + ", removeCount=" +
-                    removeCount + ", viewCount=" + viewCount); // NOI18N
+                    removeCount + ", viewCount=" + size()); // NOI18N
         }
-        boolean removedTillEnd = (index + removeCount == viewCount);
-        moveStorage(index + removeCount); // Includes moveGap()
-        double visualOffset = getViewVisualOffset(boxView, index);
-        double removedSpan;
+        moveOffsetGap(index + removeCount);
+        moveVisualGap(index + removeCount);
+        // Assign visual offset BEFORE possible removal/addition of views is made
+        // since the added views would NOT have the visual offset filled in yet.
+        setVisualIndexAndOffset(boxView, visualUpdate, index);
         int gapIndexDelta = -removeCount;
         if (removeCount != 0) { // Removing at least one item => index < size
-            // Update visual offsets
-            removedSpan = getViewVisualOffset(boxView, index + removeCount) - visualOffset;
             remove(index, removeCount);
-            modified = true;
-        } else {
-            removedSpan = 0d;
-        }
-        double addedSpan = 0d;
-        float minorAxisChildrenSpan = getMinorAxisChildrenSpan(boxView);
-        boolean minorAxisChildrenSpanChange = false;
-        int majorAxis = boxView.getMajorAxis();
-        // Update offsetGapStart/Length at this point so that the childView.getStartOffset()
-        // returns proper value once childView.setRawOffset() gets called.
-        if (gapStorage != null) {
-            gapStorage.offsetGapStart += offsetDelta;
-            gapStorage.offsetGapLength -= offsetDelta;
         }
         if (addedViews != null && addedViews.length != 0) {
-            modified = true;
             gapIndexDelta += addedViews.length;
+            visualUpdate.endVisualIndex = index + addedViews.length;
             addArray(index, addedViews);
             int boxViewStartOffset = boxView.getStartOffset();
-            int minorAxis = ViewUtils.getOtherAxis(majorAxis);
             boolean supportsRawOffsetUpdate = rawOffsetUpdate();
-            double viewVisualOffset = visualOffset;
-            TabExpander tabExpander = boxView.getTabExpander();
             for (int i = 0; i < addedViews.length; i++) {
                 @SuppressWarnings("unchecked")
                 V view = (V) addedViews[i];
@@ -170,114 +152,275 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                 // First assign parent to the view and then ask for preferred span.
                 // This way the view may get necessary info from its parent regarding its preferred span.
                 view.setParent(boxView);
-                float majorSpan;
-                if (handleTabableViews() && view instanceof TabableView) {
-                    majorSpan = ((TabableView)view).getTabbedSpan((float)viewVisualOffset, tabExpander);
-                } else {
-                    majorSpan = view.getPreferredSpan(majorAxis);
-                }
-                float minorSpan = view.getPreferredSpan(minorAxis);
-                // Below gap => do not use visualGapLength
-                view.setRawVisualOffset(viewVisualOffset);
-                viewVisualOffset += majorSpan;
-                addedSpan += majorSpan;
-                if (minorSpan > minorAxisChildrenSpan) {
-                    minorAxisChildrenSpan = minorSpan;
-                    minorAxisChildrenSpanChange = true;
-                }
             }
+        } else { // No added views
+            visualUpdate.endVisualIndex = index;
         }
         if (gapStorage != null) {
-            gapStorage.gapIndex += gapIndexDelta;
-        }
-        boolean majorAxisChildrenSpanChange = (addedSpan != removedSpan);
-        if (majorAxisChildrenSpanChange || offsetDelta != 0) {
-            // Fix both visual and textual offsets in one iteration through children
-            fixOffsetsAndMajorSpan(boxView, index + addedViews.length, offsetDelta, addedSpan - removedSpan);
-        }
-        if (minorAxisChildrenSpanChange) {
-            setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
+            gapStorage.offsetGapIndex += gapIndexDelta;
+            int relEndOffset;
+            if (gapStorage.offsetGapIndex > 0) {
+                EditorView lastView = boxView.getEditorView(gapStorage.offsetGapIndex - 1);
+                relEndOffset = lastView.getRawOffset() + lastView.getLength();
+            } else {
+                relEndOffset = 0;
+            }
+            gapStorage.offsetGapStart = relEndOffset;
+            gapStorage.visualGapIndex += gapIndexDelta;
+            gapStorage.offsetGapLength -= offsetDelta;
+        } else { // Move the items one by one
+            if (rawOffsetUpdate() && (offsetDelta != 0)) {
+                int viewCount = size(); // Refresh (changed by 
+                for (int i = visualUpdate.endVisualIndex; i < viewCount; i++) {
+                    V view = get(i);
+                    view.setRawOffset(view.getRawOffset() + offsetDelta);
+                }
+            }
         }
         // Update boxView's length to actual length of children.
         // It cannot be done relatively by just adding offsetDelta to original boxView's length
         // since box views with unitialized children already have proper length
         // so later children initialization would double the boxView's length.
-        // Also this must be done after updateSpans() was called since it updates
-        // relative offsets of the local views necessary for proper getLength() result.
-        boxView.setLength(getLength(), 0, 0);
-        if (modified) {
-            updateSpans(boxView, result, index, removeCount, addedViews.length,
-                    majorAxisChildrenSpanChange, visualOffset,
-                    addedSpan, removedSpan, removedTillEnd,
-                    minorAxisChildrenSpanChange, alloc
-            );
-        } // Otherwise the repaint bounds and other vars in result stay unfilled
-        return result;
+        int newLength = getLength();
+        if (newLength != boxView.getLength()) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer(boxView.getDumpId() + ": update length: " + // NOI18N
+                        boxView.getLength() + " => " + newLength + "\n"); // NOI18N
+            }
+            boxView.setLength(newLength);
+        }
+        return visualUpdate;
+    }
+    
+    void updateSpansAndLayout(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, Shape alloc) {
+        fixSpans(boxView, visualUpdate);
+        // Update various spans affected by preceding changes.
+        updateLayout(boxView, visualUpdate, alloc);
+    }
+    
+    VisualUpdate<V> updateViews(EditorBoxView<V> boxView, int index, int count, Shape alloc) {
+        VisualUpdate<V> visualUpdate = new VisualUpdate<V>(boxView);
+        moveVisualGap(index + count);
+        setVisualIndexAndOffset(boxView, visualUpdate, index);
+        visualUpdate.endVisualIndex = index + count;
+        updateSpansAndLayout(boxView, visualUpdate, alloc);
+        return visualUpdate;
     }
 
-    protected double getMajorAxisChildrenSpan(EditorBoxView boxView) {
+    private void setVisualIndexAndOffset(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, int index) {
+        // Adjacent child views on a line (highlight views) can be affected
+        // if they share the same text layout with the removed child views.
+        // Final determination can only be done once the added views are in-place and their font can be examined.
+        // Check handleTabableViews() to determine whether handle joined text layouts (paragraph views)
+        if (handleTabableViews()) {
+            index = HighlightsViewUtils.findAffectedLayoutIndex(boxView, visualUpdate, index);
+        }
+        visualUpdate.visualIndex = index;
+        visualUpdate.visualOffset = getViewVisualOffset(boxView, index);
+    }
+        
+    private void fixSpans(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate) {
+        // Go through affected children and recompute spans and visual offsets.
+        // For lines the only affected children are the added ones but for intra-line views
+        // a TextLayout may span multiple views so affected children may precede/follow the added ones.
+        boolean handleTabableViews = handleTabableViews();
+        int majorAxis = boxView.getMajorAxis();
+        int minorAxis = ViewUtils.getOtherAxis(majorAxis);
+        TabExpander tabExpander = handleTabableViews ? boxView.getTabExpander() : null;
+        float minorAxisChildrenSpan = getMinorAxisChildrenSpan(boxView);
+        double visualOffset = visualUpdate.visualOffset;
+        assert (visualUpdate.visualIndex <= visualUpdate.endVisualIndex) :
+            "visualIndex=" + visualUpdate.visualIndex +
+            " > endVisualIndex=" + visualUpdate.endVisualIndex; // NOI18N
+        if (handleTabableViews) {
+            HighlightsViewUtils.fixLayouts(boxView, visualUpdate);
+        }
+        
+        for (int i = visualUpdate.visualIndex; i < visualUpdate.endVisualIndex; i++) {
+            V view = get(i);
+            // First assign parent to the view and then ask for preferred span.
+            // This way the view may get necessary info from its parent regarding its preferred span.
+            float majorSpan;
+            if (handleTabableViews) {
+                if (view instanceof TabableView) {
+                    majorSpan = ((TabableView) view).getTabbedSpan((float) visualOffset, tabExpander);
+                } else {
+                    majorSpan = view.getPreferredSpan(majorAxis);
+                }
+            } else { // Not tabable view
+                majorSpan = view.getPreferredSpan(majorAxis);
+            }
+            // Below gap => do not use visualGapLength
+            view.setRawVisualOffset(visualOffset);
+            visualOffset += majorSpan;
+            
+            float viewMinorAxisSpan = view.getPreferredSpan(minorAxis);
+            if (viewMinorAxisSpan > minorAxisChildrenSpan) {
+                visualUpdate.markMinorChildrenSpanChanged();
+                minorAxisChildrenSpan = viewMinorAxisSpan;
+            }
+        }
+        if (visualUpdate.isMinorChildrenSpanChanged()) {
+            setMinorAxisChildrenSpan(boxView, minorAxisChildrenSpan);
+        }
+        visualUpdate.endVisualOffset = visualOffset;
+        // Add span of created views to visual delta
+        double visualDelta = visualOffset - boxView.getViewVisualOffset(visualUpdate.endVisualIndex);
+        if (visualDelta != 0d) {
+            visualUpdate.markMajorChildrenSpanChanged();
+        }
+
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer(boxView.getDumpId() + "=>fixSpans(): vUpdate: " + visualUpdate +
+                    "\nvDelta=" + visualDelta + " = vOffset=" + visualOffset + // NOI18N
+                    " - vOffset[" + visualUpdate.endVisualIndex + "]=" + // NOI18N
+                    boxView.getViewVisualOffset(visualUpdate.endVisualIndex) +
+                    "\n"); // NOI18N
+        }
+        assert (visualUpdate.visualIndex <= visualUpdate.endVisualIndex) :
+            "visualIndex=" + visualUpdate.visualIndex +
+            " > endVisualIndex=" + visualUpdate.endVisualIndex; // NOI18N
+
+        // Fix upper visual offsets
+        boolean tabsChanged = false;
+        int viewCount = size();
+        if (gapStorage != null) {
+            gapStorage.visualGapIndex = visualUpdate.endVisualIndex;
+            gapStorage.visualGapStart = visualOffset;
+            gapStorage.visualGapLength -= visualDelta;
+            // When using gap storage fix the total span now since by updating visualGapLength
+            // all the visual offsets get updated so the total span should be fixed now too
+            // for boxView.getViewVisualOffset() to work properly.
+            setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
+            if (handleTabableViews()) {
+                double tabVisualDelta = 0d;
+                // Go though the rest of views and check if their span has changed
+                for (int i = visualUpdate.endVisualIndex; i < viewCount; i++) {
+                    V view = get(i);
+                    if (tabsChanged) {
+                        view.setRawVisualOffset(view.getRawVisualOffset() + tabVisualDelta);
+                    }
+                    if (view instanceof TabableView) { // Must re-measure tab-view's span since it depends on x-coordinate.
+                        // All indices are above visual gap (index is right above gap).
+                        // visualGapLength is already updated so the x-coordinate reflects the update.
+                        // visualOffset was just shifted by tabVisualDelta (but view[i+1] not yet).
+                        double viewVisualOffset = view.getRawVisualOffset() - gapStorage.visualGapLength;
+                        // add tabVisualDelta to next-view-VisualOffset since visualOffset already includes tabVisualDelta
+                        double origMajorSpan = (getViewVisualOffset(i + 1) + tabVisualDelta) - viewVisualOffset;
+                        double majorSpan = ((TabableView) view).getTabbedSpan((float) viewVisualOffset, tabExpander);
+                        double majorSpanDelta = majorSpan - origMajorSpan;
+                        if (majorSpanDelta != 0d) {
+                            tabVisualDelta += majorSpanDelta;
+                            tabsChanged = true;
+                        }
+                    }
+                }
+                if (tabsChanged) {
+                    setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + tabVisualDelta);
+                }
+            }
+        } else { // Move the items one by one
+            for (int i = visualUpdate.endVisualIndex; i < viewCount; i++) {
+                V view = get(i);
+                view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
+                // Must possibly re-measure tab-view's span since it depends on x-coordinate.
+                // Unlike when gap is active here both visualDelta shift and tab-remeasure shifts are joined
+                if (handleTabableViews() && view instanceof TabableView) {
+                    visualOffset = view.getRawVisualOffset();
+                    // Use difference of visual offsets since it is most precise (doubles subtracting)
+                    // and getPreferredSpan() could be expensive.
+                    // add visualDelta to nextViewVisualOffset since visualOffset already includes visualDelta
+                    double origMajorSpan = (boxView.getViewVisualOffset(i + 1) + visualDelta) - visualOffset;
+                    double majorSpan = ((TabableView) view).getTabbedSpan((float) visualOffset, tabExpander);
+                    double majorSpanDelta = majorSpan - origMajorSpan;
+                    if (majorSpanDelta != 0d) {
+                        visualDelta += majorSpanDelta;
+                        tabsChanged = true;
+                    }
+                }
+            }
+            if (visualDelta != 0d) {
+                setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
+                visualUpdate.markMajorChildrenSpanChanged();
+            }
+        }
+
+        if (tabsChanged) {
+            visualUpdate.markTabsChanged();
+            visualUpdate.markMajorChildrenSpanChanged();
+        }
+    }
+
+    protected double getMajorAxisChildrenSpan(EditorBoxView<V> boxView) {
         return boxView.getMajorAxisSpan();
     }
 
-    protected void setMajorAxisChildrenSpan(EditorBoxView boxView, double majorAxisSpan) {
+    protected void setMajorAxisChildrenSpan(EditorBoxView<V> boxView, double majorAxisSpan) {
         boxView.setMajorAxisSpan(majorAxisSpan);
     }
 
-    protected float getMinorAxisChildrenSpan(EditorBoxView boxView) {
+    protected float getMinorAxisChildrenSpan(EditorBoxView<V> boxView) {
         return boxView.getMinorAxisSpan();
     }
 
-    protected void setMinorAxisChildrenSpan(EditorBoxView boxView, float minorAxisSpan) {
+    protected void setMinorAxisChildrenSpan(EditorBoxView<V> boxView, float minorAxisSpan) {
         boxView.setMinorAxisSpan(minorAxisSpan);
     }
 
-    protected void updateSpans(EditorBoxView boxView, EditorBoxView.ReplaceResult result,
-            int index, int removedCount, int addedCount,
-            boolean majorAxisSpanChange, double visualOffset,
-            double addedSpan, double removedSpan, boolean removedTillEnd,
-            boolean minorAxisSpanChange, Shape alloc)
-    {
+    protected void updateLayout(EditorBoxView<V> boxView, VisualUpdate<V> visualUpdate, Shape alloc) {
         int majorAxis = boxView.getMajorAxis();
         if (alloc != null) {
             Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
             assert (repaintBounds.width >= 0) : "repaintBounds.width=" + repaintBounds.width;
-            assert (repaintBounds.height >= 0) : "repaintBounds.height=" + repaintBounds.height + "; boxView=" + boxView +
-                    ", addedSpan=" + addedSpan + ", removedSpan="  + removedSpan + ", visualOffset=" + visualOffset;
+            assert (repaintBounds.height >= 0) : "repaintBounds.height=" + repaintBounds.height + "; boxView=" + boxView;
             if (majorAxis == View.X_AXIS) {
-                repaintBounds.x += visualOffset;
-                if (majorAxisSpanChange || removedTillEnd) {
-                    result.widthChanged = true;
+                repaintBounds.x += visualUpdate.visualOffset;
+                if (visualUpdate.isMajorChildrenSpanChanged()) {
+                    visualUpdate.markWidthChanged();
                     repaintBounds.width = EXTEND_TO_END;
-                } else { // Just repaint the modified area (of the same size)
-                    repaintBounds.width = removedSpan;
+                } else {
+                    if (visualUpdate.isTabsChanged()) {
+                        // Can happen even without total children span change.
+                        // Repaint till end.
+                        repaintBounds.width = getMajorAxisChildrenSpan(boxView) - visualUpdate.visualOffset;
+                    } else { // Only repaint recomputed area
+                        repaintBounds.width = visualUpdate.changedMajorSpan();
+                    }
                 }
-                if (minorAxisSpanChange) {
-                    result.heightChanged = true;
+                if (visualUpdate.isMinorChildrenSpanChanged()) {
+                    visualUpdate.markHeightChanged();
                     repaintBounds.height = EXTEND_TO_END;
                 } // else: leave the repaintBounds.height set to alloc's height
 
             } else { // Y_AXIS is major axis
-                repaintBounds.y += visualOffset;
-                if (majorAxisSpanChange || removedTillEnd) {
-                    result.heightChanged = true;
+                repaintBounds.y += visualUpdate.visualOffset;
+                if (visualUpdate.isMajorChildrenSpanChanged()) {
+                    visualUpdate.markHeightChanged();
                     repaintBounds.height = EXTEND_TO_END;
                 } else { // Just repaint the modified area (of the same size)
-                    repaintBounds.height = removedSpan;
+                    repaintBounds.height = visualUpdate.changedMajorSpan();
                 }
-                if (minorAxisSpanChange) {
-                    result.widthChanged = true;
+                if (visualUpdate.isMinorChildrenSpanChanged()) {
+                    visualUpdate.markWidthChanged();
                     repaintBounds.width = EXTEND_TO_END;
                 } // else: leave the repaintBounds.width set to alloc's width
             }
-            result.repaintBounds = ViewUtils.toRect(repaintBounds);
+            visualUpdate.repaintBounds = ViewUtils.toRect(repaintBounds);
 
         } else { // Null alloc => compatible operation
-            if (majorAxisSpanChange || minorAxisSpanChange) {
+            if (visualUpdate.isPreferenceChanged()) {
                 if (majorAxis == View.X_AXIS) {
-                    boxView.preferenceChanged(null, majorAxisSpanChange, minorAxisSpanChange);
+                    if (visualUpdate.isMajorChildrenSpanChanged())
+                        visualUpdate.markWidthChanged();
+                    if (visualUpdate.isMinorChildrenSpanChanged())
+                        visualUpdate.markMinorChildrenSpanChanged();
                 } else {
-                    boxView.preferenceChanged(null, minorAxisSpanChange, majorAxisSpanChange);
+                    if (visualUpdate.isMinorChildrenSpanChanged())
+                        visualUpdate.markWidthChanged();
+                    if (visualUpdate.isMajorChildrenSpanChanged())
+                        visualUpdate.markMinorChildrenSpanChanged();
                 }
+                boxView.preferenceChanged(null, visualUpdate.isWidthChanged(), visualUpdate.isHeightChanged());
             }
         }
     }
@@ -289,20 +432,20 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
      * @param index
      * @return view with its children initialized.
      */
-    protected V getWithChildrenValid(EditorBoxView boxView, int index) {
+    protected V getEditorViewChildrenValid(EditorBoxView<V> boxView, int index) {
         V child = get(index);
         if (child instanceof EditorBoxView) {
-            EditorBoxView boxChild = (EditorBoxView) child;
+            EditorBoxView<?> boxChild = (EditorBoxView<?>) child;
             if (boxChild.children == null) {
                 boxView.initChildren(index, index + 1);
                 // Reget the view since the rebuild could replace it
                 child = get(index);
-                assert (((EditorBoxView)child).children != null);
+                assert (((EditorBoxView<?>)child).children != null);
             }
         }
         return child;
     }
-
+    
     int getViewIndex(int offset, Position.Bias bias) {
 	if(bias == Position.Bias.Backward) {
 	    offset -= 1;
@@ -358,7 +501,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                 : rawVisualOffset - gapStorage.visualGapLength;
     }
 
-    final double getViewVisualOffset(EditorBoxView boxView, int index) {
+    final double getViewVisualOffset(EditorBoxView<V> boxView, int index) {
         return (index == size())
                 ? getMajorAxisChildrenSpan(boxView)
                 : getViewVisualOffset(index);
@@ -372,24 +515,26 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return raw2VisualOffset(rawVisualOffset);
     }
 
-    final double getViewMajorAxisSpan(EditorBoxView boxView, int index) {
+    final double getViewMajorAxisSpan(EditorBoxView<V> boxView, int index) {
         return (index == size() - 1)
                 ? getMajorAxisChildrenSpan(boxView) - getViewVisualOffset(index)
                 : getViewVisualOffset(index + 1) - getViewVisualOffset(index);
     }
 
-    Shape getChildAllocation(EditorBoxView boxView, int startIndex, int endIndex, Shape alloc) {
+    Shape getChildAllocation(EditorBoxView<V> boxView, int startIndex, int endIndex, Shape alloc) {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         double visualOffset = getViewVisualOffset(startIndex);
-        double endVisualOffset = (endIndex == size()) ? getMajorAxisChildrenSpan(boxView) : getViewVisualOffset(endIndex);
+        double endVisualOffset = (endIndex == size())
+                ? getMajorAxisChildrenSpan(boxView)
+                : getViewVisualOffset(endIndex);
         if (boxView.getMajorAxis() == View.X_AXIS) {
             mutableBounds.x += visualOffset;
             mutableBounds.width = endVisualOffset - visualOffset;
-            mutableBounds.height = boxView.getMinorAxisSpan();
+            mutableBounds.height = getMinorAxisChildrenSpan(boxView);
         } else { // y is major axis
             mutableBounds.y += visualOffset;
             mutableBounds.height = endVisualOffset - visualOffset;
-            mutableBounds.width = boxView.getMinorAxisSpan();
+            mutableBounds.width = getMinorAxisChildrenSpan(boxView);
         }
         return mutableBounds;
     }
@@ -463,156 +608,89 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return Math.max(high, 0);
     }
 
-    final void moveStorage(int index) {
-        if (size() > 0) { // This should ensure that the gap will not be constructed if no replace done yet
-            if (gapStorage == null) {
-                if (false && size() > GAP_STORAGE_THRESHOLD) {
-                    gapStorage = new GapStorage(size());
-                    moveGap(index);
-                }
-            } else { // Existing gap storage
-                moveGap(index);
+    void moveOffsetGap(int index) {
+        if (!rawOffsetUpdate() || size() == 0) {
+            return;
+        }
+        if (gapStorage == null) {
+            if (size() > GAP_STORAGE_THRESHOLD) {
+                gapStorage = new GapStorage(size());
+            } else { // Not necessary to use gap-storage for small sizes
+                return;
             }
         }
-    }
-
-    final void fixOffsetsAndMajorSpan(EditorBoxView boxView, int index, int offsetDelta, double visualDelta) {
-        // Expects moveGap(index) was called already before calling of this method
-        int viewCount = size();
-        boolean visualUpdate = (visualDelta != 0d);
-        if (gapStorage != null) {
-            // offsetGapStart/Length already had to be updated during replace()
-            gapStorage.visualGapStart += visualDelta;
-            gapStorage.visualGapLength -= visualDelta;
-            if (handleTabableViews()) {
-                TabExpander tabExpander = boxView.getTabExpander();
-                // Go though the rest of views and check if their span has changed
-                double tabVisualDelta = 0d;
-                boolean tabVisualUpdate = false;
-                for (int i = index; i < viewCount; i++) {
-                    V view = get(i);
-                    if (tabVisualUpdate) {
-                        view.setRawVisualOffset(view.getRawVisualOffset() + tabVisualDelta);
-                    }
-                    if (view instanceof TabableView) { // Must re-measure tab-view's span since it depends on x-coordinate.
-                        // All indices are above visual gap (index is right above gap).
-                        // visualGapLength is already updated so the x-coordinate reflects the update.
-                        // visualOffset was just shifted by tabVisualDelta (but view[i+1] not yet).
-                        double visualOffset = view.getRawVisualOffset() - gapStorage.visualGapLength;
-                        // Use difference of visual offsets since it is most precise (doubles subtracting)
-                        // and getPreferredSpan() could be expensive.
-                        double nextViewVisualOffset = (i != viewCount - 1)
-                                // all visual offsets already use the updated visualGapLength
-                                ? get(i + 1).getRawVisualOffset() - gapStorage.visualGapLength
-                                // but major-axis-children-span does not reflect visualDelta yet => add it
-                                : getMajorAxisChildrenSpan(boxView) + visualDelta;
-                        // add tabVisualDelta to nextViewVisualOffset since visualOffset already includes tabVisualDelta
-                        double origMajorSpan = (nextViewVisualOffset + tabVisualDelta) - visualOffset;
-                        double majorSpan = ((TabableView)view).getTabbedSpan((float)visualOffset, tabExpander);
-                        double majorSpanDelta = majorSpan - origMajorSpan;
-                        if (majorSpanDelta != 0d) {
-                            tabVisualDelta += majorSpanDelta;
-                            tabVisualUpdate = (tabVisualDelta != 0); // may go back to zero e.g. first tab
-                        }
-                    }
-                }
-                visualDelta += tabVisualDelta;
-                visualUpdate = (visualDelta != 0d);
-            }
-        } else { // Move the items one by one
-            boolean offsetUpdate = rawOffsetUpdate() && (offsetDelta != 0);
-            TabExpander tabExpander = boxView.getTabExpander();
-            for (int i = index; i < viewCount; i++) {
-                V view = get(i);
-                if (offsetUpdate) {
-                    view.setRawOffset(view.getRawOffset() + offsetDelta);
-                }
-                if (visualUpdate) {
-                    view.setRawVisualOffset(view.getRawVisualOffset() + visualDelta);
-                }
-                // Must possibly re-measure tab-view's span since it depends on x-coordinate.
-                // Unlike when gap is active here both visualDelta shift and tab-remeasure shifts are joined
-                if (handleTabableViews() && view instanceof TabableView) {
-                    double visualOffset = view.getRawVisualOffset();
-                    // Use difference of visual offsets since it is most precise (doubles subtracting)
-                    // and getPreferredSpan() could be expensive.
-                    double nextViewVisualOffset = (i != viewCount - 1)
-                            ? get(i + 1).getRawVisualOffset()
-                            : getMajorAxisChildrenSpan(boxView);
-                    // add visualDelta to nextViewVisualOffset since visualOffset already includes visualDelta
-                    double origMajorSpan = (nextViewVisualOffset + visualDelta) - visualOffset;
-                    double majorSpan = ((TabableView) view).getTabbedSpan((float) visualOffset, tabExpander);
-                    double majorSpanDelta = majorSpan - origMajorSpan;
-                    if (majorSpanDelta != 0d) {
-                        visualDelta += majorSpanDelta;
-                        visualUpdate = (visualDelta != 0);
-                    }
-                }
-            }
-        }
-
-        if (visualUpdate) {
-            setMajorAxisChildrenSpan(boxView, getMajorAxisChildrenSpan(boxView) + visualDelta);
-        }
-    }
-
-    private void moveGap(int index) {
         checkGap();
-        if (index != gapStorage.gapIndex) {
-            boolean supportsRawOffsetUpdate = rawOffsetUpdate();
-            if (index < gapStorage.gapIndex) {
+        if (index != gapStorage.offsetGapIndex) {
+            if (index < gapStorage.offsetGapIndex) {
                 int lastOffset = 0;
-                double lastVisualOffset = 0d;
-                for (int i = gapStorage.gapIndex - 1; i >= index; i--) {
+                for (int i = gapStorage.offsetGapIndex - 1; i >= index; i--) {
                     V view = get(i);
-                    if (supportsRawOffsetUpdate) {
-                        lastOffset = view.getRawOffset();
-                        view.setRawOffset(lastOffset + gapStorage.offsetGapLength);
-                    }
-                    lastVisualOffset = view.getRawVisualOffset();
-                    view.setRawVisualOffset(lastVisualOffset + gapStorage.visualGapLength);
+                    lastOffset = view.getRawOffset();
+                    view.setRawOffset(lastOffset + gapStorage.offsetGapLength);
                 }
-                if (supportsRawOffsetUpdate) {
-                    gapStorage.offsetGapStart = lastOffset;
-                }
-                gapStorage.visualGapStart = lastVisualOffset;
+                gapStorage.offsetGapStart = lastOffset;
 
-            } else { // index > gapStorage.gapIndex
-                for (int i = gapStorage.gapIndex; i < index; i++) {
+            } else { // index > gapStorage.offsetGapIndex
+                for (int i = gapStorage.offsetGapIndex; i < index; i++) {
                     V view = get(i);
-                    view.setRawVisualOffset(view.getRawVisualOffset() - gapStorage.visualGapLength);
-                    if (supportsRawOffsetUpdate) {
-                        view.setRawOffset(view.getRawOffset() - gapStorage.offsetGapLength);
-                    }
+                    view.setRawOffset(view.getRawOffset() - gapStorage.offsetGapLength);
                 }
                 if (index < size()) { // Gap moved to existing view - the view is right above gap => subtract gap-lengths
                     V view = get(index);
-                    if (supportsRawOffsetUpdate) {
-                        gapStorage.offsetGapStart = view.getRawOffset() - gapStorage.offsetGapLength;
-                    }
+                    gapStorage.offsetGapStart = view.getRawOffset() - gapStorage.offsetGapLength;
+                } else {
+                    // Gap above at end of all existing views => make gap starts high enough
+                    // so that no offset/visual-offset is >= offsetGapStart/visualGapStart (no translation occurs)
+                    assert (index == size()) : "Invalid requested index=" + index + // NOI18N
+                            ", size()=" + size() + ", offsetGapIndex=" + gapStorage.offsetGapIndex; // NOI18N
+                    gapStorage.offsetGapStart = GapStorage.INITIAL_OFFSET_GAP_LENGTH;
+                }
+            }
+            gapStorage.offsetGapIndex = index;
+        }
+        checkGap();
+    }
+    
+    private void moveVisualGap(int index) {
+        checkGap();
+        if (gapStorage != null && index != gapStorage.visualGapIndex) {
+            if (index < gapStorage.visualGapIndex) {
+                double lastVisualOffset = 0d;
+                for (int i = gapStorage.visualGapIndex - 1; i >= index; i--) {
+                    V view = get(i);
+                    lastVisualOffset = view.getRawVisualOffset();
+                    view.setRawVisualOffset(lastVisualOffset + gapStorage.visualGapLength);
+                }
+                gapStorage.visualGapStart = lastVisualOffset;
+
+            } else { // index > gapStorage.visualGapIndex
+                for (int i = gapStorage.visualGapIndex; i < index; i++) {
+                    V view = get(i);
+                    view.setRawVisualOffset(view.getRawVisualOffset() - gapStorage.visualGapLength);
+                }
+                if (index < size()) { // Gap moved to existing view - the view is right above gap => subtract gap-lengths
+                    V view = get(index);
                     gapStorage.visualGapStart = view.getRawVisualOffset() - gapStorage.visualGapLength;
                 } else {
                     // Gap above at end of all existing views => make gap starts high enough
                     // so that no offset/visual-offset is >= offsetGapStart/visualGapStart (no translation occurs)
                     assert (index == size()) : "Invalid requested index=" + index + // NOI18N
-                            ", size()=" + size() + ", gapIndex=" + gapStorage.gapIndex; // NOI18N
-                    if (supportsRawOffsetUpdate) {
-                        gapStorage.offsetGapStart = GapStorage.INITIAL_OFFSET_GAP_LENGTH;
-                    }
+                            ", size()=" + size() + ", visualGapIndex=" + gapStorage.visualGapIndex; // NOI18N
                     gapStorage.visualGapStart = GapStorage.INITIAL_VISUAL_GAP_LENGTH;
                 }
             }
-            gapStorage.gapIndex = index;
+            gapStorage.visualGapIndex = index;
         }
         checkGap();
     }
-    
+
     private void checkGap() {
-        if (LOG.isLoggable(Level.FINE) && gapStorage != null) {
+        if (gapStorage != null && LOG.isLoggable(Level.FINE)) {
             String error = null;
-            int gapIndex = gapStorage.gapIndex;
-            if (gapIndex > size()) {
-                error = "gapIndex=" + gapIndex + " > size()=" + size(); // NOI18N
+            int offsetGapIndex = gapStorage.offsetGapIndex;
+            int visualGapIndex = gapStorage.visualGapIndex;
+            if (offsetGapIndex > size()) {
+                error = "offsetGapIndex=" + offsetGapIndex + " > size()=" + size(); // NOI18N
             } else {
                 for (int i = 0; i < size(); i++) {
                     V view = get(i);
@@ -622,7 +700,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                     double visualOffset = raw2VisualOffset(rawVisualOffset);
                     // Check textual offset
                     if (rawOffsetUpdate()) {
-                        if (i < gapIndex) {
+                        if (i < offsetGapIndex) {
                             if (rawOffset >= gapStorage.offsetGapStart) {
                                 error = "Not below offset-gap: rawOffset=" + rawOffset + // NOI18N
                                         " >= offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
@@ -632,7 +710,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                                 error = "Not above offset-gap: rawOffset=" + rawOffset + // NOI18N
                                         " < offsetGapStart=" + gapStorage.offsetGapStart; // NOI18N
                             }
-                            if (i == gapIndex) {
+                            if (i == offsetGapIndex) {
                                 if (relOffset != gapStorage.offsetGapStart) {
                                     error = "relOffset=" + relOffset + " != gapStorage.offsetGapStart=" + // NOI18N
                                             gapStorage.offsetGapStart;
@@ -642,7 +720,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                         }
                     }
                     // Check visual offset
-                    if (i < gapIndex) {
+                    if (i < visualGapIndex) {
                         if (rawVisualOffset >= gapStorage.visualGapStart) {
                             error = "Not below visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
                                     " >= visualGapStart=" + gapStorage.visualGapStart; // NOI18N
@@ -652,7 +730,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
                             error = "Not above visual-gap: rawVisualOffset=" + rawVisualOffset + // NOI18N
                                     " < visualGapStart=" + gapStorage.visualGapStart; // NOI18N
                         }
-                        if (i == gapIndex) {
+                        if (i == visualGapIndex) {
                             if (visualOffset != gapStorage.visualGapStart) {
                                 error = "visualOffset=" + visualOffset + " != gapStorage.visualGapStart=" + // NOI18N
                                         gapStorage.visualGapStart;
@@ -672,7 +750,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
     }
 
 
-    public int getViewIndexAtPoint(EditorBoxView boxView, double x, double y, Shape alloc) {
+    public int getViewIndexAtPoint(EditorBoxView<V> boxView, double x, double y, Shape alloc) {
         Rectangle2D.Double mutableBounds = ViewUtils.shape2Bounds(alloc);
         x -= mutableBounds.x;
         y -= mutableBounds.y;
@@ -698,11 +776,11 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return Math.max(high, 0);
     }
 
-    public Shape modelToViewChecked(EditorBoxView boxView, int offset, Shape alloc, Position.Bias bias) {
+    public Shape modelToViewChecked(EditorBoxView<V> boxView, int offset, Shape alloc, Position.Bias bias) {
         int index = getViewIndex(offset, bias);
         if (index >= 0) { // When at least one child the index will fit one of them
             // First find valid child (can lead to change of child allocation bounds)
-            V view = getWithChildrenValid(boxView, index);
+            V view = getEditorViewChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // Update the bounds with child.modelToView()
             return view.modelToViewChecked(offset, childAlloc, bias);
@@ -711,12 +789,14 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         }
     }
 
-    public int viewToModelChecked(EditorBoxView boxView, double x, double y, Shape alloc, Position.Bias[] biasReturn) {
+    public int viewToModelChecked(EditorBoxView<V> boxView, double x, double y, Shape alloc,
+            Position.Bias[] biasReturn)
+    {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
         int offset;
         if (index >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
-            V view = getWithChildrenValid(boxView, index);
+            V view = getEditorViewChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
             offset = view.viewToModelChecked(x, y, childAlloc, biasReturn);
@@ -726,11 +806,11 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         return offset;
     }
 
-    public String getToolTipTextChecked(EditorBoxView boxView, double x, double y, Shape alloc) {
+    public String getToolTipTextChecked(EditorBoxView<V> boxView, double x, double y, Shape alloc) {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
         if (index >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
-            V view = getWithChildrenValid(boxView, index);
+            V view = getEditorViewChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
             return view.getToolTipTextChecked(x, y, childAlloc);
@@ -739,11 +819,11 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         }
     }
 
-    public JComponent getToolTip(EditorBoxView boxView, double x, double y, Shape alloc) {
+    public JComponent getToolTip(EditorBoxView<V> boxView, double x, double y, Shape alloc) {
         int index = getViewIndexAtPoint(boxView, x, y, alloc);
         if (index >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
-            V view = getWithChildrenValid(boxView, index);
+            V view = getEditorViewChildrenValid(boxView, index);
             Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
             // forward to the child view
             return view.getToolTip(x, y, childAlloc);
@@ -752,44 +832,45 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         }
     }
 
-    protected void paint(EditorBoxView boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
+    protected void paint(EditorBoxView<V> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds) {
         int index;
         int endIndex;
         Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
-        if (clipBounds.contains(allocBounds)) { // Full rendering
-            index = 0;
-            endIndex = size();
-        } else { // Only portion
-            Rectangle2D.Double mutableBounds = (Rectangle2D.Double) allocBounds.clone();
-            Rectangle2D.intersect(mutableBounds, clipBounds, mutableBounds);
-            if (!mutableBounds.isEmpty()) {
-                // Compute lower and higher bounds
-                int majorAxis = boxView.getMajorAxis();
-                double visualOffset;
-                double endVisualOffset;
-                if (majorAxis == View.X_AXIS) {
-                    visualOffset = mutableBounds.x;
-                    endVisualOffset = visualOffset + mutableBounds.width;
-                } else {
-                    visualOffset = mutableBounds.y;
-                    endVisualOffset = visualOffset + mutableBounds.height;
-                }
-                index = Math.max(getViewIndexFirst(visualOffset), 0); // Cover no-children case
-                endIndex = getViewIndexFirst(endVisualOffset) + 1;
+        // Cannot use (clipBounds.contains(allocBounds)) to check for full rendering
+        // since sometimes the allocBounds come equal to the visible area size which would then lead
+        // to initChildren() for all the line paragraph views in the document.
+        Rectangle2D.Double mutableBounds = (Rectangle2D.Double) allocBounds.clone();
+        Rectangle2D.intersect(mutableBounds, clipBounds, mutableBounds);
+        if (!mutableBounds.isEmpty()) {
+            // Compute lower and higher bounds
+            int majorAxis = boxView.getMajorAxis();
+            double visualOffset;
+            double endVisualOffset;
+            if (majorAxis == View.X_AXIS) {
+                visualOffset = mutableBounds.x;
+                endVisualOffset = visualOffset + mutableBounds.width;
             } else {
-                index = 0;
-                endIndex = 0;
+                visualOffset = mutableBounds.y;
+                endVisualOffset = visualOffset + mutableBounds.height;
             }
+            index = Math.max(getViewIndexFirst(visualOffset), 0); // Cover no-children case
+            endIndex = getViewIndexFirst(endVisualOffset) + 1;
+            paintChildren(boxView, g, alloc, clipBounds, index, endIndex);
         }
-
-        while (index < endIndex) {
-            // Ensure chlidren are initialized. If they are not the batch size should cover
-            // a visible screen height at minimum so there should be just one initialization
-            // at maximum for regular painting requests.
-            V view = getWithChildrenValid(boxView, index);
-            Shape childAlloc = getChildAllocation(boxView, index, index + 1, alloc);
+    }
+    
+    protected void paintChildren(EditorBoxView<V> boxView, Graphics2D g, Shape alloc, Rectangle clipBounds,
+            int startIndex, int endIndex)
+    {
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("EBView.paintChildren(): <" + startIndex + "," + endIndex + ">\n");
+        }
+        boxView.initChildren(startIndex - 1, endIndex + 1); // Ensure valid children (plus extra 2 lines)
+        while (startIndex < endIndex) {
+            V view = getEditorViewChildrenValid(boxView, startIndex);
+            Shape childAlloc = getChildAllocation(boxView, startIndex, startIndex + 1, alloc);
             view.paint(g, childAlloc, clipBounds);
-            index++;
+            startIndex++;
         }
     }
 
@@ -803,7 +884,7 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
      *  Or -1 to display just starting and ending two. Or -2 to display all children.
      * @return
      */
-    public StringBuilder appendChildrenInfo(EditorBoxView boxView, StringBuilder sb, int indent, int importantIndex) {
+    public StringBuilder appendChildrenInfo(EditorBoxView<V> boxView, StringBuilder sb, int indent, int importantIndex) {
         int viewCount = size();
         int digitCount = ArrayUtilities.digitCount(viewCount);
         int importantLastIndex = -1; // just be < 0
@@ -866,7 +947,8 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         static final int INITIAL_OFFSET_GAP_LENGTH = (Integer.MAX_VALUE >> 1);
 
         GapStorage(int gapIndex) {
-            this.gapIndex = gapIndex;
+            this.offsetGapIndex = gapIndex;
+            this.visualGapIndex = gapIndex;
         }
 
         /**
@@ -887,7 +969,12 @@ public class EditorBoxViewChildren<V extends EditorView> extends GapList<V> {
         /**
          * Index of the gap in the contained children.
          */
-        int gapIndex;
+        int offsetGapIndex; // 32 + 4 = 36 bytes
+        
+        /**
+         * Index of the visual gap in the contained children.
+         */
+        int visualGapIndex; // 36 + 4 = 40 bytes
 
         StringBuilder appendInfo(StringBuilder sb) {
             sb.append("<").append(offsetGapStart).append("|").append(offsetGapLength);

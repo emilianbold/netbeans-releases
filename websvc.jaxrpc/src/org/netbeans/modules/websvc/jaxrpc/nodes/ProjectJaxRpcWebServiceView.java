@@ -293,6 +293,9 @@ final class ProjectJaxRpcWebServiceView extends AbstractProjectWebServiceViewImp
         }
         WebServicesSupport wsSupport = WebServicesSupport.getWebServicesSupport(srcRoot);
         String implBean = wsSupport.getImplementationBean(link);
+        if ( implBean == null ){
+            return null;
+        }
         return srcRoot.getFileObject(implBean.replace('.', '/').concat(".java"));
     }
 

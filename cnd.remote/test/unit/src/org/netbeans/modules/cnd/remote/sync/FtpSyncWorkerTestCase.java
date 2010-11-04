@@ -45,7 +45,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.File;
 import java.io.PrintWriter;
 import junit.framework.Test;
-import org.netbeans.modules.cnd.remote.RemoteDevelopmentTest;
+import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**

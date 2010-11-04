@@ -49,6 +49,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -72,8 +73,9 @@ public class CndDataObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.c"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof CDataObject);
     }
@@ -82,7 +84,8 @@ public class CndDataObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.cc"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         assertNotNull("Not found file object for file" + newFile, fo);
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof CCDataObject);
@@ -92,8 +95,9 @@ public class CndDataObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), "file.h"); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         DataObject dob = DataObject.find(fo);
         assertTrue("data object is not recognized by default infrastructure", dob instanceof HDataObject);
     }
@@ -109,7 +113,7 @@ public class CndDataObjectTestCase extends NbTestCase {
         File newFile = new File(super.getWorkDir(), fileName); // NOI18N
         newFile.createNewFile();
         assertTrue("Not created file " + newFile, newFile.exists());
-        FileObject fo = FileUtil.toFileObject(newFile);
+        FileObject fo = CndFileUtils.toFileObject(newFile);
         Writer writer = new OutputStreamWriter(fo.getOutputStream());
         try {
             writer.append(content);
@@ -118,6 +122,7 @@ public class CndDataObjectTestCase extends NbTestCase {
             writer.close();
         }
         assertNotNull("Not found file object for file" + newFile, fo);
+        assertTrue("File object not valid for file" + newFile, fo.isValid());
         String mime = FileUtil.getMIMEType(fo, MIMENames.HEADER_MIME_TYPE);
         assertEquals("header with content " + content + " is not recognized ", MIMENames.HEADER_MIME_TYPE, mime);
         DataObject dob = DataObject.find(fo);

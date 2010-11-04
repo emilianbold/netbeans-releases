@@ -64,10 +64,17 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     private final AbstractRefactoring refactoring;
     private RenamePanel panel;
     private final FileObject file;
+    private String newName;
 
     public RenameRefactoringUI(FileObject file) {
 	this.file = file;
 	this.refactoring = new RenameRefactoring(Lookups.fixed(file));
+    }
+
+    public RenameRefactoringUI(FileObject file, String newName) {
+        this.file = file;
+        this.newName = newName;
+        this.refactoring = new RenameRefactoring(Lookups.fixed(file));
     }
 
     @Override
@@ -88,7 +95,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
 	if (panel == null) {
-	    panel = new RenamePanel(file.getName(), parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename")); //NOI18N
+	    panel = new RenamePanel(newName, parent, NbBundle.getMessage(RenamePanel.class, "LBL_Rename")); //NOI18N
 	}
 	return panel;
     }

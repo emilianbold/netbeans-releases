@@ -75,13 +75,13 @@ public class IgnoresTest extends AbstractHgTest {
         super.setUp();        
         
         // create
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        FileObject fo = FileUtil.toFileObject(getWorkTreeDir());
         System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
     }
 
     // ignore patterns - issue 171378 - should pass
     public void testIgnores () throws IOException {
-        File workDir = getWorkDir();
+        File workDir = getWorkTreeDir();
         File ignoreFile = new File(getDataDir().getAbsolutePath() + "/ignore/hgignore");
         File toFile = new File(workDir, ".hgignore");
         ignoreFile.renameTo(toFile);
@@ -160,7 +160,7 @@ public class IgnoresTest extends AbstractHgTest {
     }
     
     public void testIgnoreAction () throws Exception {
-        File workDir = getWorkDir();
+        File workDir = getWorkTreeDir();
         new File(workDir, ".hgignore").delete();
         File folderA = new File(workDir, "folderA");
         File folderAA = new File(folderA, "folderAA");
@@ -219,6 +219,7 @@ public class IgnoresTest extends AbstractHgTest {
         ignoredFiles.clear();
         File obscureFile = new File(folderA, "This + File + Might + Crash + Mercurial");
         obscureFile.createNewFile();
+        getCache().refreshAllRoots(Collections.singleton(workDir));
         // ignoring the file
         toggleIgnore(obscureFile, ignoredFiles);
         ignoredFiles.add(obscureFile);

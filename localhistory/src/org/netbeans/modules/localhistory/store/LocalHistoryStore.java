@@ -108,9 +108,10 @@ public interface LocalHistoryStore {
      * Stores the files actual state under the given timestamp
      * 
      * @param file the file which has to be stored
+     * @param handleAsync whether the given file should be copied to the store asynchronously or not
      * @param ts the timestamp under which the file has to be stored
      */
-    public void fileChange(File file, long ts);                   
+    public void fileChange(File file, boolean handleAsync, long ts);                   
         
     /**
      * Sets a label for an entry represented by the given file and timestamp

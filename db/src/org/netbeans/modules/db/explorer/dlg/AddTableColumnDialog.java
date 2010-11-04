@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2010 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -57,7 +57,6 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -96,8 +95,9 @@ public class AddTableColumnDialog extends JPanel {
     JComboBox coltypecombo;
     JCheckBox pkcheckbox, ixcheckbox, checkcheckbox, nullcheckbox, uniquecheckbox;
     DataModel dmodel = new DataModel();
-    private Collection sizelesstypes;
+    private Collection<String> sizelesstypes;
 
+    @SuppressWarnings("unchecked")
     public AddTableColumnDialog(final Specification spe) {
         setBorder(new EmptyBorder(new Insets(12, 12, 5, 11)));
         GridBagLayout layout = new GridBagLayout();
@@ -156,15 +156,12 @@ public class AddTableColumnDialog extends JPanel {
 
         // Column type
 
-        sizelesstypes = (Collection) spe.getProperties().get("SizelessTypes"); // NOI18N
+        sizelesstypes = (Collection<String>) spe.getProperties().get("SizelessTypes"); // NOI18N
 
-        Map tmap = spe.getTypeMap();
+        Map<String, String> tmap = spe.getTypeMap();
         List<TypeElement> ttab = new ArrayList<TypeElement>(tmap.size());
-        Iterator iter = tmap.keySet().iterator();
-        while (iter.hasNext()) {
-            String iterkey = (String) iter.next();
-            String iterval = (String) tmap.get(iterkey);
-            ttab.add(new TypeElement(iterkey, iterval));
+        for (String key : tmap.keySet()) {
+            ttab.add(new TypeElement(key, tmap.get(key)));
         }
 
         ColumnItem item = new ColumnItem();

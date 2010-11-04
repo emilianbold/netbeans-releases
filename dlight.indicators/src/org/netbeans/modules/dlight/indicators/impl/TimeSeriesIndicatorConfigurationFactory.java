@@ -97,6 +97,9 @@ public final class TimeSeriesIndicatorConfigurationFactory {
         if (getString(map, "action.tooltip") != null) {//NOI18N
             indicatorConfiguration.setActionTooltip(getString(map, "action.tooltip"));//NOI18N
         }
+        if (map.get("legend.visible") != null) { // NOI18N
+            indicatorConfiguration.setLegendIsVisible(getBoolean(map, "legend.visible")); // NOI18N
+        }
         @SuppressWarnings("unchecked")
         List<TimeSeriesDescriptor> uncheckedDescriptors = getStringAndCreateInstance(map, "timeSeriesDescriptors", List.class); // NOI18N
         indicatorConfiguration.addTimeSeriesDescriptors(uncheckedDescriptors.toArray(new TimeSeriesDescriptor[uncheckedDescriptors.size()]));

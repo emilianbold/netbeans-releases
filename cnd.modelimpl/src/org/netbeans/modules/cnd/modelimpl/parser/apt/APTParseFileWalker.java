@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.structure.APTError;
@@ -221,7 +222,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         setEndPosition(pos, last);
 
-        return new MacroImpl(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos);
+        return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), pos, CsmMacro.Kind.DEFINED);
     }
 
     private IncludeImpl createInclude(final APTInclude apt, final FileImpl included) {
@@ -231,7 +232,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             lastToken = apt.getToken();
         }
         setEndPosition(inclPos, lastToken);
-        IncludeImpl incImpl = new IncludeImpl(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
+        IncludeImpl incImpl = IncludeImpl.create(apt.getFileName(getMacroMap()), apt.isSystem(getMacroMap()), included, getFile(), inclPos);
         return incImpl;
     }
 

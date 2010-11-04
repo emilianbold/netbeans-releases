@@ -78,7 +78,7 @@ public class DesignContainerAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        designer.setObject(container);
+        designer.setDesignedContainer(container);
         designer.revalidate();
         designer.repaint();
     }

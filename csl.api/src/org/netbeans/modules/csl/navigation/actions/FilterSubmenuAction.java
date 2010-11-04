@@ -50,6 +50,7 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.modules.csl.navigation.ClassMemberFilters;
 import org.netbeans.modules.csl.navigation.base.FiltersDescription;
 import org.netbeans.modules.csl.navigation.base.FiltersManager;
 import org.openide.util.NbBundle;
@@ -70,10 +71,10 @@ public final class FilterSubmenuAction extends AbstractAction implements Present
     
     private static final String PROP_FILTER_NAME = "nbFilterName";
     /** access to filter manager */        
-    private FiltersManager filters;
+    private ClassMemberFilters filters;
     
     /** Creates a new instance of FilterSubmenuAction */
-    public FilterSubmenuAction(FiltersManager filters) {
+    public FilterSubmenuAction(ClassMemberFilters filters) {
         this.filters = filters;
     }
     
@@ -83,7 +84,7 @@ public final class FilterSubmenuAction extends AbstractAction implements Present
         if (source instanceof JCheckBoxMenuItem) {
             JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem)source;
             String filterName = (String)(menuItem.getClientProperty(PROP_FILTER_NAME));
-            filters.setSelected(filterName, menuItem.isSelected());
+            filters.getInstance().setSelected(filterName, menuItem.isSelected());
         }
     }
     
@@ -92,14 +93,17 @@ public final class FilterSubmenuAction extends AbstractAction implements Present
     }
     
     private JMenuItem createSubmenu () {
-        FiltersDescription filtersDesc = filters.getDescription();
+        if (filters.disableFiltering) {
+            return null;
+        }
+        FiltersDescription filtersDesc = filters.getInstance().getDescription();
         JMenuItem menu = new JMenu(NbBundle.getMessage(FilterSubmenuAction.class, "LBL_FilterSubmenu")); //NOI18N
         JMenuItem menuItem = null;
         String filterName = null;
         for (int i = 0; i < filtersDesc.getFilterCount(); i++) {
             filterName = filtersDesc.getName(i);
             menuItem = new JCheckBoxMenuItem(
-                    filtersDesc.getDisplayName(i), filters.isSelected(filterName)); 
+                    filtersDesc.getDisplayName(i), filters.getInstance().isSelected(filterName));
             menuItem.addActionListener(this);
             menuItem.putClientProperty(PROP_FILTER_NAME, filterName);
             menu.add(menuItem);

@@ -85,20 +85,7 @@ public class CsmOffsetResolver {
         this.file = file;
     }
 
-    // =================== resolve object under offset ============================
-
-    public CsmObject findObject(int offset) {
-        return findObject(file, offset);
-    }
-
     // ==================== help methods =======================================
-
-    public static CsmObject findObject(CsmFile file, int offset) {
-        assert (file != null) : "can't be null file in findObject";
-        // not interested in context, only object under offset
-        CsmObject last = findObjectWithContext(file, offset, null, null);
-        return last;
-    }
 
     public static CsmObject findObject(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
         assert (file != null) : "can't be null file in findObject";
@@ -112,7 +99,7 @@ public class CsmOffsetResolver {
         CsmObject last = null;
         if (context == null) {
             // create dummy context
-            context = new CsmContext(offset);
+            context = new CsmContext(file, offset);
         }
         CsmObject lastObj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
         last = lastObj;
@@ -154,6 +141,7 @@ public class CsmOffsetResolver {
                     context.setLastObject(type);
                     return type;
                 }
+                context.setLastObject(param);
                 return param;
             }
             // check for constructor initializers
@@ -224,7 +212,7 @@ public class CsmOffsetResolver {
     }
 
     public static CsmContext findContext(CsmFile file, int offset, FileReferencesContext fileReferncesContext) {
-        CsmContext context = new CsmContext(offset);
+        CsmContext context = new CsmContext(file, offset);
         findObjectWithContext(file, offset, context, fileReferncesContext);
         return context;
     }

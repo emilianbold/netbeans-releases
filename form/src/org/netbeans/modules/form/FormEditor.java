@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import javax.swing.text.BadLocationException;
@@ -1343,7 +1344,7 @@ public class FormEditor {
                         ClassTree clazz = null;
                         CompilationUnitTree cu = wcopy.getCompilationUnit();
                         for (Tree tree : cu.getTypeDecls()) {
-                            if (tree.getKind() == Tree.Kind.CLASS) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                                 ClassTree cand = (ClassTree)tree;
                                 if (foName.equals(cand.getSimpleName().toString())) {
                                     clazz = cand;

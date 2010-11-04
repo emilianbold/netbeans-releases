@@ -1,8 +1,0 @@
-import module2
-import module3
-#import bar as BAR
-#import foo
-#import module1
-#from module4 import Class1
-#from module5 import Class2 as Class3
-

@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
@@ -98,7 +99,7 @@ public class DeclarationForInstanceOf implements TreeRule {
                 break;
             }
             
-            if (lk == Kind.METHOD || lk == Kind.CLASS) {
+            if (lk == Kind.METHOD || TreeUtilities.CLASS_TREE_KINDS.contains(lk)) {
                 return null;
             }
             

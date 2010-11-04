@@ -69,6 +69,7 @@ import org.openide.util.NbBundle;
 public class WrongStringComparison extends AbstractHint {
 
     private static final String TERNARY_NULL_CHECK = "ternary-null-check"; // NOI18N
+    private static final String STRING_LITERALS_FIRST = "string-literals-first"; //NOI18N
     private static final String STRING_TYPE = "java.lang.String";  // NOI18N
     private static final Set<Tree.Kind> TREE_KINDS = 
             EnumSet.<Tree.Kind>of( Tree.Kind.EQUAL_TO, Tree.Kind.NOT_EQUAL_TO );
@@ -112,8 +113,19 @@ public class WrongStringComparison extends AbstractHint {
             FileObject file = info.getFileObject();
             TreePathHandle tph = TreePathHandle.create(treePath, info);
             ArrayList<Fix> fixes = new ArrayList<Fix>();
-            fixes.add(new WrongStringComparisonFix(file, tph, getTernaryNullCheck()));
-            fixes.add(new WrongStringComparisonFix(file, tph, null));  //no null check
+            boolean reverseOperands = false;
+            if (bt.getLeftOperand().getKind() != Tree.Kind.STRING_LITERAL) {
+                if (bt.getRightOperand().getKind() == Tree.Kind.STRING_LITERAL) {
+                    if (getStringLiteralsFirst()) {
+                        reverseOperands = true;
+                    } else {
+                        fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.NULL_CHECK));
+                    }
+                } else {
+                    fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck())));
+                }
+            }
+            fixes.add(new WrongStringComparisonFix(file, tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands)));
             return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 
@@ -142,10 +154,6 @@ public class WrongStringComparison extends AbstractHint {
 
     public String getDescription() {
         return NbBundle.getMessage(WrongStringComparison.class, "DSC_WrongStringComparison"); // NOI18N
-    }
-
-    public boolean getTernaryNullCheck() {
-        return getTernaryNullCheck(getPreferences(null));
     }
 
     @Override
@@ -182,35 +190,52 @@ public class WrongStringComparison extends AbstractHint {
         return CopyFinder.isDuplicate(info, originalPath, correctPath, cancel);
     }
 
+    boolean getTernaryNullCheck() {
+        return getTernaryNullCheck(getPreferences(null));
+    }
+
+    boolean getStringLiteralsFirst() {
+        return getStringLiteralsFirst(getPreferences(null));
+    }
+
     static boolean getTernaryNullCheck(Preferences p) {
         return p.getBoolean(TERNARY_NULL_CHECK, true);
+    }
+
+    static boolean getStringLiteralsFirst(Preferences p) {
+        return p.getBoolean(STRING_LITERALS_FIRST, true);
     }
 
     static void setTernaryNullCheck(Preferences p, boolean selected) {
         p.putBoolean(TERNARY_NULL_CHECK, selected);
     }
 
+    static void setStringLiteralsFirst(Preferences p, boolean selected) {
+        p.putBoolean(STRING_LITERALS_FIRST, selected);
+    }
+
     static class WrongStringComparisonFix implements Fix, Task<WorkingCopy> {
 
         protected FileObject file;
         protected TreePathHandle tph;
-        protected Boolean nullCheck;
+        protected Kind kind;
 
-        public WrongStringComparisonFix(FileObject file, TreePathHandle tph, Boolean nullCheck) {
+        public WrongStringComparisonFix(FileObject file, TreePathHandle tph, Kind kind) {
             this.file = file;
             this.tph = tph;
-            this.nullCheck = nullCheck;
+            this.kind = kind;
         }
 
         public String getText() {
-            if (nullCheck == null) {
-                return NbBundle.getMessage(WrongStringComparison.class, "FIX_WrongStringComparison_NoNullCheck"); // NOI18N
-            } else {
-                if (nullCheck) {
+            switch (kind) {
+                case REVERSE_OPERANDS:
+                    return NbBundle.getMessage(WrongStringComparison.class, "FIX_WrongStringComparison_ReverseOperands"); // NOI18N
+                case NO_NULL_CHECK:
+                    return NbBundle.getMessage(WrongStringComparison.class, "FIX_WrongStringComparison_NoNullCheck"); // NOI18N
+                case NULL_CHECK_TERNARY:
                     return NbBundle.getMessage(WrongStringComparison.class, "FIX_WrongStringComparison_TernaryNullCheck"); // NOI18N
-                } else {
+                default:
                     return NbBundle.getMessage(WrongStringComparison.class, "FIX_WrongStringComparison_NullCheck"); // NOI18N
-                }
             }
         }
 
@@ -225,8 +250,6 @@ public class WrongStringComparison extends AbstractHint {
             return "[WrongStringComparisonFix:" + getText() + "]";
         }
 
-
-
         public void run(WorkingCopy copy) throws Exception {
             copy.toPhase(JavaSource.Phase.PARSED);
             TreePath path = tph.resolve(copy);
@@ -235,34 +258,69 @@ public class WrongStringComparison extends AbstractHint {
                 BinaryTree oldTree = (BinaryTree) path.getLeaf();
                 ExpressionTree left = oldTree.getLeftOperand();
                 ExpressionTree right = oldTree.getRightOperand();
-                ExpressionTree leftEquals = make.MemberSelect(left, "equals"); // NOI18N
-                ExpressionTree leftEqualsRight = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), leftEquals, Collections.singletonList(right));
-                if (oldTree.getKind() == Tree.Kind.NOT_EQUAL_TO) {
-                    leftEqualsRight = make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, leftEqualsRight);
-                }
                 ExpressionTree newTree;
-                if (nullCheck == null) {
-                    // str1.equals(str2)
-                    newTree = leftEqualsRight;
+                if (kind == Kind.REVERSE_OPERANDS) {
+                    // "str2".equals(str1)
+                    ExpressionTree rightEquals = make.MemberSelect(right, "equals"); // NOI18N
+                    ExpressionTree rightEqualsLeft = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), rightEquals, Collections.singletonList(left));
+                    rightEqualsLeft = matchSign(make, oldTree, rightEqualsLeft);
+                    newTree = rightEqualsLeft;
                 } else {
-                    ExpressionTree leftEqNull  = make.Binary(Tree.Kind.EQUAL_TO, left,  make.Identifier("null")); // NOI18N
-                    ExpressionTree rightEqNull = make.Binary(oldTree.getKind(), right, make.Identifier("null")); // NOI18N
-                    if (nullCheck) {
-                        // str1 == null ? str2 == null : str1.equals(str2)
-                        newTree = make.ConditionalExpression(leftEqNull, rightEqNull, leftEqualsRight);
+                    ExpressionTree leftEquals = make.MemberSelect(left, "equals"); // NOI18N
+                    ExpressionTree leftEqualsRight = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), leftEquals, Collections.singletonList(right));
+                    leftEqualsRight = matchSign(make, oldTree, leftEqualsRight);
+                    if (kind == Kind.NO_NULL_CHECK) {
+                        // str1.equals(str2)
+                        newTree = leftEqualsRight;
                     } else {
-                        // (str1 == null && str2 == null) || (str1 != null && str1.equals(str2))
-                        ExpressionTree leftNeNull = make.Binary(Tree.Kind.NOT_EQUAL_TO, left, make.Identifier("null")); // NOI18N
-                        ExpressionTree orLeft  = make.Parenthesized(make.Binary(Tree.Kind.CONDITIONAL_AND, leftEqNull, rightEqNull));
-                        ExpressionTree orRight = make.Parenthesized(make.Binary(Tree.Kind.CONDITIONAL_AND, leftNeNull, leftEqualsRight));
-                        newTree = make.Binary(Tree.Kind.CONDITIONAL_OR, orLeft, orRight);
-                    }
-                    if (path.getParentPath().getLeaf().getKind() != Tree.Kind.PARENTHESIZED) {
-                        newTree = make.Parenthesized(newTree);
+                        ExpressionTree leftEqNull  = make.Binary(Tree.Kind.EQUAL_TO, left, make.Identifier("null")); // NOI18N
+                        ExpressionTree rightEqNull = make.Binary(oldTree.getKind(), right, make.Identifier("null")); // NOI18N
+                        if (kind == Kind.NULL_CHECK_TERNARY) {
+                            // str1 == null ? str2 == null : str1.equals(str2)
+                            newTree = make.ConditionalExpression(leftEqNull, rightEqNull, leftEqualsRight);
+                        } else {
+                            ExpressionTree leftNeNull = make.Binary(Tree.Kind.NOT_EQUAL_TO, left, make.Identifier("null")); // NOI18N
+                            ExpressionTree leftNeNullAndLeftEqualsRight = make.Binary(Tree.Kind.CONDITIONAL_AND, leftNeNull, leftEqualsRight);
+                            if (right.getKind() == Tree.Kind.STRING_LITERAL) {
+                                // str1 != null && str1.equals("str2")
+                                newTree = leftNeNullAndLeftEqualsRight;
+                            } else {
+                                // (str1 == null && str2 == null) || (str1 != null && str1.equals(str2))
+                                ExpressionTree leftEqNullAndRightEqNull  = make.Binary(Tree.Kind.CONDITIONAL_AND, leftEqNull, rightEqNull);
+                                newTree = make.Binary(Tree.Kind.CONDITIONAL_OR, make.Parenthesized(leftEqNullAndRightEqNull), make.Parenthesized(leftNeNullAndLeftEqualsRight));
+                            }
+                        }
+                        if (path.getParentPath().getLeaf().getKind() != Tree.Kind.PARENTHESIZED) {
+                            newTree = make.Parenthesized(newTree);
+                        }
                     }
                 }
                 copy.rewrite(oldTree, newTree);
             }
+        }
+
+        ExpressionTree matchSign(TreeMaker make, BinaryTree oldTree, ExpressionTree et) {
+            if (oldTree.getKind() == Tree.Kind.NOT_EQUAL_TO) {
+                return make.Unary(Tree.Kind.LOGICAL_COMPLEMENT, et);
+            } else {
+                return et;
+            }
+        }
+
+        enum Kind {
+            REVERSE_OPERANDS,
+            NO_NULL_CHECK,
+            NULL_CHECK,
+            NULL_CHECK_TERNARY;
+
+            public static Kind ternaryNullCheck(boolean ternary) {
+                return ternary ? NULL_CHECK_TERNARY : NULL_CHECK;
+            }
+
+            public static Kind reverseOperands(boolean reverseOperands) {
+                return reverseOperands ? REVERSE_OPERANDS : NO_NULL_CHECK;
+            }
+
         }
 
     }

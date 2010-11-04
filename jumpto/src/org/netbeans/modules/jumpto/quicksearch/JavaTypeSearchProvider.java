@@ -55,15 +55,25 @@ import org.openide.filesystems.FileObject;
  */
 public class JavaTypeSearchProvider implements SearchProvider {
 
+    private GoToTypeWorker worker;
+
     public void evaluate(SearchRequest request, SearchResponse response) {
         String text = removeNonJavaChars(request.getText());
         if(text.length() == 0) {
             return;
         }
-        GoToTypeWorker worker = new GoToTypeWorker(text);
-        worker.run();
         
-        for (TypeDescriptor td : worker.getTypes()) {
+        GoToTypeWorker local;
+        synchronized (this) {
+            if (worker != null) {
+                worker.cancel();
+            }
+            worker = new GoToTypeWorker(text);
+            local=worker;
+        }
+        local.run();
+        
+        for (TypeDescriptor td : local.getTypes()) {
             FileObject fo = td.getFileObject();
             String displayHint = fo == null ? null : fo.getPath(); // #150654
             String htmlDisplayName = td.getSimpleName() + td.getContextName();

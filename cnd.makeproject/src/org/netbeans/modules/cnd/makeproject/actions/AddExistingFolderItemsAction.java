@@ -45,7 +45,6 @@
 package org.netbeans.modules.cnd.makeproject.actions;
 
 import java.awt.Dimension;
-import java.io.FileFilter;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JButton;
@@ -56,8 +55,8 @@ import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.ui.wizards.FolderEntry;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.SourceFilesPanel;
+import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -118,7 +117,7 @@ public final class AddExistingFolderItemsAction extends NodeAction {
             addButton,
             DialogDescriptor.CANCEL_OPTION,
         };
-        final SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(null, false);
+        final SourceFilesPanel sourceFilesPanel = new SourceFilesPanel(project);
         JPanel panel = new JPanel();
         panel.setPreferredSize(new Dimension(700, 380));
         panel.setLayout(new java.awt.GridBagLayout());
@@ -194,13 +193,13 @@ public final class AddExistingFolderItemsAction extends NodeAction {
         private final MakeConfigurationDescriptor confDescriptor;
         private final Folder targetFolder;
         private final List<? extends SourceFolderInfo> foldersToAdd;
-        private final FileFilter fileFilter;
+        private final FileObjectFilter fileFilter;
 
         public AddFilesRunnable(
                 MakeConfigurationDescriptor confDescriptor,
                 Folder targetFolder,
                 List<? extends SourceFolderInfo> foldersToAdd,
-                FileFilter fileFilter) {
+                FileObjectFilter fileFilter) {
             this.confDescriptor = confDescriptor;
             this.targetFolder = targetFolder;
             this.foldersToAdd = foldersToAdd;
@@ -211,7 +210,7 @@ public final class AddExistingFolderItemsAction extends NodeAction {
         public void run() {
             for (SourceFolderInfo folderInfo : foldersToAdd) {
                 confDescriptor.addFilesFromRoot(
-                        targetFolder, folderInfo.getFile(),
+                        targetFolder, folderInfo.getFileObject(),
                         false, false, fileFilter);
             }
         }

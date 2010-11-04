@@ -50,10 +50,13 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
+import org.netbeans.modules.cnd.makeproject.api.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserInnerPanel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -72,7 +75,11 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
         projectTextField.setText(FileUtil.toFile(project.getProjectDirectory()).getPath());
-        sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getSourceRoots()));
+        ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        sourceRootPanel.add(sourceRootChooser = new SourceRootChooser(
+                configurationDescriptor.getBaseDir(),
+                makeConfigurationDescriptor.getSourceRoots(),
+                MakeProjectUtils.getSourceFileSystemHost(project)));
         ignoreFoldersTextField.setText(makeConfigurationDescriptor.getFolderVisibilityQuery().getRegEx());
 //        if (makeConfigurationDescriptor.getActiveConfiguration() != null && makeConfigurationDescriptor.getActiveConfiguration().isMakefileConfiguration()) {
 //            testRootPanel.add(testRootChooser = new TestRootChooser(configurationDescriptor.getBaseDir(), makeConfigurationDescriptor.getTestRoots()));
@@ -127,8 +134,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 
     private static class SourceRootChooser extends DirectoryChooserInnerPanel {
 
-        public SourceRootChooser(String baseDir, List<String> feed) {
-            super(baseDir, feed);
+        public SourceRootChooser(String baseDir, List<String> feed, ExecutionEnvironment env) {
+            super(baseDir, feed, env);
             getCopyButton().setVisible(false);
             getEditButton().setVisible(false);
         }
@@ -207,9 +214,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 
         setLayout(new java.awt.GridBagLayout());
 
-        projectLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.projectLabel.mn").charAt(0));
         projectLabel.setLabelFor(projectTextField);
-        projectLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.projectLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(projectLabel, gridBagConstraints);
@@ -241,9 +247,8 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
 
         ignoreFolderPanel.setLayout(new java.awt.GridBagLayout());
 
-        ignoreFoldersLabel.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersLabel.mn").charAt(0));
         ignoreFoldersLabel.setLabelFor(ignoreFoldersTextField);
-        ignoreFoldersLabel.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreFoldersLabel, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         ignoreFolderPanel.add(ignoreFoldersLabel, gridBagConstraints);
@@ -254,8 +259,7 @@ public class ProjectPropPanel extends javax.swing.JPanel implements MakeContext.
         gridBagConstraints.weightx = 1.0;
         ignoreFolderPanel.add(ignoreFoldersTextField, gridBagConstraints);
 
-        ignoreFoldersDefaultButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/configurations/ui/Bundle").getString("ProjectPropPanel.ignoreFoldersDefaultButton.mn").charAt(0));
-        ignoreFoldersDefaultButton.setText(org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersDefaultButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreFoldersDefaultButton, org.openide.util.NbBundle.getMessage(ProjectPropPanel.class, "ProjectPropPanel.ignoreFoldersDefaultButton.text")); // NOI18N
         ignoreFoldersDefaultButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreFoldersDefaultButtonActionPerformed(evt);

@@ -62,21 +62,28 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
  * to present i.e. functions body
  * @author Vladimir Voskresensky
  */
-public class EmptyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
+public final class EmptyCompoundStatementImpl extends StatementBase implements CsmCompoundStatement {
     
-    public EmptyCompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
+    private EmptyCompoundStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
         ast.setFirstChild(null);
     }
+
+    public static EmptyCompoundStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
+        return new EmptyCompoundStatementImpl(ast, file, scope);
+    }
     
+    @Override
     public List<CsmStatement> getStatements() {
         return Collections.<CsmStatement>emptyList();
     }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return Kind.COMPOUND;
     }
     
+    @Override
     public Collection<CsmScopeElement> getScopeElements() {
         return Collections.<CsmScopeElement>emptyList();
     }

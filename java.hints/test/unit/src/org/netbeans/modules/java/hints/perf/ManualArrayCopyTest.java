@@ -42,16 +42,8 @@
 
 package org.netbeans.modules.java.hints.perf;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 
 /**
@@ -249,6 +241,22 @@ public class ManualArrayCopyTest extends TestBase {
                        "    public void test(String[] args) {\n" +
                        "        Object[] source = new Object[6];\n" +
                        "        String[] target = new String[3];\n" +
+                       "        int o = 3;\n" +
+                       "\n" +
+                       "        for (int i = 0; i < source.length; i++) {\n" +
+                       "            target[o + i] = source[i];\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n");
+    }
+
+    public void testArrayCopy191435() throws Exception {
+        performAnalysisTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        int[] source = new int[6];\n" +
+                       "        float[] target = new float[3];\n" +
                        "        int o = 3;\n" +
                        "\n" +
                        "        for (int i = 0; i < source.length; i++) {\n" +

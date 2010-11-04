@@ -50,11 +50,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Observable;
+import java.util.Observer;
 import javax.swing.SwingUtilities;
 import org.apache.lucene.search.BooleanQuery;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
@@ -64,28 +66,38 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
  * @author  mkleint
  */
-public class FindResultsPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
+public class FindResultsPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Observer {
 
     private BeanTreeView btv;
     private ExplorerManager manager;
     private ActionListener close;
     private DialogDescriptor dd;
+    
+    private QueryRequest queryRequest;
+    private ResultsRootNode resultsRootNode;
+    
+    private static final RequestProcessor queryRP = new RequestProcessor(FindResultsPanel.class.getName(), 10);
 
     private FindResultsPanel() {
         initComponents();
         btv = new BeanTreeView();
         btv.setRootVisible(false);
         manager = new ExplorerManager();
-        manager.setRootContext(new AbstractNode(Children.LEAF));
+        queryRequest = null;
+        resultsRootNode = new ResultsRootNode();
+        manager.setRootContext(resultsRootNode);
         add(btv, BorderLayout.CENTER);
     }
 
@@ -96,40 +108,43 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
     }
 
     void find(final List<QueryField> fields) {
-        // XXX replace with a static node plus ChildFactory
-        manager.setRootContext(new AbstractNode(Children.LEAF));
-        RequestProcessor.getDefault().post(new Runnable() {
+
+        if (null != queryRequest) {
+            queryRequest.deleteObserver(this);
+        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                resultsRootNode.setOneChild(getSearchingNode());
+            }
+        });
+
+        queryRequest = new QueryRequest(fields,null,this);
+        
+        queryRP.post(new Runnable() {
 
             public void run() {
-                List<NBVersionInfo> infos = null;
                 try {
-                    infos = RepositoryQueries.find(fields);
+                    RepositoryQueries.find(queryRequest);
                 } catch (BooleanQuery.TooManyClauses exc) {
-                    List<QueryField> withoutClasses = new ArrayList<QueryField>(fields);
-                    Iterator<QueryField> it = withoutClasses.iterator();
-                    while (it.hasNext()) {
-                        QueryField qf = it.next();
-                        if (qf.getField().equals(QueryField.FIELD_CLASSES)) {
-                            it.remove();
-                            break;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            resultsRootNode.setOneChild(getTooGeneralNode());
                         }
-                    }
-                    try {
-                        infos = RepositoryQueries.find(withoutClasses);
-                    } catch (BooleanQuery.TooManyClauses exc2) {
-                        infos = Collections.<NBVersionInfo>emptyList();
-                        //TODO report as problem..
-                    }
+                    });
+                } catch (final OutOfMemoryError oome) {
+                    // running into OOME may still happen in Lucene despite the fact that
+                    // we are trying hard to prevent it in NexusRepositoryIndexerImpl
+                    // (see #190265)
+                    // in the bad circumstances theoretically any thread may encounter OOME
+                    // but most probably this thread will be it
+                    // trying to indicate the condition to the user here
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            resultsRootNode.setOneChild(getTooGeneralNode());
+                        }
+                    });
                 }
-
-                final List<NBVersionInfo> finalInfos = infos;
-
-                SwingUtilities.invokeLater(new Runnable() {
-
-                    public void run() {
-                        manager.setRootContext(createRootNode(finalInfos));
-                    }
-                });
             }
         });
     }
@@ -178,6 +193,9 @@ public class FindResultsPanel extends javax.swing.JPanel implements ExplorerMana
     }// </editor-fold>//GEN-END:initComponents
 
 private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
+    if (null != queryRequest) {
+        queryRequest.deleteObserver(this);
+    }
     if (close != null) {
         close.actionPerformed(evt);
     }
@@ -194,80 +212,81 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         return manager;
     }
 
-    public static Node createEmptyNode() {
-        AbstractNode nd = new AbstractNode(Children.LEAF) {
+    @Override
+    public void update(Observable o, Object arg) {
 
-            @Override
-            public Image getIcon(int arg0) {
-                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.gif"); //NOI18N
+        if (null == o || !(o instanceof QueryRequest)) {
+            return;
+        }
+
+        List<NBVersionInfo> infos = ((QueryRequest) o).getResults();
+
+        final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+
+        if (infos != null) {
+            for (NBVersionInfo nbvi : infos) {
+                String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
+                List<NBVersionInfo> get = map.get(key);
+                if (get == null) {
+                    get = new ArrayList<NBVersionInfo>();
+                    map.put(key, get);
+                }
+                get.add(nbvi);
             }
+        }
 
-            @Override
-            public Image getOpenedIcon(int arg0) {
-                return getIcon(arg0);
+        final List<String> keyList = new ArrayList<String>(map.keySet());
+        Collections.sort(keyList);
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                updateResultNodes(keyList, map);
             }
-        };
-        nd.setName("Empty"); //NOI18N
-
-        nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_Empty"));
-        return nd;
+        });
     }
 
-    private Node createRootNode(List<NBVersionInfo> infos) {
-        Node node = null;
-        Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
+    private void updateResultNodes(List<String> keyList, Map<String, List<NBVersionInfo>> map) {
 
-        for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
-            List<NBVersionInfo> get = map.get(key);
-            if (get == null) {
-                get = new ArrayList<NBVersionInfo>();
-                map.put(key, get);
+            if (keyList.size() > 0) { // some results available
+                
+                Map<String, Node> currentNodes = new HashMap<String, Node>();
+                for (Node nd : resultsRootNode.getChildren().getNodes()) {
+                    currentNodes.put(nd.getName(), nd);
+                }
+                List<Node> newNodes = new ArrayList<Node>(keyList.size());
+
+                // still searching?
+                if (null!=queryRequest && !queryRequest.isFinished())
+                    newNodes.add(getSearchingNode());
+                
+                for (String key : keyList) {
+                    Node nd;
+                    nd = currentNodes.get(key);
+                    if (null != nd) {
+                        ((ArtifactNode)nd).setVersionInfos(map.get(key));
+                    } else {
+                        nd = new ArtifactNode(key, map.get(key));
+                    }
+                    newNodes.add(nd);
+                }
+                
+                resultsRootNode.setNewChildren(newNodes);
+            } else if (null!=queryRequest && !queryRequest.isFinished()) { // still searching, no results yet
+                resultsRootNode.setOneChild(getSearchingNode());
+            } else { // finished searching with no results
+                resultsRootNode.setOneChild(getNoResultsNode());
             }
-            get.add(nbvi);
-        }
-        Set<String> keySet = map.keySet();
-        if (keySet.size() > 0) {
-            Children.Array array = new Children.Array();
-
-            List<String> keyList = new ArrayList<String>(keySet);
-            Collections.sort(keyList);
-            node = new AbstractNode(array);
-            for (String key : keyList) {
-                array.add(new Node[]{new ArtifactNode(key, map.get(key))});
-            }
-        } else {
-            Node empty = createEmptyNode();
-            Children.Array array = new Children.Array();
-            array.add(new Node[]{empty});
-            node = new AbstractNode(array);
-        }
-        return node;
-
     }
 
     private static class ArtifactNode extends AbstractNode {
 
         private List<NBVersionInfo> versionInfos;
+        private ArtifactNodeChildren myChildren;
 
-        public ArtifactNode(String name, final List<NBVersionInfo> list) {
-            super(new Children.Keys<NBVersionInfo>() {
-
-                @Override
-                protected Node[] createNodes(NBVersionInfo info) {
-                    RepositoryInfo rinf = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                    return new Node[]{new VersionNode(rinf, info, info.isJavadocExists(),
-                                info.isSourcesExists(), true)
-                            };
-                }
-
-                @Override
-                protected void addNotify() {
-
-                    setKeys(list);
-                }
-            });
-            this.versionInfos = list;
+        public ArtifactNode(String name, List<NBVersionInfo> list) {
+            super(new ArtifactNodeChildren(list));
+            myChildren = (ArtifactNodeChildren)getChildren();
+            this.versionInfos=list;
             setName(name);
             setDisplayName(name);
         }
@@ -287,8 +306,172 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public List<NBVersionInfo> getVersionInfos() {
             return new ArrayList<NBVersionInfo>(versionInfos);
         }
+
+        public void setVersionInfos(List<NBVersionInfo> infos) {
+            versionInfos = infos;
+            myChildren.setNewKeys(infos);
+        }
+
+        static class ArtifactNodeChildren extends Children.Keys<NBVersionInfo> {
+
+            private List<NBVersionInfo> keys;
+
+            public ArtifactNodeChildren(List<NBVersionInfo> keys) {
+                this.keys = keys;
+            }
+
+            @Override
+            protected Node[] createNodes(NBVersionInfo info) {
+                RepositoryInfo rinf = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
+                return new Node[]{new VersionNode(rinf, info, info.isJavadocExists(),
+                            info.isSourcesExists(), true)
+                        };
+            }
+
+            @Override
+            protected void addNotify() {
+                setKeys(keys);
+            }
+
+            protected void setNewKeys(List<NBVersionInfo> keys) {
+                this.keys = keys;
+                setKeys(keys);
+            }
+        }
     }
 
+    private static Node noResultsNode, searchingNode, tooGeneralNode;
+
+    private static Node getNoResultsNode() {
+        if (noResultsNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Empty"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_Empty")); //NOI18N
+
+            noResultsNode = nd;
+        }
+
+        return new FilterNode (noResultsNode, Children.LEAF);
+    }
+
+    private static Node getSearchingNode() {
+        if (searchingNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/wait.gif"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Searching"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_Searching")); //NOI18N
+
+            searchingNode = nd;
+        }
+
+        return new FilterNode (searchingNode, Children.LEAF);
+    }
+
+    private static Node getTooGeneralNode() {
+        if (tooGeneralNode == null) {
+            AbstractNode nd = new AbstractNode(Children.LEAF) {
+
+                @Override
+                public Image getIcon(int arg0) {
+                    return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
+                    }
+
+                @Override
+                public Image getOpenedIcon(int arg0) {
+                    return getIcon(arg0);
+                }
+            };
+            nd.setName("Too General"); //NOI18N
+
+            nd.setDisplayName(NbBundle.getMessage(FindResultsPanel.class, "LBL_Node_TooGeneral")); //NOI18N
+
+            tooGeneralNode = nd;
+        }
+
+        return new FilterNode (tooGeneralNode, Children.LEAF);
+    }
+
+    private class ResultsRootNode extends AbstractNode {
+
+        private ResultsRootChildren resultsChildren;
+
+        public ResultsRootNode() {
+            this(new InstanceContent());
+        }
+
+        private ResultsRootNode(InstanceContent content) {
+            super (new ResultsRootChildren(), new AbstractLookup(content));
+            content.add(this);
+            this.resultsChildren = (ResultsRootChildren) getChildren();
+        }
+
+        public void setOneChild(Node n) {
+            List<Node> ch = new ArrayList<Node>(1);
+            ch.add(n);
+            setNewChildren(ch);
+        }
+        
+        public void setNewChildren(List<Node> ch) {
+            resultsChildren.setNewChildren (ch);
+        }
+    }
+    
+    private class ResultsRootChildren extends Children.Keys<Node> {
+        
+        List<Node> myNodes;
+
+        public ResultsRootChildren() {
+            myNodes = Collections.EMPTY_LIST;
+        }
+
+        private void setNewChildren(List<Node> ch) {
+            myNodes = ch;
+            refreshList();
+        }
+
+        @Override
+        protected void addNotify() {
+            refreshList();
+        }
+
+        private void refreshList() {
+            List<Node> keys = new ArrayList();
+            for (Node node : myNodes) {
+                keys.add(node);
+            }
+            setKeys(keys);
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            return new Node[] { key };
+        }
+
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClose;
     private javax.swing.JButton btnModify;

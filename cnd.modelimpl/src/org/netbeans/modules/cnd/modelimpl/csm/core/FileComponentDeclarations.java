@@ -191,7 +191,12 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     int getDeclarationsSize(){
-        return declarations.size();
+        try {
+            declarationsLock.readLock().lock();
+            return declarations.size();
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
     }
 
     Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
@@ -380,7 +385,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         if (decl instanceof VariableImpl<?>) {
             VariableImpl<?> v = (VariableImpl<?>) decl;
             if (!NamespaceImpl.isNamespaceScope(v, true)) {
-                v.setScope(decl.getContainingFile(), true);
+                v.setScope(decl.getContainingFile());
                 addStaticVariableDeclaration(uidDecl);
             }
         }

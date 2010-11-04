@@ -71,6 +71,8 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     private InnerToOuterPanel panel;
     
     private boolean disableDeclareFields;
+
+    private String className;
     
     /** Creates a new instance of InnerToOuterRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
@@ -78,6 +80,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     public InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
         refactoring = new InnerToOuterRefactoring(sourceType);
         Element temp = sourceType.resolveElement(info);
+        className = temp.getSimpleName().toString();
         disableDeclareFields = temp.getModifiers().contains(Modifier.STATIC) || temp.getKind() !=ElementKind.CLASS;
     }
     
@@ -109,7 +112,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(InnerToOuterAction.class, "DSC_InnerToOuter"); // NOI18N
+        return NbBundle.getMessage(InnerToOuterAction.class, "DSC_InnerToOuter",className); // NOI18N
     }
 
     public String getName() {

@@ -83,7 +83,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * 
  * @author Tomas Stupka
  */
-public class SvnConfigFiles implements PreferenceChangeListener {
+public class SvnConfigFiles {
 
     /** the only SvnConfigFiles instance */
     private static SvnConfigFiles instance;
@@ -149,7 +149,7 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         } finally {
             Thread.currentThread().setContextClassLoader(cl);
         }
-        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
+//        SvnModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
     }
     
     /**
@@ -171,10 +171,8 @@ public class SvnConfigFiles implements PreferenceChangeListener {
         return instance;
     }
 
-    public void preferenceChange(PreferenceChangeEvent evt) {
-        if(evt.getKey().startsWith(SvnModuleConfig.KEY_RECENT_URL)) {
-            recentUrl = null; // force rewrite
-        }
+    public void reset() {
+        recentUrl = null; // force rewrite
     }
 
     /**

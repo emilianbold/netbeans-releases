@@ -56,6 +56,7 @@ import org.netbeans.modules.masterfs.filebasedfs.BaseFileObjectTestHid;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedURLMapper;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystem;
@@ -75,6 +76,7 @@ import org.tigris.subversion.svnclientadapter.SVNUrl;
  * @author Tomas Stupka
  */
 public class SvnFileSystemTest extends FileSystemFactoryHid {
+    private String workDirPath;
 
     public SvnFileSystemTest(Test test) {
         super(test);
@@ -82,7 +84,24 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(new Class[] {FileBasedURLMapper.class});                
+
+        File f = getWorkDir("userdir");
+        // cleanup first
+        FileUtils.deleteRecursively(f.getParentFile());
+
+        f.mkdirs();
+        System.setProperty("netbeans.user", f.getAbsolutePath());
+        MockServices.setServices(new Class[] {FileBasedURLMapper.class});
+
+        // ensure test files are handled by LH
+        System.setProperty("netbeans.localhistory.historypath", System.getProperty("work.dir"));
+
+        workDirPath = System.getProperty("work.dir");//NOI18N
+        workDirPath = (workDirPath != null) ? workDirPath : System.getProperty("java.io.tmpdir");//NOI18N
+        if(!workDirPath.isEmpty()) {
+            f = new File(workDirPath);
+            FileUtils.deleteRecursively(f);
+        }
     }
     
     protected void tearDown() throws Exception {
@@ -95,33 +114,40 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();        
-        suite.addTestSuite(FileSystemTestHid.class);
+//        suite.addTestSuite(FileSystemTestHid.class);
         suite.addTestSuite(FileObjectTestHid.class);
-        suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);                
-        suite.addTestSuite(BaseFileObjectTestHid.class);            
+//        suite.addTestSuite(URLMapperTestHidden.class);
+//        suite.addTestSuite(FileUtilTestHidden.class);
+//        suite.addTestSuite(BaseFileObjectTestHid.class);
         return new SvnFileSystemTest(suite);
     }
     
-    private File getWorkDir() {
-        String workDirProperty = System.getProperty("workdir");//NOI18N
-        workDirProperty = (workDirProperty != null) ? workDirProperty : System.getProperty("java.io.tmpdir");//NOI18N
-        return new File(workDirProperty);
+    private File getWorkDir(String testName) {
+        File f = new File(workDirPath + "/" + testName + "/wc");
+        f.mkdirs();
+        return f;
     }
 
-    static File getRepoDir() {
-        return new File(new File(System.getProperty("data.root.dir")), "repo");
+    private File getRepoDir(String testName) {
+        return new File(workDirPath + "/" + testName + "/repo");
     }
 
-    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
+    protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {        
+        // cleanup just in case there will be two test with the same name
+        // destroyfilesytem() doesnt seem to be called
+        File f = new File(workDirPath + "/" + testName);
+        if(f.exists()) {
+            FileUtils.deleteRecursively(f.getParentFile());
+        }
+
         try {                                 
-            repoinit();          
+            repoinit(testName);
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         } 
                     
         FileObjectFactory.reinitForTests();
-        FileObject workFo = FileBasedFileSystem.getFileObject(getWorkDir());
+        FileObject workFo = FileBasedFileSystem.getFileObject(getWorkDir(testName));
         assertNotNull(workFo);
         List<File> files = new ArrayList<File>(resources.length);
         for (int i = 0; i < resources.length; i++) {            
@@ -136,30 +162,22 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
             }            
             files.add(FileUtil.toFile(fo));            
         }        
-        commit(files);               
-//            for (File file : files) {
-//                assertStatus(file);    
-//            }        
-//        
-        
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) { }
-//                
+        commit(files, testName);
         return new FileSystem[]{workFo.getFileSystem()};
     }
     
-    protected void destroyFileSystem(String testName) throws IOException {}    
-
-    protected String getResourcePrefix(String testName, String[] resources) {
-        return FileBasedFileSystem.getFileObject(getWorkDir()).getPath();
+    protected void destroyFileSystem(String testName) throws IOException {
+        FileUtils.deleteRecursively(getWorkDir(testName));
     }
 
-    private void repoinit() throws IOException {                        
+    protected String getResourcePrefix(String testName, String[] resources) {
+        return FileBasedFileSystem.getFileObject(getWorkDir(testName)).getPath();
+    }
+
+    private void repoinit(String testName) throws IOException {
         try {
-            File repoDir = getRepoDir();
-            File wc = getWorkDir();
-            
+            File repoDir = getRepoDir(testName);
+            File wc = getWorkDir(testName);            
             if (!repoDir.exists()) {
                 repoDir.mkdirs();                
                 String[] cmd = {"svnadmin", "create", repoDir.getAbsolutePath()};
@@ -167,28 +185,28 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
                 p.waitFor();                
             }            
             
-            ISVNClientAdapter client = getClient(getRepoUrl());
-            SVNUrl url = getRepoUrl().appendPath(getWorkDir().getName());
-            client.mkdir(url, "mkdir");            
+            ISVNClientAdapter client = getClient(getRepoUrl(testName));
+            SVNUrl url = getRepoUrl(testName).appendPath(getWorkDir(testName).getName());
+            client.mkdir(url, "mkdir");
             client.checkout(url, wc, SVNRevision.HEAD, true);
         } catch (Exception ex) {
             throw new IOException(ex.getMessage());
         } 
     }
     
-    private void commit(List<File> files) throws IOException {       
+    private void commit(List<File> files, String testName) throws IOException {
         try {   
-            ISVNClientAdapter client = getClient(getRepoUrl());            
+            ISVNClientAdapter client = getClient(getRepoUrl(testName));
             List<File> filesToAdd = new ArrayList<File>();
             for (File file : files) {
                 
-                ISVNStatus status = getStatus(file);
+                ISVNStatus status = getStatus(file, testName);
                 if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {                   
                     filesToAdd.add(file);
 
                     File parent = file.getParentFile();
-                    while (!getWorkDir().equals(parent)) {
-                        status = getStatus(parent);
+                    while (!getWorkDir(testName).equals(parent)) {
+                        status = getStatus(parent, testName);
                         if(status.getTextStatus().equals(SVNStatusKind.UNVERSIONED)) {
                             filesToAdd.add(0, parent);
                             parent = parent.getParentFile();
@@ -199,9 +217,16 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
                 }    
             }
             for (File file : filesToAdd) {
-                client.addFile(file);
+                try {
+                    client.addFile(file);
+                } catch (SVNClientException e) {
+                    if(!e.getMessage().toLowerCase().contains("entry already exists")) { // javahl
+                        throw e;
+                    }
+                }
             }
-            client.commit(new File[] {getWorkDir()}, "commit", true);
+                
+            client.commit(new File[] {getWorkDir(testName)}, "commit", true);
             FileStatusCache cache = Subversion.getInstance().getStatusCache();
             for (File file : filesToAdd) {
                 cache.refresh(file, null);
@@ -232,21 +257,21 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         return Subversion.getInstance().getClient(url);
     }
 
-    private void assertStatus(File f) throws IOException {
+    private void assertStatus(File f, String testName) throws IOException {
         try {
-            ISVNStatus status = getStatus(f);
+            ISVNStatus status = getStatus(f, testName);
             assertEquals(SVNStatusKind.NORMAL, status.getTextStatus());
         } catch (SVNClientException ex) {
             throw new IOException(ex.getMessage());
         }
     }    
 
-    private ISVNStatus getStatus(File f) throws SVNClientException, MalformedURLException {
-        return getClient(getRepoUrl()).getSingleStatus(f);
+    private ISVNStatus getStatus(File f, String testName) throws SVNClientException, MalformedURLException {
+        return getClient(getRepoUrl(testName)).getSingleStatus(f);
     }
     
-    private SVNUrl getRepoUrl() throws MalformedURLException {
-        return new SVNUrl("file:///" + getRepoDir().getAbsolutePath().replaceAll("\\\\", "/")); 
+    private SVNUrl getRepoUrl(String testName) throws MalformedURLException {
+        return new SVNUrl("file:///" + getRepoDir(testName).getAbsolutePath().replaceAll("\\\\", "/"));
     }    
 
 }

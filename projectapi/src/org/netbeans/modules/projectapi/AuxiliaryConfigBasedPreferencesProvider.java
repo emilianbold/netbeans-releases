@@ -284,7 +284,7 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         }
         
         if (domModified) {
-            ac.putConfigurationFragment(configRoot, true);
+            ac.putConfigurationFragment(configRoot, shared);
         }
         
         try {

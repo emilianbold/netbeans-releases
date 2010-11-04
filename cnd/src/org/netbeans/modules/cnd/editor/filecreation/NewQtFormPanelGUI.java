@@ -74,7 +74,6 @@ import org.openide.loaders.DataObjectNotFoundException;
         this.formTypes = formTypes;
 
         initComponents();
-        initMnemonics();
 
         if (bottomPanel != null) {
             bottomPanelContainer.add(bottomPanel, java.awt.BorderLayout.CENTER);
@@ -423,16 +422,6 @@ import org.openide.loaders.DataObjectNotFoundException;
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewQtFormPanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void initMnemonics() {
-        // kind Matiss put those above setText() in autogeneration, which is not what JLabel expects, so let's do it manually
-        lbFormName.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_FileName_Label_Mnemonic").charAt(0));
-        lbProject.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Project_Label_Mnemonic").charAt(0));
-        lbLocation.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Location_Label_Mnemonic").charAt(0));
-        lbFolder.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Folder_Label_Mnemonic").charAt(0));
-        browseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_Browse_Button_Mnemonic").charAt(0));
-        lbClassFile.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedFile_Label_Mnemonic").charAt(0));
-        lbHeaderFile.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/editor/filecreation/Bundle").getString("LBL_TargetChooser_CreatedHeader_Label_Mnemonic").charAt(0));
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;

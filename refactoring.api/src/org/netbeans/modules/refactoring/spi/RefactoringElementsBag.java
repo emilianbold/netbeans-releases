@@ -66,6 +66,8 @@ import org.openide.util.UserQuestionException;
 public final class RefactoringElementsBag {
     ArrayList<Transaction> commits;
     ArrayList<RefactoringElementImplementation> fileChanges;
+    boolean hasGuarded = false;
+    boolean hasReadOnly = false;
 
     static {
         SPIAccessor.DEFAULT = new AccessorImpl();
@@ -107,6 +109,7 @@ public final class RefactoringElementsBag {
             readOnlyFiles.add(file);
             el.setEnabled(false);
             el.setStatus(el.READ_ONLY);
+            hasReadOnly = true;
             delegate.add(el);
         //isQuery should be used
         } else if (!(refactoring instanceof WhereUsedQuery) && isGuarded(el)) {
@@ -131,6 +134,7 @@ public final class RefactoringElementsBag {
             }
             el.setEnabled(false);
             el.setStatus(el.GUARDED);
+            hasGuarded = true;
             delegate.add(el);
         } else {
             delegate.add(el);

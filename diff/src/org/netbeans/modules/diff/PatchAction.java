@@ -160,6 +160,13 @@ public class PatchAction extends NodeAction {
 
         InputOutput log = IOProvider.getDefault().getIO("Patch Report", false);        
         OutputWriter ow = log.getOut();
+        if (log.isClosed()) {
+            try {
+                ow.reset();
+            } catch (IOException ex) {
+            }
+            log.select();
+        }
 
         try {
             ow.print(DateFormat.getDateTimeInstance().format(new Date()));

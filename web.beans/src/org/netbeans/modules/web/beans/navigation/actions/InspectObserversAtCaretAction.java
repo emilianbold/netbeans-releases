@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.beans.navigation.ObserversModel;
@@ -109,17 +108,16 @@ public class InspectObserversAtCaretAction extends AbstractObserversAction {
         final CompilationController controller = model.getCompilationController();
         final ObserversModel uiModel = new ObserversModel(observers,controller, 
                 metaModel);
-        final ElementHandle<VariableElement> handleVar = ElementHandle.create( var );
         final String name = var.getSimpleName().toString();
         if (SwingUtilities.isEventDispatchThread()) {
             WebBeansActionHelper.showObserversDialog(observers,  metaModel , 
-                    model , handleVar, uiModel ,name );
+                    model , variable, uiModel ,name );
         }
         else {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     WebBeansActionHelper.showObserversDialog(observers,  
-                            metaModel, null , handleVar, uiModel , name );
+                            metaModel, null , variable, uiModel , name );
                 }
             });
         }

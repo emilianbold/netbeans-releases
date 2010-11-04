@@ -93,6 +93,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     private  TreePathHandle newElement;
     private final transient ChangeListener parent;
     private static final int MAX_NAME = 50;
+    private static final int SCOPE_COMBOBOX_COLUMNS = 14;
     
     /** Creates new form WhereUsedPanel */
     public WhereUsedPanel(String name, TreePathHandle e, ChangeListener parent) {
@@ -195,7 +196,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                             add(methodsPanel, BorderLayout.CENTER);
                             methodsPanel.setVisible(true);
                             m_usages.setVisible(!modifiers.contains(Modifier.STATIC));
-                            m_overriders.setVisible(! (element.getEnclosingElement().getModifiers().contains(Modifier.FINAL) || modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE)));
+                            m_overriders.setVisible(! (element.getEnclosingElement().getModifiers().contains(Modifier.FINAL) || modifiers.contains(Modifier.FINAL) || modifiers.contains(Modifier.STATIC) || modifiers.contains(Modifier.PRIVATE) || element.getKind() == ElementKind.CONSTRUCTOR));
                             if (methodDeclaringSuperClass != null ) {
                                 m_isBaseClass.setVisible(true);
                                 m_isBaseClass.setSelected(true);
@@ -442,6 +443,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         scopeLabel.setLabelFor(scope);
         org.openide.awt.Mnemonics.setLocalizedText(scopeLabel, org.openide.util.NbBundle.getMessage(WhereUsedPanel.class, "LBL_Scope")); // NOI18N
 
+        ((javax.swing.JTextField) scope.getEditor().getEditorComponent()).setColumns(SCOPE_COMBOBOX_COLUMNS);
         scope.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scopeActionPerformed(evt);
@@ -456,13 +458,13 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                 .addContainerGap()
                 .addComponent(scopeLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(scope, 0, 266, Short.MAX_VALUE)
+                .addComponent(scope, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
         scopePanelLayout.setVerticalGroup(
             scopePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
             .addComponent(scopeLabel)
-            .addComponent(scope, javax.swing.GroupLayout.PREFERRED_SIZE, 20, Short.MAX_VALUE)
+            .addComponent(scope)
         );
 
         scope.getAccessibleContext().setAccessibleDescription("N/A");

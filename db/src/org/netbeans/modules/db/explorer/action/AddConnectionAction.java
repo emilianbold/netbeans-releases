@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.db.explorer.action;
@@ -53,10 +53,12 @@ public class AddConnectionAction extends BaseAction {
         return NbBundle.getMessage (AddConnectionAction.class, "AddConnection"); // NOI18N
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         return activatedNodes.length == 1;
     }
 
+    @Override
     public void performAction(Node[] activatedNodes) {
         new ConnectUsingDriverAction.NewConnectionDialogDisplayer().showDialog(null, null);
     }

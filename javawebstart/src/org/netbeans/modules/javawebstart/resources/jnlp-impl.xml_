@@ -44,7 +44,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="jnlp-impl" default="default" basedir=".." xmlns:jnlp="http://www.netbeans.org/ns/j2se-project/jnlp">
+<project name="jnlp-impl" default="default" basedir=".." xmlns:jnlp="http://www.netbeans.org/ns/j2se-project/jnlp" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3">
 
     <property name="jnlp.file.name.default" value="launch.jnlp"/>
     <property name="jnlp.dest.dir" location="dist"/>
@@ -69,26 +69,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <!-- JNLP archiving -->
-
-    <target name="-init-macrodef-jnlp-copylibs">
-        <macrodef name="copylibs" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
-            <element name="customize" optional="true"/>
-            <sequential>
-                <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
-                <pathconvert property="run.classpath.without.build.classes.dir">
-                    <path path="${run.classpath}"/>
-                    <map from="${build.classes.dir.resolved}" to=""/>
-                </pathconvert>
-                <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
-                <copylibs compress="${jar.compress}" index="${jar.index}" jarfile="${dist.jar}" manifest="${tmp.manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
-                    <fileset dir="${build.classes.dir}"/>
-                    <manifest>
-                        <customize/>
-                    </manifest>
-                </copylibs>
-            </sequential>
-        </macrodef>
-    </target>
 
     <target name="-init-macrodef-extend-manifest">
         <macrodef name="extend-manifest" uri="http://www.netbeans.org/ns/j2se-project/jnlp">
@@ -167,21 +147,21 @@ made subject to such option by the copyright holder.
             </customize>
         </jnlp:extend-manifest>
     </target>
-    <target name="-do-jar-applet" depends="-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.applet+mkdist.available">
-        <jnlp:copylibs/>
+    <target name="-do-jar-applet" depends="-test-jnlp-type,-init-macrodef-copylibs" if="is.applet+mkdist.available">
+        <j2seproject3:copylibs manifest="${tmp.manifest.file}"/>
     </target>
-    <target name="-do-jar-jnlp-application" depends="-init-filename,-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.application+mkdist.available">
-        <jnlp:copylibs>
+    <target name="-do-jar-jnlp-application" depends="-init-filename,-test-jnlp-type,-init-macrodef-copylibs" if="is.application+mkdist.available">
+        <j2seproject3:copylibs manifest="${tmp.manifest.file}">
             <customize>
                 <attribute name="Main-Class" value="${main.class}"/>
             </customize>
-        </jnlp:copylibs>
+        </j2seproject3:copylibs>
         <echo>To run this application from the command line without Ant, try:</echo>
         <property location="${jnlp.dest.dir}/${jnlp.file}" name="jnlp.file.resolved"/>
         <echo>javaws "${jnlp.file.resolved}"</echo>
     </target>
-    <target name="-do-jar-jnlp-component" depends="-test-jnlp-type,-init-macrodef-jnlp-copylibs" if="is.component+mkdist.available">
-        <jnlp:copylibs/>
+    <target name="-do-jar-jnlp-component" depends="-test-jnlp-type,-init-macrodef-copylibs" if="is.component+mkdist.available">
+        <j2seproject3:copylibs manifest="${tmp.manifest.file}"/>
     </target>
     <target name="-do-jar-jnlp" depends="-create-tmp-manifest,-copy-tmp-manifest,-add-trusted-only-attribute,-add-trusted-library-attribute,-do-jar-applet,-do-jar-jnlp-application,-do-jar-jnlp-component"/>
 

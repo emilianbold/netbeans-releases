@@ -1,2 +1,0 @@
-    def mymethod(self,param1,|>MARK_OCCURRENCES:pa^ram2<|):
-        print |>MARK_OCCURRENCES:param2<|

@@ -169,20 +169,21 @@
                 <friend>com.microchip.mplab.debugger.mdb</friend>
                 <friend>com.microchip.mplab.nbide.embedded</friend>
                 <friend>com.microchip.mplab.nbide.embedded.makeproject</friend>
-		<friend>com.microchip.mplab.nbide.programmer</friend>
+                <friend>com.microchip.mplab.nbide.programmer</friend>
                 <friend>com.sun.cloud.api</friend>
                 <friend>com.sun.cloud.cnd</friend>
                 <friend>com.sun.cloud.cnd.remote.ext</friend>
                 <friend>com.sun.cloud.impl.rest</friend>
                 <friend>com.sun.cloud.test</friend>
                 <friend>com.sun.cloud.ui</friend>
+                <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.indicators</friend>
                 <friend>com.sun.tools.analytics.management</friend>
-                <friend>com.sun.tools.analytics.targets</friend>
-                <friend>com.sun.tools.analytics.utils</friend>
-                <friend>com.sun.tools.analytics.discover</friend>
                 <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
+                <friend>com.sun.tools.analytics.targets</friend>
+                <friend>com.sun.tools.analytics.uncover</friend>
+                <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.debugger.common</friend>
                 <friend>com.sun.tools.debugger.dbx</friend>
                 <friend>com.sun.tools.debugger.dbxgui</friend>
@@ -206,6 +207,7 @@
                 <friend>org.netbeans.modules.cnd</friend>
                 <friend>org.netbeans.modules.cnd.api.remote</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
+                <friend>org.netbeans.modules.cnd.cesredirector</friend>
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common</friend>
@@ -242,6 +244,7 @@
                 <friend>org.netbeans.modules.dlight.terminal</friend>
                 <friend>org.netbeans.modules.dlight.tha</friend>
                 <friend>org.netbeans.modules.dlight.tools</friend>
+                <friend>org.netbeans.modules.dlight.uncover</friend>
                 <friend>org.netbeans.modules.dlight.util</friend>
                 <friend>org.netbeans.modules.dlight.webstack</friend>
                 <friend>org.netbeans.nativeexecution.terminal</friend>
@@ -250,6 +253,7 @@
                 <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
+                <package>org.netbeans.modules.nativeexecution.support.ui.api</package>
             </friend-packages>
         </data>
     </configuration>

@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
 public class ClassStructure {
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = "FinalClass") //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription finalClass(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (cls.getModifiers().getFlags().contains(Modifier.FINAL)) {
@@ -141,7 +141,7 @@ public class ClassStructure {
     public static ErrorDescription finalMethodInFinalClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
-        if (parent.getKind() == Kind.CLASS && mth.getModifiers().getFlags().contains(Modifier.FINAL) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && mth.getModifiers().getFlags().contains(Modifier.FINAL) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_FinalMethodInFinalClass", mth.getName()), //NOI18N
                     FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.FINAL), NbBundle.getMessage(ClassStructure.class, "FIX_RemoveFinalFromMethod", mth.getName())), //NOI18N
                     FixFactory.createSuppressWarningsFix(context.getInfo(), context.getPath(), "FinalMethodInFinalClass")); //NOI18N
@@ -154,7 +154,7 @@ public class ClassStructure {
     public static ErrorDescription noopMethodInAbstractClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
-        if (parent.getKind() == Kind.CLASS && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
             final BlockTree body = mth.getBody();
             if (body != null && body.getStatements().isEmpty()) {
                 return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_NoopMethodInAbstractClass", mth.getName()), //NOI18N
@@ -169,7 +169,7 @@ public class ClassStructure {
     public static ErrorDescription publicConstructorInNonPublicClass(HintContext context) {
         final MethodTree mth = (MethodTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
-        if (parent.getKind() == Kind.CLASS && mth.getReturnType() == null && "<init>".contentEquals(mth.getName()) && //NOI18N
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) && mth.getReturnType() == null && "<init>".contentEquals(mth.getName()) && //NOI18N
                 mth.getModifiers().getFlags().contains(Modifier.PUBLIC) && !((ClassTree) parent).getModifiers().getFlags().contains(Modifier.PUBLIC)) {
             return ErrorDescriptionFactory.forName(context, mth, NbBundle.getMessage(ClassStructure.class, "MSG_PublicConstructorInNonPublicClass", mth.getName()), //NOI18N
                     FixFactory.removeModifiersFix(context.getInfo(), TreePath.getPath(context.getPath(), mth.getModifiers()), EnumSet.of(Modifier.PUBLIC), NbBundle.getMessage(ClassStructure.class, "FIX_RemovePublicFromConstructor")), //NOI18N
@@ -183,7 +183,7 @@ public class ClassStructure {
     public static ErrorDescription protectedMemberInFinalClass(HintContext context) {
         final Tree tree = context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
-        if (parent.getKind() == Kind.CLASS) {
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind())) {
             if (tree.getKind() == Kind.METHOD) {
                 final MethodTree mth = (MethodTree) tree;
                 if (mth.getModifiers().getFlags().contains(Modifier.PROTECTED) && ((ClassTree) parent).getModifiers().getFlags().contains(Modifier.FINAL)) {
@@ -220,7 +220,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MarkerInterface"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription markerInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         if (context.getInfo().getTreeUtilities().isInterface(cls) && cls.getMembers().isEmpty() && cls.getImplementsClause().size() < 2) {
@@ -231,7 +231,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription classMayBeInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final TreeUtilities treeUtilities = context.getInfo().getTreeUtilities();
@@ -244,7 +244,7 @@ public class ClassStructure {
     }
 
     @Hint(category = "class_structure", enabled = false, suppressWarnings = {"MultipleTopLevelClassesInFile"}) //NOI18N
-    @TriggerTreeKind(Kind.CLASS)
+    @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription multipleTopLevelClassesInFile(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
         final Tree parent = context.getPath().getParentPath().getLeaf();
@@ -283,7 +283,10 @@ public class ClassStructure {
                             return false;
                         }
                         break;
+                    case ANNOTATION_TYPE:
                     case CLASS:
+                    case ENUM:
+                    case INTERFACE:
                         if (!testClassMayBeInterface(trees, treeUtilities, memberPath)) {
                             return false;
                         }

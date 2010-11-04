@@ -46,9 +46,11 @@ package org.netbeans.modules.cnd.utils.filters;
 
 import java.io.File;
 import java.util.ResourceBundle;
+import org.netbeans.modules.cnd.utils.FileFilterFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-public class WorkshopProjectFilter extends javax.swing.filechooser.FileFilter {
+public class WorkshopProjectFilter extends FileFilterFactory.FileAndFileObjectFilter {
 
     private static WorkshopProjectFilter instance = null;
 
@@ -68,6 +70,17 @@ public class WorkshopProjectFilter extends javax.swing.filechooser.FileFilter {
 	return(getString("FILECHOOSER_WORKSHOP_PROJECT_FILEFILTER")); // NOI18N
     }
     
+    @Override
+    public boolean accept(FileObject f) {
+	if (f != null) {
+	    if (f.isFolder()) {
+		return true;
+	    }
+	    return f.getExt().equals("prd"); // NOI18N
+	}
+	return false;
+    }
+
     @Override
     public boolean accept(File f) {
 	if (f != null) {

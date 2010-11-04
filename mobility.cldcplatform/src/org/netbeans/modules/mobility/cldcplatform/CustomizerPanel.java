@@ -1050,7 +1050,10 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         final Object selected = lJavaDocPaths.getSelectedValue();
         if (selected == null)
             return;
+        int i = lJavaDocPaths.getSelectedIndex();
         mJavaDocs.removeElement(selected);
+        if (i >= lJavaDocPaths.getModel().getSize()) i--;
+        if (i >= 0)lJavaDocPaths.setSelectedIndex(i);
         refreshButtons();
     }//GEN-LAST:event_bJavaDocRemoveActionPerformed
     
@@ -1071,7 +1074,10 @@ final public class CustomizerPanel extends javax.swing.JPanel implements ChangeL
         final Object selected = lSourcePaths.getSelectedValue();
         if (selected == null)
             return;
+        int i = lSourcePaths.getSelectedIndex();
         mSources.removeElement(selected);
+        if (i >= mSources.getSize()) i--;
+        if (i >= 0) lSourcePaths.setSelectedIndex(i);
         refreshButtons();
     }//GEN-LAST:event_bSourceRemoveActionPerformed
     

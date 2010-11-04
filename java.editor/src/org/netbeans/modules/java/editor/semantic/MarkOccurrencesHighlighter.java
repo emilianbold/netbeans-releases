@@ -86,6 +86,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -308,7 +309,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         
         if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true)) {
             //detect caret inside the extends/implements clause:
-            if (typePath != null && typePath.getParentPath().getLeaf().getKind() == Kind.CLASS) {
+            if (typePath != null && TreeUtilities.CLASS_TREE_KINDS.contains(typePath.getParentPath().getLeaf().getKind())) {
                 ClassTree ctree = (ClassTree) typePath.getParentPath().getLeaf();
                 int bodyStart = Utilities.findBodyStart(ctree, cu, info.getTrees().getSourcePositions(), doc);
 
@@ -337,7 +338,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
 
             TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
 
-            if (ts != null && tp.getLeaf().getKind() == Kind.CLASS) {
+            if (ts != null && TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind())) {
                 int bodyStart = Utilities.findBodyStart(tp.getLeaf(), cu, info.getTrees().getSourcePositions(), doc);
 
                 if (caretPosition < bodyStart) {
@@ -416,7 +417,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         }
 
         if (   el != null
-                && (!(tree.getKind() == Kind.CLASS) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
+                && (!TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind()) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && !Utilities.isNonCtorKeyword(tree)
                 && (!(tree.getKind() == Kind.METHOD) || isIn(caretPosition, Utilities.findIdentifierSpan(info, doc, tp)))
                 && isEnabled(node, el)

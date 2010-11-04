@@ -44,7 +44,9 @@
 package org.netbeans.modules.java.debug;
 
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.element.Element;
@@ -54,6 +56,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementScanner6;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -61,6 +64,8 @@ import org.netbeans.api.java.source.Task;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.PropertySupport.ReadOnly;
+import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 
 /**
@@ -133,6 +138,53 @@ public class ElementNode extends AbstractNode implements OffsetProvider {
 
     public int getPreferredPosition() {
         return -1;
+    }
+
+    @Override
+    protected Sheet createSheet() {
+        Sheet sheet = super.createSheet();
+
+        Sheet.Set ps = new Sheet.Set();
+        ps.setName("origins"); // NOI18N
+        ps.setDisplayName("Origins");
+        ps.setShortDescription("Origins");
+        ps.put(new Node.Property<?>[] {
+            new ReadOnly<String>("sourcefile", String.class, "sourcefile", "sourcefile") {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    if (element instanceof ClassSymbol) {
+                        JavaFileObject file = ((ClassSymbol) element).sourcefile;
+
+                        if (file != null) {
+                            return file.toUri().toString();
+                        } else {
+                            return "No sourcefile set";
+                        }
+                    } else {
+                        return "Not a ClassSymbol";
+                    }
+                }
+            },
+            new ReadOnly<String>("classfile", String.class, "classfile", "classfile") {
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    if (element instanceof ClassSymbol) {
+                        JavaFileObject file = ((ClassSymbol) element).classfile;
+
+                        if (file != null) {
+                            return file.toUri().toString();
+                        } else {
+                            return "No classfile set";
+                        }
+                    } else {
+                        return "Not a ClassSymbol";
+                    }
+                }
+            }
+        });
+
+        sheet.put(ps);
+        return sheet;
     }
 
     private static final class NodeChilren extends Children.Keys<Node> {

@@ -47,11 +47,9 @@ import java.text.MessageFormat;
 import java.util.StringTokenizer;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -238,7 +236,7 @@ public class PackageRename implements RefactoringPluginFactory{
                         }
                     }
                     while (!commonFolder.equals(folder)) {
-                        if (folder.getChildren().length==0) {
+                        if (isEmpty(folder)) {
                             FileObject tmp = folder;
                             folder = folder.getParent();
                             tmp.delete();
@@ -251,6 +249,18 @@ public class PackageRename implements RefactoringPluginFactory{
                     ErrorManager.getDefault().notify(ioe);
                 }
                 this.currentName = name;
+            }
+
+            private boolean isEmpty(FileObject folder) {
+                Boolean isVersioned = (Boolean) folder.getAttribute("ProvidedExtensions.VCSManaged");//NOI18N
+                if (!isVersioned) {
+                    return folder.getChildren().length==0;
+                }
+                for (FileObject child:folder.getChildren()) {
+                    if (VisibilityQuery.getDefault().isVisible(child))
+                        return false;
+                }
+                return true;
             }
         }
     }

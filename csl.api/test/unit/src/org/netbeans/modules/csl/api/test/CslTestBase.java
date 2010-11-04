@@ -4285,7 +4285,8 @@ public abstract class CslTestBase extends NbTestCase {
             original.store(optimize, indexedIndexables);
         }
 
-        public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException {
+        @Override
+        public Collection<? extends IndexDocumentImpl> query(String fieldName, String value, Kind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.query(fieldName, value, kind, fieldsToLoad);
         }
 

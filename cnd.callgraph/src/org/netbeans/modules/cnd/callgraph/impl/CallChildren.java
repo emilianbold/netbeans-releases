@@ -93,15 +93,15 @@ public class CallChildren extends Children.Keys<Call> {
         List<Call> set;
         if (isCalls) {
             if (call != null) {
-                set = model.getModel().getCallees(call.getCallee(), showOverriding);
+                set = model.getCallees(call.getCallee(), showOverriding);
             } else {
-                set = model.getModel().getCallees(function, showOverriding);
+                set = model.getCallees(function, showOverriding);
             }
         } else {
             if (call != null) {
-                set = model.getModel().getCallers(call.getCaller(), showOverriding);
+                set = model.getCallers(call.getCaller(), showOverriding);
             } else {
-                set = model.getModel().getCallers(function, showOverriding);
+                set = model.getCallers(function, showOverriding);
             }
         }
         if (set != null && set.size() > 0) {

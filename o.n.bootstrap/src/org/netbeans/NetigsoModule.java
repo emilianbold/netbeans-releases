@@ -180,7 +180,8 @@ final class NetigsoModule extends Module {
         return s.replaceFirst(";.*$", "");
     }
 
-    private static final class DelegateCL extends ProxyClassLoader {
+    private final class DelegateCL extends ProxyClassLoader 
+    implements Util.ModuleProvider {
         public DelegateCL() {
             super(new ClassLoader[0], false);
         }
@@ -216,6 +217,11 @@ final class NetigsoModule extends Module {
         public String toString() {
             ClassLoader l = firstParent();
             return l == null ? "Netigso[uninitialized]" : "Netigso[" + l.toString() + "]"; // NOI18N
+        }
+
+        @Override
+        public Module getModule() {
+            return NetigsoModule.this;
         }
     }
 }

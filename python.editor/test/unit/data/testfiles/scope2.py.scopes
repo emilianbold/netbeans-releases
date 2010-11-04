@@ -1,9 +1,0 @@
-=============================================
-<file-top>: Module : OffsetRange[0,29>
-foo [bound][function][def][node=FunctionDef]
-x [bound][data][read][node=Name]
-
-    =============================================
-    foo: FunctionDef : OffsetRange[6,29>
-    x [free][read][node=Name]
-

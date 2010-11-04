@@ -45,15 +45,10 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.bugtracking</friend>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
-                <friend>org.netbeans.modules.bugzilla</friend>
-                <friend>org.netbeans.modules.hudson.kenai</friend>
-                <friend>org.netbeans.modules.jira</friend>
                 <friend>org.netbeans.modules.kenai.maven</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.wag.manager</friend>
                 <package>org.netbeans.modules.kenai.api</package>
             </friend-packages>
         </data>

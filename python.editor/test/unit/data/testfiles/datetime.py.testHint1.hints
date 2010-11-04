@@ -1,7 +1,0 @@
-for dim in _DAYS_IN_MONTH[1:]:
-
-HINT:Surround With...
-FIX:Surround With Try/Except
-FIX:Surround With Try/Except/Finally
-FIX:Surround With Try/Finally
-del dbm, dim^

@@ -62,6 +62,21 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test191610() throws Exception {
+        // #191610 unresolved reference to class declared with outer scope 
+        performStaticTest("iz191610.cc");
+    }
+
+    public void test191515() throws Exception {
+        // 191515: incorrect scope resolving for typedefs
+        performStaticTest("iz191515.cpp");
+    }
+    
+    public void testIZ191336() throws Exception {
+        // 191336: Regression in test results (Oracle Solaris Studio projects)
+        performStaticTest("iz191336.cpp");
+    }
+    
     public void testArrowDerefOfThis() throws Exception {
         performStaticTest("arrow_deref_of_this.cpp");
     }

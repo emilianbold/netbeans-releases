@@ -105,6 +105,12 @@ public class CopyCommand extends SvnCommand {
         type = CopyType.file2url;
     }
 
+    public CopyCommand(File fromFile, File toFile) {
+        this.fromFile = fromFile;
+        this.toFile = toFile;
+        type = CopyType.file2file;
+    }
+
     public CopyCommand(File fromFile, SVNUrl toUrl, String msg, boolean makeParents) {
         this.fromFile = fromFile;
         this.toUrl = toUrl;
@@ -137,6 +143,11 @@ public class CopyCommand extends SvnCommand {
                 arguments.add(fromFile);        
                 arguments.addNonExistent(toUrl);
                 setCommandWorkingDirectory(fromFile);                
+                break;
+            case file2file:
+                arguments.add(fromFile);
+                arguments.add(toFile);
+                setCommandWorkingDirectory(fromFile);
                 break;
             default :    
                 throw new IllegalStateException("Illegal copytype: " + type);                             

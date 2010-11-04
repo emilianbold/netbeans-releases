@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDisplayer;
@@ -289,7 +290,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
             JTextComponent component = context.lookup(JTextComponent.class);
             CompilationController cc = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
-            while (path != null && path.getLeaf().getKind() != Kind.CLASS) {
+            while (path != null && !TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind())) {
                 path = path.getParentPath();
             }
 

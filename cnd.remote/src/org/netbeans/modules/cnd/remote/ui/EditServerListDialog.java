@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
+import org.netbeans.modules.cnd.api.toolchain.ui.Save;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.CreateHostWizardIterator;
@@ -81,7 +82,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author  gordonp
  */
-public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener {
+public class EditServerListDialog extends JPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, Save {
 
     private DefaultListModel model;
     private DialogDescriptor desc;
@@ -91,6 +92,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private boolean buttonsEnabled;
     private final ToolsCacheManager cacheManager;
     private final AtomicReference<ExecutionEnvironment> selectedEnv;
+    private final boolean isRemoveAvaliable;
 
     private static final String CMD_ADD = "Add"; // NOI18N
     private static final String CMD_REMOVE = "Remove"; // NOI18N
@@ -100,6 +102,10 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static final String CMD_RETRY = "Retry"; // NOI18N
 
     public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
+        this(cacheManager,selectedEnv, true);
+    }
+
+    public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv, boolean removeAvaliable) {
         this.cacheManager = cacheManager;
         initComponents();
         initServerList(cacheManager.getServerUpdateCache());
@@ -108,20 +114,27 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         tfReason.setEnabled(false); // setVisible(false);
         pbarStatusPanel.setVisible(false);
         this.selectedEnv = selectedEnv;
+        isRemoveAvaliable = removeAvaliable;
         initListeners();
     }
+
 
     private void initListeners() {
         lstDevHosts.addListSelectionListener(this);
         btAddServer.addActionListener(this);
-        btRemoveServer.addActionListener(this);
+        if (isRemoveAvaliable) {
+            btRemoveServer.addActionListener(this);
+            btRemoveServer.setActionCommand(CMD_REMOVE);
+        } else {
+            btRemoveServer.setEnabled(false);
+            btRemoveServer.setVisible(false);
+        }
         btSetAsDefault.addActionListener(this);
         btPathMapper.addActionListener(this);
         btProperties.addActionListener(this);
         btRetry.addActionListener(this);
 
         btAddServer.setActionCommand(CMD_ADD);
-        btRemoveServer.setActionCommand(CMD_REMOVE);
         btSetAsDefault.setActionCommand(CMD_DEFAULT);
         btPathMapper.setActionCommand(CMD_PATHMAPPER);
         btProperties.setActionCommand(CMD_PROPERTIES);
@@ -261,10 +274,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         return defaultRecord;
     }
 
-    private void showPathMapper() {
-        EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue(), getHosts());
-    }
-
     private void setButtons(boolean enable) {
         buttonsEnabled = enable;
         if (desc != null) {
@@ -272,7 +281,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
         btAddServer.setEnabled(enable);
         btAddServer.setEnabled(enable);
-        btRemoveServer.setEnabled(enable);
+        if (isRemoveAvaliable) {
+            btRemoveServer.setEnabled(enable);
+        }
         btPathMapper.setEnabled(enable);
         btSetAsDefault.setEnabled(enable);
         btRetry.setEnabled(enable);
@@ -295,7 +306,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
         if (record != null) {
             tfStatus.setText(record.getStateAsText());
-            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled);            
+            btRemoveServer.setEnabled(record.isRemote() && buttonsEnabled && isRemoveAvaliable);
             checkDefaultButton(record);
             btProperties.setEnabled(record.isRemote());
             btPathMapper.setEnabled(buttonsEnabled && record.isRemote() && record.getSyncFactory().isPathMappingCustomizable());
@@ -360,7 +371,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 b.setEnabled(false);
                 lstDevHosts.repaint();
             } else if (b.getActionCommand().equals(CMD_PATHMAPPER)) {
-                showPathMapper();
+                EditPathMapDialog.showMe((ServerRecord) lstDevHosts.getSelectedValue());
             } else if (b.getActionCommand().equals(CMD_PROPERTIES)) {
                 RemoteServerRecord record = (RemoteServerRecord) lstDevHosts.getSelectedValue();
                 if (record.isRemote()) {
@@ -373,6 +384,12 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 this.revalidateRecord(getSelectedRecord(), null, false);
             }
         }
+    }
+
+    @Override
+    public void save(ToolsCacheManager cacheManager) {
+        cacheManager.setHosts(getHosts());
+        cacheManager.setDefaultRecord(getDefaultRecord());
     }
 
     private RemoteServerRecord getSelectedRecord() {
@@ -408,9 +425,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         setMinimumSize(new java.awt.Dimension(419, 255));
         setLayout(new java.awt.GridBagLayout());
 
-        lbDevHosts.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerList").charAt(0));
         lbDevHosts.setLabelFor(lstDevHosts);
-        lbDevHosts.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_ServerList")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbDevHosts, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_ServerList")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -438,8 +454,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        btAddServer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_AddServer").charAt(0));
-        btAddServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_AddServer")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btAddServer, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_AddServer")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -448,8 +463,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btAddServer, gridBagConstraints);
 
-        btRemoveServer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_RemoveServer").charAt(0));
-        btRemoveServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_RemoveServer")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btRemoveServer, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_RemoveServer")); // NOI18N
         btRemoveServer.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -469,8 +483,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
         add(btSetAsDefault, gridBagConstraints);
 
-        btPathMapper.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PathMapper").charAt(0));
-        btPathMapper.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_PathMapper")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btPathMapper, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_PathMapper")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -488,9 +501,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
         add(btProperties, gridBagConstraints);
 
-        lbStatus.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Status").charAt(0));
         lbStatus.setLabelFor(tfStatus);
-        lbStatus.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Status")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbStatus, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Status")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -509,8 +521,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 6);
         add(tfStatus, gridBagConstraints);
 
-        btRetry.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Retry").charAt(0));
-        btRetry.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Retry")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(btRetry, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Retry")); // NOI18N
         btRetry.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -519,9 +530,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
         add(btRetry, gridBagConstraints);
 
-        lbReason.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Reason").charAt(0));
         lbReason.setLabelFor(lbReason);
-        lbReason.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbReason, org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;

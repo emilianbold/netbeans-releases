@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.vmd.midp.components.items;
 
+import java.util.Collection;
 import org.netbeans.modules.vmd.api.codegen.CodeSetterPresenter;
 import org.netbeans.modules.vmd.api.codegen.Parameter;
 import org.netbeans.modules.vmd.api.inspector.InspectorOrderingController;
@@ -70,6 +71,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.vmd.midp.components.general.RootCode;
 
 /**
  *
@@ -141,6 +143,17 @@ public class ChoiceGroupCD extends ComponentDescriptor {
                 createPropertiesPresenter(),
                 // code
                 createSetterPresenter(),
+                new RootCode.CodeComponentDependencyPresenter() {
+                    protected void collectRequiredComponents(Collection<DesignComponent> requiredComponents) {
+                        PropertyValue value = getComponent().readProperty(PROP_ELEMENTS);
+                        final List<PropertyValue> array = value.getArray();
+                        for (PropertyValue element : array) {
+                            DesignComponent component = element.getComponent();
+                            if (component != null)
+                                requiredComponents.add(component);
+                        }
+                    }
+                },
                 MidpInspectorSupport.createComponentElementsCategory(NbBundle.getMessage (ChoiceGroupCD.class, "DISP_InspectorCategory_ChoiceElements"),getInspectorOrderingControllers(), ChoiceElementCD.TYPEID), //NOI18N
                 //actions
                 AddActionPresenter.create(AddActionPresenter.ADD_ACTION, 10, ChoiceElementCD.TYPEID),

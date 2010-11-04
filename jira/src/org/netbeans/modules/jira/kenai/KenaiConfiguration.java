@@ -57,7 +57,6 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  */
 public class KenaiConfiguration extends JiraConfiguration {
 
-    private Project[] projects;
     private String projectName;
 
     protected KenaiConfiguration(JiraClient jiraClient, JiraRepository repository) {
@@ -71,19 +70,17 @@ public class KenaiConfiguration extends JiraConfiguration {
 
     @Override
     public Project[] getProjects() {
-        return projects;
+        return findProject();
     }
 
     private void ensureProject() throws CoreException {
+        Project[] projects = findProject();
         if(projects == null) {
+            Jira.LOG.log(Level.FINE, "Project {0} missing in cached jira configuration. Will refresh one more time.", projectName); // NOI18N
+            Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(repository.getTaskRepository(), new NullProgressMonitor());
             projects = findProject();
             if(projects == null) {
-                Jira.LOG.log(Level.FINE, "Project {0} missing in cached jira configuration. Will refresh one more time.", projectName); // NOI18N
-                Jira.getInstance().getRepositoryConnector().updateRepositoryConfiguration(repository.getTaskRepository(), new NullProgressMonitor());
-                projects = findProject();
-                if(projects == null) {
-                    Jira.LOG.log(Level.WARNING, "Could not find project {0} in jira configuration.", projectName); // NOI18N
-                }
+                Jira.LOG.log(Level.WARNING, "Could not find project {0} in jira configuration.", projectName); // NOI18N
             }
         }
     }

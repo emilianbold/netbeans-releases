@@ -57,24 +57,27 @@ import org.openide.filesystems.FileUtil;
  */
 public class LuceneIndexFactory implements IndexFactoryImpl {
 
+    @Override
     public IndexDocumentImpl createDocument(final Indexable indexable) {
         assert indexable !=null;
         return new LuceneDocument(indexable);
     }
 
+    @Override
     public IndexImpl createIndex (Context ctx) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(ctx.getIndexFolder());
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), LuceneIndexManager.Mode.CREATE);
+        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.CREATE);
     }
 
+    @Override
     public IndexImpl getIndex(final FileObject indexFolder) throws IOException {
         final FileObject luceneIndexFolder = getIndexFolder(indexFolder);
-        return LuceneIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), LuceneIndexManager.Mode.IF_EXIST);
+        return DocumentBasedIndexManager.getDefault().getIndex(luceneIndexFolder.getURL(), DocumentBasedIndexManager.Mode.IF_EXIST);
     }
 
     private FileObject getIndexFolder (final FileObject indexFolder) throws IOException {
         assert indexFolder != null;
-        final String indexVersion = Integer.toString(LuceneIndex.VERSION);
+        final String indexVersion = Integer.toString(DocumentBasedIndex.VERSION);
         final FileObject luceneIndexFolder = FileUtil.createFolder(indexFolder,indexVersion);    //NOI18N
         return luceneIndexFolder;
     }

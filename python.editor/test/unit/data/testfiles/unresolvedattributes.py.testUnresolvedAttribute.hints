@@ -1,3 +1,0 @@
-    print self.undefined # KO
-          --------------
-HINT:Undefined attribute "self.undefined"

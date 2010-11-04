@@ -67,6 +67,7 @@ import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -163,11 +164,6 @@ public final class NativeExecutionService {
 
                     }
 
-                    if (process.getState() == State.ERROR) {
-                        descriptor.inputOutput.getErr().println(ProcessUtils.readProcessErrorLine(process));
-                        return 1;
-                    }
-
                     PtySupport.connect(descriptor.inputOutput, process);
                     SwingUtilities.invokeAndWait(new Runnable() {
 
@@ -176,6 +172,12 @@ public final class NativeExecutionService {
                             // connected
                         }
                     });
+
+                    if (process.getState() == State.ERROR) {
+                        descriptor.inputOutput.getErr().print(ProcessUtils.readProcessErrorLine(process));
+                        descriptor.inputOutput.getErr().println('\r');
+                        return 1;
+                    }
 
                     return process.waitFor();
                 } finally {
@@ -203,27 +205,32 @@ public final class NativeExecutionService {
                     // After we are sure that our output was read, and queued in
                     // terminal, our runnable will be started only after
                     // all streams will be drained (by the terminal)...
+                    // There is one thing.. If, for some reason, terminal is not
+                    // connected at this point, continuation passed to the
+                    // disconnect() method will not be executed.
+                    // So do it directly...
 
-                    IOTerm.disconnect(descriptor.inputOutput, new Runnable() {
+                    IOTerm.disconnect(descriptor.inputOutput, null);
+                    SwingUtilities.invokeAndWait(new Runnable() {
 
                         @Override
                         public void run() {
-                            if (descriptor.postExecution != null) {
-                                NativeTaskExecutorService.submit(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        descriptor.postExecution.run();
-                                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                                    }
-                                }, displayName + " postExecution"); // NOI18N
-                            }
+                            // disconnected
                         }
                     });
 
+                    try {
+                        if (descriptor.postExecution != null) {
+                            descriptor.postExecution.run();
+                        }
+                    } finally {
+                        IOTerm.term(descriptor.inputOutput).setReadOnly(true);
+                        descriptor.inputOutput.getOut().close();
+                    }
                 }
             }
         };
+
         FutureTask<Integer> runTask = new FutureTask<Integer>(callable) {
 
             @Override
@@ -292,7 +299,7 @@ public final class NativeExecutionService {
         try {
             descriptor.inputOutput.getIn().close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
 

@@ -47,7 +47,6 @@ package org.netbeans.nbbuild;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.junit.*;
 
 
 /** Behaviour of fixing module dependencies. Knows how to replace old
@@ -55,14 +54,14 @@ import org.netbeans.junit.*;
  *
  * @author Jaroslav Tulach
  */
-public class FixDependenciesTest extends NbTestCase {
+public class FixDependenciesTest extends TestBase {
     public FixDependenciesTest (String name) {
         super (name);
     }
     public void testWrongIndentation() throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-cnd-dwarfdiscovery.xml");
+        java.io.File xml = extractResource("FixDependencies-cnd-dwarfdiscovery.xml");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -81,8 +80,8 @@ public class FixDependenciesTest extends NbTestCase {
 
         );
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        execute (f, new String[] { });
+        String result = readFile (xml);
 
         if (result.indexOf ("org.openide.util") == -1) {
             fail ("org.openide.util should be there: " + result);
@@ -111,9 +110,9 @@ public class FixDependenciesTest extends NbTestCase {
         }
     }
     public void testCanFixXmlWsdlModel() throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-xml.wsdl.model.xml");
+        java.io.File xml = extractResource("FixDependencies-xml.wsdl.model.xml");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -132,8 +131,8 @@ public class FixDependenciesTest extends NbTestCase {
 
         );
 
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        execute (f, new String[] { });
+        String result = readFile (xml);
 
         if (result.indexOf ("org.openide.util") == -1) {
             fail ("org.openide.util should be there: " + result);
@@ -143,9 +142,9 @@ public class FixDependenciesTest extends NbTestCase {
         }
     }
     public void testCanParseCoreKit () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-core.kit.xml");
+        java.io.File xml = extractResource("FixDependencies-core.kit.xml");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -164,16 +163,16 @@ public class FixDependenciesTest extends NbTestCase {
 
         );
 
-        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        String before = readFile(xml);
+        execute (f, new String[] { });
+        String after = readFile(xml);
 
         assertEquals("No change", before, after);
     }
     public void testCanParseOpenideUtil () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractResource("FixDependencies-openide.util.xml");
+        java.io.File xml = extractResource("FixDependencies-openide.util.xml");
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -192,14 +191,14 @@ public class FixDependenciesTest extends NbTestCase {
 
         );
 
-        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        String before = readFile(xml);
+        execute (f, new String[] { });
+        String after = readFile(xml);
 
         assertEquals("No change", before, after);
     }
     public void testNoModuleDependenciesDoesNotCrash() throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString(
+        java.io.File xml = extractString(
                 "<?xml version='1.0' encoding='UTF-8'?>" +
                 "<project xmlns='http://www.netbeans.org/ns/project/1'>" +
                 "<type>org.netbeans.modules.apisupport.project</type>" +
@@ -213,7 +212,7 @@ public class FixDependenciesTest extends NbTestCase {
                 "</project>"
         );
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -232,14 +231,14 @@ public class FixDependenciesTest extends NbTestCase {
 
         );
 
-        String before = PublicPackagesInProjectizedXMLTest.readFile(xml);
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
-        String after = PublicPackagesInProjectizedXMLTest.readFile(xml);
+        String before = readFile(xml);
+        execute (f, new String[] { });
+        String after = readFile(xml);
 
         assertEquals("No change", before, after);
     }
     public void testReplaceOpenideDepWithSmallerOnes () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -255,7 +254,7 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -273,9 +272,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
         
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
         
         if (result.indexOf ("org.openide.util") == -1) {
             fail ("org.openide.util should be there: " + result);
@@ -290,7 +289,7 @@ public class FixDependenciesTest extends NbTestCase {
     }
 
     public void testReplaceOpenideUtilWithUtilAndLookup () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -306,7 +305,7 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -324,9 +323,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
 
         if (result.indexOf ("org.openide.util") == -1) {
             fail ("org.openide.util should be there: " + result);
@@ -351,7 +350,7 @@ public class FixDependenciesTest extends NbTestCase {
     }
 
     private void doDontReplaceNewerVersionOfItself(String version) throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -367,7 +366,7 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
 
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -385,9 +384,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { });
+        execute (f, new String[] { });
 
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
 
         if (result.indexOf ("org.openide.util") == -1) {
             fail ("org.openide.util should be there: " + result);
@@ -403,7 +402,7 @@ public class FixDependenciesTest extends NbTestCase {
     
     
     public void testVerificationOfRemovedDependencies () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -435,9 +434,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
         
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File out = extractString ("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -477,9 +476,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
+        execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
         
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
         
         if (result.indexOf ("org.openide.keep") == -1) {
             fail ("org.openide.keep should be there: " + result);
@@ -488,7 +487,7 @@ public class FixDependenciesTest extends NbTestCase {
             fail ("org.openide.remove should not be there: " + result);
         }
 
-        String written = PublicPackagesInProjectizedXMLTest.readFile (out);
+        String written = readFile (out);
         assertEquals ("First we do clean, test verify, then clean and verify three times as there are three <dependency> tags"
                 , "cvcvcvcvcv", written);
     }
@@ -536,12 +535,12 @@ public class FixDependenciesTest extends NbTestCase {
         
         
         
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (projectXML);
+        java.io.File xml = extractString (projectXML);
         
         
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File out = extractString ("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -584,13 +583,13 @@ public class FixDependenciesTest extends NbTestCase {
         assertNotNull ("Originally can be parsed", doc);
         
         
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
+        execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
         
         doc = javax.xml.parsers.DocumentBuilderFactory.newInstance ().newDocumentBuilder ().parse (xml);
         
         assertNotNull ("Still can be parsed", doc);
         
-        String r = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String r = readFile (xml);
         assertEquals ("No release version used as modules do not have it", -1, r.indexOf ("release-version"));
         
         
@@ -603,7 +602,7 @@ public class FixDependenciesTest extends NbTestCase {
     }
 
     public void testPropertiesAreNotInfluencedByPreviousExecution () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -635,9 +634,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
         
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File out = extractString ("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Separate namespaces\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -658,17 +657,17 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
+        execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
         
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
 
-        String written = PublicPackagesInProjectizedXMLTest.readFile (out);
+        String written = readFile (out);
         assertEquals ("The property remove is never set", "vvvvvvvvvv", written);
     }
 
     
   public void testOnlyCompileTimeDependenciesCanBeRemoved () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project>" +
             "  <module-dependencies>" +
@@ -700,9 +699,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
         );
         
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File out = extractString ("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -742,9 +741,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
+        execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
         
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
         
         if (result.indexOf ("org.openide.keep") == -1) {
             fail ("org.openide.keep should be there: " + result);
@@ -753,13 +752,13 @@ public class FixDependenciesTest extends NbTestCase {
             fail ("org.openide.remove should be there: " + result);
         }
 
-        String written = PublicPackagesInProjectizedXMLTest.readFile (out);
+        String written = readFile (out);
         assertEquals ("The remove dependency is not even asked for"
                 , "cvcvccvcv", written);
     }
     
   public void testRuntimeDepOnOpenideIsSpecial () throws Exception {
-        java.io.File xml = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File xml = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<project>\n" +
             "  <module-dependencies>\n" +
@@ -773,9 +772,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>\n"
         );
         
-        java.io.File out = PublicPackagesInProjectizedXMLTest.extractString ("");
+        java.io.File out = extractString ("");
         
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+        java.io.File f = extractString (
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
             "<project name=\"Replace Openide\" basedir=\".\" default=\"all\" >" +
             "  <taskdef name=\"fix\" classname=\"org.netbeans.nbbuild.FixDependencies\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
@@ -799,9 +798,9 @@ public class FixDependenciesTest extends NbTestCase {
             "</project>"
 
         );
-        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
+        execute (f, new String[] { "-Dbuildscript=" + f.getPath () });
         
-        String result = PublicPackagesInProjectizedXMLTest.readFile (xml);
+        String result = readFile (xml);
         
         if (result.indexOf ("org.openide") > -1) {
             fail ("No org.openide should be there: " + result);

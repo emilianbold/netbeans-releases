@@ -23,8 +23,10 @@
 package org.netbeans.modules.html.validation;
 
 import java.net.URL;
+import java.util.ArrayList;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.editor.ext.html.parser.api.HtmlVersion;
 import org.netbeans.modules.html.validation.patched.RootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.BufferingRootNamespaceSniffer;
 import org.netbeans.modules.html.validation.patched.LocalCacheEntityResolver;
@@ -204,8 +206,10 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     private ProblemsHandler problemsHandler = new ProblemsHandler();
     private LinesMapper linesMapper = new LinesMapper();
 
-    public static synchronized ValidationTransaction getInstance() {
-        return new ValidationTransaction();
+    private HtmlVersion version;
+
+    public static synchronized ValidationTransaction create(HtmlVersion version) {
+        return new ValidationTransaction(version);
     }
 
     private static void  initializeLocalEntities_HACK() {
@@ -434,12 +438,24 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
         return false;
     }
 
-    public ValidationTransaction() {
+    public ValidationTransaction(HtmlVersion version) {
+        this.version = version;
         initialize();
     }
 
     public List<ProblemDescription> getFoundProblems() {
         return problemsHandler.getProblems();
+    }
+
+    /** return a list of problems with the given severity and higher (more severe issues) */
+    public List<ProblemDescription> getFoundProblems(int ofThisTypeAndMoreSevere) {
+        List<ProblemDescription> filtered = new ArrayList<ProblemDescription>();
+        for(ProblemDescription pd : getFoundProblems()) {
+            if(pd.getType() >= ofThisTypeAndMoreSevere) {
+                filtered.add(pd);
+            }
+        }
+        return filtered;
     }
 
     public long getValidationTime() {
@@ -469,7 +485,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
     }
 
     public boolean isSuccess() {
-        return getFoundProblems().isEmpty();
+        return getFoundProblems(ProblemDescription.WARNING).isEmpty();
 
     }
 
@@ -479,12 +495,19 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
 //                + "http://s.validator.nu/html5/assertions.sch "
 //                + "http://c.validator.nu/all/";
 
-        parser = ParserMode.HTML; //html5
-//        parser = ParserMode.HTML401_STRICT;
-//        parser = ParserMode.HTML401_TRANSITIONAL;
+        parser = htmlVersion2ParserMode(version);
 
         laxType = false;
 
+    }
+
+    private ParserMode htmlVersion2ParserMode(HtmlVersion version) {
+        switch(version) {
+            case XHTML5:
+                return ParserMode.XML_NO_EXTERNAL_ENTITIES;
+            default:
+                return ParserMode.HTML;
+        }
     }
 
     private boolean isHtmlUnsafePreset() {
@@ -539,7 +562,9 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
             setAllowRnc(false);
 
             loadDocAndSetupParser();
-            setErrorProfile();
+            if(htmlParser != null) {
+                setErrorProfile();
+            }
 
             reader.setErrorHandler(errorHandler);
             contentType = documentInput.getType();
@@ -579,6 +604,7 @@ public class ValidationTransaction implements DocumentModeHandler, SchemaResolve
                 }
                 xmlParser.setErrorHandler(errorHandler.getExactErrorHandler());
                 xmlParser.lockErrorHandler();
+                xmlParser.setCharacterHandler(linesMapper);
             } else {
                 throw new RuntimeException("Bug. Unreachable.");
             }

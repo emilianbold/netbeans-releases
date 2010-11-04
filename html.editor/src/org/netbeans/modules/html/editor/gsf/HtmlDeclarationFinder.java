@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -396,9 +398,15 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             }
             String elementText = elementTextPrefix + entryHandle.entry().getName();
             int elementTextIndex = croppedLineText.indexOf(elementText);
-            assert elementTextIndex != -1 : "elementText='" + elementText +
-                    "'; lineText='" + lineText + "'; croppedLineText='" +
-                    croppedLineText + "'; elementTextPrefix='" + elementTextPrefix + "'";
+            if(elementTextIndex == -1) {
+                String msg = "A parsing error occured when trying to extract display name for html declaration finder."
+                        + "elementText='" + elementText
+                        + "'; lineText='" + lineText + "'; croppedLineText='"
+                        + croppedLineText + "'; elementTextPrefix='" + elementTextPrefix + "'"; //NOI18N
+                Logger.getAnonymousLogger().log(Level.INFO, msg, new IllegalStateException());//NOI18N
+
+                return entryHandle.entry().getName();
+            }
             String prefix = croppedLineText.substring(0, elementTextIndex).trim();
             String postfix = croppedLineText.substring(elementTextIndex + elementText.length()).trim();
 

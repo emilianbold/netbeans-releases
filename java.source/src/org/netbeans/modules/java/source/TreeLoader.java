@@ -354,7 +354,10 @@ public class TreeLoader extends LazyTreeLoader {
         StringBuilder info = new StringBuilder("\n"); //NOI18N
         if (t != null) {
             switch (t.getKind()) {
+                case ANNOTATION_TYPE:
                 case CLASS:
+                case ENUM:
+                case INTERFACE:
                     info.append("CLASS: ").append(((ClassTree) t).getSimpleName().toString()); //NOI18N
                     break;
                 case VARIABLE:

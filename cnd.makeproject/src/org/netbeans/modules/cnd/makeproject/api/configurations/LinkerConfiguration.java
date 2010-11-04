@@ -323,7 +323,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
         String options = ""; // NOI18N
         OptionToString staticSearchVisitor = new OptionToString(cs, linker.getLibrarySearchFlag());
         options += getAdditionalLibs().toString(staticSearchVisitor) + " "; // NOI18N
-        if (linker.getDynamicLibrarySearchFlag().length() > 0) {
+        if (linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
             OptionToString dynamicSearchVisitor = new OptionToString(cs, linker.getDynamicLibrarySearchFlag());
             options += getDynamicSearch().toString(dynamicSearchVisitor) + " "; // NOI18N
         }
@@ -368,7 +368,7 @@ public class LinkerConfiguration implements AllOptionsProvider {
             }
             set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseDir(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories"))); // NOI18N
         }
-        if (linker != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
+        if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
             set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseDir(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories"))); // NOI18N
         }
         sheet.put(set1);
@@ -497,6 +497,15 @@ public class LinkerConfiguration implements AllOptionsProvider {
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(LinkerConfiguration.class, s);
+    }
+
+    @Override
+    public String toString() {
+        return "{output=" + output + " additionalLibs=" + additionalLibs + " dynamicSearch=" + dynamicSearch + // NOI18N
+                " stripOption=" + stripOption + " picOption=" + picOption + " norunpathOption=" + norunpathOption + // NOI18N
+                " nameassignOption=" + nameassignOption + " commandLineConfiguration=" + commandLineConfiguration + // NOI18N
+                " additionalDependencies=" + additionalDependencies + " librariesConfiguration=" + librariesConfiguration + // NOI18N
+                " tool=" + tool + '}'; // NOI18N
     }
 
     public static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {

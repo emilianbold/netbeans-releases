@@ -69,7 +69,9 @@ import org.netbeans.jemmy.util.Dumper;
 public class testBrowserAndIDE extends project {
 
     static final String TEST_PHP_NAME = "PhpProject_project_0002";
-
+    static final String TEST_URL = "http://netbeans.org";
+    static final int TEST_CB_PORT = 80;
+    
     public testBrowserAndIDE(String arg0) {
         super(arg0);
     }
@@ -230,7 +232,12 @@ public class testBrowserAndIDE extends project {
         int iRecount = 0;
         while (bRedo) {
             try {
-                URL u = new URL(args[ 0]);
+                URL u = null; 
+                try {
+                    u = new URL(args[0]);
+                } catch (ArrayIndexOutOfBoundsException aioobe) {
+                    u = new URL(TEST_URL);
+                }
                 HttpURLConnection http = (HttpURLConnection) u.openConnection();
                 http.setConnectTimeout(30000);
                 http.setReadTimeout(60000);
@@ -254,7 +261,8 @@ public class testBrowserAndIDE extends project {
             }
         }
         // Send result back to test
-        Socket sSocketBack = new Socket("127.0.0.1", Integer.parseInt(args[ 1]));
+//        Socket sSocketBack = new Socket("127.0.0.1", Integer.parseInt(args[ 1]));
+        Socket sSocketBack = new Socket("127.0.0.1", TEST_CB_PORT);
         OutputStream sStreamBack = sSocketBack.getOutputStream();
         sStreamBack.write(sContent.getBytes());
         sStreamBack.flush();

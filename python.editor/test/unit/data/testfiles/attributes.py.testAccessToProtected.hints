@@ -1,6 +1,0 @@
-        other._notokay = true;
-        --------------
-HINT:Access to protected variable "_notokay"
-        print other._notokay
-              --------------
-HINT:Access to protected variable "_notokay"

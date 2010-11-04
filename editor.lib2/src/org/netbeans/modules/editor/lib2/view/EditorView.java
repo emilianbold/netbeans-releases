@@ -128,19 +128,6 @@ public abstract class EditorView extends View {
     }
 
     /**
-     * Set textual length of the view.
-     *
-     * @param length &gt;=0 new textual length of the view.
-     * @param modOffset &gt;=0 modification offset of insert/remove that caused this length change.
-     * @param modLength modification length (negative for removals) or 0 for length change
-     *  not caused by insert/remove.
-     * @return true if length change is supported or false if the view must be recreated.
-     */
-    public boolean setLength(int length, int modOffset, int modLength) {
-        return false;
-    }
-
-    /**
      * @return raw visual offset along parent's major axis. It must be post-processed
      *   by parent (if it uses gap-based storage) to become a real visual offset.
      */
@@ -186,7 +173,9 @@ public abstract class EditorView extends View {
      * they might not be in the same order found in the model, or they just
      * might not allow access to some of the locations in the model.
      *
-     * @param offset the position to convert >= 0
+     * @param offset the position to convert >= 0. -1 can be passed to request
+     *  "first available position" at the view's start in the particular direction.
+     *  For example -1 with SwingConstants.WEST means getStartOffset().
      * @param bias bias for the offset.
      * @param alloc non-null bounds allocated to this view.
      * @param direction the direction from the current position that can
@@ -415,7 +404,7 @@ public abstract class EditorView extends View {
     }
 
     public final String getDumpId() {
-        return getDumpName() + "@" + ViewUtils.toStringId(this);
+        return getDumpName() + "@" + ViewUtils.toStringId(this) + "#" + getViewCount(); // NOI18N
     }
 
     public void checkIntegrity() {
@@ -438,15 +427,21 @@ public abstract class EditorView extends View {
     }
 
     public String findIntegrityError() {
-        return null;
+        String err = null;
+        if (getStartOffset() + getLength() != getEndOffset()) {
+            err = "getStartOffset()=" + getStartOffset() + " + getLength()=" + getLength() + // NOI18N
+                    " != getEndOffset()=" + getEndOffset(); // NOI18N
+        }
+        return err;
     }
 
     public String findTreeIntegrityError() {
         String err = findIntegrityError();
         if (err == null) { // Check children
             int viewCount = getViewCount();
-            int lastOffset = getStartOffset();
+            int startOffset = getStartOffset();
             int endOffset = getEndOffset();
+            int lastOffset = startOffset;
             for (int i = 0; i < viewCount; i++) {
                 EditorView child = (EditorView) getView(i);
                 if (child.getParent() != this) {
@@ -489,6 +484,9 @@ public abstract class EditorView extends View {
                     return getDumpId() + "[" + i + "]=" + (noChildInfo ? "" : child.getDumpId() + ": ") + err + '\n';
                 }
                 lastOffset = childEndOffset;
+            }
+            if (viewCount > 0 && lastOffset != endOffset) {
+                err = "lastChild.getEndOffset()=" + lastOffset + " != endOffset=" + endOffset; // NOI18N
             }
         }
         return err;
@@ -556,14 +554,6 @@ public abstract class EditorView extends View {
          * @return real offset.
          */
         int getViewOffset(int rawOffset);
-
-        /**
-         * Get cached text layout for the given child view.
-         *
-         * @param textLayoutView non-null text layout view.
-         * @return cached (or created) text layout.
-         */
-        TextLayout getTextLayout(TextLayoutView textLayoutView);
 
         /**
          * Get font rendering context that for example may be used for text layout creation.

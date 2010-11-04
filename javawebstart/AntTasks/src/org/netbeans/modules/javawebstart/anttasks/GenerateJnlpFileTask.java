@@ -296,7 +296,6 @@ public class GenerateJnlpFileTask extends Task {
                                     informationElem.appendChild(createIconElement(docDom, fileName, "default"));
                                 }
                             } else if (nodeValue.equals(DEFAULT_JNLP_OFFLINE)) {
-                                //Has to be here to keep compatibility with NB 6.8
                                 informationElem.removeChild(node);
                                 String offlineProp = getProperty("jnlp.offline-allowed", null); // property in project.properties
                                 if (offlineProp.equalsIgnoreCase("true")) {

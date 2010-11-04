@@ -54,15 +54,6 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-
-    <folder name="Actions">
-        <folder name="Build">
-            <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.instance">
-                <attr name="instanceClass" stringvalue="org.apache.tools.ant.module.run.RunTargetsAction"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Templates">
  
         <folder name="Other">
@@ -103,12 +94,6 @@ made subject to such option by the copyright holder.
     <folder name="Editors">
         <folder name="text">
             <folder name="x-ant+xml">
-                <folder name="Popup"> <!-- #20203 -->
-                    <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
-                        <attr name="position" intvalue="900"/>
-                    </file>
-                </folder>
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
                         <file name="org-apache-tools-ant-module-CodeTemplates.xml" url="codetemplates.xml"/>
@@ -128,10 +113,6 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="Actions">
-                    <file name="org-apache-tools-ant-module-nodes-RunTargetsAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-nodes-RunTargetsAction.instance"/>
-                        <attr name="position" intvalue="200"/>
-                    </file>
                     <file name="org-openide-actions-CopyAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-openide-actions-CopyAction.instance"/>
                         <attr name="position" intvalue="700"/>

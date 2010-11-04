@@ -109,6 +109,12 @@ import org.openide.util.Lookup;
  */
 public abstract class CsmResultItem implements CompletionItem {
 
+    enum SubstitutionHint {
+        NONE,
+        DOT_TO_ARROW,
+        ARROW_TO_DOT,
+    }
+    
     private static boolean enableInstantSubstitution = true;
     protected int selectionStartOffset = -1;
     protected int selectionEndOffset = -1;
@@ -117,6 +123,7 @@ public abstract class CsmResultItem implements CompletionItem {
     private static final Color KEYWORD_COLOR = Color.gray;
     private static final Color TYPE_COLOR = Color.black;
     private int priority;
+    private SubstitutionHint hint;
 
     protected CsmResultItem(CsmObject associatedObject, int priority) {
         this.associatedObject = associatedObject;
@@ -129,6 +136,10 @@ public abstract class CsmResultItem implements CompletionItem {
         return associatedObject;
     }
 
+    void setHint(SubstitutionHint hint) {
+        this.hint = hint;
+    }
+    
     protected static Color getTypeColor(CsmType type) {
         return type.isBuiltInBased(false) ? KEYWORD_COLOR : TYPE_COLOR;
     }
@@ -160,11 +171,21 @@ public abstract class CsmResultItem implements CompletionItem {
                             return;
                         }
 
-                        doc.remove(offset, len);
-                        doc.insertString(offset, text, null);
+                        int insertOffset = offset;
+                        int removeLength = len;
+                        String insertText = text;
+                        if (hint == SubstitutionHint.DOT_TO_ARROW) {
+                            if (doc.getChars(insertOffset - 1, 1)[0] == '.') {// NOI18N
+                                insertOffset--;
+                                removeLength++;
+                                insertText = "->" + insertText; // NOI18N
+                            }
+                        }
+                        doc.remove(insertOffset, removeLength);
+                        doc.insertString(insertOffset, insertText, null);
                         if (selectionStartOffset >= 0) {
-                            c.select(offset + selectionStartOffset,
-                                    offset + selectionEndOffset);
+                            c.select(insertOffset + selectionStartOffset,
+                                    insertOffset + selectionEndOffset);
                         }
                     } catch (BadLocationException e) {
                         // Can't update

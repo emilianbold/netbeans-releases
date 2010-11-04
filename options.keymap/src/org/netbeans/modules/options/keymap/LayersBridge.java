@@ -97,7 +97,7 @@ public class LayersBridge extends KeymapManager {
     /**
      * Returns Map (String (folderName) > Set (GlobalAction)).
      */
-    public Map<String, Set<ShortcutAction>> getActions () {
+    public synchronized Map<String, Set<ShortcutAction>> getActions () {
         if (categoryToActions == null) {
             categoryToActions = new HashMap<String, Set<ShortcutAction>> ();
             initActions ("Actions", null);               // NOI18N

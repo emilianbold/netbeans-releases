@@ -375,6 +375,7 @@ tokens {
 	protected static final int tsWCHAR_T   = 0x4000;
 	protected static final int tsBOOL      = 0x8000;
 	protected static final int tsCOMPLEX   = 0x10000;
+	protected static final int tsIMAGINARY = 0x20000;
 
 	public static class TypeQualifier extends Enum { public TypeQualifier(String id) { super(id); } }
 
@@ -430,6 +431,7 @@ tokens {
     protected static final int declGeneric = 2;
     protected static final int declNotFirst = 3;
     protected static final int declFunctionParam = 4;
+    protected static final int declExternFunction = 5;
 
 	public int getErrorCount() {
 	    int cnt = errorCount;
@@ -673,9 +675,11 @@ public translation_unit:
                 /* Do not generate ambiguity warnings: we intentionally want to match everything that
                    can not be matched in external_declaration in the second alternative */
 		(options{generateAmbigWarnings = false;}:
+                    { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
+                    |
                     {shouldProceed()}?
                     external_declaration 
-                    | 
+                    |
                     {shouldProceed()}?
                     /* Here we match everything that can not be matched by external_declaration rule,
                        report it as an error and not include in AST */
@@ -690,7 +694,7 @@ public translation_unit:
 protected
 template_explicit_specialization
     :
-    LITERAL_template LESSTHAN GREATERTHAN
+    (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
         // Template explicit specialisation function definition (VK 30/05/06)
         (declaration_specifiers[false, false] function_declarator[true, false] (LCURLY | LITERAL_try))=>
@@ -762,7 +766,7 @@ template_explicit_specialization
 protected
 external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition;}
 	:      
-		(LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
+		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
 		(LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union)) =>
 		LITERAL_template (LITERAL_class | LITERAL_struct| LITERAL_union) 
@@ -909,7 +913,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		(LITERAL___extension__!)? LITERAL_extern LITERAL_template external_declaration
 		{ #external_declaration = #(#[CSM_EXTERN_TEMPLATE, "CSM_EXTERN_TEMPLATE"], #external_declaration); }
         |
-	    {isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => external_declaration_template
+	    {isCPlusPlus()}? ((LITERAL___extension__)? (LITERAL_export)? LITERAL_template) => external_declaration_template
         |
 	// Class definition (templates too)
 	// This is separated out otherwise the next alternative
@@ -1018,6 +1022,17 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declOther]
         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
     |
+        // Extern function declaration without return type but with parameters list
+        (   (LITERAL___extension__)?
+            (options {greedy=true;} :function_attribute_specification)?
+            LITERAL_extern
+            (options {greedy=true;} :function_attribute_specification)?
+            function_declarator[false, false] (EOF|SEMICOLON)
+        ) =>
+        {if (statementTrace>=1) printf("external_declaration_7[%d]: Function prototype\n", LT(1).getLine());}
+        (LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? declaration[declExternFunction]
+        { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
+    |
         // Function definition with return value
         (   (LITERAL___extension__)?
             (options {greedy=true;} :function_attribute_specification!)?
@@ -1076,6 +1091,12 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 		}
 		decl_namespace
 		// moved to decl_namespace { #external_declaration = #(#[, ""], #external_declaration); }
+        |
+		{isCPlusPlus()}?
+            // Constructor definition with initializer
+            (   ctor_decl_spec ctor_declarator[true] COLON ) =>
+            ctor_definition
+            { #external_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #external_declaration); }
 	|	
 		// everything else (except templates)
 		{if (statementTrace>=1) 
@@ -1242,7 +1263,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;}
+	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;}
 	:
 	(
 		// Class definition
@@ -1265,7 +1286,8 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("member_declaration_2[%d]: Enum definition\n",
 				LT(1).getLine());
@@ -1550,26 +1572,34 @@ function_definition
 protected
 is_declaration
         :
-        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther])
+        LITERAL_extern | LITERAL_using | (declaration_specifiers[true, false] declarator[declOther, 0])
         ;
 
 declaration[int kind]
-	:	
-		(LITERAL_extern STRING_LITERAL)=> linkage_specification
-	|	
-		{beginDeclaration();}
-		// LL 31/1/97: added (COMMA) ? below. This allows variables to
-		// typedef'ed more than once. DW 18/08/03 ?
-		declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])? 
+    :
+        (LITERAL_extern STRING_LITERAL)=> linkage_specification
+    |
+        {kind == declExternFunction}? (LITERAL_extern) =>
+        {beginDeclaration();}
+        LITERAL_extern
+        ((COMMA!)? init_declarator_list[kind])?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
-		//{end_of_stmt();}
-		{endDeclaration();}
-	|	
-		using_declaration	// DW 19/04/04
+        {endDeclaration();}
+    |
+        {beginDeclaration();}
+        // LL 31/1/97: added (COMMA) ? below. This allows variables to
+        // typedef'ed more than once. DW 18/08/03 ?
+        declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | SEMICOLON )
+        //{end_of_stmt();}
+        {endDeclaration();}
+    |
+	using_declaration	// DW 19/04/04
     |
         namespace_alias_definition
-	;
+    ;
 
 linkage_specification
 	:	LITERAL_extern STRING_LITERAL
@@ -1618,7 +1648,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         |   { LT(1).getText().equals(LITERAL___global_ext) == true}? ID
         |   (options {greedy=true;} : attribute_specification!)
 		)*
-		(	
+		(
                         (options {greedy=true;} :type_attribute_specification)?
                         ts = type_specifier[ds, noTypeId]
                         // support for "A const*";
@@ -1712,6 +1742,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_double        {ts |= tsDOUBLE;}
         | LITERAL_void          {ts |= tsVOID;}
         | literal_complex       {ts |= tsCOMPLEX;}
+        | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
     ;
 
 qualified_type
@@ -1857,18 +1888,21 @@ init_declarator_list[int kind]
 	;
 
 init_declarator[int kind]
-	:	declarator[kind]
+	:	declarator[kind, 0]
 		(	
 			ASSIGNEQUAL 
-                        ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
-			initializer
-		|	
+                        (cast_array_initializer_head) => initializer
+                        |	
 			LPAREN expression_list RPAREN
 		)?
 	;
 
 initializer
-    :  
+    : 
+        (cast_array_initializer_head) => cast_array_initializer
+    |   
+       array_initializer
+    | 
         lazy_expression[false, false]
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL
@@ -1885,14 +1919,32 @@ initializer
             )            
             initializer
         )?
-    |   
+    ;
+
+cast_array_initializer:
+    // it's better to have LPAREN type RPAREN, but we use simple balanceParensInExpression
+    (AMPERSAND)? balanceParensInExpression array_initializer
+    ;
+
+array_initializer:
         LCURLY RCURLY
     |   
-        LCURLY initializer (COMMA initializer)* (COMMA)? 
+        LCURLY initializer 
+        (
+            // empty comma
+            (COMMA (RCURLY|EOF)) => COMMA
+            |
+            COMMA initializer
+        )*  
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     ;
 
+// only for predicates
+cast_array_initializer_head
+:
+    (AMPERSAND)? balanceParensInExpression LCURLY
+    ;
 
 // so far this one is used in predicates only
 class_head     
@@ -1977,7 +2029,7 @@ member_declarator
 	:	
 		((ID)? COLON constant_expression)=>(ID)? COLON constant_expression
 	|  
-		declarator[declOther]
+		declarator[declOther, 0]
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -2001,52 +2053,52 @@ cv_qualifier_seq
 	(options {warnWhenFollowAmbig = false;}:tq = cv_qualifier)*
 	;
 
-declarator[int kind]
+declarator[int kind, int level]
     :
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // void (__attribute__((noreturn)) ****f) (void);
-        (attribute_specification)=> attribute_specification!
-        declarator[kind]
+        {level < 5}? (attribute_specification)=> attribute_specification!
+        declarator[kind, level + 1]
     |   //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         // VV: 23/05/06 added support for __restrict after pointers
         //i.e. void foo (char **__restrict a)
-        (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
-    |
-        // type (var) = {...}
-        (LPAREN declarator[kind] RPAREN ASSIGNEQUAL LCURLY) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5}? (ptr_operator)=> ptr_operator // AMPERSAND or STAR
+        restrict_declarator[kind, level + 1]
     |
         // typedef ((...));
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid)}? (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level + 1] RPAREN
     |
-        direct_declarator[kind]
+        // type (var) = {...}
+        {level < 5}? (LPAREN declarator[kind, level + 1] RPAREN ASSIGNEQUAL LCURLY) =>
+        LPAREN declarator[kind, level + 1] RPAREN
+    |
+        {level < 5}? direct_declarator[kind, level + 1]
     ;
 
-restrict_declarator[int kind]
+restrict_declarator[int kind, int level]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[kind] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
-        LPAREN declarator[kind] RPAREN
+        (LPAREN declarator[kind, level] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        LPAREN declarator[kind, level] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
         // This rule adds support for declarations like
         // char *__attribute__((aligned(8))) *f;
         (attribute_specification)=> attribute_specification!
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |
         //{( !(LA(1)==SCOPE||LA(1)==ID) || qualifiedItemIsOneOf(qiPtrMember) )}?
         (ptr_operator)=> ptr_operator // AMPERSAND or STAR
-        restrict_declarator[kind]
+        restrict_declarator[kind, level]
     |   
-        (literal_restrict!)? direct_declarator[kind]
+        (literal_restrict!)? direct_declarator[kind, level]
     ;
 
-direct_declarator[int kind]
+direct_declarator[int kind, int level]
 {String id; TypeQualifier tq;}
     :
         // Must be function declaration
@@ -2112,7 +2164,7 @@ direct_declarator[int kind]
 		(parameter_list)?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind] RPAREN
+		LPAREN declarator[kind, level+1] RPAREN
         (options {greedy=true;} :variable_attribute_specification)?
         declarator_suffixes
         (options {greedy=true;} :variable_attribute_specification)?
@@ -2473,12 +2525,12 @@ parameter_declaration
 			    qualifiedItemIsOneOf(qiType|qiCtor) )}?
 			declaration_specifiers[true, false]	// DW 24/3/98 Mods for K & R
 			(  
-				(declarator[declFunctionParam])=> declarator[declFunctionParam]        // if arg name given
+				(declarator[declFunctionParam, 0])=> declarator[declFunctionParam, 0]        // if arg name given
 			| 
 				abstract_declarator  // if arg name not given  // can be empty
 			)
 		|
-			(declarator[declOther])=> declarator[declOther]	// DW 24/3/98 Mods for K & R
+			(declarator[declOther, 0])=> declarator[declOther, 0]	// DW 24/3/98 Mods for K & R
 		|
 			ELLIPSIS
 		)
@@ -2676,8 +2728,9 @@ template_parameter_list
  */
 template_parameter
 	:
-	(   ((LITERAL_class|LITERAL_typename) (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
+	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (ID)? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
 		(LITERAL_class|LITERAL_typename) 
+                (ELLIPSIS)? // support for variadic template params
 		(id:ID  (ASSIGNEQUAL assigned_type_name)? )?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
@@ -2788,6 +2841,7 @@ single_statement
     ;
 
 statement
+	{StorageClass sc = scInvalid;}
 	:
 	(	
                 // Issue 83496   C++ parser does not allow class definition inside function
@@ -2815,7 +2869,8 @@ statement
 	|
                 // Issue 83996   Code completion list doesn't appear if enum defined within function (without messages)
 		// Enum definition (don't want to backtrack over this in other alts)
-		(LITERAL_enum (ID)? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (ID)? LCURLY)=>
+                (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
 			printf("statement_2[%d]: Enum definition\n",
 				LT(1).getLine());
@@ -2850,7 +2905,7 @@ statement
 	|
                 { LT(1).getText().equals(LITERAL_EXEC) && LT(2).getText().equals(LITERAL_SQL) }? (ID ID) => pro_c_statement
                 {if (statementTrace>=1)
-			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
+			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
 	|
                 {if (statementTrace>=1) 
@@ -2994,7 +3049,7 @@ condition_declaration {int ts = tsInvalid;}
         cv_qualifier_seq (LITERAL_typename)?
         ts=type_specifier[dsInvalid, false]
         (postfix_cv_qualifier)? 
-        declarator[declStatement]
+        declarator[declStatement, 0]
         ASSIGNEQUAL assignment_expression
     ;
 
@@ -3096,8 +3151,10 @@ jump_statement
 			//		LT(1).getLine());}
 		|	expression 
 */
-                expression
-		)?	
+                (   (cast_array_initializer_head) => initializer
+                |   expression
+                )
+	)?	
         (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {in_return = false; /*end_of_stmt();*/ #jump_statement = #(#[CSM_RETURN_STATEMENT, "CSM_RETURN_STATEMENT"], #jump_statement);}
 	)
@@ -3207,27 +3264,28 @@ expression
 	;
 
 assignment_expression
-	:	
-        lazy_expression[false, false]
-		(options {greedy=true;}:	
+	:
+        (
+            // IZ#152872: parser error in VLC on cast expression
+            // #191198 -  Parser error in buf.c
+            (cast_array_initializer_head)=>cast_array_initializer
+            |
+            lazy_expression[false, false]
+        )
+	(options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
             | MINUSEQUAL
             | PLUSEQUAL
-			| MODEQUAL
-			| SHIFTLEFTEQUAL
-			| SHIFTRIGHTEQUAL
-			| BITWISEANDEQUAL
-			| BITWISEXOREQUAL
-			| BITWISEOREQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
             )
-            (
-                // IZ#152872: parser error in VLC on cast expression
-                (LPAREN ID RPAREN LCURLY) => ((LPAREN ID RPAREN) LCURLY (initializer (COMMA initializer)*)? RCURLY)
-            |
-                assignment_expression
-            )
+            assignment_expression
         )?
     ;
 
@@ -3328,6 +3386,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_double
             |   LITERAL_void
             |   literal_complex
+            |   LITERAL__Imaginary
 
             |   LITERAL_struct
             |   LITERAL_union
@@ -3337,6 +3396,9 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LITERAL_sizeof
             |   LITERAL___real
             |   LITERAL___imag
+
+            |   LITERAL_alignof
+            |   LITERAL___alignof__
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3502,6 +3564,7 @@ lazy_expression_predicate
     |   LITERAL_double
     |   LITERAL_void
     |   literal_complex
+    |   LITERAL__Imaginary
 
     |   LITERAL_OPERATOR 
     |   LITERAL_dynamic_cast 
@@ -3511,6 +3574,9 @@ lazy_expression_predicate
     |   LITERAL_sizeof
     |   LITERAL___real
     |   LITERAL___imag
+
+    |   LITERAL_alignof
+    |   LITERAL___alignof__
 
     |   GREATERTHAN lazy_expression_predicate
     ;

@@ -43,124 +43,237 @@
  */
 package org.netbeans.modules.editor.url;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
+import javax.swing.text.Position.Bias;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.spi.editor.highlighting.HighlightsChangeListener;
-import org.netbeans.spi.editor.highlighting.HighlightsContainer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
-import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.ZOrder;
+import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 
 /**
  * Highlights URLs in the source editor
  * (This was based on the stripwhitespace module by Andrei Badea and the TODO highlighter)
+ * Rewritten to search for the URLs on background due to #190188.
  *
  * @author Andrei Badea
  * @author Tor Norbye
  * @author Jan Lahoda
  */
-public final class HighlightURLs implements HighlightsContainer {
+public final class HighlightURLs implements DocumentListener, Runnable {
 
     private static final Logger LOG = Logger.getLogger(HighlightURLs.class.getName());
-    
-    private final BaseDocument doc;
-    private final AttributeSet coloring;
+    private static final Object REGISTERED_KEY = new Object();
 
-    public HighlightURLs(BaseDocument doc) {
+    static void ensureAttached(final BaseDocument doc) {
+        if (doc.getProperty(REGISTERED_KEY) != null) {
+            return;
+        }
+
+        final HighlightURLs h = new HighlightURLs(doc);
+
+        doc.addDocumentListener(h);
+
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    h.modifiedSpans.add(new Position[] {
+                        doc.createPosition(0, Bias.Backward),
+                        doc.createPosition(doc.getLength(), Bias.Forward)
+                    });
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        h.schedule();
+
+        doc.putProperty(REGISTERED_KEY, true);
+    }
+    
+    private HighlightURLs(BaseDocument doc) {
         this.doc = doc;
         String mimeType = DocumentUtilities.getMimeType(doc);
         FontColorSettings fcs = mimeType == null ? null : MimeLookup.getLookup(mimeType).lookup(FontColorSettings.class);
         this.coloring = fcs == null ? null : fcs.getTokenFontColors("url"); // NOI18N
     }
 
-    @Override
-    public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        if (coloring == null) {
-            return HighlightsSequence.EMPTY;
-        }
-        
-        List<int[]> highlights = new LinkedList<int[]>();
+    private final BaseDocument doc;
+    private final AttributeSet coloring;
+    private final List<Position[]> modifiedSpans = new ArrayList<Position[]>();
 
+    @Override
+    public synchronized void insertUpdate(DocumentEvent e) {
         try {
-            startOffset = Utilities.getRowStart(doc, startOffset);
-            endOffset = Math.min(doc.getLength(), endOffset);
-            endOffset = Utilities.getRowEnd(doc, endOffset);
-
-            CharSequence text = DocumentUtilities.getText(doc, startOffset, endOffset - startOffset);
-
-            for (int[] span : Parser.recognizeURLs(text)) {
-                highlights.add(new int[] {startOffset + span[0], startOffset + span[1]});
-            }
-
-            return new SeqImpl(highlights, coloring);
-        } catch (BadLocationException e) {
-            LOG.log(Level.WARNING, null, e);
-            return HighlightsSequence.EMPTY;
+            modifiedSpans.add(new Position[] {
+                doc.createPosition(e.getOffset(), Bias.Backward),
+                doc.createPosition(e.getOffset() + e.getLength(), Bias.Forward),
+            });
+        } catch (BadLocationException ex) {
+            LOG.log(Level.FINE, null, ex);
         }
+
+        schedule();
     }
 
     @Override
-    public void addHighlightsChangeListener(HighlightsChangeListener listener) {
+    public synchronized void removeUpdate(DocumentEvent e) {
+        try {
+            modifiedSpans.add(new Position[] {
+                doc.createPosition(e.getOffset(), Bias.Backward),
+                doc.createPosition(e.getOffset(), Bias.Forward),
+            });
+        } catch (BadLocationException ex) {
+            LOG.log(Level.FINE, null, ex);
+        }
+
+        schedule();
     }
 
     @Override
-    public void removeHighlightsChangeListener(HighlightsChangeListener listener) {
+    public void changedUpdate(DocumentEvent e) {
     }
-    
-    private static final class SeqImpl implements HighlightsSequence {
-        
-        private int[] current;
-        private final List<int[]> highlights;
-        private final AttributeSet as;
 
-        public SeqImpl(List<int[]> highlights, AttributeSet as) {
-            this.highlights = highlights;
-            this.as = as;
-            
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("SeqImpl:"); // NOI18N
-                for (int[] span : highlights) {
-                    LOG.fine("span: " + span[0] + "-" + span[1]); // NOI18N
+    private static final RequestProcessor WORKER_THREAD = new RequestProcessor(HighlightURLs.class.getName(), 1, false, false);
+    private final Task WORKER = WORKER_THREAD.create(this);
+
+    private void schedule() {
+        WORKER.schedule(100);
+    }
+
+    @Override
+    public void run() {
+        final Position[] span = new Position[2];
+        final CharSequence[] text = new CharSequence[1];
+        final long[] version = new long[1];
+        final OffsetsBag workingBag = new OffsetsBag(doc);
+        final int[] length = new int[1];
+
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (HighlightURLs.this) {
+                    try {
+                        int startOffset = Integer.MAX_VALUE;
+                        int endOffset = -1;
+                        for (Position[] sp : modifiedSpans) {
+                            startOffset = Math.min(startOffset, sp[0].getOffset());
+                            endOffset = Math.max(endOffset, sp[1].getOffset());
+                        }
+
+                        modifiedSpans.clear();
+                        
+                        if (endOffset == (-1)) return;
+                        
+                        startOffset = Utilities.getRowStart(doc, startOffset);
+                        endOffset = Math.min(doc.getLength(), endOffset);
+                        endOffset = Utilities.getRowEnd(doc, endOffset);
+
+                        text[0] = DocumentUtilities.getText(doc, startOffset, endOffset - startOffset);
+                        version[0] = DocumentUtilities.getDocumentVersion(doc);
+
+                        workingBag.setHighlights(getBag(doc));
+                        workingBag.removeHighlights(startOffset, endOffset + 1, false);
+
+                        length[0] = text[0].length();
+                        span[0] = doc.createPosition(startOffset, Bias.Backward);
+                        span[1] = doc.createPosition(endOffset, Bias.Forward);
+                    } catch (BadLocationException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
                 }
             }
-        }
 
-        public @Override boolean moveNext() {
-            if (highlights.isEmpty())
-                return false;
-            
-            current = highlights.remove(0);
-            
-            return true;
-        }
+        });
 
-        public @Override int getStartOffset() {
-            return current[0];
-        }
+        if (span[0] == null) return; //nothing to do
 
-        public @Override int getEndOffset() {
-            return current[1];
-        }
+        class Stop extends Error {}
 
-        public @Override AttributeSet getAttributes() {
-            return as;
+        CharSequence seq = new CharSequence() {
+            @Override
+            public int length() {
+                return length[0];
+            }
+            @Override
+            public char charAt(final int index) {
+                final char[] result = new char[1];
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (DocumentUtilities.getDocumentVersion(doc) != version[0]) {
+                            throw new Stop();
+                        }
+
+                        result[0] = text[0].charAt(index);
+                    }
+                });
+                return result[0];
+            }
+            @Override
+            public CharSequence subSequence(int start, int end) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+
+        try {
+            final Iterable<int[]> toHighlight = Parser.recognizeURLs(seq);
+
+            doc.render(new Runnable() {
+                @Override
+                public void run() {
+                    if (DocumentUtilities.getDocumentVersion(doc) != version[0]) {
+                        throw new Stop();
+                    }
+
+                    for (int[] s : toHighlight) {
+                        workingBag.addHighlight(span[0].getOffset() + s[0], span[0].getOffset() + s[1], coloring);
+                    }
+
+                    getBag(doc).setHighlights(workingBag);
+                }
+            });
+        } catch (Stop u) {
+            synchronized (HighlightURLs.this) {
+                modifiedSpans.add(span);
+            }
+            schedule();
         }
-    } // End of SeqImpl class
+    }
     
+    private static OffsetsBag getBag(Document doc) {
+        OffsetsBag bag = (OffsetsBag) doc.getProperty(HighlightURLs.class);
+
+        if (bag == null) {
+            doc.putProperty(HighlightURLs.class, bag = new OffsetsBag(doc));
+        }
+
+        return bag;
+    }
+
+    @MimeRegistration(mimeType="", service=HighlightsLayerFactory.class)
     public static final class FactoryImpl implements HighlightsLayerFactory {
 
         @Override
@@ -170,9 +283,10 @@ public final class HighlightURLs implements HighlightsContainer {
             if (!(doc instanceof BaseDocument)) {
                 return null;
             } else {
-                HighlightsContainer c = new HighlightURLs((BaseDocument) doc);
+                ensureAttached((BaseDocument) doc);
+                
                 return new HighlightsLayer[] {
-                    HighlightsLayer.create(HighlightURLs.class.getName(), ZOrder.SYNTAX_RACK.forPosition(4950), false, c),
+                    HighlightsLayer.create(HighlightURLs.class.getName(), ZOrder.SYNTAX_RACK.forPosition(4950), false, getBag(doc)),
                 };
             }
         }

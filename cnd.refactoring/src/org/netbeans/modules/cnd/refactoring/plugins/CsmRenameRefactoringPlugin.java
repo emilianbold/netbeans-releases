@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -139,7 +140,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return preCheckProblem;
     }   
 
-    private static final String getString(String key) {
+    private static String getString(String key) {
         return NbBundle.getMessage(CsmRenameRefactoringPlugin.class, key);
     }
 
@@ -170,9 +171,10 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         }
     }
 
+    @Override
     protected Collection<CsmFile> getRefactoredFiles() {
         Collection<? extends CsmObject> objs = getRefactoredObjects();
-        if (objs == null || objs.size() == 0) {
+        if (objs == null || objs.isEmpty()) {
             return Collections.emptySet();
         }
         Collection<CsmFile> files = new HashSet<CsmFile>();
@@ -215,6 +217,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         return out;
     }
 
+    @Override
     protected final void processFile(CsmFile csmFile, ModificationResult mr, AtomicReference<Problem> outProblem) {
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
@@ -228,6 +231,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         if (refs.size() > 0) {
             List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
+                @Override
                 public int compare(CsmReference o1, CsmReference o2) {
                     return o1.getStartOffset() - o2.getStartOffset();
                 }
@@ -249,7 +253,8 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private String getDescription(CsmReference ref, String targetName) {
-        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, "UpdateRef", targetName);
+        boolean decl = CsmReferenceResolver.getDefault().isKindOf(ref, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
+        String out = NbBundle.getMessage(CsmRenameRefactoringPlugin.class, decl ? "UpdateDeclRef" : "UpdateRef", targetName);
         return out;
     }
 

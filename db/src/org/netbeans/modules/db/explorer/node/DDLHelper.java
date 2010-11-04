@@ -30,6 +30,8 @@
  */
 package org.netbeans.modules.db.explorer.node;
 
+import org.netbeans.lib.ddl.CommandNotSupportedException;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.impl.AbstractCommand;
 import org.netbeans.lib.ddl.impl.DropIndex;
 import org.netbeans.lib.ddl.impl.SetDefaultDatabase;
@@ -50,19 +52,18 @@ public class DDLHelper {
         cmd.execute();
     }
 
-    public static void setDefaultDatabase(Specification spec, String dbname) throws Exception {
+    public static void setDefaultDatabase(Specification spec, String dbname) throws CommandNotSupportedException, DDLException {
         SetDefaultDatabase cmd = spec.createSetDefaultDatabase(dbname);
         cmd.execute();
     }
 
-    public static void setDefaultSchema(Specification spec, String schemaName) throws Exception {
+    public static void setDefaultSchema(Specification spec, String schemaName) throws CommandNotSupportedException, DDLException {
         SetDefaultSchema cmd = spec.createSetDefaultSchema(schemaName);
         cmd.execute();
     }
 
     public static void deleteIndex(Specification spec,
-            String schema, String tablename, String indexname)
-            throws Exception
+            String schema, String tablename, String indexname) throws CommandNotSupportedException, DDLException
     {
         DropIndex cmd = spec.createCommandDropIndex(indexname);
         cmd.setTableName(tablename);
@@ -71,7 +72,7 @@ public class DDLHelper {
     }
     
     public static void deleteView(Specification spec,
-            String schema, String viewname) throws Exception {
+            String schema, String viewname) throws CommandNotSupportedException, DDLException {
         AbstractCommand cmd = spec.createCommandDropView(viewname);
         cmd.setObjectOwner(schema);
         cmd.execute();        

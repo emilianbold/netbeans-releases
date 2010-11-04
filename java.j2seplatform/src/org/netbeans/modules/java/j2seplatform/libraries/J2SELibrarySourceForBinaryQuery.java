@@ -59,7 +59,6 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -81,6 +80,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     /** Default constructor for lookup. */
     public J2SELibrarySourceForBinaryQuery() {}
 
+    @Override
     public SourceForBinaryQueryImplementation2.Result findSourceRoots2 (URL binaryRoot) {
         SourceForBinaryQueryImplementation2.Result res = cache.get(binaryRoot);
         if (res != null) {
@@ -118,8 +118,25 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     }
     
     
+    @Override
     public SourceForBinaryQuery.Result findSourceRoots (final URL binaryRoot) {
         return this.findSourceRoots2(binaryRoot);
+    }
+    
+    public void preInit() {
+        for (final LibraryManager lm : LibraryManager.getOpenManagers()) {
+            for (final Library lib : lm.getLibraries()) {
+                if (J2SELibraryTypeProvider.LIBRARY_TYPE.equals(lib.getType())) {
+                    for (final URL url : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
+                        try {
+                            getNormalizedURL (url);
+                        } catch (MalformedURLException ex) {
+                            LOG.log (Level.INFO, "Invalid URL: " + url, ex);
+                        }
+                    }
+                }
+            }
+        }
     }
     
     private URL getNormalizedURL (URL url) throws MalformedURLException {
@@ -138,7 +155,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                     normalizedURL = fo.getURL();
                     this.normalizedURLCache.put (url, normalizedURL);
                 } catch (FileStateInvalidException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Exceptions.printStackTrace(e);
                 }
             }
         }
@@ -178,12 +195,14 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         private final ChangeSupport cs = new ChangeSupport(this);
         private FileObject[] cache;
         
+        @SuppressWarnings("LeakingThisInConstructor")
         public Result (URL queryFor, Library lib) {
             this.entry = queryFor;
             this.lib = lib;
             this.lib.addPropertyChangeListener(WeakListeners.propertyChange(this, this.lib));
         }
         
+        @Override
         public synchronized FileObject[] getRoots () {
             if (this.cache == null) {
                 // entry is not resolved so directly volume content can be searched for it:
@@ -204,16 +223,19 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             return this.cache;
         }
         
+        @Override
         public synchronized void addChangeListener (ChangeListener l) {
             assert l != null : "Listener cannot be null"; // NOI18N
             cs.addChangeListener(l);
         }
         
+        @Override
         public synchronized void removeChangeListener (ChangeListener l) {
             assert l != null : "Listener cannot be null"; // NOI18N
             cs.removeChangeListener(l);
         }
         
+        @Override
         public void propertyChange (PropertyChangeEvent event) {
             if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
                 synchronized (this) {                    
@@ -223,6 +245,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
             }
         }
 
+        @Override
         public boolean preferSources() {
             return false;
         }

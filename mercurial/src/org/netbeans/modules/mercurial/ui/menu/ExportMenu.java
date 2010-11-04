@@ -61,7 +61,7 @@ import org.openide.util.actions.SystemAction;
 public final class ExportMenu extends DynamicMenu {
 
     public ExportMenu () {
-        super(null, NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
+        super(NbBundle.getMessage(ExportMenu.class, "CTL_MenuItem_ExportMenu"));
     }
 
     @Override

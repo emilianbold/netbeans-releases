@@ -46,25 +46,28 @@ package org.netbeans.modules.web.core.syntax.spi;
 import org.netbeans.modules.web.core.syntax.completion.api.ELExpression;
 
 public class ELImplicitObject {
-    
-    public static final int OBJECT_TYPE = 0;
-    public static final int MAP_TYPE = 1;
-            
+
+    public enum Type {
+        OBJECT_TYPE,
+        MAP_TYPE,
+        SCOPE_TYPE
+    }
+
     /** Creates a new instance of ELImplicitObject */
     public ELImplicitObject(String name ) {
         myName = name;
-        setType(MAP_TYPE);
+        setType(Type.MAP_TYPE);
     }
 
     public String getName() {
         return myName;
     }
 
-    public int getType() {
+    public Type getType() {
         return myType;
     }
 
-    public void setType(int type) {
+    public void setType(Type type) {
         myType = type;
     }
     
@@ -81,6 +84,6 @@ public class ELImplicitObject {
     }
     
     private String myName;
-    private int myType;
+    private Type myType;
     private String myClazz; 
 }

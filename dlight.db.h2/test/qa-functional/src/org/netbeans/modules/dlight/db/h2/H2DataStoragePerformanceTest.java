@@ -2,7 +2,7 @@ package org.netbeans.modules.dlight.db.h2;
 
 import java.sql.SQLException;
 import org.netbeans.modules.dlight.impl.CommonSQLDataStoragePerformanceTests;
-import org.netbeans.modules.dlight.impl.SQLDataStorage;
+import org.netbeans.modules.dlight.spi.support.SQLDataStorage;
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.

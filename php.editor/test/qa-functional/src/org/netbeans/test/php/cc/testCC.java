@@ -45,6 +45,7 @@ package org.netbeans.test.php.cc;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.junit.NbModuleSuite;
 import junit.framework.Test;
@@ -53,6 +54,9 @@ import java.util.List;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
 import org.netbeans.jemmy.Timeouts;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JScrollPaneOperator;
+import org.netbeans.jemmy.util.Dumper;
 
 /**
  *
@@ -78,7 +82,7 @@ public class testCC extends cc {
                 "Verify_variable_from_required_file_code_completion",
                 "Verify_code_completion_inside_the_identifier",
                 "Verify_documentation_hints_for_built_in_identifiers",
-                "Verify_documentation_hints_for_keywords",
+//                "Verify_documentation_hints_for_keywords",
                 "Verify_keywords_code_completion",
                 "Verify_code_completion_after_extends_keyword",
                 "Verify_code_completion_with_a_single_option",
@@ -112,7 +116,7 @@ public class testCC extends cc {
     public void Verify_automatic_code_completion_invocation() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
 
         //Sleep( 2000 );
         eoPHP.setCaretPosition("*/\n", false);
@@ -165,7 +169,7 @@ public class testCC extends cc {
     public void Verify_local_variable_code_completion() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         TypeCode(eoPHP, "function function_0001( )\n{\n$variable_0001 = 1;\n$va");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         CheckResult(eoPHP, "$variable_0001");
@@ -180,7 +184,7 @@ public class testCC extends cc {
     public void Verify_global_variable_code_completion() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
         TypeCode(eoPHP, "$variable_0002 = 2;\n");
         eoPHP.setCaretPosition("{", false);
@@ -205,9 +209,9 @@ public class testCC extends cc {
         CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
 
         // Include first file
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP_1.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP1.php");
         eoPHP.setCaretPosition("*/\n", false);
-        TypeCode(eoPHP, "include 'EmptyPHP.php';\n\n$va");
+        TypeCode(eoPHP, "include 'newEmptyPHP.php';\n\n$va");
 
         // Use global variable from first file
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
@@ -224,20 +228,20 @@ public class testCC extends cc {
         startTest();
 
         // Add required third into first file
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/\n", false);
-        TypeCode(eoPHP, "require 'EmptyPHP_2.php';\n");
+        TypeCode(eoPHP, "require 'newEmptyPHP2.php';\n");
 
         // Add third file
         CreatePHPFile(TEST_PHP_NAME, "PHP File", null);
 
         // Add variable into third file
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("newEmptyPHP2.php");
         eoPHP_2.setCaretPosition("*/\n", false);
         TypeCode(eoPHP_2, "$variable_0003 = 3;\n");
 
         // Check completion within first file
-        eoPHP = new EditorOperator("EmptyPHP.php");
+        eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("$variable_0002", false);
         eoPHP.deleteLine(eoPHP.getLineNumber());
         eoPHP.setCaretPosition("}", false);
@@ -253,7 +257,7 @@ public class testCC extends cc {
         startTest();
 
         // Locate existing variable
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("varia", false);
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
@@ -273,7 +277,7 @@ public class testCC extends cc {
     public void Verify_documentation_hints_for_built_in_identifiers() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("*/", false);
         //TypeCode( eoPHP, "$" );
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
@@ -288,21 +292,29 @@ public class testCC extends cc {
         t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", 6000000);
         t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 6000000);
         jCompl.listItself.setTimeouts(t);
-
         System.out.println("==== go to click on item ====");
         jCompl.listItself.clickOnItem("$GLOBALS", new CFulltextStringComparator());
+
+        WindowOperator jdDoc = new WindowOperator(2);
+        JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
+    
+//        try {
+//            Dumper.dumpAll("/Users/filipzamboj/dump.txt");
+//        } catch (IOException ex) {
+//        }
+
+        String sCompleteContent = jeEdit.getText();
         //jCompl.listItself.pressKey( KeyEvent.VK_DOWN );
         System.out.println("=== check done ===");
 
+        //back to original values
         t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", lBack1);
         t.setTimeout("JScrollBarOperator.WholeScrollTimeout", lBack2);
         jCompl.listItself.setTimeouts(t);
 
+//      try{ Dumper.dumpAll( "/Users/filipzamboj/dump.txt" ); } catch( IOException ex ) { }
 
-        //try{ Dumper.dumpAll( "c:\\dump.txt" ); } catch( IOException ex ) { }
-        WindowOperator jdDoc = new WindowOperator(1);
-        JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
-        String sCompleteContent = jeEdit.getText();
+
         //System.out.println( ">>>" + st + "<<<" );
         //Sleep( 5000 );
         // Check content
@@ -328,7 +340,7 @@ public class testCC extends cc {
     public void Verify_documentation_hints_for_keywords() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         //eoPHP.setCaretPosition( "*/", false );
         //TypeCode( eoPHP, "ext" );
         //eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
@@ -341,19 +353,18 @@ public class testCC extends cc {
 
         Timeouts t = jCompl.listItself.getTimeouts();
         //t.print( System.out );
-        long lBack1 = t.getTimeout("JScrollBarOperator.OneScrollClickTimeout");
-        long lBack2 = t.getTimeout("JScrollBarOperator.WholeScrollTimeout");
+//        long lBack1 = t.getTimeout("JScrollBarOperator.OneScrollClickTimeout");
+//        long lBack2 = t.getTimeout("JScrollBarOperator.WholeScrollTimeout");
         t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", 60000);
         t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 60000);
         jCompl.listItself.setTimeouts(t);
 
         jCompl.listItself.clickOnItem("extends", new CFulltextStringComparator());
 
-        t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", lBack1);
-        t.setTimeout("JScrollBarOperator.WholeScrollTimeout", lBack2);
+        t.setTimeout("JScrollBarOperator.OneScrollClickTimeout", 60000);
+        t.setTimeout("JScrollBarOperator.WholeScrollTimeout", 60000);
         jCompl.listItself.setTimeouts(t);
-
-        WindowOperator jdDoc = new WindowOperator(1);
+        WindowOperator jdDoc = new WindowOperator(2);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
         // Check content
@@ -364,19 +375,19 @@ public class testCC extends cc {
             if (-1 == sCompleteContent.indexOf(sContentPart)) {
                 System.out.println(">>>" + sCompleteContent + "<<<");
                 // THIS IS ISSUE
-                // fail( "Unable to find part of required content: \"" + sContentPart + "\"" );
+                fail("Unable to find part of required content: \"" + sContentPart + "\"");
             }
         }
+
         jCompl.hideAll();
         //Backit( eoPHP, 3 );
-
         endTest();
     }
 
     public void Verify_keywords_code_completion() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("?>", true);
         TypeCode(eoPHP, "class a ext");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
@@ -393,7 +404,7 @@ public class testCC extends cc {
     public void Verify_code_completion_after_extends_keyword() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("?>", true);
         TypeCode(eoPHP, "class a ext");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
@@ -419,13 +430,17 @@ public class testCC extends cc {
     public void Verify_code_completion_with_a_single_option() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("?>", true);
         TypeCode(eoPHP, "odbc_ge");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
+        CompletionInfo completionInfo = GetCompletion();
+        if (null == completionInfo) {
+            fail("No code competion after extends .");
+        }
         TypeCode(eoPHP, "\n");
-        CheckResult(eoPHP, "odbc_gettypeinfo()", -1);
+        CheckResult(eoPHP, "odbc_gettypeinfo($connection_id)",0);
 
         // Clean up
         eoPHP.deleteLine(eoPHP.getLineNumber() - 1);
@@ -438,18 +453,18 @@ public class testCC extends cc {
 
         String sJavaDoc = "This is function 1234567890...";
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("\nfunction", true);
         TypeCode(eoPHP, "\n/**\n" + sJavaDoc);
         eoPHP.setCaretPosition("}", false);
-        TypeCode(eoPHP, "\nfunction");
+        TypeCode(eoPHP, "\nfunction_");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
 
         CompletionInfo jCompl = GetCompletion();
         jCompl.listItself.clickOnItem("function_0001");
 
-        WindowOperator jdDoc = new WindowOperator(1);
+        WindowOperator jdDoc = new WindowOperator(2);
         JEditorPaneOperator jeEdit = new JEditorPaneOperator(jdDoc);
         String sCompleteContent = jeEdit.getText();
         // Check content
@@ -467,10 +482,10 @@ public class testCC extends cc {
     public void Verify_code_completion_after_EXTENDS() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("}", false);
         TypeCode(eoPHP, "\nclass Foo\n{\n");
-        eoPHP.setCaretPosition("\n?>", true);
+        eoPHP.setCaretPosition("?>", true);
         TypeCode(eoPHP, "\nclass MyClass extends F");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
@@ -484,13 +499,13 @@ public class testCC extends cc {
     public void Verify_that_require_directive_is_automatically_added() {
         startTest();
 
-        EditorOperator eoPHP = new EditorOperator("EmptyPHP.php");
+        EditorOperator eoPHP = new EditorOperator("newEmptyPHP.php");
         eoPHP.setCaretPosition("require", true);
         eoPHP.deleteLine(eoPHP.getLineNumber());
 
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("newEmptyPHP2.php");
         eoPHP_2.setCaretPosition("\n?>", true);
-        TypeCode(eoPHP_2, "function");
+        TypeCode(eoPHP_2, "function_");
         eoPHP.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
 
@@ -510,7 +525,7 @@ public class testCC extends cc {
     public void Verify_code_completion_in_slash_slash_comments() {
         startTest();
 
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("newEmptyPHP2.php");
         TypeCode(eoPHP_2, "//");
         eoPHP_2.typeKey(' ', InputEvent.CTRL_MASK);
         Sleep(1000);
@@ -537,7 +552,7 @@ public class testCC extends cc {
     public void Verify_code_completion_in_slash_star_comments() {
         startTest();
 
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("newEmptyPHP2.php");
         TypeCode(eoPHP_2, "\n/* comment    */");
         eoPHP_2.setCaretPosition("/* comment  ", false);
         eoPHP_2.typeKey(' ', InputEvent.CTRL_MASK);
@@ -589,14 +604,14 @@ public class testCC extends cc {
 
         // Cleanup
 
-        
+
         endTest();
     }
 
     public void Verify_code_completion_in_slash_star_star_comments() {
         startTest();
 
-        EditorOperator eoPHP_2 = new EditorOperator("EmptyPHP_2.php");
+        EditorOperator eoPHP_2 = new EditorOperator("newEmptyPHP2.php");
         eoPHP_2.setCaretPosition(8);
         eoPHP_2.deleteLine(eoPHP_2.getLineNumber());
         TypeCode(eoPHP_2, "\n/** \n");

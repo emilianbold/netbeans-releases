@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.dlight.core.stack.ui;
 
+import java.util.List;
 import org.netbeans.modules.dlight.core.stack.api.FunctionCall;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -52,24 +53,24 @@ import org.openide.nodes.Node;
  */
 final class FunctionCallChildren extends Children.Keys<FunctionCall> {
     private final CallStackTreeModel stackModel;
-    private final FunctionCall call;
+    private final List<FunctionCall> calls;
 
-    FunctionCallChildren(CallStackTreeModel stackModel, FunctionCall call) {
+    FunctionCallChildren(CallStackTreeModel stackModel, List<FunctionCall> call) {
         this.stackModel = stackModel;
-        this.call = call;
+        this.calls = call;
     }
 
     @Override
     protected void addNotify() {
         super.addNotify();
-        setKeys(new FunctionCall[]{call});
+        setKeys(calls);
     }
 
 
 
     @Override
     protected Node[] createNodes(FunctionCall key) {
-        return new FunctionCallNode[]{new FunctionCallNode(stackModel, call)};
+        return new FunctionCallNode[]{new FunctionCallNode(stackModel, key)};
     }
 
 }

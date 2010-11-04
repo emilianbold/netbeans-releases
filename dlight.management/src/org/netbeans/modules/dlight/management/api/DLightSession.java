@@ -52,6 +52,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -129,7 +131,9 @@ public final class DLightSession implements
     private final String sharedStorageID;
     private final boolean useSharedStorage;
     private CountDownLatch collectorsDoneFlag;
-    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();
+    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();    
+    final static ConcurrentMap<String, SessionDataFiltersSupport> sharedDataFilterSupports = new ConcurrentHashMap<String, SessionDataFiltersSupport>();
+    
 
     public static enum SessionState {
 
@@ -152,7 +156,14 @@ public final class DLightSession implements
         this.sharedStorageID = sharedStorageID;
         this.useSharedStorage = sharedStorageID != null;
         sessionID = sessionCount++;
-        dataFiltersSupport = new SessionDataFiltersSupport();
+        SessionDataFiltersSupport newSupport = new SessionDataFiltersSupport();
+        if (useSharedStorage) {
+            SessionDataFiltersSupport old = sharedDataFilterSupports.putIfAbsent(sharedStorageID, newSupport);
+            if (old != null) {
+                newSupport = old;
+            }
+        }
+        dataFiltersSupport = newSupport;
     }
 
     public final long getStartTime() {
@@ -162,7 +173,7 @@ public final class DLightSession implements
     @Override
     public void collectorStateChanged(DataCollector<?> source, CollectorState state) {
         if (collectors.contains(source) && (state == CollectorState.STOPPED || state == CollectorState.FAILED
-                || state == CollectorState.TERMINATED)) {
+                || state == CollectorState.TERMINATED || state == CollectorState.DONE)) {
             collectorsDoneFlag.countDown();
             if (collectorsDoneFlag.getCount() == 0) {
                 final DLightTarget target = contexts.get(0).getTarget();
@@ -414,7 +425,7 @@ public final class DLightSession implements
                 }
                 //in case we are using the shared session we need to collect all info of
                 if (useSharedStorage) {//we should share this info
-                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
+                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);                    
                 } else {
                     serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
                 }
@@ -1037,5 +1048,12 @@ public final class DLightSession implements
         public String getSharedStorageUniqueKey(DLightSession session) {
             return session.sharedStorageID;
         }
+
+        @Override
+        public SessionDataFiltersSupport getSessionDataFiltersSupport(DLightSession session) {
+            return session.dataFiltersSupport;
+        }
+        
+        
     }
 }

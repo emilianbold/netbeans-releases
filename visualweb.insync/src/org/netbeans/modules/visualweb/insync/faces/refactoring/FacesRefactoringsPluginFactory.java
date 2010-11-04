@@ -48,6 +48,7 @@ import java.util.Arrays;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -144,7 +145,7 @@ public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory 
             		FacesModelSet.getInstance(refactoredFileObject);
 	            	if (FacesRefactoringUtils.isJavaFileObjectOfInterest(refactoredFileObject)) {
 		                TreePathHandle treePathHandle = refactoringSource.lookup(TreePathHandle.class);
-		                if (treePathHandle == null || treePathHandle.getKind() == Tree.Kind.CLASS) {
+		                if (treePathHandle == null || TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
 		                    if (refactoring instanceof RenameRefactoring) {
 		                        return new FacesJavaFileRenameRefactoringPlugin((RenameRefactoring)refactoring);
 		                    } else if (refactoring instanceof MoveRefactoring) {

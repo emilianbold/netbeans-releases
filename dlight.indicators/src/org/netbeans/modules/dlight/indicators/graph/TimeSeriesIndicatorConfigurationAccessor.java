@@ -84,6 +84,8 @@ public abstract class TimeSeriesIndicatorConfigurationAccessor {
 
     public abstract int getGraphScale(TimeSeriesIndicatorConfiguration conf);
 
+    public abstract boolean isLegendVisible(TimeSeriesIndicatorConfiguration conf);
+
     public abstract List<TimeSeriesDescriptor> getTimeSeriesDescriptors(TimeSeriesIndicatorConfiguration conf);
 
     public abstract List<DetailDescriptor> getDetailDescriptors(TimeSeriesIndicatorConfiguration conf);

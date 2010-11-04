@@ -278,7 +278,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
             mimeType = this.operationMimeType;
         }
         
-        Collection<? extends HyperlinkProviderExt> extProviders = HyperlinkProviderManagerExt.getHyperlinkProviderExts(mimeType);
+        Collection<? extends HyperlinkProviderExt> extProviders = getHyperlinkProviderExts(mimeType);
         
         for (HyperlinkProviderExt provider : extProviders) {
             if (provider.getSupportedHyperlinkTypes().contains(type) && provider.isHyperlinkPoint(component.getDocument(), position, type)) {
@@ -290,7 +290,7 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
             return null;
         }
         
-        Collection<? extends HyperlinkProvider> providers = HyperlinkProviderManager.getHyperlinkProviders(mimeType);
+        Collection<? extends HyperlinkProvider> providers = getHyperlinkProviders(mimeType);
         
         for (final HyperlinkProvider provider : providers) {
             if (provider.isHyperlinkPoint(component.getDocument(), position)) {
@@ -429,6 +429,30 @@ public class HyperlinkOperation implements MouseListener, MouseMotionListener, P
         }
         
         return bag;
+    }
+    
+    /**
+     * Gets the list of <code>HyperlinkProvider</code>s for a given mime type.
+     *
+     * @param mimeType mime type to get the <code>HyperlinkProvider</code>s for
+     *
+     * @return The list of <code>HyperlinkProvider<code>s available for the given mime type.
+     */
+    public static Collection<? extends HyperlinkProvider> getHyperlinkProviders(String mimeType) {
+        MimePath mimePath = MimePath.parse(mimeType);
+        return MimeLookup.getLookup(mimePath).lookupAll(HyperlinkProvider.class);
+    }
+
+    /**
+     * Gets the list of <code>HyperlinkProvider</code>s for a given mime type.
+     *
+     * @param mimeType mime type to get the <code>HyperlinkProvider</code>s for
+     *
+     * @return The list of <code>HyperlinkProvider<code>s available for the given mime type.
+     */
+    public static Collection<? extends HyperlinkProviderExt> getHyperlinkProviderExts(String mimeType) {
+        MimePath mimePath = MimePath.parse(mimeType);
+        return MimeLookup.getLookup(mimePath).lookupAll(HyperlinkProviderExt.class);
     }
     
     private static AttributeSet defaultHyperlinksHighlight = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.BLUE, StyleConstants.Underline, Color.BLUE);

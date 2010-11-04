@@ -51,20 +51,23 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
+ * This class is used for filechooser only!
+ * This is not a full implementation of File - only those
+ * methods are supported that are used for file browsing...
  *
  * @author ak119685
  */
-/*package*/ class FileObjectBasedFile extends File {
-    final ExecutionEnvironment env;
+public class FileObjectBasedFile extends File {
 
+    final ExecutionEnvironment env;
     private final FileObject fo;
     /** to be used ONLY when fo is null !!! */
     private final String path;
@@ -78,10 +81,15 @@ import org.openide.util.Utilities;
     }
 
     public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
-        super( fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
+        super(fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
-        this.path = fo.getPath();
+        // super.getPath() changes slashes and can lead to #186521 Wrong path returned by remote file chooser
+        this.path = (fo == null || "".equals(fo.getPath())) ? "/" : fo.getPath(); // NOI18N
         this.env = env;
+    }
+
+    public FileObject getFileObject() {
+        return fo;
     }
 
     @Override
@@ -145,18 +153,14 @@ import org.openide.util.Utilities;
         try {
             return result.get() == 0;
         } catch (InterruptedException ex) {
-
         } catch (ExecutionException ex) {
-
         }
         return false;
     }
 
-    
-
     @Override
     public boolean mkdirs() {
-        if (fo == null){
+        if (fo == null) {
             Future<Integer> result = CommonTasksSupport.mkDir(env, getPath(), new StringWriter());
             try {
                 return result.get() == 0;
@@ -191,7 +195,7 @@ import org.openide.util.Utilities;
             return null;
         }
         FileObject parent = fo.getParent();
-        return parent == null ? null : new FileObjectBasedFile(env,parent);
+        return parent == null ? null : new FileObjectBasedFile(env, parent);
     }
 
     @Override
@@ -258,8 +262,9 @@ import org.openide.util.Utilities;
     public File getCanonicalFile() throws IOException {
         return this;
     }
+
     private static final String PREFIX = "NATIVEEXECUTOR: "; // NOI18N
-   private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50);
+    private static final RequestProcessor processor = new RequestProcessor(PREFIX, 50);
 
     public static Future<Integer> renameTo(final ExecutionEnvironment execEnv, final String sourceDir,
             final String destDir, final Writer error) {
@@ -267,48 +272,19 @@ import org.openide.util.Utilities;
 
             @Override
             public Integer call() throws Exception {
-                Thread.currentThread().setName(PREFIX + "mv " + sourceDir + " " + destDir);//NOI18N
-                return new CommandRunner(execEnv, error, "mv", sourceDir, destDir).call();//NOI18N
+                ExitStatus result = ProcessUtils.execute(execEnv, "mv", sourceDir, destDir); // NOI18N
+
+                if (!result.isOK() && error != null) {
+                    error.write(result.error);
+                    error.flush();
+            }
+
+                return result.exitCode;
             }
         });
 
 
         processor.post(ftask);
         return ftask;
-
     }
-
-    private static class CommandRunner implements Callable<Integer> {
-
-        private final ExecutionEnvironment execEnv;
-        private final String cmd;
-        private final String[] args;
-        private final Writer error;
-
-        public CommandRunner(ExecutionEnvironment execEnv, Writer error, String cmd, String... args) {
-            this.execEnv = execEnv;
-            this.cmd = cmd;
-            this.args = args;
-            this.error = error;
-        }
-
-        public Integer call() throws Exception {
-            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
-            npb.setExecutable(cmd).setArguments(args);
-            Process p = npb.call();
-
-            int exitStatus = p.waitFor();
-
-            if (exitStatus != 0) {
-                if (error != null) {
-                    ProcessUtils.writeError(error, p);
-                } 
-            }
-
-            return exitStatus;
-        }
-    }
-
-  
-
 }

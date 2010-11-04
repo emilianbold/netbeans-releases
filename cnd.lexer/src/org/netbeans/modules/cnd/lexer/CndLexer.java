@@ -75,6 +75,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
         setState((Integer) info.state()); // last line in contstructor
     }
 
+    @Override
     public Object state() {
         return getState();
     }
@@ -130,6 +131,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
     }
 
     @SuppressWarnings("fallthrough")
+    @Override
     public Token<CppTokenId> nextToken() {
         while (true) {
             // special handling for escaped lines
@@ -343,6 +345,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                         return token(CppTokenId.LBRACE);
                     case '}':
                         return token(CppTokenId.RBRACE);
+                    case '`':
+                        return token(CppTokenId.GRAVE_ACCENT);
                     case '@':
                         return token(CppTokenId.AT);
 

@@ -67,6 +67,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.SharedClassObject;
 
 /**
@@ -86,7 +87,7 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
         ClassPathProvider cpp = new ClassPathProvider() {
             public ClassPath findClassPath(FileObject file, String type) {
                 if (type == ClassPath.SOURCE)
-                    return ClassPathSupport.createClassPath(new FileObject[] {FileUtil.toFileObject(getDataDir())});
+                    return ClassPathSupport.createClassPath(getSourcePath());
                     if (type == ClassPath.COMPILE)
                         return ClassPathSupport.createClassPath(new FileObject[0]);
                     if (type == ClassPath.BOOT)
@@ -201,4 +202,7 @@ public abstract class GeneratorTestMDRCompat extends NbTestCase {
 
     abstract String getSourcePckg();
 
+    FileObject[] getSourcePath() {
+        return new FileObject[] {FileUtil.toFileObject(getDataDir())};
+    }
 }

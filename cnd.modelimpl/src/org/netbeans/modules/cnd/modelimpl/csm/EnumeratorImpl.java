@@ -69,15 +69,23 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
     private /*final*/ CsmEnum enumerationRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmEnum> enumerationUID;
 
-    public EnumeratorImpl(AST ast, EnumImpl enumeration) {
+    private EnumeratorImpl(AST ast, NameHolder name, EnumImpl enumeration) {
         super(ast, enumeration.getContainingFile());
-        this.name = NameCache.getManager().getString(ast.getText());
+        this.name = NameCache.getManager().getString(name.getName());
         // set parent enum, do it in constructor to have final fields
         this.enumerationUID = UIDCsmConverter.declarationToUID((CsmEnum)enumeration);
         this.enumerationRef = null;
     }
 
-    EnumeratorImpl(EnumImpl enumeration, String name, int startOffset, int endOffset) {
+    public static EnumeratorImpl create(AST ast, EnumImpl enumeration, boolean global) {
+        NameHolder holder = NameHolder.createSimpleName(ast);
+        EnumeratorImpl ei = new EnumeratorImpl(ast, holder, enumeration);
+        postObjectCreateRegistration(global, ei);
+        holder.addReference(enumeration.getContainingFile(), ei);
+        return ei;
+    }
+
+    private EnumeratorImpl(EnumImpl enumeration, String name, int startOffset, int endOffset) {
         super(enumeration.getContainingFile(), startOffset, endOffset);
         this.name = NameCache.getManager().getString(name);
         // set parent enum, do it in constructor to have final fields
@@ -85,26 +93,38 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.enumerationRef = null;
     }
     
+    public static EnumeratorImpl create(EnumImpl enumeration, String name, int startOffset, int endOffset, boolean global) {
+        EnumeratorImpl ei = new EnumeratorImpl(enumeration, name, startOffset, endOffset);
+        postObjectCreateRegistration(global, ei);
+        return ei;
+    }
+
+    @Override
     public CharSequence getName() {
         return name;
     }
 
+    @Override
     public CsmExpression getExplicitValue() {
         return null;
     }
 
+    @Override
     public CsmEnum getEnumeration() {
         return _getEnumeration();
     }
     
+    @Override
     public CsmScope getScope() {
         return getEnumeration();
     }
 
+    @Override
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.ENUMERATOR;
     }
 
+    @Override
     public CharSequence getQualifiedName() {
 	return CharSequences.create(_getEnumeration().getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
     }

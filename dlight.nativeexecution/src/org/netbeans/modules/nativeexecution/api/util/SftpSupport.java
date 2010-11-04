@@ -59,6 +59,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.Md5checker.Result;
@@ -69,6 +71,8 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * @author Vladimir Kvashin
@@ -103,12 +107,8 @@ class SftpSupport {
         return instance;
     }
 
-    static Future<Integer> uploadFile(
-            final String srcFileName,
-            final ExecutionEnvironment execEnv,
-            final String dstFileName,
-            final int mask, final Writer error, final boolean checkMd5) {
-        return getInstance(execEnv).uploadFile(srcFileName, dstFileName, mask, error, checkMd5);
+    static Future<Integer> uploadFile(CommonTasksSupport.UploadParameters parameters) {
+        return getInstance(parameters.dstExecEnv).uploadFileImpl(parameters);
     }
 
     static Future<Integer> downloadFile(
@@ -289,7 +289,9 @@ class SftpSupport {
                 }
             }
             put(cftp);
-            cftp.chmod(mask, dstFileName);
+            if (mask >= 0) {
+                cftp.chmod(mask, dstFileName);
+            }
             uploadCount.incrementAndGet();
         }
 
@@ -348,14 +350,22 @@ class SftpSupport {
         }
     }
 
-    private Future<Integer> uploadFile(
-            final String srcFileName,
-            final String dstFileName,
-            final int mask, final Writer error, final boolean checkMd5) {
-
-        Uploader uploader = new Uploader(srcFileName, execEnv, dstFileName, mask, error, checkMd5);
-        FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
-        requestProcessor.post(ftask);
+    private Future<Integer> uploadFileImpl(CommonTasksSupport.UploadParameters parameters) {
+        Uploader uploader = new Uploader(
+                parameters.srcFile.getAbsolutePath(), parameters.dstExecEnv,
+                parameters.dstFileName, parameters.mask, parameters.error, parameters.checkMd5);
+        final FutureTask<Integer> ftask = new FutureTask<Integer>(uploader);
+        RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
+        if (parameters.callback != null) {
+            final ChangeListener callback = parameters.callback;
+            requestProcessorTask.addTaskListener(new TaskListener() {
+                @Override
+                public void taskFinished(Task task) {
+                    callback.stateChanged(new ChangeEvent(ftask));
+                }
+            });
+        }
+        requestProcessorTask.schedule(0);
         LOG.log(Level.FINE, "{0} schedulled", uploader.getTraceName());
         return ftask;
     }

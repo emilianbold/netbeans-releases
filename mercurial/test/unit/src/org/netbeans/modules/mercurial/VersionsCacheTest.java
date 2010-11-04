@@ -75,7 +75,7 @@ public class VersionsCacheTest extends AbstractHgTest {
         System.setProperty("netbeans.user", getWorkDir().getParentFile().getAbsolutePath());
         super.setUp();
         // create
-        workdir = getWorkDir();
+        workdir = getWorkTreeDir();
         Mercurial.STATUS_LOG.setLevel(Level.FINE);
     }
     

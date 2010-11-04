@@ -61,17 +61,6 @@ made subject to such option by the copyright holder.
     </file>
     <file>
         <ext name="xml"/>
-    <resolver mime="text/x-maven-profile+xml">
-            <xml-rule>
-            	<element name="profilesXml" ns="http://maven.apache.org/POM/4.0.0">
-                </element>
-            	<element name="profilesXml" ns="http://maven.apache.org/PROFILES/1.0.0">
-                </element>
-            </xml-rule>
-        </resolver>
-    </file>
-    <file>
-        <ext name="xml"/>
         <resolver mime="text/x-maven-settings+xml">
             <xml-rule>
             	<element name="settings" ns="http://maven.apache.org/POM/4.0.0">

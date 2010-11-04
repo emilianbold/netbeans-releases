@@ -62,14 +62,23 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
  *
  * @author Vladimir Voskresensky
  */
-public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFriendFunction> implements CsmFriendFunction {
+public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
     
-    public FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
-        super(ast, cls.getContainingFile(), scope, register, register);
+    private FriendFunctionDefinitionImpl(AST ast, CsmClass cls, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+        super(ast, cls.getContainingFile(), scope, nameHolder, global);
         friendClassUID = UIDs.get(cls);
     }
+
+    public static FriendFunctionDefinitionImpl create(AST ast, CsmClass cls, CsmScope scope, boolean register) throws AstRendererException {
+        NameHolder nameHolder = NameHolder.createFunctionName(ast);
+        FriendFunctionDefinitionImpl friendFunctionDefinitionImpl = new FriendFunctionDefinitionImpl(ast, cls, scope, nameHolder, register);
+        postObjectCreateRegistration(register, friendFunctionDefinitionImpl);
+        nameHolder.addReference(cls.getContainingFile(), friendFunctionDefinitionImpl);
+        return friendFunctionDefinitionImpl;
+    }
     
+    @Override
     public CsmFunction getReferencedFunction() {
         CsmFunction fun = this;
         if (CsmKindUtilities.isFunctionDeclaration(this)){
@@ -81,6 +90,7 @@ public class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<CsmFrie
         return fun;
     }
     
+    @Override
     public CsmClass getContainingClass() {
         CsmClass cls = null;
         cls = UIDCsmConverter.UIDtoClass(friendClassUID);

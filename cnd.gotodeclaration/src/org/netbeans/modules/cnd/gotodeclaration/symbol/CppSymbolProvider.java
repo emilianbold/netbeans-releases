@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.gotodeclaration.symbol;
 
-import com.sun.org.apache.xpath.internal.functions.FunctionDef1Arg;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,6 +50,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -106,12 +106,14 @@ public class CppSymbolProvider implements SymbolProvider {
         if (TRACE) { trace("ctor"); } // NOI18N
     }
 
+    @Override
     public synchronized void cancel() {
         if (TRACE) { trace("cancel"); } // NOI18N
         cancelled = true;
         cache = null;
     }
 
+    @Override
     public synchronized void cleanup() {
         if (TRACE) { trace("cleanup"); } // NOI18N
         cancelled = false;
@@ -121,6 +123,7 @@ public class CppSymbolProvider implements SymbolProvider {
     private CsmSelect.NameAcceptor createNameAcceptor(final Context context) {
         final NameMatcher nameMatcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
         return new CsmSelect.NameAcceptor() {
+            @Override
             public boolean accept(CharSequence name) {
                 return nameMatcher.accept(name.toString());
             }
@@ -128,6 +131,7 @@ public class CppSymbolProvider implements SymbolProvider {
     }
 
     // synchronized is just in case here - it shouldn't be called async
+    @Override
     public synchronized void computeSymbolNames(Context context, Result result) {
         if (TRACE) { trace("computeSymbolNames %s", toString(context)); } // NOI18N
         cancelled = false;
@@ -135,7 +139,7 @@ public class CppSymbolProvider implements SymbolProvider {
         if (nameAcceptor == null) {
             if (CndUtils.isDebugMode()) {
                 Logger log = Logger.getLogger("org.netbeans.modules.cnd.gotodeclaration"); // NOI18N
-                log.severe("Can not create matcher for '" + context.getText() + "' search type " + context.getSearchType()); //NOI18N
+                log.log(Level.SEVERE, "Can not create matcher for ''{0}'' search type {1}", new Object[]{context.getText(), context.getSearchType()}); //NOI18N
             }
             return;
         }
@@ -349,10 +353,12 @@ public class CppSymbolProvider implements SymbolProvider {
         }
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(getClass(), "CPP_Provider_Display_Name");
     }
 
+    @Override
     public String name() {
         return "C/C++"; //NOI18N
     }

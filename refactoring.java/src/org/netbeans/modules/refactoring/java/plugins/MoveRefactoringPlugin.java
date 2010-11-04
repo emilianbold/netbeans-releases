@@ -292,7 +292,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                         parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                         List<? extends Tree> trees= parameter.getCompilationUnit().getTypeDecls();
                         for (Tree t: trees) {
-                            if (t.getKind() == Tree.Kind.CLASS) {
+                            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
                                 classes.add(ElementHandle.create((TypeElement) parameter.getTrees().getElement(TreePath.getPath(parameter.getCompilationUnit(), t))));
                             }
                         }

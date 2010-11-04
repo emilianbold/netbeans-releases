@@ -125,6 +125,7 @@ public final class FileUtil extends Object {
         transientAttributes.add("displayName"); // NOI18N
         transientAttributes.add("iconBase"); // NOI18N
         transientAttributes.add("position"); // NOI18N
+        transientAttributes.add("weight"); // NOI18N
     }
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
@@ -1660,6 +1661,23 @@ public final class FileUtil extends Object {
         return displayName;
     }
 
+    /**
+     * See {@link #normalizeFile} for details
+     * @param path file path to normalize
+     * @return normalized file path
+     * @since 7.42
+     */
+    public static String normalizePath(final String path) {
+        Map<String, String> normalizedPaths = getNormalizedFilesMap();
+        String normalized = normalizedPaths.get(path);
+        if (normalized == null) {
+            File ret = normalizeFileImpl(new File(path));
+            normalized = ret.getPath();
+            normalizedPaths.put(path, normalized);
+        }
+        return normalized;
+    }
+    
     /**
      * Normalize a file path to a clean form.
      * This method may for example make sure that the returned file uses

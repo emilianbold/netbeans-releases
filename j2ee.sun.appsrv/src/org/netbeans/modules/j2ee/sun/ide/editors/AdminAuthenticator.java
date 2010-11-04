@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.j2ee.sun.ide.editors;
 
+import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -140,7 +141,7 @@ public class AdminAuthenticator extends java.net.Authenticator {
                     if (dd.getValue().equals(NotifyDescriptor.OK_OPTION)) {
                         // try to update info for the node...
                         if (ip != null) {
-                            String oldpass = Keyring.read(ip.getProperty(InstanceProperties.URL_ATTR)).toString();
+                            String oldpass = Arrays.toString(Keyring.read(ip.getProperty(InstanceProperties.URL_ATTR)));
                             String oldname = ip.getProperty(InstanceProperties.USERNAME_ATTR);
                             ip.setProperty(InstanceProperties.USERNAME_ATTR, passwordPanel.getUsername());
                             ip.setProperty(InstanceProperties.PASSWORD_ATTR, passwordPanel.getTPassword());

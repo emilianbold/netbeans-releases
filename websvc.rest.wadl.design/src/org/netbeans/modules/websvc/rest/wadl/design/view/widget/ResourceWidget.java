@@ -141,7 +141,11 @@ public class ResourceWidget extends WadlComponentWidget implements PropertyChang
         StringBuffer sb = new StringBuffer();
         findPath(getResource(), sb);
         String serviceUrl = sb.toString();
-        final int skipLen = serviceUrl.length() - path.length();
+        int pathLength = 0 ;
+        if ( path != null ){
+            pathLength = path.length();
+        }
+        final int skipLen = serviceUrl.length() - pathLength;
         final String serviceBase = serviceUrl.substring(0, skipLen);
         headerLabelWidget = new ImageLabelWidget(getScene(), image, serviceUrl);
         headerLabelWidget.setLabelFont(getScene().getFont().deriveFont(Font.BOLD));

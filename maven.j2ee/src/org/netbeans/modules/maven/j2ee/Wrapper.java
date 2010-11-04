@@ -48,7 +48,6 @@ import javax.swing.JLabel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -137,14 +136,14 @@ public class Wrapper {
         return  new ComboBoxUpdater<Wrapper>(combo, label) {
             public Wrapper getDefaultValue() {
                 Wrapper wr = null;
-                String id = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                String id = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
                 if (id != null) {
                     wr = Wrapper.findWrapperByInstance(id, combo);
                 }
                 if (wr == null) {
-                    String str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                    String str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
                     if (str == null) {
-                        str = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                        str = handle.getProject().getProperties().getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD);
                     }
                     if (str != null) {
                         wr = findWrapperByType(str, combo);
@@ -155,31 +154,19 @@ public class Wrapper {
 
             public Wrapper getValue() {
                 Wrapper wr = null;
-                org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
-                if (privprof != null) {
-                    org.netbeans.modules.maven.model.profile.Properties privprops = privprof.getProperties();
-                    if (privprops != null) {
-                        String id = privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
-                        if (id != null) {
-                            wr = findWrapperByInstance(id, combo);
-                        }
-                    }
+                String id = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
+                if (id != null) {
+                    wr = findWrapperByInstance(id, combo);
                 }
                 if (wr == null) {
                     POMModel model = handle.getPOMModel();
                     Properties props = model.getProject().getProperties();
                     String str = null;
                     if (props != null) {
-                        str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                        str = props.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
                     }
                     if (str == null) {
-                        org.netbeans.modules.maven.model.pom.Profile prof = handle.getNetbeansPublicProfile(false);
-                        if (prof != null) {
-                            props = prof.getProperties();
-                            if (props != null) {
-                                str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
-                            }
-                        }
+                        str = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, true);
                     }
                     if (str != null) {
                         wr = findWrapperByType(str, combo);
@@ -194,62 +181,25 @@ public class Wrapper {
                 }
                 String sID = wr.getServerID();
                 String iID = wr.getServerInstanceID();
-                org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile(false);
                 //remove old deprecated data.
-                org.netbeans.modules.maven.model.pom.Profile pub = handle.getNetbeansPublicProfile(false);
-                if (pub != null) {
-                    Properties props = pub.getProperties();
-                    if (props != null) {
-                        pub.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null);
-                    }
-                }
+                handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_OLD, null, true);
                 POMModel model = handle.getPOMModel();
                 if (ExecutionChecker.DEV_NULL.equals(iID)) {
-                    //check if someone moved the property to netbeans-private profile, remove from there then.
                     Properties props = model.getProject().getProperties();
-                    if (privateProf != null) {
-                        org.netbeans.modules.maven.model.profile.Properties privprops = privateProf.getProperties();
-                        if (privprops != null && privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
-                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                        } else {
-                            if (props != null) {
-                                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                                handle.markAsModified(handle.getPOMModel());
-                            }
-                        }
-                        if (privprops != null) {
-                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
-                        }
-                        handle.markAsModified(handle.getProfileModel());
-                    } else {
-                        if (props != null) {
-                            props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
-                            handle.markAsModified(handle.getPOMModel());
-                        }
-                    }
-                } else {
-
-                    //check if someone moved the property to netbeans-private profile, set there.
-                    if (privateProf != null && privateProf.getProperties() != null &&
-                            privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
-                        privateProf.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
-                    } else {
-                        Properties props = model.getProject().getProperties();
-                        if (props == null) {
-                            props = model.getFactory().createProperties();
-                            model.getProject().setProperties(props);
-                        }
-                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                    if (props != null) {
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                         handle.markAsModified(handle.getPOMModel());
                     }
-                    privateProf = handle.getNetbeansPrivateProfile();
-                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
-                    if (privs == null) {
-                        privs = handle.getProfileModel().getFactory().createProperties();
-                        privateProf.setProperties(privs);
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, null, false);
+                } else {
+                    Properties props = model.getProject().getProperties();
+                    if (props == null) {
+                        props = model.getFactory().createProperties();
+                        model.getProject().setProperties(props);
                     }
-                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
-                    handle.markAsModified(handle.getProfileModel());
+                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
+                    handle.markAsModified(handle.getPOMModel());
+                    handle.setRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
                 }
             }
         };

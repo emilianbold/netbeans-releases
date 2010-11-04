@@ -42,6 +42,7 @@
 
 package org.netbeans.editor.ext.html.parser.api;
 
+import org.netbeans.editor.ext.html.parser.SyntaxAnalyzer;
 import java.util.Map;
 import org.netbeans.editor.ext.html.parser.SyntaxElement;
 import org.netbeans.editor.ext.html.parser.spi.EmptyResult;
@@ -59,6 +60,32 @@ public class SyntaxAnalyzerResultTest extends TestBase {
         super(testName);
     }
 
+
+    @Override
+    protected void setUp() throws Exception {
+        HtmlVersionTest.setDefaultHtmlVersion(HtmlVersion.HTML41_TRANSATIONAL);
+        super.setUp();
+    }
+
+    public void testGetHtmlTagDefaultNamespace() {
+        String code = "<html xmlns=\"namespace\"><head><title>xxx</title></head><body>yyy</body></html>";
+        HtmlSource source = new HtmlSource(code);
+        SyntaxAnalyzerResult result = SyntaxAnalyzer.create(source).analyze();
+        assertNotNull(result);
+        assertEquals("namespace", result.getHtmlTagDefaultNamespace());
+
+        code = "<html><head xmlns=\"namespace\"><title>xxx</title></head><body>yyy</body></html>";
+        source = new HtmlSource(code);
+        result = SyntaxAnalyzer.create(source).analyze();
+        assertNotNull(result);
+        assertNull(result.getHtmlTagDefaultNamespace());
+
+        code = "<div><html xmlns=\"namespace\"><head><title>xxx</title></head><body>yyy</body></html>";
+        source = new HtmlSource(code);
+        result = SyntaxAnalyzer.create(source).analyze();
+        assertNotNull(result);
+        assertNull(result.getHtmlTagDefaultNamespace());
+    }
 
     public void testBasic() throws ParseException {
         String code = "<html><head><title>xxx</title></head><body>yyy</body></html>";

@@ -136,48 +136,35 @@ public class CompilationUnit {
         return (cl == null) ? null : (String)cl;
     }
     
-    public String getSourceFileFullName() {
-        String result = null;
-        
-        try {
-            String dir = getCompilationDir();
-            String name = getSourceFileName();
-            if (name != null) {
-                if (dir != null) {
-                    if (name.startsWith("/")) { // NOI18N
-                        result = new File(name).getCanonicalPath();
-                    } else {
-                        result = new File(dir + File.separator + name).getCanonicalPath();
-                    }
-                } else {
-                    result = new File(name).getCanonicalPath();
-                }
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        
-        return result;
-    }
-
     public String getSourceFileAbsolutePath() throws IOException {
         String result = null;
         
         String dir = getCompilationDir();
         String name = getSourceFileName();
         if (dir != null) {
-            if (name.startsWith("/")) { // NOI18N
-                result = new File(name).getAbsolutePath();
+            if (isAbsolute(name)) {
+                result = name;
             } else {
-                result = new File(dir + File.separator + name).getAbsolutePath();
+                if (dir.endsWith("/") || dir.endsWith("\\")) { // NOI18N
+                    result = dir+name;
+                } else {
+                    result = dir+ File.separator + name;
+                }
             }
         } else {
-            result = new File(name).getAbsolutePath();
+            result = name;
         }
         
         return result;
     }
     
+    private boolean isAbsolute(String path) {
+        if (path.startsWith("/") || path.length() > 2 && path.charAt(1) == ':') { // NOI18N
+            return true;
+        }
+        return false;
+    }
+
     public String getSourceLanguage() throws IOException {
         if (root != null) {
             Object lang = root.getAttributeValue(ATTR.DW_AT_language);
@@ -660,7 +647,7 @@ public class CompilationUnit {
             return;
         }
         
-        out.println("*** " + getSourceFileFullName() + " ***"); // NOI18N
+        out.println("*** " + getSourceFileAbsolutePath() + " ***"); // NOI18N
         out.println("  Compilation Unit @ offset " + Long.toHexString(unit_offset) + ":"); // NOI18N
         out.println("    Length: " + unit_length); // NOI18N
         out.println("    Version: " + version); // NOI18N

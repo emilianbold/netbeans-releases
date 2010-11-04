@@ -456,6 +456,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2me.cdc.project.savaje</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.semc</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.sjmc</friend>
+                <friend>org.netbeans.modules.j2me.cdc.project.ojec</friend>
                 <friend>org.netbeans.modules.j2me.cdc.project.ui.wizards</friend>
                 <friend>org.netbeans.modules.javame.toolbar</friend>
                 <friend>org.netbeans.modules.mobility.deployment.ricoh</friend>

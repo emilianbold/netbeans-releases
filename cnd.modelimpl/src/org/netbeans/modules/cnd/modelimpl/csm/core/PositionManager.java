@@ -43,7 +43,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.Map;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -56,6 +55,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.MapBasedTable;
 
 /**
  *
@@ -77,6 +77,10 @@ public class PositionManager {
     public static CsmOffsetable.Position getPosition(CsmUID<CsmFile> uid, int posID) {
         return new LazyOffsPositionImpl((FileImpl) UIDCsmConverter.UIDtoFile(uid), getOffset(uid, posID));
     }
+
+    private static MapBasedTable getPositionTable(Key key) {
+        return (MapBasedTable) RepositoryAccessor.getRepository().getDatabaseTable(key, PositionStorageImpl.TABLE_NAME);
+    }
     
     public static int getOffset(CsmUID<CsmFile> uid, int posID) {
         if (IMPL == Impl.trivial) {
@@ -85,9 +89,9 @@ public class PositionManager {
         Key key = RepositoryUtils.UIDtoKey(uid);
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")
-            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position"); //NOI18N
+            MapBasedTable table = getPositionTable(key);
             FilePositionKey positionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), posID);
-            Position position = storage.get(positionKey);
+            Position position = (Position) table.get(positionKey);
             return position.getOffset();
         } else {
             // map implementation
@@ -104,33 +108,28 @@ public class PositionManager {
         int maxPositionId = 0;
         if (IMPL == Impl.optimistic || IMPL == Impl.full) {
             @SuppressWarnings("unchecked")
-            SortedMap<FilePositionKey, Position> storage = (SortedMap<FilePositionKey, Position>)RepositoryAccessor.getRepository().getStorage(key, "position"); //NOI18N
+            MapBasedTable table = getPositionTable(key);
             if (IMPL == Impl.full) {
                 FilePositionKey positionStart = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), 0);
                 FilePositionKey positionEnd = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), Integer.MAX_VALUE);
-                SortedMap<FilePositionKey, Position> subMap = storage.subMap(positionStart, positionEnd);
                 maxPositionId = 0;
-                FilePositionKey lastKey = subMap.lastKey();
-                if (lastKey != null) {
-                    maxPositionId = lastKey.getPositionID();
+                for(Map.Entry<?, ?> entry : table.getSubMap(positionStart, positionEnd)) {
+                    FilePositionKey positionKey = (FilePositionKey) entry.getKey();
+                    Position position = (Position) entry.getValue();
+                    if (position.getOffset() == offset) {
+                        return positionKey.getPositionID();
+                    }
+                    if (maxPositionId < positionKey.getPositionID()) {
+                        maxPositionId = positionKey.getPositionID();
+                    }
                 }
-//                for(Map.Entry<FilePositionKey, Position> entry : subMap.entrySet()) {
-//                    FilePositionKey positionKey = entry.getKey();
-//                    Position position = entry.getValue();
-//                    if (position.getOffset() == offset) {
-//                        return positionKey.getPositionID();
-//                    }
-//                    if (maxPositionId < positionKey.getPositionID()) {
-//                        maxPositionId = positionKey.getPositionID();
-//                    }
-//                }
                 maxPositionId++;
             } else if (IMPL == Impl.optimistic) {
                 maxPositionId = offset;
             }
             FilePositionKey newPositionKey = new PositionStorageImpl.FilePositionKey(KeyUtilities.getProjectFileIndex(key), maxPositionId);
             PositionDataImpl newPositionData = new PositionDataImpl(offset, -1, -1);
-            storage.put(newPositionKey, newPositionData);
+            table.put(newPositionKey, newPositionData);
             return maxPositionId;
         } else {
             // map implementation

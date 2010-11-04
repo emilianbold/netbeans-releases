@@ -54,6 +54,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.BaseDwarfProvider.GrepEntry;
@@ -129,7 +132,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
         assertTrue(compareMap(map, golden));
         assertEquals(sf.getUserPaths().get(0), "/export1/sside/pomona/java_cp/wsb131/proto/root_i386/usr/include");
         list = CompileLineService.getSourceFolderProperties(getDataDir().getAbsolutePath());
-        assertTrue(list.size()==1);
+        assertTrue(list.size()==2);
     }
 
     public void testLeopard(){
@@ -785,11 +788,8 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                         @Override
-                        public String getCompileFlavor() {
-                            if (cygwinPath != null) {
-                                return "Cygwin";
-                            }
-                            return super.getCompileFlavor();
+                        public CompilerFlavor getCompileFlavor() {
+                            return CompilerFlavor.toFlavor("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
                         }
 
                         @Override
@@ -828,7 +828,7 @@ public class DwarfSourceReaderTest extends NbTestCase {
                         }
 
                     };
-                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, settings, grepBase);
+                    DwarfSource source = new DwarfSource(cu, ItemProperties.LanguageKind.C, ItemProperties.LanguageStandard.C, settings, grepBase);
                     source.process(cu);
                     return source;
                 }

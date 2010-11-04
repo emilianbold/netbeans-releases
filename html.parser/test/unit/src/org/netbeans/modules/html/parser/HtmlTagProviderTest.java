@@ -42,8 +42,11 @@
 
 package org.netbeans.modules.html.parser;
 
+import java.net.URL;
 import java.util.Collection;
 import nu.validator.htmlparser.impl.ElementName;
+import org.netbeans.editor.ext.html.parser.spi.HelpItem;
+import org.netbeans.editor.ext.html.parser.spi.HelpResolver;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTagType;
 import org.netbeans.junit.NbTestCase;
@@ -59,11 +62,19 @@ public class HtmlTagProviderTest extends NbTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        Documentation.setupDocumentationForUnitTests();
+    }
+
+
+
     public void testHtmlTagConversion() {
         HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.HTML.name);
         assertNotNull(t);
 
-        assertEquals(ElementDescriptor.HTML.getNameLink().getName(), t.getName());
+        assertEquals(ElementDescriptor.HTML.getName(), t.getName());
         assertEquals(HtmlTagType.HTML, t.getTagClass());
 
         Collection<HtmlTag> children = t.getChildren();
@@ -74,5 +85,55 @@ public class HtmlTagProviderTest extends NbTestCase {
         assertFalse(children.contains(HtmlTagProvider.getTagForElement(ElementName.VIDEO.name)));
 
     }
+
+    public void testTypes() {
+        HtmlTag t = HtmlTagProvider.getTagForElement("body");
+        assertNotNull(t);
+        assertSame(HtmlTagType.HTML, t.getTagClass());
+
+        t = HtmlTagProvider.getTagForElement("math");
+        assertNotNull(t);
+        assertSame(HtmlTagType.MATHML, t.getTagClass());
+
+        t = HtmlTagProvider.getTagForElement("ellipse");
+        assertNotNull(t);
+        assertSame(HtmlTagType.SVG, t.getTagClass());
+
+    }
+
+    public void testHelp() {
+        HtmlTag t = HtmlTagProvider.getTagForElement(ElementName.VIDEO.name);
+        assertNotNull(t);
+
+
+        HelpItem helpItem = t.getHelp();
+        assertNotNull(helpItem);
+
+        HelpResolver help = helpItem.getHelpResolver();
+        assertNotNull(help);
+
+        String helpContent = help.getHelpContent(helpItem.getHelpURL());
+        assertNotNull(helpContent);
+
+        System.out.println(helpContent);
+
+    }
+
+    public void testHelplessElements() {
+        HtmlTag t = HtmlTagProvider.getTagForElement("ellipse");
+        assertNotNull(t);
+
+        HelpItem helpItem = t.getHelp();
+        assertNull(helpItem);
+
+    }
     
+    public void testAnnotation_XML() {
+        HtmlTag t = HtmlTagProvider.getTagForElement("annotation-xml");
+        assertNotNull(t);
+
+        assertSame(HtmlTagType.MATHML, t.getTagClass());
+
+    }
+
 }

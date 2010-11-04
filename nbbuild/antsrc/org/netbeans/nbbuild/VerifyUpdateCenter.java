@@ -45,9 +45,11 @@
 package org.netbeans.nbbuild;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -173,7 +175,7 @@ public final class VerifyUpdateCenter extends Task {
     @SuppressWarnings("unchecked")
     private SortedMap<String,SortedSet<String>> findInconsistencies(Set<Manifest> manifests, ClassLoader loader) throws BuildException {
         try {
-            return (SortedMap) loader.loadClass("org.netbeans.core.startup.ConsistencyVerifier").
+            return (SortedMap<String,SortedSet<String>>) loader.loadClass("org.netbeans.core.startup.ConsistencyVerifier").
                     getMethod("findInconsistencies", Set.class).invoke(null, manifests);
         } catch (Exception x) {
             throw new BuildException(x, getLocation());
@@ -210,6 +212,9 @@ public final class VerifyUpdateCenter extends Task {
                 manifests.add(mani);
             }
             return manifests;
+        } catch (FileNotFoundException x) {
+            log("Could not load: " + u, x, Project.MSG_WARN);
+            return Collections.emptySet();
         } catch (Exception x) {
             throw new BuildException("Could not load " + u, x, getLocation());
         }
@@ -245,11 +250,22 @@ public final class VerifyUpdateCenter extends Task {
         return false;
     }
 
+    /* XXX feedback:
+The test says things like:
+--
+Problems found for module org.netbeans.api.debugger.jpda: [The module org.netbeans.modules.java.source would also need to be installed., The module org.netbeans.modules.parsing.api would also need to be installed.]
+--
+but there is no problem whatsoever in module org.netbeans.api.debugger.jpda - it only happens to depend on module(s) that have problem. The error for java.source (which is hard to find in the plethora of warnings similar to the api.debugger.jpda's) says something like:
+--
+Problems found for module org.netbeans.modules.java.source: [The module named org.netbeans.modules.editor.indent.project/0-1 was needed and not found., The module named org.netbeans.modules.editor.lib/2 was needed and not found., The module org.netbeans.modules.editor.indent would also need to be installed., The module org.netbeans.modules.editor.lib2 would also need to be installed., The module org.netbeans.modules.java.preprocessorbridge would also need to be installed., The module org.netbeans.modules.options.editor would also need to be installed., The module org.netbeans.modules.parsing.api would also need to be installed., The module org.netbeans.modules.refactoring.api would also need to be installed.]
+--
+which is quite confusing IMO - it does not say anything about the fact that this relates to the "original" version of java.source that was not "upgraded" on the AUC because the spec. version did not change. Even though I knew what needs to be done for the test to pass before I looked at the test results, it took me a while figure out what exactly the test verifies. It would be great if at least the "false" warnings (like the one about api.debugger.jpda) could be suppressed.
+     */
     private void checkForProblems(SortedMap<String,SortedSet<String>> problems, String msg, String testName, Map<String,String> pseudoTests) {
         if (!problems.isEmpty()) {
-            StringBuffer message = new StringBuffer(msg);
+            StringBuilder message = new StringBuilder(msg);
             for (Map.Entry<String, SortedSet<String>> entry : problems.entrySet()) {
-                message.append("\nProblems found for module " + entry.getKey() + ": " + entry.getValue());
+                message.append("\nProblems found for module ").append(entry.getKey()).append(": ").append(entry.getValue());
             }
             pseudoTests.put(testName, message.toString());
         } else {

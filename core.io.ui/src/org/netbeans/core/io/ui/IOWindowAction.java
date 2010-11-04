@@ -42,38 +42,30 @@
 
 package org.netbeans.core.io.ui;
 
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.CallableSystemAction;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.windows.IOContainer;
 
 /** The action which shows standard IO component.
 *
 * @author Tomas Holy
 */
-public final class IOWindowAction extends CallableSystemAction {
+@ActionID(id = "org.netbeans.core.io.ui.IOWindowAction", category = "Window")
+@ActionRegistration(displayName = "#IOWindow", iconBase="org/netbeans/core/resources/frames/output.png")
+@ActionReferences({
+    @ActionReference(name = "D-4", path = "Shortcuts"),
+    @ActionReference(position = 100, path = "Menu/Window/Output")
+})
+public final class IOWindowAction implements ActionListener {
 
-    public void performAction() {
+    public @Override void actionPerformed(ActionEvent evt) {
         IOContainer container = IOContainer.getDefault();
         container.open();
         container.requestActive();
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String getName() {
-        return NbBundle.getBundle(IOWindowAction.class).getString("IOWindow");
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx(IOWindowAction.class);
-    }
-
-    @Override
-    protected String iconResource() {
-        return "org/netbeans/core/resources/frames/output.png"; // NOI18N
-    }
 }

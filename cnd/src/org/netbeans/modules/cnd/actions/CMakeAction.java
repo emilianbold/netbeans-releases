@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
@@ -139,6 +140,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
         buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
         if (buildDir == null) {
+            trace("Run folder folder is null"); //NOI18N
             return null;
         }
         Map<String, String> envMap = getEnv(execEnv, node, null);
@@ -147,7 +149,6 @@ public class CMakeAction extends AbstractExecutorRunAction {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(arguments[i]);
         }
-        traceExecutable(executable, buildDir, argsFlat, envMap);
         if (inputOutput == null) {
             // Tab Name
             String tabName = execEnv.isLocal() ? getString("CMAKE_LABEL", node.getName()) : getString("CMAKE_REMOTE_LABEL", node.getName(), execEnv.getDisplayName()); // NOI18N
@@ -163,9 +164,11 @@ public class CMakeAction extends AbstractExecutorRunAction {
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
+                trace("RemoteSyncWorker is not started up"); //NOI18N
                 return null;
             }
         }
+        traceExecutable(executable, buildDir, argsFlat, envMap);
 
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener, null, syncWorker);
 
@@ -184,7 +187,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
                 frontWindow(true).
                 inputVisible(true).
                 inputOutput(inputOutput).
-                showProgress(true).
+                showProgress(!CndUtils.isStandalone()).
                 postExecution(processChangeListener).
                 postMessageDisplayer(new PostMessageDisplayer.Default("CMake")). // NOI18N
                 outConvertorFactory(processChangeListener);

@@ -79,6 +79,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
@@ -224,7 +225,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -256,7 +257,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -282,7 +283,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -314,7 +315,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -340,7 +341,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -511,7 +512,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;
                     }
                 } // end for
@@ -584,7 +585,7 @@ public class Common extends Object {
                 TreeMaker make = workingCopy.getTreeMaker();
                 ClassTree clazz = null;
                 for (Tree typeDecl : cut.getTypeDecls()) {
-                    if (Tree.Kind.CLASS == typeDecl.getKind()) {
+                    if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind())) {
                         clazz = (ClassTree) typeDecl;                        
                     }
                 } // end for

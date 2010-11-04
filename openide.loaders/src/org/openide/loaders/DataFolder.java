@@ -377,9 +377,6 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 if (ch instanceof FolderChildren) {
                     ((FolderChildren) ch).getFilter ().equals (filter);
                 }
-                if (ch instanceof FolderChildrenEager) {
-                    ((FolderChildrenEager) ch).getFilter ().equals (filter);
-                }
                 return false;
             } else if (o instanceof ClonedFilter) {
                 ClonedFilter cf = (ClonedFilter) o;
@@ -436,13 +433,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         Node n = getNodeDelegate ();
         Children c = n.getChildren ();
         // #7362: relying on subclassers to override createNodeChildren is ugly...
-        if (c.getClass () == FolderChildren.class || c.getClass() == FolderChildrenEager.class) {
-            DataFilter f;
-            if (c instanceof FolderChildren) {
-                f = ((FolderChildren) c).getFilter ();
-            } else {
-                f = ((FolderChildrenEager)c).getFilter();
-            }
+        if (c.getClass () == FolderChildren.class) {
+            DataFilter f = ((FolderChildren) c).getFilter ();
             if (f == DataFilter.ALL) {
                 // Either createNodeDelegate was not overridden; or
                 // it provided some node with the same children as
@@ -479,15 +471,8 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
         }
     }
 
-    private static final boolean lazy = !"false".equals(System.getProperty( // NOI18N
-        "org.openide.loaders.DataFolder.lazy" // NOI18N
-    ));
     static Children createNodeChildren(DataFolder df, DataFilter filter) {
-        if (lazy) {
-            return new FolderChildren(df, filter);
-        } else {
-            return new FolderChildrenEager(df, filter);
-        }
+        return new FolderChildren(df, filter);
     }
 
     /** Support method to obtain a children object that

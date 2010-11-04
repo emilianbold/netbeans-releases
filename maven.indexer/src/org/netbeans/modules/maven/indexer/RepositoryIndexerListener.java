@@ -42,8 +42,8 @@
 package org.netbeans.modules.maven.indexer;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -51,13 +51,8 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
 import org.sonatype.nexus.index.ArtifactContext;
-import org.sonatype.nexus.index.ArtifactInfo;
 import org.sonatype.nexus.index.ArtifactScanningListener;
-import org.sonatype.nexus.index.NexusIndexer;
 import org.sonatype.nexus.index.ScanningResult;
 import org.sonatype.nexus.index.context.IndexingContext;
 
@@ -68,43 +63,70 @@ import org.sonatype.nexus.index.context.IndexingContext;
 public class RepositoryIndexerListener implements ArtifactScanningListener, Cancellable {
 
     private final IndexingContext indexingContext;
-    private final NexusIndexer nexusIndexer;
     private long tstart;
     
     private int count;
-   private final ProgressHandle handle;
+    private ProgressHandle handle;
     private final AtomicBoolean canceled = new AtomicBoolean();
     
     private final RepositoryInfo ri;
-    /*Debug*/
-    private final boolean DEBUG = false;
-     private InputOutput io;
-    private OutputWriter writer;
+    private final Set<File> expectedDirs = new HashSet<File>();
+    private final Set<File> encounteredDirs = new HashSet<File>();
 
     @SuppressWarnings("LeakingThisInConstructor")
-    public RepositoryIndexerListener(NexusIndexer nexusIndexer, IndexingContext indexingContext) {
+    public RepositoryIndexerListener(IndexingContext indexingContext) {
         this.indexingContext = indexingContext;
-        this.nexusIndexer = nexusIndexer;
         ri = RepositoryPreferences.getInstance().getRepositoryInfoById(indexingContext.getId());
-        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
         Cancellation.register(this);
 
-        if (DEBUG) {
-            io = IOProvider.getDefault().getIO("Indexing " +(ri!=null? ri.getName():indexingContext.getId()), true); //NOI18N
-            writer = io.getOut();
-        }
+//        if (DEBUG) {
+//            io = IOProvider.getDefault().getIO("Indexing " +(ri!=null? ri.getName():indexingContext.getId()), true); //NOI18N
+//            writer = io.getOut();
+//        }
     }
 
     public void scanningStarted(IndexingContext ctx) {
-        if (DEBUG) {
-            writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
-            writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N
-            writer.println("--------------------------------------------------------");//NOI18N
-            writer.println("Scanning started at " + SimpleDateFormat.getInstance().format(new Date()));//NOI18N
+//        if (DEBUG) {
+//            writer.println("Indexing Repo   : " + (ri!=null? ri.getName():ctx.getId())); //NOI18N
+//            writer.println("Index Directory : " + ctx.getIndexDirectory().toString());//NOI18N
+//            writer.println("--------------------------------------------------------");//NOI18N
+//            writer.println("Scanning started at " + SimpleDateFormat.getInstance().format(new Date()));//NOI18N
+//        }
+        if (handle != null) {
+            handle.finish();
         }
-        handle.start();
-        handle.switchToIndeterminate();
+        expectedDirs.clear();
+        encounteredDirs.clear();
+//        System.err.println("looking for indexable dirs...");
+        findIndexableDirs(ctx.getRepository());
+//        System.err.println("...done; found: " + expectedDirs.size());
+        handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryIndexerListener.class, "LBL_indexing_repo", ri != null ? ri.getName() : indexingContext.getId()), this);
+        handle.start(expectedDirs.size());
         tstart = System.currentTimeMillis();
+    }
+    private void findIndexableDirs(File d) {
+        // Try to guess what DefaultScanner might find. Hard to know for sure, so guess that nonempty leaf dirs will contain real artifacts.
+        if (d == null || d.getName().startsWith(".")) {
+            return;
+        }
+        File[] kids = d.listFiles();
+        if (kids == null) {
+            return;
+        }
+        boolean hasFiles = false;
+        boolean hasDirs = false;
+        for (File f : kids) {
+            if (f.isFile() && !f.getName().matches("maven-metadata.*[.]xml")) {
+                hasFiles = true;
+            }
+            if (f.isDirectory()) {
+                hasDirs = true;
+                findIndexableDirs(f);
+            }
+        }
+        if (hasFiles && !hasDirs) {
+            expectedDirs.add(d);
+        }
     }
 
     public @Override boolean cancel() {
@@ -119,26 +141,40 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
         count++;
 
 
-        ArtifactInfo ai = ac.getArtifactInfo();
-
-        if (DEBUG) {
-            if ("maven-plugin".equals(ai.packaging)) {//NOI18N
-                writer.printf("Plugin: %s:%s:%s - %s %s\n", //NOI18N
-                        ai.groupId,
-                        ai.artifactId,
-                        ai.version,
-                        ai.prefix,
-                        "" + ai.goals);//NOI18N
+//        ArtifactInfo ai = ac.getArtifactInfo();
+//
+//        if (DEBUG) {
+//            if ("maven-plugin".equals(ai.packaging)) {//NOI18N
+//                writer.printf("Plugin: %s:%s:%s - %s %s\n", //NOI18N
+//                        ai.groupId,
+//                        ai.artifactId,
+//                        ai.version,
+//                        ai.prefix,
+//                        "" + ai.goals);//NOI18N
+//            }
+//
+//
+//            // ArtifactInfo ai = ac.getArtifactInfo();
+//            writer.printf("  %6d %s\n", count, formatFile(ac.getPom()));//NOI18N
+//        }
+        if (handle != null) {
+            String label = ac.getArtifactInfo().groupId + ":" + ac.getArtifactInfo().artifactId + ":" + ac.getArtifactInfo().version;
+            File art = ac.getArtifact();
+            if (art == null) {
+                art = ac.getPom();
             }
-
-
-            // ArtifactInfo ai = ac.getArtifactInfo();
-            writer.printf("  %6d %s\n", count, formatFile(ac.getPom()));//NOI18N
+            if (art != null) {
+                File d = art.getParentFile();
+                if (expectedDirs.contains(d)) {
+                    encounteredDirs.add(d);
+                } else {
+//                    System.err.println("encountered unexpected artifact " + art);
+                }
+            } else {
+//                System.err.println("no artifact file for " + label);
+            }
+            handle.progress(label, encounteredDirs.size());
         }
-        handle.progress(ac.getArtifactInfo().groupId + ":" 
-                      + ac.getArtifactInfo().artifactId + ":" 
-                      + ac.getArtifactInfo().version);
-
     }
 
     public void artifactError(ArtifactContext ac, Exception e) {
@@ -146,12 +182,12 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
             throw new Cancellation();
         }
 
-        if (DEBUG) {
-            writer.printf("! %6d %s - %s\n", count, formatFile(ac.getPom()), e.getMessage());//NOI18N
-
-            writer.printf("         %s\n", formatFile(ac.getArtifact()));//NOI18N
-            e.printStackTrace(writer);
-        }
+//        if (DEBUG) {
+//            writer.printf("! %6d %s - %s\n", count, formatFile(ac.getPom()), e.getMessage());//NOI18N
+//
+//            writer.printf("         %s\n", formatFile(ac.getArtifact()));//NOI18N
+//            e.printStackTrace(writer);
+//        }
 
     }
 
@@ -160,31 +196,39 @@ public class RepositoryIndexerListener implements ArtifactScanningListener, Canc
     }
 
     public void scanningFinished(IndexingContext ctx, ScanningResult result) {
-        if (DEBUG) {
-            writer.println("Scanning ended at " + SimpleDateFormat.getInstance().format(new Date())); //NOI18N
-
-            if (result.hasExceptions()) {
-                writer.printf("Total scanning errors: %s\n", result.getExceptions().size()); //NOI18N
-            }
-
-            writer.printf("Total files scanned: %s\n", result.getTotalFiles()); //NOI18N
-
-            long t = System.currentTimeMillis() - tstart;
-
-            long s = t / 1000L;
-
-            if (t > 60 * 1000) {
-                long m = t / 1000L / 60L;
-
-                writer.printf("Total time: %d min %d sec\n", m, s - (m * 60)); //NOI18N
-            } else {
-                writer.printf("Total time: %d sec\n", s); //NOI18N
-
-            }
-        }
+//        if (DEBUG) {
+//            writer.println("Scanning ended at " + SimpleDateFormat.getInstance().format(new Date())); //NOI18N
+//
+//            if (result.hasExceptions()) {
+//                writer.printf("Total scanning errors: %s\n", result.getExceptions().size()); //NOI18N
+//            }
+//
+//            writer.printf("Total files scanned: %s\n", result.getTotalFiles()); //NOI18N
+//
+//            long t = System.currentTimeMillis() - tstart;
+//
+//            long s = t / 1000L;
+//
+//            if (t > 60 * 1000) {
+//                long m = t / 1000L / 60L;
+//
+//                writer.printf("Total time: %d min %d sec\n", m, s - (m * 60)); //NOI18N
+//            } else {
+//                writer.printf("Total time: %d sec\n", s); //NOI18N
+//
+//            }
+//        }
+//        Set<File> unencountered = new TreeSet<File>(expectedDirs);
+//        unencountered.removeAll(encounteredDirs);
+//        System.err.println("did not encounter " + unencountered.size() + ":");
+//        for (File d : unencountered) {
+//            System.err.println("  " + d);
+//        }
     }
 
     void close() {
-        handle.finish();
+        if (handle != null) {
+            handle.finish();
+        }
     }
 }

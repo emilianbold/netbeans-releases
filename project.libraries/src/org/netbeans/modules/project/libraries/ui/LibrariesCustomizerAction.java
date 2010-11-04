@@ -46,8 +46,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
+@ActionID(id = "org.netbeans.modules.project.libraries.ui.LibrariesCustomizerAction", category = "Tools")
+@ActionRegistration(iconInMenu = false, displayName = "#CTL_LibrariesManager")
+@ActionReference(position = 500, name = "LibrariesCustomizerAction", path = "Menu/Tools")
 public final class LibrariesCustomizerAction implements ActionListener {
 
     public void actionPerformed(ActionEvent e) {

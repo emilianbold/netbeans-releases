@@ -115,6 +115,10 @@ public class HtmlParserResult extends ParserResult {
         return result.getHtmlVersion();
     }
 
+    public HtmlVersion getDetectedHtmlVersion() {
+        return result.getDetectedHtmlVersion();
+    }
+
 //    //kinda hacky method
 //    public ParseResult getParseResultForRootTag(AstNode root) {
 //        try {

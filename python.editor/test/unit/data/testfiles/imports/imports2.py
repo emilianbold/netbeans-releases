@@ -1,4 +1,0 @@
-"""My module"""
-
-x = DecimalException();
-

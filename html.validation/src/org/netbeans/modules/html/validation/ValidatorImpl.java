@@ -63,7 +63,7 @@ public class ValidatorImpl implements Validator {
         
         try {
 
-            ValidationTransaction validatorTransaction = ValidationTransaction.getInstance();
+            ValidationTransaction validatorTransaction = ValidationTransaction.create(context.getVersion());
 
             String source = context.getSource();
             validatorTransaction.validateCode(source);
@@ -86,6 +86,7 @@ public class ValidatorImpl implements Validator {
     public boolean canValidate(HtmlVersion version) {
         switch(version) {
             case HTML5:
+            case XHTML5:
                 return true;
             default:
                 return false;
