@@ -57,7 +57,6 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.LogHandler;
-import org.netbeans.modules.bugtracking.kenai.QueryAccessorImpl;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.Issue;
@@ -65,8 +64,6 @@ import org.netbeans.modules.bugtracking.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.spi.Query;
 import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -79,7 +76,7 @@ public class KenaiTestHidden extends NbTestCase {
 
     private String username;
     private String password;
-    private Kenai kenai;
+//    private Kenai kenai;
 
     public KenaiTestHidden(String arg0) {
         super(arg0);
@@ -90,281 +87,281 @@ public class KenaiTestHidden extends NbTestCase {
         return Level.ALL;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
-        username = br.readLine();
-        password = br.readLine();
-        br.close();
-
-        kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
-    }
-
-//    public void testQueryTopComponent() throws Throwable {
+//    @Override
+//    protected void setUp() throws Exception {
+//        super.setUp();
+//
+//        BufferedReader br = new BufferedReader(new FileReader(new File(System.getProperty("user.home"), ".test-kenai")));
+//        username = br.readLine();
+//        password = br.readLine();
+//        br.close();
+//
+//        kenai = KenaiManager.getDefault().createKenai("testkenai", "https://testkenai.com");
+//    }
+//
+////    public void testQueryTopComponent() throws Throwable {
+////        KenaiRepository repo = KenaiConnector.repo;
+////
+////        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
+////
+////        QueryAction.openQuery(null, repo, true);
+////        openedHandler.waitUntilDone();
+////
+////        QueryTopComponent qtc = getQueryTC();
+////        JComboBox combo = (JComboBox) getField(qtc, "repositoryComboBox");
+////        assertFalse(combo.isEnabled());
+////        JButton button = (JButton) getField(qtc, "newButton");
+////        assertFalse(button.isEnabled());
+////
+////        kenai.login(username, password.toCharArray());
+////        kenai.logout();
+////        kenai.login(username, password.toCharArray());
+////
+////        combo = (JComboBox) getField(qtc, "repositoryComboBox");
+////        assertFalse(combo.isEnabled());
+////        button = (JButton) getField(qtc, "newButton");
+////        assertFalse(button.isEnabled());
+////    }
+//
+//    public void testRefreshQueriesInQueryTopComponent() throws Throwable {
+//        QueryAccessorImpl qa = new QueryAccessorImpl(); // need the instace to listen on kenai
+//
+//        kenai.login(username, password.toCharArray());
+//
 //        KenaiRepository repo = KenaiConnector.repo;
+//        repo.queries.add(new KenaiQuery(repo));
 //
 //        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
+//        LogHandler savedHandler = new LogHandler("saved queries.", LogHandler.Compare.ENDS_WITH);
 //
 //        QueryAction.openQuery(null, repo, true);
 //        openedHandler.waitUntilDone();
 //
 //        QueryTopComponent qtc = getQueryTC();
-//        JComboBox combo = (JComboBox) getField(qtc, "repositoryComboBox");
-//        assertFalse(combo.isEnabled());
-//        JButton button = (JButton) getField(qtc, "newButton");
-//        assertFalse(button.isEnabled());
 //
-//        kenai.login(username, password.toCharArray());
+//        savedHandler.waitUntilDone();
+//        Query[] savedQueries = getSavedQueries(qtc);
+//        assertNotNull(savedQueries);
+//
+//        assertEquals(repo.queries.size(), savedQueries.length);
+//
+//        repo.queries.add(new KenaiQuery(repo));
+//        savedHandler.reset();
 //        kenai.logout();
-//        kenai.login(username, password.toCharArray());
+//        savedHandler.waitUntilDone();
 //
-//        combo = (JComboBox) getField(qtc, "repositoryComboBox");
-//        assertFalse(combo.isEnabled());
-//        button = (JButton) getField(qtc, "newButton");
-//        assertFalse(button.isEnabled());
+//        savedQueries = getSavedQueries(qtc);
+//        assertEquals(repo.queries.size(), savedQueries.length);
+//
+//        repo.queries.clear();
+//        LogHandler noQueriesHandler = new LogHandler("No queries.", LogHandler.Compare.ENDS_WITH);
+//        kenai.login(username, password.toCharArray());
+//        noQueriesHandler.waitUntilDone();
+//
+//        savedQueries = getSavedQueries(qtc);
+//        assertEquals(repo.queries.size(), savedQueries.length);
 //    }
-
-    public void testRefreshQueriesInQueryTopComponent() throws Throwable {
-        QueryAccessorImpl qa = new QueryAccessorImpl(); // need the instace to listen on kenai
-
-        kenai.login(username, password.toCharArray());
-
-        KenaiRepository repo = KenaiConnector.repo;
-        repo.queries.add(new KenaiQuery(repo));
-
-        LogHandler openedHandler = new LogHandler("QueryAction.openQuery finnish", LogHandler.Compare.STARTS_WITH);
-        LogHandler savedHandler = new LogHandler("saved queries.", LogHandler.Compare.ENDS_WITH);
-
-        QueryAction.openQuery(null, repo, true);
-        openedHandler.waitUntilDone();
-
-        QueryTopComponent qtc = getQueryTC();
-
-        savedHandler.waitUntilDone();
-        Query[] savedQueries = getSavedQueries(qtc);
-        assertNotNull(savedQueries);
-
-        assertEquals(repo.queries.size(), savedQueries.length);
-
-        repo.queries.add(new KenaiQuery(repo));
-        savedHandler.reset();
-        kenai.logout();
-        savedHandler.waitUntilDone();
-
-        savedQueries = getSavedQueries(qtc);
-        assertEquals(repo.queries.size(), savedQueries.length);
-
-        repo.queries.clear();
-        LogHandler noQueriesHandler = new LogHandler("No queries.", LogHandler.Compare.ENDS_WITH);
-        kenai.login(username, password.toCharArray());
-        noQueriesHandler.waitUntilDone();
-
-        savedQueries = getSavedQueries(qtc);
-        assertEquals(repo.queries.size(), savedQueries.length);
-    }
-
-    private QueryTopComponent getQueryTC() {
-        QueryTopComponent qtc = null;
-        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        for (TopComponent tc : tcs) {
-            if (tc instanceof QueryTopComponent) {
-                qtc = (QueryTopComponent) tc;
-            }
-        }
-        assertNotNull(qtc);
-        return qtc;
-    }
-
-    private Query[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        return (Query[]) getField(tc, "savedQueries");
-    }
-
-    private Object getField(Object o, String name) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field f = o.getClass().getDeclaredField(name);
-        f.setAccessible(true);
-        return f.get(o);
-    }
-
-    private static class KenaiRepository extends Repository {
-        List<Query> queries = new ArrayList<Query>();
-        Query newquery;
-
-        public KenaiRepository() {
-            this.newquery = new KenaiQuery(this);
-        }
-
-        @Override
-        public String getID() {
-            return "repoid";
-        }
-        
-        @Override
-        public Image getIcon() {
-            return null;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "kenai repo";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "kenai repo";
-        }
-
-        @Override
-        public String getUrl() {
-            return "http://kenai.repo";
-        }
-
-        @Override
-        public Issue getIssue(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public BugtrackingController getController() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query createQuery() {
-            return newquery;
-        }
-
-        @Override
-        public Issue createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Query[] getQueries() {
-            return queries.toArray(new Query[queries.size()]);
-        }
-
-        @Override
-        public Issue[] simpleSearch(String criteria) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        protected IssueCache getIssueCache() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
-    private static class KenaiQuery extends Query {
-        private Repository repository;
-        private BugtrackingController controler = new BugtrackingController() {
-            private JPanel panel = new JPanel();
-            @Override
-            public JComponent getComponent() {
-                return panel;
-            }
-            @Override
-            public HelpCtx getHelpCtx() {
-                return null;
-            }
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-            @Override
-            public void applyChanges() throws IOException {}
-        };
-
-        public KenaiQuery(Repository repository) {
-            this.repository = repository;
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "kenai query";
-        }
-        @Override
-        public String getTooltip() {
-            return "kenai query";
-        }
-        @Override
-        public BugtrackingController getController() {
-            return controler;
-        }
-        @Override
-        public Repository getRepository() {
-            return repository;
-        }
-        @Override
-        public Issue[] getIssues(int includeStatus) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public boolean contains(Issue issue) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-        @Override
-        public int getIssueStatus(Issue issue) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-    
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
-    public static class KenaiConnector extends BugtrackingConnector {
-        static String ID = "KenaiCconector";
-        private static KenaiRepository repo = new KenaiRepository();
-
-        public KenaiConnector() {
-        }
-
-        @Override
-        public String getDisplayName() {
-            return ID;
-        }
-
-        @Override
-        public String getTooltip() {
-            return ID;
-        }
-
-        @Override
-        public Repository createRepository() {
-                throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Repository[] getRepositories() {
-            return new Repository[] {repo};
-        }
-
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-    }
+//
+//    private QueryTopComponent getQueryTC() {
+//        QueryTopComponent qtc = null;
+//        Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
+//        for (TopComponent tc : tcs) {
+//            if (tc instanceof QueryTopComponent) {
+//                qtc = (QueryTopComponent) tc;
+//            }
+//        }
+//        assertNotNull(qtc);
+//        return qtc;
+//    }
+//
+//    private Query[] getSavedQueries(QueryTopComponent tc) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        return (Query[]) getField(tc, "savedQueries");
+//    }
+//
+//    private Object getField(Object o, String name) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+//        Field f = o.getClass().getDeclaredField(name);
+//        f.setAccessible(true);
+//        return f.get(o);
+//    }
+//
+//    private static class KenaiRepository extends Repository {
+//        List<Query> queries = new ArrayList<Query>();
+//        Query newquery;
+//
+//        public KenaiRepository() {
+//            this.newquery = new KenaiQuery(this);
+//        }
+//
+//        @Override
+//        public String getID() {
+//            return "repoid";
+//        }
+//        
+//        @Override
+//        public Image getIcon() {
+//            return null;
+//        }
+//
+//        @Override
+//        public String getDisplayName() {
+//            return "kenai repo";
+//        }
+//
+//        @Override
+//        public String getTooltip() {
+//            return "kenai repo";
+//        }
+//
+//        @Override
+//        public String getUrl() {
+//            return "http://kenai.repo";
+//        }
+//
+//        @Override
+//        public Issue getIssue(String id) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public void remove() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public BugtrackingController getController() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public Query createQuery() {
+//            return newquery;
+//        }
+//
+//        @Override
+//        public Issue createIssue() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public Query[] getQueries() {
+//            return queries.toArray(new Query[queries.size()]);
+//        }
+//
+//        @Override
+//        public Issue[] simpleSearch(String criteria) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        protected IssueCache getIssueCache() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        public Lookup getLookup() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public Collection<RepositoryUser> getUsers() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//    }
+//
+//    private static class KenaiQuery extends Query {
+//        private Repository repository;
+//        private BugtrackingController controler = new BugtrackingController() {
+//            private JPanel panel = new JPanel();
+//            @Override
+//            public JComponent getComponent() {
+//                return panel;
+//            }
+//            @Override
+//            public HelpCtx getHelpCtx() {
+//                return null;
+//            }
+//            @Override
+//            public boolean isValid() {
+//                return true;
+//            }
+//            @Override
+//            public void applyChanges() throws IOException {}
+//        };
+//
+//        public KenaiQuery(Repository repository) {
+//            this.repository = repository;
+//        }
+//
+//        @Override
+//        public String getDisplayName() {
+//            return "kenai query";
+//        }
+//        @Override
+//        public String getTooltip() {
+//            return "kenai query";
+//        }
+//        @Override
+//        public BugtrackingController getController() {
+//            return controler;
+//        }
+//        @Override
+//        public Repository getRepository() {
+//            return repository;
+//        }
+//        @Override
+//        public Issue[] getIssues(int includeStatus) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//        @Override
+//        public boolean contains(Issue issue) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//        @Override
+//        public int getIssueStatus(Issue issue) {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//    }
+//    
+//    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+//    public static class KenaiConnector extends BugtrackingConnector {
+//        static String ID = "KenaiCconector";
+//        private static KenaiRepository repo = new KenaiRepository();
+//
+//        public KenaiConnector() {
+//        }
+//
+//        @Override
+//        public String getDisplayName() {
+//            return ID;
+//        }
+//
+//        @Override
+//        public String getTooltip() {
+//            return ID;
+//        }
+//
+//        @Override
+//        public Repository createRepository() {
+//                throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public Repository[] getRepositories() {
+//            return new Repository[] {repo};
+//        }
+//
+//        public Lookup getLookup() {
+//            return Lookup.EMPTY;
+//        }
+//
+//        @Override
+//        public String getID() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//        @Override
+//        public Image getIcon() {
+//            throw new UnsupportedOperationException("Not supported yet.");
+//        }
+//
+//    }
 
 }

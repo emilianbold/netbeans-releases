@@ -44,10 +44,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /** Registers an action under associated identifier specified by separate
  * {@link ActionID} annotation on the same element. Usually it is used together
- * with {@link ActionRegistration}.
+ * with {@link ActionRegistration}. You can place your action reference into
+ * any path, here are few typical locations:
+ * <ul>
+ * <li>menu - <code>path="Menu/File"</code>, <code>path="Menu/Edit"</code>, etc.</li>
+ * <li>toolbar - <code>path="Toolbars/Edit"</code> and other peer directories</li>
+ * <li>shortcuts - <code>path="Shortcuts" name="C-F2 D-A"</code>, see {@link Utilities#stringToKeys(java.lang.String)}
+ *     and {@link Utilities#stringToKey(java.lang.String)} for description of valid reference names</li>
+ * <li>context menus - <code>path="Loaders/text/xml"</code>, and other mime types</li>
+ * </ul>
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 7.27

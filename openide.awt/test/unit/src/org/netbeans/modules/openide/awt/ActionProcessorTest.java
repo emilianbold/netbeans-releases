@@ -511,7 +511,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
     @ActionID(category="eager", id="direct.two")
     @ActionRegistration(displayName="Direct Action")
-    @ActionReference(path="Shortcuts", name="C-F2")
+    @ActionReference(path="Shortcuts", name="C-F2 D-A")
     public static class Direct2 extends AbstractAction implements Presenter.Toolbar {
         static int cnt;
         public Direct2() {
@@ -769,7 +769,7 @@ public class ActionProcessorTest extends NbTestCase {
     }
     
     public void testReferenceWithoutPosition() throws Exception {
-        FileObject fo = FileUtil.getConfigFile("Shortcuts/C-F2.shadow");
+        FileObject fo = FileUtil.getConfigFile("Shortcuts/C-F2 D-A.shadow");
         assertNotNull(fo);
         assertEquals("Actions/eager/direct-two.instance", fo.getAttribute("originalFile"));
         assertEquals(null, fo.getAttribute("position"));
