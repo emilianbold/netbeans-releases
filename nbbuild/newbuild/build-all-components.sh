@@ -106,7 +106,7 @@ else
     mv nbbuild/build/testdist.zip $DIST/zip/testdist-${BUILDNUMBER}.zip
 fi
 
-if [ $RUNJAVAFX !=0 ]; then
+if [ $RUNJAVAFX != 0 ]; then
     bash ${SCRIPT_DIR}/pack-base.sh
 fi
 
