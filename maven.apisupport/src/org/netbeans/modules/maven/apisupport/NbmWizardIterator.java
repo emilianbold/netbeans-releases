@@ -133,7 +133,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     @SuppressWarnings("unchecked")
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
             return new WizardDescriptor.Panel[] {
-                ArchetypeWizards.basicWizardPanel(vg, true, archetype),
+                ArchetypeWizards.basicWizardPanel(vg, false, archetype),
                 new NbmWizardPanel(vg, archetype)
             };
     }
