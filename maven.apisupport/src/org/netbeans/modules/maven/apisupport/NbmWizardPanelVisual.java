@@ -94,7 +94,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 public @Override void run() {
                     final List<String> versions = new ArrayList<String>();
-                    for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.api", "org-openide-util", info)) { // NOI18N
+                    for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info)) { // NOI18N
                         versions.add(version.getVersion());
                     }
                     EventQueue.invokeLater(new Runnable()  {
