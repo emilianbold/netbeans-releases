@@ -79,7 +79,7 @@ public final class CharSequences {
         // check 2 bytes vs 1 byte chars
         for (int i = 0; i < n; i++) {
             o = buf[start + i];
-            if ((o & 0xFF) != o) {
+            if ((o & 0x7F) != o) {
                 // can not compact this char sequence
                 bytes = false;
                 break;
