@@ -115,7 +115,7 @@ public final class CharSequences {
         int o;
         for (int i = 0; i < n; i++) {
             o = s.charAt(i);
-            if ((o & 0xFF) != o || (Character.isLetter(o) && Character.getNumericValue(o) < 0)) {
+            if ((o & 0x7F) != o) {
                 bytes = false;
                 break;
             }
