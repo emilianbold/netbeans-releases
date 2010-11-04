@@ -107,6 +107,7 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
     }
 
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
+    static final String NB_VERSION = "nb.version"; // NOI18N
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
@@ -161,8 +162,8 @@ public class NbmWizardIterator implements WizardDescriptor.ProgressInstantiating
             int max = nbm_artifactId != null ? 7 : 4;
             handle.start(max);
             File projFile = FileUtil.normalizeFile((File) wiz.getProperty("projdir")); // NOI18N
-            // XXX perhaps should display a GUI listing possible versions of org.netbeans.cluster:platform as choices?
-            Map<String, String> additional = Collections.singletonMap("netbeansVersion", "RELEASE691"); // NOI18N
+            String version = (String) wiz.getProperty(NB_VERSION);
+            Map<String,String> additional = version != null ? Collections.singletonMap("netbeansVersion", version) : null; // NOI18N
             ArchetypeWizards.createFromArchetype(handle, projFile, vi, archetype, additional, 0, true);
             if (nbm_artifactId != null && projFile.exists()) {
                 //NOW we have the nbm-Platform or nbm suite template
