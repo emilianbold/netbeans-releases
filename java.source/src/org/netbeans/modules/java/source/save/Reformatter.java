@@ -183,7 +183,7 @@ public class Reformatter implements ReformatTask {
         if (endOffset < 0)
             return;
         int embeddingOffset = -1;
-        int firstLineIndent = 0;
+        int firstLineIndent = -1;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
             firstLineIndent = context.lineIndent(context.lineStartOffset(region.getStartOffset()));
             TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -455,7 +455,8 @@ public class Reformatter implements ReformatTask {
         public static LinkedList<Diff> reformat(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit, int firstLineIndent) {
             Pretty pretty = new Pretty(info, path, cs, startOffset, endOffset, templateEdit);
             if (pretty.indent >= 0) {
-                pretty.indent += firstLineIndent;
+                if (firstLineIndent >= 0)
+                    pretty.indent = firstLineIndent;
                 pretty.scan(path, null);
             }
             if (path.getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
