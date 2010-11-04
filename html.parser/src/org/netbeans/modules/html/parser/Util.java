@@ -122,6 +122,6 @@ public class Util {
         "SCRIPT_DATA_DOUBLE_ESCAPED_DASH",
         "SCRIPT_DATA_DOUBLE_ESCAPED_DASH_DASH",
         "SCRIPT_DATA_DOUBLE_ESCAPE_END"
-    };
+    }; //NOI18N
     
 }

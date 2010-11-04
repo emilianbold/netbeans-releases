@@ -48,8 +48,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import nu.validator.htmlparser.impl.ErrorReportingTokenizer;
 import nu.validator.htmlparser.impl.Tokenizer;
 import nu.validator.htmlparser.io.Driver;
@@ -66,10 +64,6 @@ import org.netbeans.editor.ext.html.parser.api.HtmlSource;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.spi.HtmlTag;
 import org.netbeans.editor.ext.html.parser.spi.NamedCharRef;
-import org.netbeans.html.api.validation.ValidationContext;
-import org.netbeans.html.api.validation.ValidationException;
-import org.netbeans.html.api.validation.Validator;
-import org.netbeans.html.api.validation.ValidatorService;
 import org.netbeans.modules.html.parser.model.ElementDescriptor;
 import org.netbeans.modules.html.parser.model.NamedCharacterReference;
 import org.openide.util.Lookup;
@@ -98,23 +92,6 @@ public class Html5Parser implements HtmlParser {
             driver.setTransitionHandler(treeBuilder);
             driver.tokenize(is);
             AstNode root = treeBuilder.getRoot();
-
-            //html 5 source are validated by the validator.nu,
-            //if there's no such validator available, no errors are provided
-            if (preferedVersion == HtmlVersion.HTML5 || preferedVersion == HtmlVersion.XHTML5) {
-                Validator html5validator = ValidatorService.getValidator(preferedVersion);
-                if (html5validator != null) {
-                    ValidationContext context = new ValidationContext(code, preferedVersion, source.getSourceFileObject());
-                    try {
-                        Collection<ProblemDescription> validatorProblems = html5validator.validate(context).getProblems();
-                        return new Html5ParserResult(source, root, validatorProblems, preferedVersion);
-                    } catch (ValidationException ex) {
-                        Logger.getLogger(Html5Parser.class.getName()).log(Level.WARNING,
-                                "Error during validating file " + source.getSourceFileObject(),
-                                ex);
-                    }
-                }
-            }
 
             return new Html5ParserResult(source, root, Collections.<ProblemDescription>emptyList(), preferedVersion);
 

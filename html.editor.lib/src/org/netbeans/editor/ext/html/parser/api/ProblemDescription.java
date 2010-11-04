@@ -61,7 +61,7 @@ public final class ProblemDescription {
     private ProblemDescription(String key, String text, int type, int from, int to) {
         assert from >= 0;
         assert to >= 0;
-        assert from < to;
+        assert from <= to;
         
         this.key = key;
         this.text = text;
