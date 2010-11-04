@@ -183,7 +183,7 @@ public final class Utils {
         return paths;
     }
 
-    public static RevCommit findCommit (Repository repository, String revision) throws GitException {
+    public static RevCommit findCommit (Repository repository, String revision) throws GitException.MissingObjectException, GitException {
         try {
             ObjectId commitId = parseObjectId(repository, revision);
             if (commitId == null) {
