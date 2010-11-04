@@ -42,19 +42,31 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.validation.api.builtin.Validators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.ValidationListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author mkleint
  */
 public class NbmWizardPanelVisual extends javax.swing.JPanel {
+
+    private static final String SEARCHING = NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.wait");
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
     boolean isApp = false;
@@ -76,6 +88,23 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
+        final RepositoryInfo info = RepositoryPreferences.getInstance().getRepositoryInfoById("netbeans"); // NOI18N
+        if (info != null) {
+            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
+            RequestProcessor.getDefault().post(new Runnable() {
+                public @Override void run() {
+                    final List<String> versions = new ArrayList<String>();
+                    for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", info)) { // NOI18N
+                        versions.add(version.getVersion());
+                    }
+                    EventQueue.invokeLater(new Runnable()  {
+                        public @Override void run() {
+                            versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
+                        }
+                    });
+                }
+            });
+        }
     }
 
     /** This method is called from within the constructor to
@@ -91,6 +120,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         txtAddModule = new javax.swing.JTextField();
         cbAddModule = new javax.swing.JCheckBox();
+        versionLabel = new javax.swing.JLabel();
+        versionCombo = new javax.swing.JComboBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbOsgiDeps, org.openide.util.NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.cbOsgiDeps.text")); // NOI18N
         cbOsgiDeps.addActionListener(new java.awt.event.ActionListener() {
@@ -111,6 +142,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
         });
 
+        versionLabel.setLabelFor(versionCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(NbmWizardPanelVisual.class, "NbmWizardPanelVisual.versionLabel.text")); // NOI18N
+
+        versionCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "RELEASE123" }));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -125,7 +161,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(cbAddModule)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtAddModule, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE)))
+                        .addComponent(txtAddModule, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(versionLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(versionCombo, 0, 391, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -139,7 +179,11 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtAddModule, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cbAddModule))
-                .addContainerGap(197, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(versionLabel)
+                    .addComponent(versionCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -159,6 +203,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbOsgiDeps;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JTextField txtAddModule;
+    private javax.swing.JComboBox versionCombo;
+    private javax.swing.JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
 
@@ -171,6 +217,10 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
              } else {
                  d.putProperty(NbmWizardIterator.NBM_ARTIFACTID, null);
              }
+         }
+         String version = (String) versionCombo.getSelectedItem();
+         if (!version.equals(SEARCHING)) {
+             d.putProperty(NbmWizardIterator.NB_VERSION, version);
          }
          if (isApp || isSuite) {
             SwingUtilities.invokeLater(new Runnable() {
@@ -202,6 +252,10 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     panel.getValidationGroup().addValidationGroup(vg, true);
                 }
             });
+        }
+        String version = (String) d.getProperty(NbmWizardIterator.NB_VERSION);
+        if (version != null) {
+            versionCombo.setSelectedItem(version);
         }
     }
 }
