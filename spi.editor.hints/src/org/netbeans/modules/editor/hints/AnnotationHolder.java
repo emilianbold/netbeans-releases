@@ -835,7 +835,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                 if (attributes != null) {
                     coloring.put(Severity.ERROR, attributes);
                 } else {
-                    attributes = fcs.getTokenFontColors(Severity.ERROR.toString());
+                    attributes = fcs.getTokenFontColors("error"); // NOI18N
                     if (attributes != null) {
                         coloring.put(Severity.ERROR, attributes);
                     } else {
@@ -845,28 +845,20 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                             EditorStyleConstants.Tooltip, new TooltipResolver()));
                     }
                 }
-                attributes = fcs.getTokenFontColors(Severity.WARNING.toString());
+                attributes = fcs.getTokenFontColors("warning"); // NOI18N
                 if (attributes != null) {
                     coloring.put(Severity.WARNING, attributes);
+                    coloring.put(Severity.VERIFIER, attributes);
+                    coloring.put(Severity.HINT, attributes);
                 } else {
                     coloring.put(Severity.WARNING, AttributesUtilities.createImmutable(
                         EditorStyleConstants.WaveUnderlineColor,
                         new Color(0xC0, 0xC0, 0x00), 
                         EditorStyleConstants.Tooltip, new TooltipResolver()));
-                }
-                attributes = fcs.getTokenFontColors(Severity.VERIFIER.toString());
-                if (attributes != null) {
-                    coloring.put(Severity.VERIFIER, attributes);
-                } else {
                     coloring.put(Severity.VERIFIER, AttributesUtilities.createImmutable(
                         EditorStyleConstants.WaveUnderlineColor, 
                         new Color(0xFF, 0xD5, 0x55), 
                         EditorStyleConstants.Tooltip, new TooltipResolver()));
-                }
-                attributes = fcs.getTokenFontColors(Severity.HINT.toString());
-                if (attributes != null) {
-                    coloring.put(Severity.HINT, attributes);
-                } else {
                     coloring.put(Severity.HINT, AttributesUtilities.createImmutable(
                         EditorStyleConstants.Tooltip, new TooltipResolver()));
                 }
