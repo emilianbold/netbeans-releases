@@ -90,6 +90,7 @@ import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.BuildArtifactMapperImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.VirtualSourceProviderQuery;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
@@ -328,6 +329,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         for (Indexable i : files) {
                             clear(context, javaContext, i, removedTypes, removedFiles);
                             ErrorsCache.setErrors(context.getRootURI(), i, Collections.<Diagnostic<?>>emptyList(), ERROR_CONVERTOR);
+                            ExecutableFilesIndex.DEFAULT.setMainClass(context.getRootURI(), i.getURL(), false);
                             javaContext.checkSums.remove(i.getURL());
                         }
                         for (Map.Entry<URL, Set<URL>> entry : findDependent(context.getRootURI(), removedTypes, false).entrySet()) {
