@@ -40,41 +40,72 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.git.ui.diff;
+package org.netbeans.modules.git;
 
-import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import org.netbeans.libs.git.GitClient;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.progress.ProgressMonitor;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.status.DiffAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DiffAction_Name")
-public class DiffAction extends GitAction {
+public class VersionsCache {
 
-    @Override
-    protected void performContextAction (Node[] nodes) {
-        VCSContext context = getCurrentContext(nodes);
-        diff(context);
+    private static VersionsCache instance;
+
+    /** Creates a new instance of VersionsCache */
+    private VersionsCache() {
     }
 
-    public void diff (VCSContext context) {
-        String contextName = Utils.getContextDisplayName(context);
-        Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-        MultiDiffPanelController controller = new MultiDiffPanelController(context, mode);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setTopComponent(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
-        tc.open();
-        tc.requestActive();
+    public static synchronized VersionsCache getInstance() {
+        if (instance == null) {
+            instance = new VersionsCache();
+        }
+        return instance;
     }
 
+    /**
+     * Loads the file in specified revision.
+     *
+     * @return null if the file does not exist in given revision
+     */
+    public File getFileRevision(File base, String revision) throws IOException {
+        if("-1".equals(revision)) return null; // NOI18N
+
+        File repository = Git.getInstance().getRepositoryRoot(base);
+        if (GitUtils.CURRENT.equals(revision)) {
+            return base;
+        } else {
+            File tempFile = new File(Utils.getTempFolder(), "nb-git-" + base.getName()); //NOI18N
+            tempFile.deleteOnExit();
+            try {
+                GitClient client = Git.getInstance().getClient(repository);
+                boolean result;
+                if (GitUtils.INDEX.equals(revision)) {
+                    result = client.catIndexEntry(base, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                } else {
+                    result = client.catFile(base, revision, new FileOutputStream(tempFile), ProgressMonitor.NULL_PROGRESS_MONITOR);
+                }
+                if (!result) {
+                    tempFile.delete();
+                    tempFile = null;
+                }
+            } catch (java.io.FileNotFoundException ex) {
+                tempFile.delete();
+                tempFile = null;
+            } catch (GitException.MissingObjectException ex) {
+                tempFile.delete();
+                tempFile = null;
+            } catch (GitException ex) {
+                throw new IOException(ex);
+            }
+            return tempFile;
+        }
+    }
 }

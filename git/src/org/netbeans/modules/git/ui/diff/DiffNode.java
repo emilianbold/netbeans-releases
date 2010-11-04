@@ -42,39 +42,25 @@
 
 package org.netbeans.modules.git.ui.diff;
 
+import org.netbeans.modules.git.ui.status.*;
+import java.io.File;
+import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.actions.GitAction;
-import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionRegistration;
-import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
 
 /**
  *
  * @author ondra
  */
-@ActionID(id = "org.netbeans.modules.git.ui.status.DiffAction", category = "Git")
-@ActionRegistration(displayName = "#LBL_DiffAction_Name")
-public class DiffAction extends GitAction {
+public class DiffNode extends StatusNode {
+
+    public DiffNode (GitFileNode node, Mode mode) {
+        super(node, mode);
+    }
 
     @Override
-    protected void performContextAction (Node[] nodes) {
-        VCSContext context = getCurrentContext(nodes);
-        diff(context);
+    public Action getPreferredAction () {
+        return new OpenInEditorAction(new File[] { getFile() });
     }
-
-    public void diff (VCSContext context) {
-        String contextName = Utils.getContextDisplayName(context);
-        Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-        MultiDiffPanelController controller = new MultiDiffPanelController(context, mode);
-        DiffTopComponent tc = new DiffTopComponent(controller);
-        controller.setTopComponent(tc);
-        tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
-        tc.open();
-        tc.requestActive();
-    }
-
 }

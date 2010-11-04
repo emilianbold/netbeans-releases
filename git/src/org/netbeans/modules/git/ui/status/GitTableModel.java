@@ -54,12 +54,12 @@ import org.openide.nodes.Node;
  *
  * @author ondra
  */
-public class StatusTableModel extends NodeTableModel {
+public class GitTableModel<T extends StatusNode> extends NodeTableModel {
 
-    private StatusNode[] nodes;
+    private T[] nodes;
 
-    public StatusTableModel () {
-        nodes = new StatusNode[0];
+    public GitTableModel (T[] nodes) {
+        this.nodes = nodes;
     }
 
     @Override
@@ -67,30 +67,30 @@ public class StatusTableModel extends NodeTableModel {
         throw new IllegalStateException("Do not call this method");
     }
 
-    final void setNodes (StatusNode[] nodes) {
+    public final void setNodes (T[] nodes) {
         this.nodes = nodes;
         super.setNodes(nodes);
     }
 
-    StatusNode getNode (int idx) {
+    public T getNode (int idx) {
         return nodes[idx];
     }
 
-    Collection<StatusNode> getNodes () {
-        return new HashSet<StatusNode>(Arrays.asList(nodes));
+    public Collection<T> getNodes () {
+        return new HashSet<T>(Arrays.asList(nodes));
     }
 
-    void remove (List<StatusNode> toRemove) {
-        Set<StatusNode> newNodes = new HashSet<StatusNode>(Arrays.asList(nodes));
+    public void remove (List<T> toRemove) {
+        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
         newNodes.removeAll(toRemove);
-        nodes = newNodes.toArray(new StatusNode[newNodes.size()]);
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
         super.setNodes(nodes);
     }
 
-    void add (List<StatusNode> toAdd) {
-        Set<StatusNode> newNodes = new HashSet<StatusNode>(Arrays.asList(nodes));
+    public void add (List<T> toAdd) {
+        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
         newNodes.addAll(toAdd);
-        nodes = newNodes.toArray(new StatusNode[newNodes.size()]);
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
         super.setNodes(nodes);
     }
 }

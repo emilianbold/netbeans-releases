@@ -63,11 +63,15 @@ public class MultiDiffPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         btnModeGroup = new javax.swing.ButtonGroup();
-        splitPane = new javax.swing.JSplitPane();
-        jSeparator1 = new javax.swing.JSeparator();
+        jPanel2 = new javax.swing.JToolBar();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
 
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
+        jPanel2.setFloatable(false);
+        jPanel2.setRollover(true);
 
         btnModeGroup.add(tgbHeadVsWorking);
         tgbHeadVsWorking.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/head_vs_working.png"))); // NOI18N
@@ -88,9 +92,49 @@ public class MultiDiffPanel extends javax.swing.JPanel {
         tgbIndexVsWorking.setFocusable(false);
         jPanel2.add(tgbIndexVsWorking);
 
-        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        jSeparator1.setPreferredSize(new java.awt.Dimension(2, 20));
-        jPanel2.add(jSeparator1);
+        jPanel1.setMaximumSize(new java.awt.Dimension(80, 32767));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 80, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 28, Short.MAX_VALUE)
+        );
+
+        jPanel2.add(jPanel1);
+
+        nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))); // NOI18N
+        nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.nextButton.toolTipText")); // NOI18N
+        nextButton.setFocusable(false);
+        nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jPanel2.add(nextButton);
+
+        prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))); // NOI18N
+        prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.prevButton.toolTipText")); // NOI18N
+        prevButton.setFocusable(false);
+        prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jPanel2.add(prevButton);
+
+        jPanel4.setMaximumSize(new java.awt.Dimension(30, 32767));
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 30, Short.MAX_VALUE)
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 28, Short.MAX_VALUE)
+        );
+
+        jPanel2.add(jPanel4);
 
         btnRefresh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/refresh.png"))); // NOI18N
         btnRefresh.setToolTipText(bundle.getString("MultiDiffPanel.btnRefresh.toolTipText")); // NOI18N
@@ -139,10 +183,13 @@ public class MultiDiffPanel extends javax.swing.JPanel {
     final javax.swing.JButton btnCommit = new javax.swing.JButton();
     private javax.swing.ButtonGroup btnModeGroup;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
-    final javax.swing.JToolBar jPanel2 = new javax.swing.JToolBar();
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JToolBar jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSplitPane splitPane;
+    private javax.swing.JPanel jPanel4;
+    final javax.swing.JButton nextButton = new javax.swing.JButton();
+    final javax.swing.JButton prevButton = new javax.swing.JButton();
+    final javax.swing.JSplitPane splitPane = new javax.swing.JSplitPane();
     final javax.swing.JToggleButton tgbHeadVsIndex = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbHeadVsWorking = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbIndexVsWorking = new javax.swing.JToggleButton();

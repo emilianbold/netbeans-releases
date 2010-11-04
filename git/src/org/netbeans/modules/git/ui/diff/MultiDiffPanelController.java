@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.git.ui.diff;
 
+import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -49,26 +51,62 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.KeyStroke;
+import org.netbeans.api.diff.DiffController;
+import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.client.GitClientExceptionHandler;
+import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
+import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.status.GitTableModel;
+import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.versioning.diff.DiffLookup;
+import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.diff.EditorSaveCookie;
+import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
+import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.TopComponent;
 
 /**
@@ -77,20 +115,57 @@ import org.openide.windows.TopComponent;
  */
 class MultiDiffPanelController implements ActionListener, PropertyChangeListener {
     private final VCSContext context;
-    private final String contextName;
     private EnumSet<Status> displayStatuses;
     private final DelegatingUndoRedo delegatingUndoRedo = new DelegatingUndoRedo();
     private Mode mode;
     private final MultiDiffPanel panel;
+    private AbstractAction nextAction;
+    private AbstractAction prevAction;
+    private JComponent infoPanelLoadingFromRepo;
+    static final Logger LOG = Logger.getLogger(MultiDiffPanelController.class.getName());
+    private DiffFileTable fileTable;
+    private static final RequestProcessor RP = new RequestProcessor("GitDiffWindow", 1, true); //NOI18N
+    private RequestProcessor.Task refreshNodesTask = RP.create(new RefreshNodesTask());
+    private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
+    private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
 
-    public MultiDiffPanelController (VCSContext context, Mode mode, String contextName) {
+    private boolean dividerSet;
+
+    // TODO Merge with GitVersioningPanelController
+
+    /**
+     * DIFF setups that we show in the DIFF view. Contents is changed when the user switches DIFF types or a file under the context changes.
+     */
+    private final Map<File, Setup> setups = new HashMap<File, Setup>();
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private final Map<File, EditorCookie> editorCookies = new HashMap<File, EditorCookie>();
+    private JComponent diffView;
+
+    private RequestProcessor.Task prepareTask;
+    private DiffPrepareTask dpt;
+
+    private File currentFile;
+    private boolean fileTableSetSelectedIndexContext;
+    private final DiffLookup lookup = new DiffLookup();
+
+    private GitProgressSupport statusRefreshSupport;
+
+    public MultiDiffPanelController (VCSContext context, Mode mode) {
         this.context = context;
-        this.contextName = contextName;
         this.mode = mode;
         panel = new MultiDiffPanel();
-        setPanelMode();
-        initDisplayStatus();
+        initFileTable();
+        initToolbarButtons();
+        initNextPrevActions();
         attachListeners();
+        setPanelMode();
+        refreshComponents();
     }
 
     void setTopComponent (TopComponent tc) {
@@ -118,23 +193,157 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
     }
 
     Lookup getLookup () {
-        return Lookups.fixed();
+        return lookup;
     }
 
-    boolean canClose () {
-        return true;
+    boolean canClose() {
+        if (setups.isEmpty()) {
+            return true;
+        }
+        SaveCookie[] saveCookies = getSaveCookies(true);
+        return (saveCookies.length == 0) || SaveBeforeClosingDiffConfirmation.allSaved(saveCookies);
     }
+
+    // <editor-fold defaultstate="collapsed" desc="save cookie support">
+    public SaveCookie[] getSaveCookies(boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        SaveCookie[] saveCookies = getSaveCookies(editorCookiesCopy);
+        return saveCookies;
+    }
+
+    public EditorCookie[] getEditorCookies(boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = getEditorCookiesIntern(ommitOpened);
+        int count = 0, length = editorCookiesCopy.length;
+        EditorCookie[] editorCookiesShorten = new EditorCookie[length];
+        for (int i = 0; i < length; i++) {
+            EditorCookie editorCookie = editorCookiesCopy[i];
+            if (editorCookie == null) {
+                continue;
+            }
+            editorCookiesShorten[count++] = editorCookie;
+        }
+        return CollectionUtils.shortenArray(editorCookiesShorten, count);
+    }
+
+    private EditorCookie[] getEditorCookiesIntern(boolean ommitOpened) {
+        EditorCookie[] editorCookiesCopy = editorCookies.values().toArray(new EditorCookie[editorCookies.values().size()]);
+        DiffUtils.cleanThoseUnmodified(editorCookiesCopy);
+        if (ommitOpened) {
+            DiffUtils.cleanThoseWithEditorPaneOpen(editorCookiesCopy);
+        }
+        return editorCookiesCopy;
+    }
+
+    private SaveCookie[] getSaveCookies(EditorCookie[] editorCookies) {
+        List<SaveCookie> proResult = new LinkedList<SaveCookie>();
+        Set<EditorCookie> editorCookieSet = new HashSet<EditorCookie>(Arrays.asList(editorCookies));
+        for (Map.Entry<File, EditorCookie> e : this.editorCookies.entrySet()) {
+            if (editorCookieSet.contains(e.getValue())) {
+                File baseFile = e.getKey();
+                FileObject fileObj = FileUtil.toFileObject(baseFile);
+                if (fileObj == null) {
+                    continue;
+                }
+                proResult.add(new EditorSaveCookie(e.getValue(), fileObj.getNameExt()));
+            }
+        }
+        return proResult.toArray(new SaveCookie[proResult.size()]);
+    }// </editor-fold>
 
     UndoRedo getUndoRedo () {
         return delegatingUndoRedo;
     }
 
     void componentClosed() {
-        
+        setSetups(Collections.<File, Setup>emptyMap(), Collections.<File, EditorCookie>emptyMap());
+        prevAction.setEnabled(false);
+        nextAction.setEnabled(false);
+        cancelBackgroundTasks();
+        setups.clear();
+        editorCookies.clear();
+    }
+
+    private void cancelBackgroundTasks() {
+        if (prepareTask != null) {
+            prepareTask.cancel();
+        }
+        GitProgressSupport supp = statusRefreshSupport;
+        if(supp != null) {
+            supp.cancel();
+        }
     }
 
     void requestActive() {
-        
+        fileTable.getTable().requestFocusInWindow();
+    }
+
+    private void displayDiffView() {
+        if (panel.splitPane != null) {
+            int gg = panel.splitPane.getDividerLocation();
+            panel.splitPane.setBottomComponent(diffView);
+            panel.splitPane.setDividerLocation(gg);
+        } else {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private void initNextPrevActions() {
+        nextAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-next.png"))) {  //NOI18N
+            {
+                putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.nextButton.toolTipText")); //NOI18N
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onNextButton();
+            }
+        };
+        prevAction = new AbstractAction(null, new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/git/resources/icons/diff-prev.png"))) { //NOI18N
+            {
+                putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.prevButton.toolTipText")); //NOI18N
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onPrevButton();
+            }
+        };
+        panel.nextButton.setAction(nextAction);
+        panel.prevButton.setAction(prevAction);
+    }
+
+    private void initFileTable () {
+        fileTable = new DiffFileTable(new GitTableModel<DiffNode>(new DiffNode[0]), this);
+        panel.splitPane.setTopComponent(fileTable.getComponent());
+        panel.splitPane.setBottomComponent(getInfoPanelLoading());
+    }
+
+    private void initToolbarButtons () {
+        if (context != null) {
+            panel.btnCommit.setEnabled(false);
+            panel.btnCheckout.setEnabled(false);
+        } else {
+            panel.btnCommit.setVisible(false);
+            panel.btnCheckout.setVisible(false);
+            panel.btnRefresh.setVisible(false);
+        }
+    }
+    
+    private JComponent getInfoPanelLoading () {
+        if (infoPanelLoadingFromRepo == null) {
+            infoPanelLoadingFromRepo = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
+        }
+        return infoPanelLoadingFromRepo;
+    }
+
+    private void refreshComponents () {
+        Setup setup = setups.get(currentFile);
+        DiffController view = setup == null ? null : setup.getView();
+        int currentDifferenceIndex = view != null ? view.getDifferenceIndex() : -1;
+        if (view != null) {
+            nextAction.setEnabled(currentDifferenceIndex < view.getDifferenceCount() - 1 || fileTable.getNextFile(currentFile) != null);
+        } else {
+            nextAction.setEnabled(false);
+        }
+        prevAction.setEnabled(currentDifferenceIndex > 0 || fileTable.getPrevFile(currentFile) != null);
     }
 
     private void attachListeners() {
@@ -172,30 +381,132 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
     private void onDisplayedStatusChanged () {
         if (panel.tgbHeadVsWorking.isSelected()) {
             mode = Mode.HEAD_VS_WORKING_TREE;
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
             GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             mode = Mode.HEAD_VS_INDEX;
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
             GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         } else {
             mode = Mode.INDEX_VS_WORKING_TREE;
+            setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
             GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
         }
     }
 
-    private void initDisplayStatus () {
-        mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-        panel.tgbHeadVsWorking.setSelected(true);
-        switch (mode) {
-            case HEAD_VS_WORKING_TREE:
-                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
-                break;
-            case HEAD_VS_INDEX:
-                displayStatuses = FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
-                break;
-            case INDEX_VS_WORKING_TREE:
-                displayStatuses = FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING;
-                break;
+    private void setDisplayStatuses (EnumSet<Status> displayStatuses) {
+        this.displayStatuses = displayStatuses;
+        refreshNodes();
+    }
+
+    private void setSetups (Map<File, Setup> setups, Map<File, EditorCookie> editorCookies) {
+        this.setups.clear();
+        this.setups.putAll(setups);
+        this.editorCookies.clear();
+        this.editorCookies.putAll(editorCookies);
+    }
+
+    private void onNextButton() {
+//        if (showingFileTable()) {
+//            currentIndex = fileTable.getSelectedIndex();
+//            currentModelIndex = fileTable.getSelectedModelIndex();
+//        }
+        DiffController view = setups.get(currentFile).getView();
+        if (view != null) {
+            int currentDifferenceIndex = view.getDifferenceIndex();
+            if (++currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
+                File nextFile = fileTable.getNextFile(currentFile);
+                if (nextFile != null) {
+                    setDiffIndex(nextFile, 0, true);
+                }
+            } else {
+                view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+            }
+        } else {
+            assert false : "Whats this?";
+//            if (++currentIndex >= setups.length) currentIndex = 0;
+//            setDiffIndex(currentIndex, 0, true);
         }
+        refreshComponents();
+    }
+
+    private void onPrevButton() {
+        DiffController view = setups.get(currentFile).getView();
+        if (view != null) {
+            int currentDifferenceIndex = view.getDifferenceIndex();
+            if (--currentDifferenceIndex < 0) {
+                File prevFile = fileTable.getPrevFile(currentFile);
+                if (prevFile != null) {
+                    setDiffIndex(prevFile, -1, true);
+                }
+            } else if (currentDifferenceIndex < view.getDifferenceCount()) {
+                view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
+            }
+        } else {
+            assert false : "Whats this?";
+//            if (--currentIndex < 0) currentIndex = setups.length - 1;
+//            setDiffIndex(currentIndex, -1, true);
+        }
+        refreshComponents();
+    }
+
+    private void setDiffIndex (File file, int location, boolean restartPrepareTask) {
+        currentFile = file;
+        Setup setup = setups.get(currentFile);
+        DiffController view = null;
+
+        if (setup != null) {
+            if (restartPrepareTask) {
+                if (dpt != null) {
+                    dpt.cancel();
+                }
+                startPrepareTask();
+            }
+            view = setup.getView();
+
+            // enable Select in .. action
+            FileObject fileObj = FileUtil.toFileObject(currentFile);
+            EditorCookie.Observable observableEditorCookie = null;
+            TopComponent tc = (TopComponent) panel.getClientProperty(TopComponent.class);
+            if (tc != null) {
+                Node node = setup.getNode();
+                tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
+            }
+            EditorCookie editorCookie = editorCookies.get(currentFile);
+            if (editorCookie instanceof EditorCookie.Observable) {
+                observableEditorCookie = (EditorCookie.Observable) editorCookie;
+            }
+
+            diffView = null;
+            if (view != null) {
+                fileTableSetSelectedIndexContext = true;
+                fileTable.setSelectedNodes(new File[] { currentFile });
+                fileTableSetSelectedIndexContext = false;
+                diffView = view.getJComponent();
+                diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
+                diffView.getActionMap().put("jumpPrev", prevAction);  // NOI18N
+                displayDiffView();
+                if (location == -1) {
+                    location = view.getDifferenceCount() - 1;
+                }
+                if (location >= 0 && location < view.getDifferenceCount()) {
+                    view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, location);
+                }
+            } else {
+                diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoContent"));
+                displayDiffView();
+            }
+            lookup.setData(fileObj, observableEditorCookie, diffView.getActionMap());
+        } else {
+            lookup.setData();
+            diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
+            lookup.setData(diffView.getActionMap());
+            displayDiffView();
+        }
+
+        delegatingUndoRedo.setDiffView(diffView);
+
+        refreshComponents();
     }
 
     @Override
@@ -212,7 +523,11 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
                     } else if (e.getSource() == panel.btnCommit) {
                         SystemAction.get(CommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
-                        // TODO
+                        statusRefreshSupport = SystemAction.get(StatusAction.class).scanStatus(context);
+                        statusRefreshSupport.getTask().waitFinished();
+                        if (!(statusRefreshSupport == null || statusRefreshSupport.isCanceled())) {
+                            refreshNodes();
+                        }
                     }
                 }
             }, 0);
@@ -221,7 +536,9 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
 
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
+        if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
+            refreshComponents();
+        } else if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
             if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
                 applyChange(changedEvent);
@@ -244,11 +561,15 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
-            // TODO
+            synchronized (applyChangeTask.changes) {
+                applyChangeTask.changes.add(event);
+            }
+            changeTask.schedule(1000);
         }
     }
 
     private void setPanelMode () {
+        panel.tgbHeadVsWorking.setSelected(true);
         switch (mode) {
             case HEAD_VS_WORKING_TREE:
                 panel.tgbHeadVsWorking.setSelected(true);
@@ -260,6 +581,292 @@ class MultiDiffPanelController implements ActionListener, PropertyChangeListener
                 panel.tgbIndexVsWorking.setSelected(true);
                 break;
         }
+        onDisplayedStatusChanged();
     }
 
+    private void updateSplitLocation () {
+        JComponent parent = (JComponent) panel.getParent();
+        Dimension dim = parent == null ? new Dimension() : parent.getSize();
+        if (dim.width <= 0 || dim.height <= 0) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    updateSplitLocation();
+                }
+            });
+            return;
+        }
+        JTable jt = fileTable.getTable();
+        int optimalLocation = jt.getPreferredSize().height + jt.getTableHeader().getPreferredSize().height;
+        if (optimalLocation > dim.height / 3) {
+            optimalLocation = dim.height / 3;
+        }
+        if (optimalLocation <= jt.getTableHeader().getPreferredSize().height) {
+            optimalLocation = jt.getTableHeader().getPreferredSize().height * 3;
+        }
+        if (dividerSet && panel.splitPane.getDividerLocation() <= optimalLocation) return;
+        panel.splitPane.setDividerLocation(optimalLocation);
+        dividerSet = true;
+    }
+
+    public void tableRowSelected (File[] selectedFiles) {
+        if (fileTableSetSelectedIndexContext) return;
+        setDiffIndex(selectedFiles.length == 1 ? selectedFiles[0] : null, 0, true);
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="refreshing tasks">
+    private void refreshNodes () {
+        if (context != null) {
+            refreshNodesTask.cancel();
+            refreshNodesTask.schedule(0);
+        }
+    }
+
+    private void startPrepareTask() {
+        Setup[] toInitialize = getSetupsToRefresh();
+        if (toInitialize.length > 0) {
+            dpt = new DiffPrepareTask(toInitialize);
+            prepareTask = Utils.createTask(dpt);
+            prepareTask.schedule(0);
+        }
+    }
+
+    private Setup[] getSetupsToRefresh () {
+        List<Setup> toRefresh = new LinkedList<Setup>(Collections.singletonList(setups.get(currentFile)));
+        // get neighbouring setups
+        for (int i = 1; i <= 2; ++i) {
+            for (int sign : new int[] { 1, -1 }) {
+                File file = fileTable.getNeighbouringFile(currentFile, sign * i);
+                if (file != null) {
+                    toRefresh.add(setups.get(file));
+                }
+            }
+        }
+        return toRefresh.toArray(new Setup[toRefresh.size()]);
+    }
+
+    private class RefreshViewTask {
+
+        protected void updateView() {
+            if (setups.isEmpty()) {
+                String noContentLabel = ""; //NOI18N
+                switch (mode) {
+                    case HEAD_VS_WORKING_TREE:
+                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_HeadWorking"); //NOI18N
+                        break;
+                    case HEAD_VS_INDEX:
+                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_HeadIndex"); //NOI18N
+                        break;
+                    case INDEX_VS_WORKING_TREE:
+                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_IndexWorking"); //NOI18N
+                        break;
+                }
+                fileTable.getComponent().setEnabled(false);
+                fileTable.getComponent().setPreferredSize(null);
+                Dimension dim = fileTable.getComponent().getPreferredSize();
+                fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                diffView = new NoContentPanel(noContentLabel);
+                displayDiffView();
+                nextAction.setEnabled(false);
+                prevAction.setEnabled(false);
+                panel.btnCommit.setEnabled(false);
+                panel.btnCheckout.setEnabled(false);
+            } else {
+                fileTable.getComponent().setEnabled(true);
+                fileTable.getComponent().setPreferredSize(null);
+                Dimension dim = fileTable.getComponent().getPreferredSize();
+                fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                panel.btnCommit.setEnabled(true);
+                panel.btnCheckout.setEnabled(true);
+            }
+            if (panel.splitPane != null) {
+                updateSplitLocation();
+            }
+            panel.revalidate();
+            panel.repaint();
+        }
+
+        protected Map<File, Setup> computeSetups(List<DiffNode> nodes) {
+            Map<File, Setup> newSetups = new HashMap<File, Setup>(nodes.size());
+            for (DiffNode node : nodes) {
+                newSetups.put(node.getFile(), new Setup(node, mode));
+            }
+            return newSetups;
+        }
+
+        protected Map<File, EditorCookie> getCookiesFromSetups(Map<File, Setup> localSetups) {
+            Setup[] retSetups = localSetups.values().toArray(new Setup[localSetups.values().size()]);
+            EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(retSetups);
+            Map<File, EditorCookie> map = new HashMap<File, EditorCookie>();
+            for (int i = 0; i < cookies.length; ++i) {
+                if (cookies[i] != null) {
+                    map.put(retSetups[i].getNode().getFile(), cookies[i]);
+                }
+            }
+            return map;
+        }
+    }
+
+    private final class RefreshNodesTask extends RefreshViewTask implements Runnable {
+
+        @Override
+        public void run() {
+            final List<DiffNode> nodes = new LinkedList<DiffNode>();
+            Git git = Git.getInstance();
+            File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
+            for (File f : interestingFiles) {
+                File root = git.getRepositoryRoot(f);
+                if (root != null) {
+                    nodes.add(new DiffNode(new GitFileNode(root, f), mode));
+                }
+            }
+            final Map<File, Setup> localSetups = computeSetups(nodes);
+            final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    dividerSet = false;
+                    setSetups(localSetups, cookies);
+                    fileTable.setNodes(new HashMap<File, EditorCookie>(cookies), nodes.toArray(new DiffNode[nodes.size()]));
+                    updateView();
+                }
+            });
+        }
+    }
+
+    /**
+     * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
+     */
+    private final class ApplyChangesTask extends RefreshViewTask implements Runnable {
+
+        private final Set<FileStatusCache.ChangedEvent> changes = new HashSet<FileStatusCache.ChangedEvent>();
+
+        @Override
+        public void run() {
+            final Set<FileStatusCache.ChangedEvent> events;
+            synchronized (changes) {
+                events = new HashSet<FileStatusCache.ChangedEvent>(changes);
+                changes.clear();
+            }
+            // remove irrelevant changes
+            for (Iterator<FileStatusCache.ChangedEvent> it = events.iterator(); it.hasNext();) {
+                FileStatusCache.ChangedEvent evt = it.next();
+                if (!affectsView(evt)) {
+                    it.remove();
+                }
+            }
+            Git git = Git.getInstance();
+            Collection<DiffNode> nodes = fileTable.getNodes();
+            Map<File, DiffNode> nodesAsMap = new HashMap<File, DiffNode>(nodes.size());
+            for (DiffNode node : nodes) {
+                nodesAsMap.put(node.getFile(), node);
+            }
+            // sort changes
+            final List<DiffNode> toRemove = new LinkedList<DiffNode>();
+            final List<DiffNode> toRefresh = new LinkedList<DiffNode>();
+            final List<DiffNode> toAdd = new LinkedList<DiffNode>();
+            for (FileStatusCache.ChangedEvent evt : events) {
+                FileInformation newInfo = evt.getNewInfo();
+                DiffNode node = nodesAsMap.get(evt.getFile());
+                if (newInfo.containsStatus(displayStatuses)) {
+                    if (node != null) {
+                        toRefresh.add(node);
+                    } else {
+                        File root = git.getRepositoryRoot(evt.getFile());
+                        if (root != null) {
+                            toAdd.add(new DiffNode(new GitFileNode(root, evt.getFile()), mode));
+                        }
+                    }
+                } else if (node != null) {
+                    toRemove.add(node);
+                }
+            }
+
+            // new setups and editor cookies
+            final Map<File, Setup> localSetups = computeSetups(toAdd);
+            localSetups.putAll(computeSetups(toRefresh));
+            final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    for (DiffNode node : toAdd) {
+                        setups.put(node.getFile(), localSetups.get(node.getFile()));
+                        editorCookies.put(node.getFile(), cookies.get(node.getFile()));
+                    }
+                    for (DiffNode node : toRemove) {
+                        setups.remove(node.getFile());
+                        editorCookies.remove(node.getFile());
+                    }
+                    fileTable.updateNodes(new HashMap<File, EditorCookie>(MultiDiffPanelController.this.editorCookies), toRemove, toRefresh, toAdd);
+                    if (fileTable.getTable().getRowCount() == 1) {
+                        fileTable.getTable().getSelectionModel().addSelectionInterval(0, 0);
+                    }
+                    updateView();
+                }
+            });
+        }
+    }
+
+    private class DiffPrepareTask implements Runnable, Cancellable {
+
+        private final Setup[] prepareSetups;
+        private boolean canceled;
+
+        public DiffPrepareTask(Setup[] prepareSetups) {
+            assert EventQueue.isDispatchThread();
+            this.prepareSetups = prepareSetups;
+        }
+
+        @Override
+        public void run() {
+            canceled = false;
+            IOException exception = null;
+            for (final Setup setup : prepareSetups) {
+                if (setup.getView() == null) {
+                    if (Thread.interrupted() || canceled) {
+                        return;
+                    }
+                    try {
+                        setup.initSources();  // slow network I/O
+                        if (Thread.interrupted() || canceled) {
+                            return;
+                        }
+                        StreamSource ss1 = setup.getFirstSource();
+                        StreamSource ss2 = setup.getSecondSource();
+                        final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
+                        view.addPropertyChangeListener(MultiDiffPanelController.this);
+                        if (Thread.interrupted() || canceled) {
+                            return;
+                        }
+                        setup.setView(view);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (setup.getBaseFile().equals(currentFile)) {
+                                    setDiffIndex(setup.getBaseFile(), 0, false);
+                                }
+                            }
+                        });
+                    } catch (IOException e) {
+                        if (!GitClientExceptionHandler.isCancelledAction(e)) {
+                            LOG.log(Level.INFO, null, e);
+                            if (exception == null) {
+                                // save only the first exception
+                                exception = e;
+                            }
+                        }
+                    }
+                }
+            }
+            if (exception != null) {
+                // notify user of the failure
+                GitClientExceptionHandler.notifyException(exception, true);
+            }
+        }
+
+        @Override
+        public boolean cancel() {
+            return this.canceled = true;
+        }
+    }// </editor-fold>
 }
