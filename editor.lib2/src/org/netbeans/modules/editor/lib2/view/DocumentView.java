@@ -478,8 +478,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
                 ((EditorTabExpander) tabExpander).updateTabSize();
                 if (isBuildable()) {
                     LOG.fine("viewUpdates.reinitViews()\n");
-                    viewUpdates.reinitViews();
+                    // Signal early that the views will be valid - otherwise preferenceChange()
+                    // that calls getPreferredSpan() would attempt to reinit the views again
+                    // (failing in HighlightsViewFactory on usageCount).
                     childrenValid = true;
+                    viewUpdates.reinitViews();
                 }
             }
         }
