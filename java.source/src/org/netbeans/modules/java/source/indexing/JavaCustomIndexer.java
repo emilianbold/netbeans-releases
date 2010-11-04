@@ -138,11 +138,11 @@ public class JavaCustomIndexer extends CustomIndexer {
             final ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
             final ClassPath compilePath = ClassPath.getClassPath(root, ClassPath.COMPILE);
             if (sourcePath == null || bootPath == null || compilePath == null) {
-                JavaIndex.LOG.warning("Ignoring root with no ClassPath: " + FileUtil.getFileDisplayName(root)); // NOI18N
+                JavaIndex.LOG.log(Level.WARNING, "Ignoring root with no ClassPath: {0}", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
             }
             if (!Arrays.asList(sourcePath.getRoots()).contains(root)) {
-                JavaIndex.LOG.warning("Source root: " + FileUtil.getFileDisplayName(root) + " is not on its sourcepath"); // NOI18N
+                JavaIndex.LOG.log(Level.WARNING, "Source root: {0} is not on its sourcepath", FileUtil.getFileDisplayName(root)); // NOI18N
                 return;
             }
             final List<Indexable> javaSources = new ArrayList<Indexable>();
@@ -287,7 +287,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             return VirtualSourceProviderQuery.translate(virtualSources, root);
         } catch (IllegalArgumentException e) {
             //Called on non local fs => not supported, log and ignore.
-            JavaIndex.LOG.warning("Virtual sources in the root: " + rootURL +" are ignored due to: " + e.getMessage()); //NOI18N
+            JavaIndex.LOG.log(Level.WARNING, "Virtual sources in the root: {0} are ignored due to: {1}", new Object[]{rootURL, e.getMessage()}); //NOI18N
             return Collections.<CompileTuple>emptySet();
         }
     }
@@ -317,6 +317,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 return;
             }
             ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Void>() {
+                @Override
                 public Void run() throws IOException, InterruptedException {
                     try {
                         final JavaParsingContext javaContext = new JavaParsingContext(context);
@@ -339,7 +340,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         javaContext.uq.typesEvent(null, removedTypes, null);
                         return null;
                     } catch (NoSuchAlgorithmException ex) {
-                        throw (IOException) new IOException().initCause(ex);
+                        throw new IOException(ex);
                     }
                 }
             });
@@ -417,6 +418,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
 
+                        @Override
                         public boolean accept(File dir, String name) {
                             for (int i = 0; i < patterns.length; i++) {
                                 if (name.startsWith(patterns[i])) {
@@ -505,6 +507,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             final String[] patterns = new String[] {fileName + '.', fileName + '$'}; //NOI18N
             File parent = file.getParentFile();
             FilenameFilter filter = new FilenameFilter() {
+                @Override
                 public boolean accept(File dir, String name) {
                     if (!name.endsWith(FileObjects.SIG)) {
                         return false;
@@ -668,7 +671,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                     break;
             }
         } catch (TopologicalSortException ex) {
-            JavaIndex.LOG.warning("Cycle in the source root dependencies detected: " + ex.unsortableSets()); //NOI18N
+            JavaIndex.LOG.log(Level.WARNING, "Cycle in the source root dependencies detected: {0}", ex.unsortableSets()); //NOI18N
             List part = ex.partialSort();
             part.retainAll(depRoots);
             depRoots = part;
@@ -757,8 +760,10 @@ public class JavaCustomIndexer extends CustomIndexer {
         public boolean scanStarted(final Context context) {
             try {
                 boolean classIndexConsistent = ClassIndexManager.getDefault().prepareWriteLock(new IndexManager.Action<Boolean>() {
+                    @Override
                     public Boolean run() throws IOException, InterruptedException {
                         return IndexManager.writeAccess(new IndexManager.Action<Boolean>() {
+                            @Override
                             public Boolean run() throws IOException, InterruptedException {
                                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
                                 if (uq == null) {
@@ -841,6 +846,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             final JavaFileFilterListener ffl = JavaFileFilterListener.getDefault();
             try {
                 cim.prepareWriteLock(new IndexManager.Action<Void>() {
+                    @Override
                     public Void run() throws IOException, InterruptedException {
                         for (URL removedRoot : removedRoots) {
                             cim.removeRoot(removedRoot);
@@ -913,12 +919,15 @@ public class JavaCustomIndexer extends CustomIndexer {
         public ErrorConvertorImpl(ErrorKind errorKind) {
             this.errorKind = errorKind;
         }
+        @Override
         public ErrorKind getKind(Diagnostic<?> t) {
             return t.getKind() == Kind.ERROR ? errorKind : ErrorKind.WARNING;
         }
+        @Override
         public int getLineNumber(Diagnostic<?> t) {
             return (int) t.getLineNumber();
         }
+        @Override
         public String getMessage(Diagnostic<?> t) {
             return t.getMessage(null);
         }
