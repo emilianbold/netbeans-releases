@@ -242,13 +242,13 @@ public class JBProperties {
                 Collections.addAll(commonLibs, "jboss-servlet-api_3.0_spec.jar", // NOI18N
                     "jboss-jsp-api_2.2_spec.jar", "jboss-el-api_2.2_spec.jar", // NOI18N
                     "mail.jar", "jboss-jsr77.jar", "jboss-ejb-api_3.1_spec.jar", // NOI18N
-                    "hibernate-jpa-2.0-api.jar", "jbossws-common.jar", "jbossws-framework.jar", // NOI18N
+                    "hibernate-jpa-2.0-api.jar", "hibernate-entitymanager.jar", "jbossws-common.jar", "jbossws-framework.jar", // NOI18N
                     "jbossws-jboss60.jar", "jbossws-native-core.jar", "jbossws-spi.jar"); // NOI18N
             } else {
                 // Add common libs for JBoss 5.x
                 Collections.addAll(commonLibs, "servlet-api.jar", // NOI18N
                     "jsp-api.jar", "el-api.jar", "mail.jar", "jboss-jsr77.jar", //NOI18N
-                    "ejb3-persistence.jar", "jbossws-native-jaxws.jar", // NOI18N
+                    "ejb3-persistence.jar", "hibernate-entitymanager.jar","jbossws-native-jaxws.jar", // NOI18N
                     "jbossws-native-jaxws-ext.jar", "jbossws-native-jaxrpc.jar", // NOI18N
                     "jbossws-native-saaj.jar"); // NOI18N                
             }
