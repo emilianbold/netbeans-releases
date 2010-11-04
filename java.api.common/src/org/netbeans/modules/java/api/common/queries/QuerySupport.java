@@ -44,6 +44,7 @@ package org.netbeans.modules.java.api.common.queries;
 
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.api.java.queries.AnnotationProcessingQuery.Result;
@@ -100,20 +101,29 @@ public final class QuerySupport {
      * @param helper {@link AntProjectHelper} used for resolving files, e.g. output directory.
      * @param evaluator {@link PropertyEvaluator} used for obtaining project properties.
      * @param srcRoots a list of source roots.
-     * @param testRoots a list of test roots.
+     * @param testRoots a list of test roots, may be null if the project does not support tests.
      * @param binaryProperties array of property names of binary artifacts produced by this project, e.g. dist.jar
      * @param testBinaryProperties array of property names of test binary artifacts produced by this project, e.g. build.test.classes.dir
+     * If the testRoots parameter is null this parameter has to be null as well.
      * @return {@link SourceForBinaryQueryImplementation} to provide information about where Java sources can be found.
      * @see SourceForBinaryQueryImplementation
      * @since org.netbeans.modules.java.api.common/0 1.3
      */
-    public static SourceForBinaryQueryImplementation createCompiledSourceForBinaryQuery(AntProjectHelper helper,
-            PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots, String[] binaryProperties, String[] testBinaryProperties) {
+    public static SourceForBinaryQueryImplementation createCompiledSourceForBinaryQuery(
+            @NonNull AntProjectHelper helper,
+            @NonNull PropertyEvaluator evaluator,
+            @NonNull SourceRoots srcRoots,
+            @NullAllowed SourceRoots testRoots,
+            @NonNull String[] binaryProperties,
+            @NullAllowed String[] testBinaryProperties) {
         Parameters.notNull("helper", helper); // NOI18N
         Parameters.notNull("evaluator", evaluator); // NOI18N
         Parameters.notNull("srcRoots", srcRoots); // NOI18N
         Parameters.notNull("binaryProperties", binaryProperties); // NOI18N
-
+        final boolean validTestParams = testRoots == null ? testBinaryProperties == null : testBinaryProperties != null;
+        if (!validTestParams) {
+            throw new IllegalArgumentException("Both testRoots and testBinaryProperties have to be null or non null");  //NOI18N
+        }
         return new CompiledSourceForBinaryQueryImpl(helper, evaluator, srcRoots, testRoots, binaryProperties, testBinaryProperties);
     }
 
@@ -167,18 +177,20 @@ public final class QuerySupport {
      * @param helper {@link AntProjectHelper} used for creating a query itself.
      * @param evaluator a {@link PropertyEvaluator property evaluator} to interpret paths with.
      * @param srcRoots a list of source roots to treat as sharable.
-     * @param testRoots a list of test roots to treat as sharable.
+     * @param testRoots a list of test roots to treat as sharable, may be null if the project does not support tests
      * @param additionalSourceRoots additional paths to treat as sharable (just pure property names, do not
      *          use <i>${</i> and <i>}</i> characters). Can be <code>null</code>.
      * @return a {@link SharabilityQueryImplementation} to provide information about files sharability.
      */
-    public static SharabilityQueryImplementation createSharabilityQuery(AntProjectHelper helper,
-            PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots,
-            String... additionalSourceRoots) {
+    public static SharabilityQueryImplementation createSharabilityQuery(
+            final @NonNull AntProjectHelper helper,
+            final @NonNull PropertyEvaluator evaluator,
+            final @NonNull SourceRoots srcRoots,
+            final @NullAllowed SourceRoots testRoots,
+            final @NullAllowed String... additionalSourceRoots) {
         Parameters.notNull("helper", helper); // NOI18N
         Parameters.notNull("evaluator", evaluator); // NOI18N
         Parameters.notNull("srcRoots", srcRoots); // NOI18N
-        Parameters.notNull("testRoots", testRoots); // NOI18N
 
         return new SharabilityQueryImpl(helper, evaluator, srcRoots, testRoots, additionalSourceRoots);
     }

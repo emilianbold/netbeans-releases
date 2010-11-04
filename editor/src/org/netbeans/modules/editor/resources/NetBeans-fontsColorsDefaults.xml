@@ -58,6 +58,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="operator"/>
     <fontcolor name="string" foreColor="ffCE7B00"/>
     <fontcolor name="separator"/>
+    <fontcolor name="warning" waveUnderlined="yellow"/>
     <fontcolor name="whitespace" foreColor="black"/>
     
     <!-- OO languages -->    

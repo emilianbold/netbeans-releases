@@ -271,7 +271,7 @@ final class WrapInfoUpdater {
         if (childViewPart == null) {
             double childWidth = nextVisualOffset - visualOffset;
             WrapLine wl = wrapLine();
-            if (!wl.isInited()) {
+            if (!wl.hasFullViews()) {
                 wl.startViewIndex = childIndex;
             }
             wl.endViewIndex = childIndex + 1;
@@ -313,14 +313,11 @@ final class WrapInfoUpdater {
                 : "startIndex=" + startIndex + " not in WL " + wrapLine;
         double startVisualOffset = paragraphView.getViewVisualOffset(startIndex);
         x -= (visualOffset - startVisualOffset);
-                ;
-        if (startIndex == wrapLine.startViewIndex) {
-            wrapLine.resetFullViews();
+        wrapLine.endViewIndex = startIndex;
+        if (!wrapLine.hasFullViews()) {
             if (wrapLine.startViewPart == null) {
                 wrapLineNonEmpty = false;
             }
-        } else {
-            wrapLine.endViewIndex = startIndex;
         }
         initChildVars(startIndex, startVisualOffset);
     }
@@ -328,7 +325,7 @@ final class WrapInfoUpdater {
     private void addStartPart(EditorView startPart) {
         assert (!wrapLineNonEmpty);
         assert (wrapLine().startViewPart == null);
-        assert (wrapLine().startViewIndex == -1);
+        assert !wrapLine().hasFullViews();
         assert (x == 0f);
         wrapLine().startViewPart = startPart;
         wrapLine().startViewX = childViewPartWidth;
@@ -343,7 +340,7 @@ final class WrapInfoUpdater {
     
     private void removeStartPart() {
         assert (wrapLine.startViewPart != null);
-        assert (wrapLine.isInited());
+        assert (!wrapLine.hasFullViews());
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  Removed startViewPart x=" + x + " => 0."); // NOI18N
             logWrapLineAndX(0f, x);
