@@ -140,25 +140,29 @@ public final class ParagraphViewChildren extends EditorBoxViewChildren<EditorVie
         boolean heightChanged = (origHeight != height);
 
         if (alloc != null) {
-            Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
             if (wrapInfo == null) {
-                repaintBounds.x += visualUpdate.visualOffset;
-                repaintBounds.width -= visualUpdate.visualOffset;
+                super.updateLayout(boxView, visualUpdate, alloc);
             } else {
-                // Possibly improve by computing exact bounds
+                Rectangle2D.Double repaintBounds = ViewUtils.shape2Bounds(alloc);
+                if (wrapInfo == null) {
+                    repaintBounds.x += visualUpdate.visualOffset;
+                    repaintBounds.width -= visualUpdate.visualOffset;
+                } else {
+                    // Possibly improve by computing exact bounds
+                }
+                if (widthChanged) {
+                    visualUpdate.markWidthChanged();
+                    repaintBounds.width = EXTEND_TO_END;
+                } else { // Just repaint the modified area (of the same size)
+                    // Leave the whole visible width for repaint
+                    //repaintBounds.width = removedSpan;
+                }
+                if (heightChanged) {
+                    visualUpdate.markHeightChanged();
+                    repaintBounds.height = EXTEND_TO_END;
+                } // else: leave the repaintBounds.height set to alloc's height
+                visualUpdate.repaintBounds = ViewUtils.toRect(repaintBounds);
             }
-            if (widthChanged) {
-                visualUpdate.markWidthChanged();
-                repaintBounds.width = EXTEND_TO_END;
-            } else { // Just repaint the modified area (of the same size)
-                // Leave the whole visible width for repaint
-                //repaintBounds.width = removedSpan;
-            }
-            if (heightChanged) {
-                visualUpdate.markHeightChanged();
-                repaintBounds.height = EXTEND_TO_END;
-            } // else: leave the repaintBounds.height set to alloc's height
-            visualUpdate.repaintBounds = ViewUtils.toRect(repaintBounds);
 
         } else { // Null alloc => compatible operation
             if (widthChanged || heightChanged) {
