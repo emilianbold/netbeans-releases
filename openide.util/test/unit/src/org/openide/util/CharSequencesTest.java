@@ -57,6 +57,13 @@ public class CharSequencesTest extends NbTestCase {
         super(testName);
     }
 
+    @Test
+    public void testUmlaut() {
+        // #189988 -  Netbeans IDE does not find source files with umlauts in class name
+        String name = "ProbenSchlüssel.java";
+        CharSequence cs = CharSequences.create(name);
+        assertEquals("incorrect conversion", cs.toString(), name);
+    }
     /**
      * Test of create method, of class CharSequences.
      */
