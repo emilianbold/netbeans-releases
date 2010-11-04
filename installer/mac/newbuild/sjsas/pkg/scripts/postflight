@@ -97,6 +97,6 @@ echo "Updating sjsas security files permissions to $ownership"
 
 #create ST for NB
 #//TODO
-"$script_dir"/servicetag.sh "gf-v2.1" "$2"
+#"$script_dir"/servicetag.sh "gf-v2.1" "$2"
 
 
