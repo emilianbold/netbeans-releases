@@ -118,12 +118,23 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
 
     protected void init(CsmScope scope, AST ast, boolean register) {
         initScope(scope);
-        initQualifiedName(scope, ast);
         temporaryRepositoryRegistration(register, this);
+        initClassDefinition(scope);
         render(ast, !register);
-        leftBracketPos = initLeftBracketPos(ast);
         if (register) {
             register(getScope(), false);
+        }
+    }
+
+    private void initClassDefinition(CsmScope scope) {
+        ClassImpl.ClassMemberForwardDeclaration fd = findClassDefinition(scope);
+        if (fd != null && CsmKindUtilities.isClass(this)) {
+            fd.setCsmClass((CsmClass) this);
+            CsmClass containingClass = fd.getContainingClass();
+            if (containingClass != null) {
+                // this is our real scope, not current namespace
+                initScope(containingClass);
+            }
         }
     }
 

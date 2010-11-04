@@ -143,6 +143,11 @@ public class NameHolder {
         return end;
     }
 
+    @Override
+    public String toString() {
+        return "name=" + name + ", start=" + start + ", end=" + end + ", isMacroExpanded=" + isMacroExpanded; // NOI18N
+    }
+
     public void addReference(CsmFile file, final CsmObject decl) {
         if (file instanceof FileImpl) {
             if (start > 0 && !isMacroExpanded) {
@@ -432,9 +437,12 @@ public class NameHolder {
             }
             else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
 		if( qualified ) {
-                    start = OffsetableBase.getStartOffset(token);
-                    isMacroExpanded = isMacroExpandedToken(token);
-                    end = OffsetableBase.getEndOffset(token);
+                    // for start/end use last token's offsets
+                    AST lastNamePart = AstUtil.getLastChild(token);
+                    start = OffsetableBase.getStartOffset(lastNamePart);
+                    isMacroExpanded = isMacroExpandedToken(lastNamePart);
+                    end = OffsetableBase.getEndOffset(lastNamePart);
+                    // but return full name as requested
 		    return AstUtil.getText(token);
 		}
                 AST last = AstUtil.getLastChild(token);

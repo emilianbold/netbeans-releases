@@ -140,12 +140,11 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
      * See BZ #131625
      * @return  For "struct A::B" above, the method returns its forward declaration "struct B;"
      */
-    protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition() {
-        CsmScope scope = getScope();
+    protected final ClassImpl.ClassMemberForwardDeclaration findClassDefinition(CsmScope scope) {
         if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
             String n = name.toString();
-            String prefix = n.substring(0, n.indexOf("::")); // NOI18N
-            String suffix = n.substring(n.indexOf("::") + 2); // NOI18N
+            String prefix = n.substring(0, n.lastIndexOf("::")); // NOI18N
+            String suffix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
             if (CsmKindUtilities.isNamespace(scope)) {
                 CsmNamespace ns = (CsmNamespace) scope;
                 String qn;
@@ -190,14 +189,19 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             // in the case of classes/enums inside bodies
             this.scopeRef = scope;
         }
+        initQualifiedName(scope);
     }
 
     /** Initializes qualified name */
-    protected final void initQualifiedName(CsmScope scope, AST ast) {
+    protected final void initQualifiedName(CsmScope scope) {
         CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
         if (CsmKindUtilities.isNamespace(scope)) {
             qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
         } else if (CsmKindUtilities.isClass(scope)) {
+            String n = qualifiedNamePostfix.toString();
+            if (n.contains("::")) { // NOI18N
+                qualifiedNamePostfix = n.substring(n.lastIndexOf("::") + 2); // NOI18N
+            }
             qualifiedName = ((CsmClass) scope).getQualifiedName() + "::" + qualifiedNamePostfix; // NOI18N
         } else {
             qualifiedName = qualifiedNamePostfix;
@@ -228,10 +232,6 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     @Override
     protected boolean registerInProject() {
-        ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
-        if (fd != null && CsmKindUtilities.isClass(this)) {
-            fd.setCsmClass((CsmClass) this);
-        }
         return ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
     }
 
