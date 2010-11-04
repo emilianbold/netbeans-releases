@@ -104,6 +104,21 @@ public class CatTest extends AbstractGitTestCase {
         assertFile(f, getGoldenFile());
     }
 
+    public void testCatIndex () throws Exception {
+        File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File f = new File(folder, "testcat1");
+        copyFile(getGoldenFile(), f);
+        assertFile(getGoldenFile(), f);
+        GitClient client = getClient(workDir);
+        assertFalse(client.catIndexEntry(f, new FileOutputStream(new File("temp")), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        
+        add(f);
+
+        assertTrue(client.catIndexEntry(f, new FileOutputStream(f), ProgressMonitor.NULL_PROGRESS_MONITOR));
+        assertFile(f, getGoldenFile());
+    }
+
     public void testCatRemoved () throws Exception {
         File f = new File(workDir, "removed");
         copyFile(getGoldenFile(), f);

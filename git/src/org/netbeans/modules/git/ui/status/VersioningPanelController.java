@@ -101,13 +101,14 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
     private final StatusTable syncTable;
     private Mode mode;
+    private GitProgressSupport refreshStatusSupport;
 
     VersioningPanelController (GitVersioningTopComponent tc) {
         this.panel = new VersioningPanel();
 
         initDisplayStatus();
         onDisplayedStatusChanged();
-        syncTable = new StatusTable(new StatusTableModel());
+        syncTable = new StatusTable(new GitTableModel<StatusNode>(new StatusNode[0]));
         setVersioningComponent(syncTable.getComponent());
         
         attachListeners();
@@ -145,6 +146,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     }
 
     void cancelRefresh() {
+
     }
 
     private void attachListeners() {
@@ -220,8 +222,9 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                     } else if (e.getSource() == panel.btnCommit) {
                         SystemAction.get(CommitAction.class).performAction(context);
                     } else if (e.getSource() == panel.btnRefresh) {
-                        GitProgressSupport supp = SystemAction.get(StatusAction.class).scanStatus(context);
-                        if (!(supp == null || supp.isCanceled())) {
+                        refreshStatusSupport = SystemAction.get(StatusAction.class).scanStatus(context);
+                        refreshStatusSupport.getTask().waitFinished();
+                        if (!(refreshStatusSupport == null || refreshStatusSupport.isCanceled())) {
                             refreshNodes();
                         }
                     }

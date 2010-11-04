@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.git.ui.status;
+package org.netbeans.modules.git.ui.diff;
 
 import org.openide.windows.TopComponent;
 import org.openide.awt.MouseUtils;
@@ -55,6 +55,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -73,18 +75,23 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.diff.DiffAction;
+import org.netbeans.modules.git.ui.status.GitTableModel;
+import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
 import org.openide.awt.Mnemonics;
+import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -94,10 +101,20 @@ import org.openide.util.actions.SystemAction;
  * 
  * @author Maros Sandor
  */
-class StatusTable implements MouseListener, ListSelectionListener {
+class DiffFileTable implements MouseListener, ListSelectionListener {
+
+    // TODO Merge with StatusTable
 
     private ETable          table;
     private JScrollPane     component;
+    /**
+     * editor cookies belonging to the files being diffed.
+     * The array may contain {@code null}s if {@code EditorCookie}s
+     * for the corresponding files were not found.
+     *
+     * @see  #nodes
+     */
+    private Map<File, EditorCookie> editorCookies;
     
     private static final Comparator NodeComparator = new Comparator() {
         @Override
@@ -114,16 +131,19 @@ class StatusTable implements MouseListener, ListSelectionListener {
                     String s2 = (String) p2.getValue();
                     return s1.compareToIgnoreCase(s2);
                 } catch (Exception e) {
-                    VersioningPanelController.LOG.log(Level.INFO, null, e);
+                    MultiDiffPanelController.LOG.log(Level.INFO, null, e);
                     return 0;
                 }
             }
         }
     };
-    private final GitTableModel<StatusNode> tableModel;
+    private final GitTableModel<DiffNode> tableModel;
+    private PropertyChangeListener changeListener;
+    private final MultiDiffPanelController master;
     
-    public StatusTable (GitTableModel<StatusNode> model) {
+    public DiffFileTable (GitTableModel<DiffNode> model, MultiDiffPanelController master) {
         this.tableModel = model;
+        this.master = master;
         table = new ETable(tableModel);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         table.addMouseListener(this);
@@ -149,9 +169,9 @@ class StatusTable implements MouseListener, ListSelectionListener {
 
     private void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(StatusNode.NameProperty.NAME, String.class, StatusNode.NameProperty.DISPLAY_NAME, StatusNode.NameProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<String>(StatusNode.StatusProperty.NAME, String.class, StatusNode.StatusProperty.DISPLAY_NAME, StatusNode.StatusProperty.DESCRIPTION);
-        properties[2] = new ColumnDescriptor<String>(StatusNode.PathProperty.NAME, String.class, StatusNode.PathProperty.DISPLAY_NAME, StatusNode.PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<String>(DiffNode.NameProperty.NAME, String.class, DiffNode.NameProperty.DISPLAY_NAME, DiffNode.NameProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<String>(DiffNode.StatusProperty.NAME, String.class, DiffNode.StatusProperty.DISPLAY_NAME, DiffNode.StatusProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<String>(DiffNode.PathProperty.NAME, String.class, DiffNode.PathProperty.DISPLAY_NAME, DiffNode.PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
         for (int i = 0; i < table.getColumnCount(); ++i) {
             ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
@@ -187,7 +207,6 @@ class StatusTable implements MouseListener, ListSelectionListener {
             }
         }
         EventQueue.invokeLater(new Runnable() {
-
             @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
@@ -211,8 +230,6 @@ class StatusTable implements MouseListener, ListSelectionListener {
         Mnemonics.setLocalizedText(item, item.getText());
         menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"))); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new SystemActionBridge(SystemAction.get(DiffAction.class), NbBundle.getMessage(DiffAction.class, "LBL_DiffAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
         item = menu.add(new SystemActionBridge(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"))); //NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
@@ -248,7 +265,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
             if (row == -1) {
                 return;
             }
-            StatusNode node = tableModel.getNode(table.convertRowIndexToModel(row));
+            DiffNode node = tableModel.getNode(table.convertRowIndexToModel(row));
             Action action = node.getPreferredAction();
             if (action != null && action.isEnabled()) {
                 action.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, node.getFile().getAbsolutePath()));
@@ -261,7 +278,7 @@ class StatusTable implements MouseListener, ListSelectionListener {
         if (e.getValueIsAdjusting()) {
             return;
         }
-        List<StatusNode> selectedNodes = new ArrayList<StatusNode>();
+        List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
         ListSelectionModel selection = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);
         if (tc == null) {
@@ -278,36 +295,37 @@ class StatusTable implements MouseListener, ListSelectionListener {
             }
         }
         // this method may be called outside of AWT if a node fires change events from some other thread, see #79174
-        final Node[] nodeArray = selectedNodes.toArray(new Node[selectedNodes.size()]);
-        if (SwingUtilities.isEventDispatchThread()) {
-            tc.setActivatedNodes(nodeArray);
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    tc.setActivatedNodes(nodeArray);
+        final DiffNode[] nodeArray = selectedNodes.toArray(new DiffNode[selectedNodes.size()]);
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                File[] selectedFiles = new File[nodeArray.length];
+                for (int i = 0; i < nodeArray.length; ++i) {
+                    selectedFiles[i] = nodeArray[i].getFile();
                 }
-            });
-        }
+                master.tableRowSelected(selectedFiles);
+                tc.setActivatedNodes(nodeArray);
+            }
+        });
     }// </editor-fold>
 
-    private File[] getSelectedFiles() {
+    File[] getSelectedFiles() {
         int[] selection = table.getSelectedRows();
         List<File> files = new LinkedList<File>();
         for (int i : selection) {
-            StatusNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
+            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
             files.add(selectedNode.getFile());
         }
         return files.toArray(new File[files.size()]);
     }
 
-    private void setSelectedNodes (File[] selectedFiles) {
+    void setSelectedNodes (File[] selectedFiles) {
         Set<File> files = new HashSet<File>(Arrays.asList(selectedFiles));
         ListSelectionModel selection = table.getSelectionModel();
         selection.setValueIsAdjusting(true);
         selection.clearSelection();
         for (int i = 0; i < table.getRowCount(); ++i) {
-            StatusNode node = tableModel.getNode(table.convertRowIndexToModel(i));
+            DiffNode node = tableModel.getNode(table.convertRowIndexToModel(i));
             if (files.contains(node.getFile())) {
                 selection.addSelectionInterval(i, i);
             }
@@ -315,25 +333,113 @@ class StatusTable implements MouseListener, ListSelectionListener {
         selection.setValueIsAdjusting(false);
     }
 
-    void setNodes (StatusNode[] nodes) {
+    private void setNodes (DiffNode[] nodes) {
         File[] selectedFiles = getSelectedFiles();
         tableModel.setNodes(nodes);
         setSelectedNodes(selectedFiles);
+        if (selectedFiles.length == 0 && nodes.length > 0) {
+            table.getSelectionModel().addSelectionInterval(0, 0);
+        }
     }
 
-    Collection<StatusNode> getNodes () {
+    void setNodes (Map<File, EditorCookie> editorCookies, DiffNode[] nodes) {
+        setEditorCookies(editorCookies);
+        setNodes(nodes);
+    }
+
+    Collection<DiffNode> getNodes () {
         return tableModel.getNodes();
     }
 
-    void updateNodes (List<StatusNode> toRemove, List<StatusNode> toRefresh, List<StatusNode> toAdd) {
+    void updateNodes (Map<File, EditorCookie> editorCookies, List<DiffNode> toRemove, List<DiffNode> toRefresh, List<DiffNode> toAdd) {
+        setEditorCookies(editorCookies);
+        updateNodes(toRemove, toRefresh, toAdd);
+    }
+
+    private void updateNodes (List<DiffNode> toRemove, List<DiffNode> toRefresh, List<DiffNode> toAdd) {
         File[] selectedFiles = getSelectedFiles();
-        for (StatusNode node : toRefresh) {
+        for (DiffNode node : toRefresh) {
             node.refresh();
         }
         tableModel.remove(toRemove);
         tableModel.add(toAdd);
         tableModel.fireTableDataChanged();
         setSelectedNodes(selectedFiles);
+    }
+
+    private void setEditorCookies (Map<File, EditorCookie> editorCookies) {
+        this.editorCookies = editorCookies;
+        changeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent e) {
+                Object source = e.getSource();
+                String propertyName = e.getPropertyName();
+                if (EditorCookie.Observable.PROP_MODIFIED.equals(propertyName) && (source instanceof EditorCookie.Observable)) {
+                    final EditorCookie.Observable cookie = (EditorCookie.Observable) source;
+                    Mutex.EVENT.readAccess(new Runnable () {
+                        @Override
+                        public void run() {
+                            for (int i = 0; i < tableModel.getRowCount(); ++i) {
+                                if (DiffFileTable.this.editorCookies.get(tableModel.getNode(i).getFile()) == cookie) {
+                                    tableModel.fireTableCellUpdated(i, 0);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        };
+        for (Map.Entry<File, EditorCookie> e : editorCookies.entrySet()) {
+            EditorCookie editorCookie = e.getValue();
+            if (editorCookie instanceof EditorCookie.Observable) {
+                ((EditorCookie.Observable) editorCookie).addPropertyChangeListener(WeakListeners.propertyChange(changeListener, editorCookie));
+            }
+        }
+    }
+
+    JTable getTable () {
+        return table;
+    }
+
+    File getNextFile (File file) {
+        return getNeighbouringFile(file, 1);
+    }
+
+    File getPrevFile (File file) {
+        return getNeighbouringFile(file, -1);
+    }
+    
+    File getNeighbouringFile (File file, int indexDelta) {
+        assert EventQueue.isDispatchThread();
+        int tableIndex = findIndex(file);
+        File neighbour = null;
+        if (tableIndex > -1) {
+            tableIndex += indexDelta;
+            if (tableIndex >= 0 && tableIndex < table.getRowCount()) {
+                neighbour = tableModel.getNode(table.convertRowIndexToModel(tableIndex)).getFile();
+            }
+        }
+        return neighbour;
+    }
+
+    int findIndex (File file) {
+        // try faster search among selected rows
+        int[] selection = table.getSelectedRows();
+        for (int i : selection) {
+            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
+            if (selectedNode.getFile().equals(file)) {
+                return i;
+            }
+        }
+        // slower, search among all rows
+        for (int i = 0; i < table.getRowCount(); ++i) {
+            DiffNode selectedNode = tableModel.getNode(table.convertRowIndexToModel(i));
+            if (selectedNode.getFile().equals(file)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static class ColumnDescriptor<T> extends ReadOnly<T> {
@@ -356,11 +462,15 @@ class StatusTable implements MouseListener, ListSelectionListener {
         public Component getTableCellRendererComponent (JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer;
             int modelColumnIndex = table.convertColumnIndexToModel(column);
-            StatusNode node = null;
+            DiffNode node = null;
             if (modelColumnIndex == 0) {
                 node = tableModel.getNode(table.convertRowIndexToModel(row));
-                if (!isSelected) {
-                    value = "<html>" + node.getHtmlDisplayName(); // NOI18N
+                String htmlDisplayName = DiffUtils.getHtmlDisplayName(node, isModified(node.getFile()), isSelected);
+                if (GitModuleConfig.getDefault().isExcludedFromCommit(node.getFile().getAbsolutePath())) {
+                    htmlDisplayName = "<s>" + (htmlDisplayName == null ? node.getFileNode().getName() : htmlDisplayName) + "</s>"; //NOI18N
+                }
+                if (htmlDisplayName != null) {
+                    value = "<html>" + htmlDisplayName;                 //NOI18N
                 }
             }
             if (modelColumnIndex == 2) {
@@ -376,6 +486,11 @@ class StatusTable implements MouseListener, ListSelectionListener {
                 ((JComponent) renderer).setToolTipText(path);
             }
             return renderer;
+        }
+
+        private boolean isModified (File file) {
+            EditorCookie editorCookie = editorCookies.get(file);
+            return (editorCookie != null) ? editorCookie.isModified() : false;
         }
     }
 }

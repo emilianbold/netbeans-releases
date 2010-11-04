@@ -47,12 +47,14 @@ import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -80,8 +82,7 @@ public class StatusNode extends AbstractNode {
         if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
             return new OpenInEditorAction(new File[] { getFile() });
         } else {
-            // Diff
-            return new OpenInEditorAction(new File[] { getFile() });
+            return SystemAction.get(DiffAction.class);
         }
     }
 
@@ -102,15 +103,20 @@ public class StatusNode extends AbstractNode {
         return node.getInformation().annotateNameHtml(nameProperty.getValue());
     }
 
+    @Override
+    public String getName() {
+        return node.getName();
+    }
+
     public File getFile() {
         return node.getFile();
     }
 
-    GitFileNode getFileNode() {
+    public GitFileNode getFileNode() {
         return node;
     }
 
-    void refresh() {
+    public void refresh() {
         // do something when needed
     }
 
@@ -128,11 +134,11 @@ public class StatusNode extends AbstractNode {
         public abstract T getValue ();
     }
 
-    static class PathProperty extends NodeProperty<String> {
+    public static class PathProperty extends NodeProperty<String> {
         private String shortPath;
-        static final String NAME = "path"; //NOI18N
-        static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Path.DisplayName"); //NOI18N
-        static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Path.Description"); //NOI18N
+        public static final String NAME = "path"; //NOI18N
+        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Path.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Path.Description"); //NOI18N
 
         public PathProperty (StatusNode statusNode) {
             super(NAME, String.class, DISPLAY_NAME, DESCRIPTION); // NOI18N
@@ -146,10 +152,10 @@ public class StatusNode extends AbstractNode {
         }
     }
 
-    static class NameProperty extends NodeProperty<String> {
-        static final String NAME = "name"; //NOI18N
-        static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_File.DisplayName"); //NOI18N
-        static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_File.Description"); //NOI18N
+    public static class NameProperty extends NodeProperty<String> {
+        public static final String NAME = "name"; //NOI18N
+        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_File.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_File.Description"); //NOI18N
         private final GitFileNode fileNode;
 
         public NameProperty (StatusNode statusNode) {
@@ -165,10 +171,10 @@ public class StatusNode extends AbstractNode {
     }
 
     private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
-    static class StatusProperty extends NodeProperty<String> {
-        static final String NAME = "status"; //NOI18N
-        static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Status.DisplayName"); //NOI18N
-        static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Status.Description"); //NOI18N
+    public static class StatusProperty extends NodeProperty<String> {
+        public static final String NAME = "status"; //NOI18N
+        public static final String DISPLAY_NAME = NbBundle.getMessage(StatusNode.class, "LBL_Status.DisplayName"); //NOI18N
+        public static final String DESCRIPTION = NbBundle.getMessage(StatusNode.class, "LBL_Status.Description"); //NOI18N
         private final GitFileNode fileNode;
         private final Mode mode;
 

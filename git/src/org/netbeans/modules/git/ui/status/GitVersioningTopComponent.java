@@ -120,6 +120,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
 
     @Override
     protected void componentClosed () {
+        controller.cancelRefresh();
         super.componentClosed();
     }
 
