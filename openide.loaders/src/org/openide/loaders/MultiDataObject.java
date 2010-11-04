@@ -488,7 +488,7 @@ public class MultiDataObject extends DataObject {
             fo = e.copy (df.getPrimaryFile (), suffix);
             if (template) {
                 FileUtil.copyAttributes(e.getFile(), fo);
-                copyAttributes(e.getFile(), fo, TEMPLATE_ATTRIBUTES);
+                copyTemplateAttributes(e.getFile(), fo);
             }
         }
         //#33244 - copy primary file after the secondary ones
@@ -496,8 +496,9 @@ public class MultiDataObject extends DataObject {
 
         if (template) {
             FileObject source = getPrimaryEntry().getFile();
+            copyUniqueAttribute(source, fo, "displayName");     // NOI18N
             FileUtil.copyAttributes(source, fo);
-            copyAttributes(source, fo, TEMPLATE_ATTRIBUTES);
+            copyTemplateAttributes(source, fo);
         }
 
         boolean fullRescan = getMultiFileLoader() == null ||
@@ -511,10 +512,11 @@ public class MultiDataObject extends DataObject {
     }
 
     private static final String[] TEMPLATE_ATTRIBUTES = {
-        "templateCategory",          // NOI18N
         "iconBase",                  // NOI18N
         "SystemFileSystem.icon",     // NOI18N
         "SystemFileSystem.icon32",   // NOI18N
+        "instantiatingIterator",     // NOI18N
+        "instantiatingWizardURL",    // NOI18N
     };
 
     private static void copyAttributes(FileObject source, FileObject dest,
@@ -524,6 +526,51 @@ public class MultiDataObject extends DataObject {
             if (value != null) {
                 dest.setAttribute(attr, value);
             }
+        }
+    }
+
+    private static void copyTemplateAttributes(FileObject source, FileObject dest) throws IOException {
+        copyAttributes(source, dest, TEMPLATE_ATTRIBUTES);
+        Enumeration<String> attrs = source.getAttributes();
+        while(attrs.hasMoreElements()) {
+            String attr = attrs.nextElement();
+            if (attr.startsWith("template")) {      // NOI18N
+                Object value = source.getAttribute(attr);
+                if (value != null) {
+                    dest.setAttribute(attr, value);
+                }
+            }
+        }
+    }
+    
+    private static void copyUniqueAttribute(FileObject source, FileObject dest,
+                                            String attrName) throws IOException {
+        Object value = source.getAttribute(attrName);
+        if (value == null) {
+            return ;
+        }
+        FileObject parent = dest.getParent();
+        if (parent == null || !(value instanceof String)) {
+            dest.setAttribute(attrName, value);
+            return ;
+        }
+        String valueBase = (String) value;
+        FileObject[] ch = parent.getChildren();
+        int i = 0;
+        while(true) {
+            boolean isValueInChildren = false;
+            for (int j = 0; j < ch.length; j++) {
+                Object v = ch[j].getAttribute(attrName);
+                if (value.equals(v)) {
+                    isValueInChildren = true;
+                    break;
+                }
+            }
+            if (!isValueInChildren) {
+                dest.setAttribute(attrName, value);
+                break;
+            }
+            value = valueBase + " " + (++i);
         }
     }
 
