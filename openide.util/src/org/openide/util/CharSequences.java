@@ -127,7 +127,7 @@ public final class CharSequences {
         char[] v = new char[n];
         for (int i = 0; i < n; i++) {
             v[i] = s.charAt(i);
-        }
+        }   
         return new CharBasedSequence(v);
     }
 
@@ -554,7 +554,7 @@ public final class CharSequences {
             long a3 = 0;
             switch (n) {
                 case 23:
-                    a3 += (b[22] & 0xFF) << 24;
+                    a3 += (b[22] & 0xFFL) << 24;
                 case 22:
                     a3 += (b[21] & 0xFF) << 16;
                 case 21:
@@ -563,7 +563,7 @@ public final class CharSequences {
                     a3 += (b[19] & 0xFF);
                     a3 <<= 32;
                 case 19:
-                    a3 += (b[18] & 0xFF) << 24;
+                    a3 += (b[18] & 0xFFL) << 24;
                 case 18:
                     a3 += (b[17] & 0xFF) << 16;
                 case 17:
@@ -571,7 +571,7 @@ public final class CharSequences {
                 case 16:
                     a3 += b[15] & 0xFF;
                 case 15:
-                    a2 += (b[14] & 0xFF) << 24;
+                    a2 += (b[14] & 0xFFL) << 24;
                 case 14:
                     a2 += (b[13] & 0xFF) << 16;
                 case 13:
@@ -580,7 +580,7 @@ public final class CharSequences {
                     a2 += (b[11] & 0xFF);
                     a2 <<= 32;
                 case 11:
-                    a2 += (b[10] & 0xFF) << 24;
+                    a2 += (b[10] & 0xFFL) << 24;
                 case 10:
                     a2 += (b[9] & 0xFF) << 16;
                 case 9:
@@ -588,7 +588,7 @@ public final class CharSequences {
                 case 8:
                     a2 += b[7] & 0xFF;
                 case 7:
-                    a1 += (b[6] & 0xFF) << 24;
+                    a1 += (b[6] & 0xFFL) << 24;
                 case 6:
                     a1 += (b[5] & 0xFF) << 16;
                 case 5:
@@ -597,7 +597,7 @@ public final class CharSequences {
                     a1 += (b[3] & 0xFF);
                     a1 <<= 32;
                 case 3:
-                    a1 += (b[2] & 0xFF) << 24;
+                    a1 += (b[2] & 0xFFL) << 24;
                 case 2:
                     a1 += (b[1] & 0xFF) << 16;
                 case 1:
