@@ -43,10 +43,6 @@
 package org.netbeans.modules.maven.apisupport;
 
 import java.awt.Component;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.validation.api.Problem;
@@ -59,8 +55,7 @@ import org.openide.util.NbBundle;
  * Panel just asking for nb platform relatd information.
  * @author mkleint
  */
-public class NbmWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.FinishablePanel {
+public class NbmWizardPanel implements WizardDescriptor.FinishablePanel<WizardDescriptor> {
     
     private WizardDescriptor wizardDescriptor;
     private NbmWizardPanelVisual component;
@@ -97,41 +92,16 @@ public class NbmWizardPanel implements WizardDescriptor.Panel,
         return new HelpCtx(NbmWizardPanel.class);
     }
     
+    public @Override void addChangeListener(ChangeListener l) {}
+    public @Override void removeChangeListener(ChangeListener l) {}
     
-    private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    @Override
-    public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
-    }
-    @Override
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    protected final void fireChangeEvent() {
-        Iterator it;
-        synchronized (listeners) {
-            it = new HashSet<ChangeListener>(listeners).iterator();
-        }
-        ChangeEvent ev = new ChangeEvent(this);
-        while (it.hasNext()) {
-            ((ChangeListener) it.next()).stateChanged(ev);
-        }
-    }
-    
-    @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
+    public @Override void readSettings(WizardDescriptor wiz) {
+        wizardDescriptor = wiz;
         component.read(wizardDescriptor);
     }
     
-    @Override
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
+    public @Override void storeSettings(WizardDescriptor wiz) {
+        component.store(wiz);
     }
     
     @Override
