@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.commit;
 
+import java.awt.EventQueue;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.netbeans.modules.versioning.util.common.VCSCommitTable;
@@ -86,34 +87,37 @@ public class CommitAction extends SingleRepositoryAction {
     private static final Logger LOG = Logger.getLogger(CommitAction.class.getName());
 
     @Override
-    protected void performAction (File repository, File[] roots, VCSContext context) {
+    protected void performAction (final File repository, final File[] roots, final VCSContext context) {
 
-        final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
-        VCSCommitTable table = panel.getCommitTable();
-        boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
-        
-        if (ok) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final GitCommitPanel panel = GitCommitPanel.create(roots, repository, context);
+                VCSCommitTable table = panel.getCommitTable();
+                boolean ok = panel.open(context, new HelpCtx(CommitAction.class));
 
-            final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
-            
-            GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
-            panel.getParameters().storeCommitMessage();
-            
-            RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
-            GitProgressSupport support = new GitProgressSupport() {
-                @Override
-                public void perform() {
-                    try {
-                        performCommit(panel.getParameters().getCommitMessage(), commitFiles, getClient(), this, panel.getHooks());
-                    } catch (GitException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                        return;
-                    }
+                if (ok) {
+                    final Map<VCSFileNode, VCSCommitOptions> commitFiles = table.getCommitFiles();
+
+                    GitModuleConfig.getDefault().setLastCanceledCommitMessage(""); //NOI18N            
+                    panel.getParameters().storeCommitMessage();
+
+                    RequestProcessor rp = Git.getInstance().getRequestProcessor(repository);
+                    GitProgressSupport support = new GitProgressSupport() {
+                        @Override
+                        public void perform() {
+                            try {
+                                performCommit(panel.getParameters().getCommitMessage(), commitFiles, getClient(), this, panel.getHooks());
+                            } catch (GitException ex) {
+                                LOG.log(Level.WARNING, null, ex);
+                                return;
+                            }
+                        }
+                    };
+                    support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
                 }
-            };
-            support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
-
-        }
+            }
+        });
     }
 
     private static void performCommit(
