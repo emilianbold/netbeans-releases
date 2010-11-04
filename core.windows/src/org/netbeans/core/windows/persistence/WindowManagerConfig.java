@@ -216,6 +216,7 @@ public class WindowManagerConfig {
         modes = new ModeConfig[0];
         groups = new GroupConfig[0];
         tcIdViewList = new String[0];
+        preferredToolbarIconSize = 24;
     }
     
     public boolean equals (Object obj) {
