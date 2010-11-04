@@ -78,4 +78,4 @@ echo Configuring GlassFish V3 in `pwd`
 #add Product ID
 "$script_dir"/addproduct_id.sh "GFMOD"
 
-"$script_dir"/servicetag.sh "gf-v3" "$2"
+#"$script_dir"/servicetag.sh "gf-v3" "$2"
