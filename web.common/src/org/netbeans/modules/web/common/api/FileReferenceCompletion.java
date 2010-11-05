@@ -114,8 +114,12 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
 
                 //add go up in the directories structure item
                 if (!(documentBase != null && folder.equals(documentBase)) && !path.startsWith("/") // NOI18N
-                        && (path.length() == 0 || (path.lastIndexOf("../") + 3 == path.length()))) { // NOI18N
-//                        result.add(HtmlCompletionItem.createGoUpFileCompletionItem(anchor, java.awt.Color.BLUE, PACKAGE_ICON)); // NOI18N
+                        && (fileNamePart.isEmpty() // ../| case
+                        ||
+                        fileNamePart.equals(".") // ../.| case
+                        ||
+                        fileNamePart.equals("..")) //../..| case
+                        ) { // NOI18N
                     result.add(createGoUpItem(anchor, Color.BLUE, PACKAGE_ICON)); // NOI18N
                 }
             }
