@@ -333,7 +333,18 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         Set<String> toRemove = new HashSet<String>(indexer.getIndexingContexts().keySet());
         toRemove.removeAll(currents);
         if (!toRemove.isEmpty()) {
-            unloadIndexingContext(toRemove);
+            for (final String repo : toRemove) {
+                try {
+                    getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public @Override Void run() throws Exception {
+                            unloadIndexingContext(repo);
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 
@@ -399,14 +410,12 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
 
     //always call from mutex.writeAccess
-    private void unloadIndexingContext(final Set<String> repos) throws IOException {
-        for (String repo : repos) {
-            assert getRepoMutex(repo).isWriteAccess();
-            LOGGER.fine("Unloading Context :" + repo);//NOI18N
-            IndexingContext ic = indexer.getIndexingContexts().get(repo);
-            if (ic != null) {
-                indexer.removeIndexingContext(ic, false);
-            }
+    private void unloadIndexingContext(final String repo) throws IOException {
+        assert getRepoMutex(repo).isWriteAccess();
+        LOGGER.fine("Unloading Context :" + repo);//NOI18N
+        IndexingContext ic = indexer.getIndexingContexts().get(repo);
+        if (ic != null) {
+            indexer.removeIndexingContext(ic, false);
         }
     }
 
