@@ -86,8 +86,7 @@ final class ExecutionContext {
         this.target = target;
         this.dlightConfiguration = dlightConfiguration;
         listeners = new CopyOnWriteArrayList<ExecutionContextListener>();
-        tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());
-        DataCollectorProvider.getInstance().reset();
+        tools = Collections.unmodifiableList(dlightConfiguration.getToolsSet());        
         envProvider = new DLightTargetExecutionEnvProviderCollection();
     }
 
