@@ -65,7 +65,7 @@ import org.openide.modules.InstalledFileLocator;
  * @author marekfukala
  */
 public class Documentation implements HelpResolver {
-    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";
+    static final String SECTIONS_PATTERN_CODE ="<[\\w\\d]*.*?id=\\\"([\\w\\d-_]*)\\\"[^\\>]*>";//NOI18N
     static final Pattern SECTIONS_PATTERN = Pattern.compile(SECTIONS_PATTERN_CODE);
     private static final String DOC_ZIP_FILE_NAME = "docs/html5doc.zip"; //NOI18N
     private static URL DOC_ZIP_URL;
@@ -73,7 +73,7 @@ public class Documentation implements HelpResolver {
     private static final Documentation SINGLETON = new Documentation();
 
     public static void setupDocumentationForUnitTests() {
-         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));
+         System.setProperty("netbeans.dirs", System.getProperty("cluster.path.final"));//NOI18N
     }
 
     public static Documentation getDefault() {
@@ -189,7 +189,7 @@ public class Documentation implements HelpResolver {
             String stripped = content.substring(from);
             //"fix" the stripped content a bit by adding html content prefix
             return new StringBuilder().
-                    append("<html><head><title>help</title></head><body>").
+                    append("<html><head><title>help</title></head><body>").//NOI18N
                     append(stripped).toString(); //NOI18N
         } else {
             return null;

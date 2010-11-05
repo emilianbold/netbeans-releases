@@ -85,12 +85,15 @@ import org.openide.windows.WindowManager;
  */
 public class ActionsSearchProvider implements SearchProvider {
 
+    private volatile SearchRequest currentRequest;
+
     /**
      * Iterates through all found KeymapManagers and their sets of actions
      * and fills response object with proper actions that are enabled
      * and can be run meaningfully on current actions context.
      */
     public void evaluate(final SearchRequest request, final SearchResponse response) {
+        currentRequest = request;
         final Map<Object, String> duplicateCheck = new HashMap<Object, String>();
         final List<Object[]> possibleResults = new ArrayList<Object[]>(7);
         Map<ShortcutAction, Set<String>> curKeymap;
@@ -99,6 +102,10 @@ public class ActionsSearchProvider implements SearchProvider {
             curKeymap = m.getKeymap(m.getCurrentProfile());
             for (Entry<String, Set<ShortcutAction>> entry : m.getActions().entrySet()) {
                 for (ShortcutAction sa : entry.getValue()) {
+                    if (currentRequest!=request) {
+                        return;
+                    }
+
                     // check action and obtain only meaningful ones
                     Object[] actInfo = getActionInfo(sa, curKeymap.get(sa));
                     if (actInfo == null) {
@@ -120,6 +127,9 @@ public class ActionsSearchProvider implements SearchProvider {
                     for (int i = 0; i < actNodes.length; i++) {
                         Action[] acts = actNodes[i].getActions(false);
                         for (int j = 0; j < acts.length; j++) {
+                            if (currentRequest!=request) {
+                                return;
+                            }
                             Action action = checkNodeAction(acts[j]);
                             if (action == null) {
                                 continue;
@@ -147,6 +157,9 @@ public class ActionsSearchProvider implements SearchProvider {
 
         // add results stored above, actions that contain typed text, but not as prefix
         for (Object[] actInfo : possibleResults) {
+            if (currentRequest != request) {
+                return;
+            }
             if (!addAction(actInfo, response, duplicateCheck)) {
                 return;
             }

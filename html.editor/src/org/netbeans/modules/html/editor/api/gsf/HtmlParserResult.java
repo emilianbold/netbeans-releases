@@ -47,17 +47,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.ParseException;
 import org.netbeans.editor.ext.html.parser.api.ProblemDescription;
 import org.netbeans.editor.ext.html.parser.api.AstNodeUtils;
-import org.netbeans.editor.ext.html.parser.spi.AstNodeVisitor;
 import org.netbeans.editor.ext.html.parser.api.SyntaxAnalyzerResult;
-import org.netbeans.editor.ext.html.parser.spi.HtmlParseResult;
 import org.netbeans.editor.ext.html.parser.spi.ParseResult;
+import org.netbeans.html.api.validation.ValidationException;
+import org.netbeans.html.api.validation.Validator;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
@@ -67,8 +66,8 @@ import org.netbeans.html.api.validation.ValidationContext;
 import org.netbeans.html.api.validation.ValidationResult;
 import org.netbeans.html.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  * HTML parser result
@@ -81,7 +80,6 @@ public class HtmlParserResult extends ParserResult {
      * Used as a key of a swing document to find a default fallback dtd.
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
-    private static final String UNEXPECTED_TOKEN = "unexpected_token"; //NOI18N
     private SyntaxAnalyzerResult result;
     private List<Error> errors;
     private boolean isValid = true;
@@ -119,33 +117,6 @@ public class HtmlParserResult extends ParserResult {
         return result.getDetectedHtmlVersion();
     }
 
-//    //kinda hacky method
-//    public ParseResult getParseResultForRootTag(AstNode root) {
-//        try {
-//            if (!root.isRootNode()) {
-//                throw new IllegalArgumentException("AstNode " + root + " is not a root node!"); //NOI18N
-//            }
-//            if (result.parseHtml().root() == root) {
-//                return result.parseHtml();
-//            }
-//            if(result.parseUndeclaredEmbeddedCode().root() == root) {
-//                return result.parseUndeclaredEmbeddedCode();
-//            }
-//
-//            for(String ns : result.getAllDeclaredNamespaces().keySet()) {
-//                ParseResult pr = result.parseEmbeddedCode(ns);
-//                if(pr.root() == root) {
-//                    return pr;
-//                }
-//            }
-//
-//        } catch (ParseException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//
-//        throw new IllegalArgumentException("The AstNode " + root
-//                + " doesn't belong to " + this + " HtmlParserResult!");//NOI18N
-//    }
     /** @return a root node of the hierarchical parse tree of the document.
      * basically the tree structure is done by postprocessing the flat parse tree
      * you can get by calling elementsList() method.
@@ -262,10 +233,7 @@ public class HtmlParserResult extends ParserResult {
     public synchronized List<? extends Error> getDiagnostics() {
         if (errors == null) {
             errors = new ArrayList<Error>();
-            errors.addAll(getParseResultErrors());
-            errors.addAll(extractErrorsFromAST());
-            errors.addAll(findLexicalErrors());
-//            errors.addAll(getValidationResults());
+            errors.addAll(getValidationResults());
         }
         return errors;
     }
@@ -275,73 +243,43 @@ public class HtmlParserResult extends ParserResult {
         this.isValid = false;
     }
 
-//    private Collection<Error> getValidationResults() {
-//
-//        //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
-//        Collection<ValidationResult> results =
-//                ValidatorService.getDefault().getValidators(new ValidationContext(getSnapshot().getText().toString(), getSnapshot().getSource().getFileObject()));
-//
-//
-//        if (!results.isEmpty()) {
-//
-//            //XXX just use first for now
-//            ValidationResult validatorResult = results.iterator().next();
-//
-//            if (!validatorResult.isSuccess()) {
-//
-//                Collection<Error> errs = new ArrayList<Error>();
-//                for (ProblemDescription pd : validatorResult.getProblems()) {
-//
-//                    DefaultError error =
-//                            new DefaultError(pd.getKey(),
-//                            "nu.validator issue",
-//                            pd.getText(),
-//                            validatorResult.getContext().getFile(),
-//                            pd.getFrom(),
-//                            pd.getTo(),
-//                            false /* not line error */,
-//                            forProblemType(pd.getType()));
-//                    errs.add(error);
-//                }
-//
-//                return errs;
-//
-//
-//
-//            }
-//        }
-//
-//        return Collections.emptyList();
-//
-//
-//
-//    }
-
-    private Collection<Error> getParseResultErrors() {
-        Collection<Error> diagnostics = new ArrayList<Error>();
+    private Collection<Error> getValidationResults() {
+        FileObject file = getSnapshot().getSource().getFileObject();
         try {
-            //collect problem descriptions from all embedded parse results
-            for (ParseResult parseResult : result.getAllParseResults()) {
-                for (ProblemDescription problem : parseResult.getProblems()) {
-                    DefaultError error =
-                            new DefaultError(problem.getKey(),
-                            problem.getText(),
-                            problem.getText(),
-                            result.getSource().getSourceFileObject(),
-                            problem.getFrom(),
-                            problem.getTo(),
-                            false /* not line error */,
-                            forProblemType(problem.getType()));
-
-                    diagnostics.add(error);
-                }
+            //use the filtered snapshot or use the namespaces filtering facility in the nu.validator
+            Validator validator = ValidatorService.getValidator(getHtmlVersion());
+            if(validator == null) {
+                return Collections.emptyList();
             }
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-            return Collections.emptyList();
+            ValidationContext context = new ValidationContext(getSnapshot().getText().toString(), getHtmlVersion(), file, result);
+            ValidationResult result = validator.validate(context);
+
+            Collection<Error> errs = new ArrayList<Error>();
+            for (ProblemDescription pd : result.getProblems()) {
+                DefaultError error = new DefaultError(pd.getKey(),
+                        "nu.validator issue", //NOI18N
+                        pd.getText(),
+                        result.getContext().getFile(),
+                        pd.getFrom(),
+                        pd.getTo(),
+                        false,
+                        forProblemType(pd.getType()));
+
+                errs.add(error);
+            }
+            return errs;
+
+        } catch (ValidationException ex) {
+            Logger.getAnonymousLogger().log(Level.INFO, "An error occured during html code validation", ex);
+
+            DefaultError error = new DefaultError("validator.error",
+                    "validator.error",
+                    "An internal error occured during validating the code: " + ex.getLocalizedMessage(),
+                    file, 0,0, true, Severity.ERROR);
+
+            return Collections.<Error>singletonList(error);
         }
 
-        return diagnostics;
     }
 
     private static Severity forProblemType(int problemtype) {
@@ -355,82 +293,6 @@ public class HtmlParserResult extends ParserResult {
             default:
                 throw new IllegalArgumentException("Invalid ProblemDescription type: " + problemtype); //NOI18N
         }
-
-    }
-
-    private List<Error> findLexicalErrors() {
-        TokenHierarchy th = getSnapshot().getTokenHierarchy();
-        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
-        if (ts == null) {
-            return Collections.emptyList();
-        }
-
-        final List<Error> lexicalErrors = new ArrayList<Error>();
-        ts.moveStart();
-        while (ts.moveNext()) {
-            if (ts.token().id() == HTMLTokenId.ERROR) {
-                //some error in the node, report
-                String msg = NbBundle.getMessage(HtmlParserResult.class, "MSG_UnexpectedToken", ts.token().text()); //NOI18N
-                DefaultError error =
-                        new DefaultError(UNEXPECTED_TOKEN,
-                        msg,
-                        msg,
-                        getSnapshot().getSource().getFileObject(),
-                        ts.offset(),
-                        ts.offset() + ts.token().length(),
-                        false /* not line error */,
-                        Severity.ERROR);
-
-                lexicalErrors.add(error);
-            }
-        }
-        return lexicalErrors;
-
-    }
-
-    private List<Error> extractErrorsFromAST() {
-        final List<Error> _errors = new ArrayList<Error>();
-
-        AstNodeVisitor errorsCollector = new AstNodeVisitor() {
-
-            @Override
-            public void visit(AstNode node) {
-                if (node.type() == AstNode.NodeType.OPEN_TAG
-                        || node.type() == AstNode.NodeType.ENDTAG
-                        || node.type() == AstNode.NodeType.UNKNOWN_TAG) {
-
-                    for (ProblemDescription desc : node.getDescriptions()) {
-                        if (desc.getType() < ProblemDescription.WARNING) {
-                            continue;
-                        }
-                        //some error in the node, report
-                        DefaultError error =
-                                new DefaultError(desc.getKey(), //NOI18N
-                                desc.getText(),
-                                desc.getText(),
-                                getSnapshot().getSource().getFileObject(),
-                                desc.getFrom(),
-                                desc.getTo(),
-                                false /* not line error */,
-                                desc.getType() == ProblemDescription.WARNING ? Severity.WARNING : Severity.ERROR); //NOI18N
-
-                        error.setParameters(new Object[]{node});
-
-                        _errors.add(error);
-
-                    }
-                }
-            }
-        };
-
-        Collection<AstNode> roots = new ArrayList<AstNode>();
-        roots.addAll(roots().values());
-        roots.add(rootOfUndeclaredTagsParseTree());
-        for (AstNode root : roots) {
-            AstNodeUtils.visitChildren(root, errorsCollector);
-        }
-
-        return _errors;
 
     }
 

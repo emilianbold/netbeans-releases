@@ -40,42 +40,57 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.html.parser;
+package org.netbeans.modules.git.ui.status;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.junit.NbTestCase;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.openide.explorer.view.NodeTableModel;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author marekfukala
+ * @author ondra
  */
-public class ElementAttributesTest extends NbTestCase {
+public class GitTableModel<T extends StatusNode> extends NodeTableModel {
 
-    public ElementAttributesTest(String name) {
-        super(name);
+    private T[] nodes;
+
+    public GitTableModel (T[] nodes) {
+        this.nodes = nodes;
     }
 
-    public void testAttributes() {
-        Collection<String> attrs = ElementAttributes.getAttrNamesForElement("div"); //only global attrs
-
-        assertNotNull(attrs);
-        assertTrue(attrs.contains("class"));
-        assertTrue(attrs.contains("onclick"));
-
-        assertFalse(attrs.contains("bla"));
-        assertFalse(attrs.contains("href"));
-
-        attrs = ElementAttributes.getAttrNamesForElement("meta"); //some specific attrs as well
-
-        assertNotNull(attrs);
-        assertTrue(attrs.contains("class"));
-        assertTrue(attrs.contains("onclick"));
-        assertTrue(attrs.contains("http-equiv"));
-
-        assertFalse(attrs.contains("bla"));
-        assertFalse(attrs.contains("href"));
+    @Override
+    public final void setNodes (Node[] nodes) {
+        throw new IllegalStateException("Do not call this method");
     }
 
+    public final void setNodes (T[] nodes) {
+        this.nodes = nodes;
+        super.setNodes(nodes);
+    }
+
+    public T getNode (int idx) {
+        return nodes[idx];
+    }
+
+    public Collection<T> getNodes () {
+        return new HashSet<T>(Arrays.asList(nodes));
+    }
+
+    public void remove (List<T> toRemove) {
+        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
+        newNodes.removeAll(toRemove);
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
+        super.setNodes(nodes);
+    }
+
+    public void add (List<T> toAdd) {
+        Set<T> newNodes = new HashSet<T>(Arrays.asList(nodes));
+        newNodes.addAll(toAdd);
+        nodes = newNodes.toArray((T[]) java.lang.reflect.Array.newInstance(nodes.getClass().getComponentType(), newNodes.size()));
+        super.setNodes(nodes);
+    }
 }

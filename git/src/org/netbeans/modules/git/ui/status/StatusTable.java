@@ -120,9 +120,9 @@ class StatusTable implements MouseListener, ListSelectionListener {
             }
         }
     };
-    private final StatusTableModel tableModel;
+    private final GitTableModel<StatusNode> tableModel;
     
-    public StatusTable (StatusTableModel model) {
+    public StatusTable (GitTableModel<StatusNode> model) {
         this.tableModel = model;
         table = new ETable(tableModel);
         table.setRowHeight(table.getRowHeight() * 6 / 5);
@@ -258,6 +258,9 @@ class StatusTable implements MouseListener, ListSelectionListener {
 
     @Override
     public void valueChanged (ListSelectionEvent e) {
+        if (e.getValueIsAdjusting()) {
+            return;
+        }
         List<StatusNode> selectedNodes = new ArrayList<StatusNode>();
         ListSelectionModel selection = table.getSelectionModel();
         final TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, table);

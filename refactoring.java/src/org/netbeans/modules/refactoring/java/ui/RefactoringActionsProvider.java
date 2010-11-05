@@ -556,7 +556,14 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                     return false;
                 }
                 if (dob instanceof DataFolder) {
-                    return drop!=null;
+                    if (drop==null) {
+                        return false;
+                    } else {
+                        //Ctrl-X
+                        if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile()) || RetoucheUtils.isClasspathRoot(dob.getPrimaryFile())) {
+                            return false;
+                        }
+                    }
                 }
                 if (!RetoucheUtils.isOnSourceClasspath(dob.getPrimaryFile())) {
                     return false;

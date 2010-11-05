@@ -189,7 +189,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
     private Lookup lookup;
 
     private static final int MAX_RESULT_COUNT = 512;
-    private static final int DEFAULT_MAX_CLAUSE = 1024;
     private static final int MAX_MAX_CLAUSE = 2048;
 
     //#138102
@@ -359,9 +358,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     private FlatSearchResponse repeatedFlatSearch(FlatSearchRequest fsr, final Collection<IndexingContext> contexts, boolean shouldThrow) throws IOException {
         FlatSearchResponse response = null;
+        int oldMax = BooleanQuery.getMaxClauseCount();
         try {
             BooleanQuery.TooManyClauses tooManyC = null;
-            for (int i = DEFAULT_MAX_CLAUSE; i <= MAX_MAX_CLAUSE; i*=2) {
+            for (int i = oldMax; i <= MAX_MAX_CLAUSE; i*=2) {
                 try {
                     BooleanQuery.setMaxClauseCount(i);
                     response = searcher.searchFlatPaged(fsr, contexts);
@@ -379,7 +379,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 throw tooManyC;
             }
         } finally {
-            BooleanQuery.setMaxClauseCount(DEFAULT_MAX_CLAUSE);
+            BooleanQuery.setMaxClauseCount(oldMax);
+        }
+        if (response == null) {
+            LOGGER.log(Level.WARNING, "Encountered more than {0} clauses processing {1}", new Object[] {MAX_MAX_CLAUSE, fsr.getQuery()});
         }
         return response;
     }

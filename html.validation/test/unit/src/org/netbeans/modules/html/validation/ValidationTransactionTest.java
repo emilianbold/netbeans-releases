@@ -61,9 +61,11 @@ public class ValidationTransactionTest extends NbTestCase {
         super(name);
     }
 
-    public static Test xsuite() {
+    public static Test Xsuite() {
+        String testName = "testHtml4";
+        System.err.println("Running only following test: " + testName);
         TestSuite suite = new TestSuite();
-        suite.addTest(new ValidationTransactionTest("testX"));
+        suite.addTest(new ValidationTransactionTest(testName));
         return suite;
     }
 
@@ -74,16 +76,16 @@ public class ValidationTransactionTest extends NbTestCase {
         validate("<!doctype html> chybi open tag</div>", false);
         validate("<!doctype html> <div> chybi close tag", false);
 
-        validate("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+        validate("<!doctype html>\n"
                 + "<html><head><title>hello</title></head>\n"
                 + "<body>\n"
                 + "<div>ahoj!</Xiv>\n"
                 + "</body></html>\n", false);
-
+        
         validate("1\n"
                 + "23\n"
                 + "345\n"
-                + "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+                + "<!doctype html>\n"
                 + "<html><head><title>hello</title></head>\n"
                 + "<body>\n"
                 + "<div>ahoj!</Xiv>\n"
@@ -122,6 +124,18 @@ public class ValidationTransactionTest extends NbTestCase {
                 + "<body>"
                 + "</body>"
                 + "</html>    ", true, HtmlVersion.XHTML5);
+    }
+
+    public void testHtml4() throws SAXException {
+        validate("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">\n"
+                + "<html>"
+                + "     <head>"
+                + "         <title>hello</title>"
+                + "     </head>"
+                + "     <body>"
+                + "         <div>ahoj!</div>"
+                + "     </body>"
+                + "</html>", true, HtmlVersion.HTML41_TRANSATIONAL);
     }
 
     private void validate(String code, boolean expectedPass) throws SAXException {

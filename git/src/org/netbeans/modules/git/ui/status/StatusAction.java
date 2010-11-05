@@ -78,6 +78,11 @@ public class StatusAction extends GitAction {
         stc.requestActive();
     }
 
+    /**
+     * Starts the status scan but does not wait for it to finish.
+     * @param context
+     * @return running task
+     */
     public final GitProgressSupport scanStatus (final VCSContext context) {
         Set<File> repositories = GitUtils.getRepositoryRoots(context);
         if (repositories.isEmpty()) {
@@ -101,7 +106,7 @@ public class StatusAction extends GitAction {
                     }
                 }
             };
-            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")).waitFinished(); //NOI18N
+            supp.start(Git.getInstance().getRequestProcessor(), null, NbBundle.getMessage(StatusAction.class, "LBL_ScanningStatuses")); //NOI18N
             return supp;
         }
     }

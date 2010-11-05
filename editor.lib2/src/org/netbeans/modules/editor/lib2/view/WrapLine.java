@@ -89,21 +89,13 @@ final class WrapLine {
     int endViewIndex;
 
     WrapLine() {
-        resetFullViews();
-    }
-
-    boolean isInited() {
-        return (startViewIndex != -1);
+        // Leave startViewIndex == endViewIndex which means no full views
     }
 
     boolean hasFullViews() {
         return startViewIndex != endViewIndex;
     }
     
-    void resetFullViews() {
-        startViewIndex = endViewIndex = -1;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

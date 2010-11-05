@@ -430,12 +430,15 @@ public class JavaCustomIndexer extends CustomIndexer {
                             return false;
                         }
                     };
-                    for (File f : parent.listFiles(filter)) {
-                        String className = FileObjects.getBinaryName(f, classFolder);
-                        toDelete.add(Pair.<String, String>of(className, null));
-                        removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
-                        removedFiles.add(f);
-                        f.delete();
+                    final File[] children = parent.listFiles(filter);
+                    if (children != null) {
+                        for (File f : children) {
+                            String className = FileObjects.getBinaryName(f, classFolder);
+                            toDelete.add(Pair.<String, String>of(className, null));
+                            removedTypes.add(ElementHandleAccessor.INSTANCE.create(ElementKind.OTHER, className));
+                            removedFiles.add(f);
+                            f.delete();
+                        }
                     }
                 }
             }

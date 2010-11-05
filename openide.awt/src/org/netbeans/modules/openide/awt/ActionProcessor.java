@@ -371,9 +371,14 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
         }
         
         if (ref.path().startsWith("Shortcuts")) {
-            KeyStroke stroke = Utilities.stringToKey(name);
+            KeyStroke[] stroke = Utilities.stringToKeys(name);
             if (stroke == null) {
-                throw new LayerGenerationException("Registrations in shortcuts folder need to represent a key. See org.openide.util.Utilities.stringToKey.");
+                throw new LayerGenerationException(
+                    "Registrations in Shortcuts folder need to represent a key. "
+                    + "Specify value for 'name' attribute.\n"
+                    + "See org.openide.util.Utilities.stringToKeys for possible values. Current "
+                    + "name=\"" + name + "\" is not valid.\n"
+                );
             }
         }
         

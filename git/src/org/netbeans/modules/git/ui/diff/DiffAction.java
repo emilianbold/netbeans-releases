@@ -69,7 +69,7 @@ public class DiffAction extends GitAction {
     public void diff (VCSContext context) {
         String contextName = Utils.getContextDisplayName(context);
         Mode mode = GitModuleConfig.getDefault().getLastUsedModificationContext();
-        MultiDiffPanelController controller = new MultiDiffPanelController(context, mode, contextName);
+        MultiDiffPanelController controller = new MultiDiffPanelController(context, mode);
         DiffTopComponent tc = new DiffTopComponent(controller);
         controller.setTopComponent(tc);
         tc.setName(NbBundle.getMessage(DiffAction.class, "CTL_DiffPanel_Title", contextName)); //NOI18N
