@@ -1209,7 +1209,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
 
-    /** Adapted from a class formerly in DefaultIndexUpdater, but seems to work better than default JettyFetcher. */
+    /** XXX use WagonHelper when available (3.0.5?) */
     private class WagonFetcher extends AbstractResourceFetcher {
         private final TransferListener listener;
         private Wagon wagon = null;
