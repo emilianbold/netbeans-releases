@@ -43,7 +43,6 @@ package org.netbeans.modules.java.stackanalyzer;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.util.regex.Matcher;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.UIManager;
@@ -55,11 +54,7 @@ import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
 
 
 /**
@@ -134,12 +129,14 @@ class AnalyserCellRenderer extends DefaultListCellRenderer {
         if (link != null) {
             StringBuilder sb = new StringBuilder ();
             sb.append ("<html>");
+            if (isSelected)
+                sb.append("<style> a.val {text-decoration: underline; color: " + toRgbText(getForeground().getRGB()) + "} </style><body>");
             sb.append (line.substring (0, link.getStartOffset ()));
-            sb.append ("<a href=\"\">");
+            sb.append ("<a class=\"val\" href=\"\">");
             sb.append (line.substring (link.getStartOffset (), link.getEndOffset ()));
             sb.append ("</a>");
             sb.append (line.substring (link.getEndOffset ()));
-            sb.append ("</html>");
+            sb.append ("</body></html>");
             setText (sb.toString ());
         } else
             setText (line.trim ());
@@ -172,5 +169,14 @@ class AnalyserCellRenderer extends DefaultListCellRenderer {
 //        ClassPath cp = ClassPathSupport.createClassPath (GlobalPathRegistry.getDefault ().getSourceRoots ().toArray (new FileObject[0]));
 //        return cp.findResource (resource) != null;
 //    }
+
+    private static String toRgbText(int rgb) {
+        if (rgb > 0xFFFFFF)
+            rgb = 0xFFFFFF;
+        if (rgb < 0)
+            rgb = 0;
+        String str = "000000" + Integer.toHexString(rgb); //NOI18N
+        return "#" + str.substring(str.length() - 6); //NOI18N
+    }
 }
 
