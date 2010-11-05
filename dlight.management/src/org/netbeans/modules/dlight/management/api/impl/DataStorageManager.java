@@ -115,8 +115,7 @@ public final class DataStorageManager {
                         } else {
                             log.log(Level.FINEST, "DataStorage with key {0} {1} successfully closed", new Object[]{storageUniqueKey, storage});//NOI18N
                         }
-                    }
-                    sharedStorages.remove(storageUniqueKey);
+                    }                   
                     activeStorages.remove(storageUniqueKey);
                 }
             }
@@ -136,7 +135,7 @@ public final class DataStorageManager {
      *  Returns existing or  new instance of DataStorage
      *  for requested schema (if it can be found within all available DataStorages)
      */
-    public Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
+    public synchronized  Map<DataStorageType, DataStorage> getDataStoragesFor(DLightSession session, DataCollector<?> collector) {
         Map<DataStorageType, DataStorage> result = new HashMap<DataStorageType, DataStorage>();
         for (DataStorageType type : collector.getRequiredDataStorageTypes()) {
             result.put(type, getDataStorageFor(session, type, collector.getDataTablesMetadata()));
