@@ -201,6 +201,18 @@ public final class InspectMembersAtCaretAction extends BaseAction {
                                                 show(elementFileObject, new Element[] {element});
                                             }
                                         }
+                                    } else {
+                                        final List<? extends TypeElement> topLevels = compilationController.getTopLevelElements();
+                                        final String fileName = elementFileObject.getName();
+                                        TypeElement preferredElement = topLevels.isEmpty() ? null : topLevels.get(0);
+                                        for (TypeElement te : topLevels) {
+                                            if (fileName.contentEquals(te.getSimpleName())) {
+                                                preferredElement = te;
+                                            }
+                                        }
+                                        if (preferredElement != null) {
+                                            show(elementFileObject, new Element[] {preferredElement});
+                                        }
                                     }
                                 }
                             }
