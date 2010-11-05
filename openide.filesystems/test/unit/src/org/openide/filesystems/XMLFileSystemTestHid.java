@@ -985,7 +985,7 @@ public class XMLFileSystemTestHid extends TestBaseHid {
             w.close();
         }
 
-        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURL(), f2.toURL());
+        xfs = FileSystemFactoryHid.createXMLSystem(getName(), this, f1.toURI().toURL(), f2.toURI().toURL());
 
 
         FileObject just1 = xfs.findResource("just1/empty.xml");
@@ -997,11 +997,11 @@ public class XMLFileSystemTestHid extends TestBaseHid {
         String layers2 = layers(just2);
         String layersB = layers(both);
 
-        if (!layersR.contains(f1.toString())) {
-            fail("Missing " + f1 + "\ninside: " + layersR);
+        if (!layersR.contains(f1.toURI().toString())) {
+            fail("Missing " + f1.toURI().toString() + "\ninside: " + layersR);
         }
-        if (!layersR.contains(f2.toString())) {
-            fail("Missing " + f2 + "\ninside: " + layersR);
+        if (!layersR.contains(f2.toURI().toString())) {
+            fail("Missing " + f2.toURI().toString() + "\ninside: " + layersR);
         }
 
         assertEquals(f1.toURL().toExternalForm(), layers1);
