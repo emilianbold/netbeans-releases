@@ -267,11 +267,20 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
 
         //complete in folder
         code = "<a href='folder1/|'";
-        //             01234567890
+        //      012345678901234567
         //we need a fileobject backed document here
         doc = createDocuments("test.html", "folder1/another.html", "images/image.png")[0]; //use test.html
         doc.insertString(0, code, null);
-        assertItems(doc, arr("another.html"), Match.CONTAINS, 9);
+        assertItems(doc, arr("../", "another.html"), Match.CONTAINS, 9);
+
+        //complete go up in nested folders
+        code = "<a href='folder1/folder2/|'";
+        //      01234567890123456789023456
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "folder1/folder2/another.html")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../", "another.html"), Match.CONTAINS, 9);
+        
     }
 
     public void testFileAttrValueWithPrefix() throws BadLocationException, ParseException {
@@ -289,6 +298,22 @@ public class HtmlCompletionQueryTest extends HtmlCompletionTestBase {
         doc = createDocuments("test.html", "another.html", "image.png")[0]; //use test.html
         doc.insertString(0, code, null);
         assertItems(doc, arr("image.png"), Match.CONTAINS, 8);
+
+        //complete go up in nested folders
+        code = "<a href='folder1/folder2/.|'";
+        //      01234567890123456789023456
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "folder1/folder2/another.html")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../"), Match.CONTAINS, 9);
+
+        //complete go up in nested folders
+        code = "<a href='folder1/folder2/..|'";
+        //      01234567890123456789023456
+        //we need a fileobject backed document here
+        doc = createDocuments("test.html", "folder1/folder2/another.html")[0]; //use test.html
+        doc.insertString(0, code, null);
+        assertItems(doc, arr("../"), Match.CONTAINS, 9);
     }
 
     public void testFileAttrValueUppercase() throws BadLocationException, ParseException {
