@@ -733,6 +733,10 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void testIssue171232_02() throws Exception {
         checkCompletion("testfiles/completion/lib/issue171232_02.php", "$this->^", false);
     }
+    
+    public void testIssue144840_01() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue144840_01.php", "$retval->^", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
