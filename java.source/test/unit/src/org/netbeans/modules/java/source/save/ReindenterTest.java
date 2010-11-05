@@ -450,6 +450,16 @@ public class ReindenterTest extends NbTestCase {
                 "package t;\npublic class T {\n    public void op() {\n        {\n    }\n}\n");
     }
 
+    public void testNewLineIndentationInsideEmptyBlock() throws Exception {
+        performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        {|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        {\n            \n    }\n}\n");
+    }
+
+    public void testLineIndentationInsideEmptyBlock() throws Exception {
+        performLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        {\n|\n    }\n}\n",
+                "package t;\npublic class T {\n    public void op() {\n        {\n            \n    }\n}\n");
+    }
+
     public void testNewLineIndentationBeforeEmptyBlockEnd() throws Exception {
         performNewLineIndentationTest("package t;\npublic class T {\n    public void op() {\n        {|}\n    }\n}\n",
                 "package t;\npublic class T {\n    public void op() {\n        {\n        }\n    }\n}\n");
