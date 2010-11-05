@@ -776,11 +776,11 @@ public final class DocumentView extends EditorBoxView<ParagraphView>
             // caused by using a [float,float] point that does not fit into views boundaries
             // maintained as doubles.
             defaultLineHeight = ViewUtils.ceilFractions(defaultLineHeight);
-            defaultAscent = lineHeightTextLayout.getAscent();
+            defaultAscent = ViewUtils.floorFractions(lineHeightTextLayout.getAscent());
             LineMetrics lineMetrics = defaultFont.getLineMetrics(defaultCharText, frc);
-            defaultUnderlineOffset = lineMetrics.getUnderlineOffset();
+            defaultUnderlineOffset = ViewUtils.floorFractions(lineMetrics.getUnderlineOffset());
             defaultUnderlineThickness = lineMetrics.getUnderlineThickness();
-            defaultStrikethroughOffset = lineMetrics.getStrikethroughOffset();
+            defaultStrikethroughOffset = ViewUtils.floorFractions(lineMetrics.getStrikethroughOffset());
             defaultStrikethroughThickness = lineMetrics.getStrikethroughThickness();
             defaultCharWidth = ViewUtils.ceilFractions(defaultCharTextLayout.getAdvance());
             tabTextLayout = null;

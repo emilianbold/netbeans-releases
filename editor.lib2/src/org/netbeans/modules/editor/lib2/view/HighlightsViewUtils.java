@@ -762,9 +762,11 @@ public class HighlightsViewUtils {
                 g.clip(alloc); // Update current clip
                 g.setColor(textLayoutPart.foreground());
                 Rectangle2D textLayoutBounds = ViewUtils.shapeAsRect(textLayoutAlloc);
-                textLayoutPart.textLayout().draw(g,
-                        (float) textLayoutBounds.getX(),
-                        (float) (textLayoutBounds.getY() + textLayoutPart.textLayout().getAscent()));
+                TextLayout textLayout = textLayoutPart.textLayout();
+                // Both x and ascentedY should already be floor/ceil-ed
+                float x = (float) textLayoutBounds.getX();
+                float ascentedY = (float) (textLayoutBounds.getY() + docView.getDefaultAscent());
+                textLayout.draw(g, x, ascentedY);
     //            g.fill(shape); // Just for testing visual bounds
                 g.setClip(origClip);
                 // Leave foreground color for possible strike through rendering
@@ -813,9 +815,9 @@ public class HighlightsViewUtils {
             TextLayout textLayout, DocumentView docView)
     {
         float x = (float) bounds.getX();
-        float ascentedY = ViewUtils.floorFractions(bounds.getY() + docView.getDefaultAscent());
-//        System.err.println("paintTextLayout: x=" + x + ", ascentedY=" + ascentedY);
+        float ascentedY = (float) (bounds.getY() + docView.getDefaultAscent());
         // TextLayout is unable to do a partial render
+        // Both x and ascentedY should already be floor/ceil-ed
         textLayout.draw(g, x, ascentedY);
     }
 
