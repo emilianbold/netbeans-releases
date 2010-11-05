@@ -1005,18 +1005,6 @@ public final class EarProjectProperties {
     }
     
     
-    private static boolean showModifiedMessage(final String title) {
-        String message = NbBundle.getMessage(EarProjectProperties.class,"TXT_Regenerate");
-        JButton regenerateButton = new JButton(NbBundle.getMessage(EarProjectProperties.class,"CTL_RegenerateButton"));
-        regenerateButton.setDefaultCapable(true);
-        regenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EarProjectProperties.class,"AD_RegenerateButton"));
-        NotifyDescriptor d = new NotifyDescriptor.Message(message, NotifyDescriptor.WARNING_MESSAGE);
-        d.setTitle(title);
-        d.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
-        d.setOptions(new Object[] {regenerateButton, NotifyDescriptor.CANCEL_OPTION});
-        return DialogDisplayer.getDefault().notify(d) == regenerateButton;
-    }
-
     public static String getCompletePathInArchive(EarProject project, ClassPathSupport.Item item) {
         String full = "";
         if (item.getReference() == null) {

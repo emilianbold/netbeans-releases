@@ -404,7 +404,12 @@ final public class EjbJarProjectProperties {
                 }
             });
             // and save the project        
-            ProjectManager.getDefault().saveProject(project);
+            project.setProjectPropertiesSave(true);
+            try {
+                ProjectManager.getDefault().saveProject(project);
+            } finally {
+                project.setProjectPropertiesSave(false);
+            }
             //Delete COS mark
             if (!DEPLOY_ON_SAVE_MODEL.isSelected()) {
                 DeployOnSaveUtils.performCleanup(project, evaluator, updateHelper, "build.classes.dir", false); // NOI18N

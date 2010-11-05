@@ -215,6 +215,9 @@ public class EjbJarProject implements Project, FileChangeListener {
     private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
+    // set to true when project customizer is being closed and changes persisted
+    private final ThreadLocal<Boolean> projectPropertiesSave;
+    
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
     /*private String propJ2eeServerInstance;
     private PropertyChangeListener evalListener = new PropertyChangeListener() {
@@ -273,6 +276,12 @@ public class EjbJarProject implements Project, FileChangeListener {
     };*/
     
     public EjbJarProject(final AntProjectHelper helper) throws IOException {
+        this.projectPropertiesSave = new ThreadLocal<Boolean>() {
+            @Override
+            protected Boolean initialValue() {
+                return Boolean.FALSE;
+            }
+        };
         this.helper = helper;
         eval = createEvaluator();
         aux = helper.createAuxiliaryConfiguration();
@@ -320,6 +329,10 @@ public class EjbJarProject implements Project, FileChangeListener {
          );    
     }
 
+    public void setProjectPropertiesSave(boolean value) {
+        this.projectPropertiesSave.set(value);
+    }
+    
     private ClassPathModifier.Callback createClassPathModifierCallback() {
         return new ClassPathModifier.Callback() {
             public String getClassPathProperty(SourceGroup sg, String type) {
@@ -692,72 +705,35 @@ public class EjbJarProject implements Project, FileChangeListener {
         return helper.getProperties(path).getProperty(name);
     }
     
-    /**
-     * Refreshes the build-impl.xml script. If it was modified by the user, it 
-     * displays a confirmation dialog.
-     *
-     * @param askUserIfFlags only display the dialog if the state of the build script
-     * contains these flags (along with {@link GeneratedFilesHelper#FLAG_MODIFIED}, 
-     * which is always checked)
-     * @param askInCurrentThread if false, asks in another thread
-     * @param checkForProjectXmlModified true if it is necessary to check whether the
-     * script is out of date with respect to <code>project.xml</code> and/or the stylesheet
-     */
-    private void refreshBuildImplXml(int askUserIfFlags, boolean askInCurrentThread, boolean checkForProjectXmlModified) {
-        askUserIfFlags |= GeneratedFilesHelper.FLAG_MODIFIED;
-        int flags = genFilesHelper.getBuildScriptState(
-            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-            EjbJarProject.class.getResource("resources/build-impl.xsl")); //NOI18N
-        if ((flags & askUserIfFlags) == askUserIfFlags) {
-            Runnable run = new Runnable () {
-                public void run () {
-                    JButton updateOption = new JButton (NbBundle.getMessage(EjbJarProject.class, "CTL_Regenerate"));
-                    if (DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor (NbBundle.getMessage(EjbJarProject.class,"TXT_BuildImplRegenerate"),
-                            NbBundle.getMessage(EjbJarProject.class,"TXT_BuildImplRegenerateTitle"),
-                            NotifyDescriptor.DEFAULT_OPTION,
-                            NotifyDescriptor.WARNING_MESSAGE,
-                            new Object[] {
-                                updateOption,
-                                NotifyDescriptor.CANCEL_OPTION
-                            },
-                            updateOption)) == updateOption) {
-                        try {
-                            genFilesHelper.generateBuildScriptFromStylesheet(
-                                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                                EjbJarProject.class.getResource("resources/build-impl.xsl")); // NOI18N
-                        } catch (IOException e) {
-                            Exceptions.printStackTrace(e);
-                        } catch (IllegalStateException e) {
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
-                }
-            };
-            if (askInCurrentThread) {
-                run.run();
-            } else {
-                RequestProcessor.getDefault().post(run);
-            }
-        } else {
-            try {
-                genFilesHelper.refreshBuildScript(
-                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
-                    EjbJarProject.class.getResource("resources/build-impl.xsl"), // NOI18N
-                    checkForProjectXmlModified);
-            } catch (IOException e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-    }
-
     // Private innerclasses ----------------------------------------------------
     private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
         
         ProjectXmlSavedHookImpl() {}
         
+        @Override
         protected void projectXmlSaved() throws IOException {
-            refreshBuildImplXml(0, false, false);
+            int state = genFilesHelper.getBuildScriptState(
+                GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                EjbJarProject.class.getResource("resources/build-impl.xsl"));
+            final Boolean projectPropertiesSave = EjbJarProject.this.projectPropertiesSave.get();
+            if ((projectPropertiesSave.booleanValue() && (state & GeneratedFilesHelper.FLAG_MODIFIED) == GeneratedFilesHelper.FLAG_MODIFIED) ||
+                state == (GeneratedFilesHelper.FLAG_UNKNOWN | GeneratedFilesHelper.FLAG_MODIFIED | 
+                    GeneratedFilesHelper.FLAG_OLD_PROJECT_XML | GeneratedFilesHelper.FLAG_OLD_STYLESHEET)) {  //missing genfiles.properties
+                try {
+                    Util.backupBuildImplFile(updateHelper);
+                    genFilesHelper.generateBuildScriptFromStylesheet(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            EjbJarProject.class.getResource("resources/build-impl.xsl"));
+                } catch (IOException e) {
+                    Exceptions.printStackTrace(e);
+                } catch (IllegalStateException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            } else {
+                genFilesHelper.refreshBuildScript(GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                                                  EjbJarProject.class.getResource("resources/build-impl.xsl"),
+                                                  false);
+            }
             
             genFilesHelper.refreshBuildScript(
                 getBuildXmlName(),
@@ -810,7 +786,20 @@ public class EjbJarProject implements Project, FileChangeListener {
                 
                 // Check up on build scripts.
                 
-                 refreshBuildImplXml( GeneratedFilesHelper.FLAG_OLD_PROJECT_XML, true, true);
+                int flags = genFilesHelper.getBuildScriptState(
+                    GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                    EjbJarProject.class.getResource("resources/build-impl.xsl"));
+                if ((flags & GeneratedFilesHelper.FLAG_MODIFIED) != 0
+                    && (flags & GeneratedFilesHelper.FLAG_OLD_PROJECT_XML) != 0) {
+                        Util.backupBuildImplFile(updateHelper);
+                        genFilesHelper.generateBuildScriptFromStylesheet(
+                            GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                            EjbJarProject.class.getResource("resources/build-impl.xsl"));
+                } else {
+                    genFilesHelper.refreshBuildScript(
+                        GeneratedFilesHelper.BUILD_IMPL_XML_PATH,
+                        EjbJarProject.class.getResource("resources/build-impl.xsl"), true);
+                }
                 
                 genFilesHelper.refreshBuildScript(
                     getBuildXmlName(),
