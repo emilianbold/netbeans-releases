@@ -70,7 +70,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,9 +107,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
     private SelfSamplerAction() {
         putValue(Action.NAME, ACTION_NAME_START);
         putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
-        putValue(Action.SMALL_ICON,
-                ImageUtilities.loadImageIcon("org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
-                , false));
+        putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSampler.png"); // NOI18N
         if (System.getProperty(SelfSamplerAction.class.getName() + ".sniff") != null) { //NOI18N
             Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.KEY_EVENT_MASK);
         }
@@ -132,10 +129,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
             if (RUNNING.compareAndSet(null, c = new InternalSampler(THREAD_NAME))) {
                 putValue(Action.NAME, ACTION_NAME_STOP);
                 putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_STOP);
-                putValue(Action.SMALL_ICON,
-                        ImageUtilities.loadImageIcon(
-                        "org/netbeans/core/ui/sampler/selfSamplerRunning.png" //NOI18N
-                        , false));
+                putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSamplerRunning.png"); // NOI18N
                 c.run();
             } else if ((c = RUNNING.getAndSet(null)) != null) {
                 final Sampler controller = c;
@@ -153,10 +147,7 @@ class SelfSamplerAction extends AbstractAction implements AWTEventListener {
                     protected void done() {
                         putValue(Action.NAME, ACTION_NAME_START);
                         putValue(Action.SHORT_DESCRIPTION, ACTION_NAME_START);
-                        putValue(Action.SMALL_ICON,
-                                ImageUtilities.loadImageIcon(
-                                "org/netbeans/core/ui/sampler/selfSampler.png" //NOI18N
-                                , false));
+                        putValue ("iconBase", "org/netbeans/core/ui/sampler/selfSampler.png"); // NOI18N
                         SelfSamplerAction.this.setEnabled(true);
                     }
                 };
