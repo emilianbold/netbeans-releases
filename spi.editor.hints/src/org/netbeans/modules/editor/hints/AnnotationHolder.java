@@ -127,6 +127,15 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
     private static Map<String, LookupListener> COLORINGS_LISTENERS =
         Collections.synchronizedMap(new HashMap<String, LookupListener>());
 
+    private static final AttributeSet DEFUALT_ERROR =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00));
+    private static final AttributeSet DEFUALT_WARNING =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00));
+    private static final AttributeSet DEFUALT_VERIFIER =
+            AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55));
+    private static final AttributeSet TOOLTIP =
+            AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver());
+
     private Map<ErrorDescription, List<Position>> errors2Lines;
     private Map<Position, List<ErrorDescription>> line2Errors;
     private Map<Position, ParseErrorAnnotation> line2Annotations;
@@ -829,55 +838,39 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                 );
             }
             final Iterator<? extends FontColorSettings> it = result.allInstances().iterator();
+            AttributeSet error;
+            AttributeSet warning;
+            AttributeSet verifier;
             if (it.hasNext()) {
                 FontColorSettings fcs = it.next();
                 AttributeSet attributes = fcs.getTokenFontColors("errors"); // NOI18N
                 if (attributes != null) {
-                    coloring.put(Severity.ERROR, attributes);
+                    error = attributes;
                 } else {
                     attributes = fcs.getTokenFontColors("error"); // NOI18N
                     if (attributes != null) {
-                        coloring.put(Severity.ERROR, attributes);
+                        error = attributes;
                     } else {
-                        coloring.put(Severity.ERROR, AttributesUtilities.createImmutable(
-                            EditorStyleConstants.WaveUnderlineColor, 
-                            new Color(0xFF, 0x00, 0x00),
-                            EditorStyleConstants.Tooltip, new TooltipResolver()));
+                        error = DEFUALT_ERROR;
                     }
                 }
                 attributes = fcs.getTokenFontColors("warning"); // NOI18N
                 if (attributes != null) {
-                    coloring.put(Severity.WARNING, attributes);
-                    coloring.put(Severity.VERIFIER, attributes);
-                    coloring.put(Severity.HINT, attributes);
+                    warning = attributes;
+                    verifier = attributes;
                 } else {
-                    coloring.put(Severity.WARNING, AttributesUtilities.createImmutable(
-                        EditorStyleConstants.WaveUnderlineColor,
-                        new Color(0xC0, 0xC0, 0x00), 
-                        EditorStyleConstants.Tooltip, new TooltipResolver()));
-                    coloring.put(Severity.VERIFIER, AttributesUtilities.createImmutable(
-                        EditorStyleConstants.WaveUnderlineColor, 
-                        new Color(0xFF, 0xD5, 0x55), 
-                        EditorStyleConstants.Tooltip, new TooltipResolver()));
-                    coloring.put(Severity.HINT, AttributesUtilities.createImmutable(
-                        EditorStyleConstants.Tooltip, new TooltipResolver()));
+                    warning = DEFUALT_WARNING;
+                    verifier = DEFUALT_VERIFIER;
                 }
             } else {
-                coloring.put(Severity.ERROR, AttributesUtilities.createImmutable(
-                    EditorStyleConstants.WaveUnderlineColor, 
-                    new Color(0xFF, 0x00, 0x00), 
-                    EditorStyleConstants.Tooltip, new TooltipResolver()));
-                coloring.put(Severity.WARNING, AttributesUtilities.createImmutable(
-                    EditorStyleConstants.WaveUnderlineColor,
-                    new Color(0xC0, 0xC0, 0x00), 
-                    EditorStyleConstants.Tooltip, new TooltipResolver()));
-                coloring.put(Severity.VERIFIER, AttributesUtilities.createImmutable(
-                    EditorStyleConstants.WaveUnderlineColor,
-                    new Color(0xFF, 0xD5, 0x55), 
-                    EditorStyleConstants.Tooltip, new TooltipResolver()));
-                coloring.put(Severity.HINT, AttributesUtilities.createImmutable(
-                    EditorStyleConstants.Tooltip, new TooltipResolver()));
+                error = DEFUALT_ERROR;
+                warning = DEFUALT_WARNING;
+                verifier = DEFUALT_VERIFIER;
             }
+            coloring.put(Severity.ERROR, AttributesUtilities.createComposite(error, TOOLTIP));
+            coloring.put(Severity.WARNING, AttributesUtilities.createComposite(error, DEFUALT_WARNING));
+            coloring.put(Severity.VERIFIER, AttributesUtilities.createComposite(error, DEFUALT_VERIFIER));
+            coloring.put(Severity.HINT, TOOLTIP);
             COLORINGS.put(mimeType, coloring);
         }
         return coloring.get(s);
