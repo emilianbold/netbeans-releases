@@ -812,7 +812,7 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
         return bag;
     }
 
-    private static AttributeSet getColoring(Severity s, Document d) {
+    static AttributeSet getColoring(Severity s, Document d) {
         final String mimeType = DocumentUtilities.getMimeType(d);
         Map<Severity, AttributeSet> coloring = COLORINGS.get(mimeType);
         if (coloring == null) {

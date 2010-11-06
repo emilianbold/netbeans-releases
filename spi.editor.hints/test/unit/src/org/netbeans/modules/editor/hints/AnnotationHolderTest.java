@@ -115,7 +115,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 3, 5, 6}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 3, 5, 6}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer2() throws Exception {
@@ -125,7 +125,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer3() throws Exception {
@@ -135,7 +135,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
 
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsOneLayer4() throws Exception {
@@ -145,7 +145,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers1() throws Exception {
@@ -155,7 +155,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 3, 5, 7}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {1, 3, 5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testComputeHighlightsTwoLayers2() throws Exception {
@@ -165,7 +165,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers3() throws Exception {
@@ -175,7 +175,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {3, 5, /*6*/5, 7}, new AttributeSet[] {COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {3, 5, /*6*/5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testComputeHighlightsTwoLayers4() throws Exception {
@@ -185,7 +185,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5}, new AttributeSet[] {COLORINGS.get(WARNING), COLORINGS.get(ERROR)});
+        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5}, new AttributeSet[] {AnnotationHolder.getColoring(WARNING, doc), AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeHighlightsTwoLayers5() throws Exception {
@@ -195,7 +195,7 @@ public class AnnotationHolderTest extends NbTestCase {
         List<ErrorDescription> errors = Arrays.asList(ed1, ed2);
         final OffsetsBag bag = AnnotationHolder.computeHighlights(doc, errors);
         
-        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5, /*6*/5, 7}, new AttributeSet[] {COLORINGS.get(WARNING), COLORINGS.get(ERROR), COLORINGS.get(WARNING)});
+        assertHighlights("",bag, new int[] {1, /*2*/3, 3, 5, /*6*/5, 7}, new AttributeSet[] {AnnotationHolder.getColoring(WARNING, doc), AnnotationHolder.getColoring(ERROR, doc), AnnotationHolder.getColoring(WARNING, doc)});
     }
     
     public void testNullSpan() throws Exception {
@@ -219,17 +219,17 @@ public class AnnotationHolderTest extends NbTestCase {
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 0)), errors);
         
-        assertHighlights("", bag, new int[] {47 - 30, 50 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {47 - 30, 50 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
         
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 1)), errors);
         
-        assertHighlights("", bag, new int[] {53 - 30, 60 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {53 - 30, 60 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
         
         bag = new OffsetsBag(doc);
         AnnotationHolder.updateHighlightsOnLine(bag, bdoc, bdoc.createPosition(Utilities.getRowStartFromLineOffset(bdoc, 2)), errors);
         
-        assertHighlights("", bag, new int[] {65 - 30, 72 - 30}, new AttributeSet[] {COLORINGS.get(ERROR)});
+        assertHighlights("", bag, new int[] {65 - 30, 72 - 30}, new AttributeSet[] {AnnotationHolder.getColoring(ERROR, doc)});
     }
     
     public void testComputeSeverity() throws Exception {
