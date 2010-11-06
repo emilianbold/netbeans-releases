@@ -52,7 +52,6 @@ made subject to such option by the copyright holder.
     
     <fontcolor name="char" foreColor="ff006f00"/>
     <fontcolor name="comment" foreColor="ff737373"/>
-    <fontcolor name="error" foreColor="black" bgColor="pink"/>
     <fontcolor name="identifier"/>
     <fontcolor name="keyword" foreColor="ff000099">
         <font style="bold"/>
