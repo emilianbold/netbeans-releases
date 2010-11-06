@@ -709,7 +709,8 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 	 *
 	 */
 	manager().enableConsoleWindow();
-	DebuggerManager.openComponent("callstackView", true); // NOI18N
+	// CR 6998041
+	// DebuggerManager.openComponent("callstackView", true); // NOI18N
 
         if (Log.Bpt.fix6810534) {
             javax.swing.SwingUtilities.invokeLater(new Runnable() {
