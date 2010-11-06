@@ -81,6 +81,7 @@ import org.netbeans.modules.dlight.spi.collector.DataCollector.CollectorState;
 import org.netbeans.modules.dlight.spi.collector.DataCollectorListener;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProvider;
 import org.netbeans.modules.dlight.spi.dataprovider.DataProviderFactory;
+import org.netbeans.modules.dlight.spi.impl.DataCollectorProvider;
 import org.netbeans.modules.dlight.spi.impl.IndicatorAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorDataProviderAccessor;
 import org.netbeans.modules.dlight.spi.impl.IndicatorRepairActionProviderAccessor;
@@ -131,9 +132,8 @@ public final class DLightSession implements
     private final String sharedStorageID;
     private final boolean useSharedStorage;
     private CountDownLatch collectorsDoneFlag;
-    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();    
+    private final List<DataCollectorListener> collectorListeners = new ArrayList<DataCollectorListener>();
     final static ConcurrentMap<String, SessionDataFiltersSupport> sharedDataFilterSupports = new ConcurrentHashMap<String, SessionDataFiltersSupport>();
-    
 
     public static enum SessionState {
 
@@ -425,7 +425,7 @@ public final class DLightSession implements
                 }
                 //in case we are using the shared session we need to collect all info of
                 if (useSharedStorage) {//we should share this info
-                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);                    
+                    serviceInfoDataStorage = DataStorageManager.getInstance().getServiceInfoDataStorageFor(sharedStorageID);
                 } else {
                     serviceInfoDataStorage = new ServiceInfoDataStorageImpl();
                 }
@@ -594,7 +594,7 @@ public final class DLightSession implements
 
     private boolean prepareContext(ExecutionContext context) {
         final DLightTarget target = context.getTarget();
-
+        DataCollectorProvider.getInstance().reset();
         context.validateTools(context.getDLightConfiguration().getConfigurationOptions(false).validateToolsRequiredUserInteraction());
 
         List<DLightTool> validTools = new ArrayList<DLightTool>();
@@ -698,9 +698,11 @@ public final class DLightSession implements
             }
 
             List<Indicator<?>> indicators = DLightToolAccessor.getDefault().getIndicators(tool);
-            for (Indicator<?> i : indicators) {
-                if (!subscribedIndicators.contains(i)) {
-                    IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
+            if (indicators != null) {
+                for (Indicator<?> i : indicators) {
+                    if (!subscribedIndicators.contains(i)) {
+                        IndicatorAccessor.getDefault().setRepairActionProviderFor(i, IndicatorRepairActionProviderAccessor.getDefault().createNew(context.getDLightConfiguration(), tool, target));
+                    }
                 }
             }
         }
@@ -721,7 +723,7 @@ public final class DLightSession implements
 
 
 
-        if (collectors != null && collectors.size() > 0) {
+        if (collectors != null && !collectors.isEmpty()) {
             for (DataCollector<?> toolCollector : collectors) {
                 collectorNames.append(toolCollector.getName()).append(ServiceInfoDataStorage.DELIMITER);
                 Map<DataStorageType, DataStorage> currentStorages = DataStorageManager.getInstance().getDataStoragesFor(this, toolCollector);
@@ -754,18 +756,20 @@ public final class DLightSession implements
 
                 target.addTargetListener(toolCollector);
             }
-        }
-        for (DataCollector<?> c : collectors) {
-            c.addDataCollectorListener(this);
-            for (DataCollectorListener l : collectorListeners) {
-                c.addDataCollectorListener(l);
+            for (DataCollector<?> c : collectors) {
+                c.addDataCollectorListener(this);
+                for (DataCollectorListener l : collectorListeners) {
+                    c.addDataCollectorListener(l);
+                }
             }
+            collectorsDoneFlag = new CountDownLatch(collectors.size());
+            for (IndicatorDataProvider<?> idp : idproviders) {
+                idp.init(serviceInfoDataStorage);
+                addDataFilterListener(idp);
+            }
+
         }
-        collectorsDoneFlag = new CountDownLatch(collectors.size());
-        for (IndicatorDataProvider<?> idp : idproviders) {
-            idp.init(serviceInfoDataStorage);
-            addDataFilterListener(idp);
-        }
+
 
         // at the end, initialize data filters (_temporarily_ here, as info
         // about filters is stored in target's info...
@@ -787,19 +791,6 @@ public final class DLightSession implements
         }
         return true;
 
-//    activeTasks = new ArrayList<DLightExecutorTask>();
-
-        // TODO: For now: assume that ANY collector can attach to the process!
-        // Here we need to start (paused!) the target; subscribe collectors as listeners .... ;
-
-
-//    if (selectedTools != null) {
-//      for (TargetRunnerListener l : tool.getTargetRunnerListeners()) {
-//        runner.addTargetRunnerListener(l);
-//      }
-//    }
-////    RequestProcessor.getDefault().post(runner);
-//    runner.run();
     }
 
     /**
@@ -1053,7 +1044,5 @@ public final class DLightSession implements
         public SessionDataFiltersSupport getSessionDataFiltersSupport(DLightSession session) {
             return session.dataFiltersSupport;
         }
-        
-        
     }
 }
