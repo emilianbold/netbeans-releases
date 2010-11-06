@@ -182,6 +182,7 @@
                 <friend>com.sun.tools.analytics.oss.support</friend>
                 <friend>com.sun.tools.analytics.oss.support.ui</friend>
                 <friend>com.sun.tools.analytics.targets</friend>
+                <friend>com.sun.tools.analytics.targets.gui</friend>
                 <friend>com.sun.tools.analytics.uncover</friend>
                 <friend>com.sun.tools.analytics.utils</friend>
                 <friend>com.sun.tools.debugger.common</friend>
