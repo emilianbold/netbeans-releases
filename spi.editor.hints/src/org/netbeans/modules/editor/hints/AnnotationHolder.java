@@ -868,8 +868,8 @@ public final class AnnotationHolder implements ChangeListener, PropertyChangeLis
                 verifier = DEFUALT_VERIFIER;
             }
             coloring.put(Severity.ERROR, AttributesUtilities.createComposite(error, TOOLTIP));
-            coloring.put(Severity.WARNING, AttributesUtilities.createComposite(error, DEFUALT_WARNING));
-            coloring.put(Severity.VERIFIER, AttributesUtilities.createComposite(error, DEFUALT_VERIFIER));
+            coloring.put(Severity.WARNING, AttributesUtilities.createComposite(warning, TOOLTIP));
+            coloring.put(Severity.VERIFIER, AttributesUtilities.createComposite(verifier, TOOLTIP));
             coloring.put(Severity.HINT, TOOLTIP);
             COLORINGS.put(mimeType, coloring);
         }
