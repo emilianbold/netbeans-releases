@@ -165,7 +165,6 @@ public class ImportProject implements PropertyChangeListener {
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private File configureFile;
-    private FileObject makeFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
@@ -332,9 +331,11 @@ public class ImportProject implements PropertyChangeListener {
         if (makefilePath != null && makefilePath.length() > 0) {
             if (fullRemote) {
                 CndUtils.assertAbsolutePathInConsole(makefilePath);
-                makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
+                // we have to switch to file objects; but can't remember it right here since it may not exist
+                // makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
             } else {
-                makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
+                // see comment above
+                // makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
                 makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
                 makefilePath = CndPathUtilitities.normalize(makefilePath);
             }
@@ -640,6 +641,15 @@ public class ImportProject implements PropertyChangeListener {
         if (!isProjectOpened()) {
             isFinished = true;
             return;
+        }
+        FileObject makeFileObject = null;
+        if (makefilePath != null && makefilePath.length() > 0) {
+            if (fullRemote) {
+                CndUtils.assertAbsolutePathInConsole(makefilePath);
+                makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
+            } else {
+                makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
+            }
         }
         if (!fullRemote) {
             downloadRemoteFile(FileUtil.toFile(makeFileObject)); // FileUtil.toFile SIC! - always local
