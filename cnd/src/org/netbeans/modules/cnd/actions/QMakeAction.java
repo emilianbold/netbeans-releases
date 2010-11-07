@@ -142,7 +142,7 @@ public class QMakeAction extends AbstractExecutorRunAction {
         String[] args = getArguments(node, PredefinedToolKind.QMakeTool); // NOI18N
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;

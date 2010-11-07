@@ -91,7 +91,7 @@ import org.openide.util.Exceptions;
     @Override
     public File createFileObject(String path) {
         FileObject fo = fs.findResource(path);
-        if (fo == null) {
+        if (fo == null || !fo.isValid()) {
             RemoteLogger.getInstance().log(Level.INFO, "Null file object for {0}", path);
             return new FileObjectBasedFile(env, path);
         } else {

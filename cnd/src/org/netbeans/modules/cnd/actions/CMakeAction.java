@@ -138,7 +138,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         //String arguments = proFile.getName();
         String[] arguments =  getArguments(node, PredefinedToolKind.CMakeTool); // NOI18N
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;

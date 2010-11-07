@@ -165,7 +165,7 @@ public class ShellRunAction extends AbstractExecutorRunAction {
         String[] args = bes.getArguments(); // from properties
 
         ExecutionEnvironment execEnv = getExecutionEnvironment(fileObject, project);
-        buildDir = convertToRemoteIfNeeded(execEnv, buildDir);
+        buildDir = convertToRemoteIfNeeded(execEnv, buildDir, project);
         if (buildDir == null) {
             trace("Run folder folder is null"); //NOI18N
             return null;

@@ -73,16 +73,15 @@ import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
-import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryExtensionInterface;
@@ -109,8 +108,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -166,7 +165,7 @@ public class ImportProject implements PropertyChangeListener {
     private Iterator<SourceFolderInfo> tests;
     private String sourceFoldersFilter = null;
     private File configureFile;
-    private File makefileFile;
+    private FileObject makeFileObject;
     private Map<Step, State> importResult = new EnumMap<Step, State>(Step.class);
 
     public ImportProject(WizardDescriptor wizard) {
@@ -331,9 +330,14 @@ public class ImportProject implements PropertyChangeListener {
         // Add makefile and configure script to important files
         ArrayList<String> importantItems = new ArrayList<String>();
         if (makefilePath != null && makefilePath.length() > 0) {
-            makefileFile = CndFileUtils.createLocalFile(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath)); // XXX:fullRemote: for now, generated makefile is launched
-            makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
-            makefilePath = CndPathUtilitities.normalize(makefilePath);
+            if (fullRemote) {
+                CndUtils.assertAbsolutePathInConsole(makefilePath);
+                makeFileObject = RemoteFileUtil.getFileObject(makefilePath, executionEnvironment);
+            } else {
+                makeFileObject = CndFileUtils.toFileObject(CndPathUtilitities.toAbsolutePath(projectFolder.getAbsolutePath(), makefilePath));
+                makefilePath = ProjectSupport.toProperPath(projectFolder.getPath(), CndPathUtilitities.naturalize(makefilePath), pathMode);
+                makefilePath = CndPathUtilitities.normalize(makefilePath);
+            }
             importantItems.add(makefilePath);
         }
         if (configurePath != null && configurePath.length() > 0) {
@@ -637,10 +641,11 @@ public class ImportProject implements PropertyChangeListener {
             isFinished = true;
             return;
         }
-        downloadRemoteFile(makefileFile);
+        if (!fullRemote) {
+            downloadRemoteFile(FileUtil.toFile(makeFileObject)); // FileUtil.toFile SIC! - always local
+        }
         scanConfigureLog(logFile);
-        if (makefileFile != null && makefileFile.exists()) {
-            FileObject makeFileObject = CndFileUtils.toFileObject(makefileFile); //XXX:fullRemote
+        if (makeFileObject != null && makeFileObject.isValid()) {
             DataObject dObj;
             try {
                 dObj = DataObject.find(makeFileObject);
