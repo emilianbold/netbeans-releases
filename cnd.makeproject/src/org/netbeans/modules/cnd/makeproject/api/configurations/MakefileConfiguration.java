@@ -310,7 +310,7 @@ public class MakefileConfiguration {
         String buttonText = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/makeproject/api/Bundle").getString("SelectLabel");
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(getExecutionEnvironment(), titleText, buttonText,
                 FileChooser.DIRECTORIES_ONLY, null, seed, true);
-        chooser.putClientProperty("title", chooser.getDialogTitle());
+        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         chooser.setControlButtonsAreShown(false);
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         propenv.addPropertyChangeListener(new PropertyChangeListener() {
@@ -416,7 +416,7 @@ public class MakefileConfiguration {
         final JFileChooser chooser = RemoteFileUtil.createFileChooser(execEnv,
                 "", "", FileChooser.FILES_ONLY, null, seed, true); //NOI18N
         chooser.setControlButtonsAreShown(false);
-        chooser.putClientProperty("title", chooser.getDialogTitle());
+        chooser.putClientProperty("title", chooser.getDialogTitle()); // NOI18N
         setElfFilters(execEnv, chooser);
         propenv.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         propenv.addPropertyChangeListener(new PropertyChangeListener() {
