@@ -229,7 +229,17 @@ public class InvalidFileObjectSupport {
         @Override
         public FileObject getParent() {
             if (path.length() > 0) {
-                return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, CndPathUtilitities.getDirName(path.toString()));
+                if (isRoot()) {
+                    return null;
+                }
+                String parentPath = CndPathUtilitities.getDirName(path.toString());
+                if (parentPath == null) {
+                    // should there be an assertion? it's just an invalid file object...
+                    //CndUtils.assertTrueInConsole(false, getClass().getSimpleName() + ": should be root, but it isn't"); //NOI18N
+                    return null;
+                } else {
+                    return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, parentPath);
+                }
             } else {
                 return null;
             }
