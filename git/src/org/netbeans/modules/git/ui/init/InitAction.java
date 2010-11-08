@@ -139,28 +139,27 @@ public class InitAction extends GitAction {
         }
 
         RequestProcessor rp = Git.getInstance().getRequestProcessor(rootToManage);
-        GitProgressSupport supportInit = new GitProgressSupport() {
+        GitProgressSupport support = new GitProgressSupport() {
             @Override
             public void perform() {
                 try {
-                    OutputLogger logger = getLogger();
-                    logger.outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE")); // NOI18N
-                    logger.outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE_SEP")); // NOI18N
-                    logger.output(NbBundle.getMessage(InitAction.class, "MSG_INIT", rootToManage)); // NOI18N
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE")); // NOI18N
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_TITLE_SEP")); // NOI18N
+                    output(NbBundle.getMessage(InitAction.class, "MSG_INIT", rootToManage)); // NOI18N
                     
                     GitClient client = Git.getInstance().getClient(rootToManage);
                     client.init();                                        
 
                     Git.getInstance().getFileStatusCache().refreshAllRoots(rootToManage);
                     Git.getInstance().versionedFilesChanged();                       
-                    logger.outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_DONE")); // NOI18N                    
+                    outputInRed(NbBundle.getMessage(InitAction.class, "MSG_INIT_DONE")); // NOI18N                    
                                        
                 } catch (GitException ex) {
                     Git.LOG.log(Level.WARNING, NAME, ex);                    
                 }
             }            
         };
-        supportInit.start(rp, rootToManage, NbBundle.getMessage(InitAction.class, "MSG_Init_Progress")); // NOI18N
+        support.start(rp, rootToManage, NbBundle.getMessage(InitAction.class, "MSG_Init_Progress")); // NOI18N
     }
 
     private File selectRootToManage (VCSContext context) {
