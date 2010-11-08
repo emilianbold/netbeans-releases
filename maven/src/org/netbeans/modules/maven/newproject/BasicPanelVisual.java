@@ -697,7 +697,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         });
         List<ArtifactRepository> repos;
         if (arch.getRepository() == null) {
-            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, "http://repo1.maven.org/maven2", "central"));//NOI18N
+            repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, RepositoryPreferences.REPO_CENTRAL, "central"));//NOI18N
         } else {
             
             repos = Collections.<ArtifactRepository>singletonList(EmbedderFactory.createRemoteRepository(online, arch.getRepository(), "custom-repo"));//NOI18N
