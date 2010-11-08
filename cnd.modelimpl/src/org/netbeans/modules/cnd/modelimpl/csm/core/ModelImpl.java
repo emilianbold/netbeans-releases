@@ -371,6 +371,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 
     @Override
     public CsmFile findFile(CharSequence absPath, boolean snapShot) {
+        CndUtils.assertAbsolutePathInConsole(absPath.toString());
         Collection<CsmProject> projects = projects();
         CsmFile ret = null;
         for (CsmProject curPrj : projects) {
