@@ -96,20 +96,7 @@ public class SourceFileManager implements JavaFileManager {
                         while (files.hasMoreElements()) {
                             FileObject file = files.nextElement();
                             if (ignoreExcludes || entry.includes(file)) {
-                                JavaFileObject.Kind kind;
-                                final String ext = file.getExt();
-                                if (FileObjects.JAVA.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.SOURCE;
-                                }
-                                else if (FileObjects.CLASS.equalsIgnoreCase(ext) || FileObjects.SIG.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.CLASS;
-                                }
-                                else if (FileObjects.HTML.equalsIgnoreCase(ext)) {
-                                    kind = JavaFileObject.Kind.HTML;
-                                }
-                                else {
-                                    kind = JavaFileObject.Kind.OTHER;
-                                }
+                                final JavaFileObject.Kind kind = FileObjects.getKind(file.getExt());                                
                                 if (kinds.contains(kind)) {                        
                                     result.add (SourceFileObject.create(file, root));
                                 }
