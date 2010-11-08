@@ -76,7 +76,7 @@ import org.openide.filesystems.FileObject;
  * @author sherold
  */
 public class TomcatModuleConfigurationTest extends TestBase {
-    
+
     final String DRIVER_NAME = "driverName";
     final String DRIVER_DISPLAY_NAME = "driverDisplayName";
     final String DRIVER_CLASS = "driverClass";
@@ -84,46 +84,54 @@ public class TomcatModuleConfigurationTest extends TestBase {
     final String PASSWORD = "password";
     final String DB_URL = "dburl";
     final String SCHEMA = "schema";
-    
+
     final String SIMPLE_CONTEXT_XML_DATA = "<Context path='/testweb'>\n" +
                                            "</Context>";
-    
+
+    private DatabaseConnection dbCon;
+
     public TomcatModuleConfigurationTest(java.lang.String testName) {
         super (testName);
     }
-    
+
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
-        registerConnection();
-    }
-    
-    private void registerConnection() throws Exception {
         JDBCDriver driver = JDBCDriver.create(DRIVER_NAME, DRIVER_DISPLAY_NAME, DRIVER_CLASS, new URL[]{});
-        DatabaseConnection dbCon = DatabaseConnection.create(driver, DB_URL, USER, SCHEMA, PASSWORD, true);
+        dbCon = DatabaseConnection.create(driver, DB_URL, USER, SCHEMA, PASSWORD, true);
         ConnectionManager.getDefault().addConnection(dbCon);
     }
-    
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (dbCon != null) {
+            ConnectionManager.getDefault().removeConnection(dbCon);
+        }
+        dbCon = null;
+    }
+
     public void testCreateDatasource50() throws Exception {
-        
+
         final String[][] res = {
             {"jdbc/myDatabase", "jdbc:derby://localhost:1527/sample", "app", "app", "org.apache.derby.jdbc.ClientDriver"},
             {"jdbc/myDatabase1", "jdbc:derby://localhost:1527/sample1", "app1", "app1", "org.apache.derby.jdbc.ClientDriver"},
         };
         J2eeModule j2eeModule = createJ2eeModule("context.xml", SIMPLE_CONTEXT_XML_DATA);
         TomcatModuleConfiguration conf = new TomcatModuleConfiguration(j2eeModule, TomcatVersion.TOMCAT_50);
-        
+
         String dbName = ConnectionManager.getDefault().getConnections()[0].getName();
         for (int i = 0; i < res.length; i++) {
             conf.createDatasource(res[i][0], res[i][1], res[i][2], res[i][3], res[i][4]);
         }
-        
+
         Context ctx = conf.getContext();
         boolean[] resource = ctx.getResource();
         for (int i = 0; i < res.length; i++) {
             assertEquals("javax.sql.DataSource", ctx.getResourceType(i));
             assertEquals("Container", ctx.getResourceAuth(i));
             assertEquals(res[i][0], ctx.getResourceName(i));
-            
+
             ResourceParams[] resourceParams = ctx.getResourceParams();
             assertEquals(res[i][0], resourceParams[i].getName());
             Map<String,String> paramMap = new HashMap<String,String>();
@@ -135,7 +143,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             assertEquals(res[i][3], paramMap.get("password"));
             assertEquals(res[i][4], paramMap.get("driverClassName"));
         }
-        
+
         // lets try to add an already defined resource now
         try {
             conf.createDatasource(res[0][0], res[0][1], res[0][2], res[0][3], res[0][4]);
@@ -144,21 +152,21 @@ public class TomcatModuleConfigurationTest extends TestBase {
             // expected exception
         }
     }
-    
+
     public void testCreateDatasource60() throws Exception {
-        
+
         final String[][] res = {
             {"jdbc/myDatabase", "jdbc:derby://localhost:1527/sample", "app", "app", "org.apache.derby.jdbc.ClientDriver"},
             {"jdbc/myDatabase1", "jdbc:derby://localhost:1527/sample1", "app1", "app1", "org.apache.derby.jdbc.ClientDriver"},
         };
-        
+
         J2eeModule j2eeModule = createJ2eeModule("context.xml", SIMPLE_CONTEXT_XML_DATA);
         TomcatModuleConfiguration conf = new TomcatModuleConfiguration(j2eeModule, TomcatVersion.TOMCAT_60);
-        
+
         for (int i = 0; i < res.length; i++) {
             conf.createDatasource(res[i][0], res[i][1], res[i][2], res[i][3], res[i][4]);
         }
-        
+
         Context ctx = conf.getContext();
         boolean[] resource = ctx.getResource();
         for (int i = 0; i < res.length; i++) {
@@ -169,7 +177,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             assertEquals(res[i][3], ctx.getResourcePassword(i));
             assertEquals(res[i][4], ctx.getResourceDriverClassName(i));
         }
-        
+
         // lets try to add an already defined resource now
         try {
             conf.createDatasource(res[0][0], res[0][1], res[0][2], res[0][3], res[0][4]);
@@ -178,7 +186,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             // expected exception
         }
     }
-    
+
     public void testBindDatasourceReference60() throws Exception {
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "<Resource name='jdbc/derby'  auth='Container' driverClassName='org.apache.derby.jdbc.ClientDriver' maxActive='20' maxIdle='10' maxWait='-1' password='apppassword' type='javax.sql.DataSource' url='jdbc:derby://localhost:1527/sample' username='app'/> \n" +
@@ -192,7 +200,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         // nothing should be changed
         assertEquals(1 , context.getResource().length);
         assertEquals("jdbc/derby", context.getResourceName(0));
-        
+
         // add another reference to the same DS
         conf.bindDatasourceReference("jdbc/myDerby", "jdbc/derby");
         context = conf.getContext();
@@ -201,7 +209,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         boolean myDerbyPresent = false;
         boolean derbyPresent = false;
         for (int i = 0; i < lengthResource; i++) {
-            if ("jdbc/myDerby".equals(context.getResourceName(i)) 
+            if ("jdbc/myDerby".equals(context.getResourceName(i))
                     && "org.apache.derby.jdbc.ClientDriver".equals(context.getResourceDriverClassName(i))
                     && "app".equals(context.getResourceUsername(i))
                     && "apppassword".equals(context.getResourcePassword(i))
@@ -216,7 +224,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
                 derbyPresent = true;
             }
         }
-        
+
         // bind global DS with the resource reference
         conf.bindDatasourceReference("jdbc/globalDerbyRef", "jdbc/globalDerby");
         context = conf.getContext();
@@ -226,7 +234,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         assertEquals("jdbc/globalDerby" , context.getResourceLinkGlobal(0));
         assertEquals("javax.sql.DataSource" , context.getResourceLinkType(0));
     }
-    
+
     public void testBindDatasourceReference50() throws Exception {
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "  <Resource auth='Container' name='jdbc/derby' type='javax.sql.DataSource'/>\n" +
@@ -264,7 +272,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         assertEquals(1 , context.getResourceParams().length);
         assertEquals("jdbc/derby", context.getResourceName(0));
         assertEquals("jdbc/derby", context.getResourceParams(0).getName());
-        
+
         // add another reference to the same DS
         conf.bindDatasourceReference("jdbc/myDerby", "jdbc/derby");
         context = conf.getContext();
@@ -291,7 +299,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
                 derbyParamsPresent = true;
             }
         }
-        
+
         // bind global DS with the resource reference
         conf.bindDatasourceReference("jdbc/globalDerbyRef", "jdbc/globalDerby");
         context = conf.getContext();
@@ -312,15 +320,15 @@ public class TomcatModuleConfigurationTest extends TestBase {
         boolean ds0Present = false;
         boolean ds1Present = false;
         for (Datasource ds : conf.getDatasources()) {
-            if (ds.getUsername().equals("app0") && ds.getPassword().equals("apppassword0") 
-                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample0") 
-                    && ds.getJndiName().equals("jdbc/derby0") 
+            if (ds.getUsername().equals("app0") && ds.getPassword().equals("apppassword0")
+                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample0")
+                    && ds.getJndiName().equals("jdbc/derby0")
                     && ds.getDriverClassName().equals("org.apache.derby.jdbc.ClientDriver0")) {
                 ds0Present = true;
             }
-            if (ds.getUsername().equals("app1") && ds.getPassword().equals("apppassword1") 
-                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample1") 
-                    && ds.getJndiName().equals("jdbc/derby1") 
+            if (ds.getUsername().equals("app1") && ds.getPassword().equals("apppassword1")
+                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample1")
+                    && ds.getJndiName().equals("jdbc/derby1")
                     && ds.getDriverClassName().equals("org.apache.derby.jdbc.ClientDriver1")) {
                 ds1Present = true;
             }
@@ -328,7 +336,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         assertTrue(ds0Present);
         assertTrue(ds1Present);
     }
-    
+
     public void testGetDatasources50() throws Exception {
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "  <Resource auth='Container' name='jdbc/derby0' type='javax.sql.DataSource'/>\n" +
@@ -383,15 +391,15 @@ public class TomcatModuleConfigurationTest extends TestBase {
         boolean ds0Present = false;
         boolean ds1Present = false;
         for (Datasource ds : conf.getDatasources()) {
-            if (ds.getUsername().equals("app0") && ds.getPassword().equals("apppassword0") 
-                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample0") 
-                    && ds.getJndiName().equals("jdbc/derby0") 
+            if (ds.getUsername().equals("app0") && ds.getPassword().equals("apppassword0")
+                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample0")
+                    && ds.getJndiName().equals("jdbc/derby0")
                     && ds.getDriverClassName().equals("org.apache.derby.jdbc.ClientDriver0")) {
                 ds0Present = true;
             }
-            if (ds.getUsername().equals("app1") && ds.getPassword().equals("apppassword1") 
-                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample1") 
-                    && ds.getJndiName().equals("jdbc/derby1") 
+            if (ds.getUsername().equals("app1") && ds.getPassword().equals("apppassword1")
+                    && ds.getUrl().equals("jdbc:derby://localhost:1527/sample1")
+                    && ds.getJndiName().equals("jdbc/derby1")
                     && ds.getDriverClassName().equals("org.apache.derby.jdbc.ClientDriver1")) {
                 ds1Present = true;
             }
@@ -399,7 +407,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         assertTrue(ds0Present);
         assertTrue(ds1Present);
     }
-    
+
     public void testFindDatasourceJndiName60() throws Exception {
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "<Resource name='jdbc/derby'  auth='Container' driverClassName='org.apache.derby.jdbc.ClientDriver' maxActive='20' maxIdle='10' maxWait='-1' password='apppassword' type='javax.sql.DataSource' url='jdbc:derby://localhost:1527/sample' username='app'/> \n" +
@@ -416,7 +424,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         // non-existing ref name
         assertNull(conf.findDatasourceJndiName("jdbc/globalDerby"));
     }
-    
+
     public void testFindDatasourceJndiName50() throws Exception {
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "  <Resource auth='Container' name='jdbc/derby' type='javax.sql.DataSource'/>\n" +
@@ -455,7 +463,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         // non-existing ref name
         assertNull(conf.findDatasourceJndiName("jdbc/globalDerby"));
     }
-    
+
     public void testThrowsConfigurationExceptionWhenBrokenContextXml() throws Exception {
         String contextXmlData = "<Context ";
         J2eeModule j2eeModule = createJ2eeModule("context.xml", contextXmlData);
@@ -499,7 +507,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             }
         }
     }
-    
+
     public void testSetContextPath50() throws Exception {
         J2eeModule j2eeModule = createJ2eeModule("context.xml", SIMPLE_CONTEXT_XML_DATA);
         TomcatModuleConfiguration conf = new TomcatModuleConfiguration(j2eeModule, TomcatVersion.TOMCAT_50);
@@ -513,8 +521,8 @@ public class TomcatModuleConfigurationTest extends TestBase {
             assertEquals(res[i][0], conf.getContextRoot());
             assertEquals(res[i][1], conf.getContext().getLoggerPrefix()); // no logger should be defined
         }
-        
-        
+
+
         String contextXmlData = "<Context path='/testweb'>\n" +
                                 "<Logger prefix='testweb.'/> \n" +
                                 "</Context>";
@@ -531,7 +539,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
             assertEquals(res[i][1], conf.getContext().getLoggerPrefix());
         }
     }
-    
+
     public void testSetContextPath60() throws Exception {
         J2eeModule j2eeModule = createJ2eeModule("context.xml", SIMPLE_CONTEXT_XML_DATA);
         TomcatModuleConfiguration conf = new TomcatModuleConfiguration(j2eeModule, TomcatVersion.TOMCAT_60);
@@ -546,8 +554,8 @@ public class TomcatModuleConfigurationTest extends TestBase {
             assertEquals(null, conf.getContext().getLoggerPrefix()); // no logger should be defined
         }
     }
-    
-    
+
+
     private J2eeModule createJ2eeModule(String fileName, String content) throws Exception {
         File file = new File(getWorkDir(), fileName);
         FileWriter writer = new FileWriter(file);
@@ -559,27 +567,27 @@ public class TomcatModuleConfigurationTest extends TestBase {
         J2eeModuleImpl j2eeModuleImpl = new J2eeModuleImpl(file);
         return J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
     }
-    
+
     private static class J2eeModuleImpl implements J2eeModuleImplementation2 {
-    
+
         private final File contextXml;
-        
+
         public J2eeModuleImpl(File contextXml) {
             this.contextXml = contextXml;
         }
-        
+
         public String getModuleVersion() {
             return J2eeModule.J2EE_14;
         }
-    
+
         public J2eeModule.Type getModuleType() {
             return J2eeModule.Type.WAR;
         }
-    
+
         public String getUrl() {
             return null;
         }
-    
+
         public void setUrl(String url) {
         }
 
@@ -598,7 +606,7 @@ public class TomcatModuleConfigurationTest extends TestBase {
         public RootInterface getDeploymentDescriptor(String location) {
             return null;
         }
-        
+
         public <T> MetadataModel<T> getMetadataModel(Class<T> type) {
             return null;
         }
@@ -616,6 +624,6 @@ public class TomcatModuleConfigurationTest extends TestBase {
 
         public void removePropertyChangeListener(PropertyChangeListener listener) {
         }
-    
+
     };
 }

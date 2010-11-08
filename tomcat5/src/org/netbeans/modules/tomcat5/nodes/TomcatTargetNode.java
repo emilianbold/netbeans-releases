@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.tomcat5.nodes;
 import java.awt.Image;
+import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
 import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
@@ -51,6 +52,7 @@ import org.openide.util.Lookup;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesAction;
 import org.netbeans.modules.tomcat5.nodes.actions.RefreshWebModulesCookie;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -64,10 +66,20 @@ import org.openide.util.actions.SystemAction;
 public class TomcatTargetNode extends AbstractNode {
 
     /** Creates a new instance of TomcatTargetNode */
-    public TomcatTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        TomcatWebModuleChildrenFactory factory = new TomcatWebModuleChildrenFactory(lookup);
-        getChildren().add(new Node[] {new WebModuleHolderNode(factory)});
+    public TomcatTargetNode(final Lookup lookup) {
+        super(Children.create(new ChildFactory<Class<WebModuleHolderNode>>() {
+
+            @Override
+            protected boolean createKeys(List<Class<WebModuleHolderNode>> toPopulate) {
+                toPopulate.add(WebModuleHolderNode.class);
+                return true;
+            }
+
+            @Override
+            protected Node createNodeForKey(Class<WebModuleHolderNode> key) {
+                return new WebModuleHolderNode(new TomcatWebModuleChildrenFactory(lookup));
+            }   
+        }, false));
     }
 
     @Override
@@ -75,12 +87,12 @@ public class TomcatTargetNode extends AbstractNode {
         return new Action[] {};
     }
 
-    public class WebModuleHolderNode extends AbstractNode {
+    private static class WebModuleHolderNode extends AbstractNode {
 
-        public WebModuleHolderNode (TomcatWebModuleChildrenFactory factory) {
+        WebModuleHolderNode(TomcatWebModuleChildrenFactory factory) {
             super(Children.create(factory, true));
             setDisplayName(NbBundle.getMessage(TomcatTargetNode.class, "LBL_WebApps"));  // NOI18N
-            getCookieSet().add(new RefreshWebModuleChildren (factory));
+            getCookieSet().add(new RefreshWebModuleChildren(factory));
         }
 
         public Image getIcon(int type) {
@@ -99,11 +111,11 @@ public class TomcatTargetNode extends AbstractNode {
     }
 
 
-    private class RefreshWebModuleChildren implements RefreshWebModulesCookie {
+    private static class RefreshWebModuleChildren implements RefreshWebModulesCookie {
 
         private final TomcatWebModuleChildrenFactory factory;
 
-        RefreshWebModuleChildren (TomcatWebModuleChildrenFactory factory){
+        RefreshWebModuleChildren(TomcatWebModuleChildrenFactory factory){
             this.factory = factory;
         }
 

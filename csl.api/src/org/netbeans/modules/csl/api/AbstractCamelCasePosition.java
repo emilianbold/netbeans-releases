@@ -45,6 +45,7 @@ package org.netbeans.modules.csl.api;
 
 import java.awt.event.ActionEvent;
 import java.util.MissingResourceException;
+import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -52,6 +53,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -128,7 +130,11 @@ public abstract class AbstractCamelCasePosition extends BaseAction {
     }
 
     private boolean isUsingCamelCase() {
-        return !Boolean.getBoolean("no-ruby-camel-case-style-navigation");
+        Preferences p = NbPreferences.root ();
+        if ( p == null ) {
+            return false;
+        }
+        return p.getBoolean("useCamelCaseStyleNavigation", true); // NOI18N
     }
 }
 
