@@ -446,11 +446,11 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         parsingTask.cancel(false); // for the case that scanning has not finished yet
         if (!isValid[0]) return false;
         if (className[0].length() > 0) {
-            Set superTypeNames = new HashSet<String>();
+            Set<String> superTypeNames = new HashSet<String>();
             This thisVar = currentFrame.getThisVariable();
             if (thisVar != null) {
                 String fqn = thisVar.getType();
-                superTypeNames.add(fqn);
+                addClassNames(fqn, superTypeNames);
                 ObjectVariable superTypeVar = thisVar.getSuper();
                 while (superTypeVar != null) {
                     fqn = superTypeVar.getType();
@@ -458,11 +458,24 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     superTypeVar = superTypeVar.getSuper();
                 }
             } else {
-                superTypeNames.add(currentFrame.getClassName());
+                addClassNames(currentFrame.getClassName(), superTypeNames);
             }
             if (!superTypeNames.contains(className[0])) return false;
         }
         return true;
+    }
+
+    // include the class name plus all enclosing classes
+    private static void addClassNames(String fqn, Set<String> typeNames) {
+        do {
+            typeNames.add(fqn);
+            int i = fqn.lastIndexOf('$');
+            if (i > 0) {
+                fqn = fqn.substring(0, i);
+            } else {
+                fqn = null;
+            }
+        } while(fqn != null);
     }
 
     private String resolveTypeName (final int offset, Document doc) {
