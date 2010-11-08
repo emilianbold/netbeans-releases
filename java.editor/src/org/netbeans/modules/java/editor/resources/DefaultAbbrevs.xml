@@ -100,7 +100,7 @@ made subject to such option by the copyright holder.
         ${cursor}
     }
 ]]></code></codetemplate>
-    <codetemplate abbreviation="do"><code><![CDATA[do {
+    <codetemplate abbreviation="do" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[do {
             ${cursor}
         } while (${expr instanceof="boolean" default="true"});
     ]]></code></codetemplate>
@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="Psfb"><code><![CDATA[public static final boolean ]]></code></codetemplate> 
     <codetemplate abbreviation="St"><code><![CDATA[String]]></code></codetemplate>
     <!-- #173655 partial fix -->
-    <codetemplate abbreviation="as"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
+    <codetemplate abbreviation="as" contexts="BLOCK,CASE,LABELED_STATEMENT"><code><![CDATA[assert ${exp default="true" instanceof="boolean"};]]></code></codetemplate>
     <codetemplate abbreviation="na"><code><![CDATA[native ]]></code></codetemplate>
     <codetemplate abbreviation="tr"><code><![CDATA[transient ]]></code></codetemplate>
     <!-- Some bug in template processing always appends 4 spaces after volatile, if there is a single space in the template -->
@@ -127,9 +127,14 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="su"><code><![CDATA[super]]></code></codetemplate>
     <codetemplate abbreviation="pvb"><code><![CDATA[private volatile boolean ]]></code></codetemplate>
     <!-- #108167 -->
-    <codetemplate abbreviation="for"><code><![CDATA[for (int ${i newVarName default="i"}=0; ${i} < ${max default="10"}; ${i}++) {
-    ${cursor}
-}]]></code></codetemplate>
+    <codetemplate abbreviation="for" contexts="BLOCK,CASE,LABELED_STATEMENT">
+        <code>
+<![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${MAX default="10"}; ${IDX}++) {
+    ${selection}${cursor}
+}
+]]>
+        </code>
+    </codetemplate>
 
     <codetemplate abbreviation="fori" contexts="BLOCK,CASE,LABELED_STATEMENT">
         <code>

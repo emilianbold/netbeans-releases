@@ -51,6 +51,7 @@ import java.awt.event.KeyListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -74,6 +75,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.Acceptor;
 import org.netbeans.editor.AcceptorFactory;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -509,16 +511,26 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
         op.waitLoaded();
         CodeTemplate ct = op.findByAbbreviation(abbrev.toString());
         if (ct != null) {
-            try {
-                // Remove the abbrev text
-                Document doc = component.getDocument();
-                doc.remove(abbrevStartOffset, abbrev.length());
-            } catch (BadLocationException ble) {
+            if (ct.getContexts() == null || ct.getContexts().isEmpty() || accept(ct, CodeTemplateManagerOperation.getTemplateFilters(component, abbrevStartOffset))) {
+                try {
+                    // Remove the abbrev text
+                    Document doc = component.getDocument();
+                    doc.remove(abbrevStartOffset, abbrev.length());
+                } catch (BadLocationException ble) {
+                }
+                ct.insert(component);
+                return true;
             }
-            ct.insert(component);
-            return true;
-        } else {
-            return false;
         }
+        return false;
+    }
+
+    private static boolean accept(CodeTemplate template, Collection<? extends CodeTemplateFilter> filters) {
+        for(CodeTemplateFilter filter : filters) {
+            if (!filter.accept(template)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
