@@ -367,6 +367,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             if (currentClass == null) return false;
             if (workingCopy.getTypes().isSubtype(currentClass.asType(), inner.asType()))
                 return true;
+            return outer.equals(cur.getEnclosingElement());
         }
         return false;
     }
