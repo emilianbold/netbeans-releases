@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.CallModel;
 import org.netbeans.modules.cnd.callgraph.api.Function;
+import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
 
 /**
  *
@@ -131,12 +132,12 @@ public class CallModelImpl implements CallModel {
      * @return
      */
     @Override
-    public List<Call> getCallers(Function declaration, boolean showOverriding) {
+    public List<Call> getCallers(Function declaration) {
         FunctionImpl functionImpl = (FunctionImpl) declaration;
         CsmFunction owner = functionImpl.getDeclaration();
         Collection<CsmFunction> functions = new ArrayList<CsmFunction>();
         functions.add(owner);
-        if (showOverriding) {
+        if (CallGraphPreferences.isShowOverriding()) {
             if (CsmKindUtilities.isMethodDeclaration(owner)) {
                 Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) owner);
                 functions.addAll(overrides);
@@ -195,12 +196,12 @@ public class CallModelImpl implements CallModel {
      * @return
      */
     @Override
-    public List<Call> getCallees(Function definition, boolean showOverriding) {
+    public List<Call> getCallees(Function definition) {
         FunctionImpl definitionImpl = (FunctionImpl) definition;
         CsmFunction owner = definitionImpl.getDefinition();
         Collection<CsmFunction> functions = new ArrayList<CsmFunction>();
         functions.add(owner);
-        if (showOverriding) {
+        if (CallGraphPreferences.isShowOverriding()) {
             if (CsmKindUtilities.isMethodDeclaration(owner)) {
                 Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods((CsmMethod) owner, false);
                 functions.addAll(overrides);
