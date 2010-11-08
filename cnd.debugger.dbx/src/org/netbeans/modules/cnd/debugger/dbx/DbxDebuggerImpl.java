@@ -565,7 +565,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
             factory = new Dbx.DbxFactory(executor, additionalArgv,
                                          listener, exec32, isShortName(),
                                          dbxInitFile, host, connectExisting, dbxPath,
-                                         ddi.getInputOutput());
+                                         ddi.getInputOutput(), ddi);
         
             factory.start();
         }

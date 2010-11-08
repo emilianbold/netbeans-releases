@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Handler;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.RtcModel;
 import org.netbeans.modules.cnd.debugger.dbx.rtc.GpRtcUtil;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.openide.windows.InputOutput;
 
 
@@ -96,8 +97,9 @@ public final class Dbx extends CommonDbx {
 			  Host host,
 			  boolean connectExisting,
                           String dbxName,
-                          InputOutput io) {
-	    super(executor, additionalArgv, listener, exec32, shortNames, dbxInit, host, connectExisting, dbxName, io);
+                          InputOutput io,
+                          NativeDebuggerInfo ndi) {
+	    super(executor, additionalArgv, listener, exec32, shortNames, dbxInit, host, connectExisting, dbxName, io, ndi);
 	}
 
 	protected Dbx getDbx(Factory factory,

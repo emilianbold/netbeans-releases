@@ -88,6 +88,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.io.IOPack;
 
@@ -223,6 +224,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	private IOPack ioPack;
 	private boolean remote;
         private InputOutput io;
+        private NativeDebuggerInfo ndi;	// TMP
 
 	// Start out connecting to dbx in master mode. If we can't we turn
 	// 'beMaster' off and fall back on the old CONNECT_CHILD mode.
@@ -255,7 +257,8 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 			   Host host,
 			   boolean connectExisting,
                            String dbxName,
-                           InputOutput io) {
+                           InputOutput io,
+                           NativeDebuggerInfo ndi) {
 	    this.executor = executor;
 	    this.additionalArgv = additionalArgv;
 	    this.listener = listener;
@@ -266,6 +269,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    this.connectExisting = connectExisting;
             this.dbxname = dbxName;
             this.io = io;
+            this.ndi = ndi;
 	}
 
 	protected abstract CommonDbx getDbx(Factory fatory,
@@ -801,7 +805,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 
 	    boolean havePio = false;
 	    if (!connectExisting)
-		havePio = ioPack.connectPio(executor);
+		havePio = ioPack.connectPio(executor, ndi.getProfile());
 	    if (!havePio) {
 		// SHOULD do something
 	    }
