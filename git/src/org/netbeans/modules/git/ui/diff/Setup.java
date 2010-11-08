@@ -82,7 +82,7 @@ class Setup extends AbstractDiffSetup {
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
         String firstTitle;
         String secondTitle;
-        info = node.getNode().getInformation();
+        info = node.getFileNode().getInformation();
 
         // <editor-fold defaultstate="collapsed" desc="left panel">
         switch (mode) {
