@@ -334,7 +334,9 @@ abstract class ParsingLayerCacheManager extends LayerCacheManager implements Con
             if (text.length() > 0) {
                 MemFile file = (MemFile)curr.peek();
                 if (file.ref != null) throw new SAXParseException("CDATA plus url= in <file>", locator);
+                /* May be used legitimately by e.g. @HelpSetRegistration:
                 LayerCacheManager.err.warning("use of inline CDATA text contents in <file name=\"" + file.name + "\"> deprecated for performance and charset safety at " + locator.getSystemId() + ":" + locator.getLineNumber() + ". Please use the 'url' attribute instead, or the file attribute 'originalFile' on *.shadow files.");
+                 */
                 // Note: platform default encoding used. If you care about the encoding,
                 // you had better be using url= instead.
                 file.contents = text.getBytes();
