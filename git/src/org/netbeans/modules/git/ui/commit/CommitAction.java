@@ -69,7 +69,6 @@ import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.GitHookContext.LogEntry;
-import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
